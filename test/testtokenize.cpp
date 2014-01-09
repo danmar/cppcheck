@@ -10037,6 +10037,8 @@ private:
             else if (!links.empty() && Token::Match(tok,")|]")) {
                 Token::createMutualLinks(links.top(), tok);
                 links.pop();
+            } else if (Token::Match(tok, "< %type% >")) {
+                Token::createMutualLinks(tok, tok->tokAt(2));
             }
         }
 
@@ -10130,7 +10132,8 @@ private:
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
-        ASSERT_EQUALS("aint<>3==", testAst("a<int>()==3"));
+        ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
+        ASSERT_EQUALS("ab(==", testAst("a == b<c>(); f();"));
     }
 };
 

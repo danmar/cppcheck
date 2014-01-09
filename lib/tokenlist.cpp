@@ -427,19 +427,25 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
     } else if (tok->str() == "return") {
         compileUnaryOp(tok, compileExpression, op);
     } else if (tok->isName()) {
+        const bool templatefunc = Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (");
         if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
             tok = tok->next();
             tok->astOperand1(tok->previous());
             op.push(tok);
             tok = tok->next();
-        } else if (!Token::Match(tok->next(), "(|[")) {
+        } else if (tok->next() && tok->next()->str() == "<" && tok->next()->link() && !templatefunc) {
+            op.push(tok);
+            tok = tok->next()->link()->next();
+            compileTerm(tok,op);
+        } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
         } else {
             Token *name = tok;
-            tok = tok->tokAt(2);
+            Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
+            tok = par->next();
             if (Token::Match(tok, ")|]")) {
-                name->next()->astOperand1(name);
+                par->astOperand1(name);
                 tok = tok->next();
             } else {
                 Token *prev = name;
@@ -458,7 +464,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                         tok = tok->next();
                 }
             }
-            op.push(name->next());
+            op.push(par);
         }
     } else if (Token::Match(tok, "++|--")) {
         bool pre = false;
