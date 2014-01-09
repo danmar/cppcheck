@@ -531,6 +531,11 @@ bool MainWindow::LoadLibrary(Library *library, QString filename)
     if (library->load(NULL, (path+"/"+filename).toLatin1()))
         return true;
 
+    // Try to load the library from the cfg subfolder of the current working directory
+    path = QDir::currentPath() + "/cfg";
+    if (library->load(NULL, (path+"/"+filename).toLatin1()))
+        return true;
+
     return false;
 }
 
