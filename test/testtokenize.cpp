@@ -282,6 +282,7 @@ private:
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
         TEST_CASE(varid_in_class12);    // #4637 - method
         TEST_CASE(varid_in_class13);    // #4637 - method
+        TEST_CASE(varid_in_class14);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4449,6 +4450,24 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: struct a { char typename [ 2 ] ; } ;\n",  // not valid C++ code
                       tokenizeDebugListing(code2, false, "test.cpp"));
+    }
+
+    void varid_in_class14() {
+        const char code[] = "class Tokenizer { TokenList list; };\n"
+                            "\n"
+                            "void Tokenizer::f() {\n"
+                            "  std::list<int> x;\n"               // <- not member variable
+                            "  list.do_something();\n"            // <- member variable
+                            "  Tokenizer::list.do_something();\n" // <- redundant scope info
+                            "}\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Tokenizer { TokenList list@1 ; } ;\n"
+                      "2:\n"
+                      "3: void Tokenizer :: f ( ) {\n"
+                      "4: std :: list < int > x@2 ;\n"
+                      "5: list@1 . do_something ( ) ;\n"
+                      "6: Tokenizer :: list@1 . do_something ( ) ;\n"
+                      "7: }\n", tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_initList() {

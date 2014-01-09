@@ -2330,19 +2330,25 @@ static void setVarIdClassDeclaration(Token * const startToken,
 
 // Update the variable ids..
 // Parse each function..
-static void setVarIdClassFunction(Token * const startToken,
+static void setVarIdClassFunction(const std::string &classname,
+                                  Token * const startToken,
                                   const Token * const endToken,
                                   const std::map<std::string, unsigned int> &varlist,
                                   std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
                                   unsigned int *_varId)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
-        if (tok2->varId() == 0 && (tok2->previous()->str() != "." || tok2->strAt(-2) == "this")) {
-            const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());
-            if (it != varlist.end()) {
-                tok2->varId(it->second);
-                setVarIdStructMembers(&tok2, structMembers, _varId);
-            }
+        if (tok2->varId() != 0 || !tok2->isName())
+            continue;
+        if (Token::Match(tok2->tokAt(-2), ("!!"+classname+" :: ").c_str()))
+            continue;
+        if (Token::Match(tok2->tokAt(-2), "!!this . "))
+            continue;
+
+        const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());
+        if (it != varlist.end()) {
+            tok2->varId(it->second);
+            setVarIdStructMembers(&tok2, structMembers, _varId);
         }
     }
 }
@@ -2594,7 +2600,7 @@ void Tokenizer::setVarId()
                     if (Token::Match(tok2, ") const|volatile| {")) {
                         while (tok2->str() != "{")
                             tok2 = tok2->next();
-                        setVarIdClassFunction(tok2, tok2->link(), varlist, &structMembers, &_varId);
+                        setVarIdClassFunction(classname, tok2, tok2->link(), varlist, &structMembers, &_varId);
                     }
 
                     // constructor with initializer list
@@ -2607,7 +2613,7 @@ void Tokenizer::setVarId()
                             tok3 = tok3->linkAt(3);
                         }
                         if (Token::simpleMatch(tok3, ") {")) {
-                            setVarIdClassFunction(tok2, tok3->next()->link(), varlist, &structMembers, &_varId);
+                            setVarIdClassFunction(classname, tok2, tok3->next()->link(), varlist, &structMembers, &_varId);
                         }
                     }
                 }
