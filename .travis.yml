@@ -20,7 +20,7 @@ script:
 # compile cppcheck, default build
   - make -j4
   - make test -j4
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppressions-list=.travis_suppressions cli gui lib build test -igui/test -itest/test.cxx
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppressions-list=.travis_suppressions .
 # compile gui
   - cd gui
   - qmake
