@@ -165,7 +165,7 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 10));
 
         code = "void f() {\n"
-               "    for (int x = 0; x < (short)10; x++)\n"
+               "    for (int x = 0; x < ((short)10); x++)\n"
                "        a[x] = 0;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));

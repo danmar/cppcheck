@@ -165,14 +165,30 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         if (vartok->varId() == 0U)
             continue;
         tok = vartok->tokAt(4);
-        if (!Token::Match(tok, "%varid% <|<=|!= %num% ; %varid% ++ ) {", vartok->varId())) {
+        const Token *num2tok = 0;
+        if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
+            tok = tok->next();
+            num2tok = tok->astOperand2();
+            if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
+                num2tok = num2tok->astOperand1();
+            if (!Token::Match(num2tok, "%num%"))
+                num2tok = 0;
+        }
+        if (!num2tok) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok, "For loop not handled");
             continue;
         }
-        const MathLib::bigint num2 = MathLib::toLongNumber(tok->strAt(2)) - ((tok->strAt(1)=="<=") ? 0 : 1);
+        const MathLib::bigint num2 = MathLib::toLongNumber(num2tok ? num2tok->str() : "0") - ((tok->str()=="<=") ? 0 : 1);
+        while (tok && tok->str() != ";")
+            tok = tok->next();
+        if (!num2tok || !Token::Match(tok, "; %varid% ++ ) {", vartok->varId())) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "For loop not handled");
+            continue;
+        }
 
-        Token * const bodyStart = tok->tokAt(7);
+        Token * const bodyStart = tok->tokAt(4);
         const Token * const bodyEnd   = bodyStart->link();
 
         // Is variable modified inside for loop
