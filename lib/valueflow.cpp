@@ -137,7 +137,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 } else {
                     tok2 = tok2->link();
                 }
-            }
+            } else if (var->isGlobal() && tok2->str() == "{") {
+				if (!Token::Match(tok2->previous(), ")|else {"))
+					break;
+				if (Token::Match(tok2->previous(), ") {") &&
+				    !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
+				    break;
+			}
         }
     }
 }
