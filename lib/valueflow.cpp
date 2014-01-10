@@ -50,7 +50,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         unsigned int varid;
         MathLib::bigint num;
         const Variable *var;
-        if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
+        if (tok->isComparisonOp() && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
                 var = tok->astOperand1()->variable();
@@ -78,8 +78,8 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         if (varid == 0U)
             continue;
 
-        // bailout: global variables
-        if (var && var->isGlobal()) {
+        // bailout: global non-const variables
+        if (var && var->isGlobal() && !var->isConst()) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok, "global variable " + var->nameToken()->str());
             continue;

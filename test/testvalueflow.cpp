@@ -97,6 +97,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        code = "extern const int x;\n"
+               "void f() {\n"
+               "    int a = x;\n"
+               "    if (x == 123) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
         // bailout: ?:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
