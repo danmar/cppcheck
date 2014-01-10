@@ -103,7 +103,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
                 break;
             }
- 
+
             if (tok2->varId() == varid) {
                 // bailout: assignment
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
@@ -138,12 +138,12 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     tok2 = tok2->link();
                 }
             } else if (var->isGlobal() && tok2->str() == "{") {
-				if (!Token::Match(tok2->previous(), ")|else {"))
-					break;
-				if (Token::Match(tok2->previous(), ") {") &&
-				    !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
-				    break;
-			}
+                if (!Token::Match(tok2->previous(), ")|else {"))
+                    break;
+                if (Token::Match(tok2->previous(), ") {") &&
+                    !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
+                    break;
+            }
         }
     }
 }
