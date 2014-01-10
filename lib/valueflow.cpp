@@ -103,7 +103,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
                 break;
             }
-
+ 
             if (tok2->varId() == varid) {
                 // bailout: assignment
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
@@ -130,9 +130,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             }
 
             if (tok2->str() == "}") {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on }");
-                break;
+                if (Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on }");
+                    break;
+                } else {
+                    tok2 = tok2->link();
+                }
             }
         }
     }

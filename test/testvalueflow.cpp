@@ -117,9 +117,16 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: no simplification of x within ?: expression\n", errout.str());
 
         code = "void f(int x) {\n"
-               "    int a = x;\n"
+               "    int a =v x;\n"
                "    a = b ? x/2 : 20/x;\n"
                "    if (x == 123) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
+
+        code = "void f(int x, int y) {\n"
+               "    a = x;\n"
+               "    if (y){}\n"
+               "    if (x==123){}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
