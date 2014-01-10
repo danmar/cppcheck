@@ -50,7 +50,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         unsigned int varid;
         MathLib::bigint num;
         const Variable *var;
-        if (tok->isComparisonOp() && tok->astOperand2()) {
+        if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
                 var = tok->astOperand1()->variable();
