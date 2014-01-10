@@ -122,20 +122,6 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
     }
 }
 
-void TestFixture::todoAssert(const char *filename, unsigned int linenr, bool condition) const
-{
-    if (condition) {
-        if (gcc_style_errors) {
-            errmsg << filename << ':' << linenr << ": Assertion succeeded unexpectedly." << std::endl;
-        } else {
-            errmsg << "Assertion succeeded unexpectedly in " << filename << " at line " << linenr << std::endl;
-        }
-        ++succeeded_todos_counter;
-    } else {
-        ++todos_counter;
-    }
-}
-
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
@@ -217,15 +203,6 @@ void TestFixture::assertThrowFail(const char *filename, unsigned int linenr) con
     } else {
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                << "The expected exception was not thrown" << std::endl << "_____" << std::endl;
-    }
-}
-
-void TestFixture::printTests()
-{
-    const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
-
-    for (std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it) {
-        std::cout << (*it)->classname << std::endl;
     }
 }
 

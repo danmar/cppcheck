@@ -194,6 +194,7 @@ private:
         TEST_CASE(symboldatabase29); // ticket #4442 (segmentation fault)
         TEST_CASE(symboldatabase30);
         TEST_CASE(symboldatabase31);
+        TEST_CASE(symboldatabase32);
         TEST_CASE(symboldatabase33); // ticket #4682 (false negatives)
         TEST_CASE(symboldatabase34); // ticket #4694 (segmentation fault)
         TEST_CASE(symboldatabase35); // ticket #4806 (segmentation fault)

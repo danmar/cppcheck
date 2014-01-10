@@ -602,13 +602,13 @@ private:
         TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(4, argv));
     }
 
-    void fileListStdin() {
+/*    void fileListStdin() {
         // TODO: Give it some stdin to read from, fails because the list of
         // files in stdin (_pathnames) is empty
         REDIRECT;
         const char *argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
         TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(3, argv));
-    }
+    } */
 
     void inlineSuppr() {
         REDIRECT;
@@ -925,7 +925,7 @@ private:
         ASSERT_EQUALS(false, parser.ParseFromArgs(2, argv));
         ASSERT_EQUALS(0, parser.GetIgnoredPaths().size());
     }
-
+/*
     void ignorepaths1() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-isrc", "file.cpp"};
@@ -981,7 +981,7 @@ private:
         ASSERT_EQUALS(1, parser.GetIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser.GetIgnoredPaths()[0]);
     }
-
+*/
     void checkconfig() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--check-config", "file.cpp"};
