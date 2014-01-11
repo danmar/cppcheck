@@ -72,6 +72,16 @@ static bool bailoutFunctionPar(const Token *tok)
     return arg && !arg->isConst() && arg->isReference();
 }
 
+static const Token * skipValueInConditionalExpression(const Token *tok)
+{
+    while (tok && !Token::Match(tok, "%oror%|&&|?|:")) {
+        while (Token::Match(tok->astParent(), "%oror%|&&|?") && tok->astParent()->astOperand1() == tok)
+            tok = tok->astParent();
+        tok = tok->astParent();
+    }
+    return tok;
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -149,15 +159,8 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     break;
                 }
 
-                // skip if variable is conditionally used in ?: expression.
-                const Token *parent = tok2;
-                while (parent && !Token::Match(parent, "%oror%|&&|?|:")) {
-                    while (Token::Match(parent->astParent(), "%oror%|&&|?") &&
-                           parent->astParent()->astOperand1() == parent)
-                        parent = parent->astParent();
-                    parent = parent->astParent();
-                }
-                if (parent) {
+                // skip if variable is conditionally used in ?: expression
+                if (const Token *parent = skipValueInConditionalExpression(tok2)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist,
                                 errorLogger,
