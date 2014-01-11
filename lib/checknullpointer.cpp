@@ -755,7 +755,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
     if (_settings->valueFlow) {
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-            if (!tok->isName() || !tok->values.empty())
+            if (!tok->isName() || tok->values.empty())
                 continue;
 
             const Variable *var = tok->variable();

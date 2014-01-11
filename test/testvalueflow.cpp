@@ -105,12 +105,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
         // guarding by &&
-        bailout("void f(int x) {\n"
-                "    if (!x || \n"  // <- x can be 0
-                "        a/x) {}\n" // <- x can't be 0
-                "    if (x==0) {}\n"
-                "}");
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 2U, 0));
+        code = "void f(int x) {\n"
+               "    if (!x || \n"  // <- x can be 0
+               "        a/x) {}\n" // <- x can't be 0
+               "    if (x==0) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
         // bailout: ?:
