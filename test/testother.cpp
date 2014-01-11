@@ -3310,6 +3310,18 @@ private:
               "    this->var = var;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
+
+        // #5339 - false positive for function reference assigned with this
+        check("class Fred {\n"
+              "private:\n"
+              "    void* (*foo) (void *);\n"
+              "public:\n"
+              "    Fred(double, void* (*) (void *));\n"
+              "};\n"
+              "Fred::Fred(double x, void* (*foo) (void*)) {\n"
+              "    this->foo = foo;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
