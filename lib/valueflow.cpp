@@ -90,12 +90,17 @@ static bool bailoutSelfAssignment(const Token * const tok)
         parent = parent->astParent();
 
         // Assignment where lhs variable exists in rhs => return true
-        if (parent                       != NULL         &&
-            parent->astOperand2()        == op           &&
-            parent->astOperand1()        != NULL         &&
-            parent->str()                == "="          &&
-            parent->astOperand1()->str() == tok->str())
-            return true;
+        if (parent                         != NULL         &&
+            parent->astOperand2()          == op           &&
+            parent->astOperand1()          != NULL         &&
+            parent->str()                  == "=") {
+            for (const Token *lhs = parent->astOperand1(); lhs; lhs = lhs->astOperand1()) {
+                if (lhs->varId() == tok->varId())
+                    return true;
+                if (lhs->astOperand2() && lhs->astOperand2()->varId() == tok->varId())
+                    return true;
+            }
+        }
     }
     return false;
 }

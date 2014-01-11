@@ -111,6 +111,11 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 65));
 
+        code = "void f(int x) {\n"
+               "   x = y = 2 + x;\n"
+               "   if (x == 65);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 65));
 
         // guarding by &&
         code = "void f(int x) {\n"
