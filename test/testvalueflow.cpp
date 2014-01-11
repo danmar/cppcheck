@@ -114,8 +114,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
         code = "void f(int *x) {\n"
-               "  if ((x=ret())&&\n"
-               "      (*x==0));\n"  // <- x is not 0
+               "  ((x=ret())&&\n"
+               "   (*x==0));\n"  // <- x is not 0
                "  if (x==0) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
