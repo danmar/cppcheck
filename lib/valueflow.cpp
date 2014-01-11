@@ -115,7 +115,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 // skip if variable is conditionally used in ?: expression.
-                const Token *parent = tok2->astParent();
+                const Token *parent = tok2;
                 while (parent && !Token::Match(parent, "%oror%|&&|?|:")) {
                     while (Token::Match(parent->astParent(), "%oror%|&&|?") &&
                            parent->astParent()->astOperand1() == parent)
