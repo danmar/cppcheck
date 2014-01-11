@@ -104,6 +104,14 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
+        // assignment
+        code = "void f(int x) {\n"
+               "   x = 2 + x;\n"
+               "   if (x == 65);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 65));
+
+
         // guarding by &&
         code = "void f(int x) {\n"
                "    if (!x || \n"  // <- x can be 0

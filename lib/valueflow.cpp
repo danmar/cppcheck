@@ -82,6 +82,24 @@ static const Token * skipValueInConditionalExpression(const Token *tok)
     return tok;
 }
 
+static bool bailoutSelfAssignment(const Token * const tok)
+{
+    const Token *parent = tok;
+    while (parent) {
+        const Token *op = parent;
+        parent = parent->astParent();
+
+        // Assignment where lhs variable exists in rhs => return true
+        if (parent                       != NULL         &&
+            parent->astOperand2()        == op           &&
+            parent->astOperand1()        != NULL         &&
+            parent->str()                == "="          &&
+            parent->astOperand1()->str() == tok->str())
+            return true;
+    }
+    return false;
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -149,6 +167,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
+                    break;
+                }
+
+                // bailout: variable is used in rhs in assignment to itself
+                if (bailoutSelfAssignment(tok2)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + tok2->str() + " is used in rhs in assignment to itself");
                     break;
                 }
 
