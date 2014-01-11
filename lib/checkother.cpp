@@ -67,6 +67,9 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         else if (tok1->function() && !tok1->function()->isConst)
             return false;
     }
+    if ((Token::Match(tok1, "%var% <") && tok1->next()->link()) ||
+        (Token::Match(tok2, "%var% <") && tok2->next()->link()))
+        return false;
     if (Token::Match(tok1, "++|--"))
         return false;
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal

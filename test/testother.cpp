@@ -3695,6 +3695,13 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+        // #5334
+        check("void f(C *src) {\n"
+              "    if (x<A*>(src) || x<B*>(src))\n"
+              "        a++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int x) {\n"
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
