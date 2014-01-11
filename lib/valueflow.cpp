@@ -227,6 +227,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     break;
             }
 
+            // skip sizeof..
+            if (tok2->str() == ")" && Token::Match(tok2->link()->previous(), "typeof|sizeof ("))
+                tok2 = tok2->link();
+
             if (tok2->str() == "}") {
                 if (Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
                     if (settings->debugwarnings)

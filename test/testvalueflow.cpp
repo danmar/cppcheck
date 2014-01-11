@@ -182,6 +182,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
 
+        // skip sizeof
+        code = "void f(int *x) {\n"
+               "    sizeof(x[0]);\n"
+               "    if (x==63){}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 63));
+
         // bailout: if/else/etc
         bailout("void f(int x) {\n"
                 "    if (x != 123) { b = x; }\n"
