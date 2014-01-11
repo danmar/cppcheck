@@ -39,7 +39,7 @@ private:
         TEST_CASE(valueFlowSubFunction);
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, int value) {
+    bool testValueOfX(const std::string &code, unsigned int linenr, int value) {
         Settings settings;
         settings.valueFlow = true;  // temporary flag
 
@@ -112,6 +112,16 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        // function calls
+        code = "void f(int x) {\n"
+               "  a = x;\n"
+               "  setx(x);\n"
+               "  if (x == 1) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(std::string("void setx(int x);")+code, 2U, 1));
+        ASSERT_EQUALS(false, testValueOfX(std::string("void setx(int &x);")+code, 2U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
 
         // bailout: ?:
         bailout("void f(int x) {\n"
