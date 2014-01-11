@@ -87,11 +87,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
         const ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
-        if (var &&
-            var->typeStartToken()->isUnsigned() &&
-            ((num==0 && Token::Match(tok,"<|>"))   ||
-             (num==1 && Token::Match(tok,"<=|>="))))
-            val2 = ValueFlow::Value(tok,0);
+        if (var && num==1U && Token::Match(tok,"<=|>=")) {
+            bool isunsigned = var->typeEndToken()->isUnsigned();
+            for (const Token* type = var->typeStartToken(); type != var->typeEndToken(); type = type->next())
+                isunsigned |= type->isUnsigned();
+            if (isunsigned)
+                val2 = ValueFlow::Value(tok,0);
+        }
 
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
             if (!tok2) {
@@ -273,11 +275,10 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Set value in function scope..
         const unsigned int varid2 = arg->nameToken()->varId();
         for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%cop%|return %varid%", varid2) || Token::Match(tok2, "= %varid% %cop%|;", varid2)) {
-                tok2 = tok2->next();
+            if (Token::Match(tok2, "%varid% !!=", varid2)) {
                 std::list<ValueFlow::Value> &values = const_cast<Token*>(tok2)->values;
                 values.insert(values.begin(), argvalues.begin(), argvalues.end());
-            } else if (tok2->varId() == varid2 || tok2->str() == "{") {
+            } else if (tok2->str() == "{") {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str());
                 break;

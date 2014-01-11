@@ -203,6 +203,10 @@ private:
                "void f2(int y) { f1(y<123); }\n";
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 1));
+
+        code = "void f1(int x) { a=(abc)x; }\n"
+               "void f2(int y) { f1(123); }\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 1U, 123));
     }
 };
 
