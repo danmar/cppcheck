@@ -245,6 +245,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (Token::Match(tok2->previous(), ") {") &&
                     !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
                     break;
+            } else if (tok2->str() == "break") {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on break");
+                break;
             }
         }
     }

@@ -210,6 +210,15 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+
+        // bailout: switch
+        bailout("void f(int x, int y) {\n"
+                "    switch (y) {\n"
+                "    case 1: a=x; break;\n"
+                "    case 2: if (x==5) {} break;\n"
+                "    };\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on break\n", errout.str());
     }
 
     void valueFlowForLoop() {
