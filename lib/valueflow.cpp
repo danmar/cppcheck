@@ -141,6 +141,27 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
         }
 
+        // bailout: while-condition, variable is changed in while loop
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
+            if (tok2->str() == ")")
+                tok2 = tok2->link();
+            else if (tok2->str() == "(") {
+                if (Token::Match(tok2->previous(), "for|while (") && Token::Match(tok2->link(), ") {")) {
+                    const Token *start = tok2->link()->next();
+                    const Token *end   = start->link();
+                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid))
+                        varid = 0U;
+                }
+                break;
+            }
+        }
+        if (varid == 0U) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop ");
+            continue;
+        }
+
+        // extra logic for unsigned variables 'i>=1' => possible value can also be 0
         const ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
         if (var && num==1U && Token::Match(tok,"<=|>=")) {

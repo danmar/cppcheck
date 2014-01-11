@@ -138,6 +138,19 @@ private:
         ASSERT_EQUALS(false, testValueOfX(std::string("void setx(int &x);")+code, 2U, 1));
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
 
+        // while, for, do-while
+        code = "void f(int x) {\n"
+               "  a = x;\n"  // x can be 37
+               "  while (x == 37) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 37));
+
+        code = "void f(int x) {\n"
+               "  a = x;\n"  // don't assume that x can be 37
+               "  while (x != 37) { x++; }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 37));
+
         // bailout: ?:
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
