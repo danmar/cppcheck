@@ -1786,6 +1786,17 @@ void CheckOther::checkVariableScope()
                 }
 
                 tok = tok->link();
+
+                // parse else if blocks..
+            } else if (Token::simpleMatch(tok, "else { if (") && Token::simpleMatch(tok->linkAt(3), ") {")) {
+                const Token *endif = tok->linkAt(3)->linkAt(1);
+                bool elseif = false;
+                if (Token::simpleMatch(endif, "} }"))
+                    elseif = true;
+                else if (Token::simpleMatch(endif, "} else {") && Token::simpleMatch(endif->linkAt(2),"} }"))
+                    elseif = true;
+                if (elseif && Token::findmatch(tok->next(), "%varid%", tok->linkAt(1), var->declarationId()))
+                    reduce = false;
             } else if (tok->varId() == var->declarationId() || tok->str() == "goto") {
                 reduce = false;
                 break;

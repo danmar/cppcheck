@@ -3512,6 +3512,8 @@ bool Tokenizer::simplifyTokenList1()
 
     simplifyEmptyNamespaces();
 
+    elseif();
+
     return validate();
 }
 
@@ -3641,7 +3643,6 @@ bool Tokenizer::simplifyTokenList2()
     // Simplify variable declarations
     simplifyVarDecl(false);
 
-    elseif();
     simplifyErrNoInWhile();
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
