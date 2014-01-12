@@ -3695,13 +3695,6 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
-        // #5334
-        check("void f(C *src) {\n"
-              "    if (x<A*>(src) || x<B*>(src))\n"
-              "        a++;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("void f(int x) {\n"
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
@@ -4833,6 +4826,19 @@ private:
               "    if (bar(a) && !strcmp(a, b) && bar(a) && !strcmp(a, b)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5334
+        check("void f(C *src) {\n"
+              "    if (x<A*>(src) || x<B*>(src))\n"
+              "        a++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(A *src) {\n"
+              "    if (dynamic_cast<B*>(src) || dynamic_cast<B*>(src)) {}\n"
+              "}\n", "test.cpp", false, false, false, false); // don't run simplifications
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
     }
 
     void duplicateExpression4() {

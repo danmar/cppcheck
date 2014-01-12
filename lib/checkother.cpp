@@ -67,9 +67,30 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         else if (tok1->function() && !tok1->function()->isConst)
             return false;
     }
+    // templates/casts
     if ((Token::Match(tok1, "%var% <") && tok1->next()->link()) ||
-        (Token::Match(tok2, "%var% <") && tok2->next()->link()))
-        return false;
+        (Token::Match(tok2, "%var% <") && tok2->next()->link())) {
+
+        // non-const template function that is not a dynamic_cast => return false
+        if (Token::Match(tok1->next()->link(), "> (") &&
+            !(tok1->function() && tok1->function()->isConst) &&
+            tok1->str() != "dynamic_cast")
+            return false;
+
+        // some template/cast stuff.. check that the template arguments are same
+        const Token *t1 = tok1->next();
+        const Token *t2 = tok2->next();
+        const Token *end1 = tok1->next()->link();
+        const Token *end2 = tok2->next()->link();
+        while (t1 && t2 && t1 != end1 && t2 != end2) {
+            if (t1->str() != t2->str())
+                return false;
+            t1 = t1->next();
+            t2 = t2->next();
+        }
+        if (t1 != end1 || t2 != end2)
+            return false;
+    }
     if (Token::Match(tok1, "++|--"))
         return false;
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
