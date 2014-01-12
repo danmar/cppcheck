@@ -228,6 +228,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
 
         // bailout: switch
+        // TODO : handle switch/goto more intelligently
         bailout("void f(int x, int y) {\n"
                 "    switch (y) {\n"
                 "    case 1: a=x; break;\n"
@@ -235,6 +236,14 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on break\n", errout.str());
+
+        bailout("void f(int x, int y) {\n"
+                "    switch (y) {\n"
+                "    case 1: a=x; return 1;\n"
+                "    case 2: if (x==5) {} break;\n"
+                "    };\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n", errout.str());
     }
 
     void valueFlowForLoop() {
