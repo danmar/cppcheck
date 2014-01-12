@@ -169,7 +169,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         // extra logic for unsigned variables 'i>=1' => possible value can also be 0
         const ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
-        if (var && num==1U && Token::Match(tok,"<=|>=")) {
+        if (num==1U && Token::Match(tok,"<=|>=")) {
             bool isunsigned = var->typeEndToken()->isUnsigned();
             for (const Token* type = var->typeStartToken(); type != var->typeEndToken(); type = type->next())
                 isunsigned |= type->isUnsigned();
