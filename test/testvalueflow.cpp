@@ -144,17 +144,33 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
 
         // while, for, do-while
-        code = "void f(int x) {\n"
+        code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition
                "  a = x;\n"  // x can be 37
                "  while (x == 37) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 37));
 
-        code = "void f(int x) {\n"
+        code = "void f(int x) {\n" // loop condition, x is assigned inside loop => dont use condition
                "  a = x;\n"  // don't assume that x can be 37
                "  while (x != 37) { x++; }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 37));
+
+        code = "void f(int x) {\n"  // condition inside loop, x is NOT assigned inside loop => use condition
+               "    a = x;\n"
+               "    do {\n"
+               "        if (x==76) {}\n"
+               "    } while (1);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 76));
+
+        code = "void f(int x) {\n"  // conditions inside loop, x is assigned inside do-while => dont use condition
+               "    a = x;\n"
+               "    do {\n"
+               "        if (x!=76) { x=do_something(); }\n"
+               "    } while (1);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 76));
 
         // bailout: ?:
         bailout("void f(int x) {\n"

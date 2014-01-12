@@ -136,11 +136,11 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
         }
 
-        if (varid == 0U)
+        if (varid == 0U || !var)
             continue;
 
         // bailout: global non-const variables
-        if (var && var->isGlobal() && !var->isConst()) {
+        if (var->isGlobal() && !var->isConst()) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok, "global variable " + var->nameToken()->str());
             continue;
@@ -239,12 +239,29 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 } else {
                     tok2 = tok2->link();
                 }
-            } else if (var && var->isGlobal() && tok2->str() == "{") {
-                if (!Token::Match(tok2->previous(), ")|else {"))
-                    break;
-                if (Token::Match(tok2->previous(), ") {") &&
-                    !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
-                    break;
+            } else if (tok2->str() == "{") {
+                // if variable is assigned in loop don't look before the loop
+                if (tok2->previous() &&
+                    (Token::Match(tok2->previous(), "do") ||
+                     (tok2->str() == ")" && Token::Match(tok2->linkAt(-1)->previous(), "for|while (")))) {
+
+                    const Token *start = tok2;
+                    const Token *end   = start->link();
+                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
+                        break;
+                    }
+                }
+
+                // Global variable : stop when leaving the function scope
+                if (var->isGlobal()) {
+                    if (!Token::Match(tok2->previous(), ")|else {"))
+                        break;
+                    if (Token::Match(tok2->previous(), ") {") &&
+                        !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
+                        break;
+                }
             } else if (tok2->str() == "break") {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on break");
