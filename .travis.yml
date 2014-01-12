@@ -20,11 +20,15 @@ script:
 # compile cppcheck, default build
   - make -j4
   - make test -j4
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppressions-list=.travis_suppressions .
 # compile gui
   - cd gui
   - qmake
   - make -j4
+# building gui generates some more files that cppcheck can check, so check the repo *after* building gui
+  - cd ../
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppressions-list=.travis_suppressions .
+  - cd ./gui
+# clean rebuild
   - git clean -dfx .
 #     can't set this as env flags, so try again with HAVE_RULES=yes
   - qmake HAVE_RULES=yes
