@@ -290,7 +290,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall -std=c++11");
     } else {
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
@@ -316,6 +316,7 @@ int main(int argc, char **argv)
 //                                "-Wsign-conversion "
                                 "-Wsign-promo "
 //                                "-Wunreachable-code "
+                                "-std=c++11 "
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
