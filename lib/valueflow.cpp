@@ -255,7 +255,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 // Global variable : stop when leaving the function scope
-                if (var->isGlobal()) {
+                if (!var->isLocal()) {
                     if (!Token::Match(tok2->previous(), ")|else {"))
                         break;
                     if (Token::Match(tok2->previous(), ") {") &&
