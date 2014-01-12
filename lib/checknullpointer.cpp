@@ -762,18 +762,42 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (!var || !var->isPointer())
                 continue;
 
+            const ValueFlow::Value *value = 0;
+            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+                if (it->intvalue == 0) {
+                    value = &(*it);
+                    break;
+                }
+            }
+            if (!value)
+                continue;
+
+            if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+                const Token *ftok = tok->previous();
+                while (ftok && ftok->str() != "(") {
+                    if (ftok->str() == ")")
+                        ftok = ftok->link();
+                    ftok = ftok->previous();
+                }
+                std::list<const Token *> varlist;
+                parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
+                if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
+                    if (value->condition == NULL)
+                        nullPointerError(tok);
+                    else if (_settings->isEnabled("warning"))
+                        nullPointerError(tok, tok->str(), value->condition, false);
+                }
+                continue;
+            }
+
             bool unknown = false;
             if (!isPointerDeRef(tok,unknown))
                 continue;
 
-            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
-                if (it->intvalue != 0)
-                    continue;
-                if (it->condition == NULL)
-                    nullPointerError(tok);
-                else if (_settings->isEnabled("warning"))
-                    nullPointerError(tok, tok->str(), it->condition, false);
-            }
+            if (value->condition == NULL)
+                nullPointerError(tok);
+            else if (_settings->isEnabled("warning"))
+                nullPointerError(tok, tok->str(), value->condition, false);
         }
         return;
     }
