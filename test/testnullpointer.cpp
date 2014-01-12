@@ -86,7 +86,7 @@ private:
         Settings settings;
         settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
-        //settings.valueFlow = true;
+        settings.valueFlow = true;
 
         // cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
@@ -560,7 +560,7 @@ private:
               "    if (*p == 0) { }\n"
               "    if (!p) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         // no error
         check("void foo()\n"
