@@ -43,6 +43,13 @@ private:
         Settings settings;
         settings.valueFlow = true;  // temporary flag
 
+        // strcpy cfg
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "</def>";
+        settings.library.loadxmldata(cfg, sizeof(cfg));
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -142,6 +149,12 @@ private:
         ASSERT_EQUALS(true, testValueOfX(std::string("void setx(int x);")+code, 2U, 1));
         ASSERT_EQUALS(false, testValueOfX(std::string("void setx(int &x);")+code, 2U, 1));
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
+
+        code = "void f(char* x) {\n"
+               "  strcpy(x,\"abc\");\n"
+               "  if (x) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
         // while, for, do-while
         code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition

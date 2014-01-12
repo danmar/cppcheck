@@ -44,7 +44,7 @@ static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token 
     errorLogger->reportErr(errmsg);
 }
 
-static bool bailoutFunctionPar(const Token *tok)
+static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings)
 {
     // passing variable to subfunction?
     const bool addr = tok && Token::Match(tok->previous(), "&");
@@ -64,8 +64,11 @@ static bool bailoutFunctionPar(const Token *tok)
     if (!Token::Match(tok,"%var% ("))
         return false; // not a function => dont bailout
 
-    if (!tok->function())
-        return true; // unknown function bailout
+    if (!tok->function()) {
+        // unknown function.. bailout unless value is 0 and the library
+        // says 0 is invalid
+        return (value.intvalue!=0 || !settings->library.isnullargbad(tok->str(), 1+argnr));
+    }
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
 
@@ -210,7 +213,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 // assigned by subfunction?
-                if (bailoutFunctionPar(tok2)) {
+                if (bailoutFunctionPar(tok2,val2.condition ? val2 : val,settings)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                     break;
