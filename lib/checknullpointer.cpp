@@ -779,6 +779,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                         ftok = ftok->link();
                     ftok = ftok->previous();
                 }
+                if (!ftok || !ftok->previous())
+                    continue;
                 std::list<const Token *> varlist;
                 parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
                 if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
