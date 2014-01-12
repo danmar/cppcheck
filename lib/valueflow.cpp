@@ -44,7 +44,7 @@ static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token 
     errorLogger->reportErr(errmsg);
 }
 
-static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings)
+static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings, bool *inconclusive)
 {
     // passing variable to subfunction?
     const bool addr = tok && Token::Match(tok->previous(), "&");
@@ -65,9 +65,15 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         return false; // not a function => dont bailout
 
     if (!tok->function()) {
-        // unknown function.. bailout unless value is 0 and the library
-        // says 0 is invalid
-        return (value.intvalue!=0 || !settings->library.isnullargbad(tok->str(), 1+argnr));
+        // if value is 0 and the library says 0 is invalid => dont bailout
+        if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
+            return false;
+        // inconclusive => don't bailout
+        if (inconclusive && !addr && settings->inconclusive) {
+            *inconclusive = true;
+            return false;
+        }
+        return true;
     }
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
@@ -186,6 +192,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 val2 = ValueFlow::Value(tok,0);
         }
 
+        bool inconclusive = false;
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
             if (!tok2) {
                 if (settings->debugwarnings) {
@@ -213,11 +220,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 // assigned by subfunction?
-                if (bailoutFunctionPar(tok2,val2.condition ? val2 : val,settings)) {
+                bool inconclusive2 = false;
+                if (bailoutFunctionPar(tok2,val2.condition ? val2 : val, settings, &inconclusive2)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                     break;
                 }
+                inconclusive |= inconclusive2;
+                val2.inconclusive |= inconclusive2;
 
                 // skip if variable is conditionally used in ?: expression
                 if (const Token *parent = skipValueInConditionalExpression(tok2)) {
@@ -230,6 +240,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 tok2->values.push_back(val);
+                tok2->values.back().inconclusive = inconclusive;
                 if (val2.condition)
                     tok2->values.push_back(val2);
                 if (var && tok2 == var->nameToken())

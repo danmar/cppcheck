@@ -29,11 +29,12 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        Value() : condition(0), intvalue(0) {}
-        Value(long long val) : condition(0), intvalue(val) {}
-        Value(const Token *c, long long val) : condition(c), intvalue(val) {}
+        Value() : condition(0), intvalue(0), inconclusive(false) {}
+        Value(long long val) : condition(0), intvalue(val), inconclusive(false) {}
+        Value(const Token *c, long long val) : condition(c), intvalue(val), inconclusive(false) {}
         const Token *condition;
         long long    intvalue;
+        bool         inconclusive;
     };
 
     void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);

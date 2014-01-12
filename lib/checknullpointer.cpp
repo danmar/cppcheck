@@ -785,7 +785,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                     if (value->condition == NULL)
                         nullPointerError(tok);
                     else if (_settings->isEnabled("warning"))
-                        nullPointerError(tok, tok->str(), value->condition, false);
+                        nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
                 }
                 continue;
             }
@@ -797,7 +797,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (value->condition == NULL)
                 nullPointerError(tok);
             else if (_settings->isEnabled("warning"))
-                nullPointerError(tok, tok->str(), value->condition, false);
+                nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
         }
         return;
     }
