@@ -154,17 +154,23 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (Token::Match(tok2->previous(), "for|while (") && Token::Match(tok2->link(), ") {")) {
                     const Token *start = tok2->link()->next();
                     const Token *end   = start->link();
-                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid))
+                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
                         varid = 0U;
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
+                    }
+                }
+                // bailout..
+                else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
+                    varid = 0U;
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + ", condition is defined in macro");
                 }
                 break;
             }
         }
-        if (varid == 0U) {
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop ");
+        if (varid == 0U)
             continue;
-        }
 
         // extra logic for unsigned variables 'i>=1' => possible value can also be 0
         const ValueFlow::Value val(tok, num);

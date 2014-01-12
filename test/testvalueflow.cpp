@@ -244,6 +244,13 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n", errout.str());
+
+        // bailout: condition is a expanded macro
+        bailout("void f(int x) {\n"
+                "    a = x;\n"
+                "    $if ($x==$123){}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
     void valueFlowForLoop() {
