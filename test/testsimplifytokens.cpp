@@ -420,6 +420,8 @@ private:
 
         TEST_CASE(simplifyFunctorCall);
 
+        TEST_CASE(simplifyFunctionPointer); // ticket #5339 (simplify function pointer after comma)
+
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
@@ -8017,6 +8019,11 @@ private:
 
     void simplifyFunctorCall() {
         ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
+    }
+
+    // #ticket #5339 (simplify function pointer after comma)
+    void simplifyFunctionPointer() {
+        ASSERT_EQUALS("f ( double x , double * y ) ;", tok("f (double x, double (*y) ());", true));
     }
 
     void redundant_semicolon() {

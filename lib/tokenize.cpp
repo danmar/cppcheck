@@ -5152,7 +5152,7 @@ void Tokenizer:: simplifyFunctionPointers()
         }
 
         // check for start of statement
-        else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|(|public:|protected:|private:"))
+        else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|,|(|public:|protected:|private:"))
             continue;
 
         if (Token::Match(tok, "%type% *| *| ( * %var% [| ]| ) ("))
