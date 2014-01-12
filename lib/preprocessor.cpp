@@ -1635,7 +1635,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         if (it != cfg.end()) {
             if (!it->second.empty()) {
                 // Tokenize the value
-                Tokenizer tokenizer2(&settings,NULL);
+                Tokenizer tokenizer2(&settings, _errorLogger);
                 tokenizer2.tokenizeCondition(it->second);
 
                 // Copy the value tokens
@@ -1774,7 +1774,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 break;
 
             if (line.find("=") != std::string::npos) {
-                Tokenizer tokenizer(_settings, NULL);
+                Tokenizer tokenizer(_settings, _errorLogger);
                 line.erase(0, sizeof("#pragma endasm"));
                 std::istringstream tempIstr(line);
                 tokenizer.tokenize(tempIstr, "");
