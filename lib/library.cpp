@@ -186,6 +186,10 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     argumentChecks[name][nr].valid     = valid;
                 } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
                     _ignorefunction.insert(name);
+                } else if (strcmp(functionnode->Name(), "formatstr") == 0) {
+                    const tinyxml2::XMLAttribute* scan = functionnode->FindAttribute("scan");
+                    const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
+                    _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
                 } else
                     return false;
             }

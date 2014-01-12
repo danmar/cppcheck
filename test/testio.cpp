@@ -53,11 +53,9 @@ private:
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
-
-        TEST_CASE(testlibrarycfg); // library configuration
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, Library *lib = NULL) {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
@@ -69,8 +67,7 @@ private:
         settings.inconclusive = inconclusive;
         settings.platform(platform);
 
-        if (lib)
-            settings.library = *lib;
+        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -437,6 +434,8 @@ private:
 
 
     void testScanf1() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    int a, b;\n"
               "    FILE *file = fopen(\"test\", \"r\");\n"
@@ -455,6 +454,8 @@ private:
     }
 
     void testScanf2() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    scanf(\"%5s\", bar);\n" // Width specifier given
               "    scanf(\"%5[^~]\", bar);\n" // Width specifier given
@@ -481,6 +482,7 @@ private:
     }
 
     void testScanf4() { // ticket #2553
+        LOAD_LIB("std.cfg");
 
         check("void f()\n"
               "{\n"
@@ -494,6 +496,8 @@ private:
 
 
     void testScanfArgument() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    scanf(\"%1d\", &foo);\n"
               "    sscanf(bar, \"%1d\", &foo);\n"
@@ -1322,6 +1326,7 @@ private:
     }
 
     void testPrintfArgument() {
+        LOAD_LIB("std.cfg");
         check("void foo() {\n"
               "    printf(\"%u\");\n"
               "    printf(\"%u%s\", 123);\n"
@@ -2107,6 +2112,8 @@ private:
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
+        LOAD_LIB("std.cfg");
+
         check("void foo() {"
               "  int bar;"
               "  printf(\"%1$d\", 1);"
@@ -2131,6 +2138,9 @@ private:
 
 
     void testMicrosoftPrintfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -2220,6 +2230,9 @@ private:
     }
 
     void testMicrosoftScanfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -2324,6 +2337,9 @@ private:
     }
 
     void testMicrosoftSecurePrintfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -2514,6 +2530,8 @@ private:
     }
 
     void testMicrosoftSecureScanfArgument() {
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -2643,22 +2661,6 @@ private:
               "    wscanf_s(L\"%4[^-]\", msStr1, _countof(msStr1));\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void testlibrarycfg() {
-        const char code[] = "void f() {\n"
-                            "    format(\"%s\");\n"
-                            "}";
-
-        // no error if configuration for 'format' is not provided
-        check(code);
-        ASSERT_EQUALS("", errout.str());
-
-        // error if configuration for 'format' is provided
-        Library lib;
-        lib.argumentChecks["format"][1].formatstr = true;
-        check(code, false, false, Settings::Unspecified, &lib);
-        ASSERT_EQUALS("[test.cpp:2]: (error) format format string requires 1 parameter but only 0 are given.\n", errout.str());
     }
 };
 

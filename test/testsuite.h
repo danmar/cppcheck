@@ -21,8 +21,10 @@
 #define testsuiteH
 
 #include <sstream>
+#include <set>
 #include "errorlogger.h"
 #include "redirect.h"
+#include "library.h"
 
 class options;
 
@@ -33,8 +35,10 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
+    static std::set<std::string> missingLibs;
 
 protected:
+    Library _lib;
     std::string classname;
     std::string testToRun;
     bool gcc_style_errors;
@@ -57,6 +61,7 @@ protected:
     void todoAssertEquals(const char *filename, unsigned int linenr, long long wanted,
                           long long current, long long actual) const;
     void assertThrowFail(const char *filename, unsigned int linenr) const;
+    void complainMissingLib(const char* libname) const;
     void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);
@@ -70,7 +75,7 @@ public:
     static std::size_t runTests(const options& args);
 };
 
-#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { currentTest = classname + "::" + #NAME; if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
+#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { _lib = Library(); currentTest = classname + "::" + #NAME; if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL)
@@ -78,5 +83,12 @@ public:
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_EQUALS( WANTED , CURRENT , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
+
+#ifdef _WIN32
+#define REQUIRE_LIB( NAME ) { if (!_lib.load("./testrunner", "../cfg/" NAME) && !_lib.load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
+#else
+#define REQUIRE_LIB( NAME ) { if (!_lib.load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
+#endif
+#define LOAD_LIB( NAME ) { REQUIRE_LIB(NAME); }
 
 #endif
