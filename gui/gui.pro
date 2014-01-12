@@ -145,3 +145,7 @@ win32 {
     HEADERS += ../lib/version.h
     LIBS += -lshlwapi
 }
+
+unix {
+    QMAKE_CXXFLAGS += -std=c++11
+}
