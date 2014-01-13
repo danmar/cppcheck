@@ -31,6 +31,7 @@
  *  - SymbolDatabase = Information about all types/variables/functions/etc
  *    in the current translation unit
  *  - Library = Information about functions
+ *  - Value flow analysis => possible values for each token
  *
  * Use --debug on the command line to see debug output for the token list
  * and the syntax tree. If both --debug and --verbose is used, the symbol
