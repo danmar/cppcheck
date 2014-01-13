@@ -188,8 +188,8 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         const ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
         if (num==1U && Token::Match(tok,"<=|>=")) {
-            bool isunsigned = var->typeEndToken()->isUnsigned();
-            for (const Token* type = var->typeStartToken(); type != var->typeEndToken(); type = type->next())
+            bool isunsigned = false;
+            for (const Token* type = var->typeStartToken(); type && type->varId() == 0U; type = type->next())
                 isunsigned |= type->isUnsigned();
             if (isunsigned)
                 val2 = ValueFlow::Value(tok,0);
