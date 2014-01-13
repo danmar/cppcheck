@@ -1,0 +1,16 @@
+uselessAssignmentPtrArg:build/checkstl.cpp
+assertWithSideEffect:build/checkuninitvar.cpp
+duplicateBranch:build/checkunusedvar.cpp
+duplicateBranch:lib/checkunusedvar.cpp
+unusedPrivateFunction:test/testcmdlineparser.cpp
+unreadVariable:test/testpreprocessor.cpp
+*:gui/test*
+*:test/test.cxx
+
+*:democlient*
+*:externals*
+*:htdocs*
+*:htmlreport*
+*:samples*
+*:tools*
+*:win_installer*
