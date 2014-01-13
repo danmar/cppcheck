@@ -47,8 +47,8 @@ static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token 
 static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings, bool *inconclusive)
 {
     // passing variable to subfunction?
-    const bool addr = tok && Token::Match(tok->previous(), "&");
-    if (!tok || !Token::Match(tok->tokAt(addr?-2:-1), "[(,] &| %var% [,)]"))
+    const bool addressOf = tok && Token::Match(tok->previous(), "&");
+    if (!tok || !Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %var% [,)]"))
         return false;
 
     // goto start of function call and get argnr
@@ -69,7 +69,7 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
             return false;
         // inconclusive => don't bailout
-        if (inconclusive && !addr && settings->inconclusive) {
+        if (inconclusive && !addressOf && settings->inconclusive) {
             *inconclusive = true;
             return false;
         }
@@ -77,6 +77,9 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
     }
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
+
+    if (addressOf && !(arg && arg->isConst()))
+        return true;
 
     return arg && !arg->isConst() && arg->isReference();
 }

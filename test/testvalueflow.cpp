@@ -156,6 +156,14 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        code = "void addNewFunction(Scope**scope, const Token**tok);\n"
+               "void f(Scope *x) {\n"
+               "  x->functionList.back();\n"
+               "  addNewFunction(&x,&tok);\n" // address-of, x can be changed by subfunction
+               "  if (x) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         // while, for, do-while
         code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition
                "  a = x;\n"  // x can be 37
