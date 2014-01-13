@@ -759,9 +759,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 continue;
 
             const Variable *var = tok->variable();
-            if (!var || !var->isPointer())
+            if (!var || !var->isPointer() || tok == var->nameToken())
                 continue;
 
+            // Can pointer be NULL?
             const ValueFlow::Value *value = 0;
             for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
                 if (it->intvalue == 0) {
@@ -772,6 +773,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (!value)
                 continue;
 
+            // Is pointer used as function parameter?
             if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
                 const Token *ftok = tok->previous();
                 while (ftok && ftok->str() != "(") {
@@ -792,6 +794,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
                 continue;
             }
 
+            // Pointer dereference.
             bool unknown = false;
             if (!isPointerDeRef(tok,unknown))
                 continue;
