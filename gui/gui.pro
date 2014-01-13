@@ -74,6 +74,10 @@ contains(LINKCORE, [yY][eE][sS]) {
     include($$PWD/../lib/lib.pri)
 }
 
+contains(LANGDIR, .+) {
+    DEFINES += LANGDIR=\\\"$${LANGDIR}\\\"
+}
+
 HEADERS += aboutdialog.h \
            application.h \
            applicationdialog.h \

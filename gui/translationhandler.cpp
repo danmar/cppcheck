@@ -97,7 +97,11 @@ bool TranslationHandler::SetLanguage(const QString &code)
         mTranslator = new QTranslator(this);
 
     //Load the new language
+#ifdef LANGDIR
+    QString translationFile = QString(LANGDIR) + "/" + mTranslations[index].mFilename;
+#else
     QString translationFile = "lang/" + mTranslations[index].mFilename;
+#endif
     if (!mTranslator->load(translationFile) && !failure) {
         translationFile += ".qm";
         //If it failed, lets check if the default file exists
