@@ -296,6 +296,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     break;
                 }
             }
+
+            // goto label
+            if (Token::Match(tok2, "[;{}] %var% :")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on goto label");
+                break;
+            }
         }
     }
 }

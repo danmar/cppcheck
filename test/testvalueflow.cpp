@@ -272,6 +272,15 @@ private:
                 "    $if ($x==$123){}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
+
+        // bailout: goto label (TODO: handle gotos more intelligently)
+        bailout("void f(int x) {\n"
+                "    if (x == 123) { goto out; }\n"
+                "    a=x;\n"   // <- x is not 123
+                "out:"
+                "    if (x==123){}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on goto label\n", errout.str());
     }
 
     void valueFlowForLoop() {
