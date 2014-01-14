@@ -162,8 +162,9 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
             if (tok2->str() == ")")
                 tok2 = tok2->link();
-            else if (tok2->str() == "(") {
-                if (Token::Match(tok2->previous(), "for|while (") && Token::Match(tok2->link(), ") {")) {
+
+            else if (tok2->str() == "(" && Token::simpleMatch(tok2->link(), ") {")) {
+                if (Token::Match(tok2->previous(), "for|while (")) {
                     const Token *start = tok2->link()->next();
                     const Token *end   = start->link();
                     if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
@@ -172,14 +173,19 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                             bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
                     }
                 }
-                // bailout..
+
+                // if,macro => bailout
                 else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
                     varid = 0U;
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + ", condition is defined in macro");
                 }
+
                 break;
             }
+
+            else if (Token::Match(tok2, "[{}]"))
+                break;
         }
         if (varid == 0U)
             continue;
