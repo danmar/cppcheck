@@ -183,13 +183,6 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
 
-        code = "void f() {\n" // loop condition, x is assigned inside loop => dont use condition
-               "  vimmenu_T *x = pMenu->parent;\n"
-               "  for (index = 1; (index != itemIndex) && (pMenu != NULL); index++)\n"
-               "    pMenu = pMenu->next;\n"
-               "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
-
         code = "void f(int x) {\n"  // condition inside loop, x is NOT assigned inside loop => use condition
                "    a = x;\n"
                "    do {\n"
