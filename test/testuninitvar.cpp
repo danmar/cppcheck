@@ -2328,6 +2328,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("void f() {\n" // #5347
+                        "    try {\n"
+                        "    } catch (const char* e) {\n"
+                        "        A a = e;\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // exit
         checkUninitVar2("void f() {\n"
                         "    int x;\n"

@@ -1072,8 +1072,13 @@ void CheckUninitVar::checkScope(const Scope* scope)
             i->isStatic() || i->isExtern() || i->isConst() || i->isArray() || i->isReference())
             continue;
         // don't warn for try/catch exception variable
-        if (Token::Match(i->typeStartToken()->tokAt(-2), "catch ("))
-            continue;
+        {
+            const Token *start = i->typeStartToken();
+            while (start && start->isName())
+                start = start->previous();
+            if (start && Token::simpleMatch(start->previous(), "catch ("))
+                continue;
+        }
         if (i->nameToken()->strAt(1) == "(")
             continue;
         bool stdtype = _tokenizer->isC();
