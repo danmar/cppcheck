@@ -787,7 +787,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "ssize_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 't':
@@ -1625,7 +1626,10 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
         else
             errmsg << "intmax_t";
     } else if (specifier[0] == 'z') {
-        errmsg << "size_t";
+        if (specifier[1] == 'd')
+            errmsg << "ptrdiff_t";
+        else
+            errmsg << "size_t";
     } else if (specifier[0] == 't') {
         errmsg << (isUnsigned ? "unsigned " : "") << "ptrdiff_t";
     } else if (specifier[0] == 'L') {

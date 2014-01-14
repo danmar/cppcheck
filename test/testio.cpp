@@ -1323,6 +1323,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g() {\n" // #5348
+              "    size_t s1;\n"
+              "    ptrdiff_t s2;\n"
+              "    ssize_t s3;\n"
+              "    scanf(\"%zd\", &s1);\n"
+              "    scanf(\"%zd\", &s2);\n"
+              "    scanf(\"%zd\", &s3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n", errout.str());
+
     }
 
     void testPrintfArgument() {
