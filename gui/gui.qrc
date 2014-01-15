@@ -32,5 +32,18 @@
     <file alias="cfg/posix.cfg">../cfg/posix.cfg</file>
     <file alias="cfg/std.cfg">../cfg/std.cfg</file>
     <file alias="cfg/windows.cfg">../cfg/windows.cfg</file>
+
+    <file>cppcheck_de.qm</file>
+    <file>cppcheck_es.qm</file>
+    <file>cppcheck_fi.qm</file>
+    <file>cppcheck_fr.qm</file>
+    <file>cppcheck_it.qm</file>
+    <file>cppcheck_ja.qm</file>
+    <file>cppcheck_ko.qm</file>
+    <file>cppcheck_nl.qm</file>
+    <file>cppcheck_ru.qm</file>
+    <file>cppcheck_sr.qm</file>
+    <file>cppcheck_sv.qm</file>
+    <file>cppcheck_zh_CN.qm</file>
 </qresource>
 </RCC>
