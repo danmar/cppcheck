@@ -74,6 +74,14 @@ contains(LINKCORE, [yY][eE][sS]) {
     include($$PWD/../lib/lib.pri)
 }
 
+# Directory where the language files are located
+# If not set, cppcheck attempts to load them from ./lang/
+contains(LANGDIR, .+) {
+    DEFINES += LANGDIR=\\\"$${LANGDIR}\\\"
+} else {
+    message("LANGDIR not set. Cppcheck-gui will attempt to load the language files from ./lang/ - To set it, pass LANGDIR=/path/to/language/files/ to qmake.")
+}
+
 HEADERS += aboutdialog.h \
            application.h \
            applicationdialog.h \
