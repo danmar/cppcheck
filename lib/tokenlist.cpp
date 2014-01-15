@@ -687,6 +687,58 @@ static void compileExpression(Token *&tok, std::stack<Token*> &op)
 void TokenList::createAst()
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
+        if (Token::simpleMatch(tok,"for (")) {
+            std::stack<Token *> operands;
+            Token *tok2 = tok->tokAt(2);
+            Token *init1 = 0;
+            while (tok2 && tok2->str() != ";") {
+                if (tok2->str() == "<" && tok2->link()) {
+                    tok2 = tok2->link();
+                    if (!tok2)
+                        break;
+                } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
+                    init1 = tok2;
+                    compileExpression(tok2, operands);
+                    if (tok2->str() == ";")
+                        break;
+                    init1 = 0;
+                }
+                tok2 = tok2->next();
+            }
+            if (!tok2 || tok2->str() != ";") {
+                tok = tok->next();
+                continue;
+            }
+
+            Token * const init = init1 ? init1 : tok2;
+
+            Token * const semicolon1 = tok2;
+            tok2 = tok2->next();
+            compileExpression(tok2, operands);
+
+            Token * const semicolon2 = tok2;
+            tok2 = tok2->next();
+            compileExpression(tok2, operands);
+
+            if (init != semicolon1)
+                semicolon1->astOperand1(init);
+            tok2 = semicolon1->next();
+            while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
+                tok2 = tok2->next();
+            if (tok2 != semicolon2)
+                semicolon2->astOperand1(tok2);
+            tok2 = tok->linkAt(1);
+            while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
+                tok2 = tok2->previous();
+            if (tok2 != semicolon2)
+                semicolon2->astOperand2(tok2);
+
+            semicolon1->astOperand2(semicolon2);
+            tok->next()->astOperand1(tok);
+            tok->next()->astOperand2(semicolon1);
+
+            tok = tok->linkAt(1);
+        }
         if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|(")) {
             std::stack<Token *> operands;
             compileExpression(tok, operands);

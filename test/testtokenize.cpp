@@ -10098,6 +10098,10 @@ private:
 
         ASSERT_EQUALS("a0>bc/?d:", testAst("(a>0) ? (b/(c)) : d;"));
         ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
+
+        // for
+        ASSERT_EQUALS("for;;(", testAst("for(;;)"));
+        ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
     }
 
     void astpar() const { // parentheses

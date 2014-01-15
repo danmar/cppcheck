@@ -159,33 +159,26 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         }
 
         // bailout: while-condition, variable is changed in while loop
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-            if (tok2->str() == ")")
-                tok2 = tok2->link();
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->astParent()) {
+            if (tok2->astParent() || tok2->str() != "(" || !Token::simpleMatch(tok2->link(), ") {"))
+                continue;
 
-            else if (tok2->str() == "(" && Token::simpleMatch(tok2->link(), ") {")) {
-                if (Token::Match(tok2->previous(), "for|while (")) {
-                    const Token *start = tok2->link()->next();
-                    const Token *end   = start->link();
-                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
-                        varid = 0U;
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
-                    }
-                }
-
-                // if,macro => bailout
-                else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
+            if (Token::Match(tok2->previous(), "for|while (")) {
+                const Token *start = tok2->link()->next();
+                const Token *end   = start->link();
+                if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
                     varid = 0U;
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + ", condition is defined in macro");
+                        bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
                 }
-
-                break;
             }
 
-            else if (Token::Match(tok2, "[{}]"))
-                break;
+            // if,macro => bailout
+            else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
+                varid = 0U;
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + ", condition is defined in macro");
+            }
         }
         if (varid == 0U)
             continue;
