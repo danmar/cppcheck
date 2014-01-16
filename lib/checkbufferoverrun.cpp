@@ -1138,6 +1138,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             continue;
         }
 
+        else if (Token::Match(tok, "%varid% [", arrayInfo.declarationId()) && tok->next()->astOperand2() && !tok->next()->astOperand2()->values.empty()) {
+            const std::list<ValueFlow::Value> &values = tok->next()->astOperand2()->values;
+            std::list<ValueFlow::Value>::const_iterator it;
+            for (it = values.begin(); it != values.end(); ++it) {
+                if (it->intvalue >= arrayInfo.num()[0]) {
+                    std::vector<MathLib::bigint> indexes;
+                    indexes.push_back(it->intvalue);
+                    arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                }
+            }
+        }
+
         else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.declarationId())) {
             std::vector<MathLib::bigint> indexes;
             for (const Token *tok2 = tok->next(); Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {

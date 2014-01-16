@@ -72,6 +72,25 @@ private:
         checkBufferOverrun.writeOutsideBufferSize();
     }
 
+    void checkValueFlow(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.valueFlow = true;
+        settings.addEnabled("warning");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check for buffer overruns..
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
+        checkBufferOverrun.bufferOverrun();
+    }
+
     void run() {
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
@@ -142,6 +161,7 @@ private:
         TEST_CASE(array_index_cast);         // FP after cast. #2841
         TEST_CASE(array_index_string_literal);
         TEST_CASE(array_index_same_struct_and_var_name); // #4751 - not handled well when struct name and var name is same
+        TEST_CASE(array_index_valueflow);
 
         TEST_CASE(buffer_overrun_1_standard_functions);
         TEST_CASE(buffer_overrun_2_struct);
@@ -2048,6 +2068,15 @@ private:
               "    tt->name[22] = 123;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'tt.name[21]' accessed at index 22, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_valueflow() {
+        checkValueFlow("void f(int i) {\n"
+                       "    char str[3];\n"
+                       "    str[i] = 0;\n"
+                       "    if (i==10) {}\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[3]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {
