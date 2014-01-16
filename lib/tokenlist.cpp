@@ -370,7 +370,7 @@ static bool iscast(const Token *tok)
 
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         if (!Token::Match(tok2, "%var%|*|&|::"))
-            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[])]"));
+            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,]"));
     }
 
     return false;
@@ -688,7 +688,6 @@ void TokenList::createAst()
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
         if (Token::simpleMatch(tok,"for (")) {
-            std::stack<Token *> operands;
             Token *tok2 = tok->tokAt(2);
             Token *init1 = 0;
             while (tok2 && tok2->str() != ";") {
@@ -698,6 +697,7 @@ void TokenList::createAst()
                         break;
                 } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
                     init1 = tok2;
+                    std::stack<Token *> operands;
                     compileExpression(tok2, operands);
                     if (tok2->str() == ";")
                         break;
@@ -714,24 +714,26 @@ void TokenList::createAst()
 
             Token * const semicolon1 = tok2;
             tok2 = tok2->next();
-            compileExpression(tok2, operands);
+            std::stack<Token *> operands2;
+            compileExpression(tok2, operands2);
 
             Token * const semicolon2 = tok2;
             tok2 = tok2->next();
-            compileExpression(tok2, operands);
+            std::stack<Token *> operands3;
+            compileExpression(tok2, operands3);
 
             if (init != semicolon1)
-                semicolon1->astOperand1(init);
+                semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
             tok2 = semicolon1->next();
             while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
                 tok2 = tok2->next();
             if (tok2 != semicolon2)
-                semicolon2->astOperand1(tok2);
+                semicolon2->astOperand1(const_cast<Token*>(tok2->astTop()));
             tok2 = tok->linkAt(1);
             while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
                 tok2 = tok2->previous();
             if (tok2 != semicolon2)
-                semicolon2->astOperand2(tok2);
+                semicolon2->astOperand2(const_cast<Token*>(tok2->astTop()));
 
             semicolon1->astOperand2(semicolon2);
             tok->next()->astOperand1(tok);
