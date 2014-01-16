@@ -699,14 +699,14 @@ void TokenList::createAst()
                     init1 = tok2;
                     std::stack<Token *> operands;
                     compileExpression(tok2, operands);
-                    if (tok2->str() == ";")
+                    if (tok2->str() == ";" || tok2->str() == ")")
                         break;
                     init1 = 0;
                 }
                 tok2 = tok2->next();
             }
             if (!tok2 || tok2->str() != ";") {
-                tok = tok->next();
+                tok = tok2;
                 continue;
             }
 
