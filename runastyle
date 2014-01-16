@@ -14,7 +14,7 @@ if [[ "`astyle --version 2>&1`" != ${ASTYLE_VERSION}* ]]; then
 fi
 
 style="--style=stroustrup --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0"
-options="--pad-header --unpad-paren --suffix=none --convert-tabs"
+options="--options=none --pad-header --unpad-paren --suffix=none --convert-tabs"
 
 astyle $style $options cli/*.cpp
 astyle $style $options cli/*.h
