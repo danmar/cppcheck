@@ -12,6 +12,9 @@ env:
     - SRCDIR=build VERIFY=1
     - MAKEFLAGS="HAVE_RULES=yes"
     -
+# do notify immediately about it when a sub-job of a  build fails.
+matrix:
+  fast_finish: true
 before_install:
 # install needed deps
  - sudo apt-get update -qq
