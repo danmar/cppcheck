@@ -2062,7 +2062,7 @@ private:
               "    str[i] = 0;\n"
               "    if (i==10) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[3]' accessed at index 10, which is out of bounds. Otherwise condition 'i==10' is redundant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Array 'str[3]' accessed at index 10, which is out of bounds. Otherwise condition 'i==10' is redundant.\n", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {

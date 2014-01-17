@@ -70,10 +70,15 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     errmsg << "Array '" << arrayInfo.varname() << "[" << arrayInfo.num(0)
            << "]' accessed at index " << index.intvalue << ", which is out of bounds.";
 
-    if (index.condition)
+    if (index.condition) {
         errmsg << " Otherwise condition '" << index.condition->expressionString() << "' is redundant.";
-
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
+        std::list<const Token *> callstack;
+        callstack.push_back(tok);
+        callstack.push_back(index.condition);
+        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str());
+    } else {
+        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
+    }
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
@@ -1155,7 +1160,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             const std::list<ValueFlow::Value> &values = tok->next()->astOperand2()->values;
             std::list<ValueFlow::Value>::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
-                if (it->intvalue >= arrayInfo.num()[0]) {
+                if (it->intvalue >= arrayInfo.num()[0] && (_settings->isEnabled("warning") || !it->condition)) {
                     arrayIndexOutOfBoundsError(tok, arrayInfo, *it);
                 }
             }
