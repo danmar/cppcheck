@@ -41,7 +41,6 @@ private:
 
     bool testValueOfX(const std::string &code, unsigned int linenr, int value) {
         Settings settings;
-        settings.valueFlow = true;  // temporary flag
 
         // strcpy cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
@@ -71,7 +70,6 @@ private:
 
     void bailout(const char code[]) {
         Settings settings;
-        settings.valueFlow = true;  // temporary flag
         settings.debugwarnings = true;
 
         // Tokenize..

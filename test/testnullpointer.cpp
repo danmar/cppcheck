@@ -86,7 +86,6 @@ private:
         Settings settings;
         settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
-        settings.valueFlow = true;
 
         // cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"

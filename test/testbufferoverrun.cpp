@@ -72,25 +72,6 @@ private:
         checkBufferOverrun.writeOutsideBufferSize();
     }
 
-    void checkValueFlow(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        Settings settings;
-        settings.valueFlow = true;
-        settings.addEnabled("warning");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
-
-        // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.bufferOverrun();
-    }
-
     void run() {
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
@@ -417,7 +398,8 @@ private:
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n"
+                          "[test.cpp:6]: (error) Array 'val[50]' accessed at index 99, which is out of bounds.\n", errout.str());
         }
 
         {
@@ -428,7 +410,8 @@ private:
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n"
+                          "[test.cpp:6]: (error) Array 'val[50]' accessed at index 99, which is out of bounds.\n", errout.str());
         }
 
 
@@ -1825,7 +1808,8 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n"
+                      "[test.cpp:5]: (error) Array 'data[2]' accessed at index 9, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -1834,7 +1818,8 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n"
+                      "[test.cpp:5]: (error) Array 'data[2]' accessed at index 9, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -1843,7 +1828,8 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n"
+                      "[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    char data[2];\n"
@@ -2071,11 +2057,11 @@ private:
     }
 
     void array_index_valueflow() {
-        checkValueFlow("void f(int i) {\n"
-                       "    char str[3];\n"
-                       "    str[i] = 0;\n"
-                       "    if (i==10) {}\n"
-                       "}");
+        check("void f(int i) {\n"
+              "    char str[3];\n"
+              "    str[i] = 0;\n"
+              "    if (i==10) {}\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[3]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
@@ -2614,7 +2600,8 @@ private:
               "    for (size_t i = 0; i <= 4; i++)\n"
               "        dst[i] = src[i];\n"
               "} } }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: dst\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: dst\n"
+                      "[test.cpp:6]: (error) Array 'dst[4]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_22() { // ticket #3124

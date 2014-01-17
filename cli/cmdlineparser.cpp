@@ -302,10 +302,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_xml = true;
         }
 
-        // Enable experimental value flow analysis
-        else if (std::strcmp(argv[i], "--value-flow") == 0)
-            _settings->valueFlow = true;
-
         // Only print something when there are errors
         else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
             _settings->_errorsOnly = true;

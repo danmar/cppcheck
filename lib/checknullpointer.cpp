@@ -751,8 +751,6 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isName() || tok->values.empty())
             continue;

@@ -3115,7 +3115,8 @@ private:
                         "    int a;\n"
                         "    do { } a=do_something(); while (a);\n"
                         "}\n", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: assignment of a\n"
+                      "[test.cpp:3]: (error) Uninitialized variable: a\n"
                       "[test.cpp:3]: (debug) assertion failed '} while ('\n", errout.str());
 
         checkUninitVar2("void f() {\n"

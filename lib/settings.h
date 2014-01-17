@@ -251,8 +251,6 @@ public:
                platformType == Win32W ||
                platformType == Win64;
     }
-
-    bool valueFlow;
 };
 
 /// @}
