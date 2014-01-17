@@ -109,7 +109,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
-        // assignment
+        // assignment / increment
         code = "void f(int x) {\n"
                "   x = 2 + x;\n"
                "   if (x == 65);\n"
@@ -121,6 +121,19 @@ private:
                "   if (x == 65);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 65));
+
+        code = "void f(int x) {\n"
+               "   a[x++] = 0;\n"
+               "   if (x == 5);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 5));
+
+        code = "void f(int x) {\n"
+               "   a = x;\n"
+               "   x++;\n"
+               "   if (x == 4);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 3));
 
         // guarding by &&
         code = "void f(int x) {\n"

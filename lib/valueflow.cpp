@@ -184,7 +184,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
 
         // extra logic for unsigned variables 'i>=1' => possible value can also be 0
-        const ValueFlow::Value val(tok, num);
+        ValueFlow::Value val(tok, num);
         ValueFlow::Value val2;
         if (num==1U && Token::Match(tok,"<=|>=")) {
             bool isunsigned = false;
@@ -211,6 +211,17 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
+                    break;
+                }
+
+                // increment/decrement
+                if (Token::Match(tok2->previous(), "[;{}] %var% ++|-- ;"))
+                    val.intvalue += (tok2->strAt(1)=="++") ? -1 : 1;
+                else if (Token::Match(tok2->tokAt(-2), "[;{}] ++|-- %var% ;"))
+                    val.intvalue += (tok2->strAt(-1)=="++") ? -1 : 1;
+                else if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok2, "%var% ++|--")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                     break;
                 }
 
