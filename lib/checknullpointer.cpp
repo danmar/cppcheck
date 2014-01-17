@@ -753,233 +753,55 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    if (_settings->valueFlow) {
-        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-            if (!tok->isName() || tok->values.empty())
-                continue;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isName() || tok->values.empty())
+            continue;
 
-            const Variable *var = tok->variable();
-            if (!var || !var->isPointer() || tok == var->nameToken())
-                continue;
+        const Variable *var = tok->variable();
+        if (!var || !var->isPointer() || tok == var->nameToken())
+            continue;
 
-            // Can pointer be NULL?
-            const ValueFlow::Value *value = 0;
-            for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
-                if (it->intvalue == 0) {
-                    value = &(*it);
-                    break;
-                }
-            }
-            if (!value)
-                continue;
-
-            // Is pointer used as function parameter?
-            if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
-                const Token *ftok = tok->previous();
-                while (ftok && ftok->str() != "(") {
-                    if (ftok->str() == ")")
-                        ftok = ftok->link();
-                    ftok = ftok->previous();
-                }
-                if (!ftok || !ftok->previous())
-                    continue;
-                std::list<const Token *> varlist;
-                parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
-                if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
-                    if (value->condition == NULL)
-                        nullPointerError(tok);
-                    else if (_settings->isEnabled("warning"))
-                        nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
-                }
-                continue;
-            }
-
-            // Pointer dereference.
-            bool unknown = false;
-            if (!isPointerDeRef(tok,unknown))
-                continue;
-
-            if (value->condition == NULL)
-                nullPointerError(tok);
-            else if (_settings->isEnabled("warning"))
-                nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
-        }
-        return;
-    }
-
-    // Dereferencing a pointer and then checking if it's NULL..
-    // This check will first scan for the check. And then scan backwards
-    // from the check, searching for dereferencing.
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        // TODO: false negatives.
-        // - logical operators
-        const Token* tok = i->classDef;
-        if ((i->type == Scope::eIf || i->type == Scope::eElseIf || i->type == Scope::eWhile) &&
-            tok && Token::Match(tok, "else| %var% ( !| %var% )|%oror%|&&") && !tok->tokAt(tok->str()=="else"?1:0)->isExpandedMacro()) {
-
-            if (tok->str() == "else")
-                tok = tok->next();
-
-            const Token * vartok = tok->tokAt(2);
-            if (vartok->str() == "!")
-                vartok = vartok->next();
-
-            const Variable *var = vartok->variable();
-            // Check that variable is a pointer..
-            if (!var || !var->isPointer())
-                continue;
-
-            // Variable id for pointer
-            const unsigned int varid(vartok->varId());
-
-            // bailout for while scope if pointer is assigned inside the loop
-            if (i->type == Scope::eWhile) {
-                bool assign = false;
-                for (const Token *tok2 = i->classStart; tok2 && tok2 != i->classEnd; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "%varid% =", varid)) {
-                        assign = true;
-                        break;
-                    }
-                }
-                if (assign)
-                    continue;
-            }
-
-            // Name of pointer
-            const std::string& varname(vartok->str());
-
-            const Token * const decltok = var->nameToken();
-            bool inconclusive = false;
-
-            for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous()) {
-                if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "%var% (")) {
-                    const Token *tok2 = tok1->link();
-                    while (tok2 && !Token::Match(tok2, "[;{}?:]"))
-                        tok2 = tok2->previous();
-                    if (Token::Match(tok2, "[?:]"))
-                        break;
-                    if (Token::Match(tok2->next(), "%varid% = %var%", varid))
-                        break;
-
-                    if (Token::Match(tok2->next(), "while ( %varid%", varid))
-                        break;
-
-                    if (Token::Match(tok1->link(), "( ! %varid% %oror%", varid) ||
-                        Token::Match(tok1->link(), "( %varid% &&", varid)) {
-                        tok1 = tok1->link();
-                        continue;
-                    }
-
-                    if (Token::simpleMatch(tok1->link()->previous(), "sizeof (")) {
-                        tok1 = tok1->link()->previous();
-                        continue;
-                    }
-
-                    if (Token::Match(tok2->next(), "%var% ( %varid% ,", varid)) {
-                        std::list<const Token *> varlist;
-                        parseFunctionCall(*(tok2->next()), varlist, &_settings->library, 0);
-                        if (!varlist.empty() && varlist.front() == tok2->tokAt(3)) {
-                            nullPointerError(tok2->tokAt(3), varname, tok, inconclusive);
-                            break;
-                        }
-                    }
-
-                    // Passing pointer as parameter..
-                    if (Token::Match(tok2->next(), "%type% (")) {
-                        bool unknown = false;
-                        if (CanFunctionAssignPointer(tok2->next(), varid, unknown)) {
-                            if (!_settings->inconclusive || !unknown)
-                                break;
-                            inconclusive = true;
-                        }
-                    }
-
-                    // calling unknown function => it might initialize the pointer
-                    if (!(var->isLocal() || var->isArgument()))
-                        break;
-                }
-
-                if (tok1->str() == "break")
-                    break;
-
-                if (tok1->varId() == varid) {
-                    // Don't write warning if the dereferencing is
-                    // guarded by ?: or &&
-                    const Token *tok2 = tok1->previous();
-                    if (tok2 && (tok2->isArithmeticalOp() || Token::Match(tok2, "[(,]"))) {
-                        while (tok2 && !Token::Match(tok2, "[;{}?:]")) {
-                            if (tok2->str() == ")") {
-                                tok2 = tok2->link();
-                                if (Token::Match(tok2, "( %varid% =", varid)) {
-                                    tok2 = tok2->next();
-                                    break;
-                                }
-                            }
-                            // guarded by && or ||
-                            if (Token::Match(tok2, "%varid% &&|%oror%",varid))
-                                break;
-                            tok2 = tok2->previous();
-                        }
-                    }
-                    if (!tok2 || Token::Match(tok2, "[?:]") || tok2->varId() == varid)
-                        continue;
-
-                    // unknown : this is set by isPointerDeRef if it is
-                    //           uncertain
-                    bool unknown = _settings->inconclusive;
-
-                    // reassign : is the pointer reassigned like this:
-                    //            tok = tok->next();
-                    bool reassign = false;
-                    if (Token::Match(tok1->previous(), "= %varid% .", varid)) {
-                        const Token *back = tok1->tokAt(-2);
-                        while (back) {
-                            if (back->varId() == varid) {
-                                reassign = true;
-                                break;
-                            }
-                            if (Token::Match(back, "[{};,(]")) {
-                                break;
-                            }
-                            back = back->previous();
-                        }
-                    } else if (Token::Match(tok1->tokAt(-4), "%varid% = ( * %varid%", varid)) {
-                        reassign = true;
-                    } else if (Token::Match(tok1->tokAt(-3), "%varid% = * %varid%", varid)) {
-                        reassign = true;
-                    }
-
-                    if (reassign) {
-                        break;
-                    } else if (Token::simpleMatch(tok1->tokAt(-2), "* )") &&
-                               Token::Match(tok1->linkAt(-1)->tokAt(-2), "%varid% = (", tok1->varId())) {
-                        break;
-                    } else if (Token::simpleMatch(tok1->tokAt(-3), "* ) (") &&
-                               Token::Match(tok1->linkAt(-2)->tokAt(-2), "%varid% = (", tok1->varId())) {
-                        break;
-                    } else if (Token::Match(tok1->previous(), "&&|%oror%")) {
-                        break;
-                    } else if (Token::Match(tok1->tokAt(-2), "&&|%oror% !")) {
-                        break;
-                    } else if (CheckNullPointer::isPointerDeRef(tok1, unknown)) {
-                        nullPointerError(tok1, varname, tok, inconclusive);
-                        break;
-                    } else if (tok1->strAt(-1) == "&") {
-                        break;
-                    } else if (tok1->strAt(1) == "=") {
-                        break;
-                    }
-                }
-
-                else if (tok1->str() == "{" ||
-                         tok1->str() == "}")
-                    break;
-
-                // label..
-                else if (Token::Match(tok1, "%type% :"))
-                    break;
+        // Can pointer be NULL?
+        const ValueFlow::Value *value = 0;
+        for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+            if (it->intvalue == 0) {
+                value = &(*it);
+                break;
             }
         }
+        if (!value)
+            continue;
+
+        // Is pointer used as function parameter?
+        if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+            const Token *ftok = tok->previous();
+            while (ftok && ftok->str() != "(") {
+                if (ftok->str() == ")")
+                    ftok = ftok->link();
+                ftok = ftok->previous();
+            }
+            if (!ftok || !ftok->previous())
+                continue;
+            std::list<const Token *> varlist;
+            parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
+            if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
+                if (value->condition == NULL)
+                    nullPointerError(tok);
+                else if (_settings->isEnabled("warning"))
+                    nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
+            }
+            continue;
+        }
+
+        // Pointer dereference.
+        bool unknown = false;
+        if (!isPointerDeRef(tok,unknown))
+            continue;
+
+        if (value->condition == NULL)
+            nullPointerError(tok);
+        else if (_settings->isEnabled("warning"))
+            nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
 }
 
