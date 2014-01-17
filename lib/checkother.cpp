@@ -2208,24 +2208,6 @@ void CheckOther::zerodivError(const Token *tok)
     reportError(tok, Severity::error, "zerodiv", "Division by zero.");
 }
 
-// TODO: this utility function should probably be moved to some common file
-static std::string astStringify(const Token *top)
-{
-    const Token *start = top;
-    while (start->astOperand1() && start->astOperand2())
-        start = start->astOperand1();
-    const Token *end = top;
-    while (end->astOperand1() && end->astOperand2())
-        end = end->astOperand2();
-    std::string str;
-    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        str += tok->str();
-        if (Token::Match(tok, "%var%|%num% %var%|%num%"))
-            str += " ";
-    }
-    return str + end->str();
-}
-
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
 {
     std::list<const Token *> callstack;
@@ -2241,7 +2223,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
     } else if (Token::Match(tokcond, "%num% <|<=")) {
         condition = tokcond->strAt(2) + ((tokcond->strAt(1) == "<") ? ">" : ">=") + tokcond->str();
     } else if (tokcond->isComparisonOp()) {
-        condition = astStringify(tokcond);
+        condition = tokcond->expressionString();
     } else {
         if (tokcond->str() == "!")
             condition = tokcond->next()->str() + "==0";

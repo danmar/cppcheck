@@ -1182,6 +1182,25 @@ bool Token::isCalculation() const
     return true;
 }
 
+std::string Token::expressionString() const
+{
+    const Token * const top = this;
+    const Token *start = top;
+    while (start->astOperand1() && start->astOperand2())
+        start = start->astOperand1();
+    const Token *end = top;
+    while (end->astOperand1() && end->astOperand2())
+        end = end->astOperand2();
+    std::string ret;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        ret += tok->str();
+        if (Token::Match(tok, "%var%|%num% %var%|%num%"))
+            ret += " ";
+    }
+    return ret + end->str();
+
+}
+
 void Token::printAst() const
 {
     bool title = false;

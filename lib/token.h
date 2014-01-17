@@ -699,6 +699,8 @@ public:
         return ret + sep + _str;
     }
 
+    std::string expressionString() const;
+
     void printAst() const;
 };
 
