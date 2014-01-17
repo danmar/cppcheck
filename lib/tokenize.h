@@ -369,9 +369,6 @@ public:
      */
     bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
 
-    /** Replace a "goto" with the statements */
-    void simplifyGoto();
-
     /** Simplify useless C++ empty namespaces, like: 'namespace %var% { }'*/
     void simplifyEmptyNamespaces();
 
