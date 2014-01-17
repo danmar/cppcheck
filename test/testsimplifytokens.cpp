@@ -848,7 +848,7 @@ private:
         ASSERT_EQUALS("= p ;", tok("= (p);"));
         ASSERT_EQUALS("if ( a < p ) { }", tok("if(a<(p)){}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
         ASSERT_EQUALS("return p ;", tok("return (p);"));
         ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
@@ -865,7 +865,7 @@ private:
         ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( 2 * p == 0 ) { } }", tok("void f(){int p; if (2*p == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { DIR * f ; f = opendir ( dirname ) ; if ( closedir ( f ) ) { } }", tok("void f(){DIR * f = opendir(dirname);if (closedir(f)){}}"));
-        ASSERT_EQUALS("void foo ( int p ) { if ( 0 <= p ) { ; } }", tok("void foo(int p){if((p)>=0);}"));
+        ASSERT_EQUALS("void foo ( int p ) { if ( p >= 0 ) { ; } }", tok("void foo(int p){if((p)>=0);}"));
     }
 
     void declareVar() {
@@ -897,7 +897,7 @@ private:
                                 "        a = 10;\n"
                                 "    a++;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
         }
 
         {
@@ -909,7 +909,7 @@ private:
                                 "        a = 10;\n"
                                 "    ++a;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
         }
     }
 
@@ -2622,7 +2622,7 @@ private:
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a=b()));"));
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a->x=b()));"));
         ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("void f() { A() if(a=b); }"));
-        ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
+        ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( a >= 0 ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
                            "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
                            tok("void foo(A a) {if((a.c=b())>=0);}"));
@@ -3610,7 +3610,7 @@ private:
                                    "       bar(); "
                                    "   } "
                                    "}";
-                ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } " + *it + " ; { label : ; bar ( ) ; } }",tok(code));
+                ASSERT_EQUALS("void f ( ) { if ( k > 0 ) { goto label ; } " + *it + " ; { label : ; bar ( ) ; } }",tok(code));
             }
 
             {

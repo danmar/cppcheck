@@ -420,8 +420,6 @@ private:
         TEST_CASE(removeExceptionSpecification5);
         TEST_CASE(removeExceptionSpecification6); // #4617
 
-        TEST_CASE(gt);      // use "<" comparisons instead of ">"
-
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
         TEST_CASE(switchCase);
@@ -1857,7 +1855,7 @@ private:
     void simplifyKnownVariables19() {
         const char code[] = "void f ( ) { int i=0; do { if (i>0) { a(); } i=b(); } while (i != 12); }";
         ASSERT_EQUALS(
-            "void f ( ) { int i ; i = 0 ; do { if ( 0 < i ) { a ( ) ; } i = b ( ) ; } while ( i != 12 ) ; }",
+            "void f ( ) { int i ; i = 0 ; do { if ( i > 0 ) { a ( ) ; } i = b ( ) ; } while ( i != 12 ) ; }",
             simplifyKnownVariables(code));
     }
 
@@ -2109,7 +2107,7 @@ private:
             "{"
             " int i ; i = 2 ;"
             " if ( g ) { }"
-            " if ( 0 < 2 ) { } "
+            " if ( 2 > 0 ) { } "
             "}",
             simplifyKnownVariables(code));
     }
@@ -2488,7 +2486,7 @@ private:
                             "}\n";
         const char expected[] = "void f ( ) {\n"
                                 "int x ; x = 10 ;\n"
-                                "do { cin >> x ; } while ( 5 < x ) ;\n"
+                                "do { cin >> x ; } while ( x > 5 ) ;\n"
                                 "a [ x ] = 0 ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
@@ -2747,7 +2745,7 @@ private:
                             "}";
         const char expected[] = "void f ( int sz ) {\n"
                                 "int i ;\n"
-                                "for ( i = 0 ; ( i < sz ) && ( 3 < sz ) ; ++ i ) { }\n"
+                                "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
@@ -6810,13 +6808,6 @@ private:
                       tokenizeAndStringify("void foo () noexcept(noexcept(true)) const;"));
         ASSERT_EQUALS("void foo ( ) const { }",
                       tokenizeAndStringify("void foo () noexcept(noexcept(true)) const { }"));
-    }
-
-    void gt() {
-        ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
-        ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
-        ASSERT_EQUALS("void > ( ) ; void > ( )",
-                      tokenizeAndStringify("void>(); void>()"));
     }
 
 

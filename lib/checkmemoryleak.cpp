@@ -999,12 +999,16 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             if (Token::simpleMatch(tok, "if (")) {
                 if (alloctype == Fd) {
                     if (Token::Match(tok, "if ( 0|-1 <=|< %varid% )", varid) ||
-                        Token::Match(tok, "if ( %varid% != -1 )", varid)) {
+                        Token::Match(tok, "if ( %varid% >|>= 0|-1 )", varid) ||
+                        Token::Match(tok, "if ( %varid% != -1 )", varid) ||
+                        Token::Match(tok, "if ( -1 != %varid% )", varid)) {
                         addtoken(&rettail, tok, "if(var)");
                         tok = tok->next()->link();
                         continue;
                     } else if (Token::Match(tok, "if ( %varid% == -1 )", varid) ||
-                               Token::Match(tok, "if ( %varid% < 0 )", varid)) {
+                               Token::Match(tok, "if ( -1 == %varid% )", varid) ||
+                               Token::Match(tok, "if ( %varid% < 0 )", varid) ||
+                               Token::Match(tok, "if ( 0 > %varid% )", varid)) {
                         addtoken(&rettail, tok, "if(!var)");
                         tok = tok->next()->link();
                         continue;
@@ -1122,12 +1126,16 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else if (alloctype == Fd && varid) {
                 if (Token::Match(tok, "while ( 0 <= %varid% )", varid) ||
-                    Token::Match(tok, "while ( %varid% != -1 )", varid)) {
+                    Token::Match(tok, "while ( %varid% >= 0 )", varid) ||
+                    Token::Match(tok, "while ( %varid% != -1 )", varid) ||
+                    Token::Match(tok, "while ( -1 != %varid% )", varid)) {
                     addtoken(&rettail, tok, "while(var)");
                     tok = end;
                     continue;
                 } else if (Token::Match(tok, "while ( %varid% == -1 )", varid) ||
-                           Token::Match(tok, "while ( %varid% < 0 )", varid)) {
+                           Token::Match(tok, "while ( -1 == %varid% )", varid) ||
+                           Token::Match(tok, "while ( %varid% < 0 )", varid) ||
+                           Token::Match(tok, "while ( 0 > %varid% )", varid)) {
                     addtoken(&rettail, tok, "while(!var)");
                     tok = end;
                     continue;

@@ -515,12 +515,6 @@ public:
     static std::string simplifyString(const std::string &source);
 
     /**
-     * Use "<" comparison instead of ">"
-     * Use "<=" comparison instead of ">="
-     */
-    void simplifyComparisonOrder();
-
-    /**
      * Change "int const x;" into "const int x;"
      */
     void simplifyConst();

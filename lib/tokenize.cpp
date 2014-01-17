@@ -3302,9 +3302,6 @@ bool Tokenizer::simplifyTokenList1()
     // simplify bit fields..
     simplifyBitfields();
 
-    // Use "<" comparison instead of ">"
-    simplifyComparisonOrder();
-
     // Simplify '(p == 0)' to '(!p)'
     simplifyIfNot();
     simplifyIfNotNull();
@@ -3649,7 +3646,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyIfNot();
     simplifyIfNotNull();
     simplifyIfSameInnerCondition();
-    simplifyComparisonOrder();
     simplifyNestedStrcat();
     simplifyWhile0();
     simplifyFuncInWhile();
@@ -9062,33 +9058,6 @@ void Tokenizer::simplifyStructInit()
     }
 }
 
-
-void Tokenizer::simplifyComparisonOrder()
-{
-    // Use "<" comparison instead of ">"
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;(] %var%|%num% >|>= %num%|%var% [);]")) {
-            const Token *operand2 = tok->tokAt(3);
-            const std::string op1(tok->next()->str());
-            unsigned int var1 = tok->next()->varId();
-            tok->next()->str(operand2->str());
-            tok->next()->varId(operand2->varId());
-            tok->tokAt(3)->str(op1);
-            tok->tokAt(3)->varId(var1);
-            if (tok->strAt(2) == ">")
-                tok->tokAt(2)->str("<");
-            else
-                tok->tokAt(2)->str("<=");
-        } else if (Token::Match(tok, "( %num% ==|!= %var% )")) {
-            const std::string op1(tok->next()->str());
-            unsigned int var1 = tok->next()->varId();
-            tok->next()->str(tok->strAt(3));
-            tok->next()->varId(tok->tokAt(3)->varId());
-            tok->tokAt(3)->str(op1);
-            tok->tokAt(3)->varId(var1);
-        }
-    }
-}
 
 void Tokenizer::simplifyConst()
 {
