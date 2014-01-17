@@ -549,49 +549,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // ticket #5045 segmentation fault when SymbolDatabase is corrupt
-        {
-            // We don't use the "check" function because we need to
-            // make sure the symboldatabase is inconsistent..
-
-            const char code[] = "namespace {\n"
-                                "  void get() { source = create(context); }\n"
-                                "  void create( something const & context)\n"
-                                "      SAL_THROW((css::uno::Exception))\n"
-                                "  { return new Server(context); }\n"
-                                "}\n"
-                                "void component_getFactory()\n"
-                                "{ component_getFactoryHelper(); }";
-
-            Settings settings;
-            settings.addEnabled("warning");
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr,"test.cpp");
-            tokenizer.simplifyTokenList2();
-
-            // Assert that the symboldatabase is inconsistent..
-            const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
-            ASSERT_EQUALS(2U, symbolDatabase->getVariableListSize());
-            const Variable *var = symbolDatabase->getVariableFromVarId(1U);
-            ASSERT(!!var->typeStartToken());
-            bool invalid = true;
-            for (const Token *tok = var->typeStartToken(); tok; tok = tok->next()) {
-                invalid = true;
-                if (tok == var->typeEndToken()) {
-                    invalid = false;
-                    break;
-                }
-            }
-            ASSERT_EQUALS(true, invalid);
-
-            // Make sure there is no crash with inconsistent symboldatabase..
-            // typeStartToken() is not before typeEndToken()
-            errout.str("");
-            CheckOther checkOther(&tokenizer, &settings, this);
-            checkOther.checkZeroDivisionOrUselessCondition(); // don't crash
-        }
-
         // #5105 - FP
         check("int f(int a, int b) {\n"
               "  int r = a / b;\n"
