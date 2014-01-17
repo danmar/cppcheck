@@ -211,6 +211,7 @@ public:
     void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<const Token *> callstack);
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
+    void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const ValueFlow::Value &index);
     void arrayIndexInForLoop(const Token *tok, const ArrayInfo &arrayInfo);
 
 private:
