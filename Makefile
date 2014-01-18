@@ -530,3 +530,6 @@ test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h 
 test/testvalueflow.o: test/testvalueflow.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h lib/valueflow.h lib/token.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testvalueflow.o test/testvalueflow.cpp
 
+externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp externals/tinyxml/tinyxml2.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
+
