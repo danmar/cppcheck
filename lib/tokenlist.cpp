@@ -453,6 +453,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 while (Token::Match(tok, "(|[")) {
                     Token *tok1 = tok;
                     tok = tok->next();
+                    while (Token::Match(tok,"%var% %var%")) // example: sizeof(struct S)
+                        tok = tok->next();
                     compileExpression(tok, op);
                     if (!op.empty()) {
                         tok1->astOperand2(op.top());
