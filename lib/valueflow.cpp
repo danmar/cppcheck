@@ -269,7 +269,6 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             }
         }
 
-        bool inconclusive = false;
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
             if (!tok2) {
                 if (settings->debugwarnings) {
@@ -308,15 +307,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 }
 
                 // assigned by subfunction?
-                bool inconclusive2 = false;
-                if (bailoutFunctionPar(tok2,val2.condition ? val2 : val, settings, &inconclusive2)) {
+                bool inconclusive = false;
+                if (bailoutFunctionPar(tok2,val2.condition ? val2 : val, settings, &inconclusive)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
                     break;
                 }
-                inconclusive |= inconclusive2;
-                val.inconclusive |= inconclusive2;
-                val2.inconclusive |= inconclusive2;
+                val.inconclusive |= inconclusive;
+                val2.inconclusive |= inconclusive;
 
                 // skip if variable is conditionally used in ?: expression
                 if (const Token *parent = skipValueInConditionalExpression(tok2)) {
