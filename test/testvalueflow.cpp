@@ -240,6 +240,15 @@ private:
                "    } while (1);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 76));
+
+        code = "void f(X x) {\n"  // conditions inside loop, x is assigned inside do-while => dont use condition
+               "    a = x;\n"
+               "    for (i=1;i<=count;i++) {\n"
+               "        BUGON(x==0)\n"
+               "        x = x.next;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 
     void valueFlowBeforeConditionTernaryOp() { // bailout: ?:

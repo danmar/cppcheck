@@ -276,7 +276,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 // if variable is assigned in loop don't look before the loop
                 if (tok2->previous() &&
                     (Token::Match(tok2->previous(), "do") ||
-                     (tok2->str() == ")" && Token::Match(tok2->linkAt(-1)->previous(), "for|while (")))) {
+                     (tok2->strAt(-1) == ")" && Token::Match(tok2->linkAt(-1)->previous(), "for|while (")))) {
 
                     const Token *start = tok2;
                     const Token *end   = start->link();
