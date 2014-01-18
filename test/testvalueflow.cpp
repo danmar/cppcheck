@@ -35,6 +35,18 @@ private:
 
     void run() {
         TEST_CASE(valueFlowBeforeCondition);
+        TEST_CASE(valueFlowBeforeConditionAndAndOrOrGuard);
+        TEST_CASE(valueFlowBeforeConditionAssignIncDec);
+        TEST_CASE(valueFlowBeforeConditionFunctionCall);
+        TEST_CASE(valueFlowBeforeConditionGlobalVariables);
+        TEST_CASE(valueFlowBeforeConditionGoto);
+        TEST_CASE(valueFlowBeforeConditionIfElse);
+        TEST_CASE(valueFlowBeforeConditionLoop);
+        TEST_CASE(valueFlowBeforeConditionMacro);
+        TEST_CASE(valueFlowBeforeConditionSizeof);
+        TEST_CASE(valueFlowBeforeConditionSwitch);
+        TEST_CASE(valueFlowBeforeConditionTernaryOp);
+
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
     }
@@ -108,8 +120,11 @@ private:
                "    if (x == 123) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+    }
 
-        // assignment / increment
+    void valueFlowBeforeConditionAssignIncDec() {  // assignment / increment
+        const char *code;
+
         code = "void f(int x) {\n"
                "   x = 2 + x;\n"
                "   if (x == 65);\n"
@@ -135,7 +150,17 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 3));
 
-        // guarding by &&
+        // bailout: assignment
+        bailout("void f(int x) {\n"
+                "    x = y;\n"
+                "    if (x == 123) {}\n"
+                "}");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of x\n", errout.str());
+    }
+
+    void valueFlowBeforeConditionAndAndOrOrGuard() { // guarding by &&
+        const char *code;
+
         code = "void f(int x) {\n"
                "    if (!x || \n"  // <- x can be 0
                "        a/x) {}\n" // <- x can't be 0
@@ -150,8 +175,11 @@ private:
                "  if (x==0) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+    }
 
-        // function calls
+    void valueFlowBeforeConditionFunctionCall() { // function calls
+        const char *code;
+
         code = "void f(int x) {\n"
                "  a = x;\n"
                "  setx(x);\n"
@@ -174,8 +202,11 @@ private:
                "  if (x) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+    }
 
-        // while, for, do-while
+    void valueFlowBeforeConditionLoop() { // while, for, do-while
+        const char *code;
+
         code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition
                "  a = x;\n"  // x can be 37
                "  while (x == 37) {}\n"
@@ -209,8 +240,11 @@ private:
                "    } while (1);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 76));
+    }
 
-        // bailout: ?:
+    void valueFlowBeforeConditionTernaryOp() { // bailout: ?:
+        const char *code;
+
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
@@ -235,28 +269,27 @@ private:
                "    if (x==123){}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
+    }
 
-        // skip sizeof
+    void valueFlowBeforeConditionSizeof() { // skip sizeof
+        const char *code;
+
         code = "void f(int *x) {\n"
                "    sizeof(x[0]);\n"
                "    if (x==63){}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 63));
+    }
 
-        // bailout: if/else/etc
+    void valueFlowBeforeConditionIfElse() { // bailout: if/else/etc
         bailout("void f(int x) {\n"
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on }\n", errout.str());
+    }
 
-        // bailout: assignment
-        bailout("void f(int x) {\n"
-                "    x = y;\n"
-                "    if (x == 123) {}\n"
-                "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of x\n", errout.str());
-
+    void valueFlowBeforeConditionGlobalVariables() {
         // bailout: global variables
         bailout("int x;\n"
                 "void f() {\n"
@@ -264,7 +297,9 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+    }
 
+    void valueFlowBeforeConditionSwitch() {
         // bailout: switch
         // TODO : handle switch/goto more intelligently
         bailout("void f(int x, int y) {\n"
@@ -282,14 +317,18 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n", errout.str());
+    }
 
+    void valueFlowBeforeConditionMacro() {
         // bailout: condition is a expanded macro
         bailout("void f(int x) {\n"
                 "    a = x;\n"
                 "    $if ($x==$123){}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
+    }
 
+    void valueFlowBeforeConditionGoto() {
         // bailout: goto label (TODO: handle gotos more intelligently)
         bailout("void f(int x) {\n"
                 "    if (x == 123) { goto out; }\n"
