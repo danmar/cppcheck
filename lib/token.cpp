@@ -1213,8 +1213,30 @@ void Token::printAst() const
             title = true;
             std::cout << tok->astTop()->astString(" ") << std::endl;
             print = false;
+            if (tok->str() == "(")
+                tok = tok->link();
         }
         if (Token::Match(tok, "[;{}]"))
             print = true;
+    }
+}
+
+void Token::printValueFlow() const
+{
+    int line = -1;
+    std::cout << "\n\n##Value flow" << std::endl;
+    for (const Token *tok = this; tok; tok = tok->next()) {
+        if (tok->values.empty())
+            continue;
+        if (line != tok->linenr())
+            std::cout << "Line " << tok->linenr() << std::endl;
+        line = tok->linenr();
+        std::cout << "  " << tok->str() << ":{";
+        for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
+            if (it != tok->values.begin())
+                std::cout << ",";
+            std::cout << it->intvalue;
+        }
+        std::cout << "}" << std::endl;
     }
 }

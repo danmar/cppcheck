@@ -3651,6 +3651,8 @@ bool Tokenizer::simplifyTokenList2()
             _symbolDatabase->printOut("Symbol database");
 
         list.front()->printAst();
+
+        list.front()->printValueFlow();
     }
 
     if (_settings->debugwarnings) {

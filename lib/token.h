@@ -702,6 +702,8 @@ public:
     std::string expressionString() const;
 
     void printAst() const;
+
+    void printValueFlow() const;
 };
 
 /// @}
