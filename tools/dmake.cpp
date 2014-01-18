@@ -316,6 +316,7 @@ int main(int argc, char **argv)
 //                                "-Wsign-conversion "
                                 "-Wsign-promo "
 //                                "-Wunreachable-code "
+                                "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarelly a bug
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
