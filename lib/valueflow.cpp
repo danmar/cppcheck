@@ -117,6 +117,78 @@ static bool bailoutSelfAssignment(const Token * const tok)
     return false;
 }
 
+/** set ValueFlow value and perform calculations if possible */
+static void setTokenValue(Token* tok, const ValueFlow::Value &value)
+{
+    // if value already exists, don't add it again
+    std::list<ValueFlow::Value>::iterator it;
+    for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+        if (it->intvalue == value.intvalue) {
+            if (it->inconclusive && !value.inconclusive) {
+                *it = value;
+                break;
+            }
+            return;
+        }
+    }
+
+    if (it == tok->values.end()) {
+        tok->values.push_back(value);
+        it = tok->values.end();
+        --it;
+    }
+
+    // Calculations..
+    Token *parent = const_cast<Token*>(tok->astParent());
+    if (parent && parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
+        std::list<ValueFlow::Value>::const_iterator value1, value2;
+        for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
+            for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
+                if (value1->varId == 0U || value2->varId == 0U || value1->varId == value2->varId) {
+                    ValueFlow::Value result(0);
+                    result.condition = value1->condition ? value1->condition : value2->condition;
+                    result.inconclusive = value1->inconclusive | value2->inconclusive;
+                    result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
+                    switch (parent->str()[0]) {
+                    case '+':
+                        result.intvalue = value1->intvalue + value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '-':
+                        result.intvalue = value1->intvalue - value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '*':
+                        result.intvalue = value1->intvalue * value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '/':
+                        if (value2->intvalue == 0)
+                            break;
+                        result.intvalue = value1->intvalue / value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '%':
+                        if (value2->intvalue == 0)
+                            break;
+                        result.intvalue = value1->intvalue % value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+static void valueFlowNumber(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->isNumber() && MathLib::isInt(tok->str()))
+            setTokenValue(tok, ValueFlow::Value(MathLib::toLongNumber(tok->str())));
+    }
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -185,13 +257,16 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
         // extra logic for unsigned variables 'i>=1' => possible value can also be 0
         ValueFlow::Value val(tok, num);
+        val.varId = varid;
         ValueFlow::Value val2;
         if (num==1U && Token::Match(tok,"<=|>=")) {
             bool isunsigned = false;
             for (const Token* type = var->typeStartToken(); type && type->varId() == 0U; type = type->next())
                 isunsigned |= type->isUnsigned();
-            if (isunsigned)
+            if (isunsigned) {
                 val2 = ValueFlow::Value(tok,0);
+                val2.varId = varid;
+            }
         }
 
         bool inconclusive = false;
@@ -240,6 +315,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     break;
                 }
                 inconclusive |= inconclusive2;
+                val.inconclusive |= inconclusive2;
                 val2.inconclusive |= inconclusive2;
 
                 // skip if variable is conditionally used in ?: expression
@@ -252,10 +328,9 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     continue;
                 }
 
-                tok2->values.push_back(val);
-                tok2->values.back().inconclusive = inconclusive;
+                setTokenValue(tok2, val);
                 if (val2.condition)
-                    tok2->values.push_back(val2);
+                    setTokenValue(tok2,val2);
                 if (var && tok2 == var->nameToken())
                     break;
             }
@@ -373,8 +448,13 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
 
         for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
             if (tok2->varId() == vartok->varId()) {
-                tok2->values.push_back(ValueFlow::Value(num1));
-                tok2->values.push_back(ValueFlow::Value(num2));
+                ValueFlow::Value value1(num1);
+                value1.varId = tok2->varId();
+                setTokenValue(tok2, value1);
+
+                ValueFlow::Value value2(num2);
+                value2.varId = tok2->varId();
+                setTokenValue(tok2, value2);
             }
 
             if (tok2->str() == "{") {
@@ -459,6 +539,7 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->values.clear();
 
+    valueFlowNumber(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);

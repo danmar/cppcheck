@@ -34,6 +34,10 @@ public:
 private:
 
     void run() {
+        TEST_CASE(valueFlowNumber);
+
+        TEST_CASE(valueFlowCalculations);
+
         TEST_CASE(valueFlowBeforeCondition);
         TEST_CASE(valueFlowBeforeConditionAndAndOrOrGuard);
         TEST_CASE(valueFlowBeforeConditionAssignIncDec);
@@ -91,6 +95,51 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
     }
 
+    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
+        const Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
+        return (tok && tok->values.size()==1U) ? tok->values.front() : ValueFlow::Value();
+    }
+
+    void valueFlowNumber() {
+        const char *code;
+
+        code  = "void f() {\n"
+                "    x = 123;\n"
+                "}";
+        ASSERT_EQUALS(123, valueOfTok(code, "123").intvalue);
+    }
+
+    void valueFlowCalculations() {
+        const char *code;
+        /*
+                code  = "void f() {\n"
+                        "    x = 123+456;\n"
+                        "}";
+                ASSERT_EQUALS(579, valueOfTok(code, "+").intvalue);
+        */
+        code  = "void f(int x) {\n"
+                "    a = x+456;\n"
+                "    if (x==123) {}"
+                "}";
+        ASSERT_EQUALS(579, valueOfTok(code, "+").intvalue);
+
+        code  = "void f(int x) {\n"
+                "    a = x+x;\n"
+                "    if (x==123) {}"
+                "}";
+        ASSERT_EQUALS(246, valueOfTok(code, "+").intvalue);
+
+        code  = "void f(int x, int y) {\n"
+                "    a = x+y;\n"
+                "    if (x==123 || y==456) {}"
+                "}";
+        ASSERT_EQUALS(0, valueOfTok(code, "+").intvalue);
+    }
 
     void valueFlowBeforeCondition() {
         const char *code;
