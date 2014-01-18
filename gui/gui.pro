@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = cppcheck-gui
-CONFIG += warn_on
+CONFIG += warn_on debug
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
