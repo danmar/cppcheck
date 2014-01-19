@@ -250,7 +250,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
 
         // bailout: global non-const variables
-        if (var->isGlobal() && !var->isConst()) {
+        if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok, "global variable " + var->nameToken()->str());
             continue;

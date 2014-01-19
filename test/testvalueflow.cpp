@@ -369,6 +369,16 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: global variable x\n", errout.str());
+
+        // class variable
+        const char *code;
+        code = "class Fred { int x; void clear(); void f(); };\n"
+               "void Fred::f() {\n"
+               "    int a = x;\n"
+               "    clear();\n"  // <- x might be assigned
+               "    if (x == 234) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code,3,234));
     }
 
     void valueFlowBeforeConditionSwitch() {
