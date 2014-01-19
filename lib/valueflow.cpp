@@ -25,6 +25,7 @@
 #include "tokenlist.h"
 
 #include <iostream>
+#include <stack>
 
 
 static void printvalues(const Token *tok)
@@ -84,14 +85,35 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
     return arg && !arg->isConst() && arg->isReference();
 }
 
-static const Token * skipValueInConditionalExpression(const Token *tok)
+/**
+ * Should value be skipped because it's hidden inside && || or ?: expression.
+ * Example: ((x!=NULL) && (*x == 123))
+ * If 'valuetok' points at the x in '(*x == 123)'. Then the '&&' will be returned.
+ * @param valuetok original variable token
+ * @return NULL=>don't skip, non-NULL=>The operator token that cause the skip. For instance the '&&'.
+ * */
+static const Token * skipValueInConditionalExpression(const Token * const valuetok)
 {
-    while (tok && !Token::Match(tok, "%oror%|&&|?|:")) {
-        while (Token::Match(tok->astParent(), "%oror%|&&|?") && tok->astParent()->astOperand1() == tok)
-            tok = tok->astParent();
-        tok = tok->astParent();
+    // Walk up the ast
+    for (const Token *tok = valuetok->astParent(); tok; tok = tok->astParent()) {
+        if (!Token::Match(tok, "%oror%|&&|?|:"))
+            continue;
+
+        // Is variable protected in LHS..
+        std::stack<const Token *> tokens;
+        tokens.push(tok->astOperand1());
+        while (!tokens.empty()) {
+            const Token * const tok2 = tokens.top();
+            tokens.pop();
+            if (!tok2)
+                continue;
+            if (tok2 != valuetok && tok2->str() == valuetok->str())
+                return tok;
+            tokens.push(tok2->astOperand2());
+            tokens.push(tok2->astOperand1());
+        }
     }
-    return tok;
+    return NULL;
 }
 
 static bool bailoutSelfAssignment(const Token * const tok)

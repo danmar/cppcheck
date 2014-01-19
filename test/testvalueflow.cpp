@@ -340,6 +340,20 @@ private:
     }
 
     void valueFlowBeforeConditionIfElse() { // bailout: if/else/etc
+        const char *code;
+
+        code = "void f(X * x) {\n"
+               "  a = x;\n"
+               "  if ((x != NULL) &&\n"
+               "      (a(x->name, html)) &&\n"
+               "      (a(x->name, body))) {}\n"
+               "  if (x != NULL) { }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         bailout("void f(int x) {\n"
                 "    if (x != 123) { b = x; }\n"
                 "    if (x == 123) {}\n"
