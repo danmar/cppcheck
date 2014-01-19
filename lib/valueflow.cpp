@@ -294,7 +294,15 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 val2.varId = varid;
             }
         }
-
+        if (Token::Match(tok,"<|>")) {
+            if (num!=0)
+                continue;
+            bool isunsigned = false;
+            for (const Token* type = var->typeStartToken(); type && type->varId() == 0U; type = type->next())
+                isunsigned |= type->isUnsigned();
+            if (!isunsigned)
+                continue;
+        }
         for (Token *tok2 = tok->previous(); ; tok2 = tok2->previous()) {
             if (!tok2) {
                 if (settings->debugwarnings) {

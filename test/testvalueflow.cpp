@@ -157,6 +157,24 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        code = "void f(unsigned int x) {\n"
+               "    int a = x;\n"
+               "    if (x > 0) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+
+        code = "void f(unsigned int x) {\n"
+               "    int a = x;\n"
+               "    if (x > 1) {}\n" // not zero => don't consider > condition
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
+
+        code = "void f(int x) {\n" // not unsigned => don't consider > condition
+               "    int a = x;\n"
+               "    if (x > 0) {}\n" 
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+
         code = "void f(int *x) {\n"
                "    *x = 100;\n"
                "    if (x) {}\n"
