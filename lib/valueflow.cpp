@@ -95,8 +95,12 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
 static const Token * skipValueInConditionalExpression(const Token * const valuetok)
 {
     // Walk up the ast
+    const Token *prev = valuetok;
     for (const Token *tok = valuetok->astParent(); tok; tok = tok->astParent()) {
-        if (!Token::Match(tok, "%oror%|&&|?|:"))
+        const bool prevIsLhs = (prev == tok->astOperand1());
+        prev = tok;
+
+        if (prevIsLhs || !Token::Match(tok, "%oror%|&&|?|:"))
             continue;
 
         // Is variable protected in LHS..

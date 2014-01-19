@@ -350,9 +350,9 @@ private:
                "  if (x != NULL) { }\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
-        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
-        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
 
         bailout("void f(int x) {\n"
                 "    if (x != 123) { b = x; }\n"
