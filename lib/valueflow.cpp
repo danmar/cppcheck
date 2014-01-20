@@ -164,9 +164,15 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         --it;
     }
 
-    // Calculations..
     Token *parent = const_cast<Token*>(tok->astParent());
-    if (parent && parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
+
+    // Cast..
+    if (parent && parent->str() == "(" && tok == parent->link()->next()) {
+        setTokenValue(parent,value);
+    }
+
+    // Calculations..
+    else if (parent && parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {

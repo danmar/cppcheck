@@ -2063,6 +2063,12 @@ private:
               "    if (i==10) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Array 'str[3]' accessed at index 10, which is out of bounds. Otherwise condition 'i==10' is redundant.\n", errout.str());
+
+        check("void f() {\n"
+              "    char str[3];\n"
+              "    str[((unsigned char)3) - 1] = 0;\n"
+              "}", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {
