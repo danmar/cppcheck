@@ -27,6 +27,7 @@
 #include <ostream>
 #include "config.h"
 #include "valueflow.h"
+#include "mathlib.h"
 
 class Scope;
 class Function;
@@ -579,6 +580,15 @@ public:
 
     /** Values of token */
     std::list<ValueFlow::Value> values;
+
+    const ValueFlow::Value * getValue(const MathLib::bigint val) const {
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if (it->intvalue == val)
+                return &(*it);
+        }
+        return NULL;
+    }
 
 private:
     void next(Token *nextToken) {

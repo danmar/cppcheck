@@ -752,21 +752,12 @@ void CheckNullPointer::nullPointerStructByDeRefAndChec()
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->isName() || tok->values.empty())
-            continue;
-
         const Variable *var = tok->variable();
         if (!var || !var->isPointer() || tok == var->nameToken())
             continue;
 
         // Can pointer be NULL?
-        const ValueFlow::Value *value = 0;
-        for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
-            if (it->intvalue == 0) {
-                value = &(*it);
-                break;
-            }
-        }
+        const ValueFlow::Value *value = tok->getValue(0);
         if (!value)
             continue;
 
