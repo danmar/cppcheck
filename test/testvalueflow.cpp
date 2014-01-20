@@ -95,14 +95,19 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
     }
 
-    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[]) {
         const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
-        return (tok && tok->values.size()==1U) ? tok->values.front() : ValueFlow::Value();
+        return tok ? tok->values : std::list<ValueFlow::Value>();
+    }
+
+    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
+        std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
+        return values.size() == 1U ? values.front() : ValueFlow::Value();
     }
 
     void valueFlowNumber() {
@@ -128,6 +133,12 @@ private:
                 "}";
         ASSERT_EQUALS(579, valueOfTok(code, "+").intvalue);
 
+        code  = "void f(int x, int y) {\n"
+                "    a = x+y;\n"
+                "    if (x==123 || y==456) {}"
+                "}";
+        ASSERT_EQUALS(0, valueOfTok(code, "+").intvalue);
+
         code  = "void f(int x) {\n"
                 "    a = x+x;\n"
                 "    if (x==123) {}"
@@ -135,10 +146,14 @@ private:
         ASSERT_EQUALS(246, valueOfTok(code, "+").intvalue);
 
         code  = "void f(int x, int y) {\n"
-                "    a = x+y;\n"
-                "    if (x==123 || y==456) {}"
+                "    a = x*x;\n"
+                "    if (x==2) {}\n"
+                "    if (x==4) {}\n"
                 "}";
-        ASSERT_EQUALS(0, valueOfTok(code, "+").intvalue);
+        std::list<ValueFlow::Value> values = tokenValues(code,"*");
+        ASSERT_EQUALS(2U, values.size());
+        ASSERT_EQUALS(4, values.front().intvalue);
+        ASSERT_EQUALS(16, values.back().intvalue);
     }
 
     void valueFlowBeforeCondition() {

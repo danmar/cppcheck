@@ -29,9 +29,9 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        Value() : condition(0), intvalue(0), inconclusive(false), varId(0U) {}
-        Value(long long val) : condition(0), intvalue(val), inconclusive(false), varId(0U) {}
-        Value(const Token *c, long long val) : condition(c), intvalue(val), inconclusive(false), varId(0U) {}
+        Value() : condition(0), intvalue(0), inconclusive(false), varId(0U), varvalue(0) {}
+        Value(long long val) : condition(0), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
+        Value(const Token *c, long long val) : condition(c), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
 
         /** Condition that this value depends on (TODO: replace with a 'callstack') */
         const Token *condition;
@@ -44,6 +44,9 @@ namespace ValueFlow {
 
         /** For calculated values - varId that calculated value depends on */
         unsigned int varId;
+
+        /** For calculated values - variable value that calculated value depends on */
+        long long    varvalue;
     };
 
     void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);

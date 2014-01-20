@@ -170,11 +170,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
-                if (value1->varId == 0U || value2->varId == 0U || value1->varId == value2->varId) {
+                if (value1->varId == 0U || value2->varId == 0U ||
+                    (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
+                    result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
                     switch (parent->str()[0]) {
                     case '+':
                         result.intvalue = value1->intvalue + value2->intvalue;
