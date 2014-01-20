@@ -171,7 +171,7 @@ private:
 
         code = "void f(int x) {\n" // not unsigned => don't consider > condition
                "    int a = x;\n"
-               "    if (x > 0) {}\n" 
+               "    if (x > 0) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
 
