@@ -152,7 +152,8 @@ QString TranslationHandler::SuggestLanguage() const
     only want two-letter ISO 639 language code so we'll get it from
     locale's name.
     */
-    QString language = QLocale::system().name().left(2);
+    // left(2) is not correct for some code, eg. zh_CN
+    QString language = QLocale::system().name();
     //qDebug()<<"Your language is"<<language;
 
     //And see if we can find it from our list of language files
@@ -171,7 +172,9 @@ void TranslationHandler::AddTranslation(const char *name, const char *filename)
     TranslationInfo info;
     info.mName = name;
     info.mFilename = filename;
-    info.mCode = QString(filename).right(2);
+    // right(2) is not correct for some code, eg. zh_CN
+    int codeLength = QString(filename).length() - QString(filename).indexOf('_') - 1;
+    info.mCode = QString(filename).right(codeLength);
     mTranslations.append(info);
 }
 
@@ -180,6 +183,10 @@ int TranslationHandler::GetLanguageIndexByCode(const QString &code) const
     int index = -1;
     for (int i = 0; i < mTranslations.size(); i++) {
         if (mTranslations[i].mCode == code) {
+            index = i;
+            break;
+        }
+        else if (mTranslations[i].mCode.left(2) == code.left(2)) {
             index = i;
             break;
         }
