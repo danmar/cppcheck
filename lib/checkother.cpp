@@ -2173,13 +2173,9 @@ void CheckOther::strPlusCharError(const Token *tok)
 void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[/%] %num%") &&
-            MathLib::isInt(tok->next()->str()) &&
-            MathLib::toLongNumber(tok->next()->str()) == 0L) {
-            zerodivError(tok);
-        } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
-                   MathLib::isInt(tok->strAt(4)) &&
-                   MathLib::toLongNumber(tok->strAt(4)) == 0L) {
+        if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
+            MathLib::isInt(tok->strAt(4)) &&
+            MathLib::toLongNumber(tok->strAt(4)) == 0L) {
             if (tok->str() == "div") {
                 if (tok->strAt(-1) == ".")
                     continue;
