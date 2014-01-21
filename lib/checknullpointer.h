@@ -129,12 +129,6 @@ private:
 
     /**
      * @brief Does one part of the check for nullPointer().
-     * Dereferencing a struct pointer and then checking if it's NULL..
-     */
-    void nullPointerStructByDeRefAndChec();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
