@@ -3641,6 +3641,8 @@ bool Tokenizer::simplifyTokenList2()
 
     list.createAst();
 
+    ValueFlow::setValues(&list, _errorLogger, _settings);
+
     if (_settings->terminated())
         return false;
 

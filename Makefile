@@ -248,73 +248,73 @@ install: cppcheck
 
 ###### Build
 
-$(SRCDIR)/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/check64bit.o: lib/check64bit.cpp lib/check64bit.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/check64bit.o $(SRCDIR)/check64bit.cpp
 
-$(SRCDIR)/checkassert.o: lib/checkassert.cpp lib/checkassert.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkassert.o: lib/checkassert.cpp lib/checkassert.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkassert.o $(SRCDIR)/checkassert.cpp
 
-$(SRCDIR)/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkassignif.o: lib/checkassignif.cpp lib/checkassignif.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkassignif.o $(SRCDIR)/checkassignif.cpp
 
-$(SRCDIR)/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/checkuninitvar.h
+$(SRCDIR)/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/checkuninitvar.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkautovariables.o $(SRCDIR)/checkautovariables.cpp
 
-$(SRCDIR)/checkbool.o: lib/checkbool.cpp lib/checkbool.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkbool.o: lib/checkbool.cpp lib/checkbool.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkbool.o $(SRCDIR)/checkbool.cpp
 
-$(SRCDIR)/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkboost.o $(SRCDIR)/checkboost.cpp
 
-$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/executionpath.h
+$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/executionpath.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkbufferoverrun.o $(SRCDIR)/checkbufferoverrun.cpp
 
-$(SRCDIR)/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkclass.o $(SRCDIR)/checkclass.cpp
 
-$(SRCDIR)/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkexceptionsafety.o $(SRCDIR)/checkexceptionsafety.cpp
 
-$(SRCDIR)/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkinternal.o: lib/checkinternal.cpp lib/checkinternal.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkinternal.o $(SRCDIR)/checkinternal.cpp
 
-$(SRCDIR)/checkio.o: lib/checkio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkio.o: lib/checkio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkio.o $(SRCDIR)/checkio.cpp
 
-$(SRCDIR)/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/checkmemoryleak.h lib/checkother.h lib/symboldatabase.h
+$(SRCDIR)/checkleakautovar.o: lib/checkleakautovar.cpp lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/checkmemoryleak.h lib/checkother.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkleakautovar.o $(SRCDIR)/checkleakautovar.cpp
 
-$(SRCDIR)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/checkuninitvar.h
+$(SRCDIR)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/checkuninitvar.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkmemoryleak.o $(SRCDIR)/checkmemoryleak.cpp
 
-$(SRCDIR)/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checknonreentrantfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h
+$(SRCDIR)/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checknonreentrantfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checknonreentrantfunctions.o $(SRCDIR)/checknonreentrantfunctions.cpp
 
-$(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/executionpath.h lib/symboldatabase.h
+$(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/executionpath.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checknullpointer.o $(SRCDIR)/checknullpointer.cpp
 
-$(SRCDIR)/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkobsoletefunctions.o $(SRCDIR)/checkobsoletefunctions.cpp
 
-$(SRCDIR)/checkother.o: lib/checkother.cpp lib/checkother.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/templatesimplifier.h
+$(SRCDIR)/checkother.o: lib/checkother.cpp lib/checkother.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/templatesimplifier.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkother.o $(SRCDIR)/checkother.cpp
 
-$(SRCDIR)/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkpostfixoperator.o: lib/checkpostfixoperator.cpp lib/checkpostfixoperator.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkpostfixoperator.o $(SRCDIR)/checkpostfixoperator.cpp
 
-$(SRCDIR)/checksizeof.o: lib/checksizeof.cpp lib/checksizeof.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checksizeof.o: lib/checksizeof.cpp lib/checksizeof.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checksizeof.o $(SRCDIR)/checksizeof.cpp
 
-$(SRCDIR)/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/executionpath.h lib/symboldatabase.h
+$(SRCDIR)/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/executionpath.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkstl.o $(SRCDIR)/checkstl.cpp
 
-$(SRCDIR)/checkuninitvar.o: lib/checkuninitvar.cpp lib/checkuninitvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/executionpath.h lib/checknullpointer.h lib/symboldatabase.h
+$(SRCDIR)/checkuninitvar.o: lib/checkuninitvar.cpp lib/checkuninitvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/executionpath.h lib/checknullpointer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkuninitvar.o $(SRCDIR)/checkuninitvar.cpp
 
-$(SRCDIR)/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h
+$(SRCDIR)/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkunusedfunctions.o $(SRCDIR)/checkunusedfunctions.cpp
 
-$(SRCDIR)/checkunusedvar.o: lib/checkunusedvar.cpp lib/checkunusedvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h
+$(SRCDIR)/checkunusedvar.o: lib/checkunusedvar.cpp lib/checkunusedvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkunusedvar.o $(SRCDIR)/checkunusedvar.cpp
 
 $(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/preprocessor.h lib/version.h
@@ -323,7 +323,7 @@ $(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.
 $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/suppressions.h lib/path.h lib/cppcheck.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/errorlogger.o $(SRCDIR)/errorlogger.cpp
 
-$(SRCDIR)/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/config.h lib/token.h lib/valueflow.h lib/symboldatabase.h lib/mathlib.h
+$(SRCDIR)/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/executionpath.o $(SRCDIR)/executionpath.cpp
 
 $(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h lib/path.h lib/mathlib.h lib/tokenlist.h lib/token.h lib/valueflow.h
@@ -335,7 +335,7 @@ $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/config.h lib/errorlogger.
 $(SRCDIR)/path.o: lib/path.cpp lib/path.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/path.o $(SRCDIR)/path.cpp
 
-$(SRCDIR)/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/path.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h
+$(SRCDIR)/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/path.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/preprocessor.o $(SRCDIR)/preprocessor.cpp
 
 $(SRCDIR)/settings.o: lib/settings.cpp lib/settings.h lib/config.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/preprocessor.h
@@ -353,7 +353,7 @@ $(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/templatesimplifie
 $(SRCDIR)/timer.o: lib/timer.cpp lib/timer.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/timer.o $(SRCDIR)/timer.cpp
 
-$(SRCDIR)/token.o: lib/token.cpp lib/token.h lib/config.h lib/valueflow.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h
+$(SRCDIR)/token.o: lib/token.cpp lib/token.h lib/config.h lib/valueflow.h lib/mathlib.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/token.o $(SRCDIR)/token.cpp
 
 $(SRCDIR)/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/check.h lib/token.h lib/valueflow.h lib/symboldatabase.h lib/templatesimplifier.h
@@ -386,49 +386,49 @@ cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/errorlogge
 test/options.o: test/options.cpp test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/options.o test/options.cpp
 
-test/test64bit.o: test/test64bit.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/check64bit.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/test64bit.o: test/test64bit.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/check64bit.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/test64bit.o test/test64bit.cpp
 
-test/testassert.o: test/testassert.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassert.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testassert.o: test/testassert.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassert.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testassert.o test/testassert.cpp
 
-test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassignif.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testassignif.o: test/testassignif.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassignif.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testassignif.o test/testassignif.cpp
 
-test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkautovariables.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkautovariables.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testautovariables.o test/testautovariables.cpp
 
-test/testbool.o: test/testbool.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkbool.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testbool.o: test/testbool.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkbool.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testbool.o test/testbool.cpp
 
-test/testboost.o: test/testboost.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkboost.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testboost.o: test/testboost.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkboost.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testboost.o test/testboost.cpp
 
-test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkbufferoverrun.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
 
-test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testcharvar.o: test/testcharvar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testcharvar.o test/testcharvar.cpp
 
-test/testclass.o: test/testclass.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testclass.o: test/testclass.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testclass.o test/testclass.cpp
 
 test/testcmdlineparser.o: test/testcmdlineparser.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
 
-test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testconstructors.o test/testconstructors.cpp
 
 test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testcppcheck.o test/testcppcheck.cpp
 
-test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testdivision.o test/testdivision.cpp
 
 test/testerrorlogger.o: test/testerrorlogger.cpp lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testerrorlogger.o test/testerrorlogger.cpp
 
-test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
 test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/settings.h lib/standards.h lib/timer.h
@@ -437,13 +437,13 @@ test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
-test/testinternal.o: test/testinternal.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkinternal.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testinternal.o: test/testinternal.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkinternal.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testinternal.o test/testinternal.cpp
 
-test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h test/testsuite.h test/redirect.h
+test/testio.o: test/testio.cpp lib/checkio.h lib/check.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testio.o test/testio.cpp
 
-test/testleakautovar.o: test/testleakautovar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkleakautovar.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testleakautovar.o: test/testleakautovar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkleakautovar.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testleakautovar.o test/testleakautovar.cpp
 
 test/testlibrary.o: test/testlibrary.cpp lib/library.h lib/config.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenlist.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
@@ -452,16 +452,16 @@ test/testlibrary.o: test/testlibrary.cpp lib/library.h lib/config.h lib/path.h l
 test/testmathlib.o: test/testmathlib.cpp lib/mathlib.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testmathlib.o test/testmathlib.cpp
 
-test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h lib/symboldatabase.h
+test/testmemleak.o: test/testmemleak.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testmemleak.o test/testmemleak.cpp
 
-test/testnonreentrantfunctions.o: test/testnonreentrantfunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknonreentrantfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testnonreentrantfunctions.o: test/testnonreentrantfunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknonreentrantfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testnonreentrantfunctions.o test/testnonreentrantfunctions.cpp
 
-test/testnullpointer.o: test/testnullpointer.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknullpointer.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testnullpointer.o: test/testnullpointer.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknullpointer.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testnullpointer.o test/testnullpointer.cpp
 
-test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
 
 test/testoptions.o: test/testoptions.cpp test/options.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h
@@ -476,7 +476,7 @@ test/testpath.o: test/testpath.cpp test/testsuite.h lib/errorlogger.h lib/config
 test/testpathmatch.o: test/testpathmatch.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testpathmatch.o test/testpathmatch.cpp
 
-test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
 
 test/testpreprocessor.o: test/testpreprocessor.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/preprocessor.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
@@ -488,10 +488,10 @@ test/testrunner.o: test/testrunner.cpp test/testsuite.h lib/errorlogger.h lib/co
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h lib/templatesimplifier.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
 
-test/testsizeof.o: test/testsizeof.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checksizeof.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testsizeof.o: test/testsizeof.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checksizeof.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testsizeof.o test/testsizeof.cpp
 
-test/teststl.o: test/teststl.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkstl.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/teststl.o: test/teststl.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkstl.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/teststl.o test/teststl.cpp
 
 test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h test/options.h
@@ -515,13 +515,13 @@ test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h lib/conf
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testtokenize.o test/testtokenize.cpp
 
-test/testuninitvar.o: test/testuninitvar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkuninitvar.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testuninitvar.o: test/testuninitvar.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkuninitvar.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testuninitvar.o test/testuninitvar.cpp
 
 test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h test/testsuite.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
-test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
