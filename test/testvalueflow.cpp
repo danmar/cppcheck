@@ -51,6 +51,8 @@ private:
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
 
+        TEST_CASE(valueFlowAfterAssign);
+
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
     }
@@ -452,6 +454,22 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on goto label\n", errout.str());
+    }
+
+    void valueFlowAfterAssign() {
+        const char *code;
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    a = sizeof(x);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
     }
 
     void valueFlowForLoop() {

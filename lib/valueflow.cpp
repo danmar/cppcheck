@@ -432,6 +432,45 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
     }
 }
 
+static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // Assignment
+        if ((tok->str() != "=") || (tok->astParent()))
+            continue;
+
+        // Rhs should be a variable
+        if (!tok->astOperand1() || !tok->astOperand1()->isName())
+            continue;
+        unsigned int varid = tok->astOperand1()->varId();
+        if (varid == 0U)
+            continue;
+        const Variable *var = tok->astOperand1()->variable();
+        if (!var || !var->isLocal())
+            continue;
+
+        // Lhs values..
+        if (!tok->astOperand2() || tok->astOperand2()->values.empty())
+            continue;
+        std::list<ValueFlow::Value> values = tok->astOperand2()->values;
+
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "[{}]"))
+                break;
+            if (Token::Match(tok2, "sizeof ("))
+                tok2 = tok2->linkAt(1);
+            if (tok2->varId() == varid) {
+                if (!Token::Match(tok2->previous(), "= %var% %cop%|;"))
+                    break;
+
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = values.begin(); it != values.end(); ++it)
+                    setTokenValue(tok2, *it);
+            }
+        }
+    }
+}
+
 static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -582,5 +621,6 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
     valueFlowNumber(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
+    valueFlowAfterAssign(tokenlist, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
 }

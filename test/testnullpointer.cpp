@@ -1969,7 +1969,9 @@ private:
               "    std::string s5(p);\n"
               "    foo(std::string(p));\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n"
+        ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference\n"
+                      "[test.cpp:8]: (error) Null pointer dereference\n"
+                      "[test.cpp:3]: (error) Null pointer dereference\n"
                       "[test.cpp:4]: (error) Null pointer dereference\n"
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n"
