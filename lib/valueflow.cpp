@@ -434,6 +434,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
 static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
+    // temporarily hide compiler warnings
+    (void)errorLogger;
+    (void)settings;
+
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         // Assignment
         if ((tok->str() != "=") || (tok->astParent()))
