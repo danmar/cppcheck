@@ -590,7 +590,19 @@ public:
         return NULL;
     }
 
+    const ValueFlow::Value * getMaxValue(bool condition) const {
+        const ValueFlow::Value *ret = 0;
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if ((!ret || it->intvalue > ret->intvalue) &&
+                ((it->condition != NULL) == condition))
+                ret = &(*it);
+        }
+        return ret;
+    }
+
 private:
+
     void next(Token *nextToken) {
         _next = nextToken;
     }

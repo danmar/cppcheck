@@ -1157,25 +1157,19 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         else if (arrayInfo.num().size() == 1U && Token::Match(tok, "%varid% [", arrayInfo.declarationId()) && tok->next()->astOperand2() && !tok->next()->astOperand2()->values.empty()) {
-            const std::list<ValueFlow::Value> &values = tok->next()->astOperand2()->values;
-            std::list<ValueFlow::Value>::const_iterator it;
             MathLib::bigint count = arrayInfo.num()[0];
             const Token *parent = tok->next()->astParent();
             while (parent && parent->str() == ".")
                 parent = tok->astParent();
             if (parent && parent->str() == "&")
                 ++count;
-            ValueFlow::Value errvalue, warnvalue;
-            for (it = values.begin(); it != values.end(); ++it) {
-                if (!it->condition && it->intvalue >= errvalue.intvalue)
-                    errvalue = *it;
-                if (it->condition && it->intvalue >= warnvalue.intvalue)
-                    warnvalue = *it;
-            }
-            if (errvalue.intvalue >= count)
-                arrayIndexOutOfBoundsError(tok, arrayInfo, errvalue);
-            if (_settings->isEnabled("warning") && warnvalue.intvalue >= count)
-                arrayIndexOutOfBoundsError(tok, arrayInfo, warnvalue);
+
+            const ValueFlow::Value *errvalue = tok->next()->astOperand2()->getMaxValue(false);
+            const ValueFlow::Value *warnvalue = tok->next()->astOperand2()->getMaxValue(true);
+            if (errvalue && errvalue->intvalue >= count)
+                arrayIndexOutOfBoundsError(tok, arrayInfo, *errvalue);
+            else if (_settings->isEnabled("warning") && warnvalue && warnvalue->intvalue >= count)
+                arrayIndexOutOfBoundsError(tok, arrayInfo, *warnvalue);
         }
 
         else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.declarationId())) {
