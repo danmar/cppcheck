@@ -266,7 +266,7 @@ $(SRCDIR)/checkbool.o: lib/checkbool.cpp lib/checkbool.h lib/config.h lib/check.
 $(SRCDIR)/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkboost.o $(SRCDIR)/checkboost.cpp
 
-$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/executionpath.h
+$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checkbufferoverrun.o $(SRCDIR)/checkbufferoverrun.cpp
 
 $(SRCDIR)/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
@@ -290,7 +290,7 @@ $(SRCDIR)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/c
 $(SRCDIR)/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/checknonreentrantfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checknonreentrantfunctions.o $(SRCDIR)/checknonreentrantfunctions.cpp
 
-$(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/executionpath.h lib/symboldatabase.h
+$(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o $(SRCDIR)/checknullpointer.o $(SRCDIR)/checknullpointer.cpp
 
 $(SRCDIR)/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/checkobsoletefunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
