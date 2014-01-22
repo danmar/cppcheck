@@ -56,7 +56,6 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullConstantDereference();
-        checkNullPointer.executionPaths();
     }
 
     /**
@@ -94,9 +93,6 @@ public:
 
     /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
     void nullConstantDereference();
-
-    /** @brief new type of check: check execution paths */
-    void executionPaths();
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive=false);

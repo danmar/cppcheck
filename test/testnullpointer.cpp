@@ -113,7 +113,6 @@ private:
                   "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
 
         checkNullPointer.nullConstantDereference();
-        //checkNullPointer.executionPaths();
     }
 
 
