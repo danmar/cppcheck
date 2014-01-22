@@ -113,7 +113,7 @@ private:
                   "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
 
         checkNullPointer.nullConstantDereference();
-        checkNullPointer.executionPaths();
+        //checkNullPointer.executionPaths();
     }
 
 
@@ -881,8 +881,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
 
         {
-            const char code[] = "static void foo(int x)\n"
-                                "{\n"
+            const char code[] = "static void foo() {\n"
                                 "    Foo<int> *abc = 0;\n"
                                 "    abc->a();\n"
                                 "}\n";
@@ -893,7 +892,7 @@ private:
 
             // inconclusive=true => error
             check(code, true);
-            ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error, inconclusive) Possible null pointer dereference: abc\n", errout.str());
         }
 
         check("static void foo() {\n"
@@ -1058,7 +1057,7 @@ private:
         // No false positive:
         check("void foo() {\n"
               "    int n;\n"
-              "    int *argv32;\n"
+              "    int *argv32 = p;\n"
               "    if (x) {\n"
               "        n = 0;\n"
               "        argv32 = 0;\n"
@@ -1099,7 +1098,7 @@ private:
               "\n"
               "    *p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", "", errout.str());
     }
 
     void nullpointer7() {
@@ -1255,7 +1254,7 @@ private:
               "    if (x) p = q;\n"
               "    if (y ? p->x : p->y) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer21() {  // #4038 - fp: if (x) p=q; else return;
@@ -1875,7 +1874,7 @@ private:
               "    int* iVal = 0;\n"
               "    sscanf(dummy, \"%d%d\", foo(iVal), iVal);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: iVal\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(char* dummy) {\n"
               "    sscanf(dummy, \"%*d%u\", 0);\n"
@@ -1979,8 +1978,11 @@ private:
                       "[test.cpp:4]: (error) Null pointer dereference\n"
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n"
+                      /* TODO: handle std::string
                       "[test.cpp:9]: (error) Possible null pointer dereference: p\n"
-                      "[test.cpp:10]: (error) Possible null pointer dereference: p\n", errout.str());
+                      "[test.cpp:10]: (error) Possible null pointer dereference: p\n"
+                      */
+                      , errout.str());
 
         check("void f(std::string s1, const std::string& s2, const std::string* s3) {\n"
               "    void* p = 0;\n"

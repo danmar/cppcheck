@@ -452,23 +452,70 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         const Variable *var = tok->astOperand1()->variable();
         if (!var || !var->isLocal())
             continue;
+        const Token * endToken = 0;
+        for (const Token *tok2 = var->typeStartToken(); tok2; tok2 = tok2->previous()) {
+            if (tok2->str() == "{") {
+                endToken = tok2->link();
+                break;
+            }
+        }
 
         // Lhs values..
         if (!tok->astOperand2() || tok->astOperand2()->values.empty())
             continue;
         std::list<ValueFlow::Value> values = tok->astOperand2()->values;
 
-        for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "[{}]"))
-                break;
+        unsigned int number_of_if = 0;
+
+        for (Token *tok2 = tok; tok2 && tok2 != endToken; tok2 = tok2->next()) {
             if (Token::Match(tok2, "sizeof|typeof|typeid ("))
                 tok2 = tok2->linkAt(1);
+
+            // conditional block of code that assigns variable..
+            if (Token::Match(tok2, "%var% (") && Token::Match(tok2->linkAt(1), ") {")) {
+                Token * const start = tok2->linkAt(1)->next();
+                Token * const end   = start->link();
+                // TODO: don't check noreturn scopes
+                if (number_of_if > 0U && Token::findmatch(start, "%varid%", end, varid)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                    break;
+                }
+                if (Token::findmatch(start, "++|--| %varid% ++|--|=", end, varid)) {
+                    if (number_of_if == 0 &&
+                        Token::simpleMatch(tok2, "if (") &&
+                        !(Token::simpleMatch(end, "} else {") &&
+                          (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||
+                           Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                        ++number_of_if;
+                        tok2 = end;
+                    } else {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                        break;
+                    }
+                }
+            }
+
+            else if (tok2->str() == "}")
+                ++number_of_if;
+
             if (tok2->varId() == varid) {
                 // bailout: assignment
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                     break;
+                }
+
+                // skip if variable is conditionally used in ?: expression
+                if (const Token *parent = skipValueInConditionalExpression(tok2)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist,
+                                errorLogger,
+                                tok2,
+                                "no simplification of " + tok2->str() + " within " + (Token::Match(parent,"[?:]") ? "?:" : parent->str()) + " expression");
+                    continue;
                 }
 
                 {

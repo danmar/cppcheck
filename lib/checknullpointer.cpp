@@ -593,13 +593,17 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // Pointer dereference.
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
-            if (_settings->inconclusive && unknown && value->condition)
-                nullPointerError(tok, tok->str(), value->condition, true);
+            if (_settings->inconclusive && unknown) {
+                if (value->condition == NULL)
+                    nullPointerError(tok, tok->str(), true);
+                else
+                    nullPointerError(tok, tok->str(), value->condition, true);
+            }
             continue;
         }
 
         if (value->condition == NULL)
-            nullPointerError(tok, tok->str());
+            nullPointerError(tok, tok->str(), value->inconclusive);
         else if (_settings->isEnabled("warning"))
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
@@ -1245,9 +1249,9 @@ void CheckNullPointer::nullPointerError(const Token *tok)
     reportError(tok, Severity::error, "nullPointer", "Null pointer dereference");
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive)
 {
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, inconclusive);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
