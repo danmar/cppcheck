@@ -3675,7 +3675,7 @@ private:
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.executionPaths();
+        checkBufferOverrun.bufferOverrun();
     }
 
 
@@ -3698,7 +3698,7 @@ private:
                 "        i = 1000;\n"
                 "    buf[i][0] = 0;\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' accessed at index 1000, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' index buf[1000][0] out of bounds.\n", errout.str());
     }
 
     void executionPaths2() {
