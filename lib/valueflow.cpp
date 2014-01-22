@@ -464,7 +464,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
             if (Token::Match(tok2, "sizeof ("))
                 tok2 = tok2->linkAt(1);
             if (tok2->varId() == varid) {
-                if (!Token::Match(tok2->previous(), "= %var% %cop%|;"))
+                if (!Token::Match(tok2->previous(), "%cop%|= %var% %cop%|;"))
                     break;
 
                 std::list<ValueFlow::Value>::const_iterator it;

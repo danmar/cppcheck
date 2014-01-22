@@ -470,6 +470,12 @@ private:
                "    a = sizeof(x);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        code = "void f() {\n"
+               "    int x = 123;\n"
+               "    a = 2 + x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
     }
 
     void valueFlowForLoop() {
