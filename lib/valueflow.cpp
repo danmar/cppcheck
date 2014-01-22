@@ -461,15 +461,34 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "[{}]"))
                 break;
-            if (Token::Match(tok2, "sizeof ("))
+            if (Token::Match(tok2, "sizeof|typeof|typeid ("))
                 tok2 = tok2->linkAt(1);
             if (tok2->varId() == varid) {
-                if (!Token::Match(tok2->previous(), "%cop%|= %var% %cop%|;"))
+                // bailout: assignment
+                if (Token::Match(tok2->previous(), "!!* %var% =")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                     break;
+                }
 
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = values.begin(); it != values.end(); ++it)
-                    setTokenValue(tok2, *it);
+                {
+                    std::list<ValueFlow::Value>::const_iterator it;
+                    for (it = values.begin(); it != values.end(); ++it)
+                        setTokenValue(tok2, *it);
+                }
+
+                // assigned by subfunction?
+                bool inconclusive = false;
+                if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
+                    break;
+                }
+                if (inconclusive) {
+                    std::list<ValueFlow::Value>::iterator it;
+                    for (it = values.begin(); it != values.end(); ++it)
+                        it->inconclusive = true;
+                }
             }
         }
     }

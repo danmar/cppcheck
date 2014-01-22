@@ -4361,7 +4361,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
                       "[test.cpp:20] -> [test.cpp:1]: (style, inconclusive) The function parameter 'A' hides a typedef with the same name.\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style, inconclusive) The variable 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n", errout.str());
+                      "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:24]: (debug) ValueFlow bailout: parameter a\n", errout.str());
     }
 
     void simplifyTypedef36() {

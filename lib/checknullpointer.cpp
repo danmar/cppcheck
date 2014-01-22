@@ -583,7 +583,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 if (value->condition == NULL)
-                    nullPointerError(tok);
+                    nullPointerError(tok, tok->str());
                 else if (_settings->isEnabled("warning"))
                     nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
             }
@@ -593,13 +593,13 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // Pointer dereference.
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
-            if (_settings->inconclusive && unknown)
+            if (_settings->inconclusive && unknown && value->condition)
                 nullPointerError(tok, tok->str(), value->condition, true);
             continue;
         }
 
         if (value->condition == NULL)
-            nullPointerError(tok);
+            nullPointerError(tok, tok->str());
         else if (_settings->isEnabled("warning"))
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
