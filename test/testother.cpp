@@ -1507,7 +1507,7 @@ private:
               "    std::cout <<  logl(1.0E+3) << std::endl;\n"
               "    std::cout <<  log(2.0)     << std::endl;\n"
               "    std::cout <<  logf(2.0)    << std::endl;\n"
-              "    std::cout <<  logf(2.0)    << std::endl;\n"
+              "    std::cout <<  logf(2.0f)   << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
