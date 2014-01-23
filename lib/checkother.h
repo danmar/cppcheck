@@ -91,6 +91,7 @@ public:
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
+        checkOther.checkSpecialMath();
 
         checkOther.redundantGetAndSetUserId();
         checkOther.checkIncorrectLogicOperator();
@@ -171,6 +172,7 @@ public:
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
+    void checkSpecialMath();
 
     /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
     void redundantGetAndSetUserId();
@@ -290,6 +292,7 @@ private:
     void zerodivcondError(const Token *tokcond, const Token *tokdiv);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
+    void specialmathError(const Token *tok, const std::string &strVarName);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);

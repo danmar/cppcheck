@@ -2319,6 +2319,59 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
     } else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value '#' to #() leads to undefined result.");
 }
+
+void CheckOther::checkSpecialMath()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            std::string varTok, type;
+            if (Token::Match(tok, " exp ( %var%|%num% ) - %num%")) {
+                varTok = tok->strAt(5);
+                type = "exp";
+            }
+            else if (Token::Match(tok, "- %num% + exp ( %var%|%num% )")) {
+                varTok = tok->strAt(1);
+                type = "exp";
+            }
+            else if (Token::Match(tok, " log ( %num% + %var%|%num% )")) {
+                varTok = tok->strAt(2);
+                type = "log";
+            }
+            else if (Token::Match(tok, " log ( %var%|%num% + %num% )")) {
+                varTok = tok->strAt(4);
+                type = "log";
+            }
+            else if (Token::Match(tok, " %num% - erf ( %var%|%num% )")) {
+                varTok = tok->strAt(0);
+                type = "erf";
+            }
+            else if (Token::Match(tok, " - erf ( %var%|%num% ) + %num% ")) {
+                varTok = tok->strAt(6);
+                type = "erf";
+            }
+            if (MathLib::toDoubleNumber(varTok) == 1.) {
+                specialmathError(tok, type);
+            }
+        }
+    }
+}
+
+void CheckOther::specialmathError(const Token *tok, const std::string & type)
+{
+    if (type == "exp") {
+        reportError(tok, Severity::error, "expm1", "can be replaced with expm(x)");
+    }
+    else if (type == "log") {
+        reportError(tok, Severity::error, "log1p", "can be replaced with log1p(x)");
+    }
+    else if (type == "erf") {
+        reportError(tok, Severity::error, "erfc", "can be replaced with erfc(x)");
+    }
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckOther::checkMisusedScopedObject()
