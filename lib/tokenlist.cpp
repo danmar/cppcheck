@@ -692,12 +692,13 @@ void TokenList::createAst()
         if (Token::simpleMatch(tok,"for (")) {
             Token *tok2 = tok->tokAt(2);
             Token *init1 = 0;
-            while (tok2 && tok2->str() != ";") {
+            const Token * const endPar = tok->next()->link();
+            while (tok2 && tok2 != endPar && tok2->str() != ";") {
                 if (tok2->str() == "<" && tok2->link()) {
                     tok2 = tok2->link();
                     if (!tok2)
                         break;
-                } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
+                } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
                     init1 = tok2;
                     std::stack<Token *> operands;
                     compileExpression(tok2, operands);
@@ -708,6 +709,10 @@ void TokenList::createAst()
                 tok2 = tok2->next();
             }
             if (!tok2 || tok2->str() != ";") {
+                if (tok2 == endPar && init1) {
+                    tok->next()->astOperand2(init1);
+                    tok->next()->astOperand1(tok);
+                }
                 tok = tok2;
                 continue;
             }
