@@ -443,7 +443,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         if ((tok->str() != "=") || (tok->astParent()))
             continue;
 
-        // Rhs should be a variable
+        // Lhs should be a variable
         if (!tok->astOperand1() || !tok->astOperand1()->isName())
             continue;
         unsigned int varid = tok->astOperand1()->varId();
@@ -460,7 +460,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
             }
         }
 
-        // Lhs values..
+        // Rhs values..
         if (!tok->astOperand2() || tok->astOperand2()->values.empty())
             continue;
         std::list<ValueFlow::Value> values = tok->astOperand2()->values;

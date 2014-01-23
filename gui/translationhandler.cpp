@@ -178,8 +178,7 @@ int TranslationHandler::GetLanguageIndexByCode(const QString &code) const
         if (mTranslations[i].mCode == code) {
             index = i;
             break;
-        }
-        else if (mTranslations[i].mCode == code.left(2)) {
+        } else if (mTranslations[i].mCode == code.left(2)) {
             index = i;
             break;
         }
