@@ -446,7 +446,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Lhs should be a variable
         if (!tok->astOperand1() || !tok->astOperand1()->isName())
             continue;
-        unsigned int varid = tok->astOperand1()->varId();
+        const unsigned int varid = tok->astOperand1()->varId();
         if (varid == 0U)
             continue;
         const Variable *var = tok->astOperand1()->variable();
