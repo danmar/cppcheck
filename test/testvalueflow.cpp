@@ -477,6 +477,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
+        code = "void f() {\n"
+               "    int x = 9;\n"
+               "    --x;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
+
         // function
         code = "void f() {\n"
                "    char *x = 0;\n"
@@ -505,6 +512,16 @@ private:
                "    if (condition1) x = 456;\n"
                "    if (condition2) x = 789;\n"
                "    a = 2 + x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f(int a) {\n"
+               "    int x = 123;\n"
+               "    if (a > 1)\n"
+               "        ++x;\n"
+               "    else\n"
+               "        ++x;\n"
+               "    return 2 + x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
 

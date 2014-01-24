@@ -490,7 +490,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
                     break;
                 }
-                if (Token::findmatch(start, "++|--| %varid% ++|--|=", end, varid)) {
+                if (Token::findmatch(start, "++|-- %varid%", end, varid) ||
+                    Token::findmatch(start, "%varid% ++|--|=", end, varid)) {
                     if (number_of_if == 0 &&
                         Token::simpleMatch(tok2, "if (") &&
                         !(Token::simpleMatch(end, "} else {") &&
@@ -514,6 +515,13 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
+                    break;
+                }
+
+                // bailout increment/decrement for now..
+                if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok, "%var% ++|--")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                     break;
                 }
 
