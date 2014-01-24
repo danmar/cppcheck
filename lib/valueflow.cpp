@@ -47,9 +47,18 @@ static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token 
 
 static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, const Settings *settings, bool *inconclusive)
 {
-    // passing variable to subfunction?
+    if (!tok)
+        return false;
+
+    // address of variable
     const bool addressOf = tok && Token::Match(tok->previous(), "&");
-    if (!tok || !Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %var% [,)]"))
+
+    // passing variable to subfunction?
+    if (Token::Match(tok->tokAt(-2), ") & %var% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
+        ;
+    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %var% [,)]"))
+        ;
+    else
         return false;
 
     // goto start of function call and get argnr

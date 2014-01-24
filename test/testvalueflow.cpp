@@ -477,6 +477,14 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
+        // function
+        code = "void f() {\n"
+               "    char *x = 0;\n"
+               "    int success = getx((char**)&x);\n"
+               "    if (success) x[0] = 0;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"
