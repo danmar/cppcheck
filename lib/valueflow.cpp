@@ -526,7 +526,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 }
 
                 // bailout increment/decrement for now..
-                if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok, "%var% ++|--")) {
+                if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok2, "%var% ++|--")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                     break;
