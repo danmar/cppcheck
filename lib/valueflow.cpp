@@ -273,7 +273,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             continue;
         }
 
-        // bailout: while-condition, variable is changed in while loop
+        // bailout: for/while-condition, variable is changed in while loop
         for (const Token *tok2 = tok; tok2; tok2 = tok2->astParent()) {
             if (tok2->astParent() || tok2->str() != "(" || !Token::simpleMatch(tok2->link(), ") {"))
                 continue;
@@ -281,7 +281,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             if (Token::Match(tok2->previous(), "for|while (")) {
                 const Token *start = tok2->link()->next();
                 const Token *end   = start->link();
-                if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
+
+                if (tok2->astOperand2()->str() == ";" &&
+                    tok2->astOperand2()->astOperand2() &&
+                    tok2->astOperand2()->astOperand2()->str() == ";")
+                    start = tok2->astOperand2()->astOperand2();
+
+                if (Token::findmatch(start,"++|-- %varid%",end,varid) ||
+                    Token::findmatch(start,"%varid% ++|--|=",end,varid)) {
                     varid = 0U;
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");

@@ -333,6 +333,13 @@ private:
                "    }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+
+        code = "void f(unsigned int x) {\n"
+               "    for (int a = 1000 / x;\n"
+               "         x > 0;\n"
+               "         x--) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 
     void valueFlowBeforeConditionTernaryOp() { // bailout: ?:
