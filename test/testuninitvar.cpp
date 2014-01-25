@@ -2191,6 +2191,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int a) {\n"
+                        "    int result;\n"
+                        "    foo() ? result = 1 : result = 0;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // = { .. }
         checkUninitVar2("int f() {\n"
                         "    int a;\n"

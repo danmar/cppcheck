@@ -1775,7 +1775,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                 tok2 = tok2->link();
             else if (tok2->str() == ":")
                 rhs = true;
-            else if (Token::Match(tok2, "[)];,{}]"))
+            else if (Token::Match(tok2, "[)];,{}=]"))
                 break;
             else if (rhs && tok2->varId() == vartok->varId())
                 return true;
