@@ -560,6 +560,15 @@ private:
                "    if (a!=132) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 132));
+
+        code = "void f() {\n"
+               "    int a;\n"
+               "    if (n) { a = n; }\n"
+               "    else { a = 0; }\n"
+               "    int x = a;\n"
+               "    if (a > 0) { a = b / x; }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
     }
 
     void valueFlowForLoop() {

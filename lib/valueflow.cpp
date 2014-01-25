@@ -498,11 +498,10 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     // Remove conditional values
                     std::list<ValueFlow::Value>::iterator it;
                     for (it = values.begin(); it != values.end();) {
-                        if (it->condition) {
+                        if (it->condition || it->conditional)
                             values.erase(it++);
-                        } else {
+                        else
                             ++it;
-                        }
                     }
                 }
                 if (Token::findmatch(start, "++|-- %varid%", end, varid) ||
@@ -522,8 +521,14 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 }
             }
 
-            else if (tok2->str() == "}")
+            else if (tok2->str() == "}") {
                 ++number_of_if;
+
+                // Set "conditional" flag for all values
+                std::list<ValueFlow::Value>::iterator it;
+                for (it = values.begin(); it != values.end(); ++it)
+                    it->conditional = true;
+            }
 
             if (tok2->varId() == varid) {
                 // bailout: assignment

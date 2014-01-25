@@ -29,12 +29,15 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        Value() : condition(0), intvalue(0), inconclusive(false), varId(0U), varvalue(0) {}
-        Value(long long val) : condition(0), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
-        Value(const Token *c, long long val) : condition(c), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
+        Value() : condition(0), conditional(false), intvalue(0), inconclusive(false), varId(0U), varvalue(0) {}
+        Value(long long val) : condition(0), conditional(false), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
+        Value(const Token *c, long long val) : condition(c), conditional(false), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
 
         /** Condition that this value depends on (TODO: replace with a 'callstack') */
         const Token *condition;
+
+        /** Conditional value */
+        bool conditional;
 
         /** int value */
         long long    intvalue;
