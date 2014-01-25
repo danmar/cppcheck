@@ -546,6 +546,20 @@ private:
                "    a = 2 + x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
+
+        // multivariables
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    if (a!=132) { b = x; }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 132));
+
+        code = "void f(int a) {\n"
+               "    int x = a;\n"
+               "    b = x;\n"
+               "    if (a!=132) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 132));
     }
 
     void valueFlowForLoop() {

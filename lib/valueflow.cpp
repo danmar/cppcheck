@@ -487,11 +487,23 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
             if (Token::Match(tok2, "%var% (") && Token::Match(tok2->linkAt(1), ") {")) {
                 Token * const start = tok2->linkAt(1)->next();
                 Token * const end   = start->link();
-                // TODO: don't check noreturn scopes
-                if (number_of_if > 0U && Token::findmatch(start, "%varid%", end, varid)) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
-                    break;
+                if (Token::findmatch(start, "%varid%", end, varid)) {
+                    // TODO: don't check noreturn scopes
+                    if (number_of_if > 0U) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                        break;
+                    }
+
+                    // Remove conditional values
+                    std::list<ValueFlow::Value>::iterator it;
+                    for (it = values.begin(); it != values.end();) {
+                        if (it->condition) {
+                            values.erase(it++);
+                        } else {
+                            ++it;
+                        }
+                    }
                 }
                 if (Token::findmatch(start, "++|-- %varid%", end, varid) ||
                     Token::findmatch(start, "%varid% ++|--|=", end, varid)) {
