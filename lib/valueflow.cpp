@@ -504,6 +504,16 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                             ++it;
                     }
                 }
+
+                // noreturn scopes..
+                if (number_of_if > 0 &&
+                    (Token::findmatch(start, "return|continue|break", end) ||
+                     (Token::Match(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                    break;
+                }
+
                 if (Token::findmatch(start, "++|-- %varid%", end, varid) ||
                     Token::findmatch(start, "%varid% ++|--|=", end, varid)) {
                     if (number_of_if == 0 &&

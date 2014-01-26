@@ -547,6 +547,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
 
+        code = "void f(){\n"
+               "    int x = 0;\n"
+               "    if (a>=0) { x = getx(); }\n"
+               "    if (x==0) { return; }\n"
+               "    return 123 / x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"
