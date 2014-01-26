@@ -90,7 +90,8 @@ private:
         // cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "  <function name=\"memcmp\"> <arg nr=\"1\"><not-null/></arg> <arg nr=\"2\"><not-null/></arg> </function>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> <arg nr=\"2\"><not-null/></arg> </function>\n"
                            "</def>";
         settings.library.loadxmldata(cfg, sizeof(cfg));
 
