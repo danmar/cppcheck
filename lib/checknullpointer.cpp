@@ -66,8 +66,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("wcstoll");
         functionNames1_all.insert("wcstoull");
         // cstring
-        functionNames1_all.insert("memchr");
-        functionNames1_all.insert("memcmp");
         functionNames1_all.insert("strcat");
         functionNames1_all.insert("strncat");
         functionNames1_all.insert("strcoll");
@@ -135,9 +133,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         functionNames1_all.insert("ctime");
         functionNames1_all.insert("mktime");
 
-        functionNames1_nullptr.insert("memcpy");
-        functionNames1_nullptr.insert("memmove");
-        functionNames1_nullptr.insert("memset");
         functionNames1_nullptr.insert("strcpy");
         functionNames1_nullptr.insert("sprintf");
         functionNames1_nullptr.insert("vsprintf");
@@ -168,9 +163,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     if (functionNames2_all.empty()) {
         functionNames2_all.insert("mbstowcs");
         functionNames2_all.insert("wcstombs");
-        functionNames2_all.insert("memcmp");
-        functionNames2_all.insert("memcpy");
-        functionNames2_all.insert("memmove");
         functionNames2_all.insert("strcat");
         functionNames2_all.insert("strncat");
         functionNames2_all.insert("strcmp");

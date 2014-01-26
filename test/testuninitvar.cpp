@@ -75,6 +75,12 @@ private:
 
         Settings settings;
 
+        const char cfg[] = "<?xml version=\"1.0\"?>"
+                           "<def>"
+                           "  <function name=\"memcpy\"> <arg nr=\"1\"><not-null/></arg> </function>"
+                           "</def>";
+        settings.library.loadxmldata(cfg,sizeof(cfg));
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
