@@ -179,11 +179,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (Token::simpleMatch(tok2, "popen ("))
             return Pipe;
 
-        if (settings1->standards.posix) {
-            if (Token::Match(tok2, "opendir|fdopendir ("))
-                return Dir;
-        }
-
         // Does tok2 point on "g_malloc", "g_strdup", ..
         const int alloctype = settings1->library.alloc(tok2->str());
         if (alloctype > 0)
@@ -267,9 +262,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
         if (Token::Match(tok, "pclose ( %varid% )", varid))
             return Pipe;
-
-        if (Token::Match(tok, "closedir ( %varid% )", varid))
-            return Dir;
     }
 
     // Does tok2 point on "g_free", etc ..
@@ -311,9 +303,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
     if (Token::simpleMatch(tok, std::string("pclose ( " + varname + " )").c_str()))
         return Pipe;
 
-    if (Token::simpleMatch(tok, std::string("closedir ( " + varname + " )").c_str()))
-        return Dir;
-
     if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
         int type = settings1->library.dealloc(tok->str());
         if (type > 0)
@@ -333,7 +322,6 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
-        alloctype == CheckMemoryLeak::Dir  ||
         alloctype == CheckMemoryLeak::OtherRes)
         resourceLeakError(tok, varname);
     else
