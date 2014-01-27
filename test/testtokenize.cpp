@@ -10065,13 +10065,18 @@ private:
         // Create AST..
         tokenList.createAst();
 
+        // Return stringified AST
+        std::string ret;
+        std::set<const Token *> astTop;
         for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (tok->astOperand1())
-                return tok->astTop()->astString();
+            if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
+                astTop.insert(tok->astTop());
+                if (!ret.empty())
+                    ret = ret + " ";
+                ret += tok->astTop()->astString();
+            }
         }
-
-        // No AST found
-        return "";
+        return ret;
     }
 
     void astexpr() const { // simple expressions with arithmetical ops
@@ -10108,6 +10113,11 @@ private:
         TODO_ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", "fori1=current0=,i<NUM=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
         ASSERT_EQUALS("foreachxy,((", testAst("for(each(x,y)){}"));  // it's not well-defined what this ast should be
         ASSERT_EQUALS("forab:(", testAst("for (int a : b);"));
+
+        // problems with multiple expressions
+        ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
+        ASSERT_EQUALS("ifx( i0= whilei(", testAst("if (x) { ({ int i = 0; while(i); }) };"));
+        ASSERT_EQUALS("ifx( BUG_ON{!( i0= whilei(", testAst("if (x) { BUG_ON(!({int i=0; while(i);})); }"));
     }
 
     void astpar() const { // parentheses
@@ -10126,8 +10136,8 @@ private:
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
 
         // ({..})
-        ASSERT_EQUALS("a{+d+", testAst("a+({b+c;})+d"));
-        ASSERT_EQUALS("a{d*+", testAst("a+({b+c;})*d"));
+        ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
+        ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
     }
 
     void astbrackets() const { // []
@@ -10162,7 +10172,7 @@ private:
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
-        ASSERT_EQUALS("ab(==", testAst("a == b<c>(); f();"));
+        ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
     }
 };
 
