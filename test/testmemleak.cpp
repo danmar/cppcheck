@@ -356,6 +356,9 @@ private:
         TEST_CASE(garbageCode);
 
         TEST_CASE(ptrptr);
+
+        // test that the cfg files are configured correctly
+        TEST_CASE(posixcfg);
     }
 
 
@@ -3865,6 +3868,28 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
+
+    // Test that posix.cfg is configured correctly
+    void posixcfg() {
+        LOAD_LIB("posix.cfg");
+        Settings settings;
+        settings.library = _lib;
+
+        const char code[] = "void leaks() {\n"
+                            "    void* leak1 = fdopendir();\n"
+                            "    void* leak2 = opendir();\n"
+                            "    void* leak3 = socket();\n"
+                            "}\n"
+                            "void noleaks() {\n"
+                            "    void *p1 = fdopendir(); closedir(p1);\n"
+                            "    void *p2 = opendir(); closedir(p2);\n"
+                            "    void *p3 = socket(); close(p3);\n"
+                            "}";
+        check(code,&settings);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: leak1\n"
+                      "[test.cpp:5]: (error) Resource leak: leak2\n"
+                      "[test.cpp:5]: (error) Resource leak: leak3\n", errout.str());
+    }
 };
 
 static TestMemleakInFunction testMemleakInFunction;
