@@ -77,6 +77,9 @@ private:
         TEST_CASE(crash1);
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
+
+        // Test that std.cfg is configured correctly
+        TEST_CASE(stdcfg);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -86,14 +89,9 @@ private:
         Settings settings;
         settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
-
-        // cfg
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"memcmp\"> <arg nr=\"1\"><not-null/></arg> <arg nr=\"2\"><not-null/></arg> </function>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> <arg nr=\"2\"><not-null/></arg> </function>\n"
-                           "</def>";
-        settings.library.loadxmldata(cfg, sizeof(cfg));
+        _lib = Library();
+        LOAD_LIB("std.cfg");
+        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2390,6 +2388,54 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // Test that std.cfg is configured correctly
+    void stdcfg() {
+        const char errp[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n";
+        const char errpq[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n"
+                             "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n";
+
+        // str..
+        check("void f(char*p){ strchr (p,c);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p){ strdup (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p){ strlen (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p,char*q){ strcpy (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strcat (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strcmp (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strncpy (p,q,1);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strncat (p,q,1);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strncmp (p,q,1);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strstr (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        // strtol etc
+        check("void f(char*p,char*q){ strtoul (p,q,0);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p,char*q){ strtoull (p,q,0);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p,char*q){ strtol (p,q,0);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
     }
 };
 
