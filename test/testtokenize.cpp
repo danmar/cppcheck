@@ -5166,14 +5166,14 @@ private:
 
         errout.str("");
 
-        Settings settings;
+        const Settings settings;
 
         // tokenize..
-        Tokenizer tokenizer(&settings, this);
+        TokenList tokenlist(&settings);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "a.cpp");
+        tokenlist.createTokens(istr, "a.cpp");
 
-        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenizer.list.fileLine(tokenizer.tokens()));
+        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenlist.fileLine(tokenlist.front()));
     }
 
 
