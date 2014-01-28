@@ -88,6 +88,7 @@ private:
         TEST_CASE(passedByValue);
 
         TEST_CASE(mathfunctionCall_fmod);
+        TEST_CASE(mathfunctionspecial_expm1);
         TEST_CASE(mathfunctionCall_sqrt);
         TEST_CASE(mathfunctionCall_log);
         TEST_CASE(mathfunctionCall_acos);
@@ -1733,6 +1734,47 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void mathfunctionspecial_expm1() {
+        check("void f(double a)\n"
+              "{\n"
+              "    exp(b) - 1.;\n"
+              "    -1.0 + exp(b);\n"
+              "   exp(b) - 1.;\n"
+              "   exp(b + 1) - 1.;\n" 
+              "   exp(b) - 1;\n"
+              "   exp(b) - 1.0;\n"
+              "   exp(b) - 1.0001; // no replace 9\n"
+              "   b = -1. + exp(b); //fails\n"
+              "   log(1. + b);\n"
+              "   log(1 + b);\n"
+              "   log(b + 1.);\n"
+              "   log(b + 1.f);\n"
+              "   b = 1. - erf(b); // fails\n"
+              "   - erf(b) + 1.; // fails\n"
+              "   exp(b) * 3. + 1.; // no replace fails\n" 
+              "   3. * exp(b) + 1.; // no replace\n"
+              "   b = 1. - erf(b) * b; // no replace \n"
+              "   b = 1. - b * erf(b); // no replace \n"
+              "   b = b * 1. - b * erf(b); // no replace fails\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:4]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:5]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:6]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:7]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:8]: (error) can be replaced with expm(x)\n"
+                      "[test.cpp:10]: (error) can be replaced with log1p(x)\n"
+                      "[test.cpp:11]: (error) can be replaced with log1p(x)\n"
+                      "[test.cpp:12]: (error) can be replaced with log1p(x)\n"
+                      "[test.cpp:13]: (error) can be replaced with log1p(x)\n"
+                      "[test.cpp:14]: (error) can be replaced with erfc(x)\n"
+                      "[test.cpp:15]: (error) can be replaced with erfc(x)\n"
+                      ,
+                      errout.str());
+    }
+
 
     void switchRedundantAssignmentTest() {
 
