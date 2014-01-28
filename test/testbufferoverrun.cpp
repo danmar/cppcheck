@@ -2069,6 +2069,12 @@ private:
               "    str[((unsigned char)3) - 1] = 0;\n"
               "}", false, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"  // #5416 FP
+              "    char *str[3];\n"
+              "    do_something(&str[0][5]);\n"
+              "}", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_1_standard_functions() {

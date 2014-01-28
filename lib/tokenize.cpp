@@ -3520,8 +3520,8 @@ bool Tokenizer::simplifyTokenList2()
     }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%num%|%var%") && !Token::Match(tok, "]|)") &&
-            (Token::Match(tok->next(), "& %var% [ %num%|%var% ]"))) {
+        if (!Token::Match(tok, "%num%|%var%|]|)") &&
+            (Token::Match(tok->next(), "& %var% [ %num%|%var% ] !!["))) {
             tok = tok->next();
 
             if (tok->next()->varId()) {
@@ -5018,7 +5018,7 @@ void Tokenizer::simplifyPointerToStandardType()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "& %var% [ 0 ]"))
+        if (!Token::Match(tok, "& %var% [ 0 ] !!["))
             continue;
 
         // Remove '[ 0 ]' suffix

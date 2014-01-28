@@ -1176,7 +1176,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             for (int warn = 0; warn == 0 || warn == 1; ++warn) {
                 std::vector<ValueFlow::Value> indexes;
                 unsigned int valuevarid = 0;
-                for (const Token *tok2 = tok->next(); Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
+                for (const Token *tok2 = tok->next(); indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
                     if (!tok2->astOperand2()) {
                         indexes.clear();
                         break;
