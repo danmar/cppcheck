@@ -5562,6 +5562,24 @@ private:
               "    close(fd);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    if(TRUE || strcmp(strdup(a), b));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    if(!strcmp(strdup(a), b) == 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    42, strcmp(strdup(a), b);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
     }
 
     void missingAssignment() {
