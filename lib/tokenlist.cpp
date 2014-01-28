@@ -747,16 +747,23 @@ static Token * createAstAtToken(Token *tok)
         return tok->linkAt(1);
     }
 
+    if (Token::simpleMatch(tok, "( {"))
+        return tok;
+
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
         std::stack<Token *> operands;
         Token * const tok1 = tok;
         compileExpression(tok, operands);
         Token * const endToken = tok;
+        if (endToken == tok1)
+            return tok1;
 
         // Compile inner expressions inside inner ({..})
-        for (tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : NULL) {
+        for (tok = tok1->next(); tok && tok != endToken; tok = tok ? tok->next() : NULL) {
             if (!Token::simpleMatch(tok, "( {"))
                 continue;
+            if (tok->next() == endToken)
+                break;
             const Token * const endToken2 = tok->linkAt(1);
             for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : NULL)
                 tok = createAstAtToken(tok);

@@ -10052,9 +10052,9 @@ private:
         // Set links..
         std::stack<Token *> links;
         for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "(|["))
+            if (Token::Match(tok, "(|[|{"))
                 links.push(tok);
-            else if (!links.empty() && Token::Match(tok,")|]")) {
+            else if (!links.empty() && Token::Match(tok,")|]|}")) {
                 Token::createMutualLinks(links.top(), tok);
                 links.pop();
             } else if (Token::Match(tok, "< %type% >")) {
@@ -10118,6 +10118,7 @@ private:
         ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
         ASSERT_EQUALS("ifx( i0= whilei(", testAst("if (x) { ({ int i = 0; while(i); }) };"));
         ASSERT_EQUALS("ifx( BUG_ON{!( i0= whilei(", testAst("if (x) { BUG_ON(!({int i=0; while(i);})); }"));
+        ASSERT_EQUALS("v0= while{( v0= while{( v0=", testAst("({ v = 0; }); while (({ v = 0; }) != 0); while (({ v = 0; }) != 0);"));
     }
 
     void astpar() const { // parentheses
