@@ -319,6 +319,7 @@ private:
         TEST_CASE(file3);
 
         TEST_CASE(line1); // Ticket #4408
+        TEST_CASE(line2); // Ticket #5423
 
         TEST_CASE(doublesharp);
 
@@ -5157,6 +5158,22 @@ private:
             if (tok->str() == "fifth")
                 ASSERT_EQUALS(101, tok->linenr());
         }
+    }
+
+    void line2() {
+        const char code[] = "#line 8 \"c:\\a.h\"\n"
+                            "123\n";
+
+        errout.str("");
+
+        Settings settings;
+
+        // tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "a.cpp");
+
+        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenizer.list.fileLine(tokenizer.tokens()));
     }
 
 

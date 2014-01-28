@@ -54,6 +54,18 @@ void TokenList::deallocateTokens()
     _files.clear();
 }
 
+unsigned int TokenList::appendFileIfNew(const std::string &fileName)
+{
+    // Has this file been tokenized already?
+    for (unsigned int i = 0; i < _files.size(); ++i)
+        if (Path::sameFileName(_files[i], fileName))
+            return i;
+
+    // The "_files" vector remembers what files have been tokenized..
+    _files.push_back(Path::simplifyPath(fileName.c_str()));
+    return static_cast<unsigned int>(_files.size() - 1);
+}
+
 void TokenList::deleteTokens(Token *tok)
 {
     while (tok) {
@@ -236,24 +248,9 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 // Extract the filename
                 line = line.substr(1, line.length() - 2);
 
-                // Has this file been tokenized already?
                 ++lineno;
-                bool foundOurfile = false;
                 fileIndexes.push(FileIndex);
-                for (unsigned int i = 0; i < _files.size(); ++i) {
-                    if (Path::sameFileName(_files[i], line)) {
-                        // Use this index
-                        foundOurfile = true;
-                        FileIndex = i;
-                    }
-                }
-
-                if (!foundOurfile) {
-                    // The "_files" vector remembers what files have been tokenized..
-                    _files.push_back(Path::simplifyPath(line.c_str()));
-                    FileIndex = static_cast<unsigned int>(_files.size() - 1);
-                }
-
+                FileIndex = appendFileIfNew(line);
                 lineNumbers.push(lineno);
                 lineno = 0;
             } else {
@@ -297,12 +294,22 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
                 std::getline(code, line);
 
-                // Update the current line number
                 unsigned int row;
-                if (!(std::stringstream(line) >> row))
-                    ++lineno;
-                else
+                std::istringstream fiss(line);
+                if (fiss >> row) {
+                    // Update the current line number
                     lineno = row;
+
+                    std::string line;
+                    if (std::getline(fiss, line) && line.length() > 4U) {
+                        // _"file_name" -> file_name
+                        line = line.substr(2, line.length() - 3);
+
+                        // Update the current file
+                        FileIndex = appendFileIfNew(line);
+                    }
+                } else
+                    ++lineno;
                 CurrentToken.clear();
                 continue;
             } else if (CurrentToken == "#endfile") {

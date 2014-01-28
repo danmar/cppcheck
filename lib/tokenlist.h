@@ -65,6 +65,9 @@ public:
     /** Deallocate list */
     void deallocateTokens();
 
+    /** append file name if seen the first time; return its index in any case */
+    unsigned int appendFileIfNew(const std::string &file);
+
     /** get first token of list */
     const Token *front() const {
         return _front;
