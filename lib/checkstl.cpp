@@ -929,24 +929,19 @@ void CheckStl::if_findError(const Token *tok, bool str)
  */
 static bool isContainerSizeSlow(const Token *tok)
 {
-    // find where this token is defined
-    const Variable *var = tok->variable();
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* stl_size_slow[] = {
+        "array", "bitset",
+        "forward_list", "hash_map", "hash_multimap", "hash_set",
+        "list", "map", "multimap", "multiset",
+        "priority_queue", "queue", "set", "stack", "unordered_map",
+        "unordered_multimap", "unordered_multiset", "unordered_set"
+    };
 
-    if (!var)
+    if (!tok)
         return false;
-
-    // find where this tokens type starts
-    const Token *type = var->typeStartToken();
-
-    // discard namespace if supplied
-    if (Token::simpleMatch(type, "std ::"))
-        type = type->tokAt(2);
-
-    // check if it's an stl template
-    if (Token::Match(type, "array|bitset|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string"))
-        return true;
-
-    return false;
+    const Variable* var = tok->variable();
+    return var && var->isStlType(stl_size_slow);
 }
 
 void CheckStl::size()
