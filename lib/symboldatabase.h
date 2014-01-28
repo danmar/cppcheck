@@ -25,6 +25,7 @@
 #include <list>
 #include <vector>
 #include <set>
+#include <algorithm>
 
 #include "config.h"
 #include "token.h"
@@ -160,7 +161,8 @@ public:
           _access(access_),
           _flags(0),
           _type(type_),
-          _scope(scope_) {
+          _scope(scope_),
+          _stlType(false) {
         evaluate();
     }
 
@@ -430,6 +432,33 @@ public:
         return _dimensions[index_].known;
     }
 
+    /**
+     * Checks if the variable is an STL type ('std::')
+     * E.g.:
+     *   std::string s;
+     *   ...
+     *   sVar->isStlType() == true
+     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+     */
+    bool isStlType() const {
+        return _stlType;
+    }
+
+    /**
+     * Checks if the variable is of any of the STL types passed as arguments ('std::')
+     * E.g.:
+     *   std::string s;
+     *   ...
+     *   const char *str[] = {"string", "wstring"};
+     *   sVar->isStlType(str) == true
+     * @param stlTypes array of stl types in alphabetical order
+     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+     */
+    template <std::size_t array_length>
+    bool isStlType(const char* (&stlTypes)[array_length]) const {
+        return _stlType && std::binary_search(stlTypes, stlTypes + array_length, typeStartToken()->strAt(2));
+    }
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
@@ -468,6 +497,9 @@ private:
 
     /** @brief array dimensions */
     std::vector<Dimension> _dimensions;
+
+    /** @brief true if variable is of STL type */
+    bool _stlType;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
     void evaluate();

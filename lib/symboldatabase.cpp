@@ -1064,8 +1064,10 @@ void Variable::evaluate()
 
     if (_name)
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
-    if (_start)
+    if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
+        _stlType = Token::Match(_start, "std ::");
+    }
     if (_access == Argument) {
         tok = _name;
         if (!tok) {
