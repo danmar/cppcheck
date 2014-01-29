@@ -59,7 +59,8 @@ mainpage.write(
     '<td>Warning</td>' +
     '<td>Performance</td>' +
     '<td>Portability</td>' +
-    '<td>Style</td></tr>\n')
+    '<td>Style</td>' +
+    '<td>Crashes</td></tr>\n')
 
 lastupdate = None
 recent = []
@@ -104,6 +105,7 @@ for lib in range(2):
                 '<td>' + str(data.count('(performance)')) + '</td>' +
                 '<td>' + str(data.count('(portability)')) + '</td>' +
                 '<td>' + str(data.count('(style)')) + '</td>' +
+                '<td>' + str(data.count('Crash?')) + '</td>' +
                 '</tr>\n')
 
             data = data.replace('&', '&amp;')
