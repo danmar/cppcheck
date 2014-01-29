@@ -300,13 +300,13 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                     // Update the current line number
                     lineno = row;
 
-                    std::string line;
-                    if (std::getline(fiss, line) && line.length() > 4U) {
+                    std::string line2;
+                    if (std::getline(fiss, line2) && line2.length() > 4U) {
                         // _"file_name" -> file_name
-                        line = line.substr(2, line.length() - 3);
+                        line2 = line2.substr(2, line2.length() - 3);
 
                         // Update the current file
-                        FileIndex = appendFileIfNew(line);
+                        FileIndex = appendFileIfNew(line2);
                     }
                 } else
                     ++lineno;
