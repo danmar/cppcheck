@@ -1022,7 +1022,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             const Token *tok1 = var->typeStartToken();
 
             // check for std:: type
-            if (Token::simpleMatch(tok1, "std ::"))
+            if (var->isStlType())
                 if (allocation)
                     mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
                 else
@@ -1730,7 +1730,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         const Variable *var = end->variable();
 
                         if (var && Token::simpleMatch(var->typeStartToken(), "std :: map")) // operator[] changes a map
-                            return (false);
+                            return false;
                     }
                     if (!jumpBackToken)
                         jumpBackToken = end->next(); // Check inside the [] brackets
@@ -1744,8 +1744,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (end->strAt(1) == "(") {
                 const Variable *var = lastVarTok->variable();
                 if (!var)
-                    return (false);
-                if (Token::simpleMatch(var->typeStartToken(), "std ::") // assume all std::*::size() and std::*::empty() are const
+                    return false;
+                if (var->isStlType() // assume all std::*::size() and std::*::empty() are const
                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
                     ;
                 else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))

@@ -688,7 +688,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (_tokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
-                     (Token::simpleMatch(i->typeStartToken(), "std ::") &&
+                     (i->isStlType() &&
                       i->typeStartToken()->strAt(2) != "lock_guard" &&
                       i->typeStartToken()->strAt(2) != "unique_lock"))
                 type = Variables::standard;
@@ -1118,7 +1118,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unusedVariableError(usage._var->nameToken(), varname);
 
             // variable has not been written but has been modified
-            else if (usage._modified && !usage._write && !usage._allocateMemory && !Token::simpleMatch(var->typeStartToken(), "std ::"))
+            else if (usage._modified && !usage._write && !usage._allocateMemory && !var->isStlType())
                 unassignedVariableError(usage._var->nameToken(), varname);
 
             // variable has been written but not read
@@ -1126,7 +1126,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unreadVariableError(usage._lastAccess, varname);
 
             // variable has been read but not written
-            else if (!usage._write && !usage._allocateMemory && !Token::simpleMatch(var->typeStartToken(), "std ::"))
+            else if (!usage._write && !usage._allocateMemory && !var->isStlType())
                 unassignedVariableError(usage._var->nameToken(), varname);
         }
     }

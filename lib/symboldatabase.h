@@ -455,8 +455,8 @@ public:
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     template <std::size_t array_length>
-    bool isStlType(const char* (&stlTypes)[array_length]) const {
-        return _stlType && std::binary_search(stlTypes, stlTypes + array_length, typeStartToken()->strAt(2));
+    bool isStlType(const char* const(&stlTypes)[array_length]) const {
+        return _stlType && std::binary_search(stlTypes, stlTypes + array_length, _start->strAt(2));
     }
 
 private:

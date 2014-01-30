@@ -320,6 +320,13 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  */
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_stream [] = {
+        "fstream", "ifstream", "iostream", "istream",
+        "istringstream", "ofstream", "ostream", "ostringstream",
+        "stringstream", "wistringstream", "wostringstream", "wstringstream"
+    };
+
     const bool inconclusive = unknown;
 
     unknown = false;
@@ -379,7 +386,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
                 return true;
             if (tok2 && tok2->varId() != 0) {
                 const Variable* var2 = tok2->variable();
-                if (var2 && Token::Match(var2->typeStartToken(), "std :: istream|ifstream|istringstream|wistringstream|ostream|ofstream|ostringstream|wostringstream|stringstream|wstringstream|fstream|iostream"))
+                if (var2 && var2->isStlType(stl_stream))
                     return true;
             }
         }
@@ -821,6 +828,12 @@ void CheckNullPointer::nullConstantDereference()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_stream[] = {
+        "fstream", "ifstream", "iostream", "istream",
+        "istringstream", "stringstream", "wistringstream", "wstringstream"
+    };
+
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -874,7 +887,7 @@ void CheckNullPointer::nullConstantDereference()
                     nullPointerError(tok);
                 if (tok2 && tok2->varId() != 0) {
                     const Variable *var = tok2->variable();
-                    if (var && Token::Match(var->typeStartToken(), "std :: istream|ifstream|istringstream|wistringstream|stringstream|wstringstream|fstream|iostream"))
+                    if (var && var->isStlType(stl_stream))
                         nullPointerError(tok);
                 }
             }

@@ -707,7 +707,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Get function argument, and check if parameter is passed by value
         const Function * const function = ftok->astOperand1()->function();
         const Variable * const arg = function ? function->getArgumentVar(argnr) : NULL;
-        if (!Token::Match(arg ? arg->typeStartToken() : NULL, "const| %type% %var% ,|)"))
+        if (!Token::Match(arg ? arg->typeStartToken() : NULL, "%type% %var% ,|)"))
             continue;
 
         // Function scope..

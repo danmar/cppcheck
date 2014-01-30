@@ -1446,11 +1446,20 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-    if (Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_vector[] = {
+        "array", "vector"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[] = {
+        "string", "u16string", "u32string", "wstring"
+    };
+
+    if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
         return true;
-    } else if (Token::Match(variableInfo->typeStartToken(), "std :: string|wstring")) {
+    } else if (variableInfo->isStlType(stl_string)) {
         tempToken = new Token(0);
         tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
         tempToken->linenr(variableInfo->typeStartToken()->linenr());
@@ -1485,11 +1494,25 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_container[] = {
+        "array", "bitset", "deque", "forward_list",
+        "hash_map", "hash_multimap", "hash_set",
+        "list", "map", "multimap", "multiset",
+        "priority_queue", "queue", "set", "stack",
+        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set",
+        "vector"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[]= {
+        "string", "u16string", "u32string", "wstring"
+    };
+
     if (tok && tok->variable()) {
-        if (Token::Match(tok->variable()->typeStartToken(), "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
+        if (tok->variable()->isStlType(stl_container)) {
             typeToken = tok->variable()->typeStartToken()->tokAt(4);
             return true;
-        } else if (Token::Match(tok->variable()->typeStartToken(), "std :: string|wstring")) {
+        } else if (tok->variable()->isStlType(stl_string)) {
             typeToken = tok->variable()->typeStartToken();
             return true;
         } else if (tok->variable()->type() && !tok->variable()->type()->derivedFrom.empty()) {
