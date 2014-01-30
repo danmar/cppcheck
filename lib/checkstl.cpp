@@ -1132,6 +1132,15 @@ static bool isLocal(const Token *tok)
 
 void CheckStl::string_c_str()
 {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[] = {
+        "string", "u16string", "u32string", "wstring"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string_stream[] = {
+        "istringstream", "ostringstream", "stringstream", "wstringstream"
+    };
+
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
@@ -1170,11 +1179,13 @@ void CheckStl::string_c_str()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Invalid usage..
-            if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(tok->next())) {
+            if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(tok->next()) &&
+                tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
                 string_c_strThrowError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;")) {
                 const Variable* var = tok->next()->variable();
-                if (var && var->isPointer())
+                const Variable* var2 = tok->tokAt(3)->variable();
+                if (var && var->isPointer() && var2 && var2->isStlType(stl_string_stream))
                     string_c_strError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
                        Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
@@ -1203,17 +1214,25 @@ void CheckStl::string_c_str()
                         tok2 = tok2->previous();
                     if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
-                        if (var && var->isStlType())
+                        if (var && var->isStlType(stl_string)) {
                             string_c_strParam(tok, i->second);
+                        } else if (Token::Match(tok2->tokAt(-9), "%var% . str ( )")) { // Check ss.str().c_str() as parameter
+                            const Variable* ssVar = tok2->tokAt(-9)->variable();
+                            if (ssVar && ssVar->isStlType(stl_string_stream))
+                                string_c_strParam(tok, i->second);
+                        }
+
                     }
                 }
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
             if (returnType == charPtr) {
-                if (Token::Match(tok, "return %var% . c_str ( ) ;") && isLocal(tok->next())) {
+                if (Token::Match(tok, "return %var% . c_str ( ) ;") && isLocal(tok->next()) &&
+                    tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
                     string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(tok->next())) {
+                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(tok->next()) &&
+                           tok->next()->variable() && tok->next()->variable()->isStlType(stl_string_stream)) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return std :: string|wstring (") &&
                            Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
@@ -1228,7 +1247,8 @@ void CheckStl::string_c_str()
                     bool is_implicit_std_string = _settings->inconclusive;
                     const Token *search_end = tok->next()->link();
                     for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
-                        if (Token::Match(search_tok, "+ %var%") && isLocal(search_tok->next())) {
+                        if (Token::Match(search_tok, "+ %var%") && isLocal(search_tok->next()) &&
+                            search_tok->next()->variable() && search_tok->next()->variable()->isStlType(stl_string)) {
                             is_implicit_std_string = true;
                             break;
                         } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
@@ -1247,12 +1267,7 @@ void CheckStl::string_c_str()
                     const Token* tok2 = Token::findsimplematch(tok->next(), ";");
                     if (Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
                         tok2 = tok2->tokAt(-5);
-                        if (tok2->isName()) {  // return var.c_str(); => check if var is a std type
-                            const Variable *var = tok2->variable();
-                            if (var && var->isStlType())
-                                string_c_strReturn(tok);
-                        } else {
-                            // TODO: determine if a error should be written or not
+                        if (tok2->variable() && tok2->variable()->isStlType(stl_string)) { // return var.c_str();
                             string_c_strReturn(tok);
                         }
                     }
@@ -1387,6 +1402,14 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 
 void CheckStl::uselessCalls()
 {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_containers_with_empty_and_clear[] = {
+        "deque", "forward_list", "list",
+        "map", "multimap", "multiset", "set", "string",
+        "unordered_map", "unordered_multimap", "unordered_multiset",
+        "unordered_set", "vector", "wstring"
+    };
+
     bool performance = _settings->isEnabled("performance");
     bool warning = _settings->isEnabled("warning");
     if (!performance && !warning)
@@ -1411,7 +1434,8 @@ void CheckStl::uselessCalls()
                         uselessCallsSubstrError(tok, false);
                 } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
-            } else if (Token::Match(tok, "[{};] %var% . empty ( ) ;") && warning)
+            } else if (Token::Match(tok, "[{};] %var% . empty ( ) ;") && warning &&
+                       tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
