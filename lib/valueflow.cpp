@@ -538,6 +538,9 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end(); ++it)
                     it->conditional = true;
+
+                if (Token::simpleMatch(tok2,"} else {"))
+                    tok2 = tok2->linkAt(2);
             }
 
             if (tok2->varId() == varid) {
