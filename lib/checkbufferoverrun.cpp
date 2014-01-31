@@ -1670,7 +1670,7 @@ void CheckBufferOverrun::checkStructVariable()
                                         if (size != 100) { // magic number for size of struct
                                             // check if a real size was specified and give up
                                             // malloc(10) rather than malloc(sizeof(struct))
-                                            if (size < 100)
+                                            if (size < 100 || arrayInfo.element_size() == 0)
                                                 continue;
 
                                             // calculate real array size based on allocated size
