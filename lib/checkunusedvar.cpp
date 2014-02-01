@@ -1126,7 +1126,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unreadVariableError(usage._lastAccess, varname);
 
             // variable has been read but not written
-            else if (!usage._write && !usage._allocateMemory && !var->isStlType())
+            else if (!usage._write && !usage._allocateMemory && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
         }
     }
@@ -1290,4 +1290,30 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     withoutSideEffects=false;   // unknown types are assumed to have side effects
     return withoutSideEffects;
+}
+
+bool CheckUnusedVar::isEmptyType(const Type* type)
+{
+    // a type that has no variables and no constructor
+
+    std::pair<std::map<const Type *,bool>::iterator,bool> found=isEmptyTypeMap.insert(
+                std::pair<const Type *,bool>(type,false));
+    bool & emptyType=found.first->second;
+    if (!found.second)
+        return emptyType;
+
+    if (type && type->classScope && type->classScope->numConstructors == 0 &&
+        (type->classScope->varlist.empty())) {
+        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
+            if (!isEmptyType(i->type)) {
+                emptyType=false;
+                return emptyType;
+            }
+        }
+        emptyType=true;
+        return emptyType;
+    }
+
+    emptyType=false;   // unknown types are assumed to be nonempty
+    return emptyType;
 }
