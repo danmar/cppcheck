@@ -214,6 +214,15 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
     reportError(tok, Severity::warning, "argumentSize", "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.");
 }
 
+void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
+{
+    reportError(tok, Severity::error, "negativeMemoryAllocationSize",
+                "Memory allocation size have to be greater or equal to 0.\n"
+                "Memory allocation size have to be greater or equal to 0."
+                "The allocation size of memory have to be greater or equal to 0 because"
+                "negative size have no speficied behaviour.");
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -1503,6 +1512,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 type = tok->strAt(4);
                 var = tok->next()->variable();
                 nextTok = 8;
+                if (size < 0) {
+                    negativeMemoryAllocationSizeError(tok->next()->next());
+                }
             } else if (Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )")) {
                 size = 1;
                 type = tok->strAt(4);
@@ -1521,6 +1533,10 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 var = tok->next()->variable();
                 nextTok = 7;
 
+                if (size < 0) {
+                    negativeMemoryAllocationSizeError(tok->next()->next());
+                }
+
                 /** @todo false negatives: this may be too conservative */
                 if (!var || var->typeEndToken()->str() != "*" || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
@@ -1531,9 +1547,13 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
-                if (sizeOfType > 0)
+                const unsigned int sizeOfType = _tokenizer->sizeOfType(var->typeStartToken());
+                if (sizeOfType > 0) {
                     size /= static_cast<int>(sizeOfType);
+                }
+                if (size < 0) {
+                    negativeMemoryAllocationSizeError(tok->next()->next());
+                }
             } else {
                 continue;
             }
