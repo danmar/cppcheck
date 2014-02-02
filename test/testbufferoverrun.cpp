@@ -267,6 +267,8 @@ private:
         TEST_CASE(readlinkat);
 
         TEST_CASE(writeOutsideBufferSize)
+
+        TEST_CASE(negativeMemoryAllocationSizeError) // #389
     }
 
 
@@ -4110,6 +4112,40 @@ private:
               "    write(1, 0, 1);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Writing 1 bytes outside buffer size.\n", "", errout.str());
+    }
+
+    void negativeMemoryAllocationSizeError() { // #389
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
+              "   a = new int[-1];\n"
+              "   delete [] a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
+              "   a = malloc( -10 );\n"
+              "   free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
+              "   a = malloc( -10);\n"
+              "   free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
+              "   a = alloca( -10 );\n"
+              "   free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
     }
 };
 
