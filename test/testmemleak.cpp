@@ -231,6 +231,7 @@ private:
         TEST_CASE(func25);      // Ticket #2904
         TEST_CASE(func26);
         TEST_CASE(func27);      // Ticket #2773
+        TEST_CASE(func28);      // Ticket #3236
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -2305,6 +2306,15 @@ private:
               "    pData =(int*)malloc( 100 );\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: pData\n", errout.str());
+    }
+
+    void func28() { // ticket #3236
+        check("void f()\n"
+              "{\n"
+              "    my_struct *p = malloc(42);\n"
+              "    p->a + p->b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void allocfunc1() {
