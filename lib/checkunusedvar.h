@@ -75,6 +75,7 @@ public:
 
 private:
     bool isRecordTypeWithoutSideEffects(const Type* type);
+    bool isEmptyType(const Type* type);
 
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
@@ -110,6 +111,9 @@ private:
     }
 
     std::map<const Type *,bool> isRecordTypeWithoutSideEffectsMap;
+
+    std::map<const Type *,bool> isEmptyTypeMap;
+
 };
 /// @}
 //---------------------------------------------------------------------------
