@@ -177,7 +177,7 @@ void ResultsForm::scanFinished()
     }
 }
 
-void ResultsForm::showResults(const QString &projectName)
+void ResultsForm::showResults(const QString & /*projectName*/ )
 {
     // Load last results..
 }
