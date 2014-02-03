@@ -1,23 +1,23 @@
-#ifndef SOLUTION_H
-#define SOLUTION_H
+#ifndef PROJECTLIST_H
+#define PROJECTLIST_H
 
 #include <QDomElement>
 #include <QList>
 #include <QString>
 #include <QStringList>
 
-class Solution {
+class ProjectList {
 public:
-    Solution();
-    Solution(const Solution &s);
-    ~Solution() {
+    ProjectList();
+    ProjectList(const ProjectList &projectlist);
+    ~ProjectList() {
         qDeleteAll(projects);
     }
 
     // Disable operator=() this is not implemented
-    void operator=(const Solution &);
+    void operator=(const ProjectList &);
 
-    void swap(Solution &s2);
+    void swap(ProjectList &projectlist2);
 
     void load(const QString &filename);
     void save(const QString &filename) const;
@@ -55,4 +55,4 @@ public:
     QList<Project*> projects;
 };
 
-#endif // SOLUTION_H
+#endif // PROJECTLIST_H

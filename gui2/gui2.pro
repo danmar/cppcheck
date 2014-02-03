@@ -16,19 +16,19 @@ SOURCES += main.cpp\
     settingsdialog.cpp \
     applicationsettings.cpp \
     resultsmodel.cpp \
-    solution.cpp \
     configureprojects.cpp \
     projectwidget.cpp \
-    resultsform.cpp
+    resultsform.cpp \
+    projectlist.cpp
 
 HEADERS  += mainwindow.h \
     settingsdialog.h \
     applicationsettings.h \
     resultsmodel.h \
-    solution.h \
     configureprojects.h \
     projectwidget.h \
-    resultsform.h
+    resultsform.h \
+    projectlist.h
 
 FORMS    += mainwindow.ui \
     settingsdialog.ui \

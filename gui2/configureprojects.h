@@ -1,7 +1,7 @@
 #ifndef ConfigureProjects_H
 #define ConfigureProjects_H
 
-#include "solution.h"
+#include "projectlist.h"
 #include <QDialog>
 
 namespace Ui {
@@ -12,10 +12,10 @@ class ConfigureProjects : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ConfigureProjects(QWidget *parent, const Solution &solution_);
+    explicit ConfigureProjects(QWidget *parent, const ProjectList &projectlist_);
     ~ConfigureProjects();
 
-    Solution solution;
+    ProjectList projectList;
 
 private slots:
     void selectProject();

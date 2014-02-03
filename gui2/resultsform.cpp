@@ -23,7 +23,7 @@ ResultsForm::ResultsForm(QWidget *parent) :
     currentScan.filenum  = 0;
     currentScan.files.clear();
     currentScan.process  = 0;
-    currentScan.project  = Solution::Project();
+    currentScan.project  = ProjectList::Project();
 }
 
 ResultsForm::~ResultsForm()
@@ -52,7 +52,7 @@ static QStringList filelist(const QString &path)
     return files;
 }
 
-void ResultsForm::scan(const Solution::Project &project)
+void ResultsForm::scan(const ProjectList::Project &project)
 {
     qDebug() << "ResultsForm::scan()";
     if (currentScan.process)
@@ -170,7 +170,7 @@ void ResultsForm::scanFinished()
         currentScan.analyser = 0;
         currentScan.filenum  = 0;
         currentScan.files.clear();
-        currentScan.project  = Solution::Project();
+        currentScan.project  = ProjectList::Project();
     } else {
         currentScan.process->start(cmd, args << currentScan.files[currentScan.filenum]);
         ui->progressBar->setValue(100 * currentScan.filenum / currentScan.files.size());

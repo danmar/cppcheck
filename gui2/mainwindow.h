@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "solution.h"
+#include "projectlist.h"
 
 #include <QMainWindow>
 
@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Solution solution;
+    ProjectList projectList;
     ResultsForm *resultsForm;
 };
 

@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    solution.load(QDir::homePath() + "/.staticanalysis.xml");
+    projectList.load(QDir::homePath() + "/.cppcheck-gui-2.xml");
 
     connect(ui->projectwidget, SIGNAL(scan()), this, SLOT(scan()));
     connect(ui->projectwidget, SIGNAL(log()), this, SLOT(log()));
@@ -21,14 +21,14 @@ MainWindow::MainWindow(QWidget *parent) :
     this->statusBar()->hide();
 
     ApplicationSettings settings;
-    if (settings.currentProject.isEmpty() && !solution.projects.isEmpty()) {
-        settings.currentProject = solution.projectNames().first();
+    if (settings.currentProject.isEmpty() && !projectList.projects.isEmpty()) {
+        settings.currentProject = projectList.projectNames().first();
         settings.save();
     }
     ui->projectwidget->setProject(settings.currentProject);
 
-    ui->projects->addItems(solution.projectNames());
-    ui->projects->setCurrentIndex(solution.projectNames().indexOf(settings.currentProject));
+    ui->projects->addItems(projectList.projectNames());
+    ui->projects->setCurrentIndex(projectList.projectNames().indexOf(settings.currentProject));
 
     QHBoxLayout *layout = new QHBoxLayout;
     ui->workarea->setLayout(layout);
@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    solution.save(QDir::homePath() + "/.staticanalysis.xml");
+    projectList.save(QDir::homePath() + "/.cppcheck-gui-2.xml");
     delete ui;
 }
 
@@ -54,13 +54,13 @@ void MainWindow::settings()
 void MainWindow::configureProjects()
 {
     qDebug() << "MainWindow::configureProjects";
-    ConfigureProjects *dialog = new ConfigureProjects(this,solution);
+    ConfigureProjects *dialog = new ConfigureProjects(this,projectList);
     ApplicationSettings settings;
     settings.currentProject = ui->projects->currentText();
     if (dialog->exec() == QDialog::Accepted) {
-        solution.swap(dialog->solution);
+        projectList.swap(dialog->projectList);
         ui->projects->clear();
-        const QStringList s = solution.projectNames();
+        const QStringList s = projectList.projectNames();
         ui->projects->addItems(s);
         ui->projects->setCurrentIndex(s.indexOf(settings.currentProject));
     }
@@ -78,7 +78,7 @@ void MainWindow::scan()
 {
     resultsForm->show();
 
-    const Solution::Project *project = solution.getproject(ui->projectwidget->getProjectName());
+    const ProjectList::Project *project = projectList.getproject(ui->projectwidget->getProjectName());
     if (project) {
         resultsForm->scan(*project);
     }

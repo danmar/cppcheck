@@ -1,7 +1,7 @@
 #ifndef RESULTSFORM_H
 #define RESULTSFORM_H
 
-#include "solution.h"
+#include "projectlist.h"
 #include <QProcess>
 #include <QWidget>
 
@@ -18,7 +18,7 @@ public:
     explicit ResultsForm(QWidget *parent = 0);
     ~ResultsForm();
 
-    void scan(const Solution::Project &project);
+    void scan(const ProjectList::Project &project);
     void showResults(const QString &projectName);
 
 private slots:
@@ -30,11 +30,11 @@ private:
     ResultsModel *resultsmodel;
 
     struct ScanData {
-        QProcess          *process;
-        Solution::Project  project;
-        QStringList        files;
-        int                filenum;
-        int                analyser;
+        QProcess             *process;
+        ProjectList::Project  project;
+        QStringList           files;
+        int                   filenum;
+        int                   analyser;
     } currentScan;
 
 };

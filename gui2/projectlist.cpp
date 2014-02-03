@@ -1,29 +1,29 @@
-#include "solution.h"
+#include "projectlist.h"
 #include <QDomDocument>
 #include <QFile>
 #include <QTextStream>
 
-Solution::Solution()
+ProjectList::ProjectList()
 {
 }
 
-Solution::Solution(const Solution &s)
+ProjectList::ProjectList(const ProjectList &projectlist)
 {
-    foreach(const Project *project, s.projects) {
+    foreach(const Project *project, projectlist.projects) {
         Project *myproject = new Project;
         *myproject = *project;
         projects.append(myproject);
     }
 }
 
-void Solution::swap(Solution &s2)
+void ProjectList::swap(ProjectList &projectlist)
 {
     QList<Project*> p = projects;
-    projects = s2.projects;
-    s2.projects = p;
+    projects = projectlist.projects;
+    projectlist.projects = p;
 }
 
-void Solution::load(const QString &filename)
+void ProjectList::load(const QString &filename)
 {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -37,12 +37,12 @@ void Solution::load(const QString &filename)
     if (rootElement.tagName() != "solution")
         return;
 
-    Solution s;
+    ProjectList projectlist;
 
     for (QDomElement e = rootElement.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
         if (e.tagName() == "project") {
             Project *project = new Project();
-            s.projects.append(project);
+            projectlist.projects.append(project);
             if (!project->load(e))
                 return;
         } else {
@@ -51,8 +51,8 @@ void Solution::load(const QString &filename)
     }
 
     qDeleteAll(projects);
-    projects = s.projects;
-    s.projects.clear();
+    projects = projectlist.projects;
+    projectlist.projects.clear();
 }
 
 static void loaddata(const QDomElement &element, const char tag[], QStringList *stringList)
@@ -77,7 +77,7 @@ static bool getflag(const QDomElement &element, const char name1[], const char n
     return child2.text() == "true";
 }
 
-bool Solution::Project::load(const QDomElement &element)
+bool ProjectList::Project::load(const QDomElement &element)
 {
     name = element.attribute("name");
     if (name.isEmpty())
@@ -92,7 +92,7 @@ bool Solution::Project::load(const QDomElement &element)
     return true;
 }
 
-void Solution::save(const QString &filename) const
+void ProjectList::save(const QString &filename) const
 {
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -166,7 +166,7 @@ void Solution::save(const QString &filename) const
     doc.save(out, 2);
 }
 
-const Solution::Project *Solution::getproject(const QString &projectName) const
+const ProjectList::Project *ProjectList::getproject(const QString &projectName) const
 {
     foreach(const Project *project, projects) {
         if (project->name == projectName)
@@ -175,7 +175,7 @@ const Solution::Project *Solution::getproject(const QString &projectName) const
     return 0;
 }
 
-Solution::Project *Solution::getproject(const QString &projectName)
+ProjectList::Project *ProjectList::getproject(const QString &projectName)
 {
     foreach(Project *project, projects) {
         if (project->name == projectName)
@@ -184,7 +184,7 @@ Solution::Project *Solution::getproject(const QString &projectName)
     return 0;
 }
 
-QStringList Solution::projectNames() const
+QStringList ProjectList::projectNames() const
 {
     QStringList ret;
     foreach(const Project *project, projects) {
