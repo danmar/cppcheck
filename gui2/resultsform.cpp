@@ -214,5 +214,9 @@ static QString lastResultFile(const QString &projectName)
 
 void ResultsForm::showResults(const QString & projectName)
 {
-    resultsmodel->load(lastResultFile(projectName));
+    if (currentScan.process == 0) {
+        ui->progressBar->setEnabled(false);
+        ui->progressBar->setValue(0);
+        resultsmodel->load(lastResultFile(projectName));
+    }
 }

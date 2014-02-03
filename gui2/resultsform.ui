@@ -22,7 +22,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="results"/>
+    <widget class="QTreeView" name="results">
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
