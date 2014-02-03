@@ -21,6 +21,8 @@ astyle $style $options cli/*.h
 astyle $style $options democlient/*.cpp
 astyle $style $options gui/*.cpp
 astyle $style $options gui/*.h
+astyle $style $options gui2/*.cpp
+astyle $style $options gui2/*.h
 astyle $style $options -r gui/test/*.cpp
 astyle $style $options -r gui/test/*.h
 astyle $style $options lib/*.cpp
