@@ -145,7 +145,7 @@ void ResultsForm::scanFinished()
         args << "--std=c++11";
         args << "-Weverything";
     } else if (cmd == settings.cppcheck) {
-        args << "--template=gcc" << "--enable=style" << "--inconclusive";
+        args << "--template={file}:{line}:{severity}:{message} [{id}]" << "--enable=style" << "--inconclusive";
     }
 
     if (currentScan.filenum >= currentScan.files.size()) {

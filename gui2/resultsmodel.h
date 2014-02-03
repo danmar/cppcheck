@@ -16,12 +16,15 @@ public:
             parent = 0;
         }
 
-        Node(QString filename, QString line, QString severity, QString text) {
+        Node(Node *parent, QString filename, QString line, QString severity, QString text, QString id) {
+            this->parent   = parent;
+            if (parent)
+                this->parent->children.append(this);
             this->filename = filename;
             this->line     = line;
             this->severity = severity;
             this->text     = text;
-            parent = 0;
+            this->id       = id;
         }
 
         ~Node() {
@@ -33,6 +36,7 @@ public:
         QString line;
         QString severity;
         QString text;
+        QString id;
         QList<Node*> children;
     };
 
@@ -50,7 +54,7 @@ private:
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    static bool parseErrorMessage(const QString &errmsg, QString *file, QString *line, QString *severity, QString *text);
+    static bool parseErrorMessage(const QString &errmsg, QString *file, QString *line, QString *severity, QString *text, QString *id);
     Node *nodeFromIndex(const QModelIndex &index) const;
     Node *rootNode;
 };

@@ -20,11 +20,9 @@ void ResultsModel::clear()
 
 void ResultsModel::addresult(const QString &errmsg)
 {
-    QString file, line, severity, text;
-    if (parseErrorMessage(errmsg, &file, &line, &severity, &text)) {
-        Node *node = new Node(file,line,severity,text);
-        node->parent = rootNode;
-        rootNode->children.append(node);
+    QString file, line, severity, text, id;
+    if (parseErrorMessage(errmsg, &file, &line, &severity, &text, &id)) {
+        new Node(rootNode,file,line,severity,text,id);
         this->reset();
     }
 }
@@ -58,10 +56,12 @@ bool ResultsModel::load(const QString &fileName)
 
     for (QDomElement element = resultsElement.firstChildElement(); !element.isNull(); element = element.nextSiblingElement()) {
         if (element.tagName() == "result") {
-            Node *node = new Node(getstr(element,"file"),
+            Node *node = new Node(rootNode,
+                                  getstr(element,"file"),
                                   getstr(element,"line"),
                                   getstr(element,"severity"),
-                                  getstr(element,"text"));
+                                  getstr(element,"text"),
+                                  getstr(element,"id"));
             node->parent = rootNode;
             rootNode->children.append(node);
         }
@@ -100,6 +100,7 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
         QDomElement line     = doc.createElement("line");
         QDomElement severity = doc.createElement("severity");
         QDomElement text     = doc.createElement("text");
+        QDomElement id       = doc.createElement("id");
         results.appendChild(result);
 
         result.appendChild(file);
@@ -113,6 +114,9 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
 
         result.appendChild(text);
         text.appendChild(doc.createTextNode(node->text));
+
+        result.appendChild(id);
+        id.appendChild(doc.createTextNode(node->id));
     }
 
     QTextStream out(&file);
@@ -149,7 +153,7 @@ int ResultsModel::rowCount(const QModelIndex &parent) const
 
 int ResultsModel::columnCount(const QModelIndex & /* parent */) const
 {
-    return 4;
+    return 5;
 }
 
 QModelIndex ResultsModel::parent(const QModelIndex &child) const
@@ -185,6 +189,8 @@ QVariant ResultsModel::data(const QModelIndex &index, int role) const
         return node->severity;
     case 3:
         return node->text;
+    case 4:
+        return node->id;
     default:
         return QVariant();
     }
@@ -202,6 +208,8 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
             return tr("Severity");
         case 3:
             return tr("Text");
+        case 4:
+            return tr("Id");
         default:
             return QVariant();
         }
@@ -209,7 +217,7 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
     return QVariant();
 }
 
-bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QString *line, QString *severity, QString *text)
+bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QString *line, QString *severity, QString *text, QString *id)
 {
     int pos1 = 0;
     int pos2 = 0;
@@ -254,9 +262,13 @@ bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QStri
     while (pos2 < errmsg.size() && errmsg[pos2] == ' ')
         ++pos2;
     pos1 = pos2;
-    while (pos2 < errmsg.size())
-        ++pos2;
-    *text = errmsg.mid(pos1,pos2-pos1);
+    *text = errmsg.mid(pos1);
+
+    if (errmsg.endsWith("]")) {
+        pos1 = text->lastIndexOf("[");
+        *id = text->mid(pos1 + 1, text->size()-pos1-2);
+        *text = text->mid(0, pos1-1);
+    }
 
     return true;
 }
