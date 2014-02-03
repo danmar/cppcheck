@@ -29,6 +29,48 @@ void ResultsModel::addresult(const QString &errmsg)
     }
 }
 
+static QString getstr(const QDomElement element, const QString &tagName)
+{
+    const QDomElement child = element.firstChildElement(tagName);
+    return child.isNull() ? QString() : child.text();
+}
+
+bool ResultsModel::load(const QString &fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QDomDocument doc;
+    if (!doc.setContent(&file))
+        return false;
+
+    const QDomElement rootElement = doc.documentElement();
+    if (rootElement.tagName() != "results")
+        return false;
+
+    const QDomElement resultsElement = rootElement.firstChildElement("results");
+    if (resultsElement.isNull())
+        return false;
+
+    delete rootNode;
+    rootNode = new Node;
+
+    for (QDomElement element = resultsElement.firstChildElement(); !element.isNull(); element = element.nextSiblingElement()) {
+        if (element.tagName() == "result") {
+            Node *node = new Node(getstr(element,"file"),
+                                  getstr(element,"line"),
+                                  getstr(element,"severity"),
+                                  getstr(element,"text"));
+            node->parent = rootNode;
+            rootNode->children.append(node);
+        }
+    }
+
+    this->reset();
+    return true;
+}
+
 bool ResultsModel::save(const QString &fileName, const QString &projectName) const
 {
     QFile file(fileName);
@@ -135,10 +177,8 @@ QVariant ResultsModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     switch (index.column()) {
-    case 0: {
-        int pos = node->filename.lastIndexOf("/");
-        return (pos > 0) ? node->filename.mid(pos+1) : node->filename;
-    }
+    case 0:
+        return node->filename;
     case 1:
         return node->line;
     case 2:

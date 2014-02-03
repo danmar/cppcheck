@@ -39,6 +39,7 @@ public:
     void clear();
     void addresult(const QString &errmsg);
 
+    bool load(const QString &fileName);
     bool save(const QString &fileName, const QString &projectName) const;
 
 private:

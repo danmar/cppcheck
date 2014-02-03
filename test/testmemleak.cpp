@@ -129,8 +129,7 @@ private:
         errout.str("");
 
         Settings settings1;
-        if (!settings)
-        {
+        if (!settings) {
             LOAD_LIB("gtk.cfg");
             settings1.library = _lib;
             settings = &settings1;
@@ -5985,26 +5984,26 @@ private:
                       "[test.c:12]: (error) Memory leak: a.c\n"
                       "[test.c:12]: (error) Memory leak: a.m\n", errout.str());
         const char code_err_glib[] = "struct A {\n"
-                                "    FILE* f;\n"
-                                "    char* c;\n"
-                                "    void* m;\n"
-                                "};\n"
-                                "\n"
-                                "void func() {\n"
-                                "    struct A a;\n"
-                                "    a.f = fopen(\"test\", \"r\");\n"
-                                "    a.c = new char[12];\n"
-                                "    a.m = g_malloc(12);\n"
-                                "}\n";
+                                     "    FILE* f;\n"
+                                     "    char* c;\n"
+                                     "    void* m;\n"
+                                     "};\n"
+                                     "\n"
+                                     "void func() {\n"
+                                     "    struct A a;\n"
+                                     "    a.f = fopen(\"test\", \"r\");\n"
+                                     "    a.c = new char[12];\n"
+                                     "    a.m = g_malloc(12);\n"
+                                     "}\n";
 
         check(code_err_glib, "test.cpp");
         ASSERT_EQUALS("", errout.str());
         check(code_err_glib, "test.c");
         TODO_ASSERT_EQUALS("[test.c:12]: (error) Memory leak: a.f\n"
-                      "[test.c:12]: (error) Memory leak: a.c\n"
-                      "[test.c:12]: (error) Memory leak: a.m\n",
-                      "[test.c:12]: (error) Memory leak: a.f\n"
-                      "[test.c:12]: (error) Memory leak: a.c\n", errout.str());
+                           "[test.c:12]: (error) Memory leak: a.c\n"
+                           "[test.c:12]: (error) Memory leak: a.m\n",
+                           "[test.c:12]: (error) Memory leak: a.f\n"
+                           "[test.c:12]: (error) Memory leak: a.c\n", errout.str());
 
         // Test OK case
         const char code_ok[] = "struct A {\n"
@@ -6028,20 +6027,20 @@ private:
         check(code_ok, "test.c");
         ASSERT_EQUALS("", errout.str());
         const char code_ok_glib[] = "struct A {\n"
-                               "    FILE* f;\n"
-                               "    char* c;\n"
-                               "    void* m;\n"
-                               "};\n"
-                               "\n"
-                               "void func() {\n"
-                               "    struct A a;\n"
-                               "    a.f = fopen(\"test\", \"r\");\n"
-                               "    a.c = new char[12];\n"
-                               "    a.m = g_malloc(12);\n"
-                               "    fclose(a.f);\n"
-                               "    delete [] a.c;\n"
-                               "    g_free(a.m);\n"
-                               "}\n";
+                                    "    FILE* f;\n"
+                                    "    char* c;\n"
+                                    "    void* m;\n"
+                                    "};\n"
+                                    "\n"
+                                    "void func() {\n"
+                                    "    struct A a;\n"
+                                    "    a.f = fopen(\"test\", \"r\");\n"
+                                    "    a.c = new char[12];\n"
+                                    "    a.m = g_malloc(12);\n"
+                                    "    fclose(a.f);\n"
+                                    "    delete [] a.c;\n"
+                                    "    g_free(a.m);\n"
+                                    "}\n";
 
         check(code_ok_glib, "test.cpp");
         ASSERT_EQUALS("", errout.str());

@@ -177,7 +177,42 @@ void ResultsForm::scanFinished()
     }
 }
 
-void ResultsForm::showResults(const QString & /*projectName*/ )
+static QString lastResultFile(const QString &projectName)
 {
-    // Load last results..
+    QString ret;
+
+    ApplicationSettings settings;
+    QDir dir(settings.resultsFolder);
+    dir.setSorting(QDir::Name);
+    dir.setNameFilters(QStringList() << "*.xml");
+    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+    foreach(const QFileInfo fileinfo, dir.entryInfoList()) {
+        const QString filename = fileinfo.canonicalFilePath();
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+
+        QDomDocument doc;
+        if (!doc.setContent(&file))
+            continue;
+
+        const QDomElement rootElement = doc.documentElement();
+        if (rootElement.tagName() != "results")
+            continue;
+
+        const QDomElement metaElement = rootElement.firstChildElement("meta");
+        if (metaElement.isNull())
+            continue;
+
+        const QDomElement projectElement = metaElement.firstChildElement("project");
+        if (projectElement.text() == projectName)
+            ret = filename;
+    }
+
+    return ret;
+}
+
+void ResultsForm::showResults(const QString & projectName)
+{
+    resultsmodel->load(lastResultFile(projectName));
 }

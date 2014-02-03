@@ -9,7 +9,9 @@ class ProjectWidget : public QWidget {
 public:
     explicit ProjectWidget(QWidget *parent = 0);
     void setProject(const QString &projectName_);
-    QString getProjectName() const { return projectName; }
+    QString getProjectName() const {
+        return projectName;
+    }
 
 signals:
     void scan();

@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     solution.load(QDir::homePath() + "/.staticanalysis.xml");
 
     connect(ui->projectwidget, SIGNAL(scan()), this, SLOT(scan()));
+    connect(ui->projectwidget, SIGNAL(log()), this, SLOT(log()));
 
     // TODO: right now we don't show anything on the status bar
     this->statusBar()->hide();
