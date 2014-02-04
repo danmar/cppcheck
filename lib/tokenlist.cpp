@@ -447,6 +447,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
+        } else if (Token::Match(tok, "%type% ( {")) {
+            op.push(tok);
+            tok = tok->linkAt(2);
         } else {
             Token *name = tok;
             Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
