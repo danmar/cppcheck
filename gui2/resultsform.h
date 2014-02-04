@@ -25,6 +25,8 @@ private slots:
     void scanAddResult();
     void scanFinished();
 
+    void contextMenu(QPoint pos);
+
 private:
     Ui::ResultsForm *ui;
     ResultsModel *resultsmodel;

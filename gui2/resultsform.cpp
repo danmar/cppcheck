@@ -5,11 +5,10 @@
 #include <QDate>
 #include <QDebug>
 #include <QDir>
+#include <QMenu>
 #include <QMessageBox>
 #include <QProcess>
 #include <QTextCodec>
-
-#include <fstream>
 
 ResultsForm::ResultsForm(QWidget *parent) :
     QWidget(parent),
@@ -30,6 +29,21 @@ ResultsForm::~ResultsForm()
 {
     delete ui;
 }
+
+void ResultsForm::contextMenu(QPoint pos)
+{
+    QMenu contextMenu(tr("Context menu"), this);
+    QAction *hideId = new QAction(tr("Hide id"), &contextMenu);
+    contextMenu.addAction(hideId);
+    QAction *hideAllOtherId = new QAction(tr("Hide all other id"), &contextMenu);
+    contextMenu.addAction(hideAllOtherId);
+    const QAction *a = contextMenu.exec(mapToGlobal(pos));
+    if (a==hideId)
+        resultsmodel->hideId(ui->results->currentIndex().row());
+    else if (a==hideAllOtherId)
+        resultsmodel->hideAllOtherId(ui->results->currentIndex().row());
+}
+
 
 static QStringList filelist(const QString &path)
 {
@@ -63,15 +77,11 @@ void ResultsForm::scan(const ProjectList::Project &project)
     connect(currentScan.process, SIGNAL(readyReadStandardError()), this, SLOT(scanAddResult()));
     connect(currentScan.process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(scanFinished()));
     resultsmodel->clear();
+    ui->progressBar->setVisible(true);
     ui->progressBar->setEnabled(true);
+    ui->progressBar->setValue(0);
 
     currentScan.files = filelist(project.path);
-
-    std::ofstream fout("filelist.txt");
-    foreach(const QString file, currentScan.files) {
-        fout << (file.toStdString()) << std::endl;
-    }
-
     currentScan.filenum = 0;
     currentScan.analyser = 0;
     scanFinished();
@@ -215,8 +225,9 @@ static QString lastResultFile(const QString &projectName)
 void ResultsForm::showResults(const QString & projectName)
 {
     if (currentScan.process == 0) {
-        ui->progressBar->setEnabled(false);
-        ui->progressBar->setValue(0);
+        ui->progressBar->setVisible(false);
         resultsmodel->load(lastResultFile(projectName));
     }
 }
+
+

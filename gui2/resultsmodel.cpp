@@ -27,6 +27,28 @@ void ResultsModel::addresult(const QString &errmsg)
     }
 }
 
+void ResultsModel::hideId(int row)
+{
+    Node *node = rootNode->children[row];
+    const QString id = node->id;
+    for (int i = rootNode->children.size() - 1; i >= 0; i--) {
+        if (rootNode->children[i]->id == id)
+            rootNode->children.removeAt(i);
+    }
+    reset();
+}
+
+void ResultsModel::hideAllOtherId(int row)
+{
+    Node *node = rootNode->children[row];
+    const QString id = node->id;
+    for (int i = rootNode->children.size() - 1; i >= 0; i--) {
+        if (rootNode->children[i]->id != id)
+            rootNode->children.removeAt(i);
+    }
+    reset();
+}
+
 static QString getstr(const QDomElement element, const QString &tagName)
 {
     const QDomElement child = element.firstChildElement(tagName);

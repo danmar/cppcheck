@@ -43,6 +43,9 @@ public:
     void clear();
     void addresult(const QString &errmsg);
 
+    void hideId(int row);
+    void hideAllOtherId(int row);
+
     bool load(const QString &fileName);
     bool save(const QString &fileName, const QString &projectName) const;
 

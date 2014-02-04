@@ -23,6 +23,9 @@
    </item>
    <item>
     <widget class="QTreeView" name="results">
+     <property name="contextMenuPolicy">
+      <enum>Qt::CustomContextMenu</enum>
+     </property>
      <property name="uniformRowHeights">
       <bool>true</bool>
      </property>
@@ -31,5 +34,25 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>results</sender>
+   <signal>customContextMenuRequested(QPoint)</signal>
+   <receiver>ResultsForm</receiver>
+   <slot>contextMenu(QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>contextMenu(QPoint)</slot>
+ </slots>
 </ui>
