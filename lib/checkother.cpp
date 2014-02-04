@@ -33,6 +33,17 @@ namespace {
     CheckOther instance;
 }
 
+static bool astIsFloat(const Token *tok)
+{
+    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
+        return true;
+    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
+        return true;
+
+    // TODO: check function calls, struct members, arrays, etc also
+    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
+}
+
 static bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
 {
     if (!tok)
@@ -1362,7 +1373,7 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!isSameExpression(expr1, expr2, constStandardFunctions))
                     continue;
 
-                const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
+                const bool isfloat = astIsFloat(expr1) || MathLib::isFloat(value1) || astIsFloat(expr2) || MathLib::isFloat(value2);
 
                 // don't check floating point equality comparisons. that is bad
                 // and deserves different warnings.
@@ -2768,17 +2779,6 @@ namespace {
             }
         }
     }
-}
-
-static bool astIsFloat(const Token *tok)
-{
-    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
-        return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
-        return true;
-
-    // TODO: check function calls, struct members, arrays, etc also
-    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
 }
 
 //---------------------------------------------------------------------------
