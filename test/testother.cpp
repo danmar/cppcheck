@@ -3676,6 +3676,11 @@ private:
              );
         ASSERT_EQUALS("", errout.str());
 
+        check("void bar(float f) {\n" // #5246
+              "    if ((f > 0) && (f < 1)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int x) {\n"
               "    if (x < 1 && x > 1)\n"
               "        a++;\n"
