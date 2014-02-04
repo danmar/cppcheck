@@ -156,7 +156,7 @@
  <connections>
   <connection>
    <sender>actionExit</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
@@ -172,7 +172,7 @@
   </connection>
   <connection>
    <sender>actionNewProject</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>fileNewProject()</slot>
    <hints>
@@ -188,7 +188,7 @@
   </connection>
   <connection>
    <sender>actionSettings</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>settings()</slot>
    <hints>
@@ -204,7 +204,7 @@
   </connection>
   <connection>
    <sender>actionConfigure_projects</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>configureProjects()</slot>
    <hints>
