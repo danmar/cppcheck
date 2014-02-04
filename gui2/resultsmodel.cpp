@@ -8,45 +8,55 @@
 ResultsModel::ResultsModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
-    rootNode = new Node;
+    rootNode = 0;
 }
 
 void ResultsModel::clear()
 {
+    beginResetModel();
     delete rootNode;
-    rootNode = new Node;
-    this->reset();
+    rootNode = 0;
+    endResetModel();
 }
 
 void ResultsModel::addresult(const QString &errmsg)
 {
     QString file, line, severity, text, id;
     if (parseErrorMessage(errmsg, &file, &line, &severity, &text, &id)) {
+        beginResetModel();
+        if (!rootNode)
+            rootNode = new Node;
         new Node(rootNode,file,line,severity,text,id);
-        this->reset();
+        endResetModel();
     }
 }
 
 void ResultsModel::hideId(int row)
 {
+    if (!rootNode)
+        return;
+    beginResetModel();
     Node *node = rootNode->children[row];
     const QString id = node->id;
     for (int i = rootNode->children.size() - 1; i >= 0; i--) {
         if (rootNode->children[i]->id == id)
             rootNode->children.removeAt(i);
     }
-    reset();
+    endResetModel();
 }
 
 void ResultsModel::hideAllOtherId(int row)
 {
+    if (!rootNode)
+        return;
+    beginResetModel();
     Node *node = rootNode->children[row];
     const QString id = node->id;
     for (int i = rootNode->children.size() - 1; i >= 0; i--) {
         if (rootNode->children[i]->id != id)
             rootNode->children.removeAt(i);
     }
-    reset();
+    endResetModel();
 }
 
 static QString getstr(const QDomElement element, const QString &tagName)
@@ -73,23 +83,26 @@ bool ResultsModel::load(const QString &fileName)
     if (resultsElement.isNull())
         return false;
 
+    beginResetModel();
+
     delete rootNode;
-    rootNode = new Node;
+    rootNode = 0;
 
     for (QDomElement element = resultsElement.firstChildElement(); !element.isNull(); element = element.nextSiblingElement()) {
         if (element.tagName() == "result") {
-            Node *node = new Node(rootNode,
-                                  getstr(element,"file"),
-                                  getstr(element,"line"),
-                                  getstr(element,"severity"),
-                                  getstr(element,"text"),
-                                  getstr(element,"id"));
-            node->parent = rootNode;
-            rootNode->children.append(node);
+            if (!rootNode)
+                rootNode = new Node;
+
+            new Node(rootNode,
+                     getstr(element,"file"),
+                     getstr(element,"line"),
+                     getstr(element,"severity"),
+                     getstr(element,"text"),
+                     getstr(element,"id"));
         }
     }
 
-    this->reset();
+    endResetModel();
     return true;
 }
 
