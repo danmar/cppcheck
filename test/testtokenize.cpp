@@ -10157,6 +10157,9 @@ private:
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
         ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
+        ASSERT_EQUALS("xa(= bc( yd(= ef(", testAst("x=(int)(a({b(c);}));"
+                      "y=(int)(d({e(f);}));"));
+
     }
 
     void astbrackets() const { // []
