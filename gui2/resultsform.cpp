@@ -94,15 +94,27 @@ void ResultsForm::scan(const ProjectList::Project &project)
 
 void ResultsForm::scanAddResult()
 {
-    const QString err = QTextCodec::codecForMib(106)->toUnicode(currentScan.process->readAllStandardError());
-    if (!err.isEmpty()) {
-        const QStringList err2(err.split(QRegExp("[\r\n]")));
-        const QString &path = currentScan.project.path;
-        foreach(QString errmsg, err2) {
-            if (errmsg.startsWith(path) && (errmsg[path.size()]=='\\' || errmsg[path.size()]=='/'))
-                errmsg = errmsg.mid(path.size()+1);
-            resultsmodel->addresult(errmsg);
-        }
+    const QString errout = QTextCodec::codecForMib(106)->toUnicode(currentScan.process->readAllStandardError());
+    if (errout.isEmpty())
+        return;
+
+    const QStringList errorlist(errout.split(QRegExp("[\r\n]")));
+
+    // Get project path (use / separator, end with /)
+    QString path = currentScan.project.path;
+    path.replace('\\','/');
+    if (!path.endsWith('/'))
+        path += '/';
+
+    // Add results..
+    foreach(QString errmsg, errorlist) {
+        // Remove project path at start..
+        QString errmsg2 = errmsg;
+        if (errmsg2.replace('\\','/').startsWith(path))
+            errmsg = errmsg.mid(path.size());
+
+        // Add error message
+        resultsmodel->addresult(errmsg);
     }
 }
 
