@@ -3326,7 +3326,7 @@ private:
         check("void foo() {\n"
               "    gchar *str = g_malloc(10);\n"
               "    g_free(str);\n"
-              "    g_strcpy(str, p);\n"
+              "    g_strlcpy(str, p);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
 
@@ -3353,7 +3353,7 @@ private:
         ASSERT_EQUALS("", errout.str());
         check("void f(gchar *s) {\n"
               "    g_free(s);\n"
-              "    g_strcpy(a, s=b());\n"
+              "    g_strlcpy(a, s=b());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3432,7 +3432,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    char *p1 = g_malloc(10);\n"
-              "    char *p2 = g_strcpy(p1, \"a\");\n"
+              "    char *p2 = g_strlcpy(p1, \"a\");\n"
               "}");
         TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Memory leak: p1\n", errout.str());
     }
@@ -6140,9 +6140,9 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
         check("void x() {\n"
-              "    g_strcpy(a, g_strdup(p));\n"
+              "    g_strlcpy(a, g_strdup(p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with g_strdup, g_strcpy doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with g_strdup, g_strlcpy doesn't release it.\n", errout.str());
 
         check("char *x() {\n"
               "    char *ret = strcpy(malloc(10), \"abc\");\n"
@@ -6150,7 +6150,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
         check("gchar *x() {\n"
-              "    gchar *ret = g_strcpy(g_malloc(10), \"abc\");\n"
+              "    gchar *ret = g_strlcpy(g_malloc(10), \"abc\");\n"
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
