@@ -137,7 +137,7 @@ void ProjectWidget::paintEvent(QPaintEvent * /*event*/)
     painter.drawPolygon(darkpoints, 3);
     painter.setPen(Qt::black);
     painter.drawText(buttonx, distance + buttonSize + normalTextHeight, "Scan");
-    buttonx -= distance + buttonSize;
+    //buttonx -= distance + buttonSize;
 }
 
 void ProjectWidget::mousePressEvent(QMouseEvent *event)

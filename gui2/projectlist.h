@@ -15,7 +15,7 @@ public:
     }
 
     // Disable operator=() this is not implemented
-    void operator=(const ProjectList &);
+    ProjectList& operator=(const ProjectList &);
 
     void swap(ProjectList &projectlist2);
 
