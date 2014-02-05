@@ -25,10 +25,10 @@ public:
     class Project {
     public:
         Project() {
-            clang.compiler = true;
-            clang.analyser = true;
+            clang.compiler = false;
+            clang.analyser = false;
             cppcheck.enabled = true;
-            gcc.enabled = true;
+            gcc.enabled = false;
         }
         bool load(const QDomElement &element);
         QString name;
