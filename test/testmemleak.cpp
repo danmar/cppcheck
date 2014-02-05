@@ -6209,7 +6209,7 @@ private:
               "    if(!g_strcmp0(g_strdup(a), b) == 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with g_strdup, g_strcmp0 doesn't release it.\n", errout.str());
-  
+
         check("void f()\n"
               "{\n"
               "    42, strcmp(strdup(a), b);\n"
