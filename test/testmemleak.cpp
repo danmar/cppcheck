@@ -6102,6 +6102,9 @@ private:
         Settings settings;
         settings.standards.posix = true;
 
+        LOAD_LIB("gtk.cfg");
+        settings.library = _lib;
+
         // Add some test allocation functions to the library.
         // When not run as a unit test, these are read from
         // an XML file (e.g. cfg/posix.cfg).
@@ -6136,15 +6139,28 @@ private:
               "    strcpy(a, strdup(p));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+        check("void x() {\n"
+              "    g_strcpy(a, g_strdup(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with g_strdup, g_strcpy doesn't release it.\n", errout.str());
 
         check("char *x() {\n"
               "    char *ret = strcpy(malloc(10), \"abc\");\n"
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+        check("gchar *x() {\n"
+              "    gchar *ret = g_strcpy(g_malloc(10), \"abc\");\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void x() {\n"
               "    free(malloc(10));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void x() {\n"
+              "    g_free(g_malloc(10));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -6156,6 +6172,13 @@ private:
               "    set_error(strdup(p));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with strdup, set_error doesn't release it.\n", errout.str());
+        check("void set_error(const char *msg) {\n"
+              "}\n"
+              "\n"
+              "void x() {\n"
+              "    set_error(g_strdup(p));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with g_strdup, set_error doesn't release it.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -6170,18 +6193,33 @@ private:
               "    if(TRUE || strcmp(strdup(a), b));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+        check("void f()\n"
+              "{\n"
+              "    if(TRUE || g_strcmp0(g_strdup(a), b));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with g_strdup, g_strcmp0 doesn't release it.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    if(!strcmp(strdup(a), b) == 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
-
+        check("void f()\n"
+              "{\n"
+              "    if(!g_strcmp0(g_strdup(a), b) == 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with g_strdup, g_strcmp0 doesn't release it.\n", errout.str());
+  
         check("void f()\n"
               "{\n"
               "    42, strcmp(strdup(a), b);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+        check("void f()\n"
+              "{\n"
+              "    42, g_strcmp0(g_strdup(a), b);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with g_strdup, g_strcmp0 doesn't release it.\n", errout.str());
     }
 
     void missingAssignment() {
