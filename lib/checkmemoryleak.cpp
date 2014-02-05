@@ -558,10 +558,18 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
                                funcname));
 }
 
+
+bool CheckMemoryLeakInFunction::test_white_list_with_lib(const std::string &funcname, const Settings *settings)
+{
+    return (std::binary_search(call_func_white_list,
+                               call_func_white_list+sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
+                               funcname) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()));
+}
+
+
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
 {
-    if (test_white_list(tok->str()) ||
-        (_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end())) {
+    if (test_white_list_with_lib(tok->str(), _settings)) {
         if (tok->str() == "asprintf" ||
             tok->str() == "delete" ||
             tok->str() == "fclose" ||
@@ -1039,7 +1047,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             dep = true;
                         } else if (Token::Match(tok2, "! %varid%", varid)) {
                             dep = true;
-                        } else if (Token::Match(tok2, "%var% (") && !test_white_list(tok2->str())) {
+                        } else if (Token::Match(tok2, "%var% (") && !test_white_list_with_lib(tok2->str(), _settings)) {
                             bool use = false;
                             for (const Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->nextArgument()) {
                                 if (Token::Match(tok3->previous(), "(|, &| %varid% ,|)", varid)) {
@@ -1214,7 +1222,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         if (!Token::Match(tok2->previous(), "&|(") &&
                             tok2->strAt(1) == "[") {
                         } else if (f.empty() ||
-                                   !test_white_list(f.top()->str()) ||
+                                   !test_white_list_with_lib(f.top()->str(), _settings) ||
                                    getDeallocationType(f.top(),varid)) {
                             use = true;
                         }
@@ -1300,7 +1308,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 if (noreturn.find(tok->str()) != noreturn.end())
                     addtoken(&rettail, tok, "exit");
 
-                else if (!test_white_list(tok->str())) {
+                else if (!test_white_list_with_lib(tok->str(), _settings)) {
                     const Token* const end2 = tok->linkAt(1);
                     for (const Token *tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() == varid) {
@@ -2405,7 +2413,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
                 // Function call .. possible deallocation
                 else if (Token::Match(tok->previous(), "[{};] %var% (")) {
-                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str())) {
+                    if (!CheckMemoryLeakInFunction::test_white_list_with_lib(tok->str(), _settings)) {
                         return;
                     }
                 }
@@ -2721,7 +2729,7 @@ void CheckMemoryLeakNoVar::check()
                                     functionName == "fclose" ||
                                     functionName == "realloc")
                                     break;
-                                if (CheckMemoryLeakInFunction::test_white_list(functionName)) {
+                                if (CheckMemoryLeakInFunction::test_white_list_with_lib(functionName, _settings)) {
                                     functionCallLeak(tok2, tok2->strAt(1), functionName);
                                     break;
                                 }

@@ -204,6 +204,7 @@ public:
 
     /** @brief Unit testing : testing the white list */
     static bool test_white_list(const std::string &funcname);
+    static bool test_white_list_with_lib(const std::string &funcname, const Settings *settings);
 
     /** @brief Perform checking */
     void check();
