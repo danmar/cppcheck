@@ -447,9 +447,6 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
-        } else if (Token::Match(tok, "%type% ( {")) {
-            op.push(tok);
-            tok = tok->linkAt(2);
         } else {
             Token *name = tok;
             Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
@@ -508,9 +505,6 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 op.pop();
             }
             op.push(unaryop);
-        } else if (Token::Match(tok,"( {")) {
-            op.push(tok->next());
-            tok = tok->link()->next();
         } else if (Token::simpleMatch(tok->link(),") (")) {
             // Parenthesized sub-expression
             Token *nextpar = tok->link()->next();
@@ -525,6 +519,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
             compileExpression(tok,op);
             tok = tok->next();
         }
+    } else if (tok->str() == "{") {
+        op.push(tok);
+        tok = tok->link()->next();
     }
 }
 
