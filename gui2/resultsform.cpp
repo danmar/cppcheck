@@ -91,8 +91,11 @@ void ResultsForm::scanAddResult()
 {
     const QString err = QTextCodec::codecForMib(106)->toUnicode(currentScan.process->readAllStandardError());
     if (!err.isEmpty()) {
-        const QStringList err2(err.split("\n"));
-        foreach(const QString errmsg, err2) {
+        const QStringList err2(err.split(QRegExp("[\r\n]")));
+        const QString &path = currentScan.project.path;
+        foreach(QString errmsg, err2) {
+            if (errmsg.startsWith(path) && (errmsg[path.size()]=='\\' || errmsg[path.size()]=='/'))
+                errmsg = errmsg.mid(path.size()+1);
             resultsmodel->addresult(errmsg);
         }
     }

@@ -258,11 +258,14 @@ bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QStri
     int pos2 = 0;
 
     // filename
+    if (errmsg.size() > 3 && errmsg[0].isLetter() && errmsg[1]==':' && errmsg[2]=='\\')
+        pos2 = 3;
     while (pos2 < errmsg.size() && errmsg[pos2] != ':')
         ++pos2;
     if (pos2 >= errmsg.size())
         return false;
     *file = errmsg.mid(pos1,pos2-pos1);
+    file->replace('\\','/');
     pos1 = ++pos2;
 
     // line
