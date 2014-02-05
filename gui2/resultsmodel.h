@@ -18,8 +18,10 @@ public:
 
         Node(Node *parent, QString filename, QString line, QString severity, QString text, QString id) {
             this->parent   = parent;
-            if (parent)
-                this->parent->children.append(this);
+            if (parent) {
+                this->parent->allchildren.append(this);
+                this->parent->shownchildren.append(this);
+            }
             this->filename = filename;
             this->line     = line;
             this->severity = severity;
@@ -28,7 +30,7 @@ public:
         }
 
         ~Node() {
-            qDeleteAll(children);
+            qDeleteAll(allchildren);
         }
 
         Node *parent;
@@ -37,7 +39,8 @@ public:
         QString severity;
         QString text;
         QString id;
-        QList<Node*> children;
+        QList<Node*> allchildren;
+        QList<Node*> shownchildren;
     };
 
     void clear();
@@ -45,6 +48,7 @@ public:
 
     void hideId(int row);
     void hideAllOtherId(int row);
+    void showAll();
 
     bool load(const QString &fileName);
     bool save(const QString &fileName, const QString &projectName) const;

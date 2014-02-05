@@ -36,11 +36,11 @@ void ResultsModel::hideId(int row)
     if (!rootNode)
         return;
     beginResetModel();
-    Node *node = rootNode->children[row];
+    Node *node = rootNode->shownchildren[row];
     const QString id = node->id;
-    for (int i = rootNode->children.size() - 1; i >= 0; i--) {
-        if (rootNode->children[i]->id == id)
-            rootNode->children.removeAt(i);
+    for (int i = rootNode->shownchildren.size() - 1; i >= 0; i--) {
+        if (rootNode->shownchildren[i]->id == id)
+            rootNode->shownchildren.removeAt(i);
     }
     endResetModel();
 }
@@ -50,12 +50,21 @@ void ResultsModel::hideAllOtherId(int row)
     if (!rootNode)
         return;
     beginResetModel();
-    Node *node = rootNode->children[row];
+    Node *node = rootNode->shownchildren[row];
     const QString id = node->id;
-    for (int i = rootNode->children.size() - 1; i >= 0; i--) {
-        if (rootNode->children[i]->id != id)
-            rootNode->children.removeAt(i);
+    for (int i = rootNode->shownchildren.size() - 1; i >= 0; i--) {
+        if (rootNode->shownchildren[i]->id != id)
+            rootNode->shownchildren.removeAt(i);
     }
+    endResetModel();
+}
+
+void ResultsModel::showAll()
+{
+    if (!rootNode)
+        return;
+    beginResetModel();
+    rootNode->shownchildren = rootNode->allchildren;
     endResetModel();
 }
 
@@ -118,8 +127,8 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
     doc.appendChild(root);
 
     QDomElement meta = doc.createElement("meta");
-    QDomElement project     = doc.createElement("project");
-    QDomElement date        = doc.createElement("date");
+    QDomElement project = doc.createElement("project");
+    QDomElement date    = doc.createElement("date");
 
     root.appendChild(meta);
     meta.appendChild(project);
@@ -129,7 +138,7 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
 
     QDomElement results = doc.createElement("results");
     root.appendChild(results);
-    foreach(const Node *node, rootNode->children) {
+    foreach(const Node *node, rootNode->allchildren) {
         QDomElement result = doc.createElement("result");
         QDomElement file     = doc.createElement("file");
         QDomElement line     = doc.createElement("line");
@@ -167,7 +176,7 @@ QModelIndex ResultsModel::index(int row, int column, const QModelIndex &parent) 
     if (!rootNode)
         return QModelIndex();
     Node *parentNode = nodeFromIndex(parent);
-    return createIndex(row, column, parentNode->children[row]);
+    return createIndex(row, column, parentNode->shownchildren[row]);
 }
 
 ResultsModel::Node *ResultsModel::nodeFromIndex(const QModelIndex &index) const
@@ -183,7 +192,7 @@ int ResultsModel::rowCount(const QModelIndex &parent) const
     Node *parentNode = nodeFromIndex(parent);
     if (!parentNode)
         return 0;
-    return parentNode->children.count();
+    return parentNode->shownchildren.count();
 }
 
 int ResultsModel::columnCount(const QModelIndex & /* parent */) const
@@ -202,7 +211,7 @@ QModelIndex ResultsModel::parent(const QModelIndex &child) const
     Node *grandparentNode = parentNode->parent;
     if (!grandparentNode)
         return QModelIndex();
-    int row = grandparentNode->children.indexOf(parentNode);
+    int row = grandparentNode->shownchildren.indexOf(parentNode);
     return createIndex(row, child.column(), parentNode);
 }
 

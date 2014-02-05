@@ -32,16 +32,21 @@ ResultsForm::~ResultsForm()
 
 void ResultsForm::contextMenu(QPoint pos)
 {
+    const int row = ui->results->currentIndex().row();
     QMenu contextMenu(tr("Context menu"), this);
     QAction *hideId = new QAction(tr("Hide id"), &contextMenu);
     contextMenu.addAction(hideId);
     QAction *hideAllOtherId = new QAction(tr("Hide all other id"), &contextMenu);
     contextMenu.addAction(hideAllOtherId);
+    QAction *showAll = new QAction(tr("Show all"), &contextMenu);
+    contextMenu.addAction(showAll);
     const QAction *a = contextMenu.exec(mapToGlobal(pos));
     if (a==hideId)
-        resultsmodel->hideId(ui->results->currentIndex().row());
+        resultsmodel->hideId(row);
     else if (a==hideAllOtherId)
-        resultsmodel->hideAllOtherId(ui->results->currentIndex().row());
+        resultsmodel->hideAllOtherId(row);
+    else if (a==showAll)
+        resultsmodel->showAll();
 }
 
 
