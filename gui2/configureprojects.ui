@@ -104,7 +104,30 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="name"/>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLineEdit" name="name"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="nameStatus">
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>120</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>OK</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_3">
@@ -226,30 +249,6 @@
               </size>
              </property>
             </spacer>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="applyButton">
-               <property name="text">
-                <string>Apply</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
           </layout>
          </widget>
@@ -396,8 +395,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>345</x>
-     <y>313</y>
+     <x>557</x>
+     <y>355</y>
     </hint>
     <hint type="destinationlabel">
      <x>203</x>
@@ -412,8 +411,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>345</x>
-     <y>313</y>
+     <x>557</x>
+     <y>355</y>
     </hint>
     <hint type="destinationlabel">
      <x>260</x>
@@ -428,7 +427,7 @@
    <slot>newInclude()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>433</x>
+     <x>437</x>
      <y>224</y>
     </hint>
     <hint type="destinationlabel">
@@ -508,28 +507,12 @@
    <slot>pathBrowse()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>505</x>
+     <x>407</x>
      <y>84</y>
     </hint>
     <hint type="destinationlabel">
      <x>301</x>
      <y>165</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>applyButton</sender>
-   <signal>clicked()</signal>
-   <receiver>ConfigureProjects</receiver>
-   <slot>apply()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>476</x>
-     <y>294</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>260</x>
-     <y>160</y>
     </hint>
    </hints>
   </connection>
@@ -597,6 +580,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>name</sender>
+   <signal>editingFinished()</signal>
+   <receiver>ConfigureProjects</receiver>
+   <slot>apply()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>364</x>
+     <y>45</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>path</sender>
+   <signal>editingFinished()</signal>
+   <receiver>ConfigureProjects</receiver>
+   <slot>apply()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>365</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>defines</sender>
+   <signal>editingFinished()</signal>
+   <receiver>ConfigureProjects</receiver>
+   <slot>apply()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>364</x>
+     <y>100</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>name</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>ConfigureProjects</receiver>
+   <slot>nameChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>306</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>572</x>
+     <y>53</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>pathBrowse()</slot>
@@ -607,5 +654,6 @@
   <slot>selectProject()</slot>
   <slot>apply()</slot>
   <slot>saveCompilerSettings()</slot>
+  <slot>nameChanged(QString)</slot>
  </slots>
 </ui>

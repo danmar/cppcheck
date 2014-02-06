@@ -79,6 +79,16 @@ void ConfigureProjects::deleteProject()
     delete ui->projects->currentItem();
 }
 
+void ConfigureProjects::nameChanged(QString name)
+{
+    if (name.isEmpty())
+        ui->nameStatus->setText(tr("Empty name"));
+    else if (name != ui->projects->currentItem()->text() && projectList.getproject(name))
+        ui->nameStatus->setText(tr("Duplicate name"));
+    else
+        ui->nameStatus->setText("OK");
+}
+
 void ConfigureProjects::pathBrowse()
 {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select path to scan"));
@@ -104,13 +114,10 @@ void ConfigureProjects::apply()
 {
     const QString oldName = ui->projects->currentItem()->text();
     const QString newName = ui->name->text();
-    if (oldName != newName && projectList.getproject(newName)) {
-        QMessageBox::warning(this, QObject::tr("Results"), QObject::tr("Failed to apply changes - project name already exists"));
-        return;
-    }
 
     ProjectList::Project *project = projectList.getproject(oldName);
-    project->name    = newName;
+    if (!newName.isEmpty() && !projectList.getproject(newName))
+        project->name = newName;
     project->path    = ui->path->text();
     project->defines = ui->defines->text().split("[; ]");
     project->includes.clear();
@@ -121,7 +128,7 @@ void ConfigureProjects::apply()
     const QStringList s = projectList.projectNames();
     ui->projects->clear();
     ui->projects->addItems(s);
-    ui->projects->setCurrentRow(s.indexOf(newName));
+    ui->projects->setCurrentRow(s.indexOf(project->name));
 }
 
 void ConfigureProjects::saveCompilerSettings()

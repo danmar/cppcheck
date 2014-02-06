@@ -21,6 +21,7 @@ private slots:
     void selectProject();
     void newProject();
     void deleteProject();
+    void nameChanged(QString name);
     void pathBrowse();
     void newInclude();
     void deleteInclude();
