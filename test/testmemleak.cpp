@@ -23,6 +23,7 @@
 #include "checkmemoryleak.h"
 #include "testsuite.h"
 #include "symboldatabase.h"
+#include "preprocessor.h"
 #include <sstream>
 
 extern std::ostringstream errout;
@@ -6273,3 +6274,57 @@ private:
     }
 };
 REGISTER_TEST(TestMemleakNoVar)
+
+
+
+
+
+class TestMemleakGLib : public TestFixture {
+public:
+    TestMemleakGLib() : TestFixture("TestMemleakGLib") {
+    }
+
+private:
+    void check(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        LOAD_LIB("gtk.cfg");
+        settings.library = _lib;
+        
+        // Preprocess...
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istrpreproc(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istrpreproc, actual, "test.c");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(actual[""]);
+        tokenizer.tokenize(istr, "test.c");
+        tokenizer.simplifyTokenList2();
+
+        // Check for memory leaks..
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.checkReallocUsage();
+        checkMemoryLeak.check();
+    }
+
+    void run() {
+        TEST_CASE(glib1);
+    }
+
+    void glib1() {
+        check("void f(gchar *_a, gchar *_b) {"
+              "  g_return_if_fail(_a);"
+              "  gchar *a = g_strdup(_a);"
+              "  g_return_if_fail(_b);"
+              "  gchar *b = g_strdup(_b);"
+              "  g_free(a);"
+              "  g_free(b);"
+              "}");
+        ASSERT_EQUALS("[test.c:1]: (error) Memory leak: a\n", errout.str());
+    }
+};
+static TestMemleakGLib testMemleakGLib;

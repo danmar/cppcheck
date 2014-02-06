@@ -269,6 +269,7 @@ public:
     }
 
     std::set<std::string> returnuninitdata;
+    std::vector<std::string> defines; // to provide some library defines
 
 private:
     class ExportedFunctions {

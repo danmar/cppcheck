@@ -127,6 +127,20 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (strcmp(node->Name(),"define")==0) {
+            const char *name = node->Attribute("name");
+            if (name == NULL)
+                return false;
+            const char *value = node->Attribute("value");
+            if (value == NULL)
+                return false;
+            defines.push_back(std::string("#define ") +
+                              name +
+                              " " +
+                              value +
+                              "\n");
+        }
+
         else if (strcmp(node->Name(),"function")==0) {
             const char *name = node->Attribute("name");
             if (name == NULL)
