@@ -249,15 +249,16 @@ void ResultsForm::triage(QModelIndex index)
 {
     const ResultsModel::Node node = resultsmodel->getNodeFromIndex(index);
     if (node.filename.isEmpty())
-        ui->textEdit->clear();
+        ui->codeBrowser->clear();
     else {
         QFile file(currentScan.project.path + '/' + node.filename);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-            ui->textEdit->clear();
+            ui->codeBrowser->clear();
         else {
             QTextStream textstream(&file);
-            ui->textEdit->setText(textstream.readAll());
-            ui->textEdit->set
+            const QString filedata(textstream.readAll());
+            ui->codeBrowser->setPlainText(filedata);
+            ui->codeBrowser->setLine(node.line.toInt());
         }
     }
 }

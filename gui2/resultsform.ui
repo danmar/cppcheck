@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="plainTextEdit"/>
+    <widget class="CodeBrowser" name="codeBrowser"/>
    </item>
    <item>
     <widget class="QTreeView" name="results">
@@ -36,6 +36,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CodeBrowser</class>
+   <extends>QPlainTextEdit</extends>
+   <header>codebrowser.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
