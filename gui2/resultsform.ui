@@ -22,6 +22,9 @@
     </widget>
    </item>
    <item>
+    <widget class="QPlainTextEdit" name="plainTextEdit"/>
+   </item>
+   <item>
     <widget class="QTreeView" name="results">
      <property name="contextMenuPolicy">
       <enum>Qt::CustomContextMenu</enum>
@@ -42,8 +45,24 @@
    <slot>contextMenu(QPoint)</slot>
    <hints>
     <hint type="sourcelabel">
+     <x>203</x>
+     <y>295</y>
+    </hint>
+    <hint type="destinationlabel">
      <x>199</x>
-     <y>162</y>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>results</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>ResultsForm</receiver>
+   <slot>triage(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>230</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -54,5 +73,6 @@
  </connections>
  <slots>
   <slot>contextMenu(QPoint)</slot>
+  <slot>triage(QModelIndex)</slot>
  </slots>
 </ui>

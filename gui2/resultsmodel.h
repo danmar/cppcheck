@@ -22,6 +22,7 @@ public:
                 this->parent->allchildren.append(this);
                 this->parent->shownchildren.append(this);
             }
+            this->fullfilename = filename;
             this->filename = filename;
             this->line     = line;
             this->severity = severity;
@@ -34,6 +35,7 @@ public:
         }
 
         Node *parent;
+        QString fullfilename;
         QString filename;
         QString line;
         QString severity;
@@ -44,7 +46,7 @@ public:
     };
 
     void clear();
-    void addresult(const QString &errmsg);
+    void addresult(const QString &path, const QString &errmsg);
 
     void hideId(int row);
     void hideAllOtherId(int row);
@@ -52,6 +54,13 @@ public:
 
     bool load(const QString &fileName);
     bool save(const QString &fileName, const QString &projectName) const;
+
+    Node getNodeFromIndex(const QModelIndex &index) const {
+        Node *n = nodeFromIndex(index);
+        if (n)
+            return *n;
+        return Node();
+    }
 
 private:
     void setRootNode(Node *node);

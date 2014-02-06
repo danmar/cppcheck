@@ -19,14 +19,16 @@ void ResultsModel::clear()
     endResetModel();
 }
 
-void ResultsModel::addresult(const QString &errmsg)
+void ResultsModel::addresult(const QString &path, const QString &errmsg)
 {
     QString file, line, severity, text, id;
     if (parseErrorMessage(errmsg, &file, &line, &severity, &text, &id)) {
         beginResetModel();
         if (!rootNode)
             rootNode = new Node;
-        new Node(rootNode,file,line,severity,text,id);
+        Node *node = new Node(rootNode,file,line,severity,text,id);
+        if (file.replace('\\','/').startsWith(path))
+            node->filename = node->filename.mid(path.size());
         endResetModel();
     }
 }

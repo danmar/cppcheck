@@ -2,6 +2,7 @@
 #define RESULTSFORM_H
 
 #include "projectlist.h"
+#include <QModelIndex>
 #include <QProcess>
 #include <QWidget>
 
@@ -26,6 +27,7 @@ private slots:
     void scanFinished();
 
     void contextMenu(QPoint pos);
+    void triage(QModelIndex index);
 
 private:
     Ui::ResultsForm *ui;

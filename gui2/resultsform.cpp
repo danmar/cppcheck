@@ -107,14 +107,9 @@ void ResultsForm::scanAddResult()
         path += '/';
 
     // Add results..
-    foreach(QString errmsg, errorlist) {
-        // Remove project path at start..
-        QString errmsg2 = errmsg;
-        if (errmsg2.replace('\\','/').startsWith(path))
-            errmsg = errmsg.mid(path.size());
-
+    foreach(const QString errmsg, errorlist) {
         // Add error message
-        resultsmodel->addresult(errmsg);
+        resultsmodel->addresult(path,errmsg);
     }
 }
 
@@ -250,4 +245,19 @@ void ResultsForm::showResults(const QString & projectName)
     }
 }
 
-
+void ResultsForm::triage(QModelIndex index)
+{
+    const ResultsModel::Node node = resultsmodel->getNodeFromIndex(index);
+    if (node.filename.isEmpty())
+        ui->textEdit->clear();
+    else {
+        QFile file(currentScan.project.path + '/' + node.filename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            ui->textEdit->clear();
+        else {
+            QTextStream textstream(&file);
+            ui->textEdit->setText(textstream.readAll());
+            ui->textEdit->set
+        }
+    }
+}
