@@ -21,6 +21,9 @@ void ResultsModel::clear()
 
 void ResultsModel::addresult(const QString &path, const QString &errmsg)
 {
+    if (errmsg.isEmpty())
+        return;
+
     QString file, line, severity, text, id;
     if (parseErrorMessage(errmsg, &file, &line, &severity, &text, &id)) {
         beginResetModel();
@@ -141,7 +144,7 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
 
     QDomElement results = doc.createElement("results");
     root.appendChild(results);
-    foreach(const Node *node, rootNode->allchildren) {
+    foreach(const Node *node, rootNode ? rootNode->allchildren : QList<Node*>()) {
         QDomElement result = doc.createElement("result");
         QDomElement file     = doc.createElement("file");
         QDomElement line     = doc.createElement("line");
@@ -279,7 +282,7 @@ bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QStri
     int pos2 = 0;
 
     // filename
-    if (errmsg.size() > 3 && errmsg[0].isLetter() && errmsg[1]==':' && errmsg[2]=='\\')
+    if (errmsg.size() > 3 && errmsg[0].isLetter() && errmsg[1]==':' && (errmsg[2]=='\\' || errmsg[2]=='/'))
         pos2 = 3;
     while (pos2 < errmsg.size() && errmsg[pos2] != ':')
         ++pos2;
@@ -312,6 +315,11 @@ bool ResultsModel::parseErrorMessage(const QString &errmsg, QString *file, QStri
     pos1 = pos2;
     while (pos2 < errmsg.size() && errmsg[pos2].isLetter())
         ++pos2;
+    if (pos2 < errmsg.size() && errmsg[pos2] == ' ') {
+        ++pos2;
+        while (pos2 < errmsg.size() && errmsg[pos2].isLetter())
+            ++pos2;
+    }
     if (pos2 >= errmsg.size() || errmsg[pos2] != ':')
         return false;
     *severity = errmsg.mid(pos1,pos2-pos1);

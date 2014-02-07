@@ -199,6 +199,14 @@ void ResultsForm::scanFinished()
         currentScan.files.clear();
         currentScan.project  = ProjectList::Project();
     } else {
+        QString dir = cmd;
+        dir = dir.replace('\\','/');
+        if (dir.contains('/')) {
+            dir.truncate(dir.lastIndexOf('/'));
+            currentScan.process->setWorkingDirectory(dir);
+            QDir::setCurrent(dir);
+        }
+
         currentScan.process->start(cmd, args << currentScan.files[currentScan.filenum]);
         ui->progressBar->setValue(100 * currentScan.filenum / currentScan.files.size());
     }
