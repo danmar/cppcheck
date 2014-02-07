@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>486</width>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
@@ -22,7 +22,42 @@
     </widget>
    </item>
    <item>
-    <widget class="CodeBrowser" name="codeBrowser"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="CodeBrowser" name="codeBrowser"/>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="falsePositive">
+         <property name="text">
+          <string>Code is correct</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="truePositive">
+         <property name="text">
+          <string>Code is wrong</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QTreeView" name="results">
@@ -77,9 +112,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>falsePositive</sender>
+   <signal>clicked()</signal>
+   <receiver>ResultsForm</receiver>
+   <slot>falsePositive()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>386</x>
+     <y>40</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>398</x>
+     <y>41</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>truePositive</sender>
+   <signal>clicked()</signal>
+   <receiver>ResultsForm</receiver>
+   <slot>truePositive()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>389</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>70</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>contextMenu(QPoint)</slot>
   <slot>triage(QModelIndex)</slot>
+  <slot>truePositive()</slot>
+  <slot>falsePositive()</slot>
  </slots>
 </ui>

@@ -27,11 +27,15 @@ private slots:
     void scanFinished();
 
     void contextMenu(QPoint pos);
+
     void triage(QModelIndex index);
+    void falsePositive();
+    void truePositive();
 
 private:
     Ui::ResultsForm *ui;
-    ResultsModel *resultsmodel;
+    ResultsModel    *resultsmodel;
+    QModelIndex      triageIndex;
 
     struct ScanData {
         QProcess             *process;

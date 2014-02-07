@@ -26,7 +26,7 @@ void ResultsModel::addresult(const QString &path, const QString &errmsg)
         beginResetModel();
         if (!rootNode)
             rootNode = new Node;
-        Node *node = new Node(rootNode,file,line,severity,text,id);
+        Node *node = new Node(rootNode,file,line,severity,text,id,"");
         if (file.replace('\\','/').startsWith(path))
             node->filename = node->filename.mid(path.size());
         endResetModel();
@@ -109,7 +109,8 @@ bool ResultsModel::load(const QString &fileName)
                      getstr(element,"line"),
                      getstr(element,"severity"),
                      getstr(element,"text"),
-                     getstr(element,"id"));
+                     getstr(element,"id"),
+                     getstr(element,"triage"));
         }
     }
 
@@ -147,6 +148,7 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
         QDomElement severity = doc.createElement("severity");
         QDomElement text     = doc.createElement("text");
         QDomElement id       = doc.createElement("id");
+        QDomElement triage   = doc.createElement("triage");
         results.appendChild(result);
 
         result.appendChild(file);
@@ -163,6 +165,14 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
 
         result.appendChild(id);
         id.appendChild(doc.createTextNode(node->id));
+
+        result.appendChild(triage);
+        if (node->triage == Node::FALSE_POSITIVE)
+            triage.appendChild(doc.createTextNode("false positive"));
+        else if (node->triage == Node::TRUE_POSITIVE)
+            triage.appendChild(doc.createTextNode("true positive"));
+        else
+            triage.appendChild(doc.createTextNode("unknown"));
     }
 
     QTextStream out(&file);

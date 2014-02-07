@@ -34,12 +34,14 @@ void ResultsForm::contextMenu(QPoint pos)
 {
     const int row = ui->results->currentIndex().row();
     QMenu contextMenu(tr("Context menu"), this);
+
     QAction *hideId = new QAction(tr("Hide id"), &contextMenu);
     contextMenu.addAction(hideId);
     QAction *hideAllOtherId = new QAction(tr("Hide all other id"), &contextMenu);
     contextMenu.addAction(hideAllOtherId);
     QAction *showAll = new QAction(tr("Show all"), &contextMenu);
     contextMenu.addAction(showAll);
+
     const QAction *a = contextMenu.exec(mapToGlobal(pos));
     if (a==hideId)
         resultsmodel->hideId(row);
@@ -248,17 +250,36 @@ void ResultsForm::showResults(const QString & projectName)
 void ResultsForm::triage(QModelIndex index)
 {
     const ResultsModel::Node node = resultsmodel->getNodeFromIndex(index);
-    if (node.filename.isEmpty())
+    if (node.filename.isEmpty()) {
         ui->codeBrowser->clear();
-    else {
+        ui->falsePositive->setEnabled(false);
+        ui->truePositive->setEnabled(false);
+        triageIndex = QModelIndex();
+    } else {
         QFile file(currentScan.project.path + '/' + node.filename);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             ui->codeBrowser->clear();
-        else {
+            ui->falsePositive->setEnabled(false);
+            ui->truePositive->setEnabled(false);
+            triageIndex = QModelIndex();
+        } else {
             QTextStream textstream(&file);
             const QString filedata(textstream.readAll());
             ui->codeBrowser->setPlainText(filedata);
             ui->codeBrowser->setLine(node.line.toInt());
+            ui->falsePositive->setEnabled(true);
+            ui->truePositive->setEnabled(true);
+            triageIndex = index;
         }
     }
+}
+
+void ResultsForm::falsePositive()
+{
+    resultsmodel->triage(triageIndex,ResultsModel::Node::FALSE_POSITIVE);
+}
+
+void ResultsForm::truePositive()
+{
+    resultsmodel->triage(triageIndex,ResultsModel::Node::FALSE_POSITIVE);
 }

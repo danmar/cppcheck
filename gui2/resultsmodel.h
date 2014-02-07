@@ -16,7 +16,7 @@ public:
             parent = 0;
         }
 
-        Node(Node *parent, QString filename, QString line, QString severity, QString text, QString id) {
+        Node(Node *parent, QString filename, QString line, QString severity, QString text, QString id, QString triage) {
             this->parent   = parent;
             if (parent) {
                 this->parent->allchildren.append(this);
@@ -28,6 +28,12 @@ public:
             this->severity = severity;
             this->text     = text;
             this->id       = id;
+            if (triage == "true positive")
+                this->triage = TRUE_POSITIVE;
+            else if (triage == "false positive")
+                this->triage = FALSE_POSITIVE;
+            else
+                this->triage = UNKNOWN;
         }
 
         ~Node() {
@@ -41,6 +47,7 @@ public:
         QString severity;
         QString text;
         QString id;
+        enum TriageEnum { UNKNOWN, TRUE_POSITIVE, FALSE_POSITIVE } triage;
         QList<Node*> allchildren;
         QList<Node*> shownchildren;
     };
@@ -60,6 +67,12 @@ public:
         if (n)
             return *n;
         return Node();
+    }
+
+    void triage(const QModelIndex &index, Node::TriageEnum value) {
+        Node *n = nodeFromIndex(index);
+        if (n)
+            n->triage = value;
     }
 
 private:
