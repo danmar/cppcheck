@@ -171,22 +171,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionNewProject</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>fileNewProject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionSettings</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
