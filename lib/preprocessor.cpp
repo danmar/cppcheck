@@ -994,11 +994,10 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                 "#endfile\n"
                 ;
         }
-        
+
         for (std::vector<std::string>::iterator it = _settings->library.defines.begin();
              it != _settings->library.defines.end();
-             ++it)
-        {
+             ++it) {
             forcedIncludes += *it;
         }
     }

@@ -6292,7 +6292,7 @@ private:
         Settings settings;
         LOAD_LIB("gtk.cfg");
         settings.library = _lib;
-        
+
         // Preprocess...
         Preprocessor preprocessor(&settings, this);
         std::istringstream istrpreproc(code);
