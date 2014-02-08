@@ -42,7 +42,7 @@ void ResultsForm::contextMenu(QPoint pos)
     QAction *showAll = new QAction(tr("Show all"), &contextMenu);
     contextMenu.addAction(showAll);
 
-    const QAction *a = contextMenu.exec(mapToGlobal(pos));
+    const QAction *a = contextMenu.exec(ui->results->viewport()->mapToGlobal(pos));
     if (a==hideId)
         resultsmodel->hideId(row);
     else if (a==hideAllOtherId)
