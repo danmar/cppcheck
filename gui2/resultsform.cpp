@@ -79,6 +79,9 @@ void ResultsForm::scan(const ProjectList::Project &project)
     if (currentScan.process)
         return;
 
+    ui->progressBar->setVisible(true);
+    ui->triageWidget->setVisible(false);
+
     currentScan.process = new QProcess(this);
     currentScan.project = project;
     connect(currentScan.process, SIGNAL(readyReadStandardError()), this, SLOT(scanAddResult()));
@@ -273,6 +276,7 @@ void ResultsForm::triage(QModelIndex index)
         } else {
             QTextStream textstream(&file);
             const QString filedata(textstream.readAll());
+            ui->triageWidget->setVisible(true);
             ui->codeBrowser->setPlainText(filedata);
             ui->codeBrowser->setLine(node.line.toInt());
             ui->falsePositive->setEnabled(true);
