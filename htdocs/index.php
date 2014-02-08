@@ -64,8 +64,7 @@ errors in the code (i.e. have zero false positives).
         <span class="downButtonVersion">Version 1.63.1 for Windows</span>
     </a>
 </p>
-<p>You can download the standalone Cppcheck from our
-<a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
+<p>You can download the standalone Cppcheck from our <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
 as a plugin for your favorite IDE:</p>
 <ul>
   <li><strong>Code::Blocks</strong> - <em>integrated</em></li>
@@ -74,14 +73,16 @@ as a plugin for your favorite IDE:</p>
   <li><strong>gedit</strong> - <a href="http://github.com/odamite/gedit-cppcheck">gedit plugin</a></li>
   <li><strong>Hudson</strong> - <a href="http://wiki.hudson-ci.org/display/HUDSON/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
-  <li><strong>Tortoise SVN</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Tortoisesvn">Adding a pre-commit hook script</a></li>
   <li><strong>Mercurial (Linux)</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Mercurialhook">pre-commit hook</a> - Check for new errors on commit (requires interactive terminal)</li>
+  <li><strong>Tortoise SVN</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Tortoisesvn">Adding a pre-commit hook script</a></li>
+  <li><strong>Visual Studio</strong> - <a href="https://github.com/VioletGiraffe/cppcheck-vs-addin/releases">Visual Studio plugin</a></li>
 </ul>
-<p>There is no plugin for <strong>Visual Studio</strong>, but it is possible to
-add Cppcheck as an external tool. You can also try the proprietary
-<a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a> (there is a free trial),
-which is oriented for this environment. A comparison of Cppcheck and PVS-Studio can be found
-<a href="http://www.viva64.com/en/b/0149/">here</a> and we believe it's a good and honest comparison.</p>
+
+<p>Using a battery of tools is better than using 1 tool. Therefore we recommend that you also use other tools.</p>
+
+<p>One other tool you can use is <a href="http://www.viva64.com/en/pvs-studio/">PVS-Studio</a>. There is a
+<a href="http://www.viva64.com/en/b/0149/">comparison of Cppcheck and PVS-Studio</a> and we believe it's a good and honest comparison.
+PVS-Studio is commercial, however there is a free trial.</p>
 
 <h2 id="features">Features</h2>
 <ul>
