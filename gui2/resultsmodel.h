@@ -60,7 +60,7 @@ public:
     void hideAllOtherId(int row);
     void showAll();
 
-    bool load(const QString &fileName);
+    bool load(const QString &fileName, const QString &projectPath);
     bool save(const QString &fileName, const QString &projectName) const;
 
     Node getNodeFromIndex(const QModelIndex &index) const {

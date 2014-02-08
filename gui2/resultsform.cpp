@@ -247,11 +247,11 @@ static QString lastResultFile(const QString &projectName)
     return ret;
 }
 
-void ResultsForm::showResults(const QString & projectName)
+void ResultsForm::showResults(const ProjectList::Project &project)
 {
     if (currentScan.process == 0) {
         ui->progressBar->setVisible(false);
-        resultsmodel->load(lastResultFile(projectName));
+        resultsmodel->load(lastResultFile(project.name), project.path);
     }
 }
 
@@ -264,7 +264,7 @@ void ResultsForm::triage(QModelIndex index)
         ui->truePositive->setEnabled(false);
         triageIndex = QModelIndex();
     } else {
-        QFile file(currentScan.project.path + '/' + node.filename);
+        QFile file(node.fullfilename);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             ui->codeBrowser->clear();
             ui->falsePositive->setEnabled(false);

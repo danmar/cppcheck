@@ -79,7 +79,7 @@ static QString getstr(const QDomElement element, const QString &tagName)
     return child.isNull() ? QString() : child.text();
 }
 
-bool ResultsModel::load(const QString &fileName)
+bool ResultsModel::load(const QString &fileName, const QString &projectPath)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -107,13 +107,15 @@ bool ResultsModel::load(const QString &fileName)
             if (!rootNode)
                 rootNode = new Node;
 
-            new Node(rootNode,
-                     getstr(element,"file"),
-                     getstr(element,"line"),
-                     getstr(element,"severity"),
-                     getstr(element,"text"),
-                     getstr(element,"id"),
-                     getstr(element,"triage"));
+            Node *node = new Node(rootNode,
+                                  getstr(element,"file"),
+                                  getstr(element,"line"),
+                                  getstr(element,"severity"),
+                                  getstr(element,"text"),
+                                  getstr(element,"id"),
+                                  getstr(element,"triage"));
+            if (!node->filename.isEmpty())
+                node->fullfilename = projectPath + "/" + node->filename;
         }
     }
 
@@ -212,7 +214,7 @@ int ResultsModel::rowCount(const QModelIndex &parent) const
 
 int ResultsModel::columnCount(const QModelIndex & /* parent */) const
 {
-    return 5;
+    return 6;
 }
 
 QModelIndex ResultsModel::parent(const QModelIndex &child) const
@@ -250,6 +252,13 @@ QVariant ResultsModel::data(const QModelIndex &index, int role) const
         return node->text;
     case 4:
         return node->id;
+    case 5:
+        if (node->triage == ResultsModel::Node::TRUE_POSITIVE)
+            return "True positive";
+        else if (node->triage == ResultsModel::Node::FALSE_POSITIVE)
+            return "False positive";
+        else
+            return QVariant();
     default:
         return QVariant();
     }
@@ -269,6 +278,8 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
             return tr("Text");
         case 4:
             return tr("Id");
+        case 5:
+            return tr("Triage");
         default:
             return QVariant();
         }

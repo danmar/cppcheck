@@ -76,16 +76,18 @@ void MainWindow::selectProject(QString projectName)
 
 void MainWindow::scan()
 {
-    resultsForm->show();
-
     const ProjectList::Project *project = projectList.getproject(ui->projectwidget->getProjectName());
     if (project) {
+        resultsForm->show();
         resultsForm->scan(*project);
     }
 }
 
 void MainWindow::log()
 {
-    resultsForm->show();
-    resultsForm->showResults(ui->projectwidget->getProjectName());
+    const ProjectList::Project *project = projectList.getproject(ui->projectwidget->getProjectName());
+    if (project) {
+        resultsForm->show();
+        resultsForm->showResults(*project);
+    }
 }

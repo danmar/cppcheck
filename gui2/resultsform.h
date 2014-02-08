@@ -20,7 +20,7 @@ public:
     ~ResultsForm();
 
     void scan(const ProjectList::Project &project);
-    void showResults(const QString &projectName);
+    void showResults(const ProjectList::Project &project);
 
 private slots:
     void scanAddResult();
