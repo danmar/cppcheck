@@ -38,12 +38,13 @@
     <ol>
       <li>Core Cppcheck
         <ol>
-          <li>Add a new checker (C++)</li>
+          <li>Add 1 new checker (C++)</li>
           <li>Improved value flow (C++)</li>
+          <li>Check for unused functions when -j is used (C++)</li>
         </ol></li>
       <li>Configurations
         <ol>
-          <li>Write more configurations (XML)</li>
+          <li>Add a configuration (XML)</li>
           <li>Auto generate configuration (C++ / scripting)
           <li>GUI for editing configurations (C++,Qt)</li>
         </ol></li>
@@ -58,7 +59,7 @@
 
   <p>
     <strong>Project 1.1</strong><br>
-    <strong>Name:</strong> Add a new checker<br>
+    <strong>Name:</strong> Add 1 new checker<br>
     <strong>Skills required:</strong> C++<br>
     <strong>Description:</strong> There are several tickets in our issue tracker that has ideas for new checkers.
     The subtasks will be: implement a new checker, write test cases, test it against various projects.
@@ -73,15 +74,26 @@
     after conditions, inside loops, etc.
   </p>
 
+  <p>
+    <strong>Project 1.3</strong><br>
+    <strong>Name:</strong> Check for unused functions when -j is used<br>
+    <strong>Skills required:</strong> C++, threads<br>
+    <strong>Description:</strong> Currently the check for unused functions only works when the analysis is
+    single-threaded. When multithreaded analysis is done the check is disabled. The function usage must be
+    stored in a thread safe way. The problem is that you don't have access to mutexes inside the check so
+    instead of store to the same container from different threads it might be a good idea to store the
+    function usage in different containers. And when all threads are done the results can be "merged".
+  </p>
 
   <h2>2. Configurations</h2>
 
   <p>
     <strong>Project 2.1</strong><br>
-    <strong>Name:</strong> Write more configurations<br>
-    <strong>Skills required:</strong> XML<br>
-    <strong>Description:</strong> More configuration files are needed for various libraries. It
-    would be most interesting to have more configurations for popular libraries.
+    <strong>Name:</strong> Add a configuration<br>
+    <strong>Skills required:</strong> C/C++ (not much), XML<br>
+    <strong>Description:</strong> More configuration files are needed for various libraries. Subtasks: choose
+    a popular library. Analyse the library functions and read API documentation. Write proper configuration
+    file for Cppcheck.
   </p>
 
   <p>
