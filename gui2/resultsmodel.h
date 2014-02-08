@@ -14,6 +14,7 @@ public:
     public:
         Node() {
             parent = 0;
+            triage = UNKNOWN;
         }
 
         Node(Node *parent, QString filename, QString line, QString severity, QString text, QString id, QString triage) {
