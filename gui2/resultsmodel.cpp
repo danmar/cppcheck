@@ -9,6 +9,7 @@ ResultsModel::ResultsModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
     rootNode = 0;
+    modified = false;
 }
 
 void ResultsModel::clear()
@@ -17,6 +18,9 @@ void ResultsModel::clear()
     delete rootNode;
     rootNode = 0;
     endResetModel();
+    modified = false;
+    currentFileName.clear();
+    currentProjectName.clear();
 }
 
 void ResultsModel::addresult(const QString &path, const QString &errmsg)
@@ -81,6 +85,10 @@ static QString getstr(const QDomElement element, const QString &tagName)
 
 bool ResultsModel::load(const QString &fileName, const QString &projectPath)
 {
+    modified = false;
+    currentFileName = fileName;
+    currentProjectName.clear();
+
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
@@ -92,6 +100,10 @@ bool ResultsModel::load(const QString &fileName, const QString &projectPath)
     const QDomElement rootElement = doc.documentElement();
     if (rootElement.tagName() != "results")
         return false;
+
+    const QDomElement metaElement = rootElement.firstChildElement("meta");
+    if (!metaElement.isNull())
+        currentProjectName = getstr(metaElement, "project");
 
     const QDomElement resultsElement = rootElement.firstChildElement("results");
     if (resultsElement.isNull())
@@ -123,12 +135,11 @@ bool ResultsModel::load(const QString &fileName, const QString &projectPath)
     return true;
 }
 
-bool ResultsModel::save(const QString &fileName, const QString &projectName) const
+bool ResultsModel::save(const QString &fileName, const QString &projectName)
 {
     QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
-    }
 
     QDomDocument doc;
     QDomElement root = doc.createElement("results");
@@ -183,9 +194,20 @@ bool ResultsModel::save(const QString &fileName, const QString &projectName) con
     QTextStream out(&file);
     doc.save(out, 4);
 
+    modified = false;
+    currentFileName = fileName;
+    currentProjectName = projectName;
+
     return true;
 }
 
+void ResultsModel::saveIfModified()
+{
+    if (modified && !currentFileName.isEmpty() && !currentProjectName.isEmpty()) {
+        modified = false;
+        save(currentFileName,currentProjectName);
+    }
+}
 
 
 QModelIndex ResultsModel::index(int row, int column, const QModelIndex &parent) const

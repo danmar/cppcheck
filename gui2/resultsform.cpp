@@ -27,6 +27,7 @@ ResultsForm::ResultsForm(QWidget *parent) :
 
 ResultsForm::~ResultsForm()
 {
+    resultsmodel->saveIfModified();
     delete ui;
 }
 
@@ -86,6 +87,7 @@ void ResultsForm::scan(const ProjectList::Project &project)
     currentScan.project = project;
     connect(currentScan.process, SIGNAL(readyReadStandardError()), this, SLOT(scanAddResult()));
     connect(currentScan.process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(scanFinished()));
+    resultsmodel->saveIfModified();
     resultsmodel->clear();
     ui->progressBar->setVisible(true);
     ui->progressBar->setEnabled(true);
@@ -254,6 +256,7 @@ void ResultsForm::showResults(const ProjectList::Project &project)
 {
     if (currentScan.process == 0) {
         ui->progressBar->setVisible(false);
+        resultsmodel->saveIfModified();
         resultsmodel->load(lastResultFile(project.name), project.path);
     }
 }
