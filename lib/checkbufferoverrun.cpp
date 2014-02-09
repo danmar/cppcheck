@@ -2041,12 +2041,6 @@ void CheckBufferOverrun::negativeIndex()
     }
 }
 
-
-/// @addtogroup Checks
-/// @{
-
-
-
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
     : _element_size(0), _declarationId(0)
 {
@@ -2186,5 +2180,4 @@ void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std
                 "The number of bytes to write (" + MathLib::toString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::toString(stringLength)+ " bytes)."
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
-// -------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
+
