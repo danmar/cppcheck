@@ -1038,10 +1038,6 @@ void CheckNullPointer::nullPointerDefaultArgument()
     }
 }
 
-/// @addtogroup Checks
-/// @{
-
-
 void CheckNullPointer::nullPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "nullPointer", "Null pointer dereference");
@@ -1065,3 +1061,4 @@ void CheckNullPointer::nullPointerDefaultArgError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname);
 }
+
