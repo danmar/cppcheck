@@ -9,6 +9,7 @@ namespace Ui {
     class MainWindow;
 }
 
+class Graph;
 class ResultsForm;
 
 class MainWindow : public QMainWindow {
@@ -26,11 +27,13 @@ private slots:
     // Project widget..
     void scan();
     void log();
+    void trend();
 
 private:
     Ui::MainWindow *ui;
-    ProjectList projectList;
-    ResultsForm *resultsForm;
+    ProjectList     projectList;
+    ResultsForm    *resultsForm;
+    Graph          *graph;
 };
 
 #endif // MAINWINDOW_H

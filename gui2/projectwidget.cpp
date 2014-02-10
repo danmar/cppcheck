@@ -144,6 +144,9 @@ void ProjectWidget::mousePressEvent(QMouseEvent *event)
 {
     int button = (width() - event->pos().x()) / (distance + buttonSize);
 
+    if (button == 0)
+        emit(trend());
+
     if (button == 2)
         emit(log());
 

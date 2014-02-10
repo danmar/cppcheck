@@ -16,6 +16,7 @@ public:
 signals:
     void scan();
     void log();
+    void trend();
 
 private:
     void paintEvent(QPaintEvent *event);

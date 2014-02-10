@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "applicationsettings.h"
 #include "configureprojects.h"
+#include "graph.h"
 #include "resultsform.h"
 #include "settingsdialog.h"
 #include "ui_mainwindow.h"
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->projectwidget, SIGNAL(scan()), this, SLOT(scan()));
     connect(ui->projectwidget, SIGNAL(log()), this, SLOT(log()));
+    connect(ui->projectwidget, SIGNAL(trend()), this, SLOT(trend()));
 
     // TODO: right now we don't show anything on the status bar
     this->statusBar()->hide();
@@ -36,6 +38,10 @@ MainWindow::MainWindow(QWidget *parent) :
     resultsForm = new ResultsForm(this);
     resultsForm->hide();
     layout->addWidget(resultsForm);
+
+    graph = new Graph(this);
+    graph->hide();
+    layout->addWidget(graph);
 }
 
 MainWindow::~MainWindow()
@@ -78,6 +84,7 @@ void MainWindow::scan()
 {
     const ProjectList::Project *project = projectList.getproject(ui->projectwidget->getProjectName());
     if (project) {
+        graph->hide();
         resultsForm->show();
         resultsForm->scan(*project);
     }
@@ -87,7 +94,15 @@ void MainWindow::log()
 {
     const ProjectList::Project *project = projectList.getproject(ui->projectwidget->getProjectName());
     if (project) {
+        graph->hide();
         resultsForm->show();
         resultsForm->showResults(*project);
     }
+}
+
+void MainWindow::trend()
+{
+    graph->trend(ui->projectwidget->getProjectName());
+    resultsForm->hide();
+    graph->show();
 }

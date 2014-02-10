@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     projectwidget.cpp \
     resultsform.cpp \
     projectlist.cpp \
-    codebrowser.cpp
+    codebrowser.cpp \
+    graph.cpp
 
 HEADERS  += mainwindow.h \
     settingsdialog.h \
@@ -30,7 +31,8 @@ HEADERS  += mainwindow.h \
     projectwidget.h \
     resultsform.h \
     projectlist.h \
-    codebrowser.h
+    codebrowser.h \
+    graph.h
 
 FORMS    += mainwindow.ui \
     settingsdialog.ui \
