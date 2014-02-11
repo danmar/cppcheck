@@ -10,6 +10,41 @@
 #include <QProcess>
 #include <QTextCodec>
 
+static QString lastResultFile(const QString &projectName)
+{
+    QString ret;
+
+    ApplicationSettings settings;
+    QDir dir(settings.resultsFolder);
+    dir.setSorting(QDir::Name);
+    dir.setNameFilters(QStringList() << "*.xml");
+    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+    foreach(const QFileInfo fileinfo, dir.entryInfoList()) {
+        const QString filename = fileinfo.canonicalFilePath();
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+
+        QDomDocument doc;
+        if (!doc.setContent(&file))
+            continue;
+
+        const QDomElement rootElement = doc.documentElement();
+        if (rootElement.tagName() != "results")
+            continue;
+
+        const QDomElement metaElement = rootElement.firstChildElement("meta");
+        if (metaElement.isNull())
+            continue;
+
+        const QDomElement projectElement = metaElement.firstChildElement("project");
+        if (projectElement.text() == projectName)
+            ret = filename;
+    }
+
+    return ret;
+}
+
 ResultsForm::ResultsForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ResultsForm)
@@ -185,13 +220,14 @@ void ResultsForm::scanFinished()
         ui->progressBar->setEnabled(false);
 
         // Save results to file so they can be viewed later
+        const QString last = lastResultFile(currentScan.project.name);
         QString filename;
         for (int i = 1; i < 10000; i++) {
             filename = settings.resultsFolder + "/"
                        + QDate::currentDate().toString("yyyy-MM-dd-")
                        + QString().sprintf("%i",i)
                        + ".xml";
-            if (!QFileInfo(filename).exists())
+            if (!QFileInfo(filename).exists() || filename == last)
                 break;
         }
         if (!resultsmodel->save(filename, currentScan.project.name))
@@ -215,41 +251,6 @@ void ResultsForm::scanFinished()
         currentScan.process->start(cmd, args << currentScan.files[currentScan.filenum]);
         ui->progressBar->setValue(100 * currentScan.filenum / currentScan.files.size());
     }
-}
-
-static QString lastResultFile(const QString &projectName)
-{
-    QString ret;
-
-    ApplicationSettings settings;
-    QDir dir(settings.resultsFolder);
-    dir.setSorting(QDir::Name);
-    dir.setNameFilters(QStringList() << "*.xml");
-    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-    foreach(const QFileInfo fileinfo, dir.entryInfoList()) {
-        const QString filename = fileinfo.canonicalFilePath();
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-            continue;
-
-        QDomDocument doc;
-        if (!doc.setContent(&file))
-            continue;
-
-        const QDomElement rootElement = doc.documentElement();
-        if (rootElement.tagName() != "results")
-            continue;
-
-        const QDomElement metaElement = rootElement.firstChildElement("meta");
-        if (metaElement.isNull())
-            continue;
-
-        const QDomElement projectElement = metaElement.firstChildElement("project");
-        if (projectElement.text() == projectName)
-            ret = filename;
-    }
-
-    return ret;
 }
 
 void ResultsForm::showResults(const ProjectList::Project &project)
