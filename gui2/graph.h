@@ -10,6 +10,7 @@ class Graph : public QWidget {
     Q_OBJECT
 public:
     explicit Graph(QWidget *parent = 0);
+    void diff(const QString &projectName);
     void trend(const QString &projectName);
 
 protected:

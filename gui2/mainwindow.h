@@ -27,6 +27,7 @@ private slots:
     // Project widget..
     void scan();
     void log();
+    void diff();
     void trend();
 
 private:

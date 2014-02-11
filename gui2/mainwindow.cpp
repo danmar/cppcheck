@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->projectwidget, SIGNAL(scan()), this, SLOT(scan()));
     connect(ui->projectwidget, SIGNAL(log()), this, SLOT(log()));
+    connect(ui->projectwidget, SIGNAL(diff()), this, SLOT(diff()));
     connect(ui->projectwidget, SIGNAL(trend()), this, SLOT(trend()));
 
     // TODO: right now we don't show anything on the status bar
@@ -98,6 +99,13 @@ void MainWindow::log()
         resultsForm->show();
         resultsForm->showResults(*project);
     }
+}
+
+void MainWindow::diff()
+{
+    graph->diff(ui->projectwidget->getProjectName());
+    resultsForm->hide();
+    graph->show();
 }
 
 void MainWindow::trend()

@@ -110,7 +110,7 @@ void ProjectWidget::paintEvent(QPaintEvent * /*event*/)
         diff[i] = std::max(0, results[i] - results[i-1]);
     drawBarGraph(&painter, buttonx, distance, buttonSize, buttonSize, diff, sizeof(diff) / sizeof(diff[0]));
     painter.setPen(Qt::black);
-    painter.drawText(buttonx, distance + buttonSize + normalTextHeight, "New");
+    painter.drawText(buttonx, distance + buttonSize + normalTextHeight, "Diff");
     buttonx -= distance + buttonSize;
 
     // Log
@@ -146,6 +146,9 @@ void ProjectWidget::mousePressEvent(QMouseEvent *event)
 
     if (button == 0)
         emit(trend());
+
+    if (button == 1)
+        emit(diff());
 
     if (button == 2)
         emit(log());

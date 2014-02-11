@@ -16,6 +16,7 @@ public:
 signals:
     void scan();
     void log();
+    void diff();
     void trend();
 
 private:
