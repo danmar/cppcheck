@@ -85,5 +85,8 @@ void Graph::paintEvent(QPaintEvent * /*event*/)
     QPainter painter(this);
     painter.fillRect(rect(),Qt::white);
     drawLineGraph(&painter,50,50,width()-100,height()-100,&values[0],values.size());
+    painter.setPen(Qt::black);
+    painter.drawText(QRect(50,height()-40,100,20), Qt::AlignLeft, datetimes.front());
+    painter.drawText(QRect(width()-150,height()-40,100,20), Qt::AlignRight, datetimes.back());
 }
 
