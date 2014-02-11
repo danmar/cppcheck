@@ -4248,6 +4248,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: leak1\n"
                       "[test.cpp:5]: (error) Resource leak: leak2\n"
                       "[test.cpp:5]: (error) Resource leak: leak3\n", errout.str());
+
+        check("void f(char *a) {\n"
+              "    char *s = g_strdup(a);\n"
+              "    mkstemp(s);\n"
+              "    mkdtemp(s);\n"
+              "    mktemp(s);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
     }
 };
 
