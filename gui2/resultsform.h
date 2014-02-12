@@ -45,6 +45,7 @@ private:
         int                   analyser;
     } currentScan;
 
+    QStringList getresults() const;
 };
 
 #endif // RESULTSFORM_H

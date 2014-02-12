@@ -66,10 +66,51 @@ ResultsForm::~ResultsForm()
     delete ui;
 }
 
+QStringList ResultsForm::getresults() const
+{
+    QStringList ret;
+
+    const QString projectName = resultsmodel->getProjectName();
+    if (projectName.isEmpty())
+        return ret;
+
+    ApplicationSettings settings;
+    QDir dir(settings.resultsFolder);
+    dir.setSorting(QDir::Name);
+    dir.setNameFilters(QStringList() << "*.xml");
+    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+    foreach(const QFileInfo fileinfo, dir.entryInfoList()) {
+        const QString filename = fileinfo.canonicalFilePath();
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+
+        QDomDocument doc;
+        if (!doc.setContent(&file))
+            continue;
+
+        const QDomElement rootElement = doc.documentElement();
+        if (rootElement.tagName() != "results")
+            continue;
+
+        const QDomElement metaElement = rootElement.firstChildElement("meta");
+        if (metaElement.isNull())
+            continue;
+
+        const QDomElement projectElement = metaElement.firstChildElement("project");
+        if (projectElement.text() == projectName)
+            ret.append(filename);
+    }
+
+    ret.sort();
+
+    return ret;
+}
+
 void ResultsForm::contextMenu(QPoint pos)
 {
     const int row = ui->results->currentIndex().row();
-    QMenu contextMenu(tr("Context menu"), this);
+    QMenu contextMenu(tr("Context menu"),0);
 
     QAction *hideId = new QAction(tr("Hide id"), &contextMenu);
     contextMenu.addAction(hideId);
@@ -77,14 +118,25 @@ void ResultsForm::contextMenu(QPoint pos)
     contextMenu.addAction(hideAllOtherId);
     QAction *showAll = new QAction(tr("Show all"), &contextMenu);
     contextMenu.addAction(showAll);
+    QMenu diffMenu(tr("Diff against"),0);
+    contextMenu.addMenu(&diffMenu);
+    QList<QAction*> diff;
+    foreach(const QString filename, getresults()) {
+        QAction *action = new QAction(filename, &diffMenu);
+        diffMenu.addAction(action);
+        diff.append(action);
+    }
 
-    const QAction *a = contextMenu.exec(ui->results->viewport()->mapToGlobal(pos));
-    if (a==hideId)
+    const QAction *action = contextMenu.exec(ui->results->viewport()->mapToGlobal(pos));
+    if (action==hideId)
         resultsmodel->hideId(row);
-    else if (a==hideAllOtherId)
+    else if (action==hideAllOtherId)
         resultsmodel->hideAllOtherId(row);
-    else if (a==showAll)
+    else if (action==showAll)
         resultsmodel->showAll();
+    else if (diff.contains(const_cast<QAction*>(action))) {
+        resultsmodel->diffAgainstFile(action->text());
+    }
 }
 
 

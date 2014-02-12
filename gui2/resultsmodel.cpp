@@ -77,6 +77,45 @@ void ResultsModel::showAll()
     endResetModel();
 }
 
+void ResultsModel::diffAgainstFile(const QString &filename)
+{
+    if (!rootNode)
+        return;
+
+    QList<QString> results;
+    for (int i = 0; i < rootNode->allchildren.size(); ++i) {
+        results.append(rootNode->allchildren[i]->id + "," +
+                       rootNode->allchildren[i]->line + "," +
+                       rootNode->allchildren[i]->filename);
+    }
+
+    ResultsModel other;
+    other.load(filename,QString());
+    if (!other.rootNode)
+        return;
+
+    QList<QString> otherResults;
+    for (int i = 0; i < other.rootNode->allchildren.size(); ++i) {
+        otherResults.append(other.rootNode->allchildren[i]->id + "," +
+                            other.rootNode->allchildren[i]->line + "," +
+                            other.rootNode->allchildren[i]->filename);
+    }
+
+    beginResetModel();
+    rootNode->shownchildren.clear();
+    for (int i = 0; i < results.size(); ++i) {
+        if (!otherResults.contains(results[i])) {
+            rootNode->shownchildren.append(rootNode->allchildren[i]);
+        }
+        if (!results.contains(otherResults[i])) {
+            rootNode->shownchildren.append(other.rootNode->allchildren[i]);
+            other.rootNode->allchildren[i] = 0;
+        }
+    }
+    endResetModel();
+}
+
+
 static QString getstr(const QDomElement element, const QString &tagName)
 {
     const QDomElement child = element.firstChildElement(tagName);

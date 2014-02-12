@@ -59,6 +59,7 @@ public:
     void hideId(int row);
     void hideAllOtherId(int row);
     void showAll();
+    void diffAgainstFile(const QString &filename);
 
     bool load(const QString &fileName, const QString &projectPath);
     bool save(const QString &fileName, const QString &projectName);
@@ -77,6 +78,10 @@ public:
             modified = true;
             n->triage = value;
         }
+    }
+
+    QString getProjectName() const {
+        return currentProjectName;
     }
 
 private:
