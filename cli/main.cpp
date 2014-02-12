@@ -20,7 +20,7 @@
 /**
  *
  * @mainpage Cppcheck
- * @version 1.62.99
+ * @version 1.63.99
  *
  * @section overview_sec Overview
  * Cppcheck is a simple tool for static analysis of C/C++ code.
@@ -31,6 +31,7 @@
  *  - SymbolDatabase = Information about all types/variables/functions/etc
  *    in the current translation unit
  *  - Library = Information about functions
+ *  - Value flow analysis => possible values for each token
  *
  * Use --debug on the command line to see debug output for the token list
  * and the syntax tree. If both --debug and --verbose is used, the symbol
@@ -94,6 +95,10 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 /**
  * Main function of cppcheck
  *
@@ -104,6 +109,11 @@ void CheckOther::checkZeroDivision()
 int main(int argc, char* argv[])
 {
     CppCheckExecutor exec;
+#ifdef _WIN32
+    char exename[1024] = {0};
+    GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
+    argv[0] = exename;
+#endif
     return exec.check(argc, argv);
 }
 

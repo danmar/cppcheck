@@ -89,6 +89,12 @@ bool Library::load(const char exename[], const char path[])
     return (error == tinyxml2::XML_NO_ERROR) && load(doc);
 }
 
+bool Library::loadxmldata(const char xmldata[], std::size_t len)
+{
+    tinyxml2::XMLDocument doc;
+    return (tinyxml2::XML_NO_ERROR == doc.Parse(xmldata, len)) && load(doc);
+}
+
 bool Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
@@ -119,6 +125,20 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                 else
                     return false;
             }
+        }
+
+        else if (strcmp(node->Name(),"define")==0) {
+            const char *name = node->Attribute("name");
+            if (name == NULL)
+                return false;
+            const char *value = node->Attribute("value");
+            if (value == NULL)
+                return false;
+            defines.push_back(std::string("#define ") +
+                              name +
+                              " " +
+                              value +
+                              "\n");
         }
 
         else if (strcmp(node->Name(),"function")==0) {
@@ -180,6 +200,10 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     argumentChecks[name][nr].valid     = valid;
                 } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
                     _ignorefunction.insert(name);
+                } else if (strcmp(functionnode->Name(), "formatstr") == 0) {
+                    const tinyxml2::XMLAttribute* scan = functionnode->FindAttribute("scan");
+                    const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
+                    _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
                 } else
                     return false;
             }

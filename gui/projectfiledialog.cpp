@@ -46,8 +46,8 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-    const QString searchPaths[] = { appPath, appPath + "/cfg", inf.canonicalPath() };
-    for (int i = 0; i < 3; i++) {
+    const QString searchPaths[] = { ":/cfg", appPath, appPath + "/cfg", inf.canonicalPath() };
+    for (int i = 0; i < sizeof(searchPaths) / sizeof(searchPaths[0]); i++) {
         QDir dir(searchPaths[i]);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));

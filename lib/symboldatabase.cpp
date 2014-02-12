@@ -59,7 +59,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     std::map<const Token *, Scope *> back;
 
     // find all scopes
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : NULL) {
         // Locate next class
         if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
             tok->strAt(-1) != "friend") {
@@ -1064,8 +1064,10 @@ void Variable::evaluate()
 
     if (_name)
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
-    if (_start)
+    if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
+        _stlType = Token::Match(_start, "std ::");
+    }
     if (_access == Argument) {
         tok = _name;
         if (!tok) {
@@ -1432,7 +1434,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), ",|{|%type%")))) {
+    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), "%type%|,|{")))) {
         if (tok1->str() == "(" || tok1->str() == "{")
             tok1 = tok1->link();
         tok1 = tok1->next();
@@ -2023,7 +2025,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 {
     // check each base class
-    for (unsigned int i = 0; i < baseType->derivedFrom.size(); ++i) {
+    for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
         // check if base class exists in database
         if (baseType->derivedFrom[i].type && baseType->derivedFrom[i].type->classScope) {
             const Scope *parent = baseType->derivedFrom[i].type->classScope;
@@ -2055,9 +2057,11 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
                 }
             }
 
-            if (!baseType->derivedFrom[i].type->derivedFrom.empty())
-                if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
+            if (!baseType->derivedFrom[i].type->derivedFrom.empty()) {
+                // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN
+                if ((baseType != baseType->derivedFrom[i].type) && isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
                     return true;
+            }
         } else {
             // unable to find base class so assume it has no virtual function
             safe = false;

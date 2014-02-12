@@ -82,7 +82,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
@@ -316,6 +316,7 @@ int main(int argc, char **argv)
 //                                "-Wsign-conversion "
                                 "-Wsign-promo "
 //                                "-Wunreachable-code "
+                                "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarelly a bug
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
@@ -359,18 +360,18 @@ int main(int argc, char **argv)
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
     fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) -std=c++0x -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n\n";
     fout << "reduce:\ttools/reduce.cpp\n";
-    fout << "\t$(CXX) -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml lib/*.cpp externals/tinyxml/tinyxml2.cpp\n\n";
+    fout << "\t$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml lib/*.cpp externals/tinyxml/tinyxml2.cpp\n\n";
     fout << "clean:\n";
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
@@ -388,6 +389,7 @@ int main(int argc, char **argv)
     compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
+    compilefiles(fout, externalfiles, "${INCLUDE_FOR_LIB}");
 
     return 0;
 }

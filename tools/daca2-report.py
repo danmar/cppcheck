@@ -31,13 +31,6 @@ def readdate(data):
             return None
         datepos = datepos + 1
 
-if os.path.isfile(os.path.expanduser('~/aws-debian.pem')):
-    subprocess.call(['scp',
-                     '-i',
-                     os.path.expanduser('~/aws-debian.pem'),
-                     'admin@ec2-54-201-59-232.us-west-2.compute.amazonaws.com:daca2/results-*.txt',
-                     os.path.expanduser('~/daca2/')])
-
 path = '.'
 if len(sys.argv) == 2:
     path = sys.argv[1]
@@ -66,7 +59,8 @@ mainpage.write(
     '<td>Warning</td>' +
     '<td>Performance</td>' +
     '<td>Portability</td>' +
-    '<td>Style</td></tr>\n')
+    '<td>Style</td>' +
+    '<td>Crashes</td></tr>\n')
 
 lastupdate = None
 recent = []
@@ -111,6 +105,7 @@ for lib in range(2):
                 '<td>' + str(data.count('(performance)')) + '</td>' +
                 '<td>' + str(data.count('(portability)')) + '</td>' +
                 '<td>' + str(data.count('(style)')) + '</td>' +
+                '<td>' + str(data.count('Crash?')) + '</td>' +
                 '</tr>\n')
 
             data = data.replace('&', '&amp;')

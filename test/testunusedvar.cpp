@@ -34,6 +34,9 @@ public:
 
 private:
     void run() {
+        TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
+        TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
+
         TEST_CASE(structmember1);
         TEST_CASE(structmember2);
         TEST_CASE(structmember3);
@@ -173,6 +176,30 @@ private:
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         checkUnusedVar.checkStructMemberUsage();
+    }
+
+    // #5355 - False positive: Variable is not assigned a value.
+    void emptyclass() {
+        functionVariableUsage("class Carla {\n"
+                              "};\n"
+                              "class Fred : Carla {\n"
+                              "};\n"
+                              "void foo() {\n"
+                              "    Fred fred;\n"
+                              "    throw fred;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #5355 - False positive: Variable is not assigned a value.
+    void emptystruct() {
+        functionVariableUsage("struct Fred {\n"
+                              "};\n"
+                              "void foo() {\n"
+                              "    Fred fred;\n"
+                              "    throw fred;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember1() {

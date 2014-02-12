@@ -44,6 +44,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}token.h \
            $${BASEPATH}tokenize.h \
            $${BASEPATH}tokenlist.h \
+           $${BASEPATH}valueflow.h \
 
 
 SOURCES += $${BASEPATH}check64bit.cpp \
@@ -83,4 +84,5 @@ SOURCES += $${BASEPATH}check64bit.cpp \
            $${BASEPATH}timer.cpp \
            $${BASEPATH}token.cpp \
            $${BASEPATH}tokenize.cpp \
-           $${BASEPATH}tokenlist.cpp
+           $${BASEPATH}tokenlist.cpp \
+           $${BASEPATH}valueflow.cpp

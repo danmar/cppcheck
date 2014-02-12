@@ -994,6 +994,12 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                 "#endfile\n"
                 ;
         }
+
+        for (std::vector<std::string>::iterator it = _settings->library.defines.begin();
+             it != _settings->library.defines.end();
+             ++it) {
+            forcedIncludes += *it;
+        }
     }
 
     if (!forcedIncludes.empty()) {
@@ -1635,7 +1641,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         if (it != cfg.end()) {
             if (!it->second.empty()) {
                 // Tokenize the value
-                Tokenizer tokenizer2(&settings,NULL);
+                Tokenizer tokenizer2(&settings, _errorLogger);
                 tokenizer2.tokenizeCondition(it->second);
 
                 // Copy the value tokens
@@ -1774,7 +1780,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 break;
 
             if (line.find("=") != std::string::npos) {
-                Tokenizer tokenizer(_settings, NULL);
+                Tokenizer tokenizer(_settings, _errorLogger);
                 line.erase(0, sizeof("#pragma endasm"));
                 std::istringstream tempIstr(line);
                 tokenizer.tokenize(tempIstr, "");
@@ -3161,6 +3167,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                 i++;
                                 if (i<macrocode.size() && std::isdigit(macrocode[i]))
                                     i++;
+                                if (i+1U < macrocode.size() &&
+                                    (macrocode[i] == 'e' || macrocode[i] == 'E') &&
+                                    (macrocode[i+1] == '+' || macrocode[i+1] == '-')) {
+                                    i+=2;
+                                }
                             }
                         } else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
                             if ((i > 0U)                        &&
@@ -3183,7 +3194,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                             if (i+2U < macrocode.size()    &&
                                 std::isdigit(macrocode[i]) &&
                                 macrocode[i+1] == '.'      &&
-                                std::isalnum(macrocode[i+2])) {
+                                std::isalpha(macrocode[i+2])) {
                                 i += 2U;
                                 if (i+2U < macrocode.size() &&
                                     (macrocode[i+0] == 'e' || macrocode[i+0] == 'E')   &&

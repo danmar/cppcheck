@@ -80,9 +80,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             if (FileLister::isDirectory(path))
                 ++iter;
             else {
-                // If the include path is not found, warn user and remove the
-                // non-existing path from the list.
-                std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
+                // If the include path is not found, warn user (unless --quiet
+                // was used) and remove the non-existing path from the list.
+                if (!settings._errorsOnly)
+                    std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings._includePaths.erase(iter);
             }
         }
@@ -162,8 +163,18 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (!std || !posix) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken.");
-        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg, "failedToLoadCfg", false);
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+#ifdef CFGDIR
+        const std::string details("The Cppcheck binary was compiled with CFGDIR set to \"" +
+                                  std::string(CFGDIR) + "\" and will therefore search for "
+                                  "std.cfg in that path.");
+#else
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(argv[0])) + "cfg");
+        const std::string details("The Cppcheck binary was compiled without CFGDIR set. Either the "
+                                  "std.cfg should be available in " + cfgfolder + " or the CFGDIR "
+                                  "should be configured.");
+#endif
+        ErrorLogger::ErrorMessage errmsg(callstack, Severity::information, msg+" "+details, "failedToLoadCfg", false);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }

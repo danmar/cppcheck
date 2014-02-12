@@ -16,7 +16,7 @@ git reset --hard HEAD > times.log
 
 for i in `seq 1 50`;
   do
-    make CXXFLAGS=-O2 -j4
+    make SRCDIR=build CXXFLAGS=-O2 -j4
     echo "$i"
     ./cppcheck -q --showtime=summary --enable=all --inconclusive src 2> /dev/null >> times.log
     ./cppcheck -q --showtime=summary --enable=all --inconclusive src 2> /dev/null >> times.log

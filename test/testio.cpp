@@ -53,11 +53,9 @@ private:
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
-
-        TEST_CASE(testlibrarycfg); // library configuration
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, Library *lib = NULL) {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
@@ -69,8 +67,7 @@ private:
         settings.inconclusive = inconclusive;
         settings.platform(platform);
 
-        if (lib)
-            settings.library = *lib;
+        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -437,6 +434,8 @@ private:
 
 
     void testScanf1() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    int a, b;\n"
               "    FILE *file = fopen(\"test\", \"r\");\n"
@@ -455,6 +454,8 @@ private:
     }
 
     void testScanf2() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    scanf(\"%5s\", bar);\n" // Width specifier given
               "    scanf(\"%5[^~]\", bar);\n" // Width specifier given
@@ -481,6 +482,7 @@ private:
     }
 
     void testScanf4() { // ticket #2553
+        LOAD_LIB("std.cfg");
 
         check("void f()\n"
               "{\n"
@@ -494,6 +496,8 @@ private:
 
 
     void testScanfArgument() {
+        LOAD_LIB("std.cfg");
+
         check("void foo() {\n"
               "    scanf(\"%1d\", &foo);\n"
               "    sscanf(bar, \"%1d\", &foo);\n"
@@ -1319,9 +1323,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g() {\n" // #5348
+              "    size_t s1;\n"
+              "    ptrdiff_t s2;\n"
+              "    ssize_t s3;\n"
+              "    scanf(\"%zd\", &s1);\n"
+              "    scanf(\"%zd\", &s2);\n"
+              "    scanf(\"%zd\", &s3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) %zd in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n", errout.str());
+
     }
 
     void testPrintfArgument() {
+        LOAD_LIB("std.cfg");
         check("void foo() {\n"
               "    printf(\"%u\");\n"
               "    printf(\"%u%s\", 123);\n"
@@ -2107,6 +2122,8 @@ private:
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
+        LOAD_LIB("std.cfg");
+
         check("void foo() {"
               "  int bar;"
               "  printf(\"%1$d\", 1);"
@@ -2131,6 +2148,9 @@ private:
 
 
     void testMicrosoftPrintfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -2205,9 +2225,24 @@ private:
                       "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
+
+        // ticket #5264
+        check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
+              "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
+              "}\n", false, false, Settings::Win64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
+              "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
+              "}\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testMicrosoftScanfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -2312,6 +2347,9 @@ private:
     }
 
     void testMicrosoftSecurePrintfArgument() {
+        LOAD_LIB("std.cfg");
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -2502,6 +2540,8 @@ private:
     }
 
     void testMicrosoftSecureScanfArgument() {
+        LOAD_LIB("windows.cfg");
+
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -2631,22 +2671,6 @@ private:
               "    wscanf_s(L\"%4[^-]\", msStr1, _countof(msStr1));\n"
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void testlibrarycfg() {
-        const char code[] = "void f() {\n"
-                            "    format(\"%s\");\n"
-                            "}";
-
-        // no error if configuration for 'format' is not provided
-        check(code);
-        ASSERT_EQUALS("", errout.str());
-
-        // error if configuration for 'format' is provided
-        Library lib;
-        lib.argumentChecks["format"][1].formatstr = true;
-        check(code, false, false, Settings::Unspecified, &lib);
-        ASSERT_EQUALS("[test.cpp:2]: (error) format format string requires 1 parameter but only 0 are given.\n", errout.str());
     }
 };
 

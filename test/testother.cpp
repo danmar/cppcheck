@@ -283,7 +283,6 @@ private:
         Tokenizer tokenizer(&settings, &logger);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyGoto();
 
         // Check..
         CheckOther checkOther(&tokenizer, &settings, &logger);
@@ -548,49 +547,6 @@ private:
               "double* pp[3] = {p1,p2,p3};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        // ticket #5045 segmentation fault when SymbolDatabase is corrupt
-        {
-            // We don't use the "check" function because we need to
-            // make sure the symboldatabase is inconsistent..
-
-            const char code[] = "namespace {\n"
-                                "  void get() { source = create(context); }\n"
-                                "  void create( something const & context)\n"
-                                "      SAL_THROW((css::uno::Exception))\n"
-                                "  { return new Server(context); }\n"
-                                "}\n"
-                                "void component_getFactory()\n"
-                                "{ component_getFactoryHelper(); }";
-
-            Settings settings;
-            settings.addEnabled("warning");
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr,"test.cpp");
-            tokenizer.simplifyTokenList2();
-
-            // Assert that the symboldatabase is inconsistent..
-            const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
-            ASSERT_EQUALS(2U, symbolDatabase->getVariableListSize());
-            const Variable *var = symbolDatabase->getVariableFromVarId(1U);
-            ASSERT(!!var->typeStartToken());
-            bool invalid = true;
-            for (const Token *tok = var->typeStartToken(); tok; tok = tok->next()) {
-                invalid = true;
-                if (tok == var->typeEndToken()) {
-                    invalid = false;
-                    break;
-                }
-            }
-            ASSERT_EQUALS(true, invalid);
-
-            // Make sure there is no crash with inconsistent symboldatabase..
-            // typeStartToken() is not before typeEndToken()
-            errout.str("");
-            CheckOther checkOther(&tokenizer, &settings, this);
-            checkOther.checkZeroDivisionOrUselessCondition(); // don't crash
-        }
 
         // #5105 - FP
         check("int f(int a, int b) {\n"
@@ -1551,7 +1507,7 @@ private:
               "    std::cout <<  logl(1.0E+3) << std::endl;\n"
               "    std::cout <<  log(2.0)     << std::endl;\n"
               "    std::cout <<  logf(2.0)    << std::endl;\n"
-              "    std::cout <<  logf(2.0)    << std::endl;\n"
+              "    std::cout <<  logf(2.0f)   << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2810,11 +2766,7 @@ private:
             "        return;\n"
             "    }\n"
             "}");
-        // This fails because Tokenizer::simplifyGoto() copies the "leave:" block
-        // into where the goto is, but because it contains a "return", it omits
-        // copying a final return after the block.
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:5]: (style) Switch falls through case without comment. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check_preprocess_suppress(
             "void foo() {\n"
@@ -3722,6 +3674,11 @@ private:
               "        a++;\n"
               "}\n"
              );
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar(float f) {\n" // #5246
+              "    if ((f > 0) && (f < 1)) {}\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
@@ -4826,6 +4783,19 @@ private:
               "    if (bar(a) && !strcmp(a, b) && bar(a) && !strcmp(a, b)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5334
+        check("void f(C *src) {\n"
+              "    if (x<A*>(src) || x<B*>(src))\n"
+              "        a++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(A *src) {\n"
+              "    if (dynamic_cast<B*>(src) || dynamic_cast<B*>(src)) {}\n"
+              "}\n", "test.cpp", false, false, false, false); // don't run simplifications
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
     }
 
     void duplicateExpression4() {

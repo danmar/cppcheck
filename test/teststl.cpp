@@ -1922,13 +1922,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         check("void Foo1(const std::string& str) {}\n"
               "void Foo2(char* c, const std::string str) {}\n"
               "void Foo3(std::string& rstr) {}\n"
               "void Foo4(std::string str, const std::string& str) {}\n"
               "void Bar() {\n"
               "    std::string str = \"bar\";\n"
+              "    std::stringstream ss(\"foo\");\n"
               "    Foo1(str);\n"
               "    Foo1(str.c_str());\n"
               "    Foo2(str.c_str(), str);\n"
@@ -1937,14 +1937,17 @@ private:
               "    Foo4(str, str);\n"
               "    Foo4(str.c_str(), str);\n"
               "    Foo4(str, str.c_str());\n"
+              "    Foo4(ss.str(), ss.str().c_str());\n"
               "    Foo4(str.c_str(), str.c_str());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
-                      "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n"
-                      "[test.cpp:13]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
-                      "[test.cpp:14]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n"
-                      "[test.cpp:15]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
-                      "[test.cpp:15]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n", errout.str());
+
+        ASSERT_EQUALS("[test.cpp:9]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n"
+                      "[test.cpp:14]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:15]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n"
+                      "[test.cpp:16]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n"
+                      "[test.cpp:17]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:17]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 2 is slow and redundant.\n", errout.str());
 
         check("void Foo1(const std::string& str) {}\n"
               "void Foo2(char* c, const std::string str) {}\n"
@@ -2024,6 +2027,11 @@ private:
               "void b() {\n"
               "    MyStringClass s;\n"
               "    a(s.c_str());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string Format(const char * name) {\n" // #4938
+              "    return String::Format(\"%s:\", name).c_str();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2232,6 +2240,12 @@ private:
               "    return v.empty();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?\n", errout.str());
+
+        check("void f() {\n" // #4938
+              "    OdString str;\n"
+              "    str.empty();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n" // #4032
               "    const std::string greeting(\"Hello World !!!\");\n"

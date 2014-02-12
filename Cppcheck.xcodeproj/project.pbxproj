@@ -142,6 +142,8 @@
 		F4C348BF18256A8700521683 /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
 		F4C348C018256A8700521683 /* library.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CF847C17B6504100522F24 /* library.cpp */; };
 		F4C348C118256A9900521683 /* cppcheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60EA11270DE3A00AC0D02 /* cppcheck.cpp */; };
+		F4CDD6981880888F006CF685 /* valueflow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CDD6961880888F006CF685 /* valueflow.cpp */; };
+		F4CDD69918808927006CF685 /* valueflow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CDD6961880888F006CF685 /* valueflow.cpp */; };
 		F4CF847D17B6504100522F24 /* library.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CF847C17B6504100522F24 /* library.cpp */; };
 /* End PBXBuildFile section */
 
@@ -310,6 +312,8 @@
 		F47E508117896AEB00C684DC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = externals/tinyxml/tinyxml2.cpp; sourceTree = "<group>"; };
 		F47E508217896AEB00C684DC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = externals/tinyxml/tinyxml2.h; sourceTree = "<group>"; };
 		F4C34860182566E800521683 /* testrunner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testrunner; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4CDD6961880888F006CF685 /* valueflow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = valueflow.cpp; path = lib/valueflow.cpp; sourceTree = "<group>"; };
+		F4CDD6971880888F006CF685 /* valueflow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = valueflow.h; path = lib/valueflow.h; sourceTree = "<group>"; };
 		F4CF847A17B6504000522F24 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = lib/config.h; sourceTree = "<group>"; };
 		F4CF847B17B6504100522F24 /* library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = library.h; path = lib/library.h; sourceTree = "<group>"; };
 		F4CF847C17B6504100522F24 /* library.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = library.cpp; path = lib/library.cpp; sourceTree = "<group>"; };
@@ -386,6 +390,8 @@
 		2C21A45D1178BB0B00D35009 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				F4CDD6961880888F006CF685 /* valueflow.cpp */,
+				F4CDD6971880888F006CF685 /* valueflow.h */,
 				F4CF847A17B6504000522F24 /* config.h */,
 				F4CF847B17B6504100522F24 /* library.h */,
 				F4CF847C17B6504100522F24 /* library.cpp */,
@@ -640,6 +646,7 @@
 				39E60EB91270DE3A00AC0D02 /* checkautovariables.cpp in Sources */,
 				39E60EBA1270DE3A00AC0D02 /* checkbufferoverrun.cpp in Sources */,
 				39E60EBB1270DE3A00AC0D02 /* checkclass.cpp in Sources */,
+				F4CDD6981880888F006CF685 /* valueflow.cpp in Sources */,
 				39E60EBC1270DE3A00AC0D02 /* checkexceptionsafety.cpp in Sources */,
 				39E60EBD1270DE3A00AC0D02 /* checkmemoryleak.cpp in Sources */,
 				39E60EBE1270DE3A00AC0D02 /* checkobsoletefunctions.cpp in Sources */,
@@ -689,6 +696,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4CDD69918808927006CF685 /* valueflow.cpp in Sources */,
 				F4C348C118256A9900521683 /* cppcheck.cpp in Sources */,
 				F4C348BF18256A8700521683 /* tinyxml2.cpp in Sources */,
 				F4C348C018256A8700521683 /* library.cpp in Sources */,
@@ -794,7 +802,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "CFGDIR=\\\"$SRCROOT/cfg/\\\"";
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
@@ -809,6 +817,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_MODEL_TUNING = "";
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "CFGDIR=\\\"$SRCROOT/cfg/\\\"";
 				HEADER_SEARCH_PATHS = externals/tinyxml;
 				INSTALL_PATH = /usr/local/bin;
 				PRODUCT_NAME = cppcheck;

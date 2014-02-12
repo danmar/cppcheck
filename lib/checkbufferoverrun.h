@@ -64,9 +64,6 @@ public:
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.negativeIndex();
         checkBufferOverrun.arrayIndexThenCheck();
-
-        /** ExecutionPath checking.. */
-        checkBufferOverrun.executionPaths();
         checkBufferOverrun.writeOutsideBufferSize();
     }
 
@@ -211,6 +208,7 @@ public:
     void checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo, std::list<const Token *> callstack);
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
+    void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index);
     void arrayIndexInForLoop(const Token *tok, const ArrayInfo &arrayInfo);
 
 private:
@@ -220,6 +218,7 @@ private:
     void bufferOverrunError(const Token *tok, const std::string &varnames = "");
     void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = "");
     void strncatUsageError(const Token *tok);
+    void negativeMemoryAllocationSizeError(const Token *tok); // provide a negative value to memory allocation function
     void outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size);
     void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok, const std::string &varname);
@@ -253,6 +252,7 @@ public:
         c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");
         c.argumentSizeError(0, "function", "array");
         c.writeOutsideBufferSizeError(0,2,3,"write");
+        c.negativeMemoryAllocationSizeError(0);
     }
 private:
 

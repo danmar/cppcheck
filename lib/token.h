@@ -21,10 +21,13 @@
 #define tokenH
 //---------------------------------------------------------------------------
 
+#include <list>
 #include <string>
 #include <vector>
 #include <ostream>
 #include "config.h"
+#include "valueflow.h"
+#include "mathlib.h"
 
 class Scope;
 class Function;
@@ -575,7 +578,31 @@ public:
         _originalName = name;
     }
 
+    /** Values of token */
+    std::list<ValueFlow::Value> values;
+
+    const ValueFlow::Value * getValue(const MathLib::bigint val) const {
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if (it->intvalue == val)
+                return &(*it);
+        }
+        return NULL;
+    }
+
+    const ValueFlow::Value * getMaxValue(bool condition) const {
+        const ValueFlow::Value *ret = 0;
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if ((!ret || it->intvalue > ret->intvalue) &&
+                ((it->condition != NULL) == condition))
+                ret = &(*it);
+        }
+        return ret;
+    }
+
 private:
+
     void next(Token *nextToken) {
         _next = nextToken;
     }
@@ -694,7 +721,11 @@ public:
         return ret + sep + _str;
     }
 
+    std::string expressionString() const;
+
     void printAst() const;
+
+    void printValueFlow() const;
 };
 
 /// @}

@@ -602,13 +602,13 @@ private:
         TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(4, argv));
     }
 
-    void fileListStdin() {
-        // TODO: Give it some stdin to read from, fails because the list of
-        // files in stdin (_pathnames) is empty
-        REDIRECT;
-        const char *argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
-        TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(3, argv));
-    }
+    /*    void fileListStdin() {
+            // TODO: Give it some stdin to read from, fails because the list of
+            // files in stdin (_pathnames) is empty
+            REDIRECT;
+            const char *argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
+            TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(3, argv));
+        } */
 
     void inlineSuppr() {
         REDIRECT;

@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = cppcheck-gui
-CONFIG += warn_on
+CONFIG += warn_on debug
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
@@ -39,6 +39,9 @@ win32 {
       UI_DIR = ../BuildTmp/gui
    }
 }
+
+# Generate the translations before we embed them
+system("lrelease gui.pro")
 
 RESOURCES = gui.qrc
 FORMS = about.ui \
@@ -144,4 +147,8 @@ win32 {
     RC_FILE = cppcheck-gui.rc
     HEADERS += ../lib/version.h
     LIBS += -lshlwapi
+}
+
+unix {
+    QMAKE_CXXFLAGS += -std=c++0x
 }

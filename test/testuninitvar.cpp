@@ -75,6 +75,12 @@ private:
 
         Settings settings;
 
+        const char cfg[] = "<?xml version=\"1.0\"?>"
+                           "<def>"
+                           "  <function name=\"memcpy\"> <arg nr=\"1\"><not-null/></arg> </function>"
+                           "</def>";
+        settings.library.loadxmldata(cfg,sizeof(cfg));
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -2191,6 +2197,12 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("int f(int a) {\n"
+                        "    int result;\n"
+                        "    foo() ? result = 1 : result = 0;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // = { .. }
         checkUninitVar2("int f() {\n"
                         "    int a;\n"
@@ -2324,6 +2336,14 @@ private:
                         "    } catch (CException* e) {\n"
                         "        trace();\n"
                         "        e->Delete();\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f() {\n" // #5347
+                        "    try {\n"
+                        "    } catch (const char* e) {\n"
+                        "        A a = e;\n"
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
@@ -3107,7 +3127,8 @@ private:
                         "    int a;\n"
                         "    do { } a=do_something(); while (a);\n"
                         "}\n", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: assignment of a\n"
+                      "[test.cpp:3]: (error) Uninitialized variable: a\n"
                       "[test.cpp:3]: (debug) assertion failed '} while ('\n", errout.str());
 
         checkUninitVar2("void f() {\n"

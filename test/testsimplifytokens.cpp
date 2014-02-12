@@ -135,6 +135,7 @@ private:
         TEST_CASE(template40);  // #5055 - template specialization outside struct
         TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
         TEST_CASE(template42);  // #4878 - variadic templates
+        TEST_CASE(template43);  // #5097 - assert due to '>>' not treated as end of template instantiation
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -178,14 +179,6 @@ private:
         // Simplify calculations
         TEST_CASE(calculations);
         TEST_CASE(comparisons);
-
-        // Simplify goto..
-        TEST_CASE(goto1);
-        TEST_CASE(goto2);
-        TEST_CASE(goto3);  // #3138
-        TEST_CASE(goto4);  // #3459
-        TEST_CASE(goto5);  // #3705 - return ({asm("");});
-        TEST_CASE(goto6);
 
         //remove dead code after flow control statements
         TEST_CASE(flowControl);
@@ -419,6 +412,8 @@ private:
 
         TEST_CASE(simplifyFunctorCall);
 
+        TEST_CASE(simplifyFunctionPointer); // ticket #5339 (simplify function pointer after comma)
+
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
@@ -516,20 +511,6 @@ private:
     void cast() {
         ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (p == (char *)0);"));
         ASSERT_EQUALS("return str ;", tok("return (char *)str;"));
-
-        {
-            const char code[] = "static void crash()\n"
-                                "{\n"
-                                "    goto err_exit;\n"
-                                "err_exit:\n"
-                                "    (void)foo();\n"
-                                "}\n";
-
-            const char expected[] = "static void crash ( ) "
-                                    "{ foo ( ) ; return ; }";
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
 
         ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
         ASSERT_EQUALS("if ( & a )", tok("if ((int)&a)"));
@@ -845,7 +826,7 @@ private:
         ASSERT_EQUALS("= p ;", tok("= (p);"));
         ASSERT_EQUALS("if ( a < p ) { }", tok("if(a<(p)){}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
         ASSERT_EQUALS("return p ;", tok("return (p);"));
         ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
@@ -862,7 +843,7 @@ private:
         ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( 2 * p == 0 ) { } }", tok("void f(){int p; if (2*p == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { DIR * f ; f = opendir ( dirname ) ; if ( closedir ( f ) ) { } }", tok("void f(){DIR * f = opendir(dirname);if (closedir(f)){}}"));
-        ASSERT_EQUALS("void foo ( int p ) { if ( 0 <= p ) { ; } }", tok("void foo(int p){if((p)>=0);}"));
+        ASSERT_EQUALS("void foo ( int p ) { if ( p >= 0 ) { ; } }", tok("void foo(int p){if((p)>=0);}"));
     }
 
     void declareVar() {
@@ -894,7 +875,7 @@ private:
                                 "        a = 10;\n"
                                 "    a++;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
         }
 
         {
@@ -906,7 +887,7 @@ private:
                                 "        a = 10;\n"
                                 "    ++a;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
         }
     }
 
@@ -2367,6 +2348,19 @@ private:
         tok(code);
     }
 
+    void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
+        const char code[] = "template <typename T> struct C { };"
+                            "template <typename T> struct D { static int f() { return C<T>::f(); } };"
+                            "template <typename T> inline int f2() { return D<T>::f(); }"
+                            "template <typename T> int f1(int x, T *) { int id = f2<T>(); return id; }"
+                            "template <> struct C < B < A >> {"
+                            "  static int f() {"
+                            "    return f1 < B < A >> (0, reinterpret_cast< B<A> *>(E<void *>::Int(-1)));"
+                            "  }"
+                            "};";
+        tok(code); // Don't assert
+    }
+
 
     void template_default_parameter() {
         {
@@ -2606,7 +2600,7 @@ private:
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a=b()));"));
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAndWhileAssign(";if(!(a->x=b()));"));
         ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("void f() { A() if(a=b); }"));
-        ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( 0 <= a ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
+        ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( a >= 0 ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
                            "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
                            tok("void foo(A a) {if((a.c=b())>=0);}"));
@@ -3121,437 +3115,6 @@ private:
         ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
     }
 
-    void goto1() {
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (a())\n"
-                                "    {\n"
-                                "        goto out;\n"
-                                "    }\n"
-                                "    b();\n"
-                                "out:\n"
-                                "    c();\n"
-                                "}";
-
-            errout.str("");
-            Settings settings;
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList2();
-
-            const char expect[] = "\n\n##file 0\n"
-                                  "1: void foo ( )\n"
-                                  "2: {\n"
-                                  "3: if ( a ( ) )\n"
-                                  "4: {\n"
-                                  "5:\n|\n8:\n"
-                                  "9: c ( ) ; return ; }\n"
-                                  "7: b ( ) ;\n"
-                                  "8:\n"
-                                  "9: c ( ) ;\n"
-                                  "10: }\n";
-
-            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList());
-        }
-
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (a())\n"
-                                "        goto out;\n"
-                                "    b();\n"
-                                "out:\n"
-                                "    if (c())\n"
-                                "        d();\n"
-                                "}";
-
-
-            errout.str("");
-            Settings settings;
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.simplifyTokenList2();
-
-            const char expect[] = "\n\n##file 0\n"
-                                  "1: void foo ( )\n"
-                                  "2: {\n"
-                                  "3: if ( a ( ) ) {\n"
-                                  "4:\n5:\n6:\n"
-                                  "7: if ( c ( ) ) {\n"
-                                  "8: d ( ) ; } return ; }\n"
-                                  "5: b ( ) ;\n"
-                                  "6:\n"
-                                  "7: if ( c ( ) ) {\n"
-                                  "8: d ( ) ; }\n"
-                                  "9: }\n";
-
-            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList());
-        }
-
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (a())\n"
-                                "        goto out;\n"
-                                "    b();\n"
-                                "out:\n"
-                                "    if (c())\n"
-                                "    {\n"
-                                "      d();\n"
-                                "    }\n"
-                                "}";
-
-            const char expect[] = "void foo ( ) "
-                                  "{ "
-                                  "if ( a ( ) ) "
-                                  "{ "
-                                  "if ( c ( ) ) "
-                                  "{ d ( ) ; } "
-                                  "return ; "
-                                  "} "
-                                  "b ( ) ; "
-                                  "if ( c ( ) ) "
-                                  "{ d ( ) ; } "
-                                  "}";
-
-            ASSERT_EQUALS(expect, tok(code));
-        }
-
-        {
-            const char code[] = "void foo(int x)\n"
-                                "{\n"
-                                "    if (a())\n"
-                                "        goto out;\n"
-                                "    b();\n"
-                                "out:\n"
-                                "    if (x)\n"
-                                "    {\n"
-                                "      x++; b[0]=x;\n"
-                                "    }\n"
-                                "}";
-
-            const char expect[] = "void foo ( int x ) "
-                                  "{ "
-                                  "if ( a ( ) ) "
-                                  "{ "
-                                  "if ( x ) "
-                                  "{ x ++ ; b [ 0 ] = x ; } "
-                                  "return ; "
-                                  "} "
-                                  "b ( ) ; "
-                                  "if ( x ) "
-                                  "{ x ++ ; b [ 0 ] = x ; } "
-                                  "}";
-
-            ASSERT_EQUALS(expect, tok(code));
-        }
-
-        {
-            const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
-            const char expect[] = "class NoLabels { bool varOne ; bool varTwo ; } ;";
-            ASSERT_EQUALS(expect, tok(code));
-        }
-
-        {
-            const char code[] = "void foo ( ) { int var ; var = x < y ? y : z ; } ;";
-            ASSERT_EQUALS(code, tok(code));
-        }
-    }
-
-    void goto2() {
-        // Don't simplify goto inside function call (macro)
-        const char code[] = "void f ( ) { slist_iter ( if ( a ) { goto dont_write ; } dont_write : ; x ( ) ; ) ; }";
-        ASSERT_EQUALS(code, tok(code));
-
-        //ticket #3229 (segmentation fault)
-        ASSERT_EQUALS("void f ( ) { MACRO ( return ; ) return ; }",tok("void f ( ) {goto label; label: MACRO(return;)}"));
-    }
-
-    void goto3() {
-        // Simplify goto inside the namespace|struct|class|union block
-        {
-            const char code[] = "namespace A1"
-                                "{"
-                                "    void foo()"
-                                "    {"
-                                "        goto source ;"
-                                "        bleeh;"
-                                "        source:"
-                                "        boo();"
-                                "    }"
-                                "}";
-            const char expected[] = "namespace A1 "
-                                    "{"
-                                    " void foo ( )"
-                                    " {"
-                                    " boo ( ) ; return ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "class A"
-                                "{"
-                                "    int n,m;"
-                                "    A()"
-                                "    {"
-                                "        goto source ;"
-                                "        bleeh;"
-                                "        source:"
-                                "        boo();"
-                                "    }"
-                                "    void boo();"
-                                "}";
-            const char expected[] = "class A "
-                                    "{"
-                                    " int n ; int m ;"
-                                    " A ( )"
-                                    " {"
-                                    " boo ( ) ; return ;"
-                                    " }"
-                                    " void boo ( ) ; "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "struct A"
-                                "{"
-                                "    int n,m;"
-                                "    A() : m(0)"
-                                "    {"
-                                "        goto source;"
-                                "        bleeh;"
-                                "        source:"
-                                "        n=10;"
-                                "    }"
-                                "}";
-            const char expected[] = "struct A "
-                                    "{"
-                                    " int n ; int m ;"
-                                    " A ( ) : m ( 0 )"
-                                    " {"
-                                    " n = 10 ; return ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "namespace A1"
-                                "{"
-                                "    class A"
-                                "    {"
-                                "        int n,m;"
-                                "        A()"
-                                "        {"
-                                "            goto source ;"
-                                "            bleeh;"
-                                "            source:"
-                                "            boo();"
-                                "        }"
-                                "        void boo();"
-                                "    }"
-                                "}";
-            const char expected[] = "namespace A1 "
-                                    "{"
-                                    " class A"
-                                    " {"
-                                    " int n ; int m ;"
-                                    " A ( )"
-                                    " {"
-                                    " boo ( ) ; return ;"
-                                    " }"
-                                    " void boo ( ) ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "namespace A1"
-                                "{"
-                                "    namespace AA1"
-                                "    {"
-                                "        void foo1()"
-                                "        {"
-                                "            goto source1 ;"
-                                "            bleeh;"
-                                "            source1:"
-                                "            boo1();"
-                                "        }"
-                                "    }"
-                                "    namespace AA2"
-                                "    {"
-                                "        void foo2()"
-                                "        {"
-                                "            goto source2 ;"
-                                "            bleeh;"
-                                "            source2:"
-                                "            boo2();"
-                                "        }"
-                                "    }"
-                                "}";
-            const char expected[] = "namespace A1 "
-                                    "{"
-                                    " namespace AA1"
-                                    " {"
-                                    " void foo1 ( )"
-                                    " {"
-                                    " boo1 ( ) ; return ;"
-                                    " }"
-                                    " }"
-                                    " namespace AA2"
-                                    " {"
-                                    " void foo2 ( )"
-                                    " {"
-                                    " boo2 ( ) ; return ;"
-                                    " }"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "union A1"
-                                "{"
-                                " int a; "
-                                " double b; "
-                                "    A1() : b(3.22)"
-                                "    {"
-                                "        goto source ;"
-                                "        bleeh;"
-                                "        source:"
-                                "        a = 322;"
-                                "    }"
-                                "}";
-            const char expected[] = "union A1 "
-                                    "{"
-                                    " int a ;"
-                                    " double b ;"
-                                    " A1 ( ) : b ( 3.22 )"
-                                    " {"
-                                    " a = 322 ; return ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "class A"
-                                "{"
-                                " int a; "
-                                " double b; "
-                                "    A() : b(3.22)"
-                                "    {"
-                                "        goto source ;"
-                                "        bleeh;"
-                                "        source:"
-                                "        a = 322;"
-                                "    }"
-                                "}"
-                                "class A1 : public A"
-                                "{"
-                                " int a1; "
-                                " double b1; "
-                                "    A1() : b1(3.22)"
-                                "    {"
-                                "        goto source1 ;"
-                                "        bleeh1;"
-                                "        source1:"
-                                "        a = 322;"
-                                "    }"
-                                "}";
-            const char expected[] = "class A "
-                                    "{"
-                                    " int a ;"
-                                    " double b ;"
-                                    " A ( ) : b ( 3.22 )"
-                                    " {"
-                                    " a = 322 ;"
-                                    " return ;"
-                                    " } "
-                                    "} "
-                                    "class A1 : public A "
-                                    "{"
-                                    " int a1 ;"
-                                    " double b1 ;"
-                                    " A1 ( ) : b1 ( 3.22 )"
-                                    " {"
-                                    " a = 322 ;"
-                                    " return ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-    }
-
-    void goto4() {
-        const char code[] = "int main()\n"
-                            "{\n"
-                            "   goto SkipIncr;\n"
-                            "   do {\n"
-                            "       f();\n"
-                            "       SkipIncr:\n"
-                            "       printf(\".\");\n"
-                            "   } while (bar());\n"
-                            "}\n";
-
-        const char expected[] = "int main ( ) "
-                                "{"
-                                " goto SkipIncr ;"
-                                " do {"
-                                " f ( ) ;"
-                                " SkipIncr : ;"
-                                " printf ( \".\" ) ;"
-                                " } while ( bar ( ) ) ; "
-                                "}";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void goto5() {
-        const char code[] = "int foo() {\n"
-                            "    goto err;\n"
-                            "err:\n"
-                            "    return ( { __asm__(X); } ); "
-                            "}\n";
-        ASSERT_EQUALS("int foo ( ) {"
-                      " return { asm ( \"X\" ) ; } ;"
-                      " return { asm ( \"X\" ) ; } ; "
-                      "}", tok(code));
-    }
-
-    void goto6() { // from code in linux that wasn't handled well
-        const char code1[] = "static void a() {\n"
-                             "unlock:\n"
-                             "}\n"
-                             "\n"
-                             "static void b() {\n"
-                             "  if (c)\n"
-                             "    goto defer;\n"
-                             "defer:\n"
-                             "}\n";
-        ASSERT_EQUALS("static void a ( ) { } "
-                      "static void b ( ) { if ( c ) { return ; } }", tok(code1));
-
-        const char code2[] = "void a()\n"
-                             "{\n"
-                             "  if (x) {}\n"
-                             "unlock:\n"
-                             "}\n"
-                             "\n"
-                             "void b()\n"
-                             "{\n"
-                             "  { goto defer; }\n"
-                             "defer:\n"
-                             "}";
-        ASSERT_EQUALS("void a ( ) { if ( x ) { } } void b ( ) { return ; }", tok(code2));
-    }
-
     void flowControl() {
         std::list<std::string> beforedead;
         //beforedead.push_back("return");
@@ -3594,7 +3157,7 @@ private:
                                    "       bar(); "
                                    "   } "
                                    "}";
-                ASSERT_EQUALS("void f ( ) { if ( 0 < k ) { goto label ; } " + *it + " ; { label : ; bar ( ) ; } }",tok(code));
+                ASSERT_EQUALS("void f ( ) { if ( k > 0 ) { goto label ; } " + *it + " ; { label : ; bar ( ) ; } }",tok(code));
             }
 
             {
@@ -4798,7 +4361,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
                       "[test.cpp:20] -> [test.cpp:1]: (style, inconclusive) The function parameter 'A' hides a typedef with the same name.\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style, inconclusive) The variable 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n", errout.str());
+                      "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
+                      "[test.cpp:24]: (debug) ValueFlow bailout: parameter a\n", errout.str());
     }
 
     void simplifyTypedef36() {
@@ -8005,6 +7569,11 @@ private:
         ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
     }
 
+    // #ticket #5339 (simplify function pointer after comma)
+    void simplifyFunctionPointer() {
+        ASSERT_EQUALS("f ( double x , double * y ) ;", tok("f (double x, double (*y) ());", true));
+    }
+
     void redundant_semicolon() {
         ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { ; }", false));
         ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { do { ; } while (0); }", true));
@@ -8313,7 +7882,7 @@ private:
                             "      }\n"
                             "   } while ((t = type[c]) == LET && catenate());\n"
                             "}\n";
-        ASSERT_EQUALS("int evallex ( ) { int c ; int t ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
+        ASSERT_EQUALS("int evallex ( ) { int c ; int t ; again : ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
                       tok(code, true));
     }
 

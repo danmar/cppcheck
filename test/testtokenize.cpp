@@ -76,6 +76,7 @@ private:
         TEST_CASE(garbageCode4); // #4887
         TEST_CASE(garbageCode5); // #5168
         TEST_CASE(garbageCode6); // #5214
+        TEST_CASE(garbageCode7);
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -281,6 +282,7 @@ private:
         TEST_CASE(varid_in_class11);    // #4277 - anonymous union
         TEST_CASE(varid_in_class12);    // #4637 - method
         TEST_CASE(varid_in_class13);    // #4637 - method
+        TEST_CASE(varid_in_class14);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -317,6 +319,7 @@ private:
         TEST_CASE(file3);
 
         TEST_CASE(line1); // Ticket #4408
+        TEST_CASE(line2); // Ticket #5423
 
         TEST_CASE(doublesharp);
 
@@ -348,6 +351,7 @@ private:
         TEST_CASE(removeParentheses14);      // Ticket #3309
         TEST_CASE(removeParentheses15);      // Ticket #4142
         TEST_CASE(removeParentheses16);      // Ticket #4423 '*(x.y)='
+        TEST_CASE(removeParentheses17);      // Don't remove parentheses in 'a ? b : (c>0 ? d : e);'
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -416,8 +420,6 @@ private:
         TEST_CASE(removeExceptionSpecification4);
         TEST_CASE(removeExceptionSpecification5);
         TEST_CASE(removeExceptionSpecification6); // #4617
-
-        TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
@@ -575,6 +577,16 @@ private:
         tokenizer.tokenize(istr, filename);
         if (simplify)
             tokenizer.simplifyTokenList2();
+
+        // filter out ValueFlow messages..
+        const std::string debugwarnings = errout.str();
+        errout.str("");
+        std::istringstream istr2(debugwarnings.c_str());
+        std::string line;
+        while (std::getline(istr2,line)) {
+            if (line.find("ValueFlow") == std::string::npos)
+                errout << line << "\n";
+        }
 
         return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
     }
@@ -773,7 +785,11 @@ private:
     }
 
     void tokenize22() { // tokenize special marker $ from preprocessor
-        ASSERT_EQUALS("$a $b", tokenizeAndStringify("a$b"));
+        ASSERT_EQUALS("a $b", tokenizeAndStringify("a$b"));
+        ASSERT_EQUALS("a $b\nc", tokenizeAndStringify("a $b\nc"));
+        ASSERT_EQUALS("a = $0 ;", tokenizeAndStringify("a = $0;"));
+        ASSERT_EQUALS("a $++ ;", tokenizeAndStringify("a$++;"));
+        ASSERT_EQUALS("$if ( ! p )", tokenizeAndStringify("$if(!p)"));
     }
 
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
@@ -988,6 +1004,11 @@ private:
     void garbageCode6() { // #5214
         tokenizeAndStringify("int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
         tokenizeAndStringify("int a = int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
+    }
+
+    void garbageCode7() {
+        tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true);
+        tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
@@ -1845,7 +1866,7 @@ private:
     void simplifyKnownVariables19() {
         const char code[] = "void f ( ) { int i=0; do { if (i>0) { a(); } i=b(); } while (i != 12); }";
         ASSERT_EQUALS(
-            "void f ( ) { int i ; i = 0 ; do { if ( 0 < i ) { a ( ) ; } i = b ( ) ; } while ( i != 12 ) ; }",
+            "void f ( ) { int i ; i = 0 ; do { if ( i > 0 ) { a ( ) ; } i = b ( ) ; } while ( i != 12 ) ; }",
             simplifyKnownVariables(code));
     }
 
@@ -2097,7 +2118,7 @@ private:
             "{"
             " int i ; i = 2 ;"
             " if ( g ) { }"
-            " if ( 0 < 2 ) { } "
+            " if ( 2 > 0 ) { } "
             "}",
             simplifyKnownVariables(code));
     }
@@ -2476,7 +2497,7 @@ private:
                             "}\n";
         const char expected[] = "void f ( ) {\n"
                                 "int x ; x = 10 ;\n"
-                                "do { cin >> x ; } while ( 5 < x ) ;\n"
+                                "do { cin >> x ; } while ( x > 5 ) ;\n"
                                 "a [ x ] = 0 ;\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
@@ -2735,7 +2756,7 @@ private:
                             "}";
         const char expected[] = "void f ( int sz ) {\n"
                                 "int i ;\n"
-                                "for ( i = 0 ; ( i < sz ) && ( 3 < sz ) ; ++ i ) { }\n"
+                                "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
@@ -4440,6 +4461,24 @@ private:
                       tokenizeDebugListing(code2, false, "test.cpp"));
     }
 
+    void varid_in_class14() {
+        const char code[] = "class Tokenizer { TokenList list; };\n"
+                            "\n"
+                            "void Tokenizer::f() {\n"
+                            "  std::list<int> x;\n"               // <- not member variable
+                            "  list.do_something();\n"            // <- member variable
+                            "  Tokenizer::list.do_something();\n" // <- redundant scope info
+                            "}\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Tokenizer { TokenList list@1 ; } ;\n"
+                      "2:\n"
+                      "3: void Tokenizer :: f ( ) {\n"
+                      "4: std :: list < int > x@2 ;\n"
+                      "5: list@1 . do_something ( ) ;\n"
+                      "6: Tokenizer :: list@1 . do_something ( ) ;\n"
+                      "7: }\n", tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
     void varid_initList() {
         const char code1[] = "class A {\n"
                              "  A() : x(0) {}\n"
@@ -5121,6 +5160,22 @@ private:
         }
     }
 
+    void line2() {
+        const char code[] = "#line 8 \"c:\\a.h\"\n"
+                            "123\n";
+
+        errout.str("");
+
+        const Settings settings;
+
+        // tokenize..
+        TokenList tokenlist(&settings);
+        std::istringstream istr(code);
+        tokenlist.createTokens(istr, "a.cpp");
+
+        ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenlist.fileLine(tokenlist.front()));
+    }
+
 
 
     void doublesharp() {
@@ -5394,7 +5449,7 @@ private:
 
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);", false));
-        ASSERT_EQUALS("a = b ? c : 579 ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
+        ASSERT_EQUALS("a = b ? c : ( 579 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
         ASSERT_EQUALS("a = b ? 123 : c ;", tokenizeAndStringify("a = b ? (123) : c;", false));
 
         // #4316
@@ -5405,6 +5460,10 @@ private:
         // #4423
         ASSERT_EQUALS("* x = 0 ;", tokenizeAndStringify("*(x)=0;", false));
         ASSERT_EQUALS("* x . y = 0 ;", tokenizeAndStringify("*(x.y)=0;", false));
+    }
+
+    void removeParentheses17() { // a ? b : (c > 0 ? d : e)
+        ASSERT_EQUALS("a ? b : ( c > 0 ? d : e ) ;", tokenizeAndStringify("a?b:(c>0?d:e);", false));
     }
 
     void tokenize_double() {
@@ -5771,6 +5830,19 @@ private:
                           "unsigned int * foo ; "
                           "foo = & x ; "
                           "}",
+                          tokenizeAndStringify(code));
+        }
+
+        {
+            // Ticket #5266
+            const char code[] = "class Machine {\n"
+                                "  static int const STACK_ORDER = 10, STACK_MAX = 1 << STACK_ORDER,"
+                                "                   STACK_GUARD = 2;\n"
+                                "};";
+            ASSERT_EQUALS("class Machine {\n"
+                          "static const int STACK_ORDER = 10 ; static const int STACK_MAX = 1 << STACK_ORDER ; "
+                          "static const int STACK_GUARD = 2 ;\n"
+                          "} ;",
                           tokenizeAndStringify(code));
         }
     }
@@ -6763,13 +6835,6 @@ private:
                       tokenizeAndStringify("void foo () noexcept(noexcept(true)) const;"));
         ASSERT_EQUALS("void foo ( ) const { }",
                       tokenizeAndStringify("void foo () noexcept(noexcept(true)) const { }"));
-    }
-
-    void gt() {
-        ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
-        ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
-        ASSERT_EQUALS("void > ( ) ; void > ( )",
-                      tokenizeAndStringify("void>(); void>()"));
     }
 
 
@@ -10004,24 +10069,31 @@ private:
         // Set links..
         std::stack<Token *> links;
         for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "(|["))
+            if (Token::Match(tok, "(|[|{"))
                 links.push(tok);
-            else if (!links.empty() && Token::Match(tok,")|]")) {
+            else if (!links.empty() && Token::Match(tok,")|]|}")) {
                 Token::createMutualLinks(links.top(), tok);
                 links.pop();
+            } else if (Token::Match(tok, "< %type% >")) {
+                Token::createMutualLinks(tok, tok->tokAt(2));
             }
         }
 
         // Create AST..
         tokenList.createAst();
 
+        // Return stringified AST
+        std::string ret;
+        std::set<const Token *> astTop;
         for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (tok->astOperand1())
-                return tok->astTop()->astString();
+            if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
+                astTop.insert(tok->astTop());
+                if (!ret.empty())
+                    ret = ret + " ";
+                ret += tok->astTop()->astString();
+            }
         }
-
-        // No AST found
-        return "";
+        return ret;
     }
 
     void astexpr() const { // simple expressions with arithmetical ops
@@ -10046,6 +10118,24 @@ private:
 
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
+
+        ASSERT_EQUALS("a0>bc/?d:", testAst("(a>0) ? (b/(c)) : d;"));
+        ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
+
+        ASSERT_EQUALS("absizeofd(ef.+(=", testAst("a = b(sizeof(c d) + e.f)"));
+
+        // for
+        ASSERT_EQUALS("for;;(", testAst("for(;;)"));
+        ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
+        TODO_ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", "fori1=current0=,i<NUM=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
+        ASSERT_EQUALS("foreachxy,((", testAst("for(each(x,y)){}"));  // it's not well-defined what this ast should be
+        ASSERT_EQUALS("forab:(", testAst("for (int a : b);"));
+
+        // problems with multiple expressions
+        ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
+        ASSERT_EQUALS("ifx( i0= whilei(", testAst("if (x) { ({ int i = 0; while(i); }) };"));
+        ASSERT_EQUALS("ifx( BUG_ON{!( i0= whilei(", testAst("if (x) { BUG_ON(!({int i=0; while(i);})); }"));
+        ASSERT_EQUALS("v0= while{( v0= while{( v0=", testAst("({ v = 0; }); while (({ v = 0; }) != 0); while (({ v = 0; }) != 0);"));
     }
 
     void astpar() const { // parentheses
@@ -10062,10 +10152,17 @@ private:
         ASSERT_EQUALS("a1(2+=",testAst("a=(t*)1+2;"));
         ASSERT_EQUALS("a1(2+=",testAst("a=(t&)1+2;"));
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
+        ASSERT_EQUALS("ab1?0:=", testAst("a=(b)?1:0;"));
 
         // ({..})
-        ASSERT_EQUALS("a{+d+", testAst("a+({b+c;})+d"));
-        ASSERT_EQUALS("a{d*+", testAst("a+({b+c;})*d"));
+        ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
+        ASSERT_EQUALS("a{d*+ bc+", testAst("a+({b+c;})*d"));
+        ASSERT_EQUALS("xa{((= bc( yd{((= ef(",
+                      testAst("x=(int)(a({b(c);}));" // don't hang
+                              "y=(int)(d({e(f);}));"));
+        ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
+                      testAst("QT_WA({},{x=0;});" // don't hang
+                              "QT_WA({x=1;},{x=2;});"));
     }
 
     void astbrackets() const { // []
@@ -10099,7 +10196,8 @@ private:
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
-        ASSERT_EQUALS("aint<>3==", testAst("a<int>()==3"));
+        ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
+        ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
     }
 };
 

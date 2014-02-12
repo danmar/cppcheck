@@ -90,7 +90,6 @@ public:
 
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
-        checkOther.checkZeroDivisionOrUselessCondition();
         checkOther.checkMathFunctions();
 
         checkOther.redundantGetAndSetUserId();

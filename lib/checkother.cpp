@@ -33,6 +33,17 @@ namespace {
     CheckOther instance;
 }
 
+static bool astIsFloat(const Token *tok)
+{
+    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
+        return true;
+    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
+        return true;
+
+    // TODO: check function calls, struct members, arrays, etc also
+    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
+}
+
 static bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
 {
     if (!tok)
@@ -65,6 +76,30 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end())
             return false;
         else if (tok1->function() && !tok1->function()->isConst)
+            return false;
+    }
+    // templates/casts
+    if ((Token::Match(tok1, "%var% <") && tok1->next()->link()) ||
+        (Token::Match(tok2, "%var% <") && tok2->next()->link())) {
+
+        // non-const template function that is not a dynamic_cast => return false
+        if (Token::Match(tok1->next()->link(), "> (") &&
+            !(tok1->function() && tok1->function()->isConst) &&
+            tok1->str() != "dynamic_cast")
+            return false;
+
+        // some template/cast stuff.. check that the template arguments are same
+        const Token *t1 = tok1->next();
+        const Token *t2 = tok2->next();
+        const Token *end1 = tok1->next()->link();
+        const Token *end2 = tok2->next()->link();
+        while (t1 && t2 && t1 != end1 && t2 != end2) {
+            if (t1->str() != t2->str())
+                return false;
+            t1 = t1->next();
+            t2 = t2->next();
+        }
+        if (t1 != end1 || t2 != end2)
             return false;
     }
     if (Token::Match(tok1, "++|--"))
@@ -1137,7 +1172,7 @@ void CheckOther::suspiciousEqualityComparisonError(const Token* tok)
 //---------------------------------------------------------------------------
 static bool isTypeWithoutSideEffects(const Tokenizer *tokenizer, const Variable* var)
 {
-    return ((var && (!var->isClass() || var->isPointer() || Token::simpleMatch(var->typeStartToken(), "std ::"))) || !tokenizer->isCPP());
+    return ((var && (!var->isClass() || var->isPointer() || var->isStlType())) || !tokenizer->isCPP());
 }
 
 static inline const Token *findSelfAssignPattern(const Token *start)
@@ -1338,7 +1373,7 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!isSameExpression(expr1, expr2, constStandardFunctions))
                     continue;
 
-                const bool isfloat = MathLib::isFloat(value1) || MathLib::isFloat(value2);
+                const bool isfloat = astIsFloat(expr1) || MathLib::isFloat(value1) || astIsFloat(expr2) || MathLib::isFloat(value2);
 
                 // don't check floating point equality comparisons. that is bad
                 // and deserves different warnings.
@@ -1762,6 +1797,17 @@ void CheckOther::checkVariableScope()
                 }
 
                 tok = tok->link();
+
+                // parse else if blocks..
+            } else if (Token::simpleMatch(tok, "else { if (") && Token::simpleMatch(tok->linkAt(3), ") {")) {
+                const Token *endif = tok->linkAt(3)->linkAt(1);
+                bool elseif = false;
+                if (Token::simpleMatch(endif, "} }"))
+                    elseif = true;
+                else if (Token::simpleMatch(endif, "} else {") && Token::simpleMatch(endif->linkAt(2),"} }"))
+                    elseif = true;
+                if (elseif && Token::findmatch(tok->next(), "%varid%", tok->linkAt(1), var->declarationId()))
+                    reduce = false;
             } else if (tok->varId() == var->declarationId() || tok->str() == "goto") {
                 reduce = false;
                 break;
@@ -2138,13 +2184,9 @@ void CheckOther::strPlusCharError(const Token *tok)
 void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[/%] %num%") &&
-            MathLib::isInt(tok->next()->str()) &&
-            MathLib::toLongNumber(tok->next()->str()) == 0L) {
-            zerodivError(tok);
-        } else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
-                   MathLib::isInt(tok->strAt(4)) &&
-                   MathLib::toLongNumber(tok->strAt(4)) == 0L) {
+        if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
+            MathLib::isInt(tok->strAt(4)) &&
+            MathLib::toLongNumber(tok->strAt(4)) == 0L) {
             if (tok->str() == "div") {
                 if (tok->strAt(-1) == ".")
                     continue;
@@ -2152,6 +2194,15 @@ void CheckOther::checkZeroDivision()
                     continue;
             }
             zerodivError(tok);
+        } else if (Token::Match(tok, "[/%]") && tok->astOperand2() && !tok->astOperand2()->values.empty()) {
+            // Value flow..
+            const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
+            if (value) {
+                if (value->condition == NULL)
+                    zerodivError(tok);
+                else if (_settings->isEnabled("warning"))
+                    zerodivcondError(value->condition,tok);
+            }
         }
     }
 }
@@ -2159,132 +2210,6 @@ void CheckOther::checkZeroDivision()
 void CheckOther::zerodivError(const Token *tok)
 {
     reportError(tok, Severity::error, "zerodiv", "Division by zero.");
-}
-
-//---------------------------------------------------------------------------
-void CheckOther::checkZeroDivisionOrUselessCondition()
-{
-    if (!_settings->isEnabled("warning"))
-        return;
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t numberOfFunctions = symbolDatabase->functionScopes.size();
-    for (std::size_t functionIndex = 0; functionIndex < numberOfFunctions; ++functionIndex) {
-        const Scope * scope = symbolDatabase->functionScopes[functionIndex];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[/%] %var% !!.") || Token::Match(tok, "[(,] %var% [,)]")) {
-                const unsigned int varid = tok->next()->varId();
-                const Variable *var = tok->next()->variable();
-                if (!var)
-                    continue;
-                bool isVarUnsigned = var->typeEndToken()->isUnsigned();
-                for (const Token *typetok = var->typeStartToken(); typetok; typetok = typetok->next()) {
-                    if (!typetok->isName() || typetok == var->typeEndToken())
-                        break;
-                    if (typetok->isUnsigned()) {
-                        isVarUnsigned = true;
-                        break;
-                    }
-                }
-
-                const Token *divtok = tok;
-
-                // Check if variable is divided by function..
-                if (Token::Match(tok, "[(,]")) {
-                    const Token *ftok = tok;
-                    unsigned int parnum = 0U;
-                    while (ftok && ftok->str() != "(") {
-                        if (ftok->str() == ")")
-                            ftok = ftok->link();
-                        else if (ftok->str() == ",")
-                            parnum++;
-                        ftok = ftok ? ftok->previous() : NULL;
-                    }
-                    ftok = ftok ? ftok->previous() : NULL;
-                    if (!ftok)
-                        continue;
-                    if (!Token::Match(ftok, "%var% (") && ftok->function())
-                        continue;
-
-                    const Function * const function = ftok->function();
-                    const Variable * const arg = function ? function->getArgumentVar(parnum) : NULL;
-                    const Token *argtok = arg ? arg->typeStartToken() : NULL;
-
-                    if (!argtok)
-                        continue;
-
-                    if (argtok->str() == "const")
-                        argtok = argtok->next();
-
-                    if (!Token::Match(argtok,"%type% %var% ,|)"))
-                        continue;
-
-                    const Scope * const functionScope = function ? function->functionScope : NULL;
-                    if (!functionScope)
-                        continue;
-
-                    const unsigned int varid2 = argtok->next()->varId();
-                    divtok = NULL;
-                    bool use = false;
-                    for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "[%/] %varid%", varid2)) {
-                            divtok = tok2;
-                            tok2 = tok2->next();
-                        } else if (tok2->str() != "&" && Token::Match(tok2, "%cop% %varid%",varid2)) {
-                            tok2 = tok2->next();
-                        } else if (tok2->varId() == varid2 || tok2->str() == "{") {
-                            use = true;
-                            break;
-                        }
-                    }
-                    if (!divtok || use)
-                        continue;
-                } else {
-                    // Check if this division is guarded by a ?:
-                    bool guard = false;
-                    for (const Token *tok2 = divtok; tok2; tok2 = tok2->previous()) {
-                        if (Token::Match(tok2, "[,;{}]"))
-                            break;
-                        if (Token::Match(tok2, "[?:]")) {
-                            guard = true;
-                            break;
-                        }
-                        if (tok2->str() == ")")
-                            tok2 = tok2->link();
-                    }
-                    if (guard)
-                        continue;
-                }
-
-                // Look for if condition
-                const Token *tok2;
-                for (tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                    if (tok2->varId() == varid)
-                        break;
-                    if (Token::Match(tok2, "{|}"))
-                        break;
-                    if (Token::Match(tok2, "%var% (") && (var->isGlobal() || !tok2->function()))
-                        break;
-                }
-                // Parse if condition
-                if (Token::simpleMatch(tok2, "if (")) {
-                    while (NULL != (tok2 = tok2->next())) {
-                        if (tok2->str() == "{")
-                            break;
-                        if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 0 < %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,divtok);
-                        else if (isVarUnsigned && Token::Match(tok2, "(|%oror%|&& 1 <= %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,divtok);
-                        else if (Token::Match(tok2, "%var% ("))
-                            // Todo: continue looking in condition unless variable might be
-                            // changed by the function
-                            break;
-                        else if (Token::Match(tok2, "(|%oror%|&& !| %varid% &&|%oror%|)", varid))
-                            zerodivcondError(tok2,divtok);
-                    }
-                }
-            }
-        }
-    }
 }
 
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
@@ -2297,9 +2222,13 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
         callstack.push_back(tokdiv);
     }
     std::string condition;
-    if (Token::Match(tokcond, "%num% <|<=")) {
+    if (!tokcond) {
+        // getErrorMessages
+    } else if (Token::Match(tokcond, "%num% <|<=")) {
         condition = tokcond->strAt(2) + ((tokcond->strAt(1) == "<") ? ">" : ">=") + tokcond->str();
-    } else if (tokcond) {
+    } else if (tokcond->isComparisonOp()) {
+        condition = tokcond->expressionString();
+    } else {
         if (tokcond->str() == "!")
             condition = tokcond->next()->str() + "==0";
         else
@@ -2850,17 +2779,6 @@ namespace {
             }
         }
     }
-}
-
-static bool astIsFloat(const Token *tok)
-{
-    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
-        return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
-        return true;
-
-    // TODO: check function calls, struct members, arrays, etc also
-    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
 }
 
 //---------------------------------------------------------------------------

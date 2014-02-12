@@ -56,6 +56,7 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+        TEST_CASE(checkComparisonOfBoolWithBool);
 
         // Converting pointer addition result to bool
         TEST_CASE(pointerArithBool1);

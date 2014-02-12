@@ -457,43 +457,38 @@ void CheckIO::checkWrongPrintfScanfArguments()
             const Token* formatStringTok = 0; // Points to format string token
             std::string formatString;
 
-            if (Token::Match(tok->next(), "( %any%")) {
-                const Token *arg = tok->tokAt(2);
-                int argnr = 1;
-                while (arg) {
-                    if (Token::Match(arg, "%str% [,)]") && _settings->library.isargformatstr(tok->str(),argnr)) {
-                        formatStringTok = arg;
-                        if (arg->strAt(1) == ",")
-                            argListTok = arg->tokAt(2);
-                        else
-                            argListTok = 0;
+            bool scan = false;
+            bool scanf_s = false;
+            int formatStringArgNo = -1;
+
+            if (Token::Match(tok->next(), "( %any%") && _settings->library.formatstr_function(tok->str())) {
+                const std::map<int, Library::ArgumentChecks>& argumentChecks = _settings->library.argumentChecks.at(tok->str());
+                for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecks.begin(); i != argumentChecks.end(); ++i) {
+                    if (i->second.formatstr) {
+                        formatStringArgNo = i->first - 1;
                         break;
                     }
-
-                    arg = arg->nextArgument();
-                    argnr++;
                 }
+
+                scan = _settings->library.formatstr_scan(tok->str());
+                scanf_s = _settings->library.formatstr_secure(tok->str());
             }
 
-            if (formatStringTok) {
-                /* formatstring found in library */
-            } else if (Token::Match(tok, "printf|scanf|wprintf|wscanf (") ||
-                       (windows && (Token::Match(tok, "printf_s|wprintf_s|scanf_s|wscanf_s (") ||
-                                    (Token::Match(tok, "Format|AppendFormat (") &&
-                                     Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
-                                     tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString")))) {
+            if (formatStringArgNo >= 0) {
+                // formatstring found in library. Find format string and first argument belonging to format string.
+                if (!findFormat(formatStringArgNo, tok->tokAt(2), &formatStringTok, &argListTok))
+                    continue;
+            } else if (windows && Token::Match(tok, "Format|AppendFormat (") &&
+                       Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
+                       tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString") {
                 // Find second parameter and format string
                 if (!findFormat(0, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (Token::Match(tok, "sprintf|fprintf|sscanf|fscanf|swscanf|fwprintf|fwscanf ( %any%") ||
-                       (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) ||
-                       (windows && Token::Match(tok, "sscanf_s|swscanf_s|fscanf_s|fwscanf_s|fprintf_s|fwprintf_s ( %any%"))) {
+            } else if (Token::simpleMatch(tok, "swprintf (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
                 // Find third parameter and format string
                 if (!findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (Token::Match(tok, "snprintf|fnprintf (") ||
-                       (windows && Token::Match(tok, "_snprintf|_snwprintf (")) ||
-                       (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%"))) {
+            } else if (Token::simpleMatch(tok, "swprintf (") && !Token::Match(tok->tokAt(2)->nextArgument(), "%str%")) {
                 // Find forth parameter and format string
                 if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
@@ -529,8 +524,6 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 continue;
 
             // Count format string parameters..
-            bool scanf_s = windows ? Token::Match(tok, "scanf_s|wscanf_s|sscanf_s|swscanf_s|fscanf_s|fwscanf_s") : false;
-            bool scan = Token::Match(tok, "sscanf|fscanf|scanf|swscanf|fwscanf|wscanf") || scanf_s;
             unsigned int numFormat = 0;
             unsigned int numSecure = 0;
             bool percent = false;
@@ -794,7 +787,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "ssize_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 't':
@@ -1038,8 +1032,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
-                                                    } else if (!(argInfo.typeToken->originalName() != "size_t" ||
-                                                                 argInfo.typeToken->originalName() != "ptrdiff_t"))
+                                                    } else if (!(argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "WPARAM" ||
+                                                                 argInfo.typeToken->originalName() == "UINT_PTR" ||
+                                                                 argInfo.typeToken->originalName() == "LONG_PTR" ||
+                                                                 argInfo.typeToken->originalName() == "LPARAM" ||
+                                                                 argInfo.typeToken->originalName() == "LRESULT"))
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 default:
@@ -1447,11 +1446,20 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-    if (Token::Match(variableInfo->typeStartToken(), "std :: vector|array <")) {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_vector[] = {
+        "array", "vector"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[] = {
+        "string", "u16string", "u32string", "wstring"
+    };
+
+    if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
         return true;
-    } else if (Token::Match(variableInfo->typeStartToken(), "std :: string|wstring")) {
+    } else if (variableInfo->isStlType(stl_string)) {
         tempToken = new Token(0);
         tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
         tempToken->linenr(variableInfo->typeStartToken()->linenr());
@@ -1486,11 +1494,25 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_container[] = {
+        "array", "bitset", "deque", "forward_list",
+        "hash_map", "hash_multimap", "hash_set",
+        "list", "map", "multimap", "multiset",
+        "priority_queue", "queue", "set", "stack",
+        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set",
+        "vector"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[]= {
+        "string", "u16string", "u32string", "wstring"
+    };
+
     if (tok && tok->variable()) {
-        if (Token::Match(tok->variable()->typeStartToken(), "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
+        if (tok->variable()->isStlType(stl_container)) {
             typeToken = tok->variable()->typeStartToken()->tokAt(4);
             return true;
-        } else if (Token::Match(tok->variable()->typeStartToken(), "std :: string|wstring")) {
+        } else if (tok->variable()->isStlType(stl_string)) {
             typeToken = tok->variable()->typeStartToken();
             return true;
         } else if (tok->variable()->type() && !tok->variable()->type()->derivedFrom.empty()) {
@@ -1627,7 +1649,10 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, unsigned int numFor
         else
             errmsg << "intmax_t";
     } else if (specifier[0] == 'z') {
-        errmsg << "size_t";
+        if (specifier[1] == 'd')
+            errmsg << "ptrdiff_t";
+        else
+            errmsg << "size_t";
     } else if (specifier[0] == 't') {
         errmsg << (isUnsigned ? "unsigned " : "") << "ptrdiff_t";
     } else if (specifier[0] == 'L') {

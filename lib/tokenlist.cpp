@@ -54,6 +54,18 @@ void TokenList::deallocateTokens()
     _files.clear();
 }
 
+unsigned int TokenList::appendFileIfNew(const std::string &fileName)
+{
+    // Has this file been tokenized already?
+    for (unsigned int i = 0; i < _files.size(); ++i)
+        if (Path::sameFileName(_files[i], fileName))
+            return i;
+
+    // The "_files" vector remembers what files have been tokenized..
+    _files.push_back(Path::simplifyPath(fileName.c_str()));
+    return static_cast<unsigned int>(_files.size() - 1);
+}
+
 void TokenList::deleteTokens(Token *tok)
 {
     while (tok) {
@@ -199,10 +211,13 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         if (ch == Preprocessor::macroChar) {
             while (code.peek() == Preprocessor::macroChar)
                 code.get();
-            ch = ' ';
+            if (!CurrentToken.empty()) {
+                addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                _back->isExpandedMacro(expandedMacro);
+            }
+            CurrentToken.clear();
             expandedMacro = true;
-        } else if (ch == '\n') {
-            expandedMacro = false;
+            continue;
         }
 
         // char/string..
@@ -233,24 +248,9 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 // Extract the filename
                 line = line.substr(1, line.length() - 2);
 
-                // Has this file been tokenized already?
                 ++lineno;
-                bool foundOurfile = false;
                 fileIndexes.push(FileIndex);
-                for (unsigned int i = 0; i < _files.size(); ++i) {
-                    if (Path::sameFileName(_files[i], line)) {
-                        // Use this index
-                        foundOurfile = true;
-                        FileIndex = i;
-                    }
-                }
-
-                if (!foundOurfile) {
-                    // The "_files" vector remembers what files have been tokenized..
-                    _files.push_back(Path::simplifyPath(line.c_str()));
-                    FileIndex = static_cast<unsigned int>(_files.size() - 1);
-                }
-
+                FileIndex = appendFileIfNew(line);
                 lineNumbers.push(lineno);
                 lineno = 0;
             } else {
@@ -294,12 +294,22 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
                 std::getline(code, line);
 
-                // Update the current line number
                 unsigned int row;
-                if (!(std::stringstream(line) >> row))
-                    ++lineno;
-                else
+                std::istringstream fiss(line);
+                if (fiss >> row) {
+                    // Update the current line number
                     lineno = row;
+
+                    std::string line2;
+                    if (std::getline(fiss, line2) && line2.length() > 4U) {
+                        // _"file_name" -> file_name
+                        line2 = line2.substr(2, line2.length() - 3);
+
+                        // Update the current file
+                        FileIndex = appendFileIfNew(line2);
+                    }
+                } else
+                    ++lineno;
                 CurrentToken.clear();
                 continue;
             } else if (CurrentToken == "#endfile") {
@@ -317,8 +327,10 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             }
 
             addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
-            if (!CurrentToken.empty())
+            if (!CurrentToken.empty()) {
                 _back->isExpandedMacro(expandedMacro);
+                expandedMacro = false;
+            }
 
             CurrentToken.clear();
 
@@ -339,6 +351,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             _back->isExpandedMacro(expandedMacro);
             CurrentToken.clear();
+            expandedMacro = false;
             continue;
         }
 
@@ -364,7 +377,7 @@ static bool iscast(const Token *tok)
 
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         if (!Token::Match(tok2, "%var%|*|&|::"))
-            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && tok2->next()->str() != "[");
+            return Token::Match(tok2, ") %any%") && (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,?:]"));
     }
 
     return false;
@@ -421,19 +434,25 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
     } else if (tok->str() == "return") {
         compileUnaryOp(tok, compileExpression, op);
     } else if (tok->isName()) {
+        const bool templatefunc = Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (");
         if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
             tok = tok->next();
             tok->astOperand1(tok->previous());
             op.push(tok);
             tok = tok->next();
-        } else if (!Token::Match(tok->next(), "(|[")) {
+        } else if (tok->next() && tok->next()->str() == "<" && tok->next()->link() && !templatefunc) {
+            op.push(tok);
+            tok = tok->next()->link()->next();
+            compileTerm(tok,op);
+        } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
         } else {
             Token *name = tok;
-            tok = tok->tokAt(2);
+            Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
+            tok = par->next();
             if (Token::Match(tok, ")|]")) {
-                name->next()->astOperand1(name);
+                par->astOperand1(name);
                 tok = tok->next();
             } else {
                 Token *prev = name;
@@ -441,6 +460,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 while (Token::Match(tok, "(|[")) {
                     Token *tok1 = tok;
                     tok = tok->next();
+                    while (Token::Match(tok,"%var% %var%")) // example: sizeof(struct S)
+                        tok = tok->next();
                     compileExpression(tok, op);
                     if (!op.empty()) {
                         tok1->astOperand2(op.top());
@@ -452,7 +473,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                         tok = tok->next();
                 }
             }
-            op.push(name->next());
+            op.push(par);
         }
     } else if (Token::Match(tok, "++|--")) {
         bool pre = false;
@@ -484,9 +505,6 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
                 op.pop();
             }
             op.push(unaryop);
-        } else if (Token::Match(tok,"( {")) {
-            op.push(tok->next());
-            tok = tok->link()->next();
         } else if (Token::simpleMatch(tok->link(),") (")) {
             // Parenthesized sub-expression
             Token *nextpar = tok->link()->next();
@@ -501,6 +519,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
             compileExpression(tok,op);
             tok = tok->next();
         }
+    } else if (tok->str() == "{") {
+        op.push(tok);
+        tok = tok->link()->next();
     }
 }
 
@@ -672,13 +693,99 @@ static void compileExpression(Token *&tok, std::stack<Token*> &op)
         compileComma(tok,op);
 }
 
+static Token * createAstAtToken(Token *tok)
+{
+    if (Token::simpleMatch(tok,"for (")) {
+        Token *tok2 = tok->tokAt(2);
+        Token *init1 = 0;
+        const Token * const endPar = tok->next()->link();
+        while (tok2 && tok2 != endPar && tok2->str() != ";") {
+            if (tok2->str() == "<" && tok2->link()) {
+                tok2 = tok2->link();
+                if (!tok2)
+                    break;
+            } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
+                init1 = tok2;
+                std::stack<Token *> operands;
+                compileExpression(tok2, operands);
+                if (tok2->str() == ";" || tok2->str() == ")")
+                    break;
+                init1 = 0;
+            }
+            tok2 = tok2->next();
+        }
+        if (!tok2 || tok2->str() != ";") {
+            if (tok2 == endPar && init1) {
+                tok->next()->astOperand2(init1);
+                tok->next()->astOperand1(tok);
+            }
+            return tok2;
+        }
+
+        Token * const init = init1 ? init1 : tok2;
+
+        Token * const semicolon1 = tok2;
+        tok2 = tok2->next();
+        std::stack<Token *> operands2;
+        compileExpression(tok2, operands2);
+
+        Token * const semicolon2 = tok2;
+        tok2 = tok2->next();
+        std::stack<Token *> operands3;
+        compileExpression(tok2, operands3);
+
+        if (init != semicolon1)
+            semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
+        tok2 = semicolon1->next();
+        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
+            tok2 = tok2->next();
+        if (tok2 != semicolon2)
+            semicolon2->astOperand1(const_cast<Token*>(tok2->astTop()));
+        tok2 = tok->linkAt(1);
+        while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
+            tok2 = tok2->previous();
+        if (tok2 != semicolon2)
+            semicolon2->astOperand2(const_cast<Token*>(tok2->astTop()));
+
+        semicolon1->astOperand2(semicolon2);
+        tok->next()->astOperand1(tok);
+        tok->next()->astOperand2(semicolon1);
+
+        return tok->linkAt(1);
+    }
+
+    if (Token::simpleMatch(tok, "( {"))
+        return tok;
+
+    if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
+        std::stack<Token *> operands;
+        Token * const tok1 = tok;
+        compileExpression(tok, operands);
+        Token * const endToken = tok;
+        if (endToken == tok1)
+            return tok1;
+
+        // Compile inner expressions inside inner ({..})
+        for (tok = tok1->next(); tok && tok != endToken; tok = tok ? tok->next() : NULL) {
+            if (!Token::simpleMatch(tok, "( {"))
+                continue;
+            if (tok->next() == endToken)
+                break;
+            const Token * const endToken2 = tok->linkAt(1);
+            for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : NULL)
+                tok = createAstAtToken(tok);
+        }
+
+        return endToken ? endToken->previous() : NULL;
+    }
+
+    return tok;
+}
+
 void TokenList::createAst()
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
-        if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% (|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%")) {
-            std::stack<Token *> operands;
-            compileExpression(tok, operands);
-        }
+        tok = createAstAtToken(tok);
     }
 }
 

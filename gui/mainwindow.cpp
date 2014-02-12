@@ -25,6 +25,7 @@
 #include <QUrl>
 #include <QAction>
 #include <QActionGroup>
+#include <QFile>
 #include "mainwindow.h"
 #include "cppcheck.h"
 #include "applicationlist.h"
@@ -530,6 +531,14 @@ bool MainWindow::LoadLibrary(Library *library, QString filename)
     path = path + "/cfg";
     if (library->load(NULL, (path+"/"+filename).toLatin1()))
         return true;
+
+    // Try to load resource..
+    QFile f(":/cfg/" + filename);
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString data = f.readAll();
+        if (library->loadxmldata(data.toLatin1(), data.length()))
+            return true;
+    }
 
     return false;
 }

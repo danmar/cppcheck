@@ -369,9 +369,6 @@ public:
      */
     bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
 
-    /** Replace a "goto" with the statements */
-    void simplifyGoto();
-
     /** Simplify useless C++ empty namespaces, like: 'namespace %var% { }'*/
     void simplifyEmptyNamespaces();
 
@@ -513,12 +510,6 @@ public:
      * @return Modified string, e.g. "a"
      */
     static std::string simplifyString(const std::string &source);
-
-    /**
-     * Use "<" comparison instead of ">"
-     * Use "<=" comparison instead of ">="
-     */
-    void simplifyComparisonOrder();
 
     /**
      * Change "int const x;" into "const int x;"

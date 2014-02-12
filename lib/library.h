@@ -47,6 +47,7 @@ public:
     Library();
 
     bool load(const char exename [], const char path []);
+    bool loadxmldata(const char xmldata[], std::size_t len);
     bool load(const tinyxml2::XMLDocument &doc);
 
     /** get allocation id for function (by name) */
@@ -83,6 +84,18 @@ public:
         return ((id > 0) && ((id & 1) == 1));
     }
 
+    bool formatstr_function(const std::string& funcname) const {
+        return _formatstr.find(funcname) != _formatstr.end();
+    }
+
+    bool formatstr_scan(const std::string& funcname) const {
+        return _formatstr.at(funcname).first;
+    }
+
+    bool formatstr_secure(const std::string& funcname) const {
+        return _formatstr.at(funcname).second;
+    }
+
     std::set<std::string> use;
     std::set<std::string> leakignore;
 
@@ -98,8 +111,12 @@ public:
 
     class ArgumentChecks {
     public:
-        ArgumentChecks() {
-            notbool = notnull = notuninit = formatstr = strz = false;
+        ArgumentChecks() :
+            notbool(false),
+            notnull(false),
+            notuninit(false),
+            formatstr(false),
+            strz(false) {
         }
 
         bool         notbool;
@@ -252,6 +269,7 @@ public:
     }
 
     std::set<std::string> returnuninitdata;
+    std::vector<std::string> defines; // to provide some library defines
 
 private:
     class ExportedFunctions {
@@ -320,7 +338,8 @@ private:
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string> > _importers; // keywords that import variables/functions
-    std::map<std::string,std::map<std::string,int> > _reflection; // invocation of reflection
+    std::map<std::string, std::map<std::string,int> > _reflection; // invocation of reflection
+    std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
 
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
