@@ -1,4 +1,5 @@
 #include "resultsmodel.h"
+#include <QBrush>
 #include <QDate>
 #include <QDomDocument>
 #include <QDomElement>
@@ -295,34 +296,44 @@ QModelIndex ResultsModel::parent(const QModelIndex &child) const
 
 QVariant ResultsModel::data(const QModelIndex &index, int role) const
 {
-    if (role != Qt::DisplayRole)
-        return QVariant();
+    if (role == Qt::DisplayRole) {
 
-    Node *node = nodeFromIndex(index);
-    if (!node)
-        return QVariant();
-
-    switch (index.column()) {
-    case 0:
-        return node->filename;
-    case 1:
-        return node->line;
-    case 2:
-        return node->severity;
-    case 3:
-        return node->text;
-    case 4:
-        return node->id;
-    case 5:
-        if (node->triage == ResultsModel::Node::TRUE_POSITIVE)
-            return "True positive";
-        else if (node->triage == ResultsModel::Node::FALSE_POSITIVE)
-            return "False positive";
-        else
+        const Node *node = nodeFromIndex(index);
+        if (!node)
             return QVariant();
-    default:
-        return QVariant();
+
+        switch (index.column()) {
+        case 0:
+            return node->filename;
+        case 1:
+            return node->line;
+        case 2:
+            return node->severity;
+        case 3:
+            return node->text;
+        case 4:
+            return node->id;
+        case 5:
+            if (node->triage == ResultsModel::Node::TRUE_POSITIVE)
+                return "True positive";
+            else if (node->triage == ResultsModel::Node::FALSE_POSITIVE)
+                return "False positive";
+            else
+                return QVariant();
+        default:
+            return QVariant();
+        }
+    } else if (role == Qt::BackgroundRole) {
+        const Node *node = nodeFromIndex(index);
+        if (!node)
+            return QVariant();
+        if (node->triage == ResultsModel::Node::TRUE_POSITIVE)
+            return QBrush(Qt::red);
+        if (node->triage == ResultsModel::Node::FALSE_POSITIVE)
+            return QBrush(Qt::gray);
     }
+
+    return QVariant();
 }
 
 QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int role) const

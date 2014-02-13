@@ -349,5 +349,5 @@ void ResultsForm::falsePositive()
 
 void ResultsForm::truePositive()
 {
-    resultsmodel->triage(triageIndex,ResultsModel::Node::FALSE_POSITIVE);
+    resultsmodel->triage(triageIndex,ResultsModel::Node::TRUE_POSITIVE);
 }
