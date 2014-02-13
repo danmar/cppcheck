@@ -248,22 +248,18 @@ public:
         return (it != _importers.end() && it->second.count(importer) > 0);
     }
 
-    bool isreflection(const std::string& file, const std::string &token) const {
-        const std::map<std::string,std::map<std::string,int> >::const_iterator it
-            = _reflection.find(Path::getFilenameExtensionInLowerCase(file));
-        return (it != _reflection.end() && it->second.count(token));
+    bool isreflection(const std::string &token) const {
+        const std::map<std::string,int>::const_iterator it
+            = _reflection.find(token);
+        return it != _reflection.end();
     }
 
-    int reflectionArgument(const std::string& file, const std::string &token) const {
+    int reflectionArgument(const std::string &token) const {
         int argIndex = -1;
-        const std::map<std::string,std::map<std::string,int> >::const_iterator it
-            = _reflection.find(Path::getFilenameExtensionInLowerCase(file));
+        const std::map<std::string,int>::const_iterator it
+            = _reflection.find(token);
         if (it != _reflection.end()) {
-            const std::map<std::string,int>::const_iterator it2 =
-                it->second.find(token);
-            if (it2 != it->second.end()) {
-                argIndex = it2->second;
-            }
+            argIndex = it->second;
         }
         return argIndex;
     }
@@ -338,7 +334,7 @@ private:
     std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string> > _importers; // keywords that import variables/functions
-    std::map<std::string, std::map<std::string,int> > _reflection; // invocation of reflection
+    std::map<std::string,int> _reflection; // invocation of reflection
     std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
 
 

@@ -163,8 +163,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.isreflection(FileName, tok->str())) {
-            const int index = settings->library.reflectionArgument(FileName, tok->str());
+        if (settings->library.isreflection(tok->str())) {
+            const int index = settings->library.reflectionArgument(tok->str());
             if (index >= 0) {
                 const Token * funcToken = tok->tokAt(index);
                 if (funcToken) {
