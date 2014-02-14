@@ -92,8 +92,10 @@ void ConfigureProjects::nameChanged(QString name)
 void ConfigureProjects::pathBrowse()
 {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select path to scan"));
-    if (!dir.isEmpty())
+    if (!dir.isEmpty()) {
         ui->path->setText(dir);
+        apply();
+    }
 }
 
 void ConfigureProjects::newInclude()
