@@ -10061,7 +10061,8 @@ private:
 
     static std::string testAst(const char code[]) {
         // tokenize given code..
-        TokenList tokenList(NULL);
+        const Settings settings;
+        TokenList tokenList(&settings);
         std::istringstream istr(code);
         if (!tokenList.createTokens(istr,"test.cpp"))
             return "ERROR";
@@ -10193,6 +10194,8 @@ private:
         testAst("extern int for_each_commit_graft(int (*)(int*), void *);"); // don't crash
         testAst("for (;;) {}"); // don't crash
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
+
+        ASSERT_EQUALS("publica::b::", testAst("class C : public ::a::b<bool> { };"));
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..

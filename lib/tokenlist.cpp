@@ -443,7 +443,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else if (tok->next() && tok->next()->str() == "<" && tok->next()->link() && !templatefunc) {
             op.push(tok);
             tok = tok->next()->link()->next();
-            compileTerm(tok,op);
+            if (!Token::simpleMatch(tok, "{"))
+                compileTerm(tok,op);
         } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
