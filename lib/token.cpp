@@ -50,9 +50,9 @@ Token::Token(Token **t) :
     _isExpandedMacro(false),
     _isAttributeConstructor(false),
     _isAttributeUnused(false),
-    _astOperand1(NULL),
-    _astOperand2(NULL),
-    _astParent(NULL)
+    _astOperand1(nullptr),
+    _astOperand2(nullptr),
+    _astParent(nullptr)
 {
 }
 
@@ -758,7 +758,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
 std::size_t Token::getStrLength(const Token *tok)
 {
-    assert(tok != NULL);
+    assert(tok != nullptr);
 
     std::size_t len = 0;
     const std::string strValue(tok->strValue());
@@ -782,7 +782,7 @@ std::size_t Token::getStrLength(const Token *tok)
 
 std::string Token::getCharAt(const Token *tok, std::size_t index)
 {
-    assert(tok != NULL);
+    assert(tok != nullptr);
 
     const std::string strValue(tok->strValue());
     const char *str = strValue.c_str();
@@ -850,7 +850,7 @@ const Token * Token::findClosingBracket() const
 
     if (_str == "<") {
         unsigned int depth = 0;
-        for (closing = this; closing != NULL; closing = closing->next()) {
+        for (closing = this; closing != nullptr; closing = closing->next()) {
             if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
                 closing = closing->link();
             else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
@@ -1009,8 +1009,8 @@ void Token::eraseTokens(Token *begin, const Token *end)
 
 void Token::createMutualLinks(Token *begin, Token *end)
 {
-    assert(begin != NULL);
-    assert(end != NULL);
+    assert(begin != nullptr);
+    assert(end != nullptr);
     assert(begin != end);
     begin->link(end);
     end->link(begin);
