@@ -47,7 +47,7 @@ Library::Library() : allocid(0)
 
 bool Library::load(const char exename[], const char path[])
 {
-    if (std::strchr(path,',') != NULL) {
+    if (std::strchr(path,',') != nullptr) {
         bool ret = true;
         std::string p(path);
         while (p.find(",") != std::string::npos) {
@@ -99,7 +99,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 
-    if (rootnode == NULL)
+    if (rootnode == nullptr)
         return false;
 
     if (strcmp(rootnode->Name(),"def") != 0)
@@ -129,10 +129,10 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (strcmp(node->Name(),"define")==0) {
             const char *name = node->Attribute("name");
-            if (name == NULL)
+            if (name == nullptr)
                 return false;
             const char *value = node->Attribute("value");
-            if (value == NULL)
+            if (value == nullptr)
                 return false;
             defines.push_back(std::string("#define ") +
                               name +
@@ -143,7 +143,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (strcmp(node->Name(),"function")==0) {
             const char *name = node->Attribute("name");
-            if (name == NULL)
+            if (name == nullptr)
                 return false;
 
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
@@ -151,7 +151,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
-                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
+                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != nullptr) {
                     const int nr = atoi(functionnode->Attribute("nr"));
                     bool notbool = false;
                     bool notnull = false;
