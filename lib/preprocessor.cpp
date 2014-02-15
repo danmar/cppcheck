@@ -610,7 +610,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
             // Add any pending inline suppressions that have accumulated.
             if (!suppressionIDs.empty()) {
-                if (_settings != NULL) {
+                if (_settings != nullptr) {
                     // Add the suppressions.
                     for (std::size_t j = 0; j < suppressionIDs.size(); ++j) {
                         const std::string errmsg(_settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno));
@@ -638,7 +638,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
                 // Add any pending inline suppressions that have accumulated.
                 if (!suppressionIDs.empty()) {
-                    if (_settings != NULL) {
+                    if (_settings != nullptr) {
                         // Relative filename
                         std::string relativeFilename(filename);
                         if (_settings->_relativePaths) {
@@ -1145,7 +1145,7 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
 
     const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
     if (it != variables.end()) {
-        TokenList tokenList(NULL);
+        TokenList tokenList(nullptr);
         std::istringstream istr(it->second);
         if (tokenList.createTokens(istr)) {
             // expand token list
@@ -1176,7 +1176,7 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
 static void simplifyVarMap(std::map<std::string, std::string> &variables)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
-        TokenList tokenList(NULL);
+        TokenList tokenList(nullptr);
         std::istringstream istr(i->second);
         if (tokenList.createTokens(istr)) {
             for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -2697,7 +2697,7 @@ public:
                 tok = tok->next();
             if (tok) {
                 bool optcomma = false;
-                while (NULL != (tok = tok->next())) {
+                while (nullptr != (tok = tok->next())) {
                     std::string str = tok->str();
                     if (str == "##")
                         continue;
@@ -2910,7 +2910,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
     {
         // fill up "macros" with user defined macros
-        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg,NULL,""));
+        const std::map<std::string,std::string> cfgmap(getcfgmap(cfg,nullptr,""));
         std::map<std::string, std::string>::const_iterator it;
         for (it = cfgmap.begin(); it != cfgmap.end(); ++it) {
             std::string s = it->first;
