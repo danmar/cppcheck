@@ -135,6 +135,7 @@ private:
         TEST_CASE(sameExpression);
 
         TEST_CASE(memsetZeroBytes);
+        TEST_CASE(memsetInvalid2ndParam);
 
         TEST_CASE(redundantGetAndSetUserId);
 
@@ -4050,21 +4051,72 @@ private:
     void memsetZeroBytes() {
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), 0);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), i);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetInvalid2ndParam() {
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    memset(is, 1.0f, 40);\n"
+              "    int* is2 = new int[10];\n"
+              "    memset(is2, 0.1f, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The 2nd memset() argument '1.0f' is a float, its representation is implementation defined.\n"
+                      "[test.cpp:5]: (portability) The 2nd memset() argument '0.1f' is a float, its representation is implementation defined.\n", errout.str());
+
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    float g = computeG();\n"
+              "    memset(is, g, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument 'g' is a float, its representation is implementation defined.\n", errout.str());
+
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    memset(is, 0.0f, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    short ss[] = {1, 2};\n"
+              "    memset(ss, 256, 4);\n"
+              "    short ss2[2];\n"
+              "    memset(ss2, -129, 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The 2nd memset() argument '256' doesn't fit into an 'unsigned char'.\n"
+                      "[test.cpp:5]: (warning) The 2nd memset() argument '-129' doesn't fit into an 'unsigned char'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int is[10];\n"
+              "    memset(is, 0xEE, 40);\n"
+              "    unsigned char* cs = malloc(256);\n"
+              "    memset(cs, -1, 256);\n"
+              "    short* ss[30];\n"
+              "    memset(ss, -128, 60);\n"
+              "    char cs2[30];\n"
+              "    memset(cs2, 255, 30);\n"
+              "    char cs3[30];\n"
+              "    memset(cs3, 0, 30);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int is[10];\n"
+              "    const int i = g();\n"
+              "    memset(is, 1.0f + i, 40);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f + i' is a float, its representation is implementation defined.\n", "", errout.str());
     }
 
     void redundantGetAndSetUserId() {

@@ -1746,6 +1746,60 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
     reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
 }
 
+void CheckOther::checkMemsetInvalid2ndParam()
+{
+    const bool portability = _settings->isEnabled("portability");
+    const bool warning = _settings->isEnabled("warning");
+    if (!warning && !portability)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
+            if (Token::simpleMatch(tok, "memset (")) {
+                const Token* firstParamTok = tok->tokAt(2);
+                if (!firstParamTok)
+                    continue;
+                const Token* secondParamTok = firstParamTok->nextArgument();
+                if (!secondParamTok)
+                    continue;
+                const Variable* secondParamVar = secondParamTok->variable();
+
+                // Check if second parameter is a float variable or a float literal != 0.0f
+                // TODO: Use AST with astIsFloat() for catch expressions like 'a + 1.0f'
+                if (portability &&
+                    ((secondParamVar && Token::Match(secondParamVar->typeStartToken(), "float|double"))
+                     || (secondParamTok->isNumber() && MathLib::isFloat(secondParamTok->str()) &&
+                         MathLib::toDoubleNumber(secondParamTok->str()) != 0.0 && secondParamTok->next()->str() == ","))) {
+                    memsetFloatError(secondParamTok, secondParamTok->str());
+                } else if (warning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
+                    const long long int value = MathLib::toLongNumber(secondParamTok->str());
+                    if (value < -128 || value > 255)
+                        memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::memsetFloatError(const Token *tok, const std::string &var_value)
+{
+    const std::string message("The 2nd memset() argument '" + var_value +
+                              "' is a float, its representation is implementation defined.");
+    const std::string verbose(message + " memset() is used to set each byte of a block of memory to a specific value and"
+                              " the actual representation of a floating-point value is implementation defined.");
+    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose);
+}
+
+void CheckOther::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
+{
+    const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
+    const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
+    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose);
+}
+
 //---------------------------------------------------------------------------
 // Check scope of variables..
 //---------------------------------------------------------------------------
