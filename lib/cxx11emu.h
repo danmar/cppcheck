@@ -43,12 +43,7 @@ public:
     }
 private:
     void operator&() const;    // whose address can't be taken
-} cppcheck_nullptr_impl = {};  // and whose name is nullptr
-
-// An evil workaround for the inability to disable -Wc++0x-compat using a #pragma.
-// Once -std=c++0x is embraced, the above class can be renamed to nullptr and
-// the define can be removed.
-#define nullptr cppcheck_nullptr_impl
+} nullptr = {};  // and whose name is nullptr
 
 // Static assertions
 
