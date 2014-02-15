@@ -48,7 +48,7 @@ static unsigned int countParameters(const Token *tok)
         return 0;
 
     unsigned int numpar = 1;
-    while (NULL != (tok = tok->nextArgument()))
+    while (nullptr != (tok = tok->nextArgument()))
         numpar++;
 
     return numpar;
@@ -121,7 +121,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     //     * var = strndup("hello", 3);
     if (tok2 && tok2->str() == "(") {
         tok2 = tok2->link();
-        tok2 = tok2 ? tok2->next() : NULL;
+        tok2 = tok2 ? tok2->next() : nullptr;
     }
     if (! tok2)
         return No;
@@ -190,7 +190,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
     // User function
     const Function* func = tok2->function();
-    if (func == NULL)
+    if (func == nullptr)
         return No;
 
     // Prevent recursion
@@ -212,7 +212,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     //     * var = (char *)realloc(..;
     if (tok2 && tok2->str() == "(") {
         tok2 = tok2->link();
-        tok2 = tok2 ? tok2->next() : NULL;
+        tok2 = tok2 ? tok2->next() : nullptr;
     }
     if (! tok2)
         return No;
@@ -420,7 +420,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     if (varid == 0)
         return No;
 
-    if (this != NULL) {
+    if (this != nullptr) {
         // If variable is not local then alloctype shall be "No"
         // Todo: there can be false negatives about mismatching allocation/deallocation.
         //       => Generate "alloc ; use ;" if variable is not local?
@@ -643,11 +643,11 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (numpar == 0) {
         // Taking return value => it is not a noreturn function
         if (tok->strAt(-1) == "=")
-            return NULL;
+            return nullptr;
 
         // Function is not noreturn
         if (notnoreturn.find(funcname) != notnoreturn.end())
-            return NULL;
+            return nullptr;
 
         return "callfunc";
     }
@@ -1499,7 +1499,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
         }
 
         // Main inner simplification loop
-        for (Token *tok2 = tok; tok2; tok2 = tok2 ? tok2->next() : NULL) {
+        for (Token *tok2 = tok; tok2; tok2 = tok2 ? tok2->next() : nullptr) {
             // Delete extra ";"
             while (Token::Match(tok2, "[;{}] ;")) {
                 tok2->deleteNext();
@@ -1994,7 +1994,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 {
     const Token *result;
 
-    if ((result = Token::findsimplematch(tokens, "loop alloc ;")) != NULL) {
+    if ((result = Token::findsimplematch(tokens, "loop alloc ;")) != nullptr) {
         return result;
     }
 
@@ -2002,25 +2002,25 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
         return tokens->tokAt(3);
     }
 
-    if ((result = Token::findmatch(tokens, "alloc ; if|if(var)|ifv return ;")) != NULL) {
+    if ((result = Token::findmatch(tokens, "alloc ; if|if(var)|ifv return ;")) != nullptr) {
         return result->tokAt(3);
     }
 
-    if ((result = Token::findmatch(tokens, "alloc ; alloc|assign|return callfunc| ;")) != NULL) {
+    if ((result = Token::findmatch(tokens, "alloc ; alloc|assign|return callfunc| ;")) != nullptr) {
         return result->tokAt(2);
     }
 
-    if ((result = Token::findsimplematch(tokens, "; alloc ; if assign ;")) != NULL) {
+    if ((result = Token::findsimplematch(tokens, "; alloc ; if assign ;")) != nullptr) {
         return result->tokAt(4);
     }
 
-    if (((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; }")) != NULL) &&
+    if (((result = Token::findsimplematch(tokens, "; alloc ; if dealloc ; }")) != nullptr) &&
         !result->tokAt(7)) {
         return result->tokAt(6);
     }
 
-    if ((result = Token::findsimplematch(tokens, "alloc ; }")) != NULL) {
-        if (result->tokAt(3) == NULL)
+    if ((result = Token::findsimplematch(tokens, "alloc ; }")) != nullptr) {
+        if (result->tokAt(3) == nullptr)
             return result->tokAt(2);
     }
 
@@ -2035,7 +2035,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
             return last;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -2052,14 +2052,14 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     Token *tok = getcode(Tok1, callstack, varid, alloctype, dealloctype, classmember, sz);
     //tok->printOut((std::string("Checkmemoryleak: getcode result for: ") + varname).c_str());
 
-    const bool use_addr = bool(Token::findsimplematch(tok, "&use") != NULL);
+    const bool use_addr = bool(Token::findsimplematch(tok, "&use") != nullptr);
 
     // Simplify the code and check if freed memory is used..
     for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
         while (Token::Match(tok2, "[;{}] ;"))
             tok2->deleteNext();
     }
-    if ((result = Token::findmatch(tok, "[;{}] dealloc ; use_ ;")) != NULL) {
+    if ((result = Token::findmatch(tok, "[;{}] dealloc ; use_ ;")) != nullptr) {
         deallocuseError(result->tokAt(3), varname);
     }
 
@@ -2108,11 +2108,11 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         return;
     }
 
-    if ((result = findleak(tok)) != NULL) {
+    if ((result = findleak(tok)) != nullptr) {
         memoryLeak(result, varname, alloctype);
     }
 
-    else if (!use_addr && (result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != NULL) {
+    else if (!use_addr && (result = Token::findsimplematch(tok, "dealloc ; dealloc ;")) != nullptr) {
         deallocDeallocError(result->tokAt(2), varname);
     }
 
@@ -2237,7 +2237,7 @@ void CheckMemoryLeakInFunction::check()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
-        checkScope(scope->classStart->next(), "", 0, scope->functionOf != NULL, 1);
+        checkScope(scope->classStart->next(), "", 0, scope->functionOf != nullptr, 1);
     }
 
     // Check variables..
