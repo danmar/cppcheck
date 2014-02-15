@@ -42,7 +42,7 @@ Tokenizer::Tokenizer() :
     _symbolDatabase(0),
     _varId(0),
     _codeWithTemplates(false), //is there any templates?
-    m_timerResults(NULL)
+    m_timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -56,7 +56,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     _symbolDatabase(0),
     _varId(0),
     _codeWithTemplates(false), //is there any templates?
-    m_timerResults(NULL)
+    m_timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -344,7 +344,7 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
 
 Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 {
-    Token *tok = NULL;
+    Token *tok = nullptr;
 
     // remove typedef but leave ;
     while (typeDef->next()) {
@@ -370,7 +370,7 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 }
 
 struct Space {
-    Space() : classEnd(NULL), isNamespace(false) { }
+    Space() : classEnd(nullptr), isNamespace(false) { }
     std::string className;
     const Token * classEnd;
     bool isNamespace;
@@ -400,13 +400,13 @@ static Token *splitDefinitionFromTypedef(Token *tok)
             }
             tok->next()->insertToken(name);
         } else
-            return NULL;
+            return nullptr;
     } else if (tok->strAt(3) == ":") {
         tok1 = tok->tokAt(4);
         while (tok1 && tok1->str() != "{")
             tok1 = tok1->next();
         if (!tok1)
-            return NULL;
+            return nullptr;
 
         tok1 = tok1->link();
 
@@ -415,7 +415,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
         tok1 = tok->linkAt(3);
 
         if (!tok1)
-            return NULL;
+            return nullptr;
 
         name = tok->strAt(2);
     }
@@ -426,7 +426,7 @@ static Token *splitDefinitionFromTypedef(Token *tok)
     if (tok1->next() && tok1->next()->str() == ";" && tok1->previous()->str() == "}") {
         tok->deleteThis();
         tok1->deleteThis();
-        return NULL;
+        return nullptr;
     } else {
         tok1->insertToken("typedef");
         tok1 = tok1->next();
@@ -484,7 +484,7 @@ static Token *processFunc(Token *tok2, bool inOperator)
                     tok2 = tok2->tokAt(2);
 
                 if (!tok2)
-                    return NULL;
+                    return nullptr;
 
                 if (tok2->str() == "(" &&
                     tok2->link()->next()->str() == "(") {
@@ -1661,7 +1661,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     concatenateNegativeNumberAndAnyPositive();
 
     // simplify simple calculations
-    for (Token *tok = list.front() ? list.front()->next() : NULL;
+    for (Token *tok = list.front() ? list.front()->next() : nullptr;
          tok;
          tok = tok->next()) {
         if (tok->isNumber())
@@ -2065,7 +2065,7 @@ static Token *skipTernaryOp(Token *tok)
     if (!tok || tok->str() != "?")
         return tok;
     unsigned int colonlevel = 1;
-    while (NULL != (tok = tok->next())) {
+    while (nullptr != (tok = tok->next())) {
         if (tok->str() == "?") {
             ++colonlevel;
         } else if (tok->str() == ":") {
@@ -2116,7 +2116,7 @@ bool Tokenizer::simplifyLabelsCaseDefault()
             tok = tok->link();
 
         if (Token::Match(tok, "[;{}] case")) {
-            while (NULL != (tok = tok->next())) {
+            while (nullptr != (tok = tok->next())) {
                 if (tok->str() == "(" || tok->str() == "[") {
                     tok = tok->link();
                 } else if (tok->str() == "?") {
@@ -3081,7 +3081,7 @@ bool Tokenizer::simplifyTokenList1()
     concatenateNegativeNumberAndAnyPositive();
 
     // simplify simple calculations
-    for (Token *tok = list.front() ? list.front()->next() : NULL; tok; tok = tok->next()) {
+    for (Token *tok = list.front() ? list.front()->next() : nullptr; tok; tok = tok->next()) {
         if (tok->isNumber())
             TemplateSimplifier::simplifyNumericCalculations(tok->previous());
     }
@@ -3267,7 +3267,7 @@ bool Tokenizer::simplifyTokenList1()
                 start->insertToken("\"" + asmcode + "\"");
                 start->insertToken("(");
                 start->str("asm");
-                start->link(NULL);
+                start->link(nullptr);
                 start->next()->link(start->tokAt(3));
                 start->tokAt(3)->link(start->next());
                 tok = start->tokAt(4);
@@ -3759,7 +3759,7 @@ void Tokenizer::removeMacroInVarDecl()
                 }
                 tok2 = tok2->next();
             }
-            tok2 = tok2 ? tok2->next() : NULL;
+            tok2 = tok2 ? tok2->next() : nullptr;
 
             // check if this is a variable declaration..
             const Token *tok3 = tok2;
@@ -3875,7 +3875,7 @@ void Tokenizer::simplifyEmptyNamespaces()
         return;
 
     bool goback = false;
-    for (Token *tok = list.front(); tok; tok = tok ? tok->next() : NULL) {
+    for (Token *tok = list.front(); tok; tok = tok ? tok->next() : nullptr) {
         if (goback) {
             tok = tok->previous();
             goback = false;
@@ -4171,14 +4171,14 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
                 if (!tokEnd) {
                     // no while return input token
                     syntaxError(tok);
-                    return NULL;
+                    return nullptr;
                 }
             }
         }
     } else if (tok->str()=="if") {
         tokEnd=simplifyAddBracesPair(tok,true);
         if (!tokEnd)
-            return NULL;
+            return nullptr;
         Token * tokEndNext=tokEnd->next();
         if (tokEndNext && tokEndNext->str()=="else") {
             Token * tokEndNextNext=tokEndNext->next();
@@ -4187,7 +4187,7 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
                 tokEnd=simplifyAddBracesToCommand(tokEndNextNext);
             } else if (Token::simpleMatch(tokEndNext, "else }")) {
                 syntaxError(tokEndNext);
-                return NULL;
+                return nullptr;
             } else
                 tokEnd=simplifyAddBracesPair(tokEndNext,false);
         }
@@ -4208,11 +4208,11 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         if (tokCondition->str()=="(")
             tokAfterCondition=tokCondition->link();
         else
-            tokAfterCondition=NULL;
+            tokAfterCondition=nullptr;
         if (!tokAfterCondition) {
             // Bad condition
             syntaxError(tok);
-            return NULL;
+            return nullptr;
         }
         tokAfterCondition=tokAfterCondition->next();
     }
@@ -4223,7 +4223,7 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         // No tokens left where to add braces around
         return tok;
     }
-    Token * tokBracesEnd=NULL;
+    Token * tokBracesEnd=nullptr;
     if (tokAfterCondition->str()=="{") {
         // already surrounded by braces
         tokBracesEnd=tokAfterCondition->link();
@@ -4855,7 +4855,7 @@ bool Tokenizer::simplifyFunctionParameters()
             // First step: Get list of argument names in parentheses
             std::map<std::string, Token *> argumentNames;
             bool bailOut = false;
-            Token * tokparam = NULL;
+            Token * tokparam = nullptr;
 
             //take count of the function name..
             const std::string& funcName(tok->str());
@@ -4863,7 +4863,7 @@ bool Tokenizer::simplifyFunctionParameters()
             //floating token used to check for parameters
             Token *tok1 = tok;
 
-            while (NULL != (tok1 = tok1->tokAt(2))) {
+            while (nullptr != (tok1 = tok1->tokAt(2))) {
                 if (!Token::Match(tok1, "%var% [,)]")) {
                     bailOut = true;
                     break;
@@ -5137,7 +5137,7 @@ static void incdec(std::string &value, const std::string &op)
 
 void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 {
-    simplifyVarDecl(list.front(), NULL, only_k_r_fpar);
+    simplifyVarDecl(list.front(), nullptr, only_k_r_fpar);
 }
 
 void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_fpar)
@@ -5241,7 +5241,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         //skip combinations of templates and namespaces
         while (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::")) {
             if (tok2->next()->str() == "<" && !TemplateSimplifier::templateParameters(tok2->next())) {
-                tok2 = NULL;
+                tok2 = nullptr;
                 break;
             }
             typelen += 2;
@@ -5272,7 +5272,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                     ++parens;
                 } else if (tok3->str() == ")") {
                     if (!parens) {
-                        tok2 = NULL;
+                        tok2 = nullptr;
                         break;
                     }
                     --parens;
@@ -5323,10 +5323,10 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                             tok2 = tok2->next();
                         }
                         if (tok2 && tok2->str() == ";")
-                            tok2 = NULL;
+                            tok2 = nullptr;
                     }
                 } else
-                    tok2 = NULL;
+                    tok2 = nullptr;
             }
 
             //VLA case
@@ -5336,7 +5336,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 while (Token::Match(tok2->link(), "] ,|=|["))
                     tok2 = tok2->link()->next();
                 if (!Token::Match(tok2, "=|,"))
-                    tok2 = NULL;
+                    tok2 = nullptr;
                 if (tok2 && tok2->str() == "=") {
                     while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                         if (tok2->str() == "{" || tok2->str() == "(" || tok2->str() == "[")
@@ -5344,12 +5344,12 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                         tok2 = tok2->next();
                     }
                     if (tok2 && tok2->str() == ";")
-                        tok2 = NULL;
+                        tok2 = nullptr;
                 }
             } else
-                tok2 = NULL;
+                tok2 = nullptr;
         } else {
-            tok2 = NULL;
+            tok2 = nullptr;
         }
 
         if (!tok2) {
@@ -5938,7 +5938,7 @@ void Tokenizer::simplifyIfNot()
 void Tokenizer::simplifyIfNotNull()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        Token *deleteFrom = NULL;
+        Token *deleteFrom = nullptr;
 
         // Remove 'x = (x != 0)'
         if (Token::simpleMatch(tok, "= (")) {
@@ -6046,7 +6046,7 @@ bool Tokenizer::simplifyLogicalOperators()
                 continue;
 
             const Token *tok2 = tok;
-            while (NULL != (tok2 = tok2->previous())) {
+            while (nullptr != (tok2 = tok2->previous())) {
                 if (tok2->str() == ")")
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "(|;|{|}"))
@@ -6315,7 +6315,7 @@ bool Tokenizer::simplifyKnownVariables()
                 std::string value;
                 unsigned int valueVarId = 0;
 
-                Token *tok3 = NULL;
+                Token *tok3 = nullptr;
                 bool valueIsPointer = false;
 
                 // there could be a hang here if tok2 is moved back by the function calls below for some reason
@@ -6394,7 +6394,7 @@ bool Tokenizer::simplifyKnownVariables()
 bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2, Token **_tok3, std::string &value, unsigned int &valueVarId, bool &valueIsPointer, bool floatvar)
 {
     Token *tok2 = *_tok2;
-    Token *tok3 = NULL;
+    Token *tok3 = nullptr;
 
     if (Token::simpleMatch(tok2->tokAt(-2), "for (")) {
         // only specific for loops is handled
@@ -7259,10 +7259,10 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
 class EnumValue {
 public:
     EnumValue() :
-        name(NULL),
-        value(NULL),
-        start(NULL),
-        end(NULL) {
+        name(nullptr),
+        value(nullptr),
+        start(nullptr),
+        end(nullptr) {
     }
     EnumValue(const EnumValue &ev) :
         name(ev.name),
@@ -7281,7 +7281,7 @@ public:
         for (Token *tok = start; tok; tok = tok->next()) {
             if (enumValues.find(tok->str()) != enumValues.end()) {
                 const EnumValue &other = enumValues.find(tok->str())->second;
-                if (other.value != NULL)
+                if (other.value != nullptr)
                     tok->str(other.value->str());
                 else {
                     bool islast = (tok == end);
@@ -7304,7 +7304,7 @@ public:
 
         if (Token::Match(start, "%num% [,}]")) {
             value = start;
-            start = end = NULL;
+            start = end = nullptr;
         }
     }
 
@@ -7503,7 +7503,7 @@ void Tokenizer::simplifyEnum()
                     enumValues[enumName->str()] = ev;
                     lastEnumValueStart = ev.start;
                     lastEnumValueEnd = ev.end;
-                    if (ev.start == NULL)
+                    if (ev.start == nullptr)
                         lastValue = MathLib::toLongNumber(ev.value->str());
                     tok1 = ev.end ? ev.end : ev.value;
                 }
@@ -7523,7 +7523,7 @@ void Tokenizer::simplifyEnum()
                 std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
                 bool simplify = false;
                 bool hasClass = false;
-                EnumValue *ev = NULL;
+                EnumValue *ev = nullptr;
 
                 if (!tok1)
                     return;
@@ -8543,8 +8543,8 @@ void Tokenizer::simplifyComma()
         }
 
         bool inReturn = false;
-        Token *startFrom = NULL;    // "[;{}]" token before "return"
-        Token *endAt = NULL;        // first ";" token after "[;{}] return"
+        Token *startFrom = nullptr;    // "[;{}]" token before "return"
+        Token *endAt = nullptr;        // first ";" token after "[;{}] return"
 
         // find "; return" pattern before comma
         for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
@@ -8833,7 +8833,7 @@ void Tokenizer::simplifyWhile0()
             Token *tok2 = tok->previous()->link();
             tok2 = tok2->previous();
             if (tok2 && tok2->str() == "do") {
-                bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != NULL;
+                bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != nullptr;
                 // delete "do ({)"
                 tok2->deleteThis();
                 if (!flowmatch)
@@ -9203,7 +9203,7 @@ void Tokenizer::simplifyAssignmentBlock()
             // goto the "} )"
             unsigned int indentlevel = 0;
             Token *tok2 = tok;
-            while (NULL != (tok2 = tok2->next())) {
+            while (nullptr != (tok2 = tok2->next())) {
                 if (tok2->str() == "(" || tok2->str() == "{")
                     ++indentlevel;
                 else if (tok2->str() == ")" || tok2->str() == "}") {
@@ -9851,7 +9851,7 @@ void Tokenizer::createSymbolDatabase()
 
             // Set Token::variable pointer for array member variable
             // Since it doesn't point at a fixed location it doesn't have varid
-            if (tok->variable() != NULL &&
+            if (tok->variable() != nullptr &&
                 tok->variable()->typeScope() &&
                 Token::Match(tok, "%var% [|.")) {
 
@@ -9862,7 +9862,7 @@ void Tokenizer::createSymbolDatabase()
                         tok2 = tok2->link()->next();
                 }
 
-                Token *membertok = NULL;
+                Token *membertok = nullptr;
                 if (Token::Match(tok2, ". %var%"))
                     membertok = tok2->next();
                 else if (Token::Match(tok2, ") . %var%") && tok->strAt(-1) == "(")
