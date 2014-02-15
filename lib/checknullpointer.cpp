@@ -229,9 +229,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(firstParam);
         else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
-        else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),1))
+        else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),1))
             var.push_back(firstParam);
-        else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),1))
+        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(),1))
             var.push_back(firstParam);
     }
 
@@ -241,9 +241,9 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             var.push_back(secondParam);
         else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
             var.push_back(secondParam);
-        else if (value == 0 && library != NULL && library->isnullargbad(tok.str(),2))
+        else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),2))
             var.push_back(secondParam);
-        else if (value == 1 && library != NULL && library->isuninitargbad(tok.str(),2))
+        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(),2))
             var.push_back(secondParam);
     }
 
@@ -392,7 +392,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         }
     }
 
-    const Variable *ovar = NULL;
+    const Variable *ovar = nullptr;
     if (Token::Match(tok, "%var% ==|!= %var%"))
         ovar = tok->tokAt(2)->variable();
     else if (Token::Match(prev->previous(), "%var% ==|!="))
@@ -580,7 +580,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             std::list<const Token *> varlist;
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
-                if (value->condition == NULL)
+                if (value->condition == nullptr)
                     nullPointerError(tok, tok->str());
                 else if (_settings->isEnabled("warning"))
                     nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
@@ -592,7 +592,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
             if (_settings->inconclusive && unknown) {
-                if (value->condition == NULL)
+                if (value->condition == nullptr)
                     nullPointerError(tok, tok->str(), true);
                 else
                     nullPointerError(tok, tok->str(), value->condition, true);
@@ -600,7 +600,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             continue;
         }
 
-        if (value->condition == NULL)
+        if (value->condition == nullptr)
             nullPointerError(tok, tok->str(), value->inconclusive);
         else if (_settings->isEnabled("warning"))
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
@@ -964,7 +964,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                         continue;
 
                     const Token *startOfIfBlock =
-                        Token::simpleMatch(endOfCondition, ") {") ? endOfCondition->next() : NULL;
+                        Token::simpleMatch(endOfCondition, ") {") ? endOfCondition->next() : nullptr;
                     if (!startOfIfBlock)
                         continue;
 
@@ -972,7 +972,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                     // pointer check for the pointers referenced in its condition
                     const Token *endOfIf = startOfIfBlock->link();
                     bool isExitOrReturn =
-                        Token::findmatch(startOfIfBlock, "exit|return|throw", endOfIf) != NULL;
+                        Token::findmatch(startOfIfBlock, "exit|return|throw", endOfIf) != nullptr;
 
                     if (Token::Match(tok, "if ( %var% == 0 )")) {
                         const unsigned int var = tok->tokAt(2)->varId();
