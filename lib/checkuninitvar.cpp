@@ -368,7 +368,7 @@ private:
      */
     static void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) {
         // check variable usages in rhs/index
-        while (NULL != (tok2 = tok2->next())) {
+        while (nullptr != (tok2 = tok2->next())) {
             if (Token::Match(tok2, "[;)=]"))
                 break;
             if (Token::Match(tok2, "%var% ("))
@@ -713,7 +713,7 @@ private:
                     if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%")) {
                         // find function call..
                         const Token *functionCall = tok2;
-                        while (NULL != (functionCall = functionCall ? functionCall->previous() : 0)) {
+                        while (nullptr != (functionCall = functionCall ? functionCall->previous() : 0)) {
                             if (functionCall->str() == "(")
                                 break;
                             if (functionCall->str() == ")")
@@ -1097,7 +1097,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         }
         if (stdtype || i->isPointer()) {
             bool alloc = false;
-            checkScopeForVariable(scope, tok, *i, NULL, NULL, &alloc, "");
+            checkScopeForVariable(scope, tok, *i, nullptr, nullptr, &alloc, "");
         }
         if (Token::Match(i->typeStartToken(), "struct %type% *| %var% ;"))
             checkStruct(scope, tok, *i);
@@ -1115,7 +1115,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
                             checkStruct(scope, tok, *arg);
                         else if (arg->typeStartToken()->isStandardType()) {
                             bool alloc = false;
-                            checkScopeForVariable(scope, tok->next(), *arg, NULL, NULL, &alloc, "");
+                            checkScopeForVariable(scope, tok->next(), *arg, nullptr, nullptr, &alloc, "");
                         }
                     }
                 }
@@ -1156,7 +1156,7 @@ void CheckUninitVar::checkStruct(const Scope* scope, const Token *tok, const Var
                         const Token *tok2 = tok;
                         if (tok->str() == "}")
                             tok2 = tok2->next();
-                        checkScopeForVariable(scope, tok2, structvar, NULL, NULL, &alloc, var.name());
+                        checkScopeForVariable(scope, tok2, structvar, nullptr, nullptr, &alloc, var.name());
                     }
                 }
             }
@@ -1239,7 +1239,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
         // Unconditional inner scope..
         if (tok->str() == "{" && Token::Match(tok->previous(), "[;{}]")) {
-            if (checkScopeForVariable(scope, tok->next(), var, possibleInit, NULL, alloc, membervar))
+            if (checkScopeForVariable(scope, tok->next(), var, possibleInit, nullptr, alloc, membervar))
                 return true;
             tok = tok->link();
             continue;
@@ -1330,7 +1330,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, NULL, alloc, membervar);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, nullptr, alloc, membervar);
 
                     std::map<unsigned int, int> varValueElse;
                     if (!alwaysTrue && !initelse && !noreturnElse) {
@@ -1479,7 +1479,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                 tok = tok->next();
             }
 
-            return bool(noreturn==NULL);
+            return bool(noreturn==nullptr);
         }
 
         // variable is seen..
@@ -1564,7 +1564,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
 
 bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const bool alloc, const std::string &membervar, const bool suppressErrors)
 {
-    const Token *usetok = NULL;
+    const Token *usetok = nullptr;
 
     assert(tok->str() == "{");
 
@@ -1643,7 +1643,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, bool alloc,
 {
     bool rhs = false;
     unsigned int indent = 0;
-    while (NULL != (tok = tok->next())) {
+    while (nullptr != (tok = tok->next())) {
         if (tok->str() == "=")
             rhs = true;
         else if (rhs && tok->varId() == var.declarationId()) {

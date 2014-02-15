@@ -133,7 +133,7 @@ void CheckStl::iterators()
                 if (container && tok2->varId() != container->declarationId()) {
                     // skip error message if container is a set..
                     const Variable *variableInfo = tok2->variable();
-                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : nullptr;
 
                     if (Token::simpleMatch(decltok, "std :: set"))
                         continue; // No warning
@@ -434,7 +434,7 @@ private:
             // check if there is a "it = ints.erase(it);" pattern. if so
             // the it is not invalidated.
             const Token *token = &tok;
-            while (NULL != (token = token ? token->previous() : 0)) {
+            while (nullptr != (token = token ? token->previous() : 0)) {
                 if (Token::Match(token, "[;{}]"))
                     break;
                 else if (token->str() == "=")
@@ -506,7 +506,7 @@ void CheckStl::erase()
                     if (Token::Match(tok2, "; %var% !=")) {
                         // Get declaration token for var..
                         const Variable *variableInfo = tok2->next()->variable();
-                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
+                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : nullptr;
 
                         // Is variable an iterator?
                         bool isIterator = false;

@@ -64,9 +64,9 @@ static bool isConstExpression(const Token *tok, const std::set<std::string> &con
 
 static bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
 {
-    if (tok1 == NULL && tok2 == NULL)
+    if (tok1 == nullptr && tok2 == nullptr)
         return true;
-    if (tok1 == NULL || tok2 == NULL)
+    if (tok1 == nullptr || tok2 == nullptr)
         return false;
     if (tok1->str() != tok2->str())
         return false;
@@ -949,7 +949,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         for (const Token *tok2 = i->classStart; tok2 != i->classEnd; tok2 = tok2->next()) {
             if (Token::simpleMatch(tok2, "if (")) {
                 tok2 = tok2->next()->link()->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched if in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -961,7 +961,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 tok2 = tok2->next()->link()->next();
                 // skip over "do { } while ( ) ;" case
                 if (tok2->str() == "{") {
-                    if (tok2->link() == NULL) {
+                    if (tok2->link() == nullptr) {
                         std::ostringstream errmsg;
                         errmsg << "unmatched while in switch: " << tok2->linenr();
                         reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -972,7 +972,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "do {")) {
                 tok2 = tok2->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched do in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -982,7 +982,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "for (")) {
                 tok2 = tok2->next()->link()->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched for in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -1012,7 +1012,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                     if (tok2->next()->str() == "else") {
                         tok2 = tok2->tokAt(2);
                         ifnest.pop();
-                        if (tok2->link() == NULL) {
+                        if (tok2->link() == nullptr) {
                             std::ostringstream errmsg;
                             errmsg << "unmatched if in switch: " << tok2->linenr();
                             reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -1530,7 +1530,7 @@ void CheckOther::invalidFunctionUsage()
                 sprintfOverlappingDataError(tok2, tok2->str());
                 break;
             }
-        } while (NULL != (tok2 = tok2->nextArgument()));
+        } while (nullptr != (tok2 = tok2->nextArgument()));
     }
 }
 
@@ -2198,7 +2198,7 @@ void CheckOther::checkZeroDivision()
             // Value flow..
             const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
             if (value) {
-                if (value->condition == NULL)
+                if (value->condition == nullptr)
                     zerodivError(tok);
                 else if (_settings->isEnabled("warning"))
                     zerodivcondError(value->condition,tok);
@@ -2628,7 +2628,7 @@ void CheckOther::checkInvalidFree()
         // if it is later used to free memory
         else if (Token::Match(tok, "%var% (")) {
             const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
-            while (tok2 != NULL) {
+            while (tok2 != nullptr) {
                 allocatedVariables.erase(tok2->varId());
                 tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
             }
@@ -2698,7 +2698,7 @@ void CheckOther::checkDoubleFree()
         else if (tok->str() == "}" && tok->link() && tok->link()->previous() &&
                  tok->link()->linkAt(-1) &&
                  Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
-                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != NULL) {
+                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != nullptr) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
@@ -2855,7 +2855,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
         return;
 
     const Token *tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != nullptr) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -2863,7 +2863,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != nullptr) {
         const std::string &str1 = tok->strAt(4);
         const std::string &str2 = tok->strAt(6);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -2871,7 +2871,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != nullptr) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         if (str1 == str2)
@@ -2880,7 +2880,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != nullptr) {
         const std::string &str1 = tok->strAt(1);
         const std::string &str2 = tok->strAt(3);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -3318,7 +3318,7 @@ void CheckOther::oppositeInnerCondition()
 
             if (scope->classDef->strAt(6) == "{") {
 
-                const char *oppositeCondition = NULL;
+                const char *oppositeCondition = nullptr;
 
                 if (scope->classDef->strAt(3) == "==")
                     oppositeCondition = "if ( %any% !=|<|>|<=|>= %any% )";
@@ -3388,13 +3388,13 @@ void CheckOther::checkVarFuncNullUB()
                         ++argnr;
                     ftok = ftok->previous();
                 }
-                ftok = ftok ? ftok->previous() : NULL;
+                ftok = ftok ? ftok->previous() : nullptr;
                 if (ftok && ftok->isName()) {
                     // If this is a variadic function then report error
                     const Function *f = ftok->function();
                     if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
-                        tok2 = tok2 ? tok2->link() : NULL; // goto ')'
+                        tok2 = tok2 ? tok2->link() : nullptr; // goto ')'
                         if (Token::simpleMatch(tok2->tokAt(-3), ". . ."))
                             varFuncNullUBError(tok);
                     }

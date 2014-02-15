@@ -381,7 +381,7 @@ void Variables::leaveScope(bool insideLoop)
         for (std::set<unsigned int>::const_iterator readIter = currentVarReadInScope.begin();
              readIter != currentVarReadInScope.end();
              ++readIter) {
-            read(*readIter, NULL);
+            read(*readIter, nullptr);
         }
     }
 
@@ -1192,7 +1192,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (!structname.empty()) {
                 const std::string pattern1(structname + " %var% ;");
                 const Token *tok2 = tok;
-                while (NULL != (tok2 = Token::findmatch(tok2->next(), pattern1.c_str()))) {
+                while (nullptr != (tok2 = Token::findmatch(tok2->next(), pattern1.c_str()))) {
                     if (Token::simpleMatch(tok2->tokAt(3), (tok2->strAt(1) + " = {").c_str())) {
                         structname.clear();
                         break;
