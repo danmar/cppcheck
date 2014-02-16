@@ -318,7 +318,7 @@ void CheckIO::invalidScanf()
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            const Token *formatToken = 0;
+            const Token *formatToken = nullptr;
             if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
                 formatToken = tok->tokAt(2);
             else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
@@ -424,7 +424,7 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
                   argTok->variable()->dimensionKnown(0) &&
                   argTok->variable()->dimension(0) != 0)))) {
         *formatArgTok = argTok->nextArgument();
-        *formatStringTok = 0;
+        *formatStringTok = nullptr;
         if (argTok->variable()) {
             const Token *varTok = argTok->variable()->nameToken();
             if (Token::Match(varTok, "%var% ; %var% = %str% ;") &&
@@ -1330,7 +1330,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                 tok = tok->tokAt(2);
             if (!tok || !(tok->type() == Token::eVariable || tok->type() == Token::eFunction))
                 return;
-            const Token *varTok = 0;
+            const Token *varTok = nullptr;
             const Token *tok1 = tok->next();
             for (; tok1; tok1 = tok1->next()) {
                 if (tok1->str() == "," || tok1->str() == ")") {

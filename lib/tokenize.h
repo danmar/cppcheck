@@ -63,7 +63,7 @@ public:
      * \param unknown set to true if it's unknown if the scope is noreturn
      * \return true if scope ends with a function call that might be 'noreturn'
      */
-    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = 0) const;
+    bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     /**
      * Tokenize code

@@ -514,7 +514,7 @@ void CheckOther::invalidPointerCast()
                 continue;
 
             // Find casted variable
-            const Variable *var = 0;
+            const Variable *var = nullptr;
             bool allocation = false;
             bool ref = false;
             if (Token::Match(nextTok, "new %type%"))

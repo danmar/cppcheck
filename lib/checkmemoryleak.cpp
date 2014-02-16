@@ -629,7 +629,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
         Token *ftok = getcode(func->functionScope->classStart->next(), callstack, 0, alloctype, dealloctype, false, 1);
         simplifycode(ftok);
-        const char *ret = 0;
+        const char *ret = nullptr;
         if (Token::simpleMatch(ftok, "; alloc ; }"))
             ret = "alloc";
         else if (Token::simpleMatch(ftok, "; dealloc ; }"))
@@ -688,7 +688,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             while (func_ && func_->str() == ";")
                 func_ = func_->next();
 
-            const char *ret = 0;
+            const char *ret = nullptr;
             /** @todo handle "goto" */
             if (Token::findsimplematch(func_, "dealloc"))
                 ret = "dealloc";
@@ -782,7 +782,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 ;
 
             else {
-                const Token *skipToToken = 0;
+                const Token *skipToToken = nullptr;
 
                 // scan statement for interesting keywords / varid
                 for (tok2 = tok->next(); tok2; tok2 = tok2->next()) {

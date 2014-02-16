@@ -310,8 +310,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
             // check if in class or structure
             else if (scope->type == Scope::eClass || scope->type == Scope::eStruct) {
-                const Token *funcStart = 0;
-                const Token *argStart = 0;
+                const Token *funcStart = nullptr;
+                const Token *argStart = nullptr;
 
                 // What section are we in..
                 if (tok->str() == "private:")
@@ -558,8 +558,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope->definedType->friendList.push_back(friendInfo);
                 }
             } else if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal) {
-                const Token *funcStart = 0;
-                const Token *argStart = 0;
+                const Token *funcStart = nullptr;
+                const Token *argStart = nullptr;
 
                 // function?
                 if (isFunction(tok, scope, &funcStart, &argStart)) {
@@ -2723,7 +2723,7 @@ bool SymbolDatabase::isCPP() const
 
 const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope) const
 {
-    const Scope *scope = 0;
+    const Scope *scope = nullptr;
     // absolute path
     if (tok->str() == "::") {
         tok = tok->next();

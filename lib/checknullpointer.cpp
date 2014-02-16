@@ -629,8 +629,8 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
             continue;
 
         // vartok : token for the variable
-        const Token *vartok = 0;
-        const Token *checkConditionStart = 0;
+        const Token *vartok = nullptr;
+        const Token *checkConditionStart = nullptr;
         if (Token::Match(tok, "( ! %var% )|&&")) {
             vartok = tok->tokAt(2);
             checkConditionStart = vartok->next();
@@ -892,7 +892,7 @@ void CheckNullPointer::nullConstantDereference()
                 }
             }
 
-            const Variable *ovar = 0;
+            const Variable *ovar = nullptr;
             if (Token::Match(tok, "0 ==|!= %var% !!."))
                 ovar = tok->tokAt(2)->variable();
             else if (Token::Match(tok, "%var% ==|!= 0"))
