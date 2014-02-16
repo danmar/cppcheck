@@ -4512,7 +4512,7 @@ private:
               "    else\n"
               "        b = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a) {\n"
@@ -4523,7 +4523,7 @@ private:
               "    } else\n"
               "        b = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1)\n"
@@ -4535,7 +4535,7 @@ private:
               "            b = 2;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("int f(int signed, unsigned char value) {\n"
               "    int ret;\n"
@@ -4561,7 +4561,7 @@ private:
               "    else\n"
               "        __asm__(\"mov ax, bx\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
     }
 
     void duplicateBranch1() {
@@ -4575,7 +4575,7 @@ private:
               "  else\n"
               "    frac = front/(front-back);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -4584,7 +4584,7 @@ private:
               "  else\n"
               "    frac = front/((front-back));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
     }
 
     void duplicateBranch2() {

@@ -2574,7 +2574,15 @@ void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
 //-----------------------------------------------------------------------------
 void CheckOther::checkDuplicateBranch()
 {
-    if (!_settings->isEnabled("style"))
+    // This is inconclusive since in practice most warnings are noise:
+    // * There can be unfixed low-priority todos. The code is fine as it
+    //   is but it could be possible to enhance it. Writing a warning
+    //   here is noise since the code is fine (see cppcheck, abiword, ..)
+    // * There can be overspecified code so some conditions can't be true
+    //   and their conditional code is a duplicate of the condition that
+    //   is always true just in case it would be false. See for instance
+    //   abiword.
+    if (!_settings->isEnabled("style") || !_settings->inconclusive)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2621,7 +2629,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
     reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
-                "carefully to determine if it is correct.");
+                "carefully to determine if it is correct.", true);
 }
 
 
