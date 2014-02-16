@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 static bool checkRvalueExpression(const Token * const vartok)
 {
     const Variable * const var = vartok->variable();
-    if (var == NULL)
+    if (var == nullptr)
         return false;
 
     const Token * const next = vartok->next();

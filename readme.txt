@@ -78,6 +78,13 @@ Compiling
         The "LDFLAGS=-lshlwapi" is needed when building with mingw
             mingw32-make LDFLAGS=-lshlwapi
 
+    other compilers/ide
+    ===================
+
+        1. Create a empty project file / makefile.
+        2. Add all cpp files in the cppcheck cli and lib folders to the project file / makefile.
+        3. Compile.
+
 Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
     sudo apt-get install mingw32

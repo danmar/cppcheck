@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
                     break;
                 }
                 if (!Token::Match(end, "%var%|::|<|>|>>|,")) {
-                    end = NULL;
+                    end = nullptr;
                     break;
                 }
                 end = end->next();
@@ -425,7 +425,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         tok->deleteThis();
 
         // Use this special template in the code..
-        while (NULL != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
+        while (nullptr != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
             Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
             tok2->str(name);
         }

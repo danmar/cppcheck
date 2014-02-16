@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ public:
         checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
+        checkOther.checkMemsetInvalid2ndParam();
         checkOther.checkIncorrectStringCompare();
         checkOther.checkSwitchCaseFallThrough();
         checkOther.checkAlwaysTrueOrFalseStringCompare();
@@ -202,6 +203,9 @@ public:
     /** @brief %Check for filling zero bytes with memset() */
     void checkMemsetZeroBytes();
 
+    /** @brief %Check for invalid 2nd parameter of memset() */
+    void checkMemsetInvalid2ndParam();
+
     /** @brief %Check for using bad usage of strncmp and substr */
     void checkIncorrectStringCompare();
 
@@ -303,6 +307,8 @@ private:
     void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
+    void memsetFloatError(const Token *tok, const std::string &var_value);
+    void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void duplicateIfError(const Token *tok1, const Token *tok2);
@@ -368,6 +374,8 @@ private:
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
         c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
         c.memsetZeroBytesError(0, "varname");
+        c.memsetFloatError(0, "varname");
+        c.memsetValueOutOfRangeError(0, "varname");
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
         c.clarifyStatementError(0);
@@ -415,10 +423,14 @@ private:
 
                // warning
                "* either division by zero or useless condition\n"
+               "* memset() with a value out of range as the 2nd parameter\n"
 
-               //performance
+               // performance
                "* redundant data copying for const variable\n"
                "* subsequent assignment or copying to a variable or buffer\n"
+
+               // portability
+               "* memset() with a float as the 2nd parameter\n"
 
                // style
                "* Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"

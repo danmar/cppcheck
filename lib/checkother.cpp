@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,9 +64,9 @@ static bool isConstExpression(const Token *tok, const std::set<std::string> &con
 
 static bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
 {
-    if (tok1 == NULL && tok2 == NULL)
+    if (tok1 == nullptr && tok2 == nullptr)
         return true;
-    if (tok1 == NULL || tok2 == NULL)
+    if (tok1 == nullptr || tok2 == nullptr)
         return false;
     if (tok1->str() != tok2->str())
         return false;
@@ -949,7 +949,7 @@ void CheckOther::checkSwitchCaseFallThrough()
         for (const Token *tok2 = i->classStart; tok2 != i->classEnd; tok2 = tok2->next()) {
             if (Token::simpleMatch(tok2, "if (")) {
                 tok2 = tok2->next()->link()->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched if in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -961,7 +961,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 tok2 = tok2->next()->link()->next();
                 // skip over "do { } while ( ) ;" case
                 if (tok2->str() == "{") {
-                    if (tok2->link() == NULL) {
+                    if (tok2->link() == nullptr) {
                         std::ostringstream errmsg;
                         errmsg << "unmatched while in switch: " << tok2->linenr();
                         reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -972,7 +972,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "do {")) {
                 tok2 = tok2->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched do in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -982,7 +982,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "for (")) {
                 tok2 = tok2->next()->link()->next();
-                if (tok2->link() == NULL) {
+                if (tok2->link() == nullptr) {
                     std::ostringstream errmsg;
                     errmsg << "unmatched for in switch: " << tok2->linenr();
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -1012,7 +1012,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                     if (tok2->next()->str() == "else") {
                         tok2 = tok2->tokAt(2);
                         ifnest.pop();
-                        if (tok2->link() == NULL) {
+                        if (tok2->link() == nullptr) {
                             std::ostringstream errmsg;
                             errmsg << "unmatched if in switch: " << tok2->linenr();
                             reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
@@ -1530,7 +1530,7 @@ void CheckOther::invalidFunctionUsage()
                 sprintfOverlappingDataError(tok2, tok2->str());
                 break;
             }
-        } while (NULL != (tok2 = tok2->nextArgument()));
+        } while (nullptr != (tok2 = tok2->nextArgument()));
     }
 }
 
@@ -1744,6 +1744,60 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
                               " The function memset ( void * ptr, int value, size_t num ) sets the"
                               " first num bytes of the block of memory pointed by ptr to the specified value.");
     reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose);
+}
+
+void CheckOther::checkMemsetInvalid2ndParam()
+{
+    const bool portability = _settings->isEnabled("portability");
+    const bool warning = _settings->isEnabled("warning");
+    if (!warning && !portability)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
+            if (Token::simpleMatch(tok, "memset (")) {
+                const Token* firstParamTok = tok->tokAt(2);
+                if (!firstParamTok)
+                    continue;
+                const Token* secondParamTok = firstParamTok->nextArgument();
+                if (!secondParamTok)
+                    continue;
+                const Variable* secondParamVar = secondParamTok->variable();
+
+                // Check if second parameter is a float variable or a float literal != 0.0f
+                // TODO: Use AST with astIsFloat() for catch expressions like 'a + 1.0f'
+                if (portability &&
+                    ((secondParamVar && Token::Match(secondParamVar->typeStartToken(), "float|double"))
+                     || (secondParamTok->isNumber() && MathLib::isFloat(secondParamTok->str()) &&
+                         MathLib::toDoubleNumber(secondParamTok->str()) != 0.0 && secondParamTok->next()->str() == ","))) {
+                    memsetFloatError(secondParamTok, secondParamTok->str());
+                } else if (warning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
+                    const long long int value = MathLib::toLongNumber(secondParamTok->str());
+                    if (value < -128 || value > 255)
+                        memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::memsetFloatError(const Token *tok, const std::string &var_value)
+{
+    const std::string message("The 2nd memset() argument '" + var_value +
+                              "' is a float, its representation is implementation defined.");
+    const std::string verbose(message + " memset() is used to set each byte of a block of memory to a specific value and"
+                              " the actual representation of a floating-point value is implementation defined.");
+    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose);
+}
+
+void CheckOther::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
+{
+    const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
+    const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
+    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose);
 }
 
 //---------------------------------------------------------------------------
@@ -2198,7 +2252,7 @@ void CheckOther::checkZeroDivision()
             // Value flow..
             const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
             if (value) {
-                if (value->condition == NULL)
+                if (value->condition == nullptr)
                     zerodivError(tok);
                 else if (_settings->isEnabled("warning"))
                     zerodivcondError(value->condition,tok);
@@ -2520,7 +2574,15 @@ void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
 //-----------------------------------------------------------------------------
 void CheckOther::checkDuplicateBranch()
 {
-    if (!_settings->isEnabled("style"))
+    // This is inconclusive since in practice most warnings are noise:
+    // * There can be unfixed low-priority todos. The code is fine as it
+    //   is but it could be possible to enhance it. Writing a warning
+    //   here is noise since the code is fine (see cppcheck, abiword, ..)
+    // * There can be overspecified code so some conditions can't be true
+    //   and their conditional code is a duplicate of the condition that
+    //   is always true just in case it would be false. See for instance
+    //   abiword.
+    if (!_settings->isEnabled("style") || !_settings->inconclusive)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2567,7 +2629,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
     reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
-                "carefully to determine if it is correct.");
+                "carefully to determine if it is correct.", true);
 }
 
 
@@ -2628,7 +2690,7 @@ void CheckOther::checkInvalidFree()
         // if it is later used to free memory
         else if (Token::Match(tok, "%var% (")) {
             const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
-            while (tok2 != NULL) {
+            while (tok2 != nullptr) {
                 allocatedVariables.erase(tok2->varId());
                 tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
             }
@@ -2698,7 +2760,7 @@ void CheckOther::checkDoubleFree()
         else if (tok->str() == "}" && tok->link() && tok->link()->previous() &&
                  tok->link()->linkAt(-1) &&
                  Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
-                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != NULL) {
+                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != nullptr) {
             freedVariables.clear();
             closeDirVariables.clear();
         }
@@ -2855,7 +2917,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
         return;
 
     const Token *tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != nullptr) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -2863,7 +2925,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != nullptr) {
         const std::string &str1 = tok->strAt(4);
         const std::string &str2 = tok->strAt(6);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -2871,7 +2933,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != nullptr) {
         const std::string &str1 = tok->strAt(2);
         const std::string &str2 = tok->strAt(4);
         if (str1 == str2)
@@ -2880,7 +2942,7 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     }
 
     tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != NULL) {
+    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != nullptr) {
         const std::string &str1 = tok->strAt(1);
         const std::string &str2 = tok->strAt(3);
         alwaysTrueFalseStringCompareError(tok, str1, str2);
@@ -3318,7 +3380,7 @@ void CheckOther::oppositeInnerCondition()
 
             if (scope->classDef->strAt(6) == "{") {
 
-                const char *oppositeCondition = NULL;
+                const char *oppositeCondition = nullptr;
 
                 if (scope->classDef->strAt(3) == "==")
                     oppositeCondition = "if ( %any% !=|<|>|<=|>= %any% )";
@@ -3388,13 +3450,13 @@ void CheckOther::checkVarFuncNullUB()
                         ++argnr;
                     ftok = ftok->previous();
                 }
-                ftok = ftok ? ftok->previous() : NULL;
+                ftok = ftok ? ftok->previous() : nullptr;
                 if (ftok && ftok->isName()) {
                     // If this is a variadic function then report error
                     const Function *f = ftok->function();
                     if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
-                        tok2 = tok2 ? tok2->link() : NULL; // goto ')'
+                        tok2 = tok2 ? tok2->link() : nullptr; // goto ')'
                         if (Token::simpleMatch(tok2->tokAt(-3), ". . ."))
                             varFuncNullUBError(tok);
                     }
