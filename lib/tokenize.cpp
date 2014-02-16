@@ -603,19 +603,19 @@ void Tokenizer::simplifyTypedef()
 
         Token *typeName;
         std::list<std::string> pointers;
-        Token *typeStart = 0;
-        Token *typeEnd = 0;
-        Token *argStart = 0;
-        Token *argEnd = 0;
-        Token *arrayStart = 0;
-        Token *arrayEnd = 0;
-        Token *specStart = 0;
-        Token *specEnd = 0;
+        Token *typeStart = nullptr;
+        Token *typeEnd = nullptr;
+        Token *argStart = nullptr;
+        Token *argEnd = nullptr;
+        Token *arrayStart = nullptr;
+        Token *arrayEnd = nullptr;
+        Token *specStart = nullptr;
+        Token *specEnd = nullptr;
         Token *typeDef = tok;
-        Token *argFuncRetStart = 0;
-        Token *argFuncRetEnd = 0;
-        Token *funcStart = 0;
-        Token *funcEnd = 0;
+        Token *argFuncRetStart = nullptr;
+        Token *argFuncRetEnd = nullptr;
+        Token *funcStart = nullptr;
+        Token *funcEnd = nullptr;
         Token *tokOffset = tok->next();
         bool function = false;
         bool functionPtr = false;
@@ -626,8 +626,8 @@ void Tokenizer::simplifyTypedef()
         bool refToArray = false;
         bool ptrMember = false;
         bool typeOf = false;
-        Token *namespaceStart = 0;
-        Token *namespaceEnd = 0;
+        Token *namespaceStart = nullptr;
+        Token *namespaceEnd = nullptr;
 
         // check for invalid input
         if (!tok->next()) {
@@ -4440,7 +4440,7 @@ void Tokenizer::simplifyConditionOperator()
             else
                 tok->deleteNext(8);
 
-            Token *starttok = 0;
+            Token *starttok = nullptr;
 
             std::string str;
             if (isReturn)
@@ -7347,9 +7347,9 @@ void Tokenizer::simplifyEnum()
                 (!temp->isName() || !Token::Match(temp->next(), "[{:;]")))
                 continue;
             Token *start = tok;
-            Token *enumType = 0;
-            Token *typeTokenStart = 0;
-            Token *typeTokenEnd = 0;
+            Token *enumType = nullptr;
+            Token *typeTokenStart = nullptr;
+            Token *typeTokenEnd = nullptr;
 
             // check for C++0x enum class
             if (Token::Match(tok->next(), "class|struct"))
@@ -7965,7 +7965,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
     std::vector<unsigned int> switchindents;
     bool checklabel = false;
     Token *tok = begin;
-    Token *tokcheck = 0;
+    Token *tokcheck = nullptr;
     while (tok->next() && tok->next() != end) {
         if (tok->next()->str() == "(") {
             ++roundbraces;
@@ -8639,11 +8639,11 @@ void Tokenizer::removeExceptionSpecifications()
 bool Tokenizer::validate() const
 {
     std::stack<const Token *> linktok;
-    const Token *lastTok = 0;
+    const Token *lastTok = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         lastTok = tok;
         if (Token::Match(tok, "[{([]") || (tok->str() == "<" && tok->link())) {
-            if (tok->link() == 0) {
+            if (tok->link() == nullptr) {
                 cppcheckError(tok);
                 return false;
             }
@@ -8652,7 +8652,7 @@ bool Tokenizer::validate() const
         }
 
         else if (Token::Match(tok, "[})]]") || (tok->str() == ">" && tok->link())) {
-            if (tok->link() == 0) {
+            if (tok->link() == nullptr) {
                 cppcheckError(tok);
                 return false;
             }
@@ -8675,7 +8675,7 @@ bool Tokenizer::validate() const
             linktok.pop();
         }
 
-        else if (tok->link() != 0) {
+        else if (tok->link() != nullptr) {
             cppcheckError(tok);
             return false;
         }
@@ -8867,7 +8867,7 @@ void Tokenizer::simplifyErrNoInWhile()
         if (tok->str() != "errno")
             continue;
 
-        Token *endpar = 0;
+        Token *endpar = nullptr;
         if (Token::Match(tok->previous(), "&& errno == EINTR ) { ;| }"))
             endpar = tok->tokAt(3);
         else if (Token::Match(tok->tokAt(-2), "&& ( errno == EINTR ) ) { ;| }"))
@@ -9018,7 +9018,7 @@ void Tokenizer::simplifyStructDecl()
                     }
                     if (!Token::simpleMatch(tok2, "} ;"))
                         continue;
-                    Token *vartok = 0;
+                    Token *vartok = nullptr;
                     tok2 = tok1->tokAt(2);
                     while (Token::Match(tok2, "%type% %var% ;")) {
                         if (!vartok) {
@@ -9295,7 +9295,7 @@ void Tokenizer::simplifyBitfields()
             goback = false;
             tok = tok->previous();
         }
-        Token *last = 0;
+        Token *last = nullptr;
 
         if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% %var% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&

@@ -54,7 +54,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
+    Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
 
     static bool missingIncludeFlag;
 

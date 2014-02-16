@@ -846,7 +846,7 @@ Token* Token::nextArgument() const
 
 const Token * Token::findClosingBracket() const
 {
-    const Token *closing = 0;
+    const Token *closing = nullptr;
 
     if (_str == "<") {
         unsigned int depth = 0;

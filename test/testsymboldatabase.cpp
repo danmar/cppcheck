@@ -836,7 +836,7 @@ private:
 
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
-        ASSERT(db != 0);
+        ASSERT(db != nullptr);
 
         if (db) {
             bool seen_something = false;
@@ -930,11 +930,11 @@ private:
         ASSERT(db && db->scopeList.size() == 4);
         if (db) {
             const Scope* foo = db->findScopeByName("Foo");
-            ASSERT(foo != 0);
+            ASSERT(foo != nullptr);
             const Scope* bar1 = db->findScopeByName("Bar1");
-            ASSERT(bar1 != 0);
+            ASSERT(bar1 != nullptr);
             const Scope* bar2 = db->findScopeByName("Bar2");
-            ASSERT(bar2 != 0);
+            ASSERT(bar2 != nullptr);
 
             if (foo && bar1 && bar2) {
                 ASSERT(bar1->definedType->friendList.size() == 1 && bar1->definedType->friendList.front().name == "Foo" && bar1->definedType->friendList.front().type == foo->definedType);
@@ -1159,7 +1159,7 @@ private:
             }
         }
 
-        ASSERT(scope != 0);
+        ASSERT(scope != nullptr);
         if (!scope)
             return;
 
@@ -1193,7 +1193,7 @@ private:
             }
         }
 
-        ASSERT(scope != 0);
+        ASSERT(scope != nullptr);
         if (!scope)
             return;
 
@@ -1836,14 +1836,14 @@ private:
         ASSERT_EQUALS("", errout.str());
         if (db) {
             const Scope * bar = db->findScopeByName("bar");
-            ASSERT(bar != 0);
+            ASSERT(bar != nullptr);
             if (bar) {
                 unsigned int linenrs[] = { 2, 1 };
                 unsigned int index = 0;
                 for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
                         const Function * function = db->findFunction(tok);
-                        ASSERT(function != 0);
+                        ASSERT(function != nullptr);
                         if (function) {
                             std::stringstream expected;
                             expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;

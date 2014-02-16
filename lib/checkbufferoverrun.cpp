@@ -79,7 +79,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         errmsg << " out of bounds.";
     }
 
-    const Token *condition = 0;
+    const Token *condition = nullptr;
     for (unsigned int i = 0; i < index.size(); ++i) {
         if (condition == nullptr)
             condition = index[i].condition;
@@ -428,7 +428,7 @@ static bool for3(const Token * const tok,
                  std::string &max_value,
                  const bool maxMinFlipped)
 {
-    assert(tok != 0);
+    assert(tok != nullptr);
     if (Token::Match(tok, "%varid%  = %num% + %varid% )", varid)) {
         if (!for_maxvalue(tok->tokAt(2), min_value, max_value))
             return false;
@@ -1498,7 +1498,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             std::string type;
 
             // varid : The variable id for the array
-            const Variable *var = 0;
+            const Variable *var = nullptr;
 
             // nextTok : number of tokens used in variable declaration - used to skip to next statement.
             int nextTok = 0;

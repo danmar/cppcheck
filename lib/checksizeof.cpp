@@ -113,7 +113,7 @@ void CheckSizeof::checkSizeofForPointerSize()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             const Token *tokVar;
             const Token *variable;
-            const Token *variable2 = 0;
+            const Token *variable2 = nullptr;
 
             // Find any function that may use sizeof on a pointer
             // Once leaving those tests, it is mandatory to have:

@@ -608,7 +608,7 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         if (vartok->varId() == 0U)
             continue;
         tok = vartok->tokAt(4);
-        const Token *num2tok = 0;
+        const Token *num2tok = nullptr;
         if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
             tok = tok->next();
             num2tok = tok->astOperand2();

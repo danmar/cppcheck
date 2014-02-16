@@ -698,7 +698,7 @@ static Token * createAstAtToken(Token *tok)
 {
     if (Token::simpleMatch(tok,"for (")) {
         Token *tok2 = tok->tokAt(2);
-        Token *init1 = 0;
+        Token *init1 = nullptr;
         const Token * const endPar = tok->next()->link();
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {

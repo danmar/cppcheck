@@ -98,7 +98,7 @@ void CheckExceptionSafety::deallocThrow()
             const unsigned int varid(tok->varId());
 
             // Token where throw occurs
-            const Token *ThrowToken = 0;
+            const Token *ThrowToken = nullptr;
 
             // is there a throw after the deallocation?
             const Token* const end2 = tok->scope()->classEnd;

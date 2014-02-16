@@ -382,7 +382,7 @@ public:
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      */
-    void printOut(const char *title = 0) const;
+    void printOut(const char *title = nullptr) const;
 
     /**
      * For debugging purposes, prints token and all tokens
@@ -591,7 +591,7 @@ public:
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
-        const ValueFlow::Value *ret = 0;
+        const ValueFlow::Value *ret = nullptr;
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
             if ((!ret || it->intvalue > ret->intvalue) &&

@@ -449,7 +449,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
             continue;
 
-        const char *error = 0;
+        const char *error = nullptr;
         int erroffset = 0;
         pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,nullptr);
         if (!re) {
