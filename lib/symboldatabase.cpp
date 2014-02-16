@@ -48,7 +48,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
 {
     // create global scope
-    scopeList.push_back(Scope(this, NULL, NULL));
+    scopeList.push_back(Scope(this, nullptr, nullptr));
 
     // pointer to current scope
     Scope *scope = &scopeList.back();
@@ -59,7 +59,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     std::map<const Token *, Scope *> back;
 
     // find all scopes
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : NULL) {
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // Locate next class
         if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
             tok->strAt(-1) != "friend") {
@@ -856,7 +856,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     // create variable symbol table
     _variableList.resize(_tokenizer->varIdCount() + 1);
-    std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)NULL);
+    std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)nullptr);
 
     // check all scopes for variables
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
@@ -1449,7 +1449,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
             scopeList.pop_back();
             while (tok1->next())
                 tok1 = tok1->next();
-            *scope = NULL;
+            *scope = nullptr;
             *tok = tok1;
             return;
         }
@@ -1459,8 +1459,8 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
         *tok = tok1;
     } else {
         scopeList.pop_back();
-        *scope = NULL;
-        *tok = NULL;
+        *scope = nullptr;
+        *tok = nullptr;
     }
 }
 
@@ -1483,7 +1483,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 
             // check for invalid code
             if (!tok2 || !tok2->next())
-                return NULL;
+                return nullptr;
 
             if (tok2->str() == "virtual") {
                 base.isVirtual = true;
@@ -1524,7 +1524,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             }
 
             base.name = tok2->str();
-            base.type = NULL;
+            base.type = nullptr;
 
             // add unhandled templates
             if (tok2->next() && tok2->next()->str() == "<") {
@@ -1916,8 +1916,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
         for (const Token* tok = start->next(); tok; tok = tok->next()) {
             const Token* startTok = tok;
-            const Token* endTok   = NULL;
-            const Token* nameTok  = NULL;
+            const Token* endTok   = nullptr;
+            const Token* nameTok  = nullptr;
 
             if (tok->str() == "," || tok->str() == ")")
                 return; // Syntax error
@@ -1962,7 +1962,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     endTok = tok->previous();
             }
 
-            const ::Type *argType = NULL;
+            const ::Type *argType = nullptr;
             if (!typeTok->isStandardType()) {
                 argType = symbolDatabase->findVariableType(scope, typeTok);
                 if (!argType) {
@@ -2094,23 +2094,23 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     numConstructors(0),
     numCopyOrMoveConstructors(0),
     type(type_),
-    definedType(NULL),
-    functionOf(NULL),
-    function(NULL)
+    definedType(nullptr),
+    functionOf(nullptr),
+    function(nullptr)
 {
 }
 
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
-    classStart(NULL),
-    classEnd(NULL),
+    classStart(nullptr),
+    classEnd(nullptr),
     nestedIn(nestedIn_),
     numConstructors(0),
     numCopyOrMoveConstructors(0),
-    definedType(NULL),
-    functionOf(NULL),
-    function(NULL)
+    definedType(nullptr),
+    functionOf(nullptr),
+    function(nullptr)
 {
     const Token *nameTok = classDef;
     if (!classDef) {
@@ -2197,7 +2197,7 @@ void Scope::getVariableList()
         }
 
         // syntax error?
-        else if (tok->next() == NULL)
+        else if (tok->next() == nullptr)
             break;
 
         // Is it a function?
@@ -2296,8 +2296,8 @@ void Scope::getVariableList()
 const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
 {
     // This is the start of a statement
-    const Token *vartok = NULL;
-    const Token *typetok = NULL;
+    const Token *vartok = nullptr;
+    const Token *typetok = nullptr;
 
     // Is it a throw..?
     if (Token::Match(tok, "throw %any% (") &&
@@ -2340,7 +2340,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
             return tok;
         }
 
-        const Type *vType = NULL;
+        const Type *vType = nullptr;
 
         if (typetok) {
             vType = check->findVariableType(this, typetok);
@@ -2376,7 +2376,7 @@ const Variable *Scope::getVariable(const std::string &varname) const
             return &*iter;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static const Token* skipScopeIdentifiers(const Token* tok)
@@ -2406,7 +2406,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         return false;
 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
-    const Token* localVarTok = NULL;
+    const Token* localVarTok = nullptr;
 
     if (Token::Match(localTypeTok, "%type% <")) {
         const Token* closeTok = localTypeTok->next()->link();
@@ -2445,7 +2445,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         typetok = localTypeTok;
     }
 
-    return NULL != vartok;
+    return nullptr != vartok;
 }
 
 
@@ -2486,7 +2486,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------

@@ -81,11 +81,11 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 
     const Token *condition = 0;
     for (unsigned int i = 0; i < index.size(); ++i) {
-        if (condition == NULL)
+        if (condition == nullptr)
             condition = index[i].condition;
     }
 
-    if (condition != NULL) {
+    if (condition != nullptr) {
         errmsg << " Otherwise condition '" << condition->expressionString() << "' is redundant.";
         std::list<const Token *> callstack;
         callstack.push_back(tok);
@@ -756,7 +756,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
             const Variable* const argument = func->getArgumentVar(par-1);
             const Token *nameToken;
             if (argument && Token::Match(argument->typeStartToken(), "%type% %var% [ %num% ] [,)[]")
-                && (nameToken = argument->nameToken()) != NULL) {
+                && (nameToken = argument->nameToken()) != nullptr) {
                 const Token *tok2 = nameToken->next();
 
                 MathLib::bigint argsize = _tokenizer->sizeOfType(argument->typeStartToken());
@@ -926,7 +926,7 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
 
     if (max_value > size && Token::simpleMatch(tok3, "; ) {")) {
         const Token * const endToken = tok3->linkAt(2);
-        const Token *useToken = NULL;
+        const Token *useToken = nullptr;
         bool incrementInLoop = false;
         for (const Token *loopTok = tok3->tokAt(3); loopTok != endToken; loopTok = loopTok->next()) {
             if (Token::Match(loopTok, "%varid% [ %var% ++| ]", arrayInfo.declarationId()) && loopTok->tokAt(2)->varId() == counter_varid)
@@ -935,7 +935,7 @@ void CheckBufferOverrun::arrayIndexInForLoop(const Token *tok, const ArrayInfo &
                 incrementInLoop = true;
         }
 
-        if ((useToken != NULL) && incrementInLoop)
+        if ((useToken != nullptr) && incrementInLoop)
             bufferOverrunError(useToken, arrayInfo.varname());
     }
 }
@@ -1408,7 +1408,7 @@ void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* ftok, const Token
 
     const Token* bufParam = ftok->tokAt(2)->nextArgument();
     if (funcname == "readlinkat")
-        bufParam = bufParam ? bufParam->nextArgument() : NULL;
+        bufParam = bufParam ? bufParam->nextArgument() : nullptr;
     if (!Token::Match(bufParam, "%varid% , %num% )", varid))
         return;
 
@@ -1522,7 +1522,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 nextTok = 8;
             } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
                        tok->next()->varId() > 0 &&
-                       NULL != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
+                       nullptr != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
                 size = 1 + int(tok->tokAt(3)->strValue().size());
                 type = "char";
                 var = tok->next()->variable();
@@ -1707,7 +1707,7 @@ void CheckBufferOverrun::checkStructVariable()
                         }
 
                         // Goto end of statement.
-                        const Token *CheckTok = NULL;
+                        const Token *CheckTok = nullptr;
                         while (tok3 && tok3 != func_scope->classEnd) {
                             // End of statement.
                             if (tok3->str() == ";") {

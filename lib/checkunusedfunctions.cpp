@@ -94,7 +94,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    const Token *scopeEnd = NULL;
+    const Token *scopeEnd = nullptr;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
@@ -175,7 +175,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (scopeEnd == NULL) {
+        if (scopeEnd == nullptr) {
             if (!Token::Match(tok, ")|= const| {"))
                 continue;
             scopeEnd = tok;
@@ -183,7 +183,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 scopeEnd = scopeEnd->next();
             scopeEnd = scopeEnd->link();
         } else if (tok == scopeEnd) {
-            scopeEnd = NULL;
+            scopeEnd = nullptr;
             continue;
         }
 
@@ -220,7 +220,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (ftok->str() == "<")
                 ftok = ftok->link();
             if (Token::Match(ftok->linkAt(1), ") const|throw|{"))
-                funcname = NULL;
+                funcname = nullptr;
         }
 
         if (funcname) {

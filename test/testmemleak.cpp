@@ -125,7 +125,7 @@ public:
     }
 
 private:
-    void check(const char code[], const Settings *settings = NULL) {
+    void check(const char code[], const Settings *settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -385,7 +385,7 @@ private:
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
         // getcode..
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, nullptr);
         checkMemoryLeak.parse_noreturn();
         std::list<const Token *> callstack;
         callstack.push_back(0);
@@ -662,7 +662,7 @@ private:
             }
         }
 
-        CheckMemoryLeakInFunction checkMemoryLeak(NULL, &settings, this);
+        CheckMemoryLeakInFunction checkMemoryLeak(nullptr, &settings, this);
         checkMemoryLeak.simplifycode(tokens);
 
         return list.front()->stringifyList(0, false);

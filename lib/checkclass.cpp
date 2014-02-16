@@ -64,7 +64,7 @@ namespace {
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
-      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():NULL)
+      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {
 
 }
@@ -910,7 +910,7 @@ void CheckClass::checkMemset()
                 const Token* arg1 = tok->tokAt(2);
                 const Token* arg3 = arg1;
                 arg3 = arg3->nextArgument();
-                arg3 = (arg3 != NULL) ? arg3->nextArgument() : NULL;
+                arg3 = (arg3 != nullptr) ? arg3->nextArgument() : nullptr;
                 if (!arg3)
                     // weird, shouldn't happen: memset etc should have
                     // 3 arguments.
@@ -1604,7 +1604,7 @@ static unsigned int countParameters(const Token *tok)
         return 0;
 
     unsigned int numpar = 1;
-    while (NULL != (tok = tok->nextArgument()))
+    while (nullptr != (tok = tok->nextArgument()))
         numpar++;
 
     return numpar;

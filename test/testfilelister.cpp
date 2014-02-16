@@ -64,7 +64,7 @@ private:
 #else
         current_dir.resize(1024);
 #endif
-        while (getcwd(&current_dir[0], current_dir.size()) == NULL && errno == ERANGE) {
+        while (getcwd(&current_dir[0], current_dir.size()) == nullptr && errno == ERANGE) {
             current_dir.resize(current_dir.size() + 1024);
         }
 

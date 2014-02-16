@@ -70,7 +70,7 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
             tok = tok->link();
         tok = tok->previous();
     }
-    tok = tok ? tok->previous() : NULL;
+    tok = tok ? tok->previous() : nullptr;
     if (!Token::Match(tok,"%var% ("))
         return false; // not a function => dont bailout
 
@@ -126,7 +126,7 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
             tokens.push(tok2->astOperand1());
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 static bool bailoutSelfAssignment(const Token * const tok)
@@ -137,9 +137,9 @@ static bool bailoutSelfAssignment(const Token * const tok)
         parent = parent->astParent();
 
         // Assignment where lhs variable exists in rhs => return true
-        if (parent                         != NULL         &&
+        if (parent                         != nullptr      &&
             parent->astOperand2()          == op           &&
-            parent->astOperand1()          != NULL         &&
+            parent->astOperand1()          != nullptr      &&
             parent->str()                  == "=") {
             for (const Token *lhs = parent->astOperand1(); lhs; lhs = lhs->astOperand1()) {
                 if (lhs->varId() == tok->varId())
@@ -709,12 +709,12 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
         // Get function argument, and check if parameter is passed by value
         const Function * const function = ftok->astOperand1()->function();
-        const Variable * const arg = function ? function->getArgumentVar(argnr) : NULL;
-        if (!Token::Match(arg ? arg->typeStartToken() : NULL, "%type% %var% ,|)"))
+        const Variable * const arg = function ? function->getArgumentVar(argnr) : nullptr;
+        if (!Token::Match(arg ? arg->typeStartToken() : nullptr, "%type% %var% ,|)"))
             continue;
 
         // Function scope..
-        const Scope * const functionScope = function ? function->functionScope : NULL;
+        const Scope * const functionScope = function ? function->functionScope : nullptr;
         if (!functionScope)
             continue;
 

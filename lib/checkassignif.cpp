@@ -56,7 +56,7 @@ void CheckAssignIf::assignIf()
 
                 // Casting address
                 if (Token::Match(endToken->tokAt(-4), "* ) & %any% ;"))
-                    endToken = NULL;
+                    endToken = nullptr;
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
@@ -108,11 +108,11 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
                 else if (ftok->str() == ",")
                     argumentNumber++;
             }
-            ftok = ftok ? ftok->previous() : NULL;
+            ftok = ftok ? ftok->previous() : nullptr;
             if (!(ftok && ftok->function()))
                 return true;
             const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
-            if (par == NULL || par->isReference() || par->isPointer())
+            if (par == nullptr || par->isReference() || par->isPointer())
                 return true;
         }
         if (tok2->str() == "}")
