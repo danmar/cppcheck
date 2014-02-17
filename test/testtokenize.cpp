@@ -10077,6 +10077,8 @@ private:
                 links.pop();
             } else if (Token::Match(tok, "< %type% >")) {
                 Token::createMutualLinks(tok, tok->tokAt(2));
+            } else if (Token::Match(tok, "< %type% * >")) {
+                Token::createMutualLinks(tok, tok->tokAt(3));
             }
         }
 
@@ -10194,13 +10196,14 @@ private:
         testAst("extern int for_each_commit_graft(int (*)(int*), void *);"); // don't crash
         testAst("for (;;) {}"); // don't crash
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
-
-        ASSERT_EQUALS("publica::b::", testAst("class C : public ::a::b<bool> { };"));
     }
 
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
         ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
+
+        ASSERT_EQUALS("publica::b::", testAst("class C : public ::a::b<bool> { };"));
+        ASSERT_EQUALS("f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
     }
 };
 

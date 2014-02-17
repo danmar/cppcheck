@@ -51,7 +51,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (tok->previous() && tok->previous()->str() == ">")
             continue;
 
-        const Token *funcname = 0;
+        const Token *funcname = nullptr;
 
         if (Token::Match(tok, "%type% %var% ("))
             funcname = tok->next();
@@ -188,7 +188,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
 
-        const Token *funcname = 0;
+        const Token *funcname = nullptr;
 
         if (Token::Match(tok->next(), "%var% (")) {
             funcname = tok->next();

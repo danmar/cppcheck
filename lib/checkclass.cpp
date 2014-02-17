@@ -917,8 +917,8 @@ void CheckClass::checkMemset()
                     continue;
 
 
-                const Token *typeTok = 0;
-                const Scope *type = 0;
+                const Token *typeTok = nullptr;
+                const Scope *type = nullptr;
                 if (Token::Match(arg3, "sizeof ( %type% ) )"))
                     typeTok = arg3->tokAt(2);
                 else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
@@ -1252,7 +1252,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
             return true;
 
         // check for deallocating memory
-        const Token *var = 0;
+        const Token *var = nullptr;
         if (Token::Match(tok, "free ( %var%"))
             var = tok->tokAt(2);
         else if (Token::Match(tok, "delete [ ] %var%"))
@@ -1395,7 +1395,7 @@ void CheckClass::virtualDestructor()
 
                 // Find the destructor declaration for the base class.
                 const Function *base_destructor = derivedFromScope->getDestructor();
-                const Token *base = 0;
+                const Token *base = nullptr;
                 if (base_destructor)
                     base = base_destructor->token;
 

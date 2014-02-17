@@ -655,7 +655,7 @@ void CheckStl::pushback()
                     if (varId == 0)
                         continue;
 
-                    const Token *pushbackTok = 0;
+                    const Token *pushbackTok = nullptr;
 
                     // Count { and } for tok3
                     const Token *tok3 = tok2->tokAt(20);
@@ -1077,7 +1077,7 @@ void CheckStl::missingComparison()
                 break;
             }
 
-            const Token *incrementToken = 0;
+            const Token *incrementToken = nullptr;
 
             // Parse loop..
             for (const Token *tok3 = i->classStart; tok3 != i->classEnd; tok3 = tok3->next()) {

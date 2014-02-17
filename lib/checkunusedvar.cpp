@@ -40,7 +40,7 @@ public:
     /** Store information about variable usage */
     class VariableUsage {
     public:
-        VariableUsage(const Variable *var = 0,
+        VariableUsage(const Variable *var = nullptr,
                       VariableType type = standard,
                       bool read = false,
                       bool write = false,
