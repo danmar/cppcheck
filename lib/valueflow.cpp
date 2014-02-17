@@ -543,6 +543,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     tok2 = tok2->linkAt(2);
             }
 
+            else if (Token::Match(tok2, "break|continue")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                break;
+            }
+
             if (tok2->varId() == varid) {
                 // bailout: assignment
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {

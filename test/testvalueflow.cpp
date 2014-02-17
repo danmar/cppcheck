@@ -571,7 +571,7 @@ private:
 
         code = "void f(int a) {\n"
                "    int x = a;\n"
-               "    b = x;\n"
+               "    b = x;\n" // <- line 3
                "    if (a!=132) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 132));
@@ -581,9 +581,22 @@ private:
                "    if (n) { a = n; }\n"
                "    else { a = 0; }\n"
                "    int x = a;\n"
-               "    if (a > 0) { a = b / x; }\n"
+               "    if (a > 0) { a = b / x; }\n" // <- line 6
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0)); // x is not 0 at line 6
+
+        // break
+        code = "void f() {\n"
+               "  for (;;) {\n"
+               "    int x = 1;\n"
+               "    if (!abc()) {\n"
+               "      x = 2;\n"
+               "      break;\n"
+               "    }\n"
+               "    a = x;\n" // <- line 8
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 2)); // x is not 2 at line 8
     }
 
     void valueFlowForLoop() {
