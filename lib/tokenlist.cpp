@@ -758,6 +758,9 @@ static Token * createAstAtToken(Token *tok)
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 
+    if (Token::Match(tok, "%type% <") && Token::Match(tok->linkAt(1), "> !!("))
+        return tok->linkAt(1);
+
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
         std::stack<Token *> operands;
         Token * const tok1 = tok;
