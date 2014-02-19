@@ -212,6 +212,7 @@ private:
         TEST_CASE(garbage);
 
         TEST_CASE(findFunction1);
+        TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
     }
 
     void array() const {
@@ -1856,6 +1857,20 @@ private:
                 }
             }
         }
+    }
+
+    void findFunction2() {
+        // The function does not match the function call.
+        GET_SYMBOL_DB("void func(const int x, const Fred &fred);\n"
+                      "void otherfunc() {\n"
+                      "    float t;\n"
+                      "    func(x, &t);\n"
+                      "}");
+        const Token *callfunc = Token::findmatch(tokenizer.tokens(), "func ( x , & t ) ;");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+        ASSERT_EQUALS(true,  callfunc != nullptr); // not null
+        ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
     }
 };
 

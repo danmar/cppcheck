@@ -2506,6 +2506,17 @@ const Function* Scope::findFunction(const Token *tok) const
                 const Token *arg = tok->tokAt(2);
                 while (arg && arg->str() != ")") {
                     /** @todo check argument type for match */
+
+                    // mismatch parameter: passing parameter by address to function, argument is reference
+                    if (arg->str() == "&") {
+                        // check that function argument type is not mismatching
+                        const Variable *funcarg = func->getArgumentVar(args);
+                        if (funcarg && funcarg->isReference()) {
+                            args = ~0U;
+                            break;
+                        }
+                    }
+
                     args++;
                     arg = arg->nextArgument();
                 }
