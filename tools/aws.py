@@ -17,6 +17,8 @@ def wget(url):
     return ''
 
 # Perform a git pull.
+
+
 def gitpull():
     try:
         subprocess.call(['git', 'pull'])
