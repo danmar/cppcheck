@@ -66,7 +66,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         return ret;
     }
 
-    if (str.find_first_of("eE") != std::string::npos)
+    if (isFloat(str))
         return static_cast<bigint>(std::atof(str.c_str()));
 
     bigint ret = 0;
@@ -106,9 +106,43 @@ bool MathLib::isFloat(const std::string &s)
     // every number that contains a . is a float
     if (s.find("." , 0) != std::string::npos)
         return true;
-    // scientific notation
-    return (s.find("E-", 0) != std::string::npos
-            || s.find("e-", 0) != std::string::npos);
+    // scientific notation (without dot!)
+    std::string::const_iterator it=s.begin();
+    if (*it=='+' || *it=='-') { // mantissa sign char
+        ++it;
+        if (it == s.end())
+            return false;
+    }
+    if (!std::isdigit(*it))
+        return false;
+    ++it;
+    while (std::isdigit(*it)) { // number
+        ++it;
+        if (it == s.end())
+            return false;
+    }
+    if (*it!='e' && *it!='E')
+        return false;
+    else
+        ++it;
+    if (it == s.end())
+        return false; // incomplete exponent number
+    if (*it=='+' || *it=='-') { // exponent sign char
+        ++it;
+        if (it == s.end())
+            return false; // incomplete exponent number
+    }
+
+    while (std::isdigit(*it)) { // number
+        ++it;
+        if (it == s.end())
+            return true;
+    }
+    if (it==s.end())
+        return true;
+    if ((*it=='f' || *it=='F') && (it+1)==s.end())   // trailing 'f'/'F' to indicate a float literal (as opposed to a double literal)
+        return true;
+    return false;
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -149,15 +183,13 @@ bool MathLib::isInt(const std::string & s)
     // perform prechecks:
     // ------------------
     // first check, if a point is found, it is an floating point value
-    if (s.find(".", 0) != std::string::npos) return false;
-    // check for scientific notation e.g. NumberE-Number this is obvious an floating point value
-    else if (s.find("E-", 0) != std::string::npos || s.find("e-", 0) != std::string::npos) return false;
-
+    const std::string charsToIndicateAFloat=".eE";
+    if (s.find_last_of(charsToIndicateAFloat) != std::string::npos)
+        return false;
 
     // prechecking has nothing found,...
     // gather information
     enum Representation {
-        eScientific = 0, // NumberE+Number or NumberENumber
         eOctal,          // starts with 0
         eHex,            // starts with 0x
         eDefault         // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
@@ -172,9 +204,7 @@ bool MathLib::isInt(const std::string & s)
     while (std::isspace(s[n])) ++n;
 
     // determine type
-    if (s.find("E", 0) != std::string::npos) {
-        Mode = eScientific;
-    } else if (isHex(s)) {
+    if (isHex(s)) {
         Mode = eHex;
     } else if (isOct(s)) {
         Mode = eOctal;
@@ -183,24 +213,7 @@ bool MathLib::isInt(const std::string & s)
     // check sign
     if (s[n] == '-' || s[n] == '+') ++n;
 
-    // check scientific notation
-    if (Mode == eScientific) {
-        // check digits
-        while (std::isdigit(s[n])) ++n;
-
-        // check scientific notation
-        if (std::tolower(s[n]) == 'e') {
-            ++n;
-            // check positive exponent
-            if (s[n] == '+') ++n;
-            // floating pointer number e.g. 124E-2
-            if (s[n] == '-') return false;
-            // check digits of the exponent
-            while (std::isdigit(s[n])) ++n;
-        }
-    }
-    // check hex notation
-    else if (Mode == eHex) {
+    if (Mode == eHex) {
         ++n; // 0
         ++n; // x
         while (std::isxdigit(s[n]))

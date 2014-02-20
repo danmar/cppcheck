@@ -8523,6 +8523,8 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("-1"));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber(""));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("garbage"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("E2"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("2e"));
     }
 
     void isOneNumber() const {
