@@ -665,6 +665,19 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
 
         for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
             if (tok2->varId() == vartok->varId()) {
+                const Token * parent = tok2->astParent();
+                while (parent) {
+                    const Token * const p = parent;
+                    parent = parent->astParent();
+                    if (parent && parent->str() == "?" && parent->astOperand2() == p)
+                        break;
+                }
+                if (parent) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "For loop variable " + vartok->str() + " stopping on ?");
+                    continue;
+                }
+
                 ValueFlow::Value value1(num1);
                 value1.varId = tok2->varId();
                 setTokenValue(tok2, value1);
