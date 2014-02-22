@@ -345,6 +345,20 @@ private:
     }
 
     void isfloat() const {
+
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("..."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("+E."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("+e."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-E."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-e."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-."));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-"));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("+"));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat(" "));
+        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat(""));
+
         ASSERT_EQUALS(false, MathLib::isFloat("0"));
         ASSERT_EQUALS(true , MathLib::isFloat("0."));
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
