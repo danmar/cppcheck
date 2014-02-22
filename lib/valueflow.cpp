@@ -564,6 +564,18 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     break;
                 }
 
+                // bailout: possible assignment using >>
+                if (Token::Match(tok2->previous(), ">> %var% >>|;")) {
+                    const Token *parent = tok2->previous();
+                    while (Token::simpleMatch(parent,">>"))
+                        parent = parent->astParent();
+                    if (!parent) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
+                        break;
+                    }
+                }
+
                 // skip if variable is conditionally used in ?: expression
                 if (const Token *parent = skipValueInConditionalExpression(tok2)) {
                     if (settings->debugwarnings)

@@ -6758,7 +6758,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (isCPP() && Token::Match(tok3, (">> " + structname + " %varid%").c_str(), varid)) {
             // bailout for such code:   ; std :: cin >> i ;
             const Token *prev = tok3->previous();
-            while (prev && prev->str() != "return" && (prev->isName() || prev->str() == "::"))
+            while (prev && prev->str() != "return" && Token::Match(prev, "%var%|::|*"))
                 prev = prev->previous();
             if (Token::Match(prev, ";|{|}|>>"))
                 break;
