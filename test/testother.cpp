@@ -6376,6 +6376,17 @@ private:
 
         check("struct AB { int a; int b; };\n"
               "\n"
+              "int f(DO_SOMETHING do_something) {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    do_something(&ab);\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
               "int f(struct AB *ab) {\n"
               "    ab->a = 1;\n"
               "    ab->b = 2;\n"

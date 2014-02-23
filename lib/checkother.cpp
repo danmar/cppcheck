@@ -669,7 +669,7 @@ void CheckOther::checkRedundantAssignment()
             } else if (Token::Match(tok, "break|return|continue|throw|goto")) {
                 varAssignments.clear();
                 memAssignments.clear();
-            } else if (tok->type() == Token::eVariable) {
+            } else if (tok->type() == Token::eVariable && !Token::Match(tok,"%var% (")) {
                 // Set initialization flag
                 if (!Token::Match(tok, "%var% ["))
                     initialized.insert(tok->varId());
