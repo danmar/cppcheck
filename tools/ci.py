@@ -141,7 +141,8 @@ def daca2folder():
         f.close()
         pos = filedata.find('STARTDATE')
         if pos < 0:
-            return old
+            pos = old.find('/daca2/')
+            return old[pos+7:old.find('/',pos+8)]
         startdate = filedata[pos+10:pos+20]
         if not oldestdate or oldestdate > startdate:
             oldestdate = startdate
