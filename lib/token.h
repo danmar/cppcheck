@@ -721,9 +721,11 @@ public:
         return ret + sep + _str;
     }
 
+    std::string astStringVerbose(const unsigned int indent1, const unsigned int indent2) const;
+
     std::string expressionString() const;
 
-    void printAst() const;
+    void printAst(bool verbose) const;
 
     void printValueFlow() const;
 };

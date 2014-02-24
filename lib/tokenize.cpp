@@ -3652,7 +3652,7 @@ bool Tokenizer::simplifyTokenList2()
         if (_settings->_verbose)
             _symbolDatabase->printOut("Symbol database");
 
-        list.front()->printAst();
+        list.front()->printAst(_settings->_verbose);
 
         list.front()->printValueFlow();
     }

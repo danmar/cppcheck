@@ -1201,7 +1201,7 @@ std::string Token::expressionString() const
 
 }
 
-void Token::printAst() const
+void Token::printAst(bool verbose) const
 {
     bool title = false;
 
@@ -1211,7 +1211,10 @@ void Token::printAst() const
             if (!title)
                 std::cout << "\n\n##AST" << std::endl;
             title = true;
-            std::cout << tok->astTop()->astString(" ") << std::endl;
+            if (verbose)
+                std::cout << tok->astTop()->astStringVerbose(0,0) << std::endl;
+            else
+                std::cout << tok->astTop()->astString(" ") << std::endl;
             print = false;
             if (tok->str() == "(")
                 tok = tok->link();
@@ -1220,6 +1223,33 @@ void Token::printAst() const
             print = true;
     }
 }
+
+static std::string indent(const unsigned int indent1, const unsigned int indent2)
+{
+    std::string ret(indent1,' ');
+    for (unsigned int i = indent1; i < indent2; i += 2)
+        ret += "| ";
+    return ret;
+}
+
+std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+{
+    std::string ret = _str + "\n";
+    if (_astOperand1) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2 && !_astOperand2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + (_astOperand2 ? "|-" : "`-") + _astOperand1->astStringVerbose(i1,i2);
+    }
+    if (_astOperand2) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + "`-" + _astOperand2->astStringVerbose(i1,i2);
+    }
+    return ret;
+}
+
 
 void Token::printValueFlow() const
 {
