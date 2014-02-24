@@ -103,46 +103,84 @@ template<> std::string MathLib::toString(double value)
 
 bool MathLib::isFloat(const std::string &s)
 {
-    // every number that contains a . is a float
-    if (s.find("." , 0) != std::string::npos)
-        return true;
-    // scientific notation (without dot!)
-    std::string::const_iterator it=s.begin();
-    if (*it=='+' || *it=='-') { // mantissa sign char
-        ++it;
-        if (it == s.end())
-            return false;
-    }
-    if (!std::isdigit(*it))
+    if (s.empty())
         return false;
-    ++it;
-    while (std::isdigit(*it)) { // number
-        ++it;
-        if (it == s.end())
+    enum {START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F} state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); it++) {
+        switch (state) {
+        case START:
+            if (*it=='+' || *it=='-')
+                state=BASE_PLUSMINUS;
+            else if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else
+                return false;
+            break;
+        case BASE_PLUSMINUS:
+            if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
+            break;
+        case LEADING_DECIMAL:
+            if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            break;
+        case BASE_DIGITS1:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='.')
+                state=TRAILING_DECIMAL;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case TRAILING_DECIMAL:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            else
+                return false;
+            break;
+        case BASE_DIGITS2:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case E:
+            if (*it=='+' || *it=='-')
+                state=MANTISSA_PLUSMINUS;
+            else if (std::isdigit(*it))
+                state=MANTISSA_DIGITS;
+            else
+                return false;
+            break;
+        case MANTISSA_PLUSMINUS:
+            if (!std::isdigit(*it))
+                return false;
+            else
+                state=MANTISSA_DIGITS;
+            break;
+        case MANTISSA_DIGITS:
+            if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case F:
             return false;
+        }
     }
-    if (*it!='e' && *it!='E')
-        return false;
-    else
-        ++it;
-    if (it == s.end())
-        return false; // incomplete exponent number
-    if (*it=='+' || *it=='-') { // exponent sign char
-        ++it;
-        if (it == s.end())
-            return false; // incomplete exponent number
-    }
-
-    while (std::isdigit(*it)) { // number
-        ++it;
-        if (it == s.end())
-            return true;
-    }
-    if (it==s.end())
-        return true;
-    if ((*it=='f' || *it=='F') && (it+1)==s.end())   // trailing 'f'/'F' to indicate a float literal (as opposed to a double literal)
-        return true;
-    return false;
+    return (state==BASE_DIGITS2 || state == MANTISSA_DIGITS || state == TRAILING_DECIMAL || state == F);
 }
 
 bool MathLib::isNegative(const std::string &s)

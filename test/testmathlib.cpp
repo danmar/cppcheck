@@ -345,19 +345,18 @@ private:
     }
 
     void isfloat() const {
-
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("..."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("+E."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("+e."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-E."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-e."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-."));
-        TODO_ASSERT_EQUALS(false, true, MathLib::isFloat("-."));
+        ASSERT_EQUALS(false, MathLib::isFloat(""));
+        ASSERT_EQUALS(false, MathLib::isFloat("."));
+        ASSERT_EQUALS(false, MathLib::isFloat("..."));
+        ASSERT_EQUALS(false, MathLib::isFloat("+E."));
+        ASSERT_EQUALS(false, MathLib::isFloat("+e."));
+        ASSERT_EQUALS(false, MathLib::isFloat("-E."));
+        ASSERT_EQUALS(false, MathLib::isFloat("-e."));
+        ASSERT_EQUALS(false, MathLib::isFloat("-."));
+        ASSERT_EQUALS(false, MathLib::isFloat("-."));
         ASSERT_EQUALS(false, MathLib::isFloat("-"));
         ASSERT_EQUALS(false, MathLib::isFloat("+"));
         ASSERT_EQUALS(false, MathLib::isFloat(" "));
-        ASSERT_EQUALS(false, MathLib::isFloat(""));
 
         ASSERT_EQUALS(false, MathLib::isFloat("0"));
         ASSERT_EQUALS(false, MathLib::isFloat("0 "));
@@ -365,9 +364,9 @@ private:
         ASSERT_EQUALS(false, MathLib::isFloat(" 0"));
 
         ASSERT_EQUALS(true , MathLib::isFloat("0."));
-        ASSERT_EQUALS(true , MathLib::isFloat("0. "));
-        ASSERT_EQUALS(true , MathLib::isFloat(" 0. "));
-        ASSERT_EQUALS(true , MathLib::isFloat(" 0."));
+        ASSERT_EQUALS(false , MathLib::isFloat("0. "));
+        ASSERT_EQUALS(false , MathLib::isFloat(" 0. "));
+        ASSERT_EQUALS(false , MathLib::isFloat(" 0."));
 
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
         ASSERT_EQUALS(true , MathLib::isFloat("-0."));
@@ -393,14 +392,15 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+100"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+100f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+007")); // to be sure about #5485
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+001f"));
         ASSERT_EQUALS(false , MathLib::isFloat("+1E+001f2"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+10000"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1E+10000"));
-        ASSERT_EQUALS(true  , MathLib::isFloat(".1250E+04"));
-        ASSERT_EQUALS(true  , MathLib::isFloat("-1E-1"));
-        ASSERT_EQUALS(true  , MathLib::isFloat("-1E-10000"));
+        ASSERT_EQUALS(true , MathLib::isFloat(".1250E+04"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-1E-1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-1E-10000"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1.23e+01"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1.23E+01"));
 
@@ -409,6 +409,7 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("0.00004"));
         ASSERT_EQUALS(true , MathLib::isFloat("2352.00001f"));
         ASSERT_EQUALS(true , MathLib::isFloat(".4"));
+        ASSERT_EQUALS(true , MathLib::isFloat(".3e2"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
