@@ -10191,6 +10191,9 @@ private:
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
 
+        // Unary :: operator
+        ASSERT_EQUALS("abc?d12,(::e/:=",testAst("a = b ? c : ::d(1,2) / e;"));
+
         // how is "--" handled here:
         ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + --c : 1"));
         ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + c-- : 1"));

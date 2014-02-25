@@ -531,7 +531,10 @@ static void compileScope(Token *&tok, std::stack<Token*> &op)
     compileTerm(tok,op);
     while (tok) {
         if (tok->str() == "::") {
-            compileBinOp(tok, compileTerm, op);
+            if (tok->previous() && tok->previous()->isName())
+                compileBinOp(tok, compileTerm, op);
+            else
+                compileUnaryOp(tok, compileDot, op);
         } else break;
     }
 }
