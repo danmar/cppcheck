@@ -106,7 +106,7 @@ bool MathLib::isFloat(const std::string &s)
     if (s.empty())
         return false;
     enum {START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F} state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); it++) {
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
         case START:
             if (*it=='+' || *it=='-')
