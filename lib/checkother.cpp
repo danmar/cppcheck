@@ -2166,8 +2166,8 @@ void CheckOther::checkIncompleteStatement()
         else if (Token::simpleMatch(tok, "= {"))
             tok = tok->next()->link();
 
-        // C++11 struct/array initialization in initializer list
-        else if (tok->str() == "{" && Token::Match(tok->tokAt(-2), ",|: %var%") && Token::Match(tok->link(), "} [,{]"))
+        // C++11 struct/array/etc initialization in initializer list
+        else if (Token::Match(tok->previous(), "%var% {") && !Token::findsimplematch(tok,";",tok->link()))
             tok = tok->link();
 
         // C++11 vector initialization / return { .. }
