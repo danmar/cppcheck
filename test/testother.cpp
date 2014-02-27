@@ -4250,6 +4250,10 @@ private:
               "    bar(**c++);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
+        check("void * f { } void b ( ) { * f }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with = and comparison
