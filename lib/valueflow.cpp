@@ -72,10 +72,10 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
     }
     tok = tok ? tok->previous() : nullptr;
     if (!Token::Match(tok,"%var% ("))
-        return false; // not a function => dont bailout
+        return false; // not a function => do not bailout
 
     if (!tok->function()) {
-        // if value is 0 and the library says 0 is invalid => dont bailout
+        // if value is 0 and the library says 0 is invalid => do not bailout
         if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
             return false;
         // inconclusive => don't bailout

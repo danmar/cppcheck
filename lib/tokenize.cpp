@@ -5032,7 +5032,7 @@ void Tokenizer::simplifyPointerToStandardType()
 void Tokenizer:: simplifyFunctionPointers()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // #2873 - dont simplify function pointer usage here:
+        // #2873 - do not simplify function pointer usage here:
         // (void)(xy(*p)(0));
         if (Token::simpleMatch(tok, ") (")) {
             tok = tok->next()->link();
