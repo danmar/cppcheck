@@ -368,6 +368,9 @@ private:
         ASSERT_EQUALS(false , MathLib::isFloat(" 0. "));
         ASSERT_EQUALS(false , MathLib::isFloat(" 0."));
 
+        ASSERT_EQUALS(false , MathLib::isFloat("0.."));
+        ASSERT_EQUALS(false , MathLib::isFloat("..0.."));
+        ASSERT_EQUALS(false , MathLib::isFloat("..0"));
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
         ASSERT_EQUALS(true , MathLib::isFloat("-0."));
         ASSERT_EQUALS(true , MathLib::isFloat("+0."));

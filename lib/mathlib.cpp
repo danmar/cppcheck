@@ -131,6 +131,10 @@ bool MathLib::isFloat(const std::string &s)
         case LEADING_DECIMAL:
             if (std::isdigit(*it))
                 state=BASE_DIGITS2;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
             break;
         case BASE_DIGITS1:
             if (*it=='e' || *it=='E')
