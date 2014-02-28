@@ -1878,9 +1878,9 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigin
                 parameters.push_back(vaArg);
 
             else
-                parameters.push_back(0);
+                parameters.push_back(nullptr);
         } else // Parameter is more complex than just a value or variable. Ignore it for now and skip to next token.
-            parameters.push_back(0);
+            parameters.push_back(nullptr);
 
         vaArg = vaArg->nextArgument();
     }
