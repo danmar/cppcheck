@@ -443,9 +443,10 @@ std::list<Token *> TemplateSimplifier::getTemplateDeclarations(Token *tokens, bo
             tok = tok->linkAt(2);
 
         if (Token::simpleMatch(tok, "template <")) {
+            Token *parmEnd = tok->next()->findClosingBracket();
             codeWithTemplates = true;
 
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+            for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
                 // Just a declaration => ignore this
                 if (tok2->str() == ";")
                     break;
