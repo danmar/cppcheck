@@ -26,21 +26,6 @@
 #include <string>
 #include <algorithm>
 
-static tinyxml2::XMLError LoadFile(tinyxml2::XMLDocument &doc, const std::string &path)
-{
-    FILE *f = fopen(path.c_str(),"rb");
-    if (!f)
-        return tinyxml2::XML_ERROR_FILE_NOT_FOUND;
-
-    // is file ok? if "path" is a folder then reading from it will cause ferror() to return a non-zero value
-    fgetc(f);
-    int errorcode = ferror(f);
-    fclose(f);
-
-    // if file is ok, try to load it
-    return (errorcode == 0) ? doc.LoadFile(path.c_str()) : tinyxml2::XML_ERROR_FILE_NOT_FOUND;
-}
-
 Library::Library() : allocid(0)
 {
 }
@@ -62,13 +47,13 @@ bool Library::load(const char exename[], const char path[])
 
     // open file..
     tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError error = LoadFile(doc,path);
+    tinyxml2::XMLError error = doc.LoadFile(path);
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            error = LoadFile(doc,fullfilename);
+            error = doc.LoadFile(fullfilename.c_str());
         }
 
         if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
@@ -82,7 +67,7 @@ bool Library::load(const char exename[], const char path[])
 #endif
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
-            error = LoadFile(doc,filename);
+            error = doc.LoadFile(filename.c_str());
         }
     }
 
