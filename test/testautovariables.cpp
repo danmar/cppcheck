@@ -107,6 +107,8 @@ private:
         TEST_CASE(testglobalnamespace);
 
         TEST_CASE(returnParameterAddress);
+
+        TEST_CASE(testconstructor); // ticket #5478 - crash
     }
 
 
@@ -807,6 +809,15 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testconstructor() { // Ticket #5478 - crash while checking a constructor
+        check("class const_tree_iterator {\n"
+              "  const_tree_iterator(bool (*_incream)(node_type*&)) {}\n"
+              "  const_tree_iterator& parent() {\n"
+              "    return const_tree_iterator(foo);\n"
+              "  }\n"
+              "};");
     }
 
 };
