@@ -62,6 +62,7 @@ private:
         TEST_CASE(tokenize27);  // #4525 (segmentation fault)
         TEST_CASE(tokenize28);  // #4725 (writing asm() around "^{}")
         TEST_CASE(tokenize29);  // #5506 (segmentation fault upon invalid code)
+        TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -829,6 +830,11 @@ private:
     // #5506 - segmentation fault upon invalid code
     void tokenize29() {
         tokenizeAndStringify("A template < int { int = -1 ; } template < int N > struct B { int [ A < N > :: zero ] ;  } ; B < 0 > b ;");
+    }
+
+    // #5356 - segmentation fault upon invalid code
+    void tokenize30() {
+        tokenizeAndStringify("struct template<int { = }; > struct B { }; B < 0 > b;");
     }
 
     void wrong_syntax1() {
