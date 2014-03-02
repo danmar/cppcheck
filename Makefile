@@ -60,7 +60,7 @@ else # !COMSPEC
 endif # COMSPEC
 
 ifndef CXXFLAGS
-    CXXFLAGS=-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wconversion -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -Wno-sign-compare $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-O2 -DNDEBUG -Wall
 endif
 
 ifeq ($(HAVE_RULES),yes)
