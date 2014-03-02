@@ -292,6 +292,9 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 
     const Function *function = tok->function();
     if (function) {
+        // Ticket #5478: Only functions or operator equal might return a temporary
+        if (function->type != Function::eOperatorEqual && function->type != Function::eFunction)
+            return false;
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
             const Token *start = function->retDef;
