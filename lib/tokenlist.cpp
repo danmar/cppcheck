@@ -31,10 +31,11 @@
 #include <stack>
 
 
-TokenList::TokenList(const Settings* settings) :
+TokenList::TokenList(const Settings* settings, Tokenizer *tokenizer) :
     _front(0),
     _back(0),
-    _settings(settings)
+    _settings(settings),
+    _tokenizer(tokenizer)
 {
 }
 
@@ -113,7 +114,7 @@ void TokenList::addtoken(const char str[], const unsigned int lineno, const unsi
     if (_back) {
         _back->insertToken(str2.str());
     } else {
-        _front = new Token(&_back);
+        _front = new Token(&_back, _tokenizer);
         _back = _front;
         _back->str(str2.str());
     }
@@ -130,7 +131,7 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     if (_back) {
         _back->insertToken(tok->str(), tok->originalName());
     } else {
-        _front = new Token(&_back);
+        _front = new Token(&_back, _tokenizer);
         _back = _front;
         _back->str(tok->str());
         _back->originalName(tok->originalName());

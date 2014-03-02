@@ -36,7 +36,7 @@
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer() :
-    list(0),
+    list(0, this),
     _settings(0),
     _errorLogger(0),
     _symbolDatabase(0),
@@ -50,7 +50,7 @@ Tokenizer::Tokenizer() :
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
-    list(settings),
+    list(settings, this),
     _settings(settings),
     _errorLogger(errorLogger),
     _symbolDatabase(0),
@@ -2815,7 +2815,7 @@ bool Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [,)]")) {
-                Token tempTok(0);
+                Token tempTok(0, this);
                 tempTok.str("*");
                 sizeOfVar[varId] = MathLib::toString(sizeOfType(&tempTok));
             }

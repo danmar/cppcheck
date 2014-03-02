@@ -27,13 +27,14 @@
 
 class Token;
 class Settings;
+class Tokenizer;
 
 /// @addtogroup Core
 /// @{
 
 class CPPCHECKLIB TokenList {
 public:
-    TokenList(const Settings* settings);
+    TokenList(const Settings* settings, Tokenizer* tokenizer = 0);
     ~TokenList();
 
     void setSettings(const Settings *settings) {
@@ -127,6 +128,9 @@ private: /// private
 
     /** settings */
     const Settings* _settings;
+
+    /** tokenizer */
+    Tokenizer* _tokenizer;
 };
 
 /// @}
