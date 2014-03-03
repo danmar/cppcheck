@@ -1020,6 +1020,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         // don't warn if variable static or const, pointer or reference
         if (!var->isStatic() && !var->isConst() && !var->isPointer() && !var->isReference()) {
             const Token *tok1 = var->typeStartToken();
+            const Scope *typeScope = var->typeScope();
 
             // check for std:: type
             if (var->isStlType())
@@ -1029,8 +1030,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                     memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
             // check for known type
-            else if (var->typeScope())
-                checkMemsetType(start, tok, var->typeScope(), allocation);
+            else if (typeScope && typeScope != type)
+                checkMemsetType(start, tok, typeScope, allocation);
         }
     }
 }

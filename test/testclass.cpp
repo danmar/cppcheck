@@ -80,6 +80,7 @@ private:
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
+        TEST_CASE(memsetOnInvalid);  // Ticket #5425: Crash upon invalid
         TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -2283,6 +2284,22 @@ private:
                       "  memset(b,0,4);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetOnInvalid() { // Ticket #5425
+    	checkNoMemset("union ASFStreamHeader {\n"
+                      "  struct AVMPACKED {\n"
+                      "    union  {\n"
+                      "      struct AVMPACKED {\n"
+                      "        int width;\n"
+                      "      } vid;\n"
+                      "    };\n"
+                      "  } hdr;\n"
+                      "};"
+                      "void parseHeader() {\n"
+                      "  ASFStreamHeader strhdr;\n"
+                      "  memset(&strhdr, 0, sizeof(strhdr));\n"
+                      "}");
     }
 
     void memsetOnStruct() {
