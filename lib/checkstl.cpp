@@ -1553,3 +1553,90 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
                 "Make sure to check that the iterator is valid before dereferencing it - not after.");
 }
+
+
+
+
+
+void CheckStl::readingEmptyStlContainer()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    if (!_settings->inconclusive)  // check only if inconclusive true;
+        return;
+
+    std::map<unsigned int, bool> empty; //map to keep track of whether the StlContainer has been given value atleast once.
+
+    static const char *STL_CONTAINERS[] = {"map", "vector"};
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::size_t varListSize = symbolDatabase->getVariableListSize();
+    for (std::size_t i = 1; i < varListSize; ++i) {
+        // to include stl containers declared in file in used map
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        if (var && var->isLocal() && var->isStlType(STL_CONTAINERS))
+            empty[var->declarationId()] = true;
+    }
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        bool stl1_exist = false;
+        bool stl2_exist = false;
+        bool stl2_isEmpty = true;
+
+        if (tok->variable() && tok->variable()->isStlType(STL_CONTAINERS)) {
+            if (empty.find(tok->varId()) != empty.end())
+                stl1_exist = true;
+        }
+
+        // to check for various conditions for the way stl containers and variables can be used
+        if (Token::Match(tok, "%var% =|[")) {
+            const Token *tok2;
+
+            if (Token::Match(tok->next(), "="))
+                tok2 = tok->tokAt(2);
+
+            // to check cases like Cmap[1]; or i = Cmap[1] -- the right wld evaluate true when token reaches it.
+            else if (Token::Match(tok->next()," [") && Token::Match(tok->linkAt(1),"] ="))
+                tok2 = tok->next()->link()->tokAt(2);
+
+            else
+                continue;
+
+            // rhs variable
+            if (tok2->variable() && tok2->variable()->isStlType(STL_CONTAINERS)) {
+                if (empty.find(tok2->varId()) != empty.end()) {
+                    stl2_exist = true;
+                    stl2_isEmpty = empty[tok2->varId()];
+                }
+            }
+
+            // if both var are Stl Container...
+            if (stl1_exist && stl2_exist) {
+                if (stl2_isEmpty)
+                    readingEmptyStlContainerError(tok2);
+                else
+                    empty[tok->varId()] = false;
+            }
+
+            // if only second var is Stl Container
+            else if (stl2_exist && stl2_isEmpty)
+                readingEmptyStlContainerError(tok);
+
+            // if only first var is stl container
+            else if (stl1_exist)
+                empty[tok->varId()] = false;
+        } else if (stl1_exist && Token::Match(tok, "%var% [ %any% ] = %any%")) {
+            empty[tok->varId()] = false;
+        } else if (stl1_exist && Token::Match(tok, "%var% . %type% (")) {
+            //static const char STL_CONTAINER_INSERT_FUNCTIONS[] = "%var% . insert|push_back|push_front|assign|set|reset|emplace_after|insert_after|push (";
+            empty[tok->varId()] = false;
+        }
+    }
+}
+
+void CheckStl::readingEmptyStlContainerError(const Token *tok)
+{
+    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container", true);
+}
+

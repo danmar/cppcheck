@@ -128,6 +128,7 @@ private:
         TEST_CASE(dereferenceInvalidIterator);
         TEST_CASE(dereference_auto);
 
+        TEST_CASE(readingEmptyStlContainer);
     }
 
     void check(const char code[], const bool inconclusive=false) {
@@ -2393,6 +2394,72 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void readingEmptyStlContainer() {
+        check("void f() {\n"
+              "    std::map<int, std::string> CMap;\n"
+              "    std::string strValue = CMap[1]; \n"
+              "    std::cout << strValue << CMap.size() << std::endl;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int,std::string> CMap;\n"
+              "    std::string strValue = CMap[1];"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int,std::string> CMap;\n"
+              "    CMap[1] = \"123\";\n"
+              "    std::string strValue = CMap[1];"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> f() {\n"
+              "    try {\n"
+              "        std::vector<std::string> Vector;\n"
+              "        std::vector<std::string> v2 = Vector;\n"
+              "        std::string strValue = v2[1]; \n"
+              "    }\n"
+              "    return Vector;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n"
+                      "[test.cpp:5]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("f() {\n"
+              "    try {\n"
+              "        std::vector<std::string> Vector;\n"
+              "        Vector.push_back(\"123\");\n"
+              "        std::vector<std::string> v2 = Vector;\n"
+              "        std::string strValue = v2[0]; \n"
+              "    }\n"
+              "    return Vector;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::map<std::string,std::string> mymap;\n"
+              "    mymap[\"Bakery\"] = \"Barbara\";\n"
+              "    std:string bakery_name = mymap[\"Bakery\"];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.insert(1);\n"
+              "    int i = v[0];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int, std::string> CMap;\n"
+              "    std::string strValue = CMap[1];\n"
+              "    std::string strValue2 = CMap[1];\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n"
+                      "[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n", errout.str());
     }
 };
 
