@@ -1581,8 +1581,6 @@ void CheckStl::readingEmptyStlContainer()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         bool stl1_exist = false;
-        bool stl2_exist = false;
-        bool stl2_isEmpty = true;
 
         if (tok->variable() && tok->variable()->isStlType(STL_CONTAINERS)) {
             if (empty.find(tok->varId()) != empty.end())
@@ -1602,6 +1600,9 @@ void CheckStl::readingEmptyStlContainer()
 
             else
                 continue;
+
+            bool stl2_exist = false;
+            bool stl2_isEmpty = true;
 
             // rhs variable
             if (tok2->variable() && tok2->variable()->isStlType(STL_CONTAINERS)) {
