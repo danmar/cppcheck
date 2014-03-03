@@ -90,13 +90,13 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
+g++ -o cppcheck -std=c++0x -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
 ```shell
-g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++0x -lpcre -DHAVE_RULES -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW
