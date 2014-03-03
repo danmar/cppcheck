@@ -2287,7 +2287,7 @@ private:
     }
 
     void memsetOnInvalid() { // Ticket #5425
-    	checkNoMemset("union ASFStreamHeader {\n"
+        checkNoMemset("union ASFStreamHeader {\n"
                       "  struct AVMPACKED {\n"
                       "    union  {\n"
                       "      struct AVMPACKED {\n"
