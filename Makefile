@@ -81,15 +81,15 @@ ifndef PREFIX
 endif
 
 ifndef INCLUDE_FOR_LIB
-    INCLUDE_FOR_LIB=-Ilib -Iexternals -Iexternals/tinyxml
+    INCLUDE_FOR_LIB=-Ilib -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_CLI
-    INCLUDE_FOR_CLI=-Ilib -Iexternals -Iexternals/tinyxml
+    INCLUDE_FOR_CLI=-Ilib -Iexternals/tinyxml
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals -Iexternals/tinyxml
+    INCLUDE_FOR_TEST=-Ilib -Icli -Iexternals/tinyxml
 endif
 
 BIN=$(DESTDIR)$(PREFIX)/bin
