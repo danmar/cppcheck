@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ void CheckStl::iterators()
                 if (container && tok2->varId() != container->declarationId()) {
                     // skip error message if container is a set..
                     const Variable *variableInfo = tok2->variable();
-                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : NULL;
+                    const Token *decltok = variableInfo ? variableInfo->typeStartToken() : nullptr;
 
                     if (Token::simpleMatch(decltok, "std :: set"))
                         continue; // No warning
@@ -434,7 +434,7 @@ private:
             // check if there is a "it = ints.erase(it);" pattern. if so
             // the it is not invalidated.
             const Token *token = &tok;
-            while (NULL != (token = token ? token->previous() : 0)) {
+            while (nullptr != (token = token ? token->previous() : 0)) {
                 if (Token::Match(token, "[;{}]"))
                     break;
                 else if (token->str() == "=")
@@ -506,7 +506,7 @@ void CheckStl::erase()
                     if (Token::Match(tok2, "; %var% !=")) {
                         // Get declaration token for var..
                         const Variable *variableInfo = tok2->next()->variable();
-                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : NULL;
+                        const Token *decltok = variableInfo ? variableInfo->typeEndToken() : nullptr;
 
                         // Is variable an iterator?
                         bool isIterator = false;
@@ -655,7 +655,7 @@ void CheckStl::pushback()
                     if (varId == 0)
                         continue;
 
-                    const Token *pushbackTok = 0;
+                    const Token *pushbackTok = nullptr;
 
                     // Count { and } for tok3
                     const Token *tok3 = tok2->tokAt(20);
@@ -1077,7 +1077,7 @@ void CheckStl::missingComparison()
                 break;
             }
 
-            const Token *incrementToken = 0;
+            const Token *incrementToken = nullptr;
 
             // Parse loop..
             for (const Token *tok3 = i->classStart; tok3 != i->classEnd; tok3 = tok3->next()) {
@@ -1553,3 +1553,91 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
                 "Make sure to check that the iterator is valid before dereferencing it - not after.");
 }
+
+
+
+
+
+void CheckStl::readingEmptyStlContainer()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    if (!_settings->inconclusive)  // check only if inconclusive true;
+        return;
+
+    std::map<unsigned int, bool> empty; //map to keep track of whether the StlContainer has been given value atleast once.
+
+    static const char *STL_CONTAINERS[] = {"map", "vector"};
+
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::size_t varListSize = symbolDatabase->getVariableListSize();
+    for (std::size_t i = 1; i < varListSize; ++i) {
+        // to include stl containers declared in file in used map
+        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        if (var && var->isLocal() && var->isStlType(STL_CONTAINERS))
+            empty[var->declarationId()] = true;
+    }
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        bool stl1_exist = false;
+
+        if (tok->variable() && tok->variable()->isStlType(STL_CONTAINERS)) {
+            if (empty.find(tok->varId()) != empty.end())
+                stl1_exist = true;
+        }
+
+        // to check for various conditions for the way stl containers and variables can be used
+        if (Token::Match(tok, "%var% =|[")) {
+            const Token *tok2;
+
+            if (Token::Match(tok->next(), "="))
+                tok2 = tok->tokAt(2);
+
+            // to check cases like Cmap[1]; or i = Cmap[1] -- the right wld evaluate true when token reaches it.
+            else if (Token::Match(tok->next()," [") && Token::Match(tok->linkAt(1),"] ="))
+                tok2 = tok->next()->link()->tokAt(2);
+
+            else
+                continue;
+
+            bool stl2_exist = false;
+            bool stl2_isEmpty = true;
+
+            // rhs variable
+            if (tok2->variable() && tok2->variable()->isStlType(STL_CONTAINERS)) {
+                if (empty.find(tok2->varId()) != empty.end()) {
+                    stl2_exist = true;
+                    stl2_isEmpty = empty[tok2->varId()];
+                }
+            }
+
+            // if both var are Stl Container...
+            if (stl1_exist && stl2_exist) {
+                if (stl2_isEmpty)
+                    readingEmptyStlContainerError(tok2);
+                else
+                    empty[tok->varId()] = false;
+            }
+
+            // if only second var is Stl Container
+            else if (stl2_exist && stl2_isEmpty)
+                readingEmptyStlContainerError(tok);
+
+            // if only first var is stl container
+            else if (stl1_exist)
+                empty[tok->varId()] = false;
+        } else if (stl1_exist && Token::Match(tok, "%var% [ %any% ] = %any%")) {
+            empty[tok->varId()] = false;
+        } else if (stl1_exist && Token::Match(tok, "%var% . %type% (")) {
+            //static const char STL_CONTAINER_INSERT_FUNCTIONS[] = "%var% . insert|push_back|push_front|assign|set|reset|emplace_after|insert_after|push (";
+            empty[tok->varId()] = false;
+        }
+    }
+}
+
+void CheckStl::readingEmptyStlContainerError(const Token *tok)
+{
+    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container", true);
+}
+

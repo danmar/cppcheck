@@ -14,12 +14,14 @@ Manual
 
 Compiling
 
-    Any C++ compiler should work.
+    Any C++11 compiler should work. For compilers with partial C++11 support it may work. If
+    your compiler has the C++11 features that are available in Visual Studio 2010 then it
+    will work. If nullptr is not supported by your compiler then this can be emulated using
+    the header lib/cxx11emu.h.
 
     To build the GUI, you need Qt.
 
-    When building the command line tool, PCRE is normally used.
-    PCRE is optional.
+    When building the command line tool, PCRE is optional. It is used if you build with rules.
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
@@ -68,15 +70,22 @@ Compiling
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
+            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/tinyxml2.cpp
+            g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -lpcre -DHAVE_RULES -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 
     mingw
     =====
         The "LDFLAGS=-lshlwapi" is needed when building with mingw
             mingw32-make LDFLAGS=-lshlwapi
+
+    other compilers/ide
+    ===================
+
+        1. Create a empty project file / makefile.
+        2. Add all cpp files in the cppcheck cli and lib folders to the project file / makefile.
+        3. Compile.
 
 Cross compiling Win32 (CLI) version of Cppcheck in Linux
 

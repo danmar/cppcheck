@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,12 +70,12 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
             tok = tok->link();
         tok = tok->previous();
     }
-    tok = tok ? tok->previous() : NULL;
+    tok = tok ? tok->previous() : nullptr;
     if (!Token::Match(tok,"%var% ("))
-        return false; // not a function => dont bailout
+        return false; // not a function => do not bailout
 
     if (!tok->function()) {
-        // if value is 0 and the library says 0 is invalid => dont bailout
+        // if value is 0 and the library says 0 is invalid => do not bailout
         if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
             return false;
         // inconclusive => don't bailout
@@ -126,7 +126,7 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
             tokens.push(tok2->astOperand1());
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 static bool bailoutSelfAssignment(const Token * const tok)
@@ -137,9 +137,9 @@ static bool bailoutSelfAssignment(const Token * const tok)
         parent = parent->astParent();
 
         // Assignment where lhs variable exists in rhs => return true
-        if (parent                         != NULL         &&
+        if (parent                         != nullptr      &&
             parent->astOperand2()          == op           &&
-            parent->astOperand1()          != NULL         &&
+            parent->astOperand1()          != nullptr      &&
             parent->str()                  == "=") {
             for (const Token *lhs = parent->astOperand1(); lhs; lhs = lhs->astOperand1()) {
                 if (lhs->varId() == tok->varId())
@@ -543,6 +543,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     tok2 = tok2->linkAt(2);
             }
 
+            else if (Token::Match(tok2, "break|continue")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                break;
+            }
+
             if (tok2->varId() == varid) {
                 // bailout: assignment
                 if (Token::Match(tok2->previous(), "!!* %var% =")) {
@@ -556,6 +562,18 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                     break;
+                }
+
+                // bailout: possible assignment using >>
+                if (Token::Match(tok2->previous(), ">> %var% >>|;")) {
+                    const Token *parent = tok2->previous();
+                    while (Token::simpleMatch(parent,">>"))
+                        parent = parent->astParent();
+                    if (!parent) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
+                        break;
+                    }
                 }
 
                 // skip if variable is conditionally used in ?: expression
@@ -608,7 +626,7 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         if (vartok->varId() == 0U)
             continue;
         tok = vartok->tokAt(4);
-        const Token *num2tok = 0;
+        const Token *num2tok = nullptr;
         if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
             tok = tok->next();
             num2tok = tok->astOperand2();
@@ -647,6 +665,19 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
 
         for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
             if (tok2->varId() == vartok->varId()) {
+                const Token * parent = tok2->astParent();
+                while (parent) {
+                    const Token * const p = parent;
+                    parent = parent->astParent();
+                    if (parent && parent->str() == "?" && parent->astOperand2() == p)
+                        break;
+                }
+                if (parent) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "For loop variable " + vartok->str() + " stopping on ?");
+                    continue;
+                }
+
                 ValueFlow::Value value1(num1);
                 value1.varId = tok2->varId();
                 setTokenValue(tok2, value1);
@@ -709,12 +740,12 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
         // Get function argument, and check if parameter is passed by value
         const Function * const function = ftok->astOperand1()->function();
-        const Variable * const arg = function ? function->getArgumentVar(argnr) : NULL;
-        if (!Token::Match(arg ? arg->typeStartToken() : NULL, "%type% %var% ,|)"))
+        const Variable * const arg = function ? function->getArgumentVar(argnr) : nullptr;
+        if (!Token::Match(arg ? arg->typeStartToken() : nullptr, "%type% %var% ,|)"))
             continue;
 
         // Function scope..
-        const Scope * const functionScope = function ? function->functionScope : NULL;
+        const Scope * const functionScope = function ? function->functionScope : nullptr;
         if (!functionScope)
             continue;
 

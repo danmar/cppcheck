@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
+    Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
 
     static bool missingIncludeFlag;
 

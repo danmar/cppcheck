@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,10 +41,10 @@ class TestSymbolDatabase: public TestFixture {
 public:
     TestSymbolDatabase()
         :TestFixture("TestSymbolDatabase")
-        ,si(NULL, NULL, NULL)
-        ,vartok(NULL)
-        ,typetok(NULL)
-        ,t(NULL)
+        ,si(nullptr, nullptr, nullptr)
+        ,vartok(nullptr)
+        ,typetok(nullptr)
+        ,t(nullptr)
         ,found(false) {
     }
 
@@ -56,9 +56,9 @@ private:
     bool found;
 
     void reset() {
-        vartok = NULL;
-        typetok = NULL;
-        t = NULL;
+        vartok = nullptr;
+        typetok = nullptr;
+        t = nullptr;
         found = false;
     }
 
@@ -212,14 +212,15 @@ private:
         TEST_CASE(garbage);
 
         TEST_CASE(findFunction1);
+        TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
     }
 
     void array() const {
         std::istringstream code("int a[10+2];");
-        TokenList list(NULL);
+        TokenList list(nullptr);
         list.createTokens(code, "test.c");
         list.front()->tokAt(2)->link(list.front()->tokAt(6));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, NULL, NULL);
+        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr);
         ASSERT(v.isArray());
         ASSERT_EQUALS(1U, v.dimensions().size());
         ASSERT_EQUALS(0U, v.dimension(0));
@@ -227,11 +228,11 @@ private:
 
     void test_isVariableDeclarationCanHandleNull() {
         reset();
-        bool result = si.isVariableDeclaration(NULL, vartok, typetok);
+        bool result = si.isVariableDeclaration(nullptr, vartok, typetok);
         ASSERT_EQUALS(false, result);
-        ASSERT(NULL == vartok);
-        ASSERT(NULL == typetok);
-        Variable v(NULL, NULL, NULL, 0, Public, 0, 0);
+        ASSERT(nullptr == vartok);
+        ASSERT(nullptr == typetok);
+        Variable v(nullptr, nullptr, nullptr, 0, Public, 0, 0);
     }
 
     void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
@@ -337,8 +338,8 @@ private:
         givenACodeSampleToTokenize constness("const int* cp;");
         bool result = si.isVariableDeclaration(constness.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
-        ASSERT(NULL == vartok);
-        ASSERT(NULL == typetok);
+        ASSERT(nullptr == vartok);
+        ASSERT(nullptr == typetok);
     }
 
     void test_isVariableDeclarationIdentifiesFirstOfManyVariables() {
@@ -561,7 +562,7 @@ private:
         {
             reset();
             std::istringstream code("std::string s;");
-            TokenList list(NULL);
+            TokenList list(nullptr);
             list.createTokens(code, "test.cpp");
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
@@ -575,7 +576,7 @@ private:
         {
             reset();
             std::istringstream code("std::vector<int> v;");
-            TokenList list(NULL);
+            TokenList list(nullptr);
             list.createTokens(code, "test.cpp");
             list.front()->tokAt(3)->link(list.front()->tokAt(5));
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
@@ -590,7 +591,7 @@ private:
         {
             reset();
             std::istringstream code("SomeClass s;");
-            TokenList list(NULL);
+            TokenList list(nullptr);
             list.createTokens(code, "test.cpp");
             bool result = si.isVariableDeclaration(list.front(), vartok, typetok);
             ASSERT_EQUALS(true, result);
@@ -616,7 +617,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
-        tok = tok ? tok->next() : NULL;
+        tok = tok ? tok->next() : nullptr;
         ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
@@ -636,7 +637,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
-        tok = tok ? tok->next() : NULL;
+        tok = tok ? tok->next() : nullptr;
         ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
@@ -656,7 +657,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
-        tok = tok ? tok->next() : NULL;
+        tok = tok ? tok->next() : nullptr;
         ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
@@ -727,7 +728,7 @@ private:
         if (db) {
             const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
 
-            ASSERT(scope == NULL);
+            ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
@@ -805,7 +806,7 @@ private:
         if (db) {
             const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
 
-            ASSERT(scope == NULL);
+            ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
@@ -836,7 +837,7 @@ private:
 
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
-        ASSERT(db != 0);
+        ASSERT(db != nullptr);
 
         if (db) {
             bool seen_something = false;
@@ -930,11 +931,11 @@ private:
         ASSERT(db && db->scopeList.size() == 4);
         if (db) {
             const Scope* foo = db->findScopeByName("Foo");
-            ASSERT(foo != 0);
+            ASSERT(foo != nullptr);
             const Scope* bar1 = db->findScopeByName("Bar1");
-            ASSERT(bar1 != 0);
+            ASSERT(bar1 != nullptr);
             const Scope* bar2 = db->findScopeByName("Bar2");
-            ASSERT(bar2 != 0);
+            ASSERT(bar2 != nullptr);
 
             if (foo && bar1 && bar2) {
                 ASSERT(bar1->definedType->friendList.size() == 1 && bar1->definedType->friendList.front().name == "Foo" && bar1->definedType->friendList.front().type == foo->definedType);
@@ -946,13 +947,13 @@ private:
     void parseFunctionCorrect() {
         // ticket 3188 - "if" statement parsed as function
         GET_SYMBOL_DB("void func(i) int i; { if (i == 1) return; }\n")
-        ASSERT(db != NULL);
+        ASSERT(db != nullptr);
 
         // 3 scopes: Global, function, if
         ASSERT_EQUALS(3, db->scopeList.size());
 
-        ASSERT(findFunctionByName("func", &db->scopeList.back()) != NULL);
-        ASSERT(findFunctionByName("if", &db->scopeList.back()) == NULL);
+        ASSERT(findFunctionByName("func", &db->scopeList.back()) != nullptr);
+        ASSERT(findFunctionByName("if", &db->scopeList.back()) == nullptr);
     }
 
     void parseFunctionDeclarationCorrect() {
@@ -1151,7 +1152,7 @@ private:
                       "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
-        const Scope *scope = NULL;
+        const Scope *scope = nullptr;
         for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
             if (it->isClassOrStruct()) {
                 scope = &(*it);
@@ -1159,7 +1160,7 @@ private:
             }
         }
 
-        ASSERT(scope != 0);
+        ASSERT(scope != nullptr);
         if (!scope)
             return;
 
@@ -1185,7 +1186,7 @@ private:
                       "}");
 
         // Locate the scope for the class..
-        const Scope *scope = NULL;
+        const Scope *scope = nullptr;
         for (std::list<Scope>::const_iterator it = db->scopeList.begin(); it != db->scopeList.end(); ++it) {
             if (it->isClassOrStruct()) {
                 scope = &(*it);
@@ -1193,7 +1194,7 @@ private:
             }
         }
 
-        ASSERT(scope != 0);
+        ASSERT(scope != nullptr);
         if (!scope)
             return;
 
@@ -1490,13 +1491,13 @@ private:
         ASSERT_EQUALS(4U, db->scopeList.size());
 
         // Find the scope for the Fred struct..
-        const Scope *fredScope = NULL;
+        const Scope *fredScope = nullptr;
         for (std::list<Scope>::const_iterator scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
             if (scope->isClassOrStruct() && scope->className == "Fred")
                 fredScope = &(*scope);
         }
-        ASSERT(fredScope != NULL);
-        if (fredScope == NULL)
+        ASSERT(fredScope != nullptr);
+        if (fredScope == nullptr)
             return;
 
         // The struct Fred has two functions, a constructor and a destructor
@@ -1722,7 +1723,7 @@ private:
     void symboldatabase42() { // only put variables in variable list
         GET_SYMBOL_DB("void f() { extern int x(); }\n");
         ASSERT(!!db);
-        const Scope * const fscope = db ? db->findScopeByName("f") : NULL;
+        const Scope * const fscope = db ? db->findScopeByName("f") : nullptr;
         ASSERT(!!fscope);
         ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
@@ -1836,14 +1837,14 @@ private:
         ASSERT_EQUALS("", errout.str());
         if (db) {
             const Scope * bar = db->findScopeByName("bar");
-            ASSERT(bar != 0);
+            ASSERT(bar != nullptr);
             if (bar) {
                 unsigned int linenrs[] = { 2, 1 };
                 unsigned int index = 0;
                 for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
                     if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
                         const Function * function = db->findFunction(tok);
-                        ASSERT(function != 0);
+                        ASSERT(function != nullptr);
                         if (function) {
                             std::stringstream expected;
                             expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;
@@ -1856,6 +1857,20 @@ private:
                 }
             }
         }
+    }
+
+    void findFunction2() {
+        // The function does not match the function call.
+        GET_SYMBOL_DB("void func(const int x, const Fred &fred);\n"
+                      "void otherfunc() {\n"
+                      "    float t;\n"
+                      "    func(x, &t);\n"
+                      "}");
+        const Token *callfunc = Token::findmatch(tokenizer.tokens(), "func ( x , & t ) ;");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+        ASSERT_EQUALS(true,  callfunc != nullptr); // not null
+        ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
     }
 };
 

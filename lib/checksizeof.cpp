@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,7 +113,7 @@ void CheckSizeof::checkSizeofForPointerSize()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             const Token *tokVar;
             const Token *variable;
-            const Token *variable2 = 0;
+            const Token *variable2 = nullptr;
 
             // Find any function that may use sizeof on a pointer
             // Once leaving those tests, it is mandatory to have:

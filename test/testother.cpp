@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,6 +135,7 @@ private:
         TEST_CASE(sameExpression);
 
         TEST_CASE(memsetZeroBytes);
+        TEST_CASE(memsetInvalid2ndParam);
 
         TEST_CASE(redundantGetAndSetUserId);
 
@@ -195,7 +196,7 @@ private:
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
     }
 
-    void check(const char code[], const char *filename = NULL, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -257,11 +258,11 @@ private:
         ErrorLogger *_next;
     };
 
-    void check_preprocess_suppress(const char precode[], const char *filename = NULL) {
+    void check_preprocess_suppress(const char precode[], const char *filename = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        if (filename == NULL)
+        if (filename == nullptr)
             filename = "test.cpp";
 
         Settings settings;
@@ -4050,38 +4051,89 @@ private:
     void memsetZeroBytes() {
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), 0);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) memset() called to fill 0 bytes of 'p'.\n", errout.str());
 
         check("void f() {\n"
               "    memset(p, sizeof(p), i);\n"
-              "}\n"
-             );
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
+    void memsetInvalid2ndParam() {
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    memset(is, 1.0f, 40);\n"
+              "    int* is2 = new int[10];\n"
+              "    memset(is2, 0.1f, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The 2nd memset() argument '1.0f' is a float, its representation is implementation defined.\n"
+                      "[test.cpp:5]: (portability) The 2nd memset() argument '0.1f' is a float, its representation is implementation defined.\n", errout.str());
+
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    float g = computeG();\n"
+              "    memset(is, g, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument 'g' is a float, its representation is implementation defined.\n", errout.str());
+
+        check("void f() {\n"
+              "    int* is = new int[10];\n"
+              "    memset(is, 0.0f, 40);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    short ss[] = {1, 2};\n"
+              "    memset(ss, 256, 4);\n"
+              "    short ss2[2];\n"
+              "    memset(ss2, -129, 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The 2nd memset() argument '256' doesn't fit into an 'unsigned char'.\n"
+                      "[test.cpp:5]: (warning) The 2nd memset() argument '-129' doesn't fit into an 'unsigned char'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int is[10];\n"
+              "    memset(is, 0xEE, 40);\n"
+              "    unsigned char* cs = malloc(256);\n"
+              "    memset(cs, -1, 256);\n"
+              "    short* ss[30];\n"
+              "    memset(ss, -128, 60);\n"
+              "    char cs2[30];\n"
+              "    memset(cs2, 255, 30);\n"
+              "    char cs3[30];\n"
+              "    memset(cs3, 0, 30);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int is[10];\n"
+              "    const int i = g();\n"
+              "    memset(is, 1.0f + i, 40);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f + i' is a float, its representation is implementation defined.\n", "", errout.str());
+    }
+
     void redundantGetAndSetUserId() {
-        check("seteuid(geteuid());\n", NULL, false , false, true);
+        check("seteuid(geteuid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setuid(getuid());\n", NULL, false , false, true);
+        check("setuid(getuid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setgid(getgid());\n", NULL, false , false, true);
+        check("setgid(getgid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setegid(getegid());\n", NULL, false , false, true);
+        check("setegid(getegid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
 
-        check("seteuid(getuid());\n", NULL, false , false, true);
+        check("seteuid(getuid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("seteuid(foo());\n", NULL, false , false, true);
+        check("seteuid(foo());\n", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("foo(getuid());\n", NULL, false , false, true);
+        check("foo(getuid());\n", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4197,6 +4249,10 @@ private:
         check("void *f(char** c) {\n"
               "    bar(**c++);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
+        check("void * f { } void b ( ) { * f }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4460,7 +4516,7 @@ private:
               "    else\n"
               "        b = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a) {\n"
@@ -4471,7 +4527,7 @@ private:
               "    } else\n"
               "        b = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1)\n"
@@ -4483,7 +4539,7 @@ private:
               "            b = 2;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("int f(int signed, unsigned char value) {\n"
               "    int ret;\n"
@@ -4509,7 +4565,7 @@ private:
               "    else\n"
               "        __asm__(\"mov ax, bx\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
     }
 
     void duplicateBranch1() {
@@ -4523,7 +4579,7 @@ private:
               "  else\n"
               "    frac = front/(front-back);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -4532,7 +4588,7 @@ private:
               "  else\n"
               "    frac = front/((front-back));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
     }
 
     void duplicateBranch2() {
@@ -4661,12 +4717,12 @@ private:
 
         // make sure there are not "same expression" fp when there are different casts
         check("void f(long x) { if ((int32_t)x == (int64_t)x) {} }",
-              NULL,  // filename
+              nullptr,  // filename
               false, // experimental
               false, // inconclusive
               false, // posix
               false, // runSimpleChecks
-              NULL   // settings
+              nullptr   // settings
              );
         ASSERT_EQUALS("", errout.str());
 
@@ -4711,7 +4767,7 @@ private:
         check("float f(float x) { return x-x; }"); // ticket #4485 (Inf)
         ASSERT_EQUALS("", errout.str());
 
-        check("float f(float x) { return (X double)x == (X double)x; }", NULL, false, false, false, false);
+        check("float f(float x) { return (X double)x == (X double)x; }", nullptr, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("struct X { float f; };\n"
@@ -6106,7 +6162,7 @@ private:
               "    int i;\n"
               "    i = 1;\n"
               "    i = 1;\n"
-              "}", NULL, false, false, false, false);
+              "}", nullptr, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
@@ -6167,7 +6223,7 @@ private:
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
-              "}", NULL, false, false, false, false);
+              "}", nullptr, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
@@ -6175,7 +6231,7 @@ private:
               "    i = 1;\n"
               "    bar(i);\n" // Passed as argument
               "    i = 1;\n"
-              "}", NULL, false, false, false, false);
+              "}", nullptr, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         // Branch tests
@@ -6251,7 +6307,7 @@ private:
               "    x = 1;\n"
               "    x = 1;\n"
               "    return x + 1;\n"
-              "}", NULL, false, false, false, false);
+              "}", nullptr, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
 
         // from #3103 (avoid a false positive)
@@ -6314,6 +6370,17 @@ private:
         check("struct AB { int a; int b; };\n"
               "\n"
               "int f() {\n"
+              "    struct AB ab;\n"
+              "    ab.a = 1;\n"
+              "    do_something(&ab);\n"
+              "    ab.a = 2;\n"
+              "    return ab.a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB { int a; int b; };\n"
+              "\n"
+              "int f(DO_SOMETHING do_something) {\n"
               "    struct AB ab;\n"
               "    ab.a = 1;\n"
               "    do_something(&ab);\n"
@@ -6481,7 +6548,7 @@ private:
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
 
         check("void f(){\n"
@@ -6489,7 +6556,7 @@ private:
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
@@ -6497,7 +6564,7 @@ private:
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
@@ -6505,7 +6572,7 @@ private:
               "if (pipe2(pipefd,0) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
 
         check("void f(){\n"
@@ -6513,7 +6580,7 @@ private:
               "if (pipe2(pipefd,0) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
@@ -6521,7 +6588,7 @@ private:
               "if (pipe2(pipefd,0) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         // avoid crash with pointer variable
@@ -6738,22 +6805,22 @@ private:
         // check usleep(), which is allowed to be called with in a range of [0,999999]
         check("void f(){\n"
               "usleep(10000);\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
               "usleep(999999);\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
               "usleep(1000000);\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000000 but the valid values are '0-999999'.\n", errout.str());
 
         check("void f(){\n"
               "usleep(1000001);\n"
-              "}",NULL,false,false,true);
+              "}",nullptr,false,false,true);
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000001 but the valid values are '0-999999'.\n", errout.str());
     }
 
@@ -6762,38 +6829,38 @@ private:
               "  if (a < 0)\n"
               "    return a++,\n"
               "  do_something();\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a++, do_something();\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a+5,\n"
               "  do_something();\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a+5, do_something();\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return c<int,\nint>::b;\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #4927 Segfault in CheckOther::checkCommaSeparatedReturn() on invalid code
         check("int main() {\n"
               "   return 0\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
         // #4943 take care of C++11 initializer lists
@@ -6804,7 +6871,7 @@ private:
               "        { \"2\" },\n"
               "        { \"3\" }\n"
               "    };\n"
-              "}", NULL, true, false, false, false);
+              "}", nullptr, true, false, false, false);
         ASSERT_EQUALS("", errout.str());
     }
 

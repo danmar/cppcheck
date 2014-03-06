@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,8 @@ private:
         TEST_CASE(tokenize26);  // #4245 (segmentation fault)
         TEST_CASE(tokenize27);  // #4525 (segmentation fault)
         TEST_CASE(tokenize28);  // #4725 (writing asm() around "^{}")
+        TEST_CASE(tokenize29);  // #5506 (segmentation fault upon invalid code)
+        TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -188,6 +190,7 @@ private:
         TEST_CASE(simplifyKnownVariables53);    // references
         TEST_CASE(simplifyKnownVariables54);    // #4913 'x' is not 0 after *--x=0;
         TEST_CASE(simplifyKnownVariables55);    // pointer alias
+        TEST_CASE(simplifyKnownVariables56);    // ticket #5301 - >>
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesIfEq3); // #4708 - if (a==5) { buf[--a] = 0; }
@@ -822,6 +825,16 @@ private:
         ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
         ASSERT_EQUALS("void f ( ) { asm ( \"x(^{})\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
         ASSERT_EQUALS("; asm ( \"voidf^{return}intmain\" ) ; ( ) { }", tokenizeAndStringify("; void f ^ { return } int main ( ) { }"));
+    }
+
+    // #5506 - segmentation fault upon invalid code
+    void tokenize29() {
+        tokenizeAndStringify("A template < int { int = -1 ; } template < int N > struct B { int [ A < N > :: zero ] ;  } ; B < 0 > b ;");
+    }
+
+    // #5356 - segmentation fault upon invalid code
+    void tokenize30() {
+        tokenizeAndStringify("struct template<int { = }; > struct B { }; B < 0 > b;");
     }
 
     void wrong_syntax1() {
@@ -2886,6 +2899,11 @@ private:
         ASSERT_EQUALS("void f ( ) { int a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (*p>0) {} }", true));
         ASSERT_EQUALS("void f ( ) { int a ; struct AB ab ; ab . a = & a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; struct AB ab; ab.a = &a; if (*ab.a>0) {} }", true));
         ASSERT_EQUALS("void f ( ) { int a ; if ( x > a ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (x>*p) {} }", true));
+    }
+
+    void simplifyKnownVariables56() { // ticket #5301 - >>
+        ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
+                      tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }", true));
     }
 
     void simplifyKnownVariablesIfEq1() {
@@ -8523,6 +8541,8 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("-1"));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber(""));
         ASSERT_EQUALS(false, Tokenizer::isZeroNumber("garbage"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("E2"));
+        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("2e"));
     }
 
     void isOneNumber() const {
@@ -8581,7 +8601,7 @@ private:
 
         const char code_erfcl[] ="void f(long double x) {\n"
                                  " std::cout << erfcl(x);\n" // do not simplify
-                                 " std::cout << erfcl(0.0d);\n" // simplify to 1
+                                 " std::cout << erfcl(0.0f);\n" // simplify to 1
                                  "}";
         const char expected_erfcl[] = "void f ( long double x ) {\n"
                                       "std :: cout << erfcl ( x ) ;\n"
@@ -8614,7 +8634,7 @@ private:
 
         const char code_cosl[] ="void f(long double x) {\n"
                                 " std::cout << cosl(x);\n" // do not simplify
-                                " std::cout << cosl(0.0d);\n" // simplify to 1
+                                " std::cout << cosl(0.0f);\n" // simplify to 1
                                 "}";
         const char expected_cosl[] = "void f ( long double x ) {\n"
                                      "std :: cout << cosl ( x ) ;\n"
@@ -8647,7 +8667,7 @@ private:
 
         const char code_coshl[] ="void f(long double x) {\n"
                                  " std::cout << coshl(x);\n" // do not simplify
-                                 " std::cout << coshl(0.0d);\n" // simplify to 1
+                                 " std::cout << coshl(0.0f);\n" // simplify to 1
                                  "}";
         const char expected_coshl[] = "void f ( long double x ) {\n"
                                       "std :: cout << coshl ( x ) ;\n"
@@ -8680,7 +8700,7 @@ private:
 
         const char code_acosl[] ="void f(long double x) {\n"
                                  " std::cout << acosl(x);\n" // do not simplify
-                                 " std::cout << acosl(1.0d);\n" // simplify to 0
+                                 " std::cout << acosl(1.0f);\n" // simplify to 0
                                  "}";
         const char expected_acosl[] = "void f ( long double x ) {\n"
                                       "std :: cout << acosl ( x ) ;\n"
@@ -8713,7 +8733,7 @@ private:
 
         const char code_acoshl[] ="void f(long double x) {\n"
                                   " std::cout << acoshl(x);\n" // do not simplify
-                                  " std::cout << acoshl(1.0d);\n" // simplify to 0
+                                  " std::cout << acoshl(1.0f);\n" // simplify to 0
                                   "}";
         const char expected_acoshl[] = "void f ( long double x ) {\n"
                                        "std :: cout << acoshl ( x ) ;\n"
@@ -8930,12 +8950,12 @@ private:
 
         const char code_erfl[] ="void f(long double x) {\n"
                                 " std::cout << erfl(x);\n" // do not simplify
-                                " std::cout << erfl(10.0d);\n" // do not simplify
-                                " std::cout << erfl(0.0d);\n" // simplify to 0
+                                " std::cout << erfl(10.0f);\n" // do not simplify
+                                " std::cout << erfl(0.0f);\n" // simplify to 0
                                 "}";
         const char expected_erfl[] = "void f ( long double x ) {\n"
                                      "std :: cout << erfl ( x ) ;\n"
-                                     "std :: cout << erfl ( 10.0d ) ;\n"
+                                     "std :: cout << erfl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_erfl, tokenizeAndStringify(code_erfl));
@@ -8969,12 +8989,14 @@ private:
 
         const char code_atanhl[] ="void f(long double x) {\n"
                                   " std::cout << atanhl(x);\n" // do not simplify
-                                  " std::cout << atanhl(10.0d);\n" // do not simplify
-                                  " std::cout << atanhl(0.0d);\n" // simplify to 0
+                                  " std::cout << atanhl(10.0f);\n" // do not simplify
+                                  " std::cout << atanhl(0.0d);\n" // do not simplify - invalid number!
+                                  " std::cout << atanhl(0.0f);\n" // simplify to 0
                                   "}";
         const char expected_atanhl[] = "void f ( long double x ) {\n"
                                        "std :: cout << atanhl ( x ) ;\n"
-                                       "std :: cout << atanhl ( 10.0d ) ;\n"
+                                       "std :: cout << atanhl ( 10.0f ) ;\n"
+                                       "std :: cout << atanhl ( 0.0d ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_atanhl, tokenizeAndStringify(code_atanhl));
@@ -9008,12 +9030,12 @@ private:
 
         const char code_atanl[] ="void f(long double x) {\n"
                                  " std::cout << atanl(x);\n" // do not simplify
-                                 " std::cout << atanl(10.0d);\n" // do not simplify
-                                 " std::cout << atanl(0.0d);\n" // simplify to 0
+                                 " std::cout << atanl(10.0f);\n" // do not simplify
+                                 " std::cout << atanl(0.0f);\n" // simplify to 0
                                  "}";
         const char expected_atanl[] = "void f ( long double x ) {\n"
                                       "std :: cout << atanl ( x ) ;\n"
-                                      "std :: cout << atanl ( 10.0d ) ;\n"
+                                      "std :: cout << atanl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_atanl, tokenizeAndStringify(code_atanl));
@@ -9081,12 +9103,12 @@ private:
 
         const char code_tanhl[] ="void f(long double x) {\n"
                                  " std::cout << tanhl(x);\n" // do not simplify
-                                 " std::cout << tanhl(10.0d);\n" // do not simplify
-                                 " std::cout << tanhl(0.0d);\n" // simplify to 0
+                                 " std::cout << tanhl(10.0f);\n" // do not simplify
+                                 " std::cout << tanhl(0.0f);\n" // simplify to 0
                                  "}";
         const char expected_tanhl[] = "void f ( long double x ) {\n"
                                       "std :: cout << tanhl ( x ) ;\n"
-                                      "std :: cout << tanhl ( 10.0d ) ;\n"
+                                      "std :: cout << tanhl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_tanhl, tokenizeAndStringify(code_tanhl));
@@ -9120,12 +9142,12 @@ private:
 
         const char code_tanl[] ="void f(long double x) {\n"
                                 " std::cout << tanl(x);\n" // do not simplify
-                                " std::cout << tanl(10.0d);\n" // do not simplify
-                                " std::cout << tanl(0.0d);\n" // simplify to 0
+                                " std::cout << tanl(10.0f);\n" // do not simplify
+                                " std::cout << tanl(0.0f);\n" // simplify to 0
                                 "}";
         const char expected_tanl[] = "void f ( long double x ) {\n"
                                      "std :: cout << tanl ( x ) ;\n"
-                                     "std :: cout << tanl ( 10.0d ) ;\n"
+                                     "std :: cout << tanl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_tanl, tokenizeAndStringify(code_tanl));
@@ -9159,12 +9181,12 @@ private:
 
         const char code_expm1l[] ="void f(long double x) {\n"
                                   " std::cout << expm1l(x);\n" // do not simplify
-                                  " std::cout << expm1l(10.0d);\n" // do not simplify
-                                  " std::cout << expm1l(0.0d);\n" // simplify to 0
+                                  " std::cout << expm1l(10.0f);\n" // do not simplify
+                                  " std::cout << expm1l(0.0f);\n" // simplify to 0
                                   "}";
         const char expected_expm1l[] = "void f ( long double x ) {\n"
                                        "std :: cout << expm1l ( x ) ;\n"
-                                       "std :: cout << expm1l ( 10.0d ) ;\n"
+                                       "std :: cout << expm1l ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_expm1l, tokenizeAndStringify(code_expm1l));
@@ -9198,12 +9220,12 @@ private:
 
         const char code_asinhl[] ="void f(long double x) {\n"
                                   " std::cout << asinhl(x);\n" // do not simplify
-                                  " std::cout << asinhl(10.0d);\n" // do not simplify
-                                  " std::cout << asinhl(0.0d);\n" // simplify to 0
+                                  " std::cout << asinhl(10.0f);\n" // do not simplify
+                                  " std::cout << asinhl(0.0f);\n" // simplify to 0
                                   "}";
         const char expected_asinhl[] = "void f ( long double x ) {\n"
                                        "std :: cout << asinhl ( x ) ;\n"
-                                       "std :: cout << asinhl ( 10.0d ) ;\n"
+                                       "std :: cout << asinhl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_asinhl, tokenizeAndStringify(code_asinhl));
@@ -9237,12 +9259,12 @@ private:
 
         const char code_asinl[] ="void f(long double x) {\n"
                                  " std::cout << asinl(x);\n" // do not simplify
-                                 " std::cout << asinl(10.0d);\n" // do not simplify
-                                 " std::cout << asinl(0.0d);\n" // simplify to 0
+                                 " std::cout << asinl(10.0f);\n" // do not simplify
+                                 " std::cout << asinl(0.0f);\n" // simplify to 0
                                  "}";
         const char expected_asinl[] = "void f ( long double x ) {\n"
                                       "std :: cout << asinl ( x ) ;\n"
-                                      "std :: cout << asinl ( 10.0d ) ;\n"
+                                      "std :: cout << asinl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_asinl, tokenizeAndStringify(code_asinl));
@@ -9276,12 +9298,12 @@ private:
 
         const char code_sinhl[] ="void f(long double x) {\n"
                                  " std::cout << sinhl(x);\n" // do not simplify
-                                 " std::cout << sinhl(10.0d);\n" // do not simplify
-                                 " std::cout << sinhl(0.0d);\n" // simplify to 0
+                                 " std::cout << sinhl(10.0f);\n" // do not simplify
+                                 " std::cout << sinhl(0.0f);\n" // simplify to 0
                                  "}";
         const char expected_sinhl[] = "void f ( long double x ) {\n"
                                       "std :: cout << sinhl ( x ) ;\n"
-                                      "std :: cout << sinhl ( 10.0d ) ;\n"
+                                      "std :: cout << sinhl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_sinhl, tokenizeAndStringify(code_sinhl));
@@ -9315,12 +9337,12 @@ private:
 
         const char code_sinl[] ="void f(long double x) {\n"
                                 " std::cout << sinl(x);\n" // do not simplify
-                                " std::cout << sinl(10.0d);\n" // do not simplify
-                                " std::cout << sinl(0.0d);\n" // simplify to 0
+                                " std::cout << sinl(10.0f);\n" // do not simplify
+                                " std::cout << sinl(0.0f);\n" // simplify to 0
                                 "}";
         const char expected_sinl[] = "void f ( long double x ) {\n"
                                      "std :: cout << sinl ( x ) ;\n"
-                                     "std :: cout << sinl ( 10.0d ) ;\n"
+                                     "std :: cout << sinl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_sinl, tokenizeAndStringify(code_sinl));
@@ -9354,12 +9376,12 @@ private:
 
         const char code_ilogbl[] ="void f(long double x) {\n"
                                   " std::cout << ilogbl(x);\n" // do not simplify
-                                  " std::cout << ilogbl(10.0d);\n" // do not simplify
-                                  " std::cout << ilogbl(1.0d);\n" // simplify to 0
+                                  " std::cout << ilogbl(10.0f);\n" // do not simplify
+                                  " std::cout << ilogbl(1.0f);\n" // simplify to 0
                                   "}";
         const char expected_ilogbl[] = "void f ( long double x ) {\n"
                                        "std :: cout << ilogbl ( x ) ;\n"
-                                       "std :: cout << ilogbl ( 10.0d ) ;\n"
+                                       "std :: cout << ilogbl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_ilogbl, tokenizeAndStringify(code_ilogbl));
@@ -9393,12 +9415,12 @@ private:
 
         const char code_logbl[] ="void f(long double x) {\n"
                                  " std::cout << logbl(x);\n" // do not simplify
-                                 " std::cout << logbl(10.0d);\n" // do not simplify
-                                 " std::cout << logbl(1.0d);\n" // simplify to 0
+                                 " std::cout << logbl(10.0f);\n" // do not simplify
+                                 " std::cout << logbl(1.0f);\n" // simplify to 0
                                  "}";
         const char expected_logbl[] = "void f ( long double x ) {\n"
                                       "std :: cout << logbl ( x ) ;\n"
-                                      "std :: cout << logbl ( 10.0d ) ;\n"
+                                      "std :: cout << logbl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_logbl, tokenizeAndStringify(code_logbl));
@@ -9432,12 +9454,12 @@ private:
 
         const char code_log1pl[] ="void f(long double x) {\n"
                                   " std::cout << log1pl(x);\n" // do not simplify
-                                  " std::cout << log1pl(10.0d);\n" // do not simplify
-                                  " std::cout << log1pl(0.0d);\n" // simplify to 0
+                                  " std::cout << log1pl(10.0f);\n" // do not simplify
+                                  " std::cout << log1pl(0.0f);\n" // simplify to 0
                                   "}";
         const char expected_log1pl[] = "void f ( long double x ) {\n"
                                        "std :: cout << log1pl ( x ) ;\n"
-                                       "std :: cout << log1pl ( 10.0d ) ;\n"
+                                       "std :: cout << log1pl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_log1pl, tokenizeAndStringify(code_log1pl));
@@ -9471,12 +9493,12 @@ private:
 
         const char code_log10l[] ="void f(long double x) {\n"
                                   " std::cout << log10l(x);\n" // do not simplify
-                                  " std::cout << log10l(10.0d);\n" // do not simplify
-                                  " std::cout << log10l(1.0d);\n" // simplify to 0
+                                  " std::cout << log10l(10.0f);\n" // do not simplify
+                                  " std::cout << log10l(1.0f);\n" // simplify to 0
                                   "}";
         const char expected_log10l[] = "void f ( long double x ) {\n"
                                        "std :: cout << log10l ( x ) ;\n"
-                                       "std :: cout << log10l ( 10.0d ) ;\n"
+                                       "std :: cout << log10l ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
         ASSERT_EQUALS(expected_log10l, tokenizeAndStringify(code_log10l));
@@ -9510,12 +9532,12 @@ private:
 
         const char code_logl[] ="void f(long double x) {\n"
                                 " std::cout << logl(x);\n" // do not simplify
-                                " std::cout << logl(10.0d);\n" // do not simplify
-                                " std::cout << logl(1.0d);\n" // simplify to 0
+                                " std::cout << logl(10.0f);\n" // do not simplify
+                                " std::cout << logl(1.0f);\n" // simplify to 0
                                 "}";
         const char expected_logl[] = "void f ( long double x ) {\n"
                                      "std :: cout << logl ( x ) ;\n"
-                                     "std :: cout << logl ( 10.0d ) ;\n"
+                                     "std :: cout << logl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_logl, tokenizeAndStringify(code_logl));
@@ -9549,12 +9571,12 @@ private:
 
         const char code_log2l[] ="void f(long double x) {\n"
                                  " std::cout << log2l(x);\n" // do not simplify
-                                 " std::cout << log2l(10.0d);\n" // do not simplify
-                                 " std::cout << log2l(1.0d);\n" // simplify to 0
+                                 " std::cout << log2l(10.0f);\n" // do not simplify
+                                 " std::cout << log2l(1.0f);\n" // simplify to 0
                                  "}";
         const char expected_log2l[] = "void f ( long double x ) {\n"
                                       "std :: cout << log2l ( x ) ;\n"
-                                      "std :: cout << log2l ( 10.0d ) ;\n"
+                                      "std :: cout << log2l ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
         ASSERT_EQUALS(expected_log2l, tokenizeAndStringify(code_log2l));
@@ -10061,7 +10083,8 @@ private:
 
     static std::string testAst(const char code[]) {
         // tokenize given code..
-        TokenList tokenList(NULL);
+        const Settings settings;
+        TokenList tokenList(&settings);
         std::istringstream istr(code);
         if (!tokenList.createTokens(istr,"test.cpp"))
             return "ERROR";
@@ -10076,6 +10099,8 @@ private:
                 links.pop();
             } else if (Token::Match(tok, "< %type% >")) {
                 Token::createMutualLinks(tok, tok->tokAt(2));
+            } else if (Token::Match(tok, "< %type% * >")) {
+                Token::createMutualLinks(tok, tok->tokAt(3));
             }
         }
 
@@ -10178,6 +10203,9 @@ private:
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
 
+        // Unary :: operator
+        ASSERT_EQUALS("abc?d12,(::e/:=",testAst("a = b ? c : ::d(1,2) / e;"));
+
         // how is "--" handled here:
         ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + --c : 1"));
         ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + c-- : 1"));
@@ -10198,6 +10226,9 @@ private:
     void asttemplate() const { // uninstantiated templates will have <,>,etc..
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
         ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
+
+        ASSERT_EQUALS("publica::b::", testAst("class C : public ::a::b<bool> { };"));
+        ASSERT_EQUALS("f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
     }
 };
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -587,7 +587,7 @@ private:
     void isArithmeticalOp() const {
         std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.end();
         for (test_op = arithmeticalOps.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isArithmeticalOp());
         }
@@ -602,7 +602,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isArithmeticalOp(), "Failing arithmetical operator: " + *other_op);
         }
@@ -618,7 +618,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isOp());
         }
@@ -629,7 +629,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isOp(), "Failing normal operator: " + *other_op);
         }
@@ -644,7 +644,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isConstOp());
         }
@@ -656,7 +656,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isConstOp(), "Failing normal operator: " + *other_op);
         }
@@ -672,7 +672,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isExtendedOp());
         }
@@ -680,7 +680,7 @@ private:
         // Negative test against assignment operators
         std::vector<std::string>::const_iterator other_op, other_ops_end = assignmentOps.end();
         for (other_op = assignmentOps.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isExtendedOp(), "Failing assignment operator: " + *other_op);
         }
@@ -689,7 +689,7 @@ private:
     void isAssignmentOp() const {
         std::vector<std::string>::const_iterator test_op, test_ops_end = assignmentOps.end();
         for (test_op = assignmentOps.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isAssignmentOp());
         }
@@ -704,7 +704,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isAssignmentOp(), "Failing assignment operator: " + *other_op);
         }
@@ -713,26 +713,26 @@ private:
     void operators() const {
         std::vector<std::string>::const_iterator test_op;
         for (test_op = extendedOps.begin(); test_op != extendedOps.end(); ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eExtendedOp, tok.type());
         }
         for (test_op = logicalOps.begin(); test_op != logicalOps.end(); ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eLogicalOp, tok.type());
         }
         for (test_op = bitOps.begin(); test_op != bitOps.end(); ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eBitOp, tok.type());
         }
         for (test_op = comparisonOps.begin(); test_op != comparisonOps.end(); ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eComparisonOp, tok.type());
         }
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("++");
         ASSERT_EQUALS(Token::eIncDecOp, tok.type());
         tok.str("--");
@@ -740,7 +740,7 @@ private:
     }
 
     void literals() const {
-        Token tok(NULL);
+        Token tok(nullptr);
 
         tok.str("\"foo\"");
         ASSERT(tok.type() == Token::eString);
@@ -771,13 +771,13 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
         for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(NULL);
+            Token tok(nullptr);
             tok.str(*test_op);
             ASSERT_EQUALS_MSG(true, tok.isStandardType(), "Failing standard type: " + *test_op);
         }
 
         // Negative test
-        Token tok(0);
+        Token tok(nullptr);
         tok.str("string");
         ASSERT_EQUALS(false, tok.isStandardType());
 
@@ -787,7 +787,7 @@ private:
     }
 
     void updateProperties() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("foobar");
 
         ASSERT_EQUALS(true, tok.isName());
@@ -800,7 +800,7 @@ private:
     }
 
     void updatePropertiesConcatStr() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("true");
 
         ASSERT_EQUALS(true, tok.isBoolean());
@@ -812,32 +812,32 @@ private:
     }
 
     void isNameGuarantees1() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("Name");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees2() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("_name");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees3() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("_123");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees4() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("123456");
         ASSERT_EQUALS(false, tok.isName());
         ASSERT_EQUALS(true, tok.isNumber());
     }
 
     void isNameGuarantees5() const {
-        Token tok(NULL);
+        Token tok(nullptr);
         tok.str("a123456");
         ASSERT_EQUALS(true, tok.isName());
         ASSERT_EQUALS(false, tok.isNumber());
@@ -848,7 +848,7 @@ private:
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
         const Token* t = var.tokens()->findClosingBracket();
-        ASSERT(t == NULL);
+        ASSERT(t == nullptr);
     }
 
     void canFindMatchingBracketsInnerPair() const {
@@ -879,10 +879,10 @@ private:
         givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
 
         const Token* t = var.tokens()->next()->findClosingBracket();
-        ASSERT(t != NULL && t->str() == ">");
+        ASSERT(t != nullptr && t->str() == ">");
 
         t = var.tokens()->tokAt(4)->findClosingBracket();
-        ASSERT(t != NULL && t->str() == ")");
+        ASSERT(t != nullptr && t->str() == ")");
     }
 };
 

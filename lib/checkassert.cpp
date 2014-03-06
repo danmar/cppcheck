@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ void CheckAssert::assertWithSideEffects()
         return;
 
     const Token *tok = findAssertPattern(_tokenizer->tokens());
-    const Token *endTok = tok ? tok->next()->link() : NULL;
+    const Token *endTok = tok ? tok->next()->link() : nullptr;
 
     while (tok && endTok) {
         for (const Token* tmp = tok->tokAt(1); tmp != endTok; tmp = tmp->next()) {
@@ -92,7 +92,7 @@ void CheckAssert::assertWithSideEffects()
         }
 
         tok = findAssertPattern(endTok->next());
-        endTok = tok ? tok->next()->link() : NULL;
+        endTok = tok ? tok->next()->link() : nullptr;
     }
 }
 //---------------------------------------------------------------------------

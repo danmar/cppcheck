@@ -1,6 +1,6 @@
 /**!
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2013 XhmikosR and Cppcheck team.
+ * Copyright (C) 2014 XhmikosR and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@
 
         var minifier = new CleanCSS({
                 keepSpecialComments: 0,
-                selectorsMergeMode: "ie8"
+                compatibility: "ie8"
             });
 
         fs.writeFileSync("site/css/pack.css", minifier.minify(inCss), "utf8");

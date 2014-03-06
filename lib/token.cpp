@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,9 +50,9 @@ Token::Token(Token **t) :
     _isExpandedMacro(false),
     _isAttributeConstructor(false),
     _isAttributeUnused(false),
-    _astOperand1(NULL),
-    _astOperand2(NULL),
-    _astParent(NULL)
+    _astOperand1(nullptr),
+    _astOperand2(nullptr),
+    _astParent(nullptr)
 {
 }
 
@@ -758,7 +758,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
 std::size_t Token::getStrLength(const Token *tok)
 {
-    assert(tok != NULL);
+    assert(tok != nullptr);
 
     std::size_t len = 0;
     const std::string strValue(tok->strValue());
@@ -782,7 +782,7 @@ std::size_t Token::getStrLength(const Token *tok)
 
 std::string Token::getCharAt(const Token *tok, std::size_t index)
 {
-    assert(tok != NULL);
+    assert(tok != nullptr);
 
     const std::string strValue(tok->strValue());
     const char *str = strValue.c_str();
@@ -846,11 +846,11 @@ Token* Token::nextArgument() const
 
 const Token * Token::findClosingBracket() const
 {
-    const Token *closing = 0;
+    const Token *closing = nullptr;
 
     if (_str == "<") {
         unsigned int depth = 0;
-        for (closing = this; closing != NULL; closing = closing->next()) {
+        for (closing = this; closing != nullptr; closing = closing->next()) {
             if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
                 closing = closing->link();
             else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
@@ -1009,8 +1009,8 @@ void Token::eraseTokens(Token *begin, const Token *end)
 
 void Token::createMutualLinks(Token *begin, Token *end)
 {
-    assert(begin != NULL);
-    assert(end != NULL);
+    assert(begin != nullptr);
+    assert(end != nullptr);
     assert(begin != end);
     begin->link(end);
     end->link(begin);
@@ -1201,7 +1201,7 @@ std::string Token::expressionString() const
 
 }
 
-void Token::printAst() const
+void Token::printAst(bool verbose) const
 {
     bool title = false;
 
@@ -1211,7 +1211,10 @@ void Token::printAst() const
             if (!title)
                 std::cout << "\n\n##AST" << std::endl;
             title = true;
-            std::cout << tok->astTop()->astString(" ") << std::endl;
+            if (verbose)
+                std::cout << tok->astTop()->astStringVerbose(0,0) << std::endl;
+            else
+                std::cout << tok->astTop()->astString(" ") << std::endl;
             print = false;
             if (tok->str() == "(")
                 tok = tok->link();
@@ -1220,6 +1223,33 @@ void Token::printAst() const
             print = true;
     }
 }
+
+static std::string indent(const unsigned int indent1, const unsigned int indent2)
+{
+    std::string ret(indent1,' ');
+    for (unsigned int i = indent1; i < indent2; i += 2)
+        ret += "| ";
+    return ret;
+}
+
+std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+{
+    std::string ret = _str + "\n";
+    if (_astOperand1) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2 && !_astOperand2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + (_astOperand2 ? "|-" : "`-") + _astOperand1->astStringVerbose(i1,i2);
+    }
+    if (_astOperand2) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + "`-" + _astOperand2->astStringVerbose(i1,i2);
+    }
+    return ret;
+}
+
 
 void Token::printValueFlow() const
 {

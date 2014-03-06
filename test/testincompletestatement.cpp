@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ private:
         TEST_CASE(returnstruct);
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
+        TEST_CASE(cpp11init);           // #5493 : int i{1};
     }
 
     void test1() {
@@ -217,6 +218,13 @@ private:
         check("void f() {\n"
               "    int x = 1;\n"
               "    x++, x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init() {
+        check("void f() {\n"
+              "    int x{1};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

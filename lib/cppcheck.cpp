@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -449,9 +449,9 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
             continue;
 
-        const char *error = 0;
+        const char *error = nullptr;
         int erroffset = 0;
-        pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,NULL);
+        pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,nullptr);
         if (!re) {
             if (error) {
                 ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
@@ -467,7 +467,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
         int pos = 0;
         int ovector[30];
-        while (pos < (int)str.size() && 0 <= pcre_exec(re, NULL, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
+        while (pos < (int)str.size() && 0 <= pcre_exec(re, nullptr, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
             unsigned int pos1 = (unsigned int)ovector[0];
             unsigned int pos2 = (unsigned int)ovector[1];
 

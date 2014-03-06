@@ -17,12 +17,11 @@
 #
 # Update version numbers in:
 # sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
-# sed -i "s/1.[0-9][0-9] dev/1.62/" lib/cppcheck.cpp
 # sed -i "s/1,[0-9][0-9],99,0/1,62,0,0/" lib/version.h
 # sed -i "s/1.[0-9][0-9] dev/1.62/" lib/version.h
 # sed -i "s/1.[0-9][0-9] dev/1.62/" man/manual.docbook
 # sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
-# sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi#
+# sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi
 # Verify:
 # grep '\.99' */*.[ch]*
 # grep '[0-9][0-9] dev' */*.[ch]*

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (tok->previous() && tok->previous()->str() == ">")
             continue;
 
-        const Token *funcname = 0;
+        const Token *funcname = nullptr;
 
         if (Token::Match(tok, "%type% %var% ("))
             funcname = tok->next();
@@ -94,7 +94,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    const Token *scopeEnd = NULL;
+    const Token *scopeEnd = nullptr;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
@@ -175,7 +175,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (scopeEnd == NULL) {
+        if (scopeEnd == nullptr) {
             if (!Token::Match(tok, ")|= const| {"))
                 continue;
             scopeEnd = tok;
@@ -183,12 +183,12 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 scopeEnd = scopeEnd->next();
             scopeEnd = scopeEnd->link();
         } else if (tok == scopeEnd) {
-            scopeEnd = NULL;
+            scopeEnd = nullptr;
             continue;
         }
 
 
-        const Token *funcname = 0;
+        const Token *funcname = nullptr;
 
         if (Token::Match(tok->next(), "%var% (")) {
             funcname = tok->next();
@@ -220,7 +220,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (ftok->str() == "<")
                 ftok = ftok->link();
             if (Token::Match(ftok->linkAt(1), ") const|throw|{"))
-                funcname = NULL;
+                funcname = nullptr;
         }
 
         if (funcname) {

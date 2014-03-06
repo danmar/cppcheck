@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ void CheckExceptionSafety::deallocThrow()
             const unsigned int varid(tok->varId());
 
             // Token where throw occurs
-            const Token *ThrowToken = 0;
+            const Token *ThrowToken = nullptr;
 
             // is there a throw after the deallocation?
             const Token* const end2 = tok->scope()->classEnd;

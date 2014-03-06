@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -450,7 +450,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             // boolean result in lhs compared with <|<=|>|>=
             else if (tok->isComparisonOp() && !Token::Match(tok,"==|!=") && !isNonBoolLHSExpr(tok->previous())) {
                 const Token *lhs = tok;
-                while (NULL != (lhs = lhs->previous())) {
+                while (nullptr != (lhs = lhs->previous())) {
                     if ((lhs->isName() && !Token::Match(lhs,"or|and")) || lhs->isNumber())
                         continue;
                     if (lhs->isArithmeticalOp())
@@ -466,7 +466,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                     if (_tokenizer->isCPP() && tok->str() == ">" &&
                         (Token::Match(lhs->previous(), "%var% <") || lhs->str() == ">"))
                         continue;
-                    while (NULL != (lhs = lhs->previous())) {
+                    while (nullptr != (lhs = lhs->previous())) {
                         if ((lhs->isName() && lhs->str() != "return") || lhs->isNumber())
                             continue;
                         if (Token::Match(lhs,"[+-*/.]"))

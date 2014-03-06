@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -498,6 +498,13 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
 
+        code = "void f() {\n"
+               "    static int x = 2;\n"
+               "    a >> x;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
+
         // function
         code = "void f() {\n"
                "    char *x = 0;\n"
@@ -571,7 +578,7 @@ private:
 
         code = "void f(int a) {\n"
                "    int x = a;\n"
-               "    b = x;\n"
+               "    b = x;\n" // <- line 3
                "    if (a!=132) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 132));
@@ -581,9 +588,22 @@ private:
                "    if (n) { a = n; }\n"
                "    else { a = 0; }\n"
                "    int x = a;\n"
-               "    if (a > 0) { a = b / x; }\n"
+               "    if (a > 0) { a = b / x; }\n" // <- line 6
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0)); // x is not 0 at line 6
+
+        // break
+        code = "void f() {\n"
+               "  for (;;) {\n"
+               "    int x = 1;\n"
+               "    if (!abc()) {\n"
+               "      x = 2;\n"
+               "      break;\n"
+               "    }\n"
+               "    a = x;\n" // <- line 8
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 2)); // x is not 2 at line 8
     }
 
     void valueFlowForLoop() {
@@ -604,6 +624,15 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 10));
+
+        code = "void f() {\n"
+               "    for (int x = 0; x < 10; x++)\n"
+               "        x<4 ?\n"
+               "        a[x] : 0;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
     }
 
     void valueFlowSubFunction() {

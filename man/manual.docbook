@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.64 dev</title>
+    <title>Cppcheck 1.65 dev</title>
 
     <date>2013-12-23</date>
   </bookinfo>
@@ -970,6 +970,14 @@ Checking noreturn.c...
       be null. And it must point at initialized data. Using
       <literal>&lt;not-null&gt;</literal> and
       <literal>&lt;not-uninit&gt;</literal> is correct.</para>
+    </section>
+
+    <section>
+      <title>Specifications for all arguments</title>
+
+      <para>Specifying <literal>-1</literal> as the argument number is going
+      to apply a check to all arguments of that function. The specifications
+      for individual arguments override this setting.</para>
     </section>
   </chapter>
 

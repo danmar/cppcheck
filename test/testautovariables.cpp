@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,6 +107,8 @@ private:
         TEST_CASE(testglobalnamespace);
 
         TEST_CASE(returnParameterAddress);
+
+        TEST_CASE(testconstructor); // ticket #5478 - crash
     }
 
 
@@ -348,8 +350,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar12() { // Ticket #5024 - Crash on invalid input
+    void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
         check("void f(int* a) { a = }");
+        check("struct custom_type { custom_type(int) {} };\n"
+              "void func(int) {}\n"
+              "int var;\n"
+              "void init() { func(var); }\n"
+              "UNKNOWN_MACRO_EXPANDING_TO_SIGNATURE { custom_type a(var); }");
     }
 
     void testautovar_array1() {
@@ -465,7 +472,22 @@ private:
               "        free(psz_title);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        // #2298 new check: passing stack-address to free()
+        check("int main() {\n"
+              "   int *p = malloc(4);\n"
+              "   free(&p);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+        check("int main() {\n"
+              "   int i;\n"
+              "   free(&i);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+
     }
 
     void testassign1() { // Ticket #1819
@@ -807,6 +829,15 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testconstructor() { // Ticket #5478 - crash while checking a constructor
+        check("class const_tree_iterator {\n"
+              "  const_tree_iterator(bool (*_incream)(node_type*&)) {}\n"
+              "  const_tree_iterator& parent() {\n"
+              "    return const_tree_iterator(foo);\n"
+              "  }\n"
+              "};");
     }
 
 };

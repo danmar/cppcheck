@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         return ret;
     }
 
-    if (str.find_first_of("eE") != std::string::npos)
+    if (isFloat(str))
         return static_cast<bigint>(std::atof(str.c_str()));
 
     bigint ret = 0;
@@ -103,12 +103,88 @@ template<> std::string MathLib::toString(double value)
 
 bool MathLib::isFloat(const std::string &s)
 {
-    // every number that contains a . is a float
-    if (s.find("." , 0) != std::string::npos)
-        return true;
-    // scientific notation
-    return (s.find("E-", 0) != std::string::npos
-            || s.find("e-", 0) != std::string::npos);
+    if (s.empty())
+        return false;
+    enum {START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F} state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it=='+' || *it=='-')
+                state=BASE_PLUSMINUS;
+            else if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else
+                return false;
+            break;
+        case BASE_PLUSMINUS:
+            if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
+            break;
+        case LEADING_DECIMAL:
+            if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
+            break;
+        case BASE_DIGITS1:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='.')
+                state=TRAILING_DECIMAL;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case TRAILING_DECIMAL:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            else
+                return false;
+            break;
+        case BASE_DIGITS2:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case E:
+            if (*it=='+' || *it=='-')
+                state=MANTISSA_PLUSMINUS;
+            else if (std::isdigit(*it))
+                state=MANTISSA_DIGITS;
+            else
+                return false;
+            break;
+        case MANTISSA_PLUSMINUS:
+            if (!std::isdigit(*it))
+                return false;
+            else
+                state=MANTISSA_DIGITS;
+            break;
+        case MANTISSA_DIGITS:
+            if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case F:
+            return false;
+        }
+    }
+    return (state==BASE_DIGITS2 || state == MANTISSA_DIGITS || state == TRAILING_DECIMAL || state == F);
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -149,15 +225,13 @@ bool MathLib::isInt(const std::string & s)
     // perform prechecks:
     // ------------------
     // first check, if a point is found, it is an floating point value
-    if (s.find(".", 0) != std::string::npos) return false;
-    // check for scientific notation e.g. NumberE-Number this is obvious an floating point value
-    else if (s.find("E-", 0) != std::string::npos || s.find("e-", 0) != std::string::npos) return false;
-
+    const std::string charsToIndicateAFloat=".eE";
+    if (s.find_last_of(charsToIndicateAFloat) != std::string::npos)
+        return false;
 
     // prechecking has nothing found,...
     // gather information
     enum Representation {
-        eScientific = 0, // NumberE+Number or NumberENumber
         eOctal,          // starts with 0
         eHex,            // starts with 0x
         eDefault         // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
@@ -172,9 +246,7 @@ bool MathLib::isInt(const std::string & s)
     while (std::isspace(s[n])) ++n;
 
     // determine type
-    if (s.find("E", 0) != std::string::npos) {
-        Mode = eScientific;
-    } else if (isHex(s)) {
+    if (isHex(s)) {
         Mode = eHex;
     } else if (isOct(s)) {
         Mode = eOctal;
@@ -183,24 +255,7 @@ bool MathLib::isInt(const std::string & s)
     // check sign
     if (s[n] == '-' || s[n] == '+') ++n;
 
-    // check scientific notation
-    if (Mode == eScientific) {
-        // check digits
-        while (std::isdigit(s[n])) ++n;
-
-        // check scientific notation
-        if (std::tolower(s[n]) == 'e') {
-            ++n;
-            // check positive exponent
-            if (s[n] == '+') ++n;
-            // floating pointer number e.g. 124E-2
-            if (s[n] == '-') return false;
-            // check digits of the exponent
-            while (std::isdigit(s[n])) ++n;
-        }
-    }
-    // check hex notation
-    else if (Mode == eHex) {
+    if (Mode == eHex) {
         ++n; // 0
         ++n; // x
         while (std::isxdigit(s[n]))

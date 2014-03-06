@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,6 +79,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
     for (unsigned int i = 0; i < files.size(); ++i) {
         fout << objfile(files[i]) << ": " << files[i];
         std::vector<std::string> depfiles;
+        depfiles.push_back("lib/cxx11emu.h");
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
@@ -297,6 +298,7 @@ int main(int argc, char **argv)
         // -Wsign-conversion  : too many warnings
         // -Wunreachable-code : some GCC versions report lots of warnings
         makeConditionalVariable(fout, "CXXFLAGS",
+                                "-include lib/cxx11emu.h "
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
@@ -332,9 +334,9 @@ int main(int argc, char **argv)
 
     makeConditionalVariable(fout, "CXX", "g++");
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/tinyxml");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";

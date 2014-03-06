@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ public:
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
+        checkStl.readingEmptyStlContainer();
     }
 
 
@@ -146,6 +147,9 @@ public:
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string &itername);
 
+    /** @brief Reading from empty stl container */
+    void readingEmptyStlContainer();
+
 private:
 
     /**
@@ -184,6 +188,8 @@ private:
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string &itername);
 
+    void readingEmptyStlContainerError(const Token *tok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
         c.invalidIteratorError(0, "iterator");
@@ -211,6 +217,7 @@ private:
         c.uselessCallsEmptyError(0);
         c.uselessCallsRemoveError(0, "remove");
         c.dereferenceInvalidIteratorError(0, "i");
+        c.readingEmptyStlContainerError(0);
     }
 
     static std::string myName() {
@@ -230,7 +237,8 @@ private:
                "* common mistakes when using string::c_str()\n"
                "* using auto pointer (auto_ptr)\n"
                "* useless calls of string and STL functions\n"
-               "* dereferencing an invalid iterator\n";
+               "* dereferencing an invalid iterator\n"
+               "* reading from empty STL container\n";
     }
 };
 /// @}

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,28 +26,13 @@
 #include <string>
 #include <algorithm>
 
-static tinyxml2::XMLError LoadFile(tinyxml2::XMLDocument &doc, const std::string &path)
-{
-    FILE *f = fopen(path.c_str(),"rb");
-    if (!f)
-        return tinyxml2::XML_ERROR_FILE_NOT_FOUND;
-
-    // is file ok? if "path" is a folder then reading from it will cause ferror() to return a non-zero value
-    fgetc(f);
-    int errorcode = ferror(f);
-    fclose(f);
-
-    // if file is ok, try to load it
-    return (errorcode == 0) ? doc.LoadFile(path.c_str()) : tinyxml2::XML_ERROR_FILE_NOT_FOUND;
-}
-
 Library::Library() : allocid(0)
 {
 }
 
 bool Library::load(const char exename[], const char path[])
 {
-    if (std::strchr(path,',') != NULL) {
+    if (std::strchr(path,',') != nullptr) {
         bool ret = true;
         std::string p(path);
         while (p.find(",") != std::string::npos) {
@@ -62,13 +47,13 @@ bool Library::load(const char exename[], const char path[])
 
     // open file..
     tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError error = LoadFile(doc,path);
+    tinyxml2::XMLError error = doc.LoadFile(path);
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
-            error = LoadFile(doc,fullfilename);
+            error = doc.LoadFile(fullfilename.c_str());
         }
 
         if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
@@ -82,7 +67,7 @@ bool Library::load(const char exename[], const char path[])
 #endif
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
-            error = LoadFile(doc,filename);
+            error = doc.LoadFile(filename.c_str());
         }
     }
 
@@ -99,7 +84,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 
-    if (rootnode == NULL)
+    if (rootnode == nullptr)
         return false;
 
     if (strcmp(rootnode->Name(),"def") != 0)
@@ -129,10 +114,10 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (strcmp(node->Name(),"define")==0) {
             const char *name = node->Attribute("name");
-            if (name == NULL)
+            if (name == nullptr)
                 return false;
             const char *value = node->Attribute("value");
-            if (value == NULL)
+            if (value == nullptr)
                 return false;
             defines.push_back(std::string("#define ") +
                               name +
@@ -143,7 +128,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (strcmp(node->Name(),"function")==0) {
             const char *name = node->Attribute("name");
-            if (name == NULL)
+            if (name == nullptr)
                 return false;
 
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
@@ -151,8 +136,9 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
-                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != NULL) {
-                    const int nr = atoi(functionnode->Attribute("nr"));
+                else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != nullptr) {
+                    const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
+                    const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
                     bool notbool = false;
                     bool notnull = false;
                     bool notuninit = false;
@@ -324,4 +310,19 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
             return true;
     }
     return false;
+}
+
+const Library::ArgumentChecks * Library::getarg(const std::string &functionName, int argnr) const
+{
+    std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
+    it1 = argumentChecks.find(functionName);
+    if (it1 == argumentChecks.end())
+        return nullptr;
+    const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
+    if (it2 != it1->second.end())
+        return &it2->second;
+    const std::map<int,ArgumentChecks>::const_iterator it3 = it1->second.find(-1);
+    if (it3 != it1->second.end())
+        return &it3->second;
+    return nullptr;
 }

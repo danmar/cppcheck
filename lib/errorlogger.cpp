@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,14 +185,14 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
     printer.PushDeclaration("xml version=\"1.0\" encoding=\"UTF-8\"");
 
     // header
-    printer.OpenElement("results");
+    printer.OpenElement("results", false);
     // version 2 header
     if (xml_version == 2) {
         printer.PushAttribute("version", xml_version);
-        printer.OpenElement("cppcheck");
+        printer.OpenElement("cppcheck", false);
         printer.PushAttribute("version", CppCheck::version());
-        printer.CloseElement();
-        printer.OpenElement("errors");
+        printer.CloseElement(false);
+        printer.OpenElement("errors", false);
     }
 
     return std::string(printer.CStr()) + '>';
@@ -212,7 +212,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
             return "";
 
         tinyxml2::XMLPrinter printer(0, false, 1);
-        printer.OpenElement("error");
+        printer.OpenElement("error", false);
         if (!_callStack.empty()) {
             printer.PushAttribute("file", _callStack.back().getfile().c_str());
             printer.PushAttribute("line", _callStack.back().line);
@@ -220,14 +220,14 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", (_severity == Severity::error ? "error" : "style"));
         printer.PushAttribute("msg", (verbose ? _verboseMessage : _shortMessage).c_str());
-        printer.CloseElement();
+        printer.CloseElement(false);
         return printer.CStr();
     }
 
     // The xml format you get when you use --xml-version=2
     else if (version == 2) {
         tinyxml2::XMLPrinter printer(0, false, 2);
-        printer.OpenElement("error");
+        printer.OpenElement("error", false);
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
         printer.PushAttribute("msg", _shortMessage.c_str());
@@ -236,12 +236,12 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
             printer.PushAttribute("inconclusive", "true");
 
         for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
-            printer.OpenElement("location");
+            printer.OpenElement("location", false);
             printer.PushAttribute("file", (*it).getfile().c_str());
             printer.PushAttribute("line", (*it).line);
-            printer.CloseElement();
+            printer.CloseElement(false);
         }
-        printer.CloseElement();
+        printer.CloseElement(false);
         return printer.CStr();
     }
 

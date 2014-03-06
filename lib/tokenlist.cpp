@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -443,7 +443,8 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else if (tok->next() && tok->next()->str() == "<" && tok->next()->link() && !templatefunc) {
             op.push(tok);
             tok = tok->next()->link()->next();
-            compileTerm(tok,op);
+            if (!Token::simpleMatch(tok, "{"))
+                compileTerm(tok,op);
         } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
@@ -530,7 +531,10 @@ static void compileScope(Token *&tok, std::stack<Token*> &op)
     compileTerm(tok,op);
     while (tok) {
         if (tok->str() == "::") {
-            compileBinOp(tok, compileTerm, op);
+            if (tok->previous() && tok->previous()->isName())
+                compileBinOp(tok, compileTerm, op);
+            else
+                compileUnaryOp(tok, compileDot, op);
         } else break;
     }
 }
@@ -697,7 +701,7 @@ static Token * createAstAtToken(Token *tok)
 {
     if (Token::simpleMatch(tok,"for (")) {
         Token *tok2 = tok->tokAt(2);
-        Token *init1 = 0;
+        Token *init1 = nullptr;
         const Token * const endPar = tok->next()->link();
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {
@@ -756,6 +760,9 @@ static Token * createAstAtToken(Token *tok)
 
     if (Token::simpleMatch(tok, "( {"))
         return tok;
+
+    if (Token::Match(tok, "%type% <") && Token::Match(tok->linkAt(1), "> !!("))
+        return tok->linkAt(1);
 
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
         std::stack<Token *> operands;

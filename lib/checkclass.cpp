@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2013 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ namespace {
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
-      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():NULL)
+      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {
 
 }
@@ -910,15 +910,15 @@ void CheckClass::checkMemset()
                 const Token* arg1 = tok->tokAt(2);
                 const Token* arg3 = arg1;
                 arg3 = arg3->nextArgument();
-                arg3 = (arg3 != NULL) ? arg3->nextArgument() : NULL;
+                arg3 = (arg3 != nullptr) ? arg3->nextArgument() : nullptr;
                 if (!arg3)
                     // weird, shouldn't happen: memset etc should have
                     // 3 arguments.
                     continue;
 
 
-                const Token *typeTok = 0;
-                const Scope *type = 0;
+                const Token *typeTok = nullptr;
+                const Scope *type = nullptr;
                 if (Token::Match(arg3, "sizeof ( %type% ) )"))
                     typeTok = arg3->tokAt(2);
                 else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
@@ -1020,6 +1020,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         // don't warn if variable static or const, pointer or reference
         if (!var->isStatic() && !var->isConst() && !var->isPointer() && !var->isReference()) {
             const Token *tok1 = var->typeStartToken();
+            const Scope *typeScope = var->typeScope();
 
             // check for std:: type
             if (var->isStlType())
@@ -1029,8 +1030,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                     memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
 
             // check for known type
-            else if (var->typeScope())
-                checkMemsetType(start, tok, var->typeScope(), allocation);
+            else if (typeScope && typeScope != type)
+                checkMemsetType(start, tok, typeScope, allocation);
         }
     }
 }
@@ -1252,7 +1253,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
             return true;
 
         // check for deallocating memory
-        const Token *var = 0;
+        const Token *var = nullptr;
         if (Token::Match(tok, "free ( %var%"))
             var = tok->tokAt(2);
         else if (Token::Match(tok, "delete [ ] %var%"))
@@ -1395,7 +1396,7 @@ void CheckClass::virtualDestructor()
 
                 // Find the destructor declaration for the base class.
                 const Function *base_destructor = derivedFromScope->getDestructor();
-                const Token *base = 0;
+                const Token *base = nullptr;
                 if (base_destructor)
                     base = base_destructor->token;
 
@@ -1604,7 +1605,7 @@ static unsigned int countParameters(const Token *tok)
         return 0;
 
     unsigned int numpar = 1;
-    while (NULL != (tok = tok->nextArgument()))
+    while (nullptr != (tok = tok->nextArgument()))
         numpar++;
 
     return numpar;
