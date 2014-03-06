@@ -32,6 +32,7 @@ private:
         TEST_CASE(empty);
         TEST_CASE(function);
         TEST_CASE(function_arg);
+        TEST_CASE(function_arg_any);
         TEST_CASE(memory);
         TEST_CASE(resource);
     }
@@ -89,6 +90,21 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
         ASSERT_EQUALS("1-", library.argumentChecks["foo"][5].valid);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][6].notbool);
+    }
+
+    void function_arg_any() {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "<function name=\"foo\">\n"
+                               "   <arg nr=\"any\"><not-uninit/></arg>\n"
+                               "</function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][-1].notuninit);
     }
 
     void memory() {

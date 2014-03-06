@@ -342,16 +342,7 @@ private:
     std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
 
 
-    const ArgumentChecks * getarg(const std::string &functionName, int argnr) const {
-        std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
-        it1 = argumentChecks.find(functionName);
-        if (it1 != argumentChecks.end()) {
-            const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
-            if (it2 != it1->second.end())
-                return &it2->second;
-        }
-        return NULL;
-    }
+    const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
 
     static int getid(const std::map<std::string,int> &data, const std::string &name) {
         const std::map<std::string,int>::const_iterator it = data.find(name);

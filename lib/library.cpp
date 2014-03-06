@@ -137,7 +137,8 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
                 else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != nullptr) {
-                    const int nr = atoi(functionnode->Attribute("nr"));
+                    const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
+                    const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
                     bool notbool = false;
                     bool notnull = false;
                     bool notuninit = false;
@@ -309,4 +310,18 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
             return true;
     }
     return false;
+}
+
+const Library::ArgumentChecks * Library::getarg(const std::string &functionName, int argnr) const
+{
+    std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
+    it1 = argumentChecks.find(functionName);
+    if (it1 == argumentChecks.end())
+        return nullptr;
+    const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
+    if (it2 != it1->second.end())
+        return &it2->second;
+    const std::map<int,ArgumentChecks>::const_iterator it3 = it1->second.find(-1);
+    if (it3 != it1->second.end())
+        return &it3->second;
 }
