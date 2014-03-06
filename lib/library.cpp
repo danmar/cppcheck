@@ -324,4 +324,5 @@ const Library::ArgumentChecks * Library::getarg(const std::string &functionName,
     const std::map<int,ArgumentChecks>::const_iterator it3 = it1->second.find(-1);
     if (it3 != it1->second.end())
         return &it3->second;
+    return nullptr;
 }
