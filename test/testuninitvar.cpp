@@ -74,12 +74,8 @@ private:
         errout.str("");
 
         Settings settings;
-
-        const char cfg[] = "<?xml version=\"1.0\"?>"
-                           "<def>"
-                           "  <function name=\"memcpy\"> <arg nr=\"1\"><not-null/></arg> </function>"
-                           "</def>";
-        settings.library.loadxmldata(cfg,sizeof(cfg));
+        LOAD_LIB("std.cfg");
+        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
