@@ -472,7 +472,22 @@ private:
               "        free(psz_title);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        // #2298 new check: passing stack-address to free()
+        check("int main() {\n"
+              "   int *p = malloc(4);\n"
+              "   free(&p);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+        check("int main() {\n"
+              "   int i;\n"
+              "   free(&i);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+
     }
 
     void testassign1() { // Ticket #1819
