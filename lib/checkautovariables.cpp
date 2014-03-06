@@ -200,8 +200,7 @@ void CheckAutoVariables::autoVariables()
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVarArray(tok))
                     errorInvalidDeallocation(tok);
-            }
-            else if (Token::Match(tok, "free ( & %var% ) ;") || Token::Match(tok, "delete [| ]| (| & %var% !![")) {
+            } else if (Token::Match(tok, "free ( & %var% ) ;") || Token::Match(tok, "delete [| ]| (| & %var% !![")) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (tok->variable()->isLocal())
                     errorInvalidDeallocation(tok);
