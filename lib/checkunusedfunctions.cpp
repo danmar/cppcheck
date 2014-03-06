@@ -100,11 +100,13 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
             const Token * markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
-            int scope = 1;
+            int scope = 0;
+            bool start = true;
             // find all function calls in library code (starts with '(', not if or while etc)
-            while (scope) {
+            while (scope or start) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
+                    if (start) { start = false; }
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
