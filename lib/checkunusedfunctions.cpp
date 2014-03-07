@@ -103,7 +103,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             int scope = 0;
             bool start = true;
             // find all function calls in library code (starts with '(', not if or while etc)
-            while (scope or start) {
+            while (scope || start) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
                     if (start) { start = false; }
