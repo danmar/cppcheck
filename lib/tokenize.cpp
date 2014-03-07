@@ -1589,7 +1589,7 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
-    if (simplifyTokenList1()) {
+    if (simplifyTokenList1(FileName)) {
 
         createSymbolDatabase();
 
@@ -3016,7 +3016,7 @@ bool Tokenizer::simplifySizeof()
     return ret;
 }
 
-bool Tokenizer::simplifyTokenList1()
+bool Tokenizer::simplifyTokenList1(const char FileName[])
 {
     if (_settings->terminated())
         return false;
@@ -3144,7 +3144,8 @@ bool Tokenizer::simplifyTokenList1()
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
-    if (hasComplicatedSyntaxErrorsInTemplates()) {
+    if (!_settings->library.markupFile(FileName)
+           && hasComplicatedSyntaxErrorsInTemplates()) {
         list.deallocateTokens();
         return false;
     }

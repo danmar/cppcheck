@@ -103,10 +103,13 @@ public:
     /**
     * Basic simplification of tokenlist
     *
+    * @param FileName The filename to run; used to do
+    * markup checks.
+    *
     * @return false if there is an error that requires aborting
     * the checking of this file.
     */
-    bool simplifyTokenList1();
+    bool simplifyTokenList1(const char FileName[]);
 
     /**
     * Most aggressive simplification of tokenlist
