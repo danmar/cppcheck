@@ -688,7 +688,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
             // Check the parameter usage in the function scope..
             for (const Token* ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
-                if (Token::Match(ftok, "if|for|while (")) {
+                if (Token::Match(ftok, "if|for|switch|while (")) {
                     // bailout if there is buffer usage..
                     if (bailoutIfSwitch(ftok, parameter->declarationId())) {
                         break;

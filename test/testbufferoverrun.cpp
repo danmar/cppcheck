@@ -2774,6 +2774,17 @@ private:
               "    f(a);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a[]) {\n"
+              "  switch (2) {\n"
+              "    case 1:\n"
+              "      a[1] = 1;\n"
+              "    }\n"
+              "}\n"
+              "int a[1];\n"
+              "f(a);\n"
+              "");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void possible_buffer_overrun_1() { // #3035
