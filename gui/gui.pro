@@ -149,6 +149,6 @@ win32 {
     LIBS += -lshlwapi
 }
 
-unix {
+gcc {
     QMAKE_CXXFLAGS += -std=c++0x
 }
