@@ -679,6 +679,8 @@ private:
     // original name like size_t
     std::string _originalName;
 
+    static bool _isCPP;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
@@ -728,6 +730,8 @@ public:
     void printAst(bool verbose) const;
 
     void printValueFlow() const;
+    static void isCPP(bool isCPP) { _isCPP = isCPP; }
+    static bool isCPP() { return _isCPP; }
 };
 
 /// @}
