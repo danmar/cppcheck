@@ -47,6 +47,7 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
     const QString searchPaths[] = { ":/cfg", appPath, appPath + "/cfg", inf.canonicalPath() };
+    QStringList libs;
     for (int i = 0; i < sizeof(searchPaths) / sizeof(searchPaths[0]); i++) {
         QDir dir(searchPaths[i]);
         dir.setSorting(QDir::Name);
@@ -57,11 +58,16 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
             library.chop(4);
             if (library.compare("std", Qt::CaseInsensitive) == 0)
                 continue;
-            QCheckBox *checkbox = new QCheckBox(this);
-            checkbox->setText(library);
-            mUI.librariesLayout->addWidget(checkbox);
-            mLibraryCheckboxes << checkbox;
+            if (libs.indexOf(library) == -1)
+                libs << library;
         }
+    }
+    qSort(libs);
+    foreach(const QString library, libs) {
+        QCheckBox *checkbox = new QCheckBox(this);
+        checkbox->setText(library);
+        mUI.librariesLayout->addWidget(checkbox);
+        mLibraryCheckboxes << checkbox;
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
