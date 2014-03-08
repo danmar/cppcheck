@@ -32,6 +32,7 @@
 class Scope;
 class Function;
 class Variable;
+class Tokenizer;
 
 /// @addtogroup Core
 /// @{
@@ -65,7 +66,7 @@ public:
         eNone
     };
 
-    explicit Token(Token **tokensBack);
+    explicit Token(Token **tokensBack, Tokenizer *tokenizer = 0);
     ~Token();
 
     void str(const std::string &s);
@@ -678,6 +679,9 @@ private:
 
     // original name like size_t
     std::string _originalName;
+
+    Tokenizer *_tokenizer;
+    bool isCPP() const;
 
 public:
     void astOperand1(Token *tok);

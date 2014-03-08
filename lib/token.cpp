@@ -29,7 +29,7 @@
 #include <map>
 #include <stack>
 
-Token::Token(Token **t) :
+Token::Token(Token **t, Tokenizer *tokenizer) :
     tokensBack(t),
     _next(0),
     _previous(0),
@@ -52,7 +52,8 @@ Token::Token(Token **t) :
     _isAttributeUnused(false),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
-    _astParent(nullptr)
+    _astParent(nullptr),
+    _tokenizer(tokenizer)
 {
 }
 
@@ -137,6 +138,9 @@ void Token::update_property_isStandardType()
     }
 }
 
+bool Token::isCPP() const {
+    return !(_tokenizer && _tokenizer->isC());
+}
 
 bool Token::isUpperCaseName() const
 {
@@ -600,7 +604,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Type (%type%)
             {
                 p += 5;
-                multicompare(p,tok->isName() && tok->varId() == 0 && tok->str() != "delete",ismulticomp);
+                multicompare(p, tok->isName() && tok->varId() == 0 && !(tok->isCPP() && tok->str() == "delete"), ismulticomp);
             }
             break;
             case 'a':
@@ -927,7 +931,7 @@ void Token::insertToken(const std::string &tokenStr, bool prepend)
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensBack);
+        newToken = new Token(tokensBack, _tokenizer);
     newToken->str(tokenStr);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
@@ -967,7 +971,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensBack);
+        newToken = new Token(tokensBack, _tokenizer);
     newToken->str(tokenStr);
     newToken->_originalName = originalNameStr;
     newToken->_linenr = _linenr;
