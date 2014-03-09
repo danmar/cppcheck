@@ -3987,8 +3987,8 @@ private:
     }
 
     void varid_cpp_keywords_in_c_code2() { // #5373
-       const char code[] = "int clear_extent_bit(struct extent_io_tree *tree, u64 start, u64 end, "
-                           "unsigned long bits, int wake, int delete, struct extent_state **cached_state, "
+        const char code[] = "int clear_extent_bit(struct extent_io_tree *tree, u64 start, u64 end, "
+                            "unsigned long bits, int wake, int delete, struct extent_state **cached_state, "
                             "gfp_t mask) {\n"
                             "  struct extent_state *state;\n"
                             "}"

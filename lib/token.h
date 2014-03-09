@@ -730,8 +730,12 @@ public:
     void printAst(bool verbose) const;
 
     void printValueFlow() const;
-    static void isCPP(bool isCPP) { _isCPP = isCPP; }
-    static bool isCPP() { return _isCPP; }
+    static void isCPP(bool isCPP) {
+        _isCPP = isCPP;
+    }
+    static bool isCPP() {
+        return _isCPP;
+    }
 };
 
 /// @}
