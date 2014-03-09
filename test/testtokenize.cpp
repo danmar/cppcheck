@@ -263,6 +263,7 @@ private:
         TEST_CASE(varid53); // #4172 - Template instantiation: T<&functionName> list[4];
         TEST_CASE(varid54); // hang
         TEST_CASE(varid_cpp_keywords_in_c_code);
+        TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -3983,6 +3984,19 @@ private:
                                 "4: }\n";
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code,false,"test.c"));
+    }
+
+    void varid_cpp_keywords_in_c_code2() { // #5373
+       const char code[] = "int clear_extent_bit(struct extent_io_tree *tree, u64 start, u64 end, "
+                           "unsigned long bits, int wake, int delete, struct extent_state **cached_state, "
+                            "gfp_t mask) {\n"
+                            "  struct extent_state *state;\n"
+                            "}"
+                            "int clear_extent_dirty() {\n"
+                            "  return clear_extent_bit(tree, start, end, EXTENT_DIRTY | EXTENT_DELALLOC | "
+                            "                          EXTENT_DO_ACCOUNTING, 0, 0, NULL, mask);\n"
+                            "}";
+        tokenizeDebugListing(code, false, "test.c");
     }
 
     void varidFunctionCall1() {

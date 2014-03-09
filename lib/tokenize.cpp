@@ -1589,6 +1589,8 @@ bool Tokenizer::tokenize(std::istream &code,
         return false;
     }
 
+    Token::isCPP(isCPP());
+
     if (simplifyTokenList1()) {
 
         createSymbolDatabase();

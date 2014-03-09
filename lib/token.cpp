@@ -29,6 +29,8 @@
 #include <map>
 #include <stack>
 
+bool Token::_isCPP = true;
+
 Token::Token(Token **t) :
     tokensBack(t),
     _next(0),
@@ -600,7 +602,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Type (%type%)
             {
                 p += 5;
-                multicompare(p,tok->isName() && tok->varId() == 0 && tok->str() != "delete",ismulticomp);
+                multicompare(p, tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !Token::isCPP()), ismulticomp);
             }
             break;
             case 'a':
