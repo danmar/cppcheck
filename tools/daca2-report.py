@@ -39,28 +39,26 @@ mainpage = open(path + '/daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')
 mainpage.write('<html lang="en">\n')
 mainpage.write('<head>\n')
-mainpage.write('<meta charset="utf-8">\n')
+mainpage.write('<meta charset="utf-8"/>\n')
+mainpage.write('<script src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>\n')
 mainpage.write('<title>DACA2</title>\n')
-mainpage.write(
-    '<style>td { font-size: 0.9em; } td + td { padding-left: 6em; }</style>\n')
+mainpage.write('<style>td { font-size: 0.9em; } td + td { padding-left: 6em; }</style>\ntable.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):after {\n    content: " \25B4\25BE" \n')
 mainpage.write('</head>\n')
 mainpage.write('<body>\n')
 mainpage.write('<h1>DACA2</h1>\n')
-mainpage.write(
-    '<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
-mainpage.write(
-    '<p>For performance reasons the analysis is limited. Files larger than 100kb are skipped. If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
-mainpage.write('<table>\n')
+mainpage.write('<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
+mainpage.write('<p>For performance reasons the analysis is limited. Files larger than 100kb are skipped. If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
+mainpage.write('<table class="sortable">\n')
 mainpage.write(
     '<tr>' +
-    '<td>Name</td>' +
-    '<td>Date</td>' +
-    '<td>Error</td>' +
-    '<td>Warning</td>' +
-    '<td>Performance</td>' +
-    '<td>Portability</td>' +
-    '<td>Style</td>' +
-    '<td>Crashes</td></tr>\n')
+    '<th>Name</th>' +
+    '<th>Date</th>' +
+    '<th>Error</th>' +
+    '<th>Warning</th>' +
+    '<th>Performance</th>' +
+    '<th>Portability</th>' +
+    '<th>Style</th>' +
+    '<th>Crashes</th></tr>\n')
 
 lastupdate = None
 recent = []
@@ -117,7 +115,7 @@ for lib in range(2):
             f.write('<!DOCTYPE html>\n')
             f.write('<html lang="en">\n')
             f.write('<head>\n')
-            f.write('<meta charset="utf-8">\n')
+            f.write('<meta charset="utf-8"/>\n')
             f.write('<title>DACA2 - ' + a + '</title>\n')
             f.write('</head>\n')
             f.write('<body>\n')
