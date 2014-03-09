@@ -529,7 +529,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         }
 
         // Remove comments..
-        if (str.compare(i, 2, "//", 0, 2) == 0) {
+        if (str.compare(i, 2, "//") == 0) {
             std::size_t commentStart = i + 2;
             i = str.find('\n', i);
             if (i == std::string::npos)
@@ -554,7 +554,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             code << "\n";
             previous = '\n';
             ++lineno;
-        } else if (str.compare(i, 2, "/*", 0, 2) == 0) {
+        } else if (str.compare(i, 2, "/*") == 0) {
             std::size_t commentStart = i + 2;
             unsigned char chPrev = 0;
             ++i;
@@ -583,7 +583,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         suppressionIDs.push_back(word);
                 }
             }
-        } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm",0,5) == 0) {
+        } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm") == 0) {
             while (i < str.size() && (std::isalpha(str[i]) || str[i]=='_'))
                 code << str[i++];
             while (i < str.size() && std::isspace(str[i]))
@@ -1340,12 +1340,12 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 }
 
                 // ==
-                if (def.compare(pos,2,"==",0,2)==0)
+                if (def.compare(pos,2,"==")==0)
                     pos += 2;
 
                 // %num%
                 if (pos<def.size() && std::isdigit(def[pos])) {
-                    if (def.compare(pos,2,"0x",0,2)==0) {
+                    if (def.compare(pos,2,"0x")==0) {
                         pos += 2;
                         if (pos >= def.size())
                             pos = 0;
