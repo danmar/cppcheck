@@ -80,6 +80,7 @@ private:
         TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
         TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar12); // ticket #5024 - crash
+        TEST_CASE(testautovar13); // ticket #5537 - crash
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -357,6 +358,16 @@ private:
               "int var;\n"
               "void init() { func(var); }\n"
               "UNKNOWN_MACRO_EXPANDING_TO_SIGNATURE { custom_type a(var); }");
+    }
+
+    void testautovar13() { // Ticket #5537
+        check("class FileManager {\n"
+              "  FileManager() : UniqueRealDirs(*new UniqueDirContainer())\n"
+              "  {}\n"
+              "  ~FileManager() {\n"
+              "    delete &UniqueRealDirs;\n"
+              "   }\n"
+              "};\n");
     }
 
     void testautovar_array1() {
