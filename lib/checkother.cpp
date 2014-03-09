@@ -936,6 +936,9 @@ void CheckOther::checkSwitchCaseFallThrough()
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
+    if (!symbolDatabase)
+        return;
+
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type != Scope::eSwitch || !i->classStart) // Find the beginning of a switch
             continue;

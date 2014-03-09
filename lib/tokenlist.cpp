@@ -79,43 +79,44 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split)
+void TokenList::addtoken(const std::string & str, const unsigned int lineno, const unsigned int fileno, bool split)
 {
-    if (str[0] == 0)
+    if (str.empty())
         return;
 
     // If token contains # characters, split it up
-    if (split && std::strstr(str, "##")) {
-        std::string temp;
-        for (unsigned int i = 0; str[i]; ++i) {
-            if (std::strncmp(&str[i], "##", 2) == 0) {
-                addtoken(temp.c_str(), lineno, fileno, false);
-                temp.clear();
-                addtoken("##", lineno, fileno, false);
-                ++i;
-            } else
-                temp += str[i];
+    if (split) {
+        size_t begin = 0;
+        size_t end = 0;
+        while ((end = str.find("##", begin)) != std::string::npos) {
+            addtoken(str.substr(begin, end - begin), lineno, fileno, false);
+            addtoken("##", lineno, fileno, false);
+            begin = end+2;
         }
-        addtoken(temp.c_str(), lineno, fileno, false);
-        return;
+        if (begin != 0) {
+            addtoken(str.substr(begin), lineno, fileno, false);
+            return;
+        }
     }
 
     // Replace hexadecimal value with decimal
-    std::ostringstream str2;
+    std::string str2;
     if (MathLib::isHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
-        str2 << MathLib::toLongNumber(str);
-    } else if (std::strncmp(str, "_Bool", 5) == 0) {
-        str2 << "bool";
+        std::ostringstream str2stream;
+        str2stream << MathLib::toLongNumber(str);
+        str2 = str2stream.str();
+    } else if (str.compare(0, 5, "_Bool") == 0) {
+        str2 = "bool";
     } else {
-        str2 << str;
+        str2 = str;
     }
 
     if (_back) {
-        _back->insertToken(str2.str());
+        _back->insertToken(str2);
     } else {
         _front = new Token(&_back);
         _back = _front;
-        _back->str(str2.str());
+        _back->str(str2);
     }
 
     _back->linenr(lineno);
@@ -207,12 +208,12 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     bool expandedMacro = false;
 
     // Read one byte at a time from code and create tokens
-    for (char ch = (char)code.get(); code.good(); ch = (char)code.get()) {
+    for (char ch = (char)code.get(); code.good() && ch; ch = (char)code.get()) {
         if (ch == Preprocessor::macroChar) {
             while (code.peek() == Preprocessor::macroChar)
                 code.get();
             if (!CurrentToken.empty()) {
-                addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+                addtoken(CurrentToken, lineno, FileIndex, true);
                 _back->isExpandedMacro(expandedMacro);
             }
             CurrentToken.clear();
@@ -255,12 +256,12 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 lineno = 0;
             } else {
                 // Add previous token
-                addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                addtoken(CurrentToken, lineno, FileIndex);
                 if (!CurrentToken.empty())
                     _back->isExpandedMacro(expandedMacro);
 
                 // Add content of the string
-                addtoken(line.c_str(), lineno, FileIndex);
+                addtoken(line, lineno, FileIndex);
                 if (!line.empty())
                     _back->isExpandedMacro(expandedMacro);
             }
@@ -326,7 +327,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                 continue;
             }
 
-            addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+            addtoken(CurrentToken, lineno, FileIndex, true);
             if (!CurrentToken.empty()) {
                 _back->isExpandedMacro(expandedMacro);
                 expandedMacro = false;
@@ -348,7 +349,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             // Add "++", "--", ">>" or ... token
             if (std::strchr("+-<>=:&|", ch) && (code.peek() == ch))
                 CurrentToken += (char)code.get();
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            addtoken(CurrentToken, lineno, FileIndex);
             _back->isExpandedMacro(expandedMacro);
             CurrentToken.clear();
             expandedMacro = false;
@@ -357,7 +358,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
         CurrentToken += ch;
     }
-    addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
+    addtoken(CurrentToken, lineno, FileIndex, true);
     if (!CurrentToken.empty())
         _back->isExpandedMacro(expandedMacro);
     _front->assignProgressValues();

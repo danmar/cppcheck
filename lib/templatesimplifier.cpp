@@ -678,7 +678,7 @@ void TemplateSimplifier::expandTemplate(
 
         // member function implemented outside class definition
         else if (TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
-            tokenlist.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+            tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
             while (tok3->str() != "::")
                 tok3 = tok3->next();
         }
@@ -720,7 +720,7 @@ void TemplateSimplifier::expandTemplate(
 
             // replace name..
             if (Token::Match(tok3, (name + " !!<").c_str())) {
-                tokenlist.addtoken(newName.c_str(), tok3->linenr(), tok3->fileIndex());
+                tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
                 continue;
             }
 

@@ -46,7 +46,7 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
+    void addtoken(const std::string & str, const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
     static void insertTokens(Token *dest, const Token *src, unsigned int n);
