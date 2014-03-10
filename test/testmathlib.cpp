@@ -33,6 +33,7 @@ private:
         TEST_CASE(calculate1);
         TEST_CASE(convert);
         TEST_CASE(isint);
+        TEST_CASE(isbin);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
         TEST_CASE(isfloat);
@@ -310,6 +311,46 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("L"));
         ASSERT_EQUALS(false, MathLib::isInt("uL"));
         ASSERT_EQUALS(false, MathLib::isInt("LL"));
+    }
+
+    void isbin() {
+        // positive testing
+        ASSERT_EQUALS(true, MathLib::isBin("0b0"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b1"));
+        ASSERT_EQUALS(true, MathLib::isBin("+0b1"));
+        ASSERT_EQUALS(true, MathLib::isBin("-0b1"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111"));
+        ASSERT_EQUALS(true, MathLib::isBin("-0b11010111"));
+        ASSERT_EQUALS(true, MathLib::isBin("0B11010111"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111u"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111ul"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111ull"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111l"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111ll"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111llu"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111l"));
+        ASSERT_EQUALS(true, MathLib::isBin("0b11010111lu"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111lul")); // Suffix LUL not allowed
+
+        // negative testing
+        ASSERT_EQUALS(false, MathLib::isBin("100101bx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0"));
+        ASSERT_EQUALS(false, MathLib::isBin("0B"));
+        ASSERT_EQUALS(false, MathLib::isBin("0C"));
+        ASSERT_EQUALS(false, MathLib::isBin("+0B"));
+        ASSERT_EQUALS(false, MathLib::isBin("-0B"));
+        ASSERT_EQUALS(false, MathLib::isBin("-0Bx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111x"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111ux"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111lx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111lux"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111ulx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111lulx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111ullx"));
+        ASSERT_EQUALS(false, MathLib::isBin("0b11010111lll"));
+
+        // test empty string
+        ASSERT_EQUALS(false, MathLib::isBin(""));
     }
 
     void isnegative() const {
