@@ -1204,13 +1204,14 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     // constants defined through "#define" in the code..
     std::set<std::string> defines;
     std::map<std::string, std::string> alldefinesmap(defs);
+    std::stack<std::pair<std::string,bool> > includeStack;
+    includeStack.push(std::pair<std::string,bool>(filename,false));
 
     // How deep into included files are we currently parsing?
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
     int filelevel = 0;
 
     bool includeguard = false;
-
     unsigned int linenr = 0;
     std::istringstream istr(filedata);
     std::string line;
@@ -1228,12 +1229,23 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 6, "#file ") == 0) {
             includeguard = true;
+            std::string::size_type start=line.find("\"");
+            std::string::size_type end=line.find("\"",start+1);
+            std::string includeFile=line.substr(start+1,end-start-1);
+            bool fileExcluded = false;
             ++filelevel;
+            if (! _settings) {
+                fileExcluded = false;
+            } else {
+                fileExcluded = _settings->configurationExcluded(includeFile);
+            }
+            includeStack.push(std::pair<std::string,bool>(includeFile,fileExcluded));
             continue;
         }
 
         else if (line == "#endfile") {
             includeguard = false;
+            includeStack.pop();
             if (filelevel > 0)
                 --filelevel;
             continue;
@@ -1404,7 +1416,16 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
 
             if (std::find(ret.begin(), ret.end(), def) == ret.end()) {
-                ret.push_back(def);
+                if (!includeStack.top().second) {
+                    ret.push_back(def);
+                } else {
+                    if (_errorLogger && _settings && _settings->debugwarnings) {
+                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug,
+                                                               "Configuration not considered: " + def +" for file:"+includeStack.top().first, "debug", false);
+                        _errorLogger->reportErr(errmsg);
+                    }
+                }
             }
         }
 
