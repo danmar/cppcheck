@@ -289,16 +289,16 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
            break;
         */
     case SIGINT:
-      bPrintCallstack=false;
-      break;
+        bPrintCallstack=false;
+        break;
     default:
         fprintf(stderr, "Internal error (caught signal %d)\n",
                 signo);
         break;
     }
     if (bPrintCallstack) {
-      print_stacktrace(stderr, false);
-      fprintf(stderr, "Please report this to the cppcheck developers!\n");
+        print_stacktrace(stderr, false);
+        fprintf(stderr, "Please report this to the cppcheck developers!\n");
     }
     abort();
 }

@@ -2409,6 +2409,15 @@ private:
         check("void f(char*p,char*q){ strcpy (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
+        check("void f(char*p,char*q){ strspn (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strcspn (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char*p,char*q){ strcoll (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+        
         check("void f(char*p,char*q){ strcat (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
