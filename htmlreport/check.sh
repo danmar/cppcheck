@@ -6,12 +6,12 @@
 echo -e "\n"
 
 
-../cppcheck ../gui/test --enable=all  --inconclusive --xml-version=2 2> gui_test.xml
+../cppcheck ../gui/test --enable=all  --inconclusive --xml2 2> gui_test.xml
 xmllint --noout gui_test.xml
 ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive test" --report-dir .
 echo ""
 
-../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml-version=2 2> gui_test.xml
+../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml2 2> gui_test.xml
 xmllint --noout gui_test.xml
 ./cppcheck-htmlreport --file ./gui_test.xml --title "xml2 + inconclusive + verbose test" --report-dir .
 echo -e "\n"
@@ -22,6 +22,6 @@ xmllint --noout errorlist.xml
 ./cppcheck-htmlreport --file ./errorlist.xml --title "errorlist" --report-dir .
 echo ""
 
-../cppcheck --errorlist --inconclusive --xml-version=2 > errorlist.xml
+../cppcheck --errorlist --inconclusive --xml2 > errorlist.xml
 xmllint --noout errorlist.xml
 ./cppcheck-htmlreport --file ./errorlist.xml --title "errorlist" --report-dir .

@@ -827,7 +827,7 @@ private:
 
     void xmlver1() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml-version=1", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml1", "file.cpp"};
         settings._xml_version = 1;
         settings._xml = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
@@ -837,7 +837,7 @@ private:
 
     void xmlver2() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml-version=2", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml2", "file.cpp"};
         settings._xml_version = 1;
         settings._xml = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
@@ -847,7 +847,7 @@ private:
 
     void xmlver2both() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml", "--xml2", "file.cpp"};
         settings._xml_version = 1;
         settings._xml = false;
         ASSERT(defParser.ParseFromArgs(4, argv));
@@ -857,7 +857,7 @@ private:
 
     void xmlver2both2() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml2", "--xml", "file.cpp"};
         settings._xml_version = 1;
         settings._xml = false;
         ASSERT(defParser.ParseFromArgs(4, argv));
@@ -867,14 +867,14 @@ private:
 
     void xmlverunknown() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml", "--xml3", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.ParseFromArgs(4, argv));
     }
 
     void xmlverinvalid() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--xml", "--xmla", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.ParseFromArgs(4, argv));
     }

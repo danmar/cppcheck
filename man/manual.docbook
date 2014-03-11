@@ -297,7 +297,7 @@ cppcheck -DA --force file.c</programlisting>
     attributes and elements. A sample command to check a file and output
     errors in the new <literal>XML</literal> format:</para>
 
-    <para><programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>Here
+    <para><programlisting>cppcheck --xml2 file1.cpp</programlisting>Here
     is a sample version 2 report:</para>
 
     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;

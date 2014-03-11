@@ -224,7 +224,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         return printer.CStr();
     }
 
-    // The xml format you get when you use --xml-version=2
+    // The xml format you get when you use --xml2
     else if (version == 2) {
         tinyxml2::XMLPrinter printer(0, false, 2);
         printer.OpenElement("error", false);

@@ -137,7 +137,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
-      <arg choice="opt"><option>--xml-version=&lt;version&gt;]</option></arg>
+      <arg choice="opt"><option>--xml&lt;version&gt;]</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -526,7 +526,7 @@ There are false positives with this option. Each result must be carefully invest
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--xml-version=&lt;version&gt;</option></term>
+        <term><option>--xml&lt;version&gt;</option></term>
         <listitem>
           <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
         </listitem>
