@@ -3535,7 +3535,7 @@ private:
             errout.str("");
             settings.checkConfiguration = true;
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found.\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing-include!!.h\" not found. Use -I to configure include paths.\n", errout.str());
 
             pragmaOnce.clear();
             errout.str("");
@@ -3882,7 +3882,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS("[file.c:2]: (information) Include file: \"config.h\" not found.\n", errout.str());
+        ASSERT_EQUALS("[file.c:2]: (information) Include file: \"config.h\" not found. Use -I to configure include paths.\n", errout.str());
         ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
     }
 
