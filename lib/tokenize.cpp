@@ -1590,9 +1590,7 @@ bool Tokenizer::tokenize(std::istream &code,
     }
 
     Token::isCPP(isCPP());
-
-    if (simplifyTokenList1()) {
-
+    if (simplifyTokenList1(FileName)) {
         createSymbolDatabase();
 
         // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
@@ -3018,7 +3016,7 @@ bool Tokenizer::simplifySizeof()
     return ret;
 }
 
-bool Tokenizer::simplifyTokenList1()
+bool Tokenizer::simplifyTokenList1(const char FileName[])
 {
     if (_settings->terminated())
         return false;
@@ -3146,7 +3144,8 @@ bool Tokenizer::simplifyTokenList1()
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
-    if (hasComplicatedSyntaxErrorsInTemplates()) {
+    if (!_settings->library.markupFile(FileName)
+        && hasComplicatedSyntaxErrorsInTemplates()) {
         list.deallocateTokens();
         return false;
     }

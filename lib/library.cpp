@@ -195,6 +195,19 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (strcmp(node->Name(), "reflection") == 0) {
+            for (const tinyxml2::XMLElement *reflectionnode = node->FirstChildElement(); reflectionnode; reflectionnode = reflectionnode->NextSiblingElement()) {
+                if (strcmp(reflectionnode->Name(), "call") != 0)
+                    return false;
+
+                const char * const argString = reflectionnode->Attribute("arg");
+                if (!argString)
+                    return false;
+
+                _reflection[reflectionnode->GetText()] = atoi(argString);
+            }
+        }
+
         else if (strcmp(node->Name(), "markup") == 0) {
             const char * const extension = node->Attribute("ext");
             if (!extension)
@@ -242,19 +255,6 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
                             _importers[extension].insert(librarynode->GetText());
                         else
                             return false;
-                    }
-                }
-
-                else if (strcmp(markupnode->Name(), "reflection") == 0) {
-                    for (const tinyxml2::XMLElement *reflectionnode = markupnode->FirstChildElement(); reflectionnode; reflectionnode = reflectionnode->NextSiblingElement()) {
-                        if (strcmp(reflectionnode->Name(), "call") != 0)
-                            return false;
-
-                        const char * const argString = reflectionnode->Attribute("arg");
-                        if (!argString)
-                            return false;
-
-                        _reflection[extension][reflectionnode->GetText()] = atoi(argString);
                     }
                 }
 
