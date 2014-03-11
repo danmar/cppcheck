@@ -210,10 +210,95 @@ bool MathLib::isOct(const std::string& s)
            || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
 }
 
-bool MathLib::isHex(const std::string& str)
+bool MathLib::isHex(const std::string& s)
 {
-    const bool sign = str[0]=='-' || str[0]=='+';
-    return (str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
+    // return false, in case an empty string is provided
+    if (s.empty())
+        return false;
+
+    enum {START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU} state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case HEX_PREFIX:
+            if (*it == 'x' || *it == 'X')
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case DIGIT:
+            if (isHexDigit(*it))
+                state = DIGITS;
+            else
+                return false;
+            break;
+        case DIGITS:
+            if (isHexDigit(*it))
+                state = DIGITS;
+            else if (*it == 'u' || *it == 'U')
+                state = SUFFIX_U;
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_L;
+            else
+                return false;
+            break;
+        case SUFFIX_U:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_UL; // UL
+            else
+                return false;
+            break;
+        case SUFFIX_UL:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_ULL; // ULL
+            else
+                return false;
+            break;
+        case SUFFIX_L:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LU; // LU
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_LL; // LL
+            else
+                return false;
+            break;
+        case SUFFIX_LU:
+            return false;
+            break;
+        case SUFFIX_LL:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LLU; // LLU
+            else
+                return false;
+            break;
+        default:
+            return false;
+        }
+    }
+    return (state == DIGITS)
+           || (state == SUFFIX_U)  || (state == SUFFIX_L)
+           || (state == SUFFIX_UL) || (state == SUFFIX_LU)   || (state == SUFFIX_LL)
+           || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
+}
+
+bool MathLib::isHexDigit(char c)
+{
+    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'
+            || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
+            || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f');
 }
 
 /*! \brief Does the string represent a binary number?

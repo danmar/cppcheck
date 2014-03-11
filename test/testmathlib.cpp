@@ -35,6 +35,7 @@ private:
         TEST_CASE(isint);
         TEST_CASE(isbin);
         TEST_CASE(isoct);
+        TEST_CASE(ishex);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
         TEST_CASE(isfloat);
@@ -427,6 +428,65 @@ private:
         ASSERT_EQUALS(false, MathLib::isOct("-042ULL  "));
         // front and trailing white space
         ASSERT_EQUALS(false, MathLib::isOct("  -042ULL  "));
+    }
+
+    void ishex() {
+        // hex number syntax: [sign]0x[hexnumbers][suffix]
+
+        // positive testing
+        ASSERT_EQUALS(true, MathLib::isHex("0xa"));
+        ASSERT_EQUALS(true, MathLib::isHex("0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0xa"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0xa"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x2AF3"));
+        ASSERT_EQUALS(true, MathLib::isHex("0x0"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0U"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0U"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0L"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0L"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0LU"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0LU"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0UL"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0UL"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0LL"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0LL"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0ULL"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0ULL"));
+        ASSERT_EQUALS(true, MathLib::isHex("+0x0LLU"));
+        ASSERT_EQUALS(true, MathLib::isHex("-0x0LLU"));
+
+        // negative testing
+        ASSERT_EQUALS(false, MathLib::isHex("+0x"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x"));
+        ASSERT_EQUALS(false, MathLib::isHex("0x"));
+        ASSERT_EQUALS(false, MathLib::isHex("0xx"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0175"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0_garbage_"));
+        ASSERT_EQUALS(false, MathLib::isHex("  "));
+        ASSERT_EQUALS(false, MathLib::isHex(" "));
+        ASSERT_EQUALS(false, MathLib::isHex("0"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0Z"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0Z"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0Uz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0Uz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0Lz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0Lz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0LUz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0LUz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0ULz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0ULz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0LLz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0LLz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0ULLz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0ULLz"));
+        ASSERT_EQUALS(false, MathLib::isHex("+0x0LLUz"));
+        ASSERT_EQUALS(false, MathLib::isHex("-0x0LLUz"));
+
+        // test empty string
+        ASSERT_EQUALS(false, MathLib::isHex(""));
     }
 
     void ispositive() const {
