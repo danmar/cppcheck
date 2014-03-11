@@ -290,18 +290,18 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_xml = true;
 
         // Define the XML file version (and enable XML output)
-        else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-            std::string numberString(argv[i]+14);
+        else if (std::strncmp(argv[i], "--xml2", 5) == 0) {
+            std::string numberString(argv[i]+5);
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings->_xml_version)) {
-                PrintMessage("cppcheck: argument to '--xml-version' is not a number.");
+                PrintMessage("cppcheck: 'use --xml or --xml1 for XML 1, --xml2 for XML 2'");
                 return false;
             }
 
             if (_settings->_xml_version < 0 || _settings->_xml_version > 2) {
                 // We only have xml versions 1 and 2
-                PrintMessage("cppcheck: '--xml-version' can only be 1 or 2.");
+                PrintMessage("cppcheck: 'use --xml or --xml1 for XML 1, --xml2 for XML 2'");
                 return false;
             }
 
@@ -740,7 +740,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     }
 
     if (_settings->inconclusive && _settings->_xml && _settings->_xml_version == 1U) {
-        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
+        PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml2).");
     }
 
     if (argc <= 1)
@@ -935,7 +935,7 @@ void CmdLineParser::PrintHelp()
               "    -v, --verbose        Output more detailed error information.\n"
               "    --version            Print out version number.\n"
               "    --xml                Write results in xml format to error stream (stderr).\n"
-              "    --xml-version=<version>\n"
+              "    --xml<version>\n"
               "                         Select the XML file version. Currently versions 1 and\n"
               "                         2 are available. The default version is 1."
               "\n"

@@ -92,7 +92,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
         with open(xml_filename, 'w') as output_file:
             subprocess.check_call(
                 [CPPCHECK_BIN, '--xml', source_filename,
-                 '--xml-version=' + xml_version],
+                 '--xml' + xml_version],
                 stderr=output_file)
 
     assert os.path.exists(xml_filename)

@@ -9,7 +9,7 @@
 # make test
 # cppcheck --errorlist > errlist.xml
 # xmllint --noout errlist.xml
-# cppcheck --xml-version=2 --errorlist > errlist.xml
+# cppcheck --xml2 --errorlist > errlist.xml
 # xmllint --noout errlist.xml
 #
 # Update AUTHORS using output from:
