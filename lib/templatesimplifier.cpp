@@ -743,6 +743,10 @@ void TemplateSimplifier::expandTemplate(
             } else if (tok3->str() == "}") {
                 assert(brackets.empty() == false && brackets.top()->str() == "{");
                 Token::createMutualLinks(brackets.top(), tokenlist.back());
+                if (tok3->strAt(1) == ";") {
+                    const Token * tokSemicolon = tok3->next();
+                    tokenlist.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
+                }
                 brackets.pop();
                 if (indentlevel <= 1 && brackets.empty()) {
                     // there is a bug if indentlevel is 0
