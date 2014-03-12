@@ -1255,11 +1255,7 @@ void TemplateSimplifier::simplifyTemplates(
 
     std::set<std::string> expandedtemplates(TemplateSimplifier::expandSpecialized(tokenlist.front()));
 
-    // Locate templates and set member variable _codeWithTemplates if the code has templates.
-    // this info is used by checks
-    std::list<Token *> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
-
-    if (templates.empty())
+    if (TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates).empty())
         return;
 
     // There are templates..
@@ -1275,6 +1271,8 @@ void TemplateSimplifier::simplifyTemplates(
                 break;
         }
     }
+    
+    std::list<Token *> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
     // Locate possible instantiations of templates..
     std::list<Token *> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front()));
