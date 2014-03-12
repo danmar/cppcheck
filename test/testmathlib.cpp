@@ -34,6 +34,7 @@ private:
         TEST_CASE(convert);
         TEST_CASE(isint);
         TEST_CASE(isbin);
+        TEST_CASE(isoct);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
         TEST_CASE(isfloat);
@@ -369,6 +370,67 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E+2"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
+    }
+
+    void isoct() {
+        // octal number format: [+|-]0[0-7][suffix]
+        // positive testing
+        ASSERT_EQUALS(true, MathLib::isOct("010"));
+        ASSERT_EQUALS(true, MathLib::isOct("+010"));
+        ASSERT_EQUALS(true, MathLib::isOct("-010"));
+        ASSERT_EQUALS(true, MathLib::isOct("0175"));
+        ASSERT_EQUALS(true, MathLib::isOct("+0175"));
+        ASSERT_EQUALS(true, MathLib::isOct("-0175"));
+        ASSERT_EQUALS(true, MathLib::isOct("00"));
+        ASSERT_EQUALS(true, MathLib::isOct("02"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042U"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042U"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042L"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042L"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042LU"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042LU"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042UL"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042UL"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042ULL"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042ULL"));
+        ASSERT_EQUALS(true, MathLib::isOct("+042LLU"));
+        ASSERT_EQUALS(true, MathLib::isOct("-042LLU"));
+
+        // test empty string
+        ASSERT_EQUALS(false, MathLib::isOct(""));
+
+        // negative testing
+        ASSERT_EQUALS(false, MathLib::isOct("0"));
+        ASSERT_EQUALS(false, MathLib::isOct("-0x175"));
+        ASSERT_EQUALS(false, MathLib::isOct("-0_garbage_"));
+        ASSERT_EQUALS(false, MathLib::isOct("  "));
+        ASSERT_EQUALS(false, MathLib::isOct(" "));
+        ASSERT_EQUALS(false, MathLib::isOct("02."));
+        ASSERT_EQUALS(false, MathLib::isOct("02E2"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042x"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042x"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042Ux"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042Ux"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042Lx"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042Lx"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042ULx"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042ULx"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042LLx"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042LLx"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042ULLx"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042ULLx"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042LLUx"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042LLUx"));
+        ASSERT_EQUALS(false, MathLib::isOct("+042LUL"));
+        ASSERT_EQUALS(false, MathLib::isOct("-042LUL"));
+        // white space in front
+        ASSERT_EQUALS(false, MathLib::isOct(" -042ULL"));
+        // trailing white space
+        ASSERT_EQUALS(false, MathLib::isOct("-042ULL  "));
+        // front and trailing white space
+        ASSERT_EQUALS(false, MathLib::isOct("  -042ULL  "));
     }
 
     void ispositive() const {
