@@ -9535,32 +9535,58 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "_topen (")) {
                 tok->str("open");
+                tok->originalName("_topen");
+            } else if (Token::simpleMatch(tok, "_tsopen_s (")) {
+                tok->str("_sopen_s");
+                tok->originalName("_tsopen_s");
             } else if (Token::simpleMatch(tok, "_tfopen (")) {
                 tok->str("fopen");
+                tok->originalName("_tfopen");
+            } else if (Token::simpleMatch(tok, "_tfopen_s (")) {
+                tok->str("fopen_s");
+                tok->originalName("_tfopen_s");
+            } else if (Token::simpleMatch(tok, "_tfreopen (")) {
+                tok->str("_wfreopen");
+                tok->originalName("_tfreopen");
+            } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
+                tok->str("_wfreopen_s");
+                tok->originalName("_tfreopen_s");
             } else if (Token::simpleMatch(tok, "_tcscat (")) {
                 tok->str("strcat");
+                tok->originalName("_tcscat");
             } else if (Token::simpleMatch(tok, "_tcschr (")) {
                 tok->str("strchr");
+                tok->originalName("_tcschr");
             } else if (Token::simpleMatch(tok, "_tcscmp (")) {
                 tok->str("strcmp");
+                tok->originalName("_tcscmp");
             } else if (Token::simpleMatch(tok, "_tcsdup (")) {
                 tok->str("strdup");
+                tok->originalName("_tcsdup");
             } else if (Token::simpleMatch(tok, "_tcscpy (")) {
                 tok->str("strcpy");
+                tok->originalName("_tcscpy");
             } else if (Token::simpleMatch(tok, "_tcslen (")) {
                 tok->str("strlen");
+                tok->originalName("_tcslen");
             } else if (Token::simpleMatch(tok, "_tcsncat (")) {
                 tok->str("strncat");
+                tok->originalName("_tcscat");
             } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
                 tok->str("strncpy");
+                tok->originalName("_tcsncpy");
             } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
                 tok->str("strnlen");
+                tok->originalName("_tcslen");
             } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
                 tok->str("strrchr");
+                tok->originalName("_tcsrchr");
             } else if (Token::simpleMatch(tok, "_tcsstr (")) {
                 tok->str("strstr");
+                tok->originalName("_tcsstr");
             } else if (Token::simpleMatch(tok, "_tcstok (")) {
                 tok->str("strtok");
+                tok->originalName("_tcstok");
             } else if (Token::simpleMatch(tok, "_ftprintf (")) {
                 tok->str("fprintf");
                 tok->originalName("_ftprintf");
@@ -9619,30 +9645,60 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
     } else if (_settings->platformType == Settings::Win32W ||
                _settings->platformType == Settings::Win64) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "_tcscat (")) {
+            if (Token::simpleMatch(tok, "_topen (")) {
+                tok->str("_wopen");
+                tok->originalName("_topen");
+            } else if (Token::simpleMatch(tok, "_tsfopen_s (")) {
+                tok->str("_wsopen_s");
+                tok->originalName("_tsopen_s");
+            } else if (Token::simpleMatch(tok, "_tfopen (")) {
+                tok->str("_wfopen");
+                tok->originalName("_tfopen");
+            } else if (Token::simpleMatch(tok, "_tfopen_s (")) {
+                tok->str("_wfopen_s");
+                tok->originalName("_tfopen_s");
+            } else if (Token::simpleMatch(tok, "_tfreopen (")) {
+                tok->str("_wfreopen");
+                tok->originalName("_tfreopen");
+            } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
+                tok->str("_wfreopen_s");
+                tok->originalName("_tfreopen_s");
+            } else if (Token::simpleMatch(tok, "_tcscat (")) {
                 tok->str("wcscat");
+                tok->originalName("_tcscat");
             } else if (Token::simpleMatch(tok, "_tcschr (")) {
                 tok->str("wcschr");
+                tok->originalName("_tcschr");
             } else if (Token::simpleMatch(tok, "_tcscmp (")) {
                 tok->str("wcscmp");
+                tok->originalName("_tcscmp");
             } else if (Token::simpleMatch(tok, "_tcscpy (")) {
                 tok->str("wcscpy");
+                tok->originalName("_tcscpy");
             } else if (Token::simpleMatch(tok, "_tcsdup (")) {
                 tok->str("wcsdup");
+                tok->originalName("_tcsdup");
             } else if (Token::simpleMatch(tok, "_tcslen (")) {
                 tok->str("wcslen");
+                tok->originalName("_tcslen");
             } else if (Token::simpleMatch(tok, "_tcsncat (")) {
                 tok->str("wcsncat");
+                tok->originalName("_tcsncat");
             } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
                 tok->str("wcsncpy");
+                tok->originalName("_tcsncpy");
             } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
                 tok->str("wcsnlen");
+                tok->originalName("_tcsnlen");
             } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
                 tok->str("wcsrchr");
+                tok->originalName("_tcsrchr");
             } else if (Token::simpleMatch(tok, "_tcsstr (")) {
                 tok->str("wcsstr");
+                tok->originalName("_tcsstr");
             } else if (Token::simpleMatch(tok, "_tcstok (")) {
                 tok->str("wcstok");
+                tok->originalName("_tcstok");
             } else if (Token::simpleMatch(tok, "_ftprintf (")) {
                 tok->str("fwprintf");
                 tok->originalName("_ftprintf");

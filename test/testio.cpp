@@ -140,9 +140,93 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
 
         check("void foo(FILE*& f) {\n"
+              "    f = _wfopen(name, L\"r\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfopen(name, _T(\"r\"));\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfopen(name, _T(\"r\"));\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _wfopen_s(&f, name, L\"r\");\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _tfopen_s(&f, name, _T(\"r\"));\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _tfopen_s(&f, name, _T(\"r\"));\n"
+              "    fread(buffer, 5, 6, f);\n"
+              "    rewind(f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"r+\");\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _wfopen(name, L\"r+\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfopen(name, _T(\"r+\"));\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfopen(name, _T(\"r+\"));\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _wfopen_s(&f, name, L\"r+\");\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _tfopen_s(&f, name, _T(\"r+\"));\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    _tfopen_s(&f, name, _T(\"r+\"));\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
 
         // Write mode
@@ -192,19 +276,47 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(FILE*& f) {\n"
-              "    f = fopen(name, \"a\");\n"
-              "    fwrite(buffer, 5, 6, f);\n"
-              "    clearerr(f);\n"
-              "    fread(buffer, 5, 6, f);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was opened only for writing.\n", errout.str());
-
         // freopen and tmpfile
         check("void foo(FILE*& f) {\n"
               "    f = freopen(name, \"r\", f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _wfreopen(name, L\"r\", f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfreopen(name, _T(\"r\"), f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfreopen(name, _T(\"r\"), f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _wfreopen_s(&f, name, L\"r\", f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfreopen_s(&f, name, _T(\"r\"), f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = _tfreopen_s(&f, name, _T(\"r\"), f);\n"
+              "    fwrite(buffer, 5, 6, f);\n"
+              "}", false, false, Settings::Win32W);
         ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout.str());
 
         // Crash tests
@@ -250,11 +362,13 @@ private:
               "    clearerr(f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "    ungetc('a', f);\n"
+              "    ungetwc(L'a', f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n"
                       "[test.cpp:4]: (error) Used file that is not opened.\n"
                       "[test.cpp:5]: (error) Used file that is not opened.\n"
-                      "[test.cpp:6]: (error) Used file that is not opened.\n", errout.str());
+                      "[test.cpp:6]: (error) Used file that is not opened.\n"
+                      "[test.cpp:7]: (error) Used file that is not opened.\n", errout.str());
 
         check("void foo(FILE*& f) {\n"
               "    if(!ferror(f)) {\n"
