@@ -58,7 +58,8 @@ mainpage.write(
     '<th>Performance</th>' +
     '<th>Portability</th>' +
     '<th>Style</th>' +
-    '<th>Crashes</th></tr>\n')
+    '<th>Crashes</th>' +
+    '<th>VarID 0</th></tr>\n')
 
 lastupdate = None
 recent = []
@@ -104,6 +105,7 @@ for lib in range(2):
                 '<td>' + str(data.count('(portability)')) + '</td>' +
                 '<td>' + str(data.count('(style)')) + '</td>' +
                 '<td>' + str(data.count('Crash?')) + '</td>' +
+                '<td>' + str(data.count('with varid 0.')) + '</td>' +
                 '</tr>\n')
 
             data = data.replace('&', '&amp;')
