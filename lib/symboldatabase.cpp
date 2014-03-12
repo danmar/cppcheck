@@ -2500,11 +2500,12 @@ const Function* Scope::findFunction(const Token *tok) const
     for (std::list<Function>::const_iterator i = functionList.begin(); i != functionList.end(); ++i) {
         if (i->tokenDef->str() == tok->str()) {
             const Function *func = &*i;
-            if (tok->strAt(1) == "(" && tok->tokAt(2)) {
+            if ((tok->strAt(1) == "(" || (func->name() == tok->str() && tok->strAt(1) == "{" && func->type == Function::eConstructor)) && tok->tokAt(2)) {
+                std::string end(tok->strAt(1) == "{" ? "}" : ")");
                 // check the arguments
                 unsigned int args = 0;
                 const Token *arg = tok->tokAt(2);
-                while (arg && arg->str() != ")") {
+                while (arg && arg->str() != end) {
                     /** @todo check argument type for match */
 
                     // mismatch parameter: passing parameter by address to function, argument is reference

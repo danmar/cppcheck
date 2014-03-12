@@ -832,6 +832,40 @@ private:
               "    A() { number = 42; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { }\n"
+              "    A() : A{42} {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { number = n; }\n"
+              "    A() : A{42} {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A{} { }\n"
+              "    A() {}\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A{} { }\n"
+              "    A() { number = 42; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

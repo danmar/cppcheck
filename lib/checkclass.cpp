@@ -469,7 +469,34 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     }
                 }
             } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), "%type%|,|{")) {
-                initVar(ftok->str(), scope, usage);
+                if (ftok->str() != func.name()) {
+                    initVar(ftok->str(), scope, usage);
+                } else { // c++11 delegate constructor
+                    const Function *member = scope->findFunction(ftok);
+                    // member function found
+                    if (member) {
+                        // recursive call
+                        // assume that all variables are initialized
+                        if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                            /** @todo false negative: just bail */
+                            assignAllVar(usage);
+                            return;
+                        }
+
+                        // member function has implementation
+                        if (member->hasBody) {
+                            // initialize variable use list using member function
+                            callstack.push_back(member);
+                            initializeVarList(*member, callstack, scope, usage);
+                            callstack.pop_back();
+                        }
+
+                        // there is a called member function, but it has no implementation, so we assume it initializes everything
+                        else {
+                            assignAllVar(usage);
+                        }
+                    }
+                }
                 ftok = ftok->linkAt(1);
             } else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
                 assignVar(ftok->str(), scope, usage);
