@@ -170,9 +170,22 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (settings->library.isreflection(tok->str())) {
             const int index = settings->library.reflectionArgument(tok->str());
             if (index >= 0) {
-                const Token * funcToken = tok->tokAt(index);
-                if (funcToken) {
-                    std::string value = funcToken->str();
+                const Token * funcToken = tok->next();
+                int p = 0;
+                std::string value;
+                while(funcToken) {
+                    if (funcToken->str()==",") {
+                        p++;
+                        if (p==index) {
+                            break;
+                        }
+                        value = "";
+                    } else {
+                        value += funcToken->str();
+                    }
+                    funcToken = funcToken->next();
+                }
+                if (p==index) {
                     value = value.substr(1, value.length() - 2);
                     _functions[value].usedOtherFile = true;
                 }
