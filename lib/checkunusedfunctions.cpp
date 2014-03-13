@@ -175,14 +175,11 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 std::string value;
                 while(funcToken) {
                     if (funcToken->str()==",") {
-                        p++;
-                        if (p==index) {
+                        if (++p==index)
                             break;
-                        }
                         value = "";
-                    } else {
+                    } else
                         value += funcToken->str();
-                    }
                     funcToken = funcToken->next();
                 }
                 if (p==index) {
