@@ -632,7 +632,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         }
     }
 
-    if (Token::Match(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))
+    if (Token::simpleMatch(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))
         total_size.clear();
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
@@ -1394,7 +1394,7 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
             } else
                 break;
         }
-        if (Token::Match(tok->next(),";")) {
+        if (Token::simpleMatch(tok->next(),";")) {
             position = i;
             return true;
         }

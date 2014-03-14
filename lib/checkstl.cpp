@@ -1506,10 +1506,10 @@ void CheckStl::checkDereferenceInvalidIterator()
 
             // For "for" loops, only search between the two semicolons
             if (i->type == Scope::eFor) {
-                startOfCondition = Token::findmatch(tok->tokAt(2), ";", endOfCondition);
+                startOfCondition = Token::findsimplematch(tok->tokAt(2), ";", endOfCondition);
                 if (!startOfCondition)
                     continue;
-                endOfCondition = Token::findmatch(startOfCondition->next(), ";", endOfCondition);
+                endOfCondition = Token::findsimplematch(startOfCondition->next(), ";", endOfCondition);
                 if (!endOfCondition)
                     continue;
             }
@@ -1591,11 +1591,11 @@ void CheckStl::readingEmptyStlContainer()
         if (Token::Match(tok, "%var% =|[")) {
             const Token *tok2;
 
-            if (Token::Match(tok->next(), "="))
+            if (Token::simpleMatch(tok->next(), "="))
                 tok2 = tok->tokAt(2);
 
             // to check cases like Cmap[1]; or i = Cmap[1] -- the right wld evaluate true when token reaches it.
-            else if (Token::Match(tok->next()," [") && Token::Match(tok->linkAt(1),"] ="))
+            else if (Token::Match(tok->next()," [") && Token::simpleMatch(tok->linkAt(1),"] ="))
                 tok2 = tok->next()->link()->tokAt(2);
 
             else

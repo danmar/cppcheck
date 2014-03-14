@@ -373,7 +373,7 @@ private:
                 break;
             if (Token::Match(tok2, "%var% ("))
                 break;
-            if (Token::Match(tok2, "%var% <") && Token::Match(tok2->linkAt(1), "> ("))
+            if (Token::Match(tok2, "%var% <") && Token::simpleMatch(tok2->linkAt(1), "> ("))
                 break;
             if (tok2->varId() &&
                 !Token::Match(tok2->previous(), "&|::") &&

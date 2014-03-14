@@ -51,7 +51,7 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         return false;
 
     // address of variable
-    const bool addressOf = tok && Token::Match(tok->previous(), "&");
+    const bool addressOf = tok && Token::simpleMatch(tok->previous(), "&");
 
     // passing variable to subfunction?
     if (Token::Match(tok->tokAt(-2), ") & %var% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
@@ -406,7 +406,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             } else if (tok2->str() == "{") {
                 // if variable is assigned in loop don't look before the loop
                 if (tok2->previous() &&
-                    (Token::Match(tok2->previous(), "do") ||
+                    (Token::simpleMatch(tok2->previous(), "do") ||
                      (tok2->strAt(-1) == ")" && Token::Match(tok2->linkAt(-1)->previous(), "for|while (")))) {
 
                     const Token *start = tok2;
@@ -422,7 +422,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (!var->isLocal()) {
                     if (!Token::Match(tok2->previous(), ")|else|do {"))
                         break;
-                    if (Token::Match(tok2->previous(), ") {") &&
+                    if (Token::simpleMatch(tok2->previous(), ") {") &&
                         !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
                         break;
                 }
@@ -484,7 +484,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 tok2 = tok2->linkAt(1);
 
             // conditional block of code that assigns variable..
-            if (Token::Match(tok2, "%var% (") && Token::Match(tok2->linkAt(1), ") {")) {
+            if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
                 Token * const start = tok2->linkAt(1)->next();
                 Token * const end   = start->link();
                 if (Token::findmatch(start, "%varid%", end, varid)) {
@@ -508,7 +508,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 // noreturn scopes..
                 if (number_of_if > 0 &&
                     (Token::findmatch(start, "return|continue|break", end) ||
-                     (Token::Match(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                     (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
                     break;
@@ -612,7 +612,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "for ("))
+        if (!Token::simpleMatch(tok, "for ("))
             continue;
 
         tok = tok->tokAt(2);

@@ -410,7 +410,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
             return false;
 
         // OK to delete a null
-        if (Token::Match(prev, "delete") || Token::Match(prev->tokAt(-2), "delete [ ]"))
+        if (Token::simpleMatch(prev, "delete") || Token::Match(prev->tokAt(-2), "delete [ ]"))
             return false;
 
         // OK to check if pointer is null

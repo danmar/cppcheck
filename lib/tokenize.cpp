@@ -2204,7 +2204,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 ++typeCount;
             }
         } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
-                   Token::Match(tok2, "< >") /* Ticket #4764 */) {
+                   Token::simpleMatch(tok2, "< >") /* Ticket #4764 */) {
             tok2 = tok2->findClosingBracket();
             if (!Token::Match(tok2, ">|>>"))
                 break;
@@ -2727,7 +2727,7 @@ void Tokenizer::createLinks2()
             }
 
             // if > is followed by ; .. "new a<b>;" is expected
-            if (Token::Match(token->next(), ";")) {
+            if (Token::simpleMatch(token->next(), ";")) {
                 Token *prev = type.top()->previous();
                 while (prev && Token::Match(prev->previous(), ":: %var%"))
                     prev = prev->tokAt(-2);
@@ -4231,8 +4231,8 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
     if (tokAfterCondition->str()=="{") {
         // already surrounded by braces
         tokBracesEnd=tokAfterCondition->link();
-    } else if (Token::Match(tokAfterCondition, "try {") &&
-               Token::Match(tokAfterCondition->linkAt(1), "} catch (")) {
+    } else if (Token::simpleMatch(tokAfterCondition, "try {") &&
+               Token::simpleMatch(tokAfterCondition->linkAt(1), "} catch (")) {
         tokAfterCondition->previous()->insertToken("{");
         Token * tokOpenBrace = tokAfterCondition->previous();
         Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
@@ -5497,7 +5497,7 @@ void Tokenizer::simplifyPlatformTypes()
             } else if (Token::Match(tok, "HRESULT|LONG")) {
                 tok->originalName(tok->str());
                 tok->str("long");
-            } else if (Token::Match(tok, "INT8")) {
+            } else if (tok->str() == "INT8") {
                 tok->originalName(tok->str());
                 tok->str("char");
                 tok->isSigned(true);
@@ -5749,7 +5749,7 @@ void Tokenizer::simplifyIfAndWhileAssign()
         const bool iswhile(tok->next()->str() == "while");
 
         // simplifying a "do { } while(cond);" condition ?
-        const bool isDoWhile = iswhile && Token::Match(tok, "}") && Token::Match(tok->link()->previous(), "do");
+        const bool isDoWhile = iswhile && Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), "do");
         Token* openBraceTok = tok->link();
 
         // delete the "if|while"
