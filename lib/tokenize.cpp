@@ -9127,14 +9127,24 @@ void Tokenizer::simplifyAttribute()
                     tok->next()->link()->next()->isAttributeUnused(true);
             }
 
-            // type func(...) __attribute__((pure));
             if (Token::simpleMatch(tok->tokAt(2), "( pure )")) {
-                tok->previous()->link()->previous()->isAttributePure(true);
+                // type func(...) __attribute__((pure));
+                if (tok->next()->link()->next()->str() == ";")
+                    tok->previous()->link()->previous()->isAttributePure(true);
+
+                // type __attribute__((pure)) func() { }
+                else
+                    tok->next()->link()->next()->isAttributePure(true);
             }
 
-            // type func(...) __attribute__((const));
             if (Token::simpleMatch(tok->tokAt(2), "( const )")) {
-                tok->previous()->link()->previous()->isAttributeConst(true);
+                // type func(...) __attribute__((const));
+                if (tok->next()->link()->next()->str() == ";")
+                    tok->previous()->link()->previous()->isAttributeConst(true);
+
+                // type __attribute__((const)) func() { }
+                else
+                    tok->next()->link()->next()->isAttributeConst(true);
             }
 
             Token::eraseTokens(tok, tok->next()->link()->next());

@@ -4835,11 +4835,24 @@ private:
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
         }
 
-        check("void GetValue() __attribute__((const)) { return X; }\n"
+        check("void GetValue() { return rand(); }\n"
+              "void foo() {\n"
+              "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((const)) GetValue() { return X; }\n"
               "void foo() {\n"
               "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        check("void GetValue() __attribute__((const));\n"
+              "void GetValue() { return X; }\n"
+              "void foo() {\n"
+              "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (str == \"(\" || str == \"(\") {}\n"
