@@ -98,6 +98,8 @@ public:
 
     std::set<std::string> use;
     std::set<std::string> leakignore;
+    std::set<std::string> functionconst;
+    std::set<std::string> functionpure;
 
     bool isnoreturn(const std::string &name) const {
         std::map<std::string, bool>::const_iterator it = _noreturn.find(name);

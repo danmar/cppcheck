@@ -4825,10 +4825,21 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
-              "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
+        {
+            LOAD_LIB("std.cfg");
+            Settings settings;
+            settings.library = _lib;
+            check("void foo() {\n"
+                  "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
+                  "}", "test.cpp", false, false, false, true, &settings);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        }
+
+        check("void GetValue() __attribute__((const)) { return X; }\n"
+              "void foo() {\n"
+              "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (str == \"(\" || str == \"(\") {}\n"

@@ -134,6 +134,10 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(),"noreturn")==0)
                     _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
+                else if (strcmp(functionnode->Name(), "pure") == 0)
+                    functionpure.insert(name);
+                else if (strcmp(functionnode->Name(), "const") == 0)
+                    functionconst.insert(name);
                 else if (strcmp(functionnode->Name(),"leak-ignore")==0)
                     leakignore.insert(name);
                 else if (strcmp(functionnode->Name(), "arg") == 0 && functionnode->Attribute("nr") != nullptr) {

@@ -73,9 +73,9 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
     if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
         return false;
     if (tok1->isName() && tok1->next()->str() == "(") {
-        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end())
+        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end() && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
-        else if (tok1->function() && !tok1->function()->isConst)
+        else if (tok1->function() && !tok1->function()->isConst && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
             return false;
     }
     // templates/casts
@@ -2868,27 +2868,24 @@ void CheckOther::checkDuplicateExpression()
         if (scope->type != Scope::eFunction)
             continue;
 
-        std::set<std::string> constStandardFunctions;
-        constStandardFunctions.insert("strcmp");
-
         // Experimental implementation
         // TODO: check for duplicate separated expressions:  (a==1 || a==2 || a==1)
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|-|*|/|%|=|<<|>>")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
                     continue;
-                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionconst))
                     duplicateExpressionError(tok, tok, tok->str());
-                else if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), constStandardFunctions))
+                else if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionconst))
                     duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                 else if (tok->astOperand2()) {
                     const Token *ast1 = tok->astOperand1();
                     while (ast1 && tok->str() == ast1->str()) {
-                        if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), constStandardFunctions))
+                        if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionconst))
                             duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                        else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), constStandardFunctions))
+                        else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionconst))
                             duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
-                        if (!isConstExpression(ast1->astOperand2(), constStandardFunctions))
+                        if (!isConstExpression(ast1->astOperand2(), _settings->library.functionconst))
                             break;
                         ast1 = ast1->astOperand1();
                     }
