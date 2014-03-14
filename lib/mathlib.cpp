@@ -240,13 +240,13 @@ bool MathLib::isHex(const std::string& s)
                 return false;
             break;
         case DIGIT:
-            if (isHexDigit(*it))
+            if (isxdigit(*it))
                 state = DIGITS;
             else
                 return false;
             break;
         case DIGITS:
-            if (isHexDigit(*it))
+            if (isxdigit(*it))
                 state = DIGITS;
             else if (*it == 'u' || *it == 'U')
                 state = SUFFIX_U;
@@ -292,13 +292,6 @@ bool MathLib::isHex(const std::string& s)
            || (state == SUFFIX_U)  || (state == SUFFIX_L)
            || (state == SUFFIX_UL) || (state == SUFFIX_LU)   || (state == SUFFIX_LL)
            || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
-}
-
-bool MathLib::isHexDigit(char c)
-{
-    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'
-            || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
-            || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f');
 }
 
 /*! \brief Does the string represent a binary number?

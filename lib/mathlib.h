@@ -74,13 +74,6 @@ public:
      * @return true if given character is octal digit.
      */
     static bool isOctalDigit(char c);
-
-    /**
-     * Return true if given character is 0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F.
-     * @param c The character to check
-     * @return true if given character is hex digit.
-     */
-    static bool isHexDigit(char c);
 };
 
 template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
