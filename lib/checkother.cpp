@@ -1370,9 +1370,9 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
                     continue;
 
-                if (isSameExpression(comp1, comp2, _settings->library.functionconst))
+                if (isSameExpression(comp1, comp2, _settings->library.functionpure))
                     continue; // same expressions => only report that there are same expressions
-                if (!isSameExpression(expr1, expr2, _settings->library.functionconst))
+                if (!isSameExpression(expr1, expr2, _settings->library.functionpure))
                     continue;
 
                 const bool isfloat = astIsFloat(expr1) || MathLib::isFloat(value1) || astIsFloat(expr2) || MathLib::isFloat(value2);
@@ -2873,18 +2873,18 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|-|*|/|%|=|<<|>>")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
                     continue;
-                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionconst))
+                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
                     duplicateExpressionError(tok, tok, tok->str());
-                else if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionconst))
+                else if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure))
                     duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                 else if (tok->astOperand2()) {
                     const Token *ast1 = tok->astOperand1();
                     while (ast1 && tok->str() == ast1->str()) {
-                        if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionconst))
+                        if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
                             duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                        else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionconst))
+                        else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure))
                             duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
-                        if (!isConstExpression(ast1->astOperand2(), _settings->library.functionconst))
+                        if (!isConstExpression(ast1->astOperand2(), _settings->library.functionpure))
                             break;
                         ast1 = ast1->astOperand1();
                     }
