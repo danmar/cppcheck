@@ -238,6 +238,45 @@ private:
     void attribute() { // #3471 - FP __attribute__((constructor))
         check("void __attribute__((constructor)) f() {}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((constructor(1000))) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((destructor)) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((destructor(1000))) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // alternate syntax
+        check("__attribute__((constructor)) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((constructor(1000))) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((destructor)) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((destructor(1000))) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // alternate syntax
+        check("void f() __attribute__((constructor));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((constructor(1000)));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((destructor));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((destructor(1000)));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -64,8 +64,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (Token::Match(tok->previous(), ")|const") || funcname == 0)
             continue;
 
-        // Don't warn about functions that are marked by __attribute__((constructor))
-        if (tok->isAttributeConstructor() || funcname->isAttributeConstructor())
+        // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
+        if (funcname->isAttributeConstructor() || funcname->isAttributeDestructor())
             continue;
 
         tok = funcname->linkAt(1);
