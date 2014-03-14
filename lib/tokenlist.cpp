@@ -142,7 +142,11 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     _back->isUnsigned(tok->isUnsigned());
     _back->isSigned(tok->isSigned());
     _back->isLong(tok->isLong());
+    _back->isAttributeConstructor(tok->isAttributeConstructor());
+    _back->isAttributeDestructor(tok->isAttributeDestructor());
     _back->isAttributeUnused(tok->isAttributeUnused());
+    _back->isAttributePure(tok->isAttributePure());
+    _back->isAttributeConst(tok->isAttributeConst());
 }
 //---------------------------------------------------------------------------
 // InsertTokens - Copy and insert tokens
@@ -172,7 +176,11 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->isSigned(src->isSigned());
         dest->isPointerCompare(src->isPointerCompare());
         dest->isLong(src->isLong());
+        dest->isAttributeConstructor(src->isAttributeConstructor());
+        dest->isAttributeDestructor(src->isAttributeDestructor());
         dest->isAttributeUnused(src->isAttributeUnused());
+        dest->isAttributePure(src->isAttributePure());
+        dest->isAttributeConst(src->isAttributeConst());
         src  = src->next();
         --n;
     }

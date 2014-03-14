@@ -562,6 +562,18 @@ public:
     bool isDestructor() const {
         return type==eDestructor;
     }
+    bool isAttributeConstructor() const {
+        return tokenDef->isAttributeConstructor();
+    }
+    bool isAttributeDestructor() const {
+        return tokenDef->isAttributeDestructor();
+    }
+    bool isAttributePure() const {
+        return tokenDef->isAttributePure();
+    }
+    bool isAttributeConst() const {
+        return tokenDef->isAttributeConst();
+    }
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition

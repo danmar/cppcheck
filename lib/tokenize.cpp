@@ -116,7 +116,10 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->isLong(tok->isLong());
         tok2->isExpandedMacro(tok->isExpandedMacro());
         tok2->isAttributeConstructor(tok->isAttributeConstructor());
+        tok2->isAttributeDestructor(tok->isAttributeDestructor());
         tok2->isAttributeUnused(tok->isAttributeUnused());
+        tok2->isAttributePure(tok->isAttributePure());
+        tok2->isAttributeConst(tok->isAttributeConst());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up
@@ -9089,8 +9092,24 @@ void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next()) {
-            if (Token::simpleMatch(tok->tokAt(2), "( constructor )")) {
-                tok->next()->link()->next()->isAttributeConstructor(true);
+            if (Token::simpleMatch(tok->tokAt(2), "( constructor")) {
+                // prototype for constructor is: void func(void);
+                if (tok->next()->link()->next()->str() == "void") // __attribute__((constructor)) void func() {}
+                    tok->next()->link()->next()->next()->isAttributeConstructor(true);
+                else if (tok->next()->link()->next()->str() == ";") // void func() __attribute__((constructor));
+                    tok->previous()->link()->previous()->isAttributeConstructor(true);
+                else // void __attribute__((constructor)) func() {}
+                    tok->next()->link()->next()->isAttributeConstructor(true);
+            }
+
+            if (Token::simpleMatch(tok->tokAt(2), "( destructor")) {
+                // prototype for destructor is: void func(void);
+                if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
+                    tok->next()->link()->next()->next()->isAttributeDestructor(true);
+                else if (tok->next()->link()->next()->str() == ";") // void func() __attribute__((destructor));
+                    tok->previous()->link()->previous()->isAttributeDestructor(true);
+                else // void __attribute__((destructor)) func() {}
+                    tok->next()->link()->next()->isAttributeDestructor(true);
             }
 
             if (Token::simpleMatch(tok->tokAt(2), "( unused )")) {
@@ -9103,6 +9122,16 @@ void Tokenizer::simplifyAttribute()
                 // check if before variable name
                 else if (Token::Match(tok->next()->link()->next(), "%type%"))
                     tok->next()->link()->next()->isAttributeUnused(true);
+            }
+
+            // type func(...) __attribute__((pure));
+            if (Token::simpleMatch(tok->tokAt(2), "( pure )")) {
+                tok->previous()->link()->previous()->isAttributePure(true);
+            }
+
+            // type func(...) __attribute__((const));
+            if (Token::simpleMatch(tok->tokAt(2), "( const )")) {
+                tok->previous()->link()->previous()->isAttributeConst(true);
             }
 
             Token::eraseTokens(tok, tok->next()->link()->next());

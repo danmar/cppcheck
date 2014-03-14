@@ -51,7 +51,10 @@ Token::Token(Token **t) :
     _isStandardType(false),
     _isExpandedMacro(false),
     _isAttributeConstructor(false),
+    _isAttributeDestructor(false),
     _isAttributeUnused(false),
+    _isAttributePure(false),
+    _isAttributeConst(false),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr)
@@ -199,7 +202,10 @@ void Token::deleteThis()
         _isStandardType = _next->_isStandardType;
         _isExpandedMacro = _next->_isExpandedMacro;
         _isAttributeConstructor = _next->_isAttributeConstructor;
+        _isAttributeDestructor = _next->_isAttributeDestructor;
         _isAttributeUnused = _next->_isAttributeUnused;
+        _isAttributePure = _next->_isAttributePure;
+        _isAttributeConst = _next->_isAttributeConst;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -223,7 +229,10 @@ void Token::deleteThis()
         _isStandardType = _previous->_isStandardType;
         _isExpandedMacro = _previous->_isExpandedMacro;
         _isAttributeConstructor = _previous->_isAttributeConstructor;
+        _isAttributeDestructor = _previous->_isAttributeDestructor;
         _isAttributeUnused = _previous->_isAttributeUnused;
+        _isAttributePure = _previous->_isAttributePure;
+        _isAttributeConst = _previous->_isAttributeConst;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;

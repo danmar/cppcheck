@@ -281,11 +281,29 @@ public:
     void isAttributeConstructor(bool ac) {
         _isAttributeConstructor = ac;
     }
+    bool isAttributeDestructor() const {
+        return _isAttributeDestructor;
+    }
+    void isAttributeDestructor(bool value) {
+        _isAttributeDestructor = value;
+    }
     bool isAttributeUnused() const {
         return _isAttributeUnused;
     }
     void isAttributeUnused(bool unused) {
         _isAttributeUnused = unused;
+    }
+    bool isAttributePure() const {
+        return _isAttributePure;
+    }
+    void isAttributePure(bool value) {
+        _isAttributePure = value;
+    }
+    bool isAttributeConst() const {
+        return _isAttributeConst;
+    }
+    void isAttributeConst(bool value) {
+        _isAttributeConst = value;
     }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
@@ -661,8 +679,11 @@ private:
     bool _isLong;
     bool _isStandardType;
     bool _isExpandedMacro;
-    bool _isAttributeConstructor;  // __attribute__((constructor))
+    bool _isAttributeConstructor;  // __attribute__((constructor)) __attribute__((constructor(priority)))
+    bool _isAttributeDestructor;   // __attribute__((destructor))  __attribute__((destructor(priority)))
     bool _isAttributeUnused;       // __attribute__((unused))
+    bool _isAttributePure;         // __attribute__((pure))
+    bool _isAttributeConst;        // __attribute__((const))
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */

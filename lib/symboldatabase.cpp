@@ -1249,8 +1249,15 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 {
     Function* function = 0;
     for (std::list<Function>::iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
-        if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0))
+        if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0)) {
             function = &*i;
+            // copy attributes from function prototype to function
+            const_cast<Token *>(tok)->isAttributeConstructor(i->tokenDef->isAttributeConstructor());
+            const_cast<Token *>(tok)->isAttributeDestructor(i->tokenDef->isAttributeDestructor());
+            const_cast<Token *>(tok)->isAttributePure(i->tokenDef->isAttributePure());
+            const_cast<Token *>(tok)->isAttributeConst(i->tokenDef->isAttributeConst());
+            break;
+        }
     }
 
     if (!function)
