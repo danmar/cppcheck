@@ -3631,62 +3631,65 @@ bool Tokenizer::simplifyTokenList2()
 
     while (simplifyMathFunctions()) {};
 
-    if (!validate())
-        return false;
+    const bool bValidate = validate();
+    if (bValidate ||  // either anything is fine here...
+        (_settings->debug && _settings->_verbose) // or it could be dangerous to proceed, so we demand this combination of flags
+       ) {
+        list.front()->assignProgressValues();
 
-    list.front()->assignProgressValues();
 
-    // Create symbol database and then remove const keywords
-    createSymbolDatabase();
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "* const"))
-            tok->deleteNext();
-    }
+        // Create symbol database and then remove const keywords
+        createSymbolDatabase();
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "* const"))
+                tok->deleteNext();
+        }
 
-    list.createAst();
+        list.createAst();
 
-    ValueFlow::setValues(&list, _errorLogger, _settings);
+        ValueFlow::setValues(&list, _errorLogger, _settings);
 
-    if (_settings->terminated())
-        return false;
+        if (_settings->terminated())
+            return false;
 
-    if (_settings->debug) {
-        list.front()->printOut(0, list.getFiles());
+        if (_settings->debug) {
+            list.front()->printOut(0, list.getFiles());
 
-        if (_settings->_verbose)
-            _symbolDatabase->printOut("Symbol database");
+            if (_settings->_verbose)
+                _symbolDatabase->printOut("Symbol database");
 
-        list.front()->printAst(_settings->_verbose);
+            list.front()->printAst(_settings->_verbose);
 
-        list.front()->printValueFlow();
-    }
+            list.front()->printValueFlow();
+        }
 
-    if (_settings->debugwarnings) {
-        printUnknownTypes();
+        if (_settings->debugwarnings) {
+            printUnknownTypes();
 
-        // #5054 - the typeStartToken() should come before typeEndToken()
-        for (const Token *tok = tokens(); tok; tok = tok->next()) {
-            if (tok->varId() == 0U)
-                continue;
+            // #5054 - the typeStartToken() should come before typeEndToken()
+            for (const Token *tok = tokens(); tok; tok = tok->next()) {
+                if (tok->varId() == 0U)
+                    continue;
 
-            const Variable *var = tok->variable();
-            if (!var)
-                continue;
+                const Variable *var = tok->variable();
+                if (!var)
+                    continue;
 
-            const Token * typetok = var->typeStartToken();
-            while (typetok && typetok != var->typeEndToken())
-                typetok = typetok->next();
+                const Token * typetok = var->typeStartToken();
+                while (typetok && typetok != var->typeEndToken())
+                    typetok = typetok->next();
 
-            if (typetok != var->typeEndToken()) {
-                reportError(tok,
-                            Severity::debug,
-                            "debug",
-                            "Variable::typeStartToken() is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
+                if (typetok != var->typeEndToken()) {
+                    reportError(tok,
+                                Severity::debug,
+                                "debug",
+                                "Variable::typeStartToken() is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
+                }
             }
         }
     }
 
-    return true;
+    return bValidate;
 }
 //---------------------------------------------------------------------------
 
