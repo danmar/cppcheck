@@ -1370,10 +1370,9 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
                     continue;
 
-                const std::set<std::string> constStandardFunctions;
-                if (isSameExpression(comp1, comp2, constStandardFunctions))
+                if (isSameExpression(comp1, comp2, _settings->library.functionconst))
                     continue; // same expressions => only report that there are same expressions
-                if (!isSameExpression(expr1, expr2, constStandardFunctions))
+                if (!isSameExpression(expr1, expr2, _settings->library.functionconst))
                     continue;
 
                 const bool isfloat = astIsFloat(expr1) || MathLib::isFloat(value1) || astIsFloat(expr2) || MathLib::isFloat(value2);
