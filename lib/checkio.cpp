@@ -1333,7 +1333,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
         } else if (tok->str() == "&" || tok->type() == Token::eVariable ||
                    tok->type() == Token::eFunction || Token::Match(tok, "%type% ::") ||
                    (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
-                    Token::Match(tok->linkAt(1), "> (") &&
+                    Token::simpleMatch(tok->linkAt(1), "> (") &&
                     Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
             if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
                 typeToken = tok->tokAt(2);

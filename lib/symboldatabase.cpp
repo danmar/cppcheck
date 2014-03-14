@@ -77,7 +77,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 if (tok2 && tok2->next()) {
                     if (tok2->next()->str() == ";")
                         tok = tok2->next();
-                    else if (Token::Match(tok2->next(), "= {") &&
+                    else if (Token::simpleMatch(tok2->next(), "= {") &&
                              tok2->linkAt(2)->next()->str() == ";")
                         tok = tok2->linkAt(2)->next();
                     else if (Token::Match(tok2->next(), "(|{")  &&
@@ -1066,7 +1066,7 @@ void Variable::evaluate()
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
     if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
-        _stlType = Token::Match(_start, "std ::");
+        _stlType = Token::simpleMatch(_start, "std ::");
     }
     if (_access == Argument) {
         tok = _name;

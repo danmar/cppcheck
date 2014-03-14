@@ -83,7 +83,7 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         (Token::Match(tok2, "%var% <") && tok2->next()->link())) {
 
         // non-const template function that is not a dynamic_cast => return false
-        if (Token::Match(tok1->next()->link(), "> (") &&
+        if (Token::simpleMatch(tok1->next()->link(), "> (") &&
             !(tok1->function() && tok1->function()->isConst) &&
             tok1->str() != "dynamic_cast")
             return false;
@@ -2177,7 +2177,7 @@ void CheckOther::checkIncompleteStatement()
             tok = tok->linkAt(2);
 
         // C++11 initialize set in initalizer list : [,:] std::set<int>{1} [{,]
-        else if (Token::Match(tok,"> {") && tok->link())
+        else if (Token::simpleMatch(tok,"> {") && tok->link())
             tok = tok->next()->link();
 
         else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {

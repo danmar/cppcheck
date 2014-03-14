@@ -969,7 +969,7 @@ void CheckClass::checkMemset()
                     if (var && arg1->strAt(1) == ",") {
                         if (var->isPointer()) {
                             derefs--;
-                            if (var->typeEndToken() && Token::Match(var->typeEndToken()->previous(), "* *")) // Check if it's a pointer to pointer
+                            if (var->typeEndToken() && Token::simpleMatch(var->typeEndToken()->previous(), "* *")) // Check if it's a pointer to pointer
                                 derefs--;
                         }
 

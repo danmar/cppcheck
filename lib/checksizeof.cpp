@@ -296,11 +296,11 @@ void CheckSizeof::sizeofVoid()
                 const Token* tok2 = tok->tokAt(index);
                 if (index == 0) {
                     bool isMember = false;
-                    while (Token::Match(tok2->previous(), ".")) {
+                    while (Token::simpleMatch(tok2->previous(), ".")) {
                         isMember = true;
-                        if (Token::Match(tok2->tokAt(-2), ")"))
+                        if (Token::simpleMatch(tok2->tokAt(-2), ")"))
                             tok2 = tok2->tokAt(-2)->link();
-                        else if (Token::Match(tok2->tokAt(-2), "]"))
+                        else if (Token::simpleMatch(tok2->tokAt(-2), "]"))
                             tok2 = tok2->tokAt(-2)->link()->previous();
                         else
                             tok2 = tok2->tokAt(-2);
@@ -315,7 +315,7 @@ void CheckSizeof::sizeofVoid()
                 // Check for cast on operations with '+|-'
                 if (Token::Match(tok, "%var% +|-")) {
                     // Check for cast expression
-                    if (Token::Match(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
+                    if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
                         continue;
                 }
                 arithOperationsOnVoidPointerError(tok, varname,
