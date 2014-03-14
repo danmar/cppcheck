@@ -1271,7 +1271,7 @@ void TemplateSimplifier::simplifyTemplates(
                 break;
         }
     }
-    
+
     std::list<Token *> templates(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
 
     // Locate possible instantiations of templates..
