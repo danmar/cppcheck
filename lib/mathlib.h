@@ -50,6 +50,8 @@ public:
     static bool isOct(const std::string& str);
     static bool isBin(const std::string& str);
 
+    static bool isValidSuffix(std::string::const_iterator it, std::string::const_iterator end);
+
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
     static std::string multiply(const std::string & first, const std::string & second);
