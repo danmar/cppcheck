@@ -1044,8 +1044,12 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     std::list<Variable>::const_iterator var;
 
     for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
+        if (var->isReference()) {
+            memsetErrorReference(tok, tok->str(), type->classDef->str());
+            continue;
+        }
         // don't warn if variable static or const, pointer or reference
-        if (!var->isStatic() && !var->isConst() && !var->isPointer() && !var->isReference()) {
+        if (!var->isStatic() && !var->isConst() && !var->isPointer()) {
             const Token *tok1 = var->typeStartToken();
             const Scope *typeScope = var->typeScope();
 
@@ -1089,6 +1093,12 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 {
     reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".");
 }
+
+void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
+{
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a reference.");
+}
+
 
 //---------------------------------------------------------------------------
 // ClassCheck: "void operator=(" and "const type & operator=("
@@ -1266,7 +1276,7 @@ void CheckClass::operatorEqToSelf()
     }
 }
 
-bool CheckClass::hasAllocation(const Function *func, const Scope* scope)
+bool CheckClass::hasAllocation(const Function *func, const Scope* scope) const
 {
     // This function is called when no simple check was found for assignment
     // to self.  We are currently looking for:
@@ -1573,7 +1583,7 @@ void CheckClass::checkConst()
     }
 }
 
-bool CheckClass::isMemberVar(const Scope *scope, const Token *tok)
+bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 {
     bool again = false;
 
@@ -1661,7 +1671,7 @@ static unsigned int countMinArgs(const Token* argList)
     return count;
 }
 
-bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
+bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 {
     unsigned int args = countParameters(tok);
 
@@ -1691,7 +1701,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
     return false;
 }
 
-bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
+bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 {
     unsigned int args = countParameters(tok);
 

@@ -139,6 +139,7 @@ private:
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
+    void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
     void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
     void operatorEqReturnError(const Token *tok, const std::string &className);
@@ -205,13 +206,13 @@ private:
     void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
 
     // operatorEqToSelf helper functions
-    bool hasAllocation(const Function *func, const Scope* scope);
+    bool hasAllocation(const Function *func, const Scope* scope) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
-    bool isMemberVar(const Scope *scope, const Token *tok);
-    bool isMemberFunc(const Scope *scope, const Token *tok);
-    bool isConstMemberFunc(const Scope *scope, const Token *tok);
+    bool isMemberVar(const Scope *scope, const Token *tok) const;
+    bool isMemberFunc(const Scope *scope, const Token *tok) const;
+    bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
     bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
 
     // constructors helper function

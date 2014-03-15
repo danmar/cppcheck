@@ -2284,6 +2284,24 @@ private:
                       "  memset(b,0,4);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4461 Warn about memset/memcpy on class with references as members
+        checkNoMemset("class A {\n"
+                      "  std::string &s;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "  A a;\n"
+                      "  memset(&a, 0, sizeof(a)); \n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a reference.\n", errout.str());
+        checkNoMemset("class A {\n"
+                      "  const B&b;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "  A a;\n"
+                      "  memset(&a, 0, sizeof(a)); \n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a reference.\n", errout.str());
     }
 
     void memsetOnInvalid() { // Ticket #5425
