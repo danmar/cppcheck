@@ -609,88 +609,171 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
     }
 }
 
+static void execute(const Token *expr,
+                    std::map<unsigned int, MathLib::bigint> * const programMemory,
+                    MathLib::bigint *result,
+                    bool *error)
+{
+    if (!expr)
+        *error = true;
+
+    else if (expr->isNumber())
+        *result = MathLib::toLongNumber(expr->str());
+
+    else if (expr->varId() > 0) {
+        const std::map<unsigned int, MathLib::bigint>::const_iterator var = programMemory->find(expr->varId());
+        if (var == programMemory->end())
+            *error = true;
+        else
+            *result = var->second;
+    }
+
+    else if (expr->isComparisonOp()) {
+        MathLib::bigint result1, result2;
+        execute(expr->astOperand1(), programMemory, &result1, error);
+        execute(expr->astOperand2(), programMemory, &result2, error);
+        if (expr->str() == "<")
+            *result = result1 < result2;
+        else if (expr->str() == "<=")
+            *result = result1 <= result2;
+        else if (expr->str() == ">")
+            *result = result1 > result2;
+        else if (expr->str() == ">=")
+            *result = result1 >= result2;
+        else if (expr->str() == "==")
+            *result = result1 == result2;
+        else if (expr->str() == "!=")
+            *result = result1 != result2;
+    }
+
+    else if (expr->str() == "=") {
+        execute(expr->astOperand2(), programMemory, result, error);
+        if (expr->astOperand1()->varId())
+            (*programMemory)[expr->astOperand1()->varId()] = *result;
+        else
+            *error = true;
+    }
+
+    else if (expr->str() == "++") {
+        if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
+            *error = true;
+        else {
+            std::map<unsigned int, MathLib::bigint>::iterator var = programMemory->find(expr->astOperand1()->varId());
+            if (var == programMemory->end())
+                *error = true;
+            else {
+                *result = var->second + 1;
+                var->second = *result;
+            }
+        }
+    }
+
+    else if (expr->str() == "&&") {
+        execute(expr->astOperand1(), programMemory, result, error);
+        if (*error || *result == 0)
+            *result = 0;
+        else {
+            execute(expr->astOperand2(), programMemory, result, error);
+            // If there is an error, assume the result is not important
+            if (*error) {
+                *error = false;
+                *result = 1;
+            }
+        }
+    }
+
+    else if (expr->str() == "||") {
+        execute(expr->astOperand1(), programMemory, result, error);
+        if (*result == 0 && *error == false)
+            execute(expr->astOperand2(), programMemory, result, error);
+    }
+
+    else
+        *error = true;
+}
+
+
 static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "for ("))
+        if (!Token::simpleMatch(tok, "for (") ||
+            !Token::simpleMatch(tok->next()->astOperand2(), ";") ||
+            !Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
             continue;
 
-        tok = tok->tokAt(2);
-        if (!Token::Match(tok,"%type%| %var% = %num% ;")) { // TODO: don't use %num%
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "For loop not handled");
+        const Token *firstExpression  = tok->next()->astOperand2()->astOperand1();
+        const Token *secondExpression = tok->next()->astOperand2()->astOperand2()->astOperand1();
+        const Token *thirdExpression = tok->next()->astOperand2()->astOperand2()->astOperand2();
+        tok = tok->linkAt(1);
+
+        std::map<unsigned int, MathLib::bigint> programMemory;
+        MathLib::bigint result;
+        bool error = false;
+        execute(firstExpression, &programMemory, &result, &error);
+        if (error)
             continue;
-        }
-        Token * const vartok = tok->tokAt(Token::Match(tok, "%var% =") ? 0 : 1);
-        const MathLib::bigint num1 = MathLib::toLongNumber(vartok->strAt(2));
-        if (vartok->varId() == 0U)
+        execute(secondExpression, &programMemory, &result, &error);
+        if (error)
             continue;
-        tok = vartok->tokAt(4);
-        const Token *num2tok = nullptr;
-        if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
-            tok = tok->next();
-            num2tok = tok->astOperand2();
-            if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
-                num2tok = num2tok->astOperand1();
-            if (!Token::Match(num2tok, "%num%"))
-                num2tok = 0;
-        }
-        if (!num2tok) {
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "For loop not handled");
-            continue;
-        }
-        const MathLib::bigint num2 = MathLib::toLongNumber(num2tok ? num2tok->str() : "0") - ((tok->str()=="<=") ? 0 : 1);
-        while (tok && tok->str() != ";")
-            tok = tok->next();
-        if (!num2tok || !Token::Match(tok, "; %varid% ++ ) {", vartok->varId())) {
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "For loop not handled");
-            continue;
+        const std::map<unsigned int, MathLib::bigint> startMemory(programMemory);
+        std::map<unsigned int, MathLib::bigint> endMemory;
+
+        unsigned int maxcount = 10000;
+        while (result != 0 && !error && --maxcount) {
+            endMemory = programMemory;
+            execute(thirdExpression, &programMemory, &result, &error);
+            if (!error)
+                execute(secondExpression, &programMemory, &result, &error);
         }
 
-        Token * const bodyStart = tok->tokAt(4);
-        const Token * const bodyEnd   = bodyStart->link();
+        Token * const bodyStart = tok->next();
+        const Token * const bodyEnd = bodyStart->link();
 
-        // Is variable modified inside for loop
-        bool modified = false;
-        for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%varid% =", vartok->varId())) {
-                modified = true;
-                break;
-            }
-        }
-        if (modified)
-            continue;
+        for (std::map<unsigned int, MathLib::bigint>::const_iterator it = startMemory.begin(); it != startMemory.end(); ++it) {
+            const unsigned int varid = it->first;
+            const MathLib::bigint num1 = it->second;
+            const MathLib::bigint num2 = endMemory[varid];
 
-        for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
-            if (tok2->varId() == vartok->varId()) {
-                const Token * parent = tok2->astParent();
-                while (parent) {
-                    const Token * const p = parent;
-                    parent = parent->astParent();
-                    if (parent && parent->str() == "?" && parent->astOperand2() == p)
-                        break;
+            // Is variable modified inside for loop
+            bool modified = false;
+            for (const Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "%varid% =", varid)) {
+                    modified = true;
+                    break;
                 }
-                if (parent) {
+            }
+            if (modified)
+                continue;
+
+            for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
+                if (tok2->varId() == varid) {
+                    const Token * parent = tok2->astParent();
+                    while (parent) {
+                        const Token * const p = parent;
+                        parent = parent->astParent();
+                        if (parent && parent->str() == "?" && parent->astOperand2() == p)
+                            break;
+                    }
+                    if (parent) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "For loop variable " + tok2->str() + " stopping on ?");
+                        continue;
+                    }
+
+                    ValueFlow::Value value1(num1);
+                    value1.varId = tok2->varId();
+                    setTokenValue(tok2, value1);
+
+                    ValueFlow::Value value2(num2);
+                    value2.varId = tok2->varId();
+                    setTokenValue(tok2, value2);
+                }
+
+                if (tok2->str() == "{") {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "For loop variable " + vartok->str() + " stopping on ?");
-                    continue;
+                        bailout(tokenlist, errorLogger, tok2, "For loop variable " + tok2->str() + " stopping on {");
+                    break;
                 }
-
-                ValueFlow::Value value1(num1);
-                value1.varId = tok2->varId();
-                setTokenValue(tok2, value1);
-
-                ValueFlow::Value value2(num2);
-                value2.varId = tok2->varId();
-                setTokenValue(tok2, value2);
-            }
-
-            if (tok2->str() == "{") {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "For loop variable " + vartok->str() + " stopping on {");
-                break;
             }
         }
     }
