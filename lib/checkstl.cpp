@@ -1179,16 +1179,16 @@ void CheckStl::string_c_str()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Invalid usage..
-            if (Token::Match(tok, "throw %var% . c_str ( ) ;") && isLocal(tok->next()) &&
+            if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
                 string_c_strThrowError(tok);
-            } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str ( ) ;")) {
+            } else if (Token::Match(tok, "[;{}] %var% = %var% . str ( ) . c_str|data ( ) ;")) {
                 const Variable* var = tok->next()->variable();
                 const Variable* var2 = tok->tokAt(3)->variable();
                 if (var && var->isPointer() && var2 && var2->isStlType(stl_string_stream))
                     string_c_strError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
-                       Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;") &&
+                       Token::Match(tok->linkAt(4), ") . c_str|data ( ) ;") &&
                        Token::findmatch(_tokenizer->tokens(), ("std :: string|wstring " + tok->strAt(3) + " (").c_str())) {
                 const Variable* var = tok->next()->variable();
                 if (var && var->isPointer())
@@ -1212,7 +1212,7 @@ void CheckStl::string_c_str()
                         tok2 = tok->next()->link();
                     else
                         tok2 = tok2->previous();
-                    if (tok2 && Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
+                    if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
                         if (var && var->isStlType(stl_string)) {
                             string_c_strParam(tok, i->second);
@@ -1228,21 +1228,21 @@ void CheckStl::string_c_str()
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
             if (returnType == charPtr) {
-                if (Token::Match(tok, "return %var% . c_str ( ) ;") && isLocal(tok->next()) &&
+                if (Token::Match(tok, "return %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                     tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
                     string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% . str ( ) . c_str ( ) ;") && isLocal(tok->next()) &&
+                } else if (Token::Match(tok, "return %var% . str ( ) . c_str|data ( ) ;") && isLocal(tok->next()) &&
                            tok->next()->variable() && tok->next()->variable()->isStlType(stl_string_stream)) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return std :: string|wstring (") &&
-                           Token::simpleMatch(tok->linkAt(4), ") . c_str ( ) ;")) {
+                           Token::Match(tok->linkAt(4), ") . c_str|data ( ) ;")) {
                     string_c_strError(tok);
-                } else if (Token::Match(tok, "return %var% (") && Token::simpleMatch(tok->linkAt(2), ") . c_str ( ) ;")) {
+                } else if (Token::Match(tok, "return %var% (") && Token::Match(tok->linkAt(2), ") . c_str|data ( ) ;")) {
                     const Function* func = tok->next()->function();
                     if (func && Token::Match(func->tokenDef->tokAt(-3), "std :: string|wstring"))
                         string_c_strError(tok);
                 } else if (Token::simpleMatch(tok, "return (") &&
-                           Token::simpleMatch(tok->next()->link(), ") . c_str ( ) ;")) {
+                           Token::Match(tok->next()->link(), ") . c_str|data ( ) ;")) {
                     // Check for "+ localvar" or "+ std::string(" inside the bracket
                     bool is_implicit_std_string = _settings->inconclusive;
                     const Token *search_end = tok->next()->link();
@@ -1265,7 +1265,7 @@ void CheckStl::string_c_str()
             else if ((returnType == stdString || returnType == stdStringConstRef) && _settings->isEnabled("performance")) {
                 if (tok->str() == "return") {
                     const Token* tok2 = Token::findsimplematch(tok->next(), ";");
-                    if (Token::simpleMatch(tok2->tokAt(-4), ". c_str ( )")) {
+                    if (Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         tok2 = tok2->tokAt(-5);
                         if (tok2->variable() && tok2->variable()->isStlType(stl_string)) { // return var.c_str();
                             string_c_strReturn(tok);
