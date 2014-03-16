@@ -109,6 +109,25 @@ protected:
 private:
 
     /**
+     * Wrapper around check_internal
+     *   - installs optional platform dependent signal handling
+     *
+     **/
+    int check_wrapper(CppCheck& cppCheck, int argc, const char* const argv[]);
+
+    /**
+    * Starts the checking.
+    *
+    * @param argc from main()
+    * @param argv from main()
+    * @return EXIT_FAILURE if arguments are invalid or no input files
+    *         were found.
+    *         If errors are found and --error-exitcode is used,
+    *         given value is returned instead of default 0.
+    *         If no errors are found, 0 is returned.
+    */
+    int check_internal(CppCheck& cppCheck, int argc, const char* const argv[]);
+    /**
      * Pointer to current settings; set while check() is running.
      */
     const Settings* _settings;

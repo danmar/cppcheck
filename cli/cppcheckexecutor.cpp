@@ -32,6 +32,21 @@
 #include <algorithm>
 #include <climits>
 
+#if defined(__GNUC__)
+#define USE_UNIX_SIGNAL_HANDLING
+#include <execinfo.h>
+#endif
+
+#ifdef USE_UNIX_SIGNAL_HANDLING
+#include <signal.h>
+#include <stdio.h>
+#endif
+
+#ifdef _MSC_VER
+#include <Windows.h>
+#include <excpt.h>
+#endif
+
 CppCheckExecutor::CppCheckExecutor()
     : _settings(0), time1(0), errorlist(false)
 {
@@ -156,6 +171,83 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_FAILURE;
     }
 
+    if (cppCheck.settings().exceptionHandling) {
+        return check_wrapper(cppCheck, argc, argv);
+    } else {
+        return check_internal(cppCheck, argc, argv);
+    }
+}
+
+#if defined(USE_UNIX_SIGNAL_HANDLING)
+extern "C" void MySignalHandler(int signo, siginfo_t *info, void *context);
+
+/* (declare this list here, so it may be used in signal handlers in addition to main())
+ * A list of signals available in ISO C
+ * Check out http://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
+ * For now we only want to detect abnormal behaviour for a few selected signals:
+ */
+static const int listofsignals[] = {
+    /* don't care: SIGABRT, */
+    SIGFPE,
+    SIGILL,
+    SIGINT,
+    SIGSEGV,
+    /* don't care: SIGTERM */
+};
+
+static void print_stacktrace(FILE* f)
+{
+#if defined(__GNUC__)
+    void *array[50]= {0};
+    size_t size = backtrace(array, int(sizeof(array)/sizeof(array[0])));
+    char **strings = backtrace_symbols(array, (int)size);
+    fprintf(f, "Callstack:\n");
+    for (std::size_t i = 0; i < size; i++) {
+        fprintf(f, "%s\n", strings[i]);
+    }
+    free(strings);
+#endif
+}
+
+void MySignalHandler(int signo, siginfo_t * /*info*/, void * /*context*/)
+{
+    fprintf(stderr, "Internal error (caught signal %d). Please report this to the cppcheck developers!\n",
+            signo);
+    print_stacktrace(stderr);
+    abort();
+}
+#endif
+
+int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* const argv[])
+{
+#ifdef _MSC_VER
+    /* not yet finished
+        __try {
+    */
+    return check_internal(cppCheck, argc, argv);
+    /*
+        }
+        except() {
+            return -1;
+        }
+    */
+#elif defined(USE_UNIX_SIGNAL_HANDLING)
+    struct sigaction act = {0};
+    act.sa_flags=SA_SIGINFO;
+    act.sa_sigaction=MySignalHandler;
+    for (std::size_t s=0; s<sizeof(listofsignals)/sizeof(listofsignals[0]); ++s) {
+        sigaction(listofsignals[s], &act, NULL);
+    }
+    return check_internal(cppCheck, argc, argv);
+#else
+    return check_internal(cppCheck, argc, argv);
+#endif
+}
+
+int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const char* const argv[])
+{
+    Settings& settings = cppCheck.settings();
+    _settings = &settings;
     bool std = settings.library.load(argv[0], "std.cfg");
     bool posix = true;
     if (settings.standards.posix)
