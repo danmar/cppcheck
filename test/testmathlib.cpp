@@ -317,6 +317,12 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("E2"));
         ASSERT_EQUALS(false, MathLib::isInt(".e2"));
         ASSERT_EQUALS(false, MathLib::isInt(".E2"));
+        ASSERT_EQUALS(false, MathLib::isInt("0x"));
+        ASSERT_EQUALS(false, MathLib::isInt("0xu"));
+        ASSERT_EQUALS(false, MathLib::isInt("0xl"));
+        ASSERT_EQUALS(false, MathLib::isInt("0xul"));
+        // test empty string
+        ASSERT_EQUALS(false, MathLib::isInt(""));
     }
 
     void isbin() {
@@ -371,6 +377,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E+2"));
         ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));
+        // test empty string
+        ASSERT_EQUALS(false, MathLib::isNegative(""));
     }
 
     void isoct() {
@@ -505,6 +513,9 @@ private:
         ASSERT_EQUALS(true , MathLib::isPositive("+1.0"));
         ASSERT_EQUALS(true , MathLib::isPositive("+1.0E+2"));
         ASSERT_EQUALS(true , MathLib::isPositive("+1.0E-2"));
+
+        // test empty string
+        ASSERT_EQUALS(true, MathLib::isPositive("")); // because it has opposite result to MathLib::isNegative
     }
 
     void isfloat() const {

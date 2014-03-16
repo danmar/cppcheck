@@ -410,60 +410,31 @@ bool MathLib::isInt(const std::string & s)
     if (s.find_last_of(charsToIndicateAFloat) != std::string::npos)
         return false;
 
-    // prechecking has nothing found,...
-    // gather information
-    enum Representation {
-        eOctal,          // starts with 0
-        eHex,            // starts with 0x
-        eDefault         // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
-    };
-    // create an instance
-    Representation Mode = eDefault;
-
-
     // remember position
     unsigned long n = 0;
     // eat up whitespace
     while (std::isspace(s[n])) ++n;
 
     // determine type
-    if (isHex(s)) {
-        Mode = eHex;
-    } else if (isOct(s)) {
-        Mode = eOctal;
+    if (isHex(s) || isOct(s)) {
+        return true;
     }
 
     // check sign
     if (s[n] == '-' || s[n] == '+') ++n;
 
-    if (Mode == eHex) {
-        ++n; // 0
-        ++n; // x
-        while (std::isxdigit(s[n]))
-            ++n;
-
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
+    // starts with digit
+    bool bStartsWithDigit=false;
+    while (std::isdigit(s[n])) {
+        bStartsWithDigit=true;
+        ++n;
     }
-    // check octal notation
-    else if (Mode == eOctal) {
-        ++n; // 0
-        while (isOctalDigit(s[n]))
-            ++n;
 
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
-    } else if (Mode == eDefault) {
-        // starts with digit
-        bool bStartsWithDigit=false;
-        while (std::isdigit(s[n])) {
-            bStartsWithDigit=true;
-            ++n;
-        };
+    while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
 
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
+    if (!bStartsWithDigit)
+        return false;
 
-        if (!bStartsWithDigit)
-            return false;
-    }
     // eat up whitespace
     while (std::isspace(s[n]))
         ++n;
