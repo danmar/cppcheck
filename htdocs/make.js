@@ -66,6 +66,18 @@
 
         echo();
         echo("### Finished site/js/pack.js.");
+
+        minifiedJs = UglifyJS.minify(cat("site/js/sorttable.js"), {
+            compress: true,
+            fromString: true, // this is needed to pass JS source code instead of filenames
+            mangle: true,
+            warnings: false
+        });
+
+        fs.writeFileSync("site/js/sorttable.min.js", minifiedJs.code, "utf8");
+
+        echo();
+        echo("### Finished site/js/sorttable.min.js.");
     };
 
 
