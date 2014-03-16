@@ -277,6 +277,11 @@ private:
         check("void f() __attribute__((destructor(1000)));\n"
               "void f() { }");
         ASSERT_EQUALS("", errout.str());
+
+        // Don't crash on wrong syntax
+        check("int x __attribute__((constructor));\n"
+              "int x __attribute__((destructor));");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -6841,8 +6841,15 @@ private:
 
         {
             const char code[] = "enum class Enum1 { a };\n"
-                                "Enum1 e1 = a;";
+                                "Enum1 e1 = Enum1::a;";
             const char expected[] = "int e1 ; e1 = 0 ;";
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code));
+        }
+
+        {
+            const char code[] = "enum class Enum1 { a };\n"
+                                "Enum1 e1 = a;";
+            const char expected[] = "int e1 ; e1 = a ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
@@ -6855,21 +6862,21 @@ private:
 
         {
             const char code[] = "enum class Enum1 : unsigned char { a };\n"
-                                "Enum1 e1 = a;";
+                                "Enum1 e1 = Enum1::a;";
             const char expected[] = "unsigned char e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned int { a };\n"
-                                "Enum1 e1 = a;";
+                                "Enum1 e1 = Enum1::a;";
             const char expected[] = "unsigned int e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned long long int { a };\n"
-                                "Enum1 e1 = a;";
+                                "Enum1 e1 = Enum1::a;";
             const char expected[] = "unsigned long long e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
@@ -6989,23 +6996,25 @@ private:
     }
 
     void enum30() { // #3852 - false positive
-
-        const char code[] = "class TestIf\n"
-                            "{\n"
-                            "public:\n"
-                            "    enum class Foo\n"
-                            "    {\n"
-                            "      one = 0,\n"
-                            "      two = 1\n"
-                            "    };\n"
-                            "    enum class Bar\n"
-                            "    {\n"
-                            "      one = 0,\n"
-                            "      two = 1\n"
-                            "    };\n"
-                            "};\n";
-        checkSimplifyEnum(code);
-        TODO_ASSERT_EQUALS("","[test.cpp:12] -> [test.cpp:7]: (style) Variable 'two' hides enumerator with same name\n", errout.str());
+        const char code [] = "class TestIf\n"
+                             "{\n"
+                             "public:\n"
+                             "    enum class Foo\n"
+                             "    {\n"
+                             "      one = 0,\n"
+                             "      two = 1\n"
+                             "    };\n"
+                             "    enum class Bar\n"
+                             "    {\n"
+                             "      one = 0,\n"
+                             "      two = 1\n"
+                             "    };\n"
+                             "};\n"
+                             "int main() {"
+                             "    return TestIf::Bar::two;\n"
+                             "}";
+        ASSERT_EQUALS("class TestIf { public: } ; int main ( ) { return 1 ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum31() {  // #3934 - calculation in first item
