@@ -8,6 +8,8 @@ env:
 #   this also turns off the debug/warning cxxflags
     - CXXFLAGS="-O2 -Wunreachable-code"
   matrix:
+#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS  CHECK_KERNEL is the var that controlls if we check and clone the kernel in that travis job
+    - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
     - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build VERIFY=1
     - MAKEFLAGS="HAVE_RULES=yes"
@@ -20,6 +22,8 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb
 script:
+# download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
+  - if [[ "$CHECK_KERNEL" == "yes" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/testing/linux-3.14-rc6.tar.xz; mkdir kernel; tar -xJf linux-3.14-rc6.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal 11" /tmp/kernel.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
