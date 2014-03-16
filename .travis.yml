@@ -12,7 +12,6 @@ env:
     - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
     - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build VERIFY=1
-    - MAKEFLAGS="HAVE_RULES=yes"
     -
 # do notify immediately about it when a sub-job of a  build fails.
 matrix:
@@ -23,7 +22,9 @@ before_install:
  - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb
 script:
 # download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
-  - if [[ "$CHECK_KERNEL" == "yes" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/testing/linux-3.14-rc6.tar.xz; mkdir kernel; tar -xJf linux-3.14-rc6.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal 11" /tmp/kernel.cppcheck; exit; fi
+  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/testing/linux-3.14-rc6.tar.xz; mkdir kernel; tar -xJf linux-3.14-rc6.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal 11" /tmp/kernel.cppcheck; exit; fi
+# if compiler is clang, exit the build to save travis some resources
+  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "clang" ]]; then exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
