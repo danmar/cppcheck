@@ -3508,6 +3508,18 @@ private:
                        "  fflush (pFile);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // fgetc
+        checkUninitVar("void f() {\n"
+                       "  FILE * pFile;\n"
+                       "  fgetc (pFile);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
+
+        checkUninitVar("void f(FILE * pFile) {\n"
+                       "  fgetc (pFile);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

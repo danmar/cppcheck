@@ -2402,6 +2402,9 @@ private:
         check("void f(FILE *p){ feof (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
+        check("void f(FILE *p){ fgetc (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
         check("void f(FILE *p){ fclose (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
