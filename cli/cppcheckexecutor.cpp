@@ -35,6 +35,7 @@
 #if defined(__GNUC__)
 #define USE_UNIX_SIGNAL_HANDLING
 #include <execinfo.h>
+#include <cxxabi.h>
 #endif
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
@@ -179,45 +180,146 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 }
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
-extern "C" void MySignalHandler(int signo, siginfo_t *info, void *context);
-
 /* (declare this list here, so it may be used in signal handlers in addition to main())
  * A list of signals available in ISO C
  * Check out http://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
  * For now we only want to detect abnormal behaviour for a few selected signals:
  */
-static const int listofsignals[] = {
-    /* don't care: SIGABRT, */
-    SIGFPE,
-    SIGILL,
-    SIGINT,
-    SIGSEGV,
-    /* don't care: SIGTERM */
+struct Signaltype {
+    int signalnumber;
+    const char *signalname;
+};
+#define DECLARE_SIGNAL(x) {x, #x}
+static const Signaltype listofsignals[] = {
+    // don't care: SIGABRT,
+    DECLARE_SIGNAL(SIGFPE),
+    DECLARE_SIGNAL(SIGILL),
+    DECLARE_SIGNAL(SIGINT),
+    DECLARE_SIGNAL(SIGSEGV),
+    // don't care: SIGTERM
 };
 
-static void print_stacktrace(FILE* f)
+// Simple helper function
+template<typename T, int size>
+int GetArrayLength(T(&)[size])
+{
+    return size;
+}
+
+
+/*
+ * Try to print the callstack.
+ * That is very sensitive to the operating system, hardware, compiler and runtime!
+ */
+static void print_stacktrace(FILE* f, bool demangling)
 {
 #if defined(__GNUC__)
     void *array[50]= {0};
-    size_t size = backtrace(array, int(sizeof(array)/sizeof(array[0])));
-    char **strings = backtrace_symbols(array, (int)size);
-    fprintf(f, "Callstack:\n");
-    for (std::size_t i = 0; i < size; i++) {
-        fprintf(f, "%s\n", strings[i]);
+    const int depth = backtrace(array, (int)GetArrayLength(array));
+    char **symbolstrings = backtrace_symbols(array, depth);
+    if (symbolstrings) {
+        fprintf(f, "Callstack:\n");
+        const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
+        for (int i = offset; i < depth; ++i) {
+            const char * const symbol = symbolstrings[i];
+            char * realname = nullptr;
+            const char * const firstBracket = strchr(symbol, '(');
+            if (demangling && firstBracket) {
+                const char * const plus = strchr(firstBracket, '+');
+                if (plus) {
+                    char input_buffer[512]= {0};
+                    strncpy(input_buffer, firstBracket+1, plus-firstBracket-1);
+                    char output_buffer[1024]= {0};
+                    size_t length = GetArrayLength(output_buffer);
+                    int status=0;
+                    realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
+                }
+            }
+
+            fprintf(f, "%d. %s\n",
+                    i-offset, (realname) ? realname : symbolstrings[i]);
+        }
+        free(symbolstrings);
+    } else {
+        fprintf(f, "Callstack could not be obtained\n");
     }
-    free(strings);
 #endif
 }
 
-void MySignalHandler(int signo, siginfo_t * /*info*/, void * /*context*/)
+/*
+ * Simple mapping
+ */
+static const char *signal_name(int signo)
 {
-    fprintf(stderr, "Internal error (caught signal %d). Please report this to the cppcheck developers!\n",
-            signo);
-    print_stacktrace(stderr);
+    for (size_t s=0; s<GetArrayLength(listofsignals); ++s) {
+        if (listofsignals[s].signalnumber==signo)
+            return listofsignals[s].signalname;
+    }
+    return "";
+}
+
+/*
+ * Entry pointer for signal handlers
+ */
+static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*/)
+{
+    const char * const signame=signal_name(signo);
+    bool bPrintCallstack=true;
+    switch (signo) {
+    case SIGILL:
+        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+                signo, signame, info->si_addr);
+        break;
+    case SIGFPE:
+        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+                signo, signame, info->si_addr);
+        break;
+    case SIGSEGV:
+        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+                signo, signame, info->si_addr);
+        break;
+        /*
+         case SIGBUS:
+            fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+                     signo, signame, info->si_addr);
+           break;
+         case SIGTRAP:
+           fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+                    signo, signame, info->si_addr);
+           break;
+        */
+    case SIGINT:
+      bPrintCallstack=false;
+      break;
+    default:
+        fprintf(stderr, "Internal error (caught signal %d)\n",
+                signo);
+        break;
+    }
+    if (bPrintCallstack) {
+      print_stacktrace(stderr, false);
+      fprintf(stderr, "Please report this to the cppcheck developers!\n");
+    }
     abort();
 }
 #endif
 
+#ifdef _MSC_VER
+/*
+ * Any evaluation of the information about the exception needs to be done here!
+ */
+static int filterException(int code, PEXCEPTION_POINTERS ex)
+{
+    // TODO we should try to extract some information here.
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
+
+/**
+ * Signal/SEH handling
+ * TODO Check for multi-threading issues!
+ *
+ */
 int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* const argv[])
 {
 #ifdef _MSC_VER
@@ -226,17 +328,21 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* co
     */
     return check_internal(cppCheck, argc, argv);
     /*
-        }
-        except() {
-            return -1;
-        }
+    }
+    __except(filterException(GetExceptionCode(), GetExceptionInformation())) {
+       // reporting to stdout may not be helpful within a GUI application..
+       fprintf(stderr, "Internal error\n");
+       fprintf(stderr, "Please report this to the cppcheck developers!\n");
+        return -1;
+    }
     */
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
-    struct sigaction act = {0};
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO;
-    act.sa_sigaction=MySignalHandler;
-    for (std::size_t s=0; s<sizeof(listofsignals)/sizeof(listofsignals[0]); ++s) {
-        sigaction(listofsignals[s], &act, NULL);
+    act.sa_sigaction=CppcheckSignalHandler;
+    for (std::size_t s=0; s<GetArrayLength(listofsignals); ++s) {
+        sigaction(listofsignals[s].signalnumber, &act, NULL);
     }
     return check_internal(cppCheck, argc, argv);
 #else
