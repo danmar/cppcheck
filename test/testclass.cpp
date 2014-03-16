@@ -2507,6 +2507,15 @@ private:
                       "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+
+        checkNoMemset("class A {\n"
+                      "    std::array<int, 10> ints;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str()); // std::array is POD (#5481)
     }
 
     void mallocOnClass() {

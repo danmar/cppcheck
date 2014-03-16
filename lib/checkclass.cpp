@@ -1054,7 +1054,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             const Scope *typeScope = var->typeScope();
 
             // check for std:: type
-            if (var->isStlType())
+            if (var->isStlType() && tok1->strAt(2) != "array")
                 if (allocation)
                     mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
                 else
