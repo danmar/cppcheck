@@ -7359,7 +7359,8 @@ void Tokenizer::simplifyEnum()
             Token *typeTokenEnd = nullptr;
 
             // check for C++0x enum class
-            if (Token::Match(tok->next(), "class|struct"))
+            bool enumClass = Token::Match(tok->next(), "class|struct");
+            if (enumClass)
                 tok->deleteNext();
 
             // check for name
@@ -7521,15 +7522,17 @@ void Tokenizer::simplifyEnum()
                 if (_settings->terminated())
                     return;
 
-                const std::string pattern = className.empty() ?
-                                            std::string("") :
-                                            std::string(className + " :: ");
+                std::string pattern;
+                if (!className.empty())
+                    pattern += className + " :: ";
+                if (enumClass)
+                    pattern += enumType->str() + " :: ";
+
                 int level = 0;
-                bool inScope = true;
+                bool inScope = !enumClass; // enum class objects are always in a different scope
 
                 std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
                 bool simplify = false;
-                bool hasClass = false;
                 EnumValue *ev = nullptr;
 
                 if (!tok1)
@@ -7631,10 +7634,14 @@ void Tokenizer::simplifyEnum()
                             // skip ( .. )
                             tok2 = tok2->next()->link();
                         }
-                    } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()) && enumValues.find(tok2->strAt(2)) != enumValues.end()) {
-                        simplify = true;
-                        hasClass = true;
-                        ev = &(enumValues.find(tok2->strAt(2))->second);
+                    } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str())) {
+                        const Token* tok3 = tok2;
+                        while (tok3->strAt(1) == "::")
+                            tok3 = tok3->tokAt(2);
+                        if (enumValues.find(tok3->str()) != enumValues.end()) {
+                            simplify = true;
+                            ev = &(enumValues.find(tok3->str())->second);
+                        }
                     } else if (inScope &&    // enum is in scope
                                (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
                                enumValues.find(tok2->str()) != enumValues.end()) {    // tok2 is a enum id with a known value
@@ -7647,7 +7654,6 @@ void Tokenizer::simplifyEnum()
                                 // * it's followed by "["
                             } else {
                                 simplify = true;
-                                hasClass = false;
                                 ev = &(enumValues.find(tok2->str())->second);
                             }
                         } else {
@@ -7661,11 +7667,13 @@ void Tokenizer::simplifyEnum()
                     if (simplify) {
                         if (ev->value) {
                             tok2->str(ev->value->str());
-                            if (hasClass)
+                            while (tok2->strAt(1) == "::")
                                 tok2->deleteNext(2);
                         } else {
+                            while (tok2->strAt(1) == "::")
+                                tok2->deleteNext(2);
                             tok2 = tok2->previous();
-                            tok2->deleteNext(hasClass ? 3 : 1);
+                            tok2->deleteNext();
                             bool hasOp = false;
                             int indentlevel = 0;
                             for (const Token *enumtok = ev->start; enumtok != ev->end; enumtok = enumtok->next()) {
