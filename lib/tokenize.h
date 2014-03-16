@@ -289,13 +289,13 @@ public:
     void simplifyIfSameInnerCondition();
 
     /**
-     * Simplify the "not" and "and" keywords to "!" and "&&"
-     * accordingly.
+     * Simplify the 'C Alternative Tokens'
      * Examples:
-     * - "if (not p)" => "if (!p)"
-     * - "if (p and q)" => "if (p && q)"
+     * "if(s and t)" => "if(s && t)"
+     * "while((r bitand s) and not t)" => while((r & s) && !t)"
+     * "a and_eq b;" => "a &= b;"
      */
-    bool simplifyLogicalOperators();
+    bool simplifyCAlternativeTokens();
 
     /**
      * Simplify comma into a semicolon when possible:

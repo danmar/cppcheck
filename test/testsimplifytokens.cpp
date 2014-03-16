@@ -170,6 +170,8 @@ private:
         // Simplify "or" to "||"
         TEST_CASE(or1);
 
+        TEST_CASE(cAlternativeTokens);
+
         TEST_CASE(comma_keyword);
         TEST_CASE(remove_comma);
 
@@ -2695,45 +2697,70 @@ private:
         ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", tok("if(!(fclose(fd) == 0));", false));
     }
 
-
     void not1() {
-        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (not p);", false));
-        ASSERT_EQUALS("if ( p && ! q ) { ; }", tok("if (p && not q);", false));
-        ASSERT_EQUALS("void foo ( not i )", tok("void foo ( not i )", false));
+        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", false));
+        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", false));
+        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", false));
+        // Don't simplify 'not' or 'compl' if they are defined as a type;
+        // in variable declaration and in function declaration/definition
+        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", false));
+        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", false));
+        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", false));
+        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", false));
     }
 
     void and1() {
-        ASSERT_EQUALS("if ( p && q ) { ; }",
-                      tok("if (p and q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p && q ) { ; } }",
+                      tok("void f() { if (p and q) ; }", false));
 
-        ASSERT_EQUALS("if ( foo ( ) && q ) { ; }",
-                      tok("if (foo() and q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( foo ( ) && q ) { ; } }",
+                      tok("void f() { if (foo() and q) ; }", false));
 
-        ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) { ; }",
-                      tok("if (foo() and bar()) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( foo ( ) && bar ( ) ) { ; } }",
+                      tok("void f() { if (foo() and bar()) ; }", false));
 
-        ASSERT_EQUALS("if ( p && bar ( ) ) { ; }",
-                      tok("if (p and bar()) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p && bar ( ) ) { ; } }",
+                      tok("void f() { if (p and bar()) ; }", false));
 
-        ASSERT_EQUALS("if ( p && ! q ) { ; }",
-                      tok("if (p and not q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }",
+                      tok("void f() { if (p and not q) ; }", false));
+
+        ASSERT_EQUALS("void f ( ) { r = a && b ; }",
+                      tok("void f() { r = a and b; }", false));
+
+        ASSERT_EQUALS("void f ( ) { r = ( a || b ) && ( c || d ) ; }",
+                      tok("void f() { r = (a || b) and (c || d); }", false));
     }
 
     void or1() {
-        ASSERT_EQUALS("if ( p || q ) { ; }",
-                      tok("if (p or q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p || q ) { ; } }",
+                      tok("void f() { if (p or q) ; }", false));
 
-        ASSERT_EQUALS("if ( foo ( ) || q ) { ; }",
-                      tok("if (foo() or q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( foo ( ) || q ) { ; } }",
+                      tok("void f() { if (foo() or q) ; }", false));
 
-        ASSERT_EQUALS("if ( foo ( ) || bar ( ) ) { ; }",
-                      tok("if (foo() or bar()) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( foo ( ) || bar ( ) ) { ; } }",
+                      tok("void f() { if (foo() or bar()) ; }", false));
 
-        ASSERT_EQUALS("if ( p || bar ( ) ) { ; }",
-                      tok("if (p or bar()) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p || bar ( ) ) { ; } }",
+                      tok("void f() { if (p or bar()) ; }", false));
 
-        ASSERT_EQUALS("if ( p || ! q ) { ; }",
-                      tok("if (p or not q) ;", false));
+        ASSERT_EQUALS("void f ( ) { if ( p || ! q ) { ; } }",
+                      tok("void f() { if (p or not q) ; }", false));
+
+        ASSERT_EQUALS("void f ( ) { r = a || b ; }",
+                      tok("void f() { r = a or b; }", false));
+
+        ASSERT_EQUALS("void f ( ) { r = ( a && b ) || ( c && d ) ; }",
+                      tok("void f() { r = (a && b) or (c && d); }", false));
+    }
+
+    void cAlternativeTokens() {
+        ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
+                      tok("void f() { err or_eq ((r bitand s) and not t); }", false));
+        ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 15 , ~ c , ! d ) ; }",
+                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", false));
+
     }
 
     void comma_keyword() {

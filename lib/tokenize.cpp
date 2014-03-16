@@ -1680,7 +1680,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
         while (TemplateSimplifier::simplifyNumericCalculations(tok))
             ;
 
-    while (simplifyLogicalOperators()) { }
+    simplifyCAlternativeTokens();
 
     // Convert e.g. atol("0") into 0
     while (simplifyMathFunctions()) {};
@@ -3384,11 +3384,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // simplify function pointers
     simplifyFunctionPointers();
 
-    // "if (not p)" => "if (!p)"
-    // "if (p and q)" => "if (p && q)"
-    // "if (p or q)" => "if (p || q)"
-    while (simplifyLogicalOperators()) {}
-
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
@@ -3401,6 +3396,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     } else {
         setVarId();
     }
+
+    // Simplify the C alternative tokens (and, or, etc.)
+    simplifyCAlternativeTokens();
 
     // The simplify enum might have inner loops
     if (_settings->terminated())
@@ -6028,51 +6026,49 @@ void Tokenizer::simplifyIfSameInnerCondition()
     }
 }
 
+// Binary operators simplification map
+static const std::pair<std::string, std::string> cAlternativeTokens_[] = {
+    std::make_pair("and", "&&"), std::make_pair("and_eq", "&="), std::make_pair("bitand", "&"),
+    std::make_pair("bitor", "|"), std::make_pair("not_eq", "!="), std::make_pair("or", "||"),
+    std::make_pair("or_eq", "|="), std::make_pair("xor", "^"), std::make_pair("xor_eq", "^=")
+};
 
-bool Tokenizer::simplifyLogicalOperators()
+static const std::map<std::string, std::string> cAlternativeTokens(cAlternativeTokens_,
+        cAlternativeTokens_ + sizeof(cAlternativeTokens_)/sizeof(*cAlternativeTokens_));
+
+// Simplify the C alternative tokens:
+//  and      =>     &&
+//  and_eq   =>     &=
+//  bitand   =>     &
+//  bitor    =>     |
+//  compl    =>     ~
+//  not      =>     !
+//  not_eq   =>     !=
+//  or       =>     ||
+//  or_eq    =>     |=
+//  xor      =>     ^
+//  xor_eq   =>     ^=
+bool Tokenizer::simplifyCAlternativeTokens()
 {
     bool ret = false;
-
-    // "if (not p)" => "if (!p)"
-    // "if (p and q)" => "if (p && q)"
-    // "if (p or q)" => "if (p || q)"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if|while ( not|compl %var%")) {
-            tok->tokAt(2)->str(tok->strAt(2) == "not" ? "!" : "~");
-            ret = true;
-        } else if (Token::Match(tok, "&& not|compl %var%")) {
-            tok->next()->str(tok->next()->str() == "not" ? "!" : "~");
-            ret = true;
-        } else if (Token::Match(tok, "|| not|compl %var%")) {
-            tok->next()->str(tok->next()->str() == "not" ? "!" : "~");
-            ret = true;
-        }
-        // "%var%|) and %var%|("
-        else if (Token::Match(tok, "%var% %any%")) {
-            if (!Token::Match(tok, "and|or|bitand|bitor|xor|not_eq"))
-                continue;
-
-            const Token *tok2 = tok;
-            while (nullptr != (tok2 = tok2->previous())) {
-                if (tok2->str() == ")")
-                    tok2 = tok2->link();
-                else if (Token::Match(tok2, "(|;|{|}"))
-                    break;
-            }
-            if (tok2 && Token::Match(tok2->previous(), "if|while (")) {
-                if (tok->str() == "and")
-                    tok->str("&&");
-                else if (tok->str() == "or")
-                    tok->str("||");
-                else if (tok->str() == "bitand")
-                    tok->str("&");
-                else if (tok->str() == "bitor")
-                    tok->str("|");
-                else if (tok->str() == "xor")
-                    tok->str("^");
-                else if (tok->str() == "not_eq")
-                    tok->str("!=");
-                ret = true;
+        if (Token::Match(tok, ") const| {")) { // Check for executable scope
+            while (tok->str() != "{")
+                tok = tok->next();
+            Token * const end = tok->link();
+            for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "%var%|%num%|)|] %any% %var%|%num%|(")) {
+                    const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok2->next()->str());
+                    if (cOpIt != cAlternativeTokens.end()) {
+                        tok2->next()->str(cOpIt->second);
+                        ret = true;
+                    }
+                }
+                if (Token::Match(tok2, "not|compl %var%|(") &&
+                    !Token::Match(tok2->previous(), "[;{}]")) { // Don't simplify 'not p;' (in case 'not' is a type)
+                    tok2->str(Token::Match(tok2, "not") ? "!" : "~");
+                    ret = true;
+                }
             }
         }
     }
