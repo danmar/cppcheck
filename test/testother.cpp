@@ -4729,6 +4729,10 @@ private:
         // make sure there are not "same expression" fp when there are different ({}) expressions
         check("void f(long x) { if (({ 1+2; }) == ({3+4};)) {} }");
         ASSERT_EQUALS("", errout.str());
+
+        // #5535: Reference named like its type
+        check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateIf1() { // ticket 3689 ( avoid false positive )

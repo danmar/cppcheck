@@ -68,7 +68,7 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
-    if (tok1->str() != tok2->str())
+    if (tok1->str() != tok2->str() || tok1->varId() != tok2->varId())
         return false;
     if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
         return false;
