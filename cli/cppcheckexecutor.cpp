@@ -43,7 +43,8 @@
 #include <stdio.h>
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__MINGW32__)
+#define USE_WINDOWS_SEH
 #include <Windows.h>
 #include <excpt.h>
 #endif
@@ -304,13 +305,27 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
 }
 #endif
 
-#ifdef _MSC_VER
+#ifdef USE_WINDOWS_SEH
 /*
  * Any evaluation of the information about the exception needs to be done here!
  */
 static int filterException(int code, PEXCEPTION_POINTERS ex)
 {
-    // TODO we should try to extract some information here.
+    // TODO we should try to extract more information here
+    //   - address, read/write
+    switch (ex->ExceptionRecord->ExceptionCode) {
+    case EXCEPTION_ACCESS_VIOLATION:
+        fprintf(stderr, "Internal error (EXCEPTION_ACCESS_VIOLATION)\n");
+        break;
+    case EXCEPTION_IN_PAGE_ERROR:
+        fprintf(stderr, "Internal error (EXCEPTION_IN_PAGE_ERROR)\n");
+        break;
+    default:
+        fprintf(stderr, "Internal error (%d)\n",
+                code);
+        break;
+    }
+    fprintf(stderr, "Please report this to the cppcheck developers!\n");
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
@@ -322,20 +337,15 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
  */
 int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* const argv[])
 {
-#ifdef _MSC_VER
-    /* not yet finished
-        __try {
-    */
-    return check_internal(cppCheck, argc, argv);
-    /*
-    }
-    __except(filterException(GetExceptionCode(), GetExceptionInformation())) {
-       // reporting to stdout may not be helpful within a GUI application..
-       fprintf(stderr, "Internal error\n");
-       fprintf(stderr, "Please report this to the cppcheck developers!\n");
+#ifdef USE_WINDOWS_SEH
+    __try {
+        return check_internal(cppCheck, argc, argv);
+    } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
+        // reporting to stdout may not be helpful within a GUI application..
+        fprintf(stderr, "Internal error\n");
+        fprintf(stderr, "Please report this to the cppcheck developers!\n");
         return -1;
     }
-    */
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     struct sigaction act;
     memset(&act, 0, sizeof(act));
