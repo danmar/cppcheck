@@ -23,6 +23,9 @@ matrix:
   exclude:
     - compiler: clang
       env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+# kernel check can time out during travis rush hour, so make failure of it less grave...
+  allow_failures:
+    - env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
 
 before_install:
 # install needed deps
