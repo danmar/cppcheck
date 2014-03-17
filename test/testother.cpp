@@ -81,6 +81,7 @@ private:
         TEST_CASE(varScope18);
         TEST_CASE(varScope19);      // Ticket #4994
         TEST_CASE(varScope20);      // Ticket #5103
+        TEST_CASE(varScope21);      // Ticket #5382
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1195,6 +1196,15 @@ private:
                  "  int b = a;\n"
                  "  if (b > 32) b = x;\n"
                  "  return b;\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope21() { // Ticket #5382 - initializing two-dimensional array
+        varScope("int test() {\n"
+                 "    int test_value = 3;\n"
+                 "    int test_array[1][1] = { { test_value } };\n"
+                 "    return sizeof(test_array);\n"
                  "}");
         ASSERT_EQUALS("", errout.str());
     }
