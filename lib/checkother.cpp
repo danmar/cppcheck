@@ -2915,37 +2915,37 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
     if (!_settings->isEnabled("warning"))
         return;
 
-    const Token *tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %str% , %str% ")) != nullptr) {
-        const std::string &str1 = tok->strAt(2);
-        const std::string &str2 = tok->strAt(4);
-        alwaysTrueFalseStringCompareError(tok, str1, str2);
-        tok = tok->tokAt(5);
-    }
-
-    tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "QString :: compare ( %str% , %str% )")) != nullptr) {
-        const std::string &str1 = tok->strAt(4);
-        const std::string &str2 = tok->strAt(6);
-        alwaysTrueFalseStringCompareError(tok, str1, str2);
-        tok = tok->tokAt(7);
-    }
-
-    tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp ( %var% , %var% ")) != nullptr) {
-        const std::string &str1 = tok->strAt(2);
-        const std::string &str2 = tok->strAt(4);
-        if (str1 == str2)
-            alwaysTrueStringVariableCompareError(tok, str1, str2);
-        tok = tok->tokAt(5);
-    }
-
-    tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "!!+ %str% ==|!= %str% !!+")) != nullptr) {
-        const std::string &str1 = tok->strAt(1);
-        const std::string &str2 = tok->strAt(3);
-        alwaysTrueFalseStringCompareError(tok, str1, str2);
-        tok = tok->tokAt(5);
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp (")) {
+            if (Token::Match(tok->tokAt(2), "%str% , %str% ")) {
+                const std::string &str1 = tok->strAt(2);
+                const std::string &str2 = tok->strAt(4);
+                alwaysTrueFalseStringCompareError(tok, str1, str2);
+                tok = tok->tokAt(5);
+            } else if (Token::Match(tok->tokAt(2), "%var% , %var% ")) {
+                const std::string &str1 = tok->strAt(2);
+                const std::string &str2 = tok->strAt(4);
+                if (str1 == str2)
+                    alwaysTrueStringVariableCompareError(tok, str1, str2);
+                tok = tok->tokAt(5);
+            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var%  . c_str ( ) ")) {
+                const std::string &str1 = tok->strAt(2);
+                const std::string &str2 = tok->strAt(8);
+                if (str1 == str2)
+                    alwaysTrueStringVariableCompareError(tok, str1, str2);
+                tok = tok->tokAt(13);
+            }
+        } else if (Token::Match(tok, "QString :: compare ( %str% , %str% )")) {
+            const std::string &str1 = tok->strAt(4);
+            const std::string &str2 = tok->strAt(6);
+            alwaysTrueFalseStringCompareError(tok, str1, str2);
+            tok = tok->tokAt(7);
+        } else if (Token::Match(tok, "!!+ %str% ==|!= %str% !!+")) {
+            const std::string &str1 = tok->strAt(1);
+            const std::string &str2 = tok->strAt(3);
+            alwaysTrueFalseStringCompareError(tok, str1, str2);
+            tok = tok->tokAt(5);
+        }
     }
 }
 

@@ -4982,6 +4982,16 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
 
+        check(
+            "int foo(const std::string& buf)\n"
+            "{\n"
+            "  if (stricmp(buf.c_str(), buf.c_str()) == 0)"
+            "  {"
+            "    std::cout << \"Equal\n\""
+            "  }"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout.str());
+
         check_preprocess_suppress(
             "int main() {\n"
             "  if (\"str\" == \"str\") {\n"
