@@ -4717,6 +4717,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("int foo(int i) {\n"
+              "    return i/i;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '/'.\n", errout.str());
+
         check("void foo() {\n"
               "    if (a << 1 << 1) {}\n"
               "}");
