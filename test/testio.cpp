@@ -37,6 +37,7 @@ private:
         TEST_CASE(wrongMode_complex);
         TEST_CASE(useClosedFile);
         TEST_CASE(fileIOwithoutPositioning);
+        TEST_CASE(seekOnAppendedFile);
         TEST_CASE(fflushOnInputStream);
 
         TEST_CASE(testScanf1); // Scanf without field limiters
@@ -251,7 +252,8 @@ private:
               "    rewind(f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was opened only for writing.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Repositioning operation performed on a file opened in append mode has no effect.\n"
+                      "[test.cpp:5]: (error) Read operation on a file that was opened only for writing.\n", errout.str());
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"a+\");\n"
@@ -528,6 +530,26 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
+    }
+
+    void seekOnAppendedFile() {
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"a+\");\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"w\");\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"a\");\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Repositioning operation performed on a file opened in append mode has no effect.\n", errout.str());
     }
 
     void fflushOnInputStream() {

@@ -72,7 +72,7 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 // fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
 // fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
-enum OpenMode {CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN};
+enum OpenMode { CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN_OM };
 static OpenMode getMode(const std::string& str)
 {
     if (str.find('+', 1) != std::string::npos)
@@ -81,7 +81,7 @@ static OpenMode getMode(const std::string& str)
         return WRITE_MODE;
     else if (str.find('r') != std::string::npos)
         return READ_MODE;
-    return UNKNOWN;
+    return UNKNOWN_OM;
 }
 
 struct Filepointer {
@@ -89,8 +89,10 @@ struct Filepointer {
     unsigned int mode_indent;
     enum Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
     unsigned int op_indent;
-    Filepointer(OpenMode mode_ = UNKNOWN)
-        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0) {
+    enum AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
+    AppendMode append_mode;
+    Filepointer(OpenMode mode_ = UNKNOWN_OM)
+        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0), append_mode(UNKNOWN_AM) {
     }
 };
 
@@ -113,11 +115,11 @@ void CheckIO::checkFileUsage()
 
         if (var->isLocal()) {
             if (var->nameToken()->strAt(1) == "(") // initialize by calling "ctor"
-                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN)));
+                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN_OM)));
             else
                 filepointers.insert(std::make_pair(var->declarationId(), Filepointer(CLOSED)));
         } else {
-            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN)));
+            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN_OM)));
             // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
         }
     }
@@ -134,7 +136,7 @@ void CheckIO::checkFileUsage()
                 for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
                     if (indent < i->second.mode_indent) {
                         i->second.mode_indent = 0;
-                        i->second.mode = UNKNOWN;
+                        i->second.mode = UNKNOWN_OM;
                     }
                     if (indent < i->second.op_indent) {
                         i->second.op_indent = 0;
@@ -144,7 +146,7 @@ void CheckIO::checkFileUsage()
             } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break") { // Reset upon return, continue or break
                 for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
                     i->second.mode_indent = 0;
-                    i->second.mode = UNKNOWN;
+                    i->second.mode = UNKNOWN_OM;
                     i->second.op_indent = 0;
                     i->second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
@@ -153,7 +155,7 @@ void CheckIO::checkFileUsage()
                         (windows ? (tok->str() != "_wfopen" && tok->str() != "_wfreopen") : true))) {
                 std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
                 if (i != filepointers.end()) {
-                    i->second.mode = UNKNOWN;
+                    i->second.mode = UNKNOWN_OM;
                     i->second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
             } else if (Token::Match(tok, "%var% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
@@ -230,18 +232,26 @@ void CheckIO::checkFileUsage()
                     continue;
 
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
-                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN)));
+                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN_OM)));
                 }
                 Filepointer& f = filepointers[fileTok->varId()];
 
                 switch (operation) {
                 case Filepointer::OPEN:
                     f.mode = getMode(mode);
+                    if (mode.find('a') != std::string::npos) {
+                        if (f.mode == RW_MODE)
+                            f.append_mode = Filepointer::APPEND_EX;
+                        else
+                            f.append_mode = Filepointer::APPEND;
+                    }
                     f.mode_indent = indent;
                     break;
                 case Filepointer::POSITIONING:
                     if (f.mode == CLOSED)
                         useClosedFileError(tok);
+                    else if (f.append_mode == Filepointer::APPEND && _settings->isEnabled("warning"))
+                        seekOnAppendedFileError(tok);
                     break;
                 case Filepointer::READ:
                     if (f.mode == CLOSED)
@@ -271,7 +281,7 @@ void CheckIO::checkFileUsage()
                         useClosedFileError(tok);
                     break;
                 case Filepointer::UNKNOWN_OP:
-                    f.mode = UNKNOWN;
+                    f.mode = UNKNOWN_OM;
                     f.mode_indent = 0;
                     break;
                 default:
@@ -285,7 +295,7 @@ void CheckIO::checkFileUsage()
         }
         for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
             i->second.op_indent = 0;
-            i->second.mode = UNKNOWN;
+            i->second.mode = UNKNOWN_OM;
             i->second.lastOperation = Filepointer::UNKNOWN_OP;
         }
     }
@@ -320,6 +330,12 @@ void CheckIO::useClosedFileError(const Token *tok)
 {
     reportError(tok, Severity::error,
                 "useClosedFile", "Used file that is not opened.");
+}
+
+void CheckIO::seekOnAppendedFileError(const Token *tok)
+{
+    reportError(tok, Severity::warning,
+                "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.");
 }
 
 
