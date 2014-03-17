@@ -1091,7 +1091,11 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
 
 void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".");
+    reportError(tok, Severity::error, "memsetClass",
+                "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".\n"
+                "Using '" + memfunc + "' on " + type + " that contains a " + classname + " is unsafe, because constructor, destructor "
+                "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
+                "is created.");
 }
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
