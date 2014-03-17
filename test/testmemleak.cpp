@@ -273,6 +273,7 @@ private:
         TEST_CASE(realloc13);
         TEST_CASE(realloc14);
         TEST_CASE(realloc15);
+        TEST_CASE(realloc16);
 
         TEST_CASE(assign1);
         TEST_CASE(assign2);   // #2806 - FP when using redundant assignment
@@ -3063,6 +3064,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n"
                       "[test.cpp:6]: (error) Memory leak: m_options\n", errout.str());
+    }
+
+    void realloc16() {
+        check("void f(char *zLine) {\n"
+              "  zLine = realloc(zLine, 42);\n"
+              "  if (zLine) {\n"
+              "    free(zLine);\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assign1() {

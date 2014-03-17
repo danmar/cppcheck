@@ -181,8 +181,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
         const int alloctype = settings1->library.alloc(tok2->str());
-        if (alloctype > 0)
+        if (alloctype > 0) {
+            if (alloctype == settings1->library.dealloc("free"))
+                return Malloc;
             return Library::ismemory(alloctype) ? OtherMem : OtherRes;
+        }
     }
 
     while (Token::Match(tok2,"%type%|%var% ::|. %type%"))
