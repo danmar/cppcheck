@@ -130,7 +130,6 @@ private:
         TEST_CASE(array_index_negative2);    // ticket #3063
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member. #1576
-        TEST_CASE(array_index_for_break);    // FP: for,break
         TEST_CASE(array_index_for_continue); // for,continue
         TEST_CASE(array_index_for);          // FN: for,if
         TEST_CASE(array_index_for_neq);      // #2211: Using != in condition
@@ -458,7 +457,8 @@ private:
                   "        a[i] = 0;\n"
                   "    }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n"
+                          "[test.cpp:3]: (error) Array 'a[10]' accessed at index 49, which is out of bounds.\n", errout.str());
         }
     }
 
@@ -1844,19 +1844,6 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
     }
 
-    void array_index_for_break() {
-        check("void f() {\n"
-              "    int a[2];\n"
-              "    for (int i = 0; i <= 2; ++i) {\n"
-              "        a[i] = 0;\n"
-              "        if (i==1) {\n"
-              "            break;\n"
-              "        }\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void array_index_for_continue() {
         // #3913
         check("void f() {\n"
@@ -1924,7 +1911,9 @@ private:
               "        a[i] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n"
+                      "[test.cpp:4]: (error) Array 'a[5]' accessed at index 9, which is out of bounds.\n",
+                      errout.str());
     }
 
     void array_index_for_question() {
@@ -2274,7 +2263,8 @@ private:
               "    for (i = 0; i <= 10; ++i)\n"
               "        a[i] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: a\n"
+                      "[test.cpp:7]: (error) Array 'a[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
 
@@ -2285,7 +2275,8 @@ private:
               "    for (int i = 0; i < 8; ++i)\n"
               "        p[i] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: p\n"
+                      "[test.cpp:5]: (error) Array 'p[2]' accessed at index 7, which is out of bounds.\n", errout.str());
 
         // No false positive
         check("void foo(int x, int y)\n"
