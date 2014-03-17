@@ -47,7 +47,7 @@ void f2() {
     Token::Match(tok, abc);
 }
 ```
-From this we can see that the usage of `Token::Match()` in `f1()` has been optimized, whereas the one in `f2()` couldn't be optimized (the string wasn't inline on the `Token::Match()` call). **The developer doesn't need to use this tool during development but should be aware of these optimizations**. *Building with this optimization, cppcheck can get a boost of 2x of speed-up.* 
+From this we can see that the usage of `Token::Match()` in `f1()` has been optimized, whereas the one in `f2()` couldn't be optimized (the string wasn't inline on the `Token::Match()` call). **The developer doesn't need to use this tool during development but should be aware of these optimizations**. *Building with this optimization, cppcheck can get a boost of 2x of speed-up.*
 
 ### * tools/dmake.cpp
 

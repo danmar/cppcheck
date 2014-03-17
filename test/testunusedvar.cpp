@@ -3701,30 +3701,30 @@ private:
     void localvarUnusedGoto() {
         // #4447
         functionVariableUsage("bool f(const int &i) {\n"
-                              "	int X = i;\n"
+                              " int X = i;\n"
                               "label:\n"
-                              "	if ( X == 0 ) {\n"
+                              " if ( X == 0 ) {\n"
                               "    X -= 101;\n"
                               "    return true;\n"
-                              "	}\n"
-                              "	if ( X < 1001 )  {\n"
+                              " }\n"
+                              " if ( X < 1001 )  {\n"
                               "    X += 1;\n"
                               "    goto label;\n"
-                              "	}\n"
-                              "	return false;\n"
+                              " }\n"
+                              " return false;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // #4558
         functionVariableUsage("int f() {\n"
-                              "	int i,j=0;\n"
-                              "	start:\n"
-                              "	i=j;\n"
-                              "	i++;\n"
-                              "	j=i;\n"
-                              "	if (i<3)\n"
-                              "	    goto start;\n"
-                              "	return i;\n"
+                              " int i,j=0;\n"
+                              " start:\n"
+                              " i=j;\n"
+                              " i++;\n"
+                              " j=i;\n"
+                              " if (i<3)\n"
+                              "     goto start;\n"
+                              " return i;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
