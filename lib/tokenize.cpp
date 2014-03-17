@@ -7369,7 +7369,7 @@ void Tokenizer::simplifyEnum()
             if (tok->next()->str() == ":") {
                 tok = tok->next();
 
-                if (!tok->next()) {
+                if (!tok->next() || !tok->next()->isName()) {
                     syntaxError(tok);
                     return; // can't recover
                 }

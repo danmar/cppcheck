@@ -79,6 +79,7 @@ private:
         TEST_CASE(garbageCode5); // #5168
         TEST_CASE(garbageCode6); // #5214
         TEST_CASE(garbageCode7);
+        TEST_CASE(garbageCode8); // #5511
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -1023,6 +1024,10 @@ private:
     void garbageCode7() {
         tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true);
         tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
+    }
+
+    void garbageCode8() {
+        tokenizeAndStringify("{ enum struct : };", true);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
