@@ -2417,7 +2417,7 @@ void Tokenizer::setVarId()
                 if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%")) {
                     executableScope.push(true);
                 } else {
-                    executableScope.push(executableScope.top());
+                    executableScope.push(tok->strAt(-1) == "else");
                     scopeInfo.push(variableId);
                 }
             }

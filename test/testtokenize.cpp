@@ -303,6 +303,7 @@ private:
         TEST_CASE(varid_rvalueref);
         TEST_CASE(varid_arrayFuncPar); // #5294
         TEST_CASE(varid_sizeofPassed); // #5295
+        TEST_CASE(varid_classInFunction); // #5293
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4716,6 +4717,22 @@ private:
                                            "    const char* argv[] = { \"./test_runner\", \"TestClass\" };\n"
                                            "    options args(sizeof argv / sizeof argv[0], argv);\n"
                                            "    args.which_test();\n"
+                                           "}"));
+    }
+
+    void varid_classInFunction() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void AddSuppression ( ) {\n"
+                      "2: class QErrorLogger {\n"
+                      "3: void reportErr ( ErrorLogger :: ErrorMessage & msg@1 ) {\n"
+                      "4: }\n"
+                      "5: } ;\n"
+                      "6: }\n",
+                      tokenizeDebugListing("void AddSuppression() {\n"
+                                           "    class QErrorLogger {\n"
+                                           "        void reportErr(ErrorLogger::ErrorMessage &msg) {\n"
+                                           "        }\n"
+                                           "    }; \n"
                                            "}"));
     }
 
