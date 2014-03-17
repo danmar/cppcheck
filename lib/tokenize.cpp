@@ -2231,7 +2231,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
     // Check if array declaration is valid (#2638)
     // invalid declaration: AAA a[4] = 0;
-    if (typeCount >= 2 && tok2 && tok2->str() == "[") {
+    if (typeCount >= 2 && tok2 && tok2->str() == "[" && executableScope) {
         const Token *tok3 = tok2;
         while (tok3 && tok3->str() == "[") {
             tok3 = tok3->link()->next();
@@ -2495,7 +2495,7 @@ void Tokenizer::setVarId()
                     continue;
 
                 const Token *tok3 = tok2->next();
-                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3,"struct|union|class %type%") && tok3->str() != "." && !setVarIdParseDeclaration(&tok3,variableId,executableScope.top(),isCPP())) {
+                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && (notstart.find(tok3->str()) != notstart.end() ||!setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }

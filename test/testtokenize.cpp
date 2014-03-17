@@ -301,6 +301,8 @@ private:
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
         TEST_CASE(varid_rvalueref);
+        TEST_CASE(varid_arrayFuncPar); // #5294
+        TEST_CASE(varid_sizeofPassed); // #5295
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4696,6 +4698,25 @@ private:
                       tokenizeDebugListing("class C {\n"
                                            "    C(int&& a);\n"
                                            "};"));
+    }
+
+    void varid_arrayFuncPar() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void check ( const char fname@1 [ ] = 0 ) { }\n", tokenizeDebugListing("void check( const char fname[] = 0) { }"));
+    }
+
+    void varid_sizeofPassed() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void which_test ( ) {\n"
+                      "2: const char * argv@1 [ 2 ] = { \"./test_runner\" , \"TestClass\" } ;\n"
+                      "3: options args@2 ( sizeof argv@1 / sizeof ( argv@1 [ 0 ] ) , argv@1 ) ;\n"
+                      "4: args@2 . which_test ( ) ;\n"
+                      "5: }\n",
+                      tokenizeDebugListing("void which_test() {\n"
+                                           "    const char* argv[] = { \"./test_runner\", \"TestClass\" };\n"
+                                           "    options args(sizeof argv / sizeof argv[0], argv);\n"
+                                           "    args.which_test();\n"
+                                           "}"));
     }
 
     void varidclass1() {
