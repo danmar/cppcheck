@@ -7355,8 +7355,8 @@ void Tokenizer::simplifyEnum()
             Token *typeTokenStart = nullptr;
             Token *typeTokenEnd = nullptr;
 
-            // check for C++0x enum class
-            bool enumClass = Token::Match(tok->next(), "class|struct");
+            // check for C++11 enum class
+            bool enumClass = isCPP() && Token::Match(tok->next(), "class|struct");
             if (enumClass)
                 tok->deleteNext();
 
@@ -7522,7 +7522,7 @@ void Tokenizer::simplifyEnum()
                 std::string pattern;
                 if (!className.empty())
                     pattern += className + " :: ";
-                if (enumClass)
+                if (enumClass && enumType)
                     pattern += enumType->str() + " :: ";
 
                 int level = 0;

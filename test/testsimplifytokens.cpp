@@ -6736,14 +6736,14 @@ private:
     }
 
     // Check simplifyEnum
-    std::string checkSimplifyEnum(const char code[]) {
+    std::string checkSimplifyEnum(const char code[], bool cpp = true) {
         errout.str("");
         // Tokenize..
         Settings settings;
         settings.addEnabled("style");
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
         return tokenizer.tokens()->stringifyList(0, true);
     }
 
@@ -6906,6 +6906,14 @@ private:
                                 "Enum1 e1 = Enum1::a;";
             const char expected[] = "unsigned long long e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
+        }
+
+        {
+            const char code[] = "enum class { A };\n"
+                                "int i = A;";
+            const char expected [] = "int i ; i = 0 ;";
+            ASSERT_EQUALS(expected, checkSimplifyEnum(code, false)); // Compile as C code: enum has name 'class'
+            checkSimplifyEnum(code, true); // Compile as C++ code: Don't crash
         }
     }
 
