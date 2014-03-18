@@ -271,7 +271,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(std::string("void setx(int x);")+code, 2U, 1));
         ASSERT_EQUALS(false, testValueOfX(std::string("void setx(int &x);")+code, 2U, 1));
-        ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
 
         code = "void f(char* x) {\n"
                "  strcpy(x,\"abc\");\n"
@@ -568,6 +568,22 @@ private:
                "  else { x->y = 1; }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    int x = 32;\n"
+               "    if (x>=32) return;\n"
+               "    a[x]=0;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 32));
+
+        code = "void f() {\n"
+               "    int x = 32;\n"
+               "    if (x>=32) {\n"
+               "        a[x] = 0;\n"  // <- should have possible value 32
+               "        return;\n"
+               "    }\n"
+               "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 32));
 
         // multivariables
         code = "void f(int a) {\n"

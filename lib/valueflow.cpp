@@ -78,8 +78,8 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         // if value is 0 and the library says 0 is invalid => do not bailout
         if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
             return false;
-        // inconclusive => don't bailout
-        if (inconclusive && !addressOf && settings->inconclusive) {
+        // addressOf => inconclusive
+        if (!addressOf) {
             *inconclusive = true;
             return false;
         }
@@ -506,7 +506,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 }
 
                 // noreturn scopes..
-                if (number_of_if > 0 &&
+                if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
                     (Token::findmatch(start, "return|continue|break", end) ||
                      (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
                     if (settings->debugwarnings)

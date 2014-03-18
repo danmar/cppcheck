@@ -567,6 +567,9 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!value)
             continue;
 
+        if (!_settings->inconclusive && value->inconclusive)
+            continue;
+
         // Is pointer used as function parameter?
         if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
             const Token *ftok = tok->previous();
