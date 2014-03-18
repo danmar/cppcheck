@@ -1185,6 +1185,8 @@ private:
     void removeCast14() { // const
         // #5081
         ASSERT_EQUALS("( ! ( & s ) . a )", tokenizeAndStringify("(! ( (struct S const *) &s)->a)", true));
+        // #5244
+        ASSERT_EQUALS("bar ( & ptr ) ;", tokenizeAndStringify("bar((const X**)&ptr);",true));
     }
 
     void simplifyFloatCasts() { // float casting integers

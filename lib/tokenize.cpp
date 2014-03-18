@@ -4790,6 +4790,7 @@ void Tokenizer::simplifyCasts()
         }
 
         while ((Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") && (tok->str() != ")" || tok->tokAt(2)->isStandardType())) ||
+               Token::Match(tok->next(), "( const| %type% * *| *| ) *|&| %var%") ||
                Token::Match(tok->next(), "( const| %type% %type% *| *| *| ) *|&| %var%") ||
                (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *| ) (") ||
                                    Token::Match(tok->next(), "( const| %type% %type% * *| *| ) (")))) {
