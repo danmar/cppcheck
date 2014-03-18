@@ -9134,21 +9134,21 @@ void Tokenizer::simplifyAttribute()
 
             if (Token::simpleMatch(tok->tokAt(2), "( pure )")) {
                 // type func(...) __attribute__((pure));
-                if (tok->next()->link()->next()->str() == ";")
+                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
                     tok->previous()->link()->previous()->isAttributePure(true);
 
                 // type __attribute__((pure)) func() { }
-                else
+                else if (Token::Match(tok->next()->link(), ") %var% ("))
                     tok->next()->link()->next()->isAttributePure(true);
             }
 
             if (Token::simpleMatch(tok->tokAt(2), "( const )")) {
                 // type func(...) __attribute__((const));
-                if (tok->next()->link()->next()->str() == ";")
+                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
                     tok->previous()->link()->previous()->isAttributeConst(true);
 
                 // type __attribute__((const)) func() { }
-                else
+                else if (Token::Match(tok->next()->link(), ") %var% ("))
                     tok->next()->link()->next()->isAttributeConst(true);
             }
 
