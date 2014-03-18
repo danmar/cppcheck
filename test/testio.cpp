@@ -550,6 +550,12 @@ private:
               "    fseek(f, 0, SEEK_SET);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Repositioning operation performed on a file opened in append mode has no effect.\n", errout.str());
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"a\");\n"
+              "    fflush(f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #5578
     }
 
     void fflushOnInputStream() {

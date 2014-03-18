@@ -250,7 +250,7 @@ void CheckIO::checkFileUsage()
                 case Filepointer::POSITIONING:
                     if (f.mode == CLOSED)
                         useClosedFileError(tok);
-                    else if (f.append_mode == Filepointer::APPEND && _settings->isEnabled("warning"))
+                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && _settings->isEnabled("warning"))
                         seekOnAppendedFileError(tok);
                     break;
                 case Filepointer::READ:
