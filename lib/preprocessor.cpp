@@ -398,7 +398,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
                     if (needSpace) {
                         if (*i == '(' || *i == '!')
                             code << " ";
-                        else if (!std::isalpha(*i))
+                        else if (!std::isalpha((unsigned char)*i))
                             needSpace = false;
                     }
                     if (*i == '#')
@@ -583,10 +583,10 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         suppressionIDs.push_back(word);
                 }
             }
-        } else if ((i==0 || std::isspace(str[i-1])) && str.compare(i,5,"__asm") == 0) {
-            while (i < str.size() && (std::isalpha(str[i]) || str[i]=='_'))
+        } else if ((i == 0 || std::isspace((unsigned char)str[i-1])) && str.compare(i, 5, "__asm") == 0) {
+            while (i < str.size() && (std::isalpha((unsigned char)str[i]) || str[i] == '_'))
                 code << str[i++];
-            while (i < str.size() && std::isspace(str[i]))
+            while (i < str.size() && std::isspace((unsigned char)str[i]))
                 code << str[i++];
             if (str[i] == '{') {
                 // Ticket 4873: Extract comments from the __asm / __asm__'s content
@@ -1345,9 +1345,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 // Check if condition match pattern "%var% == %num%"
                 // %var%
                 std::string::size_type pos = 0;
-                if (std::isalpha(def[pos]) || def[pos] == '_') {
+                if (std::isalpha((unsigned char)def[pos]) || def[pos] == '_') {
                     ++pos;
-                    while (std::isalnum(def[pos]) || def[pos] == '_')
+                    while (std::isalnum((unsigned char)def[pos]) || def[pos] == '_')
                         ++pos;
                 }
 
@@ -1361,10 +1361,10 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                         pos += 2;
                         if (pos >= def.size())
                             pos = 0;
-                        while (pos < def.size() && std::isxdigit(def[pos]))
+                        while (pos < def.size() && std::isxdigit((unsigned char)def[pos]))
                             ++pos;
                     } else {
-                        while (pos < def.size() && std::isdigit(def[pos]))
+                        while (pos < def.size() && std::isdigit((unsigned char)def[pos]))
                             ++pos;
                     }
 
@@ -1558,11 +1558,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // identifier..
             if (std::isalpha(c) || c == '_') {
-                while (std::isalnum(s[pos]) || s[pos] == '_')
+                while (std::isalnum((unsigned char)s[pos]) || s[pos] == '_')
                     ++pos;
                 if (s[pos] == '=') {
                     ++pos;
-                    while (std::isdigit(s[pos]))
+                    while (std::isdigit((unsigned char)s[pos]))
                         ++pos;
                     if (s[pos] != ';') {
                         unhandled = true;
@@ -2492,7 +2492,7 @@ static void getparams(const std::string &line,
         // spaces are only added if needed
         else if (line[pos] == ' ') {
             // Add space only if it is needed
-            if (par.size() && std::isalnum(par[par.length()-1])) {
+            if (par.size() && std::isalnum((unsigned char)par[par.length()-1])) {
                 par += ' ';
             }
         }
@@ -2894,9 +2894,9 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
 
             // is macro used in code?
             else if (code.compare(pos1,macro.size(),macro) == 0) {
-                if (pos1 > 0 && (std::isalnum(code[pos1-1U]) || code[pos1-1U] == '_'))
+                if (pos1 > 0 && (std::isalnum((unsigned char)code[pos1-1U]) || code[pos1-1U] == '_'))
                     continue;
-                if (pos2 < code.size() && (std::isalnum(code[pos2]) || code[pos2] == '_'))
+                if (pos2 < code.size() && (std::isalnum((unsigned char)code[pos2]) || code[pos2] == '_'))
                     continue;
                 // macro is used in code, return false
                 if (_settings->isEnabled("information"))
@@ -3059,17 +3059,17 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     continue;
                 }
 
-                if (!std::isalpha(line[pos]) && line[pos] != '_')
+                if (!std::isalpha((unsigned char)line[pos]) && line[pos] != '_')
                     ++pos;
 
                 // found an identifier..
                 // the "while" is used in case the expanded macro will immediately call another macro
-                while (pos < line.length() && (std::isalpha(line[pos]) || line[pos] == '_')) {
+                while (pos < line.length() && (std::isalpha((unsigned char)line[pos]) || line[pos] == '_')) {
                     // pos1 = start position of macro
                     const std::string::size_type pos1 = pos++;
 
                     // find the end of the identifier
-                    while (pos < line.size() && (std::isalnum(line[pos]) || line[pos] == '_'))
+                    while (pos < line.size() && (std::isalnum((unsigned char)line[pos]) || line[pos] == '_'))
                         ++pos;
 
                     // get identifier
@@ -3162,7 +3162,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     line.erase(pos1, pos2 - pos1);
 
                     // Don't glue this macro into variable or number after it
-                    if (!line.empty() && (std::isalnum(line[pos1]) || line[pos1] == '_'))
+                    if (!line.empty() && (std::isalnum((unsigned char)line[pos1]) || line[pos1] == '_'))
                         macrocode.append(1,' ');
 
                     // insert macrochar before each symbol/nr/operator
@@ -3179,14 +3179,14 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         else if (str || chr)
                             continue;
                         else if (macrocode[i] == '.') { // 5. / .5
-                            if ((i > 0U && std::isdigit(macrocode[i-1])) ||
-                                (i+1 < macrocode.size() && std::isdigit(macrocode[i+1]))) {
-                                if (i > 0U && !std::isdigit(macrocode[i-1])) {
+                            if ((i > 0U && std::isdigit((unsigned char)macrocode[i-1])) ||
+                                (i+1 < macrocode.size() && std::isdigit((unsigned char)macrocode[i+1]))) {
+                                if (i > 0U && !std::isdigit((unsigned char)macrocode[i-1])) {
                                     macrocode.insert(i, 1U, macroChar);
                                     i++;
                                 }
                                 i++;
-                                if (i<macrocode.size() && std::isdigit(macrocode[i]))
+                                if (i<macrocode.size() && std::isdigit((unsigned char)macrocode[i]))
                                     i++;
                                 if (i+1U < macrocode.size() &&
                                     (macrocode[i] == 'e' || macrocode[i] == 'E') &&
@@ -3194,9 +3194,9 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                     i+=2;
                                 }
                             }
-                        } else if (std::isalnum(macrocode[i]) || macrocode[i] == '_') {
+                        } else if (std::isalnum((unsigned char)macrocode[i]) || macrocode[i] == '_') {
                             if ((i > 0U)                        &&
-                                (!std::isalnum(macrocode[i-1])) &&
+                                (!std::isalnum((unsigned char)macrocode[i-1])) &&
                                 (macrocode[i-1] != '_')         &&
                                 (macrocode[i-1] != macroChar)) {
                                 macrocode.insert(i, 1U, macroChar);
@@ -3204,23 +3204,23 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                             // 1e-7 / 1e+7
                             if (i+3U < macrocode.size()     &&
-                                (std::isdigit(macrocode[i]) || macrocode[i]=='.')  &&
+                                (std::isdigit((unsigned char)macrocode[i]) || macrocode[i]=='.')  &&
                                 (macrocode[i+1] == 'e' || macrocode[i+1] == 'E')   &&
                                 (macrocode[i+2] == '-' || macrocode[i+2] == '+')   &&
-                                std::isdigit(macrocode[i+3])) {
+                                std::isdigit((unsigned char)macrocode[i+3])) {
                                 i += 3U;
                             }
 
                             // 1.f / 1.e7
                             if (i+2U < macrocode.size()    &&
-                                std::isdigit(macrocode[i]) &&
+                                std::isdigit((unsigned char)macrocode[i]) &&
                                 macrocode[i+1] == '.'      &&
-                                std::isalpha(macrocode[i+2])) {
+                                std::isalpha((unsigned char)macrocode[i+2])) {
                                 i += 2U;
                                 if (i+2U < macrocode.size() &&
                                     (macrocode[i+0] == 'e' || macrocode[i+0] == 'E')   &&
                                     (macrocode[i+1] == '-' || macrocode[i+1] == '+')   &&
-                                    std::isdigit(macrocode[i+2])) {
+                                    std::isdigit((unsigned char)macrocode[i+2])) {
                                     i += 2U;
                                 }
                             }

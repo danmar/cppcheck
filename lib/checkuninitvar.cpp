@@ -1391,7 +1391,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             const Token *tok2 = forwhile ? tok->next()->link()->next() : tok->next();
 
             if (tok2 && tok2->str() == "{") {
-                bool init = checkLoopBody(tok2, var, alloc && *alloc, membervar, (number_of_if > 0) | suppressErrors);
+                bool init = checkLoopBody(tok2, var, alloc && *alloc, membervar, (number_of_if > 0) || suppressErrors);
 
                 // variable is initialized in the loop..
                 if (init)

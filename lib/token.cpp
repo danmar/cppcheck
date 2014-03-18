@@ -71,12 +71,12 @@ void Token::update_property_info()
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
             _type = eBoolean;
-        else if (_str[0] == '_' || std::isalpha(_str[0])) { // Name
+        else if (_str[0] == '_' || std::isalpha((unsigned char)_str[0])) { // Name
             if (_varId)
                 _type = eVariable;
             else if (_type != eVariable && _type != eFunction && _type != eType)
                 _type = eName;
-        } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1])))
+        } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _type = eNumber;
         else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
             _type = eString;

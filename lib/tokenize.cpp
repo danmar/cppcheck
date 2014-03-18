@@ -8722,7 +8722,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
         unsigned int sz = 0;    // size of stringdata
         if (str[i+1] == 'x') {
             sz = 2;
-            while (std::isxdigit(str[i+sz]) && sz < 4)
+            while (std::isxdigit((unsigned char)str[i+sz]) && sz < 4)
                 sz++;
             if (sz > 2) {
                 std::istringstream istr(str.substr(i+2, sz-2));

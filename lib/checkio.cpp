@@ -380,7 +380,7 @@ void CheckIO::invalidScanf()
                     format = false;
                 }
 
-                else if (std::isalpha(formatstr[i]) || formatstr[i] == '[') {
+                else if (std::isalpha((unsigned char)formatstr[i]) || formatstr[i] == '[') {
                     if ((formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')) && _settings->isEnabled("warning"))  // #3490 - field width limits are only necessary for string input
                         invalidScanfError(tok, false);
                     else if (formatstr[i] != 'n' && formatstr[i] != 'c' && !windows && _settings->isEnabled("portability"))
@@ -594,7 +594,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                     std::string width;
                     unsigned int parameterPosition = 0;
                     bool hasParameterPosition = false;
-                    while (i != formatString.end() && *i != '[' && !std::isalpha(*i)) {
+                    while (i != formatString.end() && *i != '[' && !std::isalpha((unsigned char)*i)) {
                         if (*i == '*') {
                             skip = true;
                             if (scan)

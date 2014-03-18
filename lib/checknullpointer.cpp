@@ -278,7 +278,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                     percent = false;
 
                     bool _continue = false;
-                    while (!std::isalpha(*i)) {
+                    while (!std::isalpha((unsigned char)*i)) {
                         if (*i == '*') {
                             if (scan)
                                 _continue = true;
