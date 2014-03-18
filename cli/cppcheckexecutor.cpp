@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <climits>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__MINGW32__)
 #define USE_UNIX_SIGNAL_HANDLING
 #include <execinfo.h>
 #include <cxxabi.h>
@@ -40,7 +40,7 @@
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
 #include <signal.h>
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #if defined(_MSC_VER) && !defined(__MINGW32__)
@@ -200,7 +200,10 @@ static const Signaltype listofsignals[] = {
     // don't care: SIGTERM
 };
 
-// Simple helper function
+/**
+ *  Simple helper function: 
+ * \return size of array
+ * */
 template<typename T, int size>
 int GetArrayLength(T(&)[size])
 {
@@ -332,6 +335,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
 
 /**
  * Signal/SEH handling
+ * Has to be clean for using with SEH on windows, i.e. no construction of C++ object instances is allowed!
  * TODO Check for multi-threading issues!
  *
  */
@@ -360,6 +364,9 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* co
 #endif
 }
 
+/*
+ * That is a method which gets called from check_wrapper
+ * */
 int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const char* const argv[])
 {
     Settings& settings = cppCheck.settings();
