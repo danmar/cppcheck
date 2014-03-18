@@ -2421,12 +2421,11 @@ private:
               "    try {\n"
               "        std::vector<std::string> Vector;\n"
               "        std::vector<std::string> v2 = Vector;\n"
-              "        std::string strValue = v2[1]; \n"
+              "        std::string strValue = v2[1]; \n" // Do not complain here - this is a consecutive fault of the line above.
               "    }\n"
               "    return Vector;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n"
-                      "[test.cpp:5]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n", errout.str());
 
         check("f() {\n"
               "    try {\n"
@@ -2454,12 +2453,37 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    initialize(v);\n"
+              "    int i = v[0];\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("char f() {\n"
+              "    std::string s(foo);\n"
+              "    return s[0];\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v = foo();\n"
+              "    if(bar) v.clear();\n"
+              "    int i = v.find(foobar);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    v.clear();\n"
+              "    int i = v.find(foobar);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
               "    std::map<int, std::string> CMap;\n"
               "    std::string strValue = CMap[1];\n"
               "    std::string strValue2 = CMap[1];\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n"
-                      "[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
     }
 };
 

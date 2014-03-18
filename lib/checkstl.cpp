@@ -1563,76 +1563,89 @@ void CheckStl::readingEmptyStlContainer()
     if (!_settings->isEnabled("style"))
         return;
 
-    if (!_settings->inconclusive)  // check only if inconclusive true;
+    if (!_settings->inconclusive)
         return;
 
-    std::map<unsigned int, bool> empty; //map to keep track of whether the StlContainer has been given value atleast once.
+    std::set<unsigned int> empty_map; // empty std::map-like instances of STL containers
+    std::set<unsigned int> empty_nonmap; // empty non-std::map-like instances of STL containers
 
-    static const char *STL_CONTAINERS[] = {"map", "vector"};
+    static const char *MAP_STL_CONTAINERS[] = { "map", "multimap", "unordered_map", "unordered_multimap" };
+    static const char *NONMAP_STL_CONTAINERS[] = { "deque", "forward_list", "list", "multiset", "queue", "set", "stack", "string", "unordered_multiset", "unordered_set", "vector" };
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::size_t varListSize = symbolDatabase->getVariableListSize();
-    for (std::size_t i = 1; i < varListSize; ++i) {
-        // to include stl containers declared in file in used map
-        const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (var && var->isLocal() && var->isStlType(STL_CONTAINERS))
-            empty[var->declarationId()] = true;
-    }
+    const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        bool stl1_exist = false;
+    for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
+        if (i->type != Scope::eFunction)
+            continue;
 
-        if (tok->variable() && tok->variable()->isStlType(STL_CONTAINERS)) {
-            if (empty.find(tok->varId()) != empty.end())
-                stl1_exist = true;
-        }
+        for (const Token *tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "for|while|do|}")) { // Loops and end of scope clear the sets.
+                empty_map.clear();
+                empty_nonmap.clear();
+            }
 
-        // to check for various conditions for the way stl containers and variables can be used
-        if (Token::Match(tok, "%var% =|[")) {
-            const Token *tok2;
-
-            if (Token::simpleMatch(tok->next(), "="))
-                tok2 = tok->tokAt(2);
-
-            // to check cases like Cmap[1]; or i = Cmap[1] -- the right wld evaluate true when token reaches it.
-            else if (Token::Match(tok->next()," [") && Token::simpleMatch(tok->linkAt(1),"] ="))
-                tok2 = tok->next()->link()->tokAt(2);
-
-            else
+            if (!tok->varId())
                 continue;
 
-            bool stl2_exist = false;
-            bool stl2_isEmpty = true;
+            // Check whether a variable should be marked as "empty"
+            const Variable* var = tok->variable();
+            if (var) {
+                bool insert = false;
+                if (tok->variable()->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
+                    insert = !Token::Match(tok->tokAt(1), "[(=]"); // Only if not initialized
+                } else if (Token::Match(tok, "%var% . clear ( ) ;")) {
+                    insert = true;
+                }
 
-            // rhs variable
-            if (tok2->variable() && tok2->variable()->isStlType(STL_CONTAINERS)) {
-                if (empty.find(tok2->varId()) != empty.end()) {
-                    stl2_exist = true;
-                    stl2_isEmpty = empty[tok2->varId()];
+                if (insert) {
+                    if (var->isStlType(MAP_STL_CONTAINERS))
+                        empty_map.insert(var->declarationId());
+                    else if (var->isStlType(NONMAP_STL_CONTAINERS))
+                        empty_nonmap.insert(var->declarationId());
+                    continue;
                 }
             }
 
-            // if both var are Stl Container...
-            if (stl1_exist && stl2_exist) {
-                if (stl2_isEmpty)
-                    readingEmptyStlContainerError(tok2);
+            bool map = empty_map.find(tok->varId()) != empty_map.end();
+            if (!map && empty_nonmap.find(tok->varId()) == empty_nonmap.end())
+                continue;
+
+            // Check for various conditions for the way stl containers and variables can be used
+            if (tok->strAt(1) == "=" || (tok->strAt(1) == "[" && Token::simpleMatch(tok->linkAt(1), "] ="))) {
+                // Assignment (LHS)
+                if (map)
+                    empty_map.erase(tok->varId());
                 else
-                    empty[tok->varId()] = false;
-            }
-
-            // if only second var is Stl Container
-            else if (stl2_exist && stl2_isEmpty)
+                    empty_nonmap.erase(tok->varId());
+            } else if (Token::Match(tok, "%var% [")) {
+                // Access through operator[]
+                if (map) { // operator[] inserts an element, if used on a std::map
+                    if (tok->strAt(-1) == "=")
+                        readingEmptyStlContainerError(tok);
+                    empty_map.erase(tok->varId());
+                } else if ((map && empty_map.find(tok->varId()) != empty_map.end()) || (!map && empty_nonmap.find(tok->varId()) != empty_nonmap.end()))
+                    readingEmptyStlContainerError(tok);
+            } else if (Token::Match(tok, "%var% . %type% (")) {
+                // Member function call
+                if (Token::Match(tok->tokAt(2), "find|at|data|c_str|back|front|empty|top|size|count")) // These functions read from the container
+                    readingEmptyStlContainerError(tok);
+                else if (map)
+                    empty_map.erase(tok->varId());
+                else
+                    empty_nonmap.erase(tok->varId());
+            } else if (tok->strAt(-1) == "=") {
+                // Assignment (RHS)
                 readingEmptyStlContainerError(tok);
-
-            // if only first var is stl container
-            else if (stl1_exist)
-                empty[tok->varId()] = false;
-        } else if (stl1_exist && Token::Match(tok, "%var% [ %any% ] = %any%")) {
-            empty[tok->varId()] = false;
-        } else if (stl1_exist && Token::Match(tok, "%var% . %type% (")) {
-            //static const char STL_CONTAINER_INSERT_FUNCTIONS[] = "%var% . insert|push_back|push_front|assign|set|reset|emplace_after|insert_after|push (";
-            empty[tok->varId()] = false;
+            } else {
+                // Unknown usage. Assume it is initialized.
+                if (map)
+                    empty_map.erase(tok->varId());
+                else
+                    empty_nonmap.erase(tok->varId());
+            }
         }
+        empty_map.clear();
+        empty_nonmap.clear();
     }
 }
 
@@ -1640,4 +1653,3 @@ void CheckStl::readingEmptyStlContainerError(const Token *tok)
 {
     reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container", true);
 }
-
