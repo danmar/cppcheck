@@ -2396,7 +2396,21 @@ private:
         const char errpq[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n"
                              "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n";
 
-        // str..
+        check("void f(FILE *p){ clearerr (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(FILE *p){ feof (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(FILE *p){ fclose (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(FILE *p){ ferror (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char*p,char*q){ fopen (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
         check("void f(char*p){ strchr (p,c);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
