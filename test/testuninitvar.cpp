@@ -3520,6 +3520,21 @@ private:
                        "  fgetc (pFile);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+
+        // fgetpos
+        checkUninitVar("void f() {\n"
+                       "  FILE * f;\n"
+                       "  fpos_t * p;\n"
+                       "  fgetpos (f, p);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n"
+                      "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("void f(FILE * f, fpos_t *p) {\n"
+                       "  fopen (f, p);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

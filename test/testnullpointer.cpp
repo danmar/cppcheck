@@ -2411,56 +2411,59 @@ private:
         check("void f(FILE *p){ ferror (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p,char*q){ fopen (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ fopen (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p){ strchr (p,c);if(!p){}}");
+        check("void f(FILE * p,fpos_t * q){ fgetpos (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
+        check("void f(char * p){ strchr (p,c);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p){ strdup (p);if(!p){}}");
+        check("void f(char * p){ strdup (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p){ strlen (p);if(!p){}}");
+        check("void f(char * p){ strlen (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p,char*q){ strcpy (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strcpy (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strspn (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strspn (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strcspn (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strcspn (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strcoll (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strcoll (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strcat (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strcat (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strcmp (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strcmp (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strncpy (p,q,1);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strncpy (p,q,1);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strncat (p,q,1);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strncat (p,q,1);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strncmp (p,q,1);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strncmp (p,q,1);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
-        check("void f(char*p,char*q){ strstr (p,q);if(!p||!q){}}");
+        check("void f(char * p,char * q){ strstr (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
         // strtol etc
-        check("void f(char*p,char*q){ strtoul (p,q,0);if(!p){}}");
+        check("void f(char * p,char * q){ strtoul (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p,char*q){ strtoull (p,q,0);if(!p){}}");
+        check("void f(char * p,char * q){ strtoull (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char*p,char*q){ strtol (p,q,0);if(!p){}}");
+        check("void f(char * p,char * q){ strtol (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
     }
 };
