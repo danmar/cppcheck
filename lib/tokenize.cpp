@@ -9099,7 +9099,7 @@ void Tokenizer::simplifyDeclspec()
 void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next()) {
+        while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {
             if (Token::simpleMatch(tok->tokAt(2), "( constructor")) {
                 // prototype for constructor is: void func(void);
                 if (tok->next()->link()->next()->str() == "void") // __attribute__((constructor)) void func() {}
