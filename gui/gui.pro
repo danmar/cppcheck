@@ -40,9 +40,6 @@ win32 {
    }
 }
 
-# Generate the translations before we embed them
-system("lrelease gui.pro")
-
 RESOURCES = gui.qrc
 FORMS = about.ui \
         application.ui \

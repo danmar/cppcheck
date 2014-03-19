@@ -523,20 +523,18 @@ bool MainWindow::LoadLibrary(Library *library, QString filename)
     }
 
     // Try to load the library from the application folder..
-    QString path = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    if (library->load(NULL, (path+"/"+filename).toLatin1()))
+    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+    if (library->load(NULL, (appPath+"/"+filename).toLatin1()))
+        return true;
+    if (library->load(NULL, (appPath+"/cfg/"+filename).toLatin1()))
         return true;
 
     // Try to load the library from the cfg subfolder..
-    path = path + "/cfg";
-    if (library->load(NULL, (path+"/"+filename).toLatin1()))
-        return true;
-
-    // Try to load resource..
-    QFile f(":/cfg/" + filename);
-    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString data = f.readAll();
-        if (library->loadxmldata(data.toLatin1(), data.length()))
+    const QString datadir = mSettings->value("DATADIR", QString()).toString();
+    if (!datadir.isEmpty()) {
+        if (library->load(NULL, (datadir+"/"+filename).toLatin1()))
+            return true;
+        if (library->load(NULL, (datadir+"/cfg/"+filename).toLatin1()))
             return true;
     }
 
@@ -613,7 +611,7 @@ Settings MainWindow::GetCppcheckSettings()
         posix = LoadLibrary(&result.library, "posix.cfg");
 
     if (!std || !posix)
-        QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken.").arg(!std ? "std.cfg" : "posix.cfg"));
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located.").arg(!std ? "std.cfg" : "posix.cfg"));
 
     if (result._jobs <= 1) {
         result._jobs = 1;
