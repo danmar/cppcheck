@@ -905,6 +905,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                 case 'L':
                                                     if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
+                                                    else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "uintmax_t")
+                                                        invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 default:
                                                     if (argInfo.typeToken->str() != "int")

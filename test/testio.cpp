@@ -1163,7 +1163,7 @@ private:
             check(code, true, false, Settings::Win32A);
             ASSERT_EQUALS(result, errout.str());
             check(code, true, false, Settings::Win64);
-            // FIXME ASSERT_EQUALS(result_win64, errout.str());
+            ASSERT_EQUALS(result_win64, errout.str());
         }
 
         {
