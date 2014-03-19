@@ -2417,6 +2417,9 @@ private:
         check("void f(FILE * p,fpos_t * q){ fgetpos (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
+        check("void f(FILE * p,fpos_t * q){ fsetpos (p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
         check("void f(char * p){ strchr (p,c);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
