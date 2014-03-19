@@ -3497,7 +3497,7 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        // ferror
+        // fflush
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  fflush (pFile);\n"
@@ -3533,12 +3533,12 @@ private:
 
         checkUninitVar("void f(FILE * f) {\n"
                        "  fpos_t p"
-                       "  fopen (f, &p);\n"
+                       "  fgetpos (f, &p);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f(FILE * f, fpos_t *p) {\n"
-                       "  fopen (f, p);\n"
+                       "  fgetpos (f, p);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
