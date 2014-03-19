@@ -3561,6 +3561,26 @@ private:
                        "  fsetpos (f, p);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // fgets
+        checkUninitVar("void f(FILE *f) {\n"
+                       "  char *s;\n"
+                       "  int n;\n"
+                       "  fgets (s, n, f);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: n\n"
+                      "[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
+        checkUninitVar("void f(char * s, int n) {\n"
+                       "  FILE *f;\n"
+                       "  fgets (s, n, f);\n"
+                       "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: f\n","", errout.str());
+
+        checkUninitVar("void f(char * s, int n, FILE *f) {\n"
+                       "  fgets (s, n, f);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
