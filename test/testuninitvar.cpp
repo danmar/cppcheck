@@ -3590,6 +3590,20 @@ private:
                        "  fgets (s, n, f);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // fputc
+        checkUninitVar("void f() {\n"
+                       "  int c;\n"
+                       "  FILE *f;"
+                       "  fputc (c, f);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n"
+                      "[test.cpp:3]: (error) Uninitialized variable: f\n", errout.str());
+
+        checkUninitVar("void f(int c, FILE *f) {\n"
+                       "  fputc (c, f);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

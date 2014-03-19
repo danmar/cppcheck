@@ -2414,6 +2414,9 @@ private:
         check("void f(char * p,char * q){ fopen (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
+        check("void f(char * p,FILE * q){ fputc (*p,q);if(!p||!q){}}");
+        ASSERT_EQUALS(errpq,errout.str());
+
         check("void f(FILE * p,fpos_t * q){ fgetpos (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
