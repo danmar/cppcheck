@@ -201,7 +201,7 @@ static const Signaltype listofsignals[] = {
 };
 
 /**
- *  Simple helper function: 
+ *  Simple helper function:
  * \return size of array
  * */
 template<typename T, int size>
