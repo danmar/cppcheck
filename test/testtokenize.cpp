@@ -815,14 +815,17 @@ private:
         tokenizeAndStringify("class x { protected : template < int y = } ;");
     }
 
-    // #4525 - segfault
     void tokenize27() {
+        // #4525 - segfault
         tokenizeAndStringify("struct except_spec_d_good : except_spec_a, except_spec_b {\n"
                              "~except_spec_d_good();\n"
                              "};\n"
                              "struct S { S(); };\n"
                              "S::S() __attribute((pure)) = default;"
                             );
+
+        // original code: glibc-2.18/posix/bug-regex20.c
+        tokenizeAndStringify("static unsigned int re_string_context_at (const re_string_t *input, int idx, int eflags) internal_function __attribute__ ((pure));");
     }
 
     // #4725 - ^{}
