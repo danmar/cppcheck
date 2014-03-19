@@ -159,6 +159,10 @@ bool FileLister::fileExists(const std::string &path)
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+#if defined(__CYGWIN__)
+#undef __STRICT_ANSI__
+#endif
+
 #include <glob.h>
 #include <unistd.h>
 #include <stdlib.h>

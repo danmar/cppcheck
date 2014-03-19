@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__GNUC__) && defined(_WIN32)
+#if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
 #undef __STRICT_ANSI__
 #endif
 #include <algorithm>
