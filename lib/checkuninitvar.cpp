@@ -1882,11 +1882,11 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, boo
     else if (!isPointer && Token::Match(tok->previous(), "[(,] %var% [,)]") && isVariableUsage(tok, isPointer, alloc, _tokenizer->isCPP()))
         return true;
 
-	else if (_settings->experimental &&
-	         !isPointer && 
-	         Token::Match(tok->tokAt(-2), "[(,] & %var% [,)]") &&
-	         isVariableUsage(tok, isPointer, alloc, _tokenizer->isCPP()))
-		return true;
+    else if (_settings->experimental &&
+             !isPointer &&
+             Token::Match(tok->tokAt(-2), "[(,] & %var% [,)]") &&
+             isVariableUsage(tok, isPointer, alloc, _tokenizer->isCPP()))
+        return true;
 
     return false;
 }
