@@ -290,8 +290,8 @@ private:
     void charBitOpError(const Token *tok);
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
-    void zerodivError(const Token *tok);
-    void zerodivcondError(const Token *tokcond, const Token *tokdiv);
+    void zerodivError(const Token *tok, bool inconclusive);
+    void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
@@ -340,8 +340,8 @@ private:
         c.invalidFunctionArgError(0, "func_name", 1, "1-4");
         c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.udivError(0, false);
-        c.zerodivError(0);
-        c.zerodivcondError(0,0);
+        c.zerodivError(0, false);
+        c.zerodivcondError(0,0,false);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
         c.doubleFreeError(0, "varname");

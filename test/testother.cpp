@@ -45,6 +45,7 @@ private:
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
         TEST_CASE(zeroDiv7);  // #4930
+        TEST_CASE(zeroDiv8);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -461,6 +462,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
                       "[test.cpp:3]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv8() {
+        // #5584 - FP when function is unknown
+        check("void f() {\n"
+              "  int a = 0;\n"
+              "  do_something(a);\n"
+              "  return 4 / a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {

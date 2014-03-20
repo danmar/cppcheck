@@ -2249,26 +2249,28 @@ void CheckOther::checkZeroDivision()
                 if (tok->variable() || tok->function())
                     continue;
             }
-            zerodivError(tok);
+            zerodivError(tok,false);
         } else if (Token::Match(tok, "[/%]") && tok->astOperand2() && !tok->astOperand2()->values.empty()) {
             // Value flow..
             const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
             if (value) {
+                if (!_settings->inconclusive && value->inconclusive)
+                    continue;
                 if (value->condition == nullptr)
-                    zerodivError(tok);
+                    zerodivError(tok, value->inconclusive);
                 else if (_settings->isEnabled("warning"))
-                    zerodivcondError(value->condition,tok);
+                    zerodivcondError(value->condition,tok,value->inconclusive);
             }
         }
     }
 }
 
-void CheckOther::zerodivError(const Token *tok)
+void CheckOther::zerodivError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "zerodiv", "Division by zero.");
+    reportError(tok, Severity::error, "zerodiv", "Division by zero.", inconclusive);
 }
 
-void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
+void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive)
 {
     std::list<const Token *> callstack;
     while (Token::Match(tokcond, "(|%oror%|&&"))
@@ -2291,7 +2293,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv)
             condition = tokcond->str() + "!=0";
     }
     const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
-    reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".");
+    reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".", inconclusive);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
