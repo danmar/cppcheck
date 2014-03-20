@@ -1841,8 +1841,34 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
     } else if (tok->strAt(1) == "=")
         return true;
-    else if (tok->strAt(-1) == "&")
+    else if (tok->strAt(-1) == "&") {
+        if (Token::Match(tok->tokAt(-2), "[(,] & %var%")) {
+            // locate start parentheses in function call..
+            unsigned int argumentNumber = 0;
+            const Token *ftok = tok;
+            while (ftok && !Token::Match(ftok, "[;{}(]")) {
+                if (ftok->str() == ")")
+                    ftok = ftok->link();
+                else if (ftok->str() == ",")
+                    ++argumentNumber;
+                ftok = ftok->previous();
+            }
+
+            // is this a function call?
+            ftok = ftok ? ftok->previous() : NULL;
+            if (Token::Match(ftok, "%var% (")) {
+                // check how function handle uninitialized data arguments..
+                const Function *function = ftok->function();
+                const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : NULL;
+                const Token *argStart    = arg ? arg->typeStartToken() : NULL;
+                while (argStart && argStart->previous() && argStart->previous()->isName())
+                    argStart = argStart->previous();
+                if (Token::Match(argStart, "const struct| %type% * const| %var% [,)]"))
+                    return false;
+            }
+        }
         return true;
+    }
     return false;
 }
 

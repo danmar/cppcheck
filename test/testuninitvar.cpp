@@ -3000,6 +3000,15 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("struct ABC { int a; int b; int c; };\n"
+                        "void foo(int x, const struct ABC *abc);\n"
+                        "void bar(void) {\n"
+                        "  struct ABC abc;\n"
+                        "  foo(123, &abc);\n"
+                        "  return abc.b;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized struct member: abc.b\n", errout.str());
+
         // return
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
