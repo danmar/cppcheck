@@ -3605,7 +3605,6 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-
         // fputs
         checkUninitVar("void f() {\n"
                        "  char *c;\n"
@@ -3619,6 +3618,31 @@ private:
                        "  fputs (c, f);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ftell
+        checkUninitVar("void f() {\n"
+                       "  FILE *f;"
+                       "  ftell (f);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: f\n", errout.str());
+
+        checkUninitVar("void f( FILE *f) {\n"
+                       "  ftell (f);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // puts
+        checkUninitVar("void f() {\n"
+                       "  char *c;"
+                       "  puts (c);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar("void f( char *c) {\n"
+                       "  puts (c);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

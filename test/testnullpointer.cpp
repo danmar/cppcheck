@@ -2411,6 +2411,12 @@ private:
         check("void f(FILE *p){ ferror (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
+        check("void f(FILE *p){ ftell (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(char *p){ puts (p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
         check("void f(char * p,char * q){ fopen (p,q);if(!p||!q){}}");
         ASSERT_EQUALS(errpq,errout.str());
 
