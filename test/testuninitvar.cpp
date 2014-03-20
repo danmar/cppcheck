@@ -3643,6 +3643,17 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        // putchar
+        checkUninitVar("void f() {\n"
+                       "  char *c;"
+                       "  putchar (*c);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar("void f( char *c) {\n"
+                       "  putchar (*c);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

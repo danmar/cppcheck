@@ -2435,6 +2435,9 @@ private:
         check("void f(char * p){ strchr (p,c);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
+        check("void f(char * p){ putchar (*p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
         check("void f(char * p){ strdup (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
