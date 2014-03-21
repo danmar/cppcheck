@@ -787,9 +787,10 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             setTokenValue(tok2, value1);
         }
 
-        if (tok2->str() == "{") {
+        else if (Token::Match(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
+            const Token *start = tok2->link();
             if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok2, "For loop variable " + tok2->str() + " stopping on {");
+                bailout(tokenlist, errorLogger, tok2, "For loop variable stopping on {");
             break;
         }
     }
