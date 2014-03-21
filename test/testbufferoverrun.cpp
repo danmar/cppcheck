@@ -240,6 +240,7 @@ private:
         TEST_CASE(crash2);  // Ticket #2607 - crash
         TEST_CASE(crash3);  // Ticket #3034 - crash
         TEST_CASE(crash4);  // Ticket #5426 - crash
+        TEST_CASE(crash5);  // TIcket #5595 - crash
 
         TEST_CASE(garbage1);  // Ticket #5203
 
@@ -3671,6 +3672,10 @@ private:
     void crash4() {
         check("struct b { unknown v[0]; };\n"
               "void d() { struct b *f; f = malloc(108); }");
+    }
+
+    void crash5() {
+        check("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
     }
 
     void garbage1() { // Ticket #5203
