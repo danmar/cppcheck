@@ -279,13 +279,8 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 continue;
 
             if (Token::Match(tok2->previous(), "for|while (")) {
-                const Token *start = tok2->link()->next();
-                const Token *end   = start->link();
-
-                if (tok2->astOperand2()->str() == ";" &&
-                    tok2->astOperand2()->astOperand2() &&
-                    tok2->astOperand2()->astOperand2()->str() == ";")
-                    start = tok2->astOperand2()->astOperand2();
+                const Token * const start = tok2->link()->next();
+                const Token * const end   = start->link();
 
                 if (Token::findmatch(start,"++|-- %varid%",end,varid) ||
                     Token::findmatch(start,"%varid% ++|--|=",end,varid)) {
