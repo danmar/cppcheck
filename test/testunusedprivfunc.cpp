@@ -72,6 +72,7 @@ private:
 
         TEST_CASE(multiFile);
         TEST_CASE(unknownBaseTemplate); // ticket #2580
+        TEST_CASE(hierarchie_loop); // ticket 5590
     }
 
 
@@ -690,6 +691,25 @@ private:
               "void Bla::F() const { }");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void hierarchie_loop() {
+        check("class InfiniteB : InfiniteA {\n"
+              "    class D {\n"
+              "    };\n"
+              "};\n"
+              "namespace N {\n"
+              "    class InfiniteA : InfiniteB {\n"
+              "    };\n"
+              "}\n"
+              "class InfiniteA : InfiniteB {\n"
+              "    void foo();\n"
+              "};\n"
+              "void InfiniteA::foo() {\n"
+              "    C a;\n"
+              "}");
+
+        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'InfiniteA::foo'\n", errout.str());
     }
 
 };

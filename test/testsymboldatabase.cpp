@@ -1818,6 +1818,27 @@ private:
                           "   }\n"
                           "};");
             ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
+            ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
+        }
+
+        // #5590
+        {
+            GET_SYMBOL_DB("class InfiniteB : InfiniteA {\n"
+                          "    class D {\n"
+                          "    };\n"
+                          "};\n"
+                          "namespace N {\n"
+                          "    class InfiniteA : InfiniteB {\n"
+                          "    };\n"
+                          "}\n"
+                          "class InfiniteA : InfiniteB {\n"
+                          "    void foo();\n"
+                          "};\n"
+                          "void InfiniteA::foo() {\n"
+                          "    C a;\n"
+                          "}");
+            //ASSERT(db && db->findScopeByName("InfiniteA") && !db->findScopeByName("InfiniteA")->functionList.front().isImplicitlyVirtual());
+            TODO_ASSERT_EQUALS(1, 0, db->findScopeByName("InfiniteA")->functionList.size());
         }
 
     }
