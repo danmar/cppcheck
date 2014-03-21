@@ -35,3 +35,5 @@ astyle $style $options --recursive "samples/*.cpp"
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
 
+# strip useless whitespaces from config files
+sed -i "s/\ $//" cfg/*
