@@ -1379,7 +1379,7 @@ private:
             ASSERT_EQUALS("", errout.str());
 
             check(code, true);
-            ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (warning, inconclusive) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
 
         check("void foo(char *p) {\n"
