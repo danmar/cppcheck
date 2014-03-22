@@ -663,6 +663,22 @@ static void execute(const Token *expr,
         }
     }
 
+    else if (expr->isArithmeticalOp() && expr->astOperand1() && expr->astOperand2()) {
+        MathLib::bigint result1, result2;
+        execute(expr->astOperand1(), programMemory, &result1, error);
+        execute(expr->astOperand2(), programMemory, &result2, error);
+        if (expr->str() == "+")
+            *result = result1 + result2;
+        else if (expr->str() == "-")
+            *result = result1 - result2;
+        else if (expr->str() == "*")
+            *result = result1 * result2;
+        else if (expr->str() == "/")
+            *result = result1 / result2;
+        else if (expr->str() == "%")
+            *result = result1 % result2;
+    }
+
     else if (expr->str() == "&&") {
         execute(expr->astOperand1(), programMemory, result, error);
         if (*error || *result == 0)
