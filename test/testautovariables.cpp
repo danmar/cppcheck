@@ -110,6 +110,8 @@ private:
         TEST_CASE(returnParameterAddress);
 
         TEST_CASE(testconstructor); // ticket #5478 - crash
+
+        TEST_CASE(variableIsUsedInScope); // ticket #5599 crash in variableIsUsedInScope()
     }
 
 
@@ -849,6 +851,16 @@ private:
               "    return const_tree_iterator(foo);\n"
               "  }\n"
               "};");
+    }
+
+    void variableIsUsedInScope() {
+        check("void removed_cb (GList *uids) {\n"
+              "for (; uids; uids = uids->next) {\n"
+              "}\n"
+              "}\n"
+              "void opened_cb () {\n"
+              "	g_signal_connect (G_CALLBACK (removed_cb));\n"
+              "}");
     }
 
 };

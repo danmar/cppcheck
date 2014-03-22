@@ -107,7 +107,7 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     if (!start) // Ticket #5024
         return false;
 
-    for (const Token *tok = start; tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != scope->classEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
         if (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eDo || tok->scope()->type == Scope::eWhile) // In case of loops, better checking would be necessary
