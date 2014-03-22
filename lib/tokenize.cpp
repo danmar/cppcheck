@@ -2718,13 +2718,12 @@ void Tokenizer::createLinks2()
         else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !Token::Match(token->next(), "%var%|>|&|*|::|,|(|)|{|;"))
+            if (token->next() && !Token::Match(token->next(), "%var%|>|>>|&|*|::|,|(|)|{|;"))
                 continue;
 
             // Check type of open link
-            if (type.empty() || type.top()->str() != "<" || (token->str() == ">>" && type.size() < 2)) {
+            if (token->str() == ">>" && type.size() < 2)
                 continue;
-            }
 
             // if > is followed by ; .. "new a<b>;" is expected
             if (Token::simpleMatch(token->next(), ";")) {
@@ -3397,6 +3396,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         setVarId();
     }
 
+    // Link < with >
+    createLinks2();
+
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
@@ -3406,8 +3408,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Add std:: in front of std classes, when using namespace std; was given
     simplifyNamespaceStd();
-
-    createLinks2();
 
     // Change initialisation of variable to assignment
     simplifyInitVar();

@@ -6789,6 +6789,24 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            // #4860
+            const char code[] = "Bar<Typelist< int, Typelist< int, Typelist< int, FooNullType>>>>::set(1, 2, 3);";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(18));
+            ASSERT_EQUALS(true, tok->tokAt(3) == tok->linkAt(17));
+            ASSERT_EQUALS(true, tok->tokAt(7) == tok->linkAt(16));
+            ASSERT_EQUALS(true, tok->tokAt(11) == tok->linkAt(15));
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void removeExceptionSpecification1() {
