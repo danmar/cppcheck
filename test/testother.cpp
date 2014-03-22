@@ -2862,6 +2862,15 @@ private:
               "}", 0, false, false, false, false, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
+        check("class NeonSession {\n"
+              "    void exit();\n"
+              "};\n"
+              "void NeonSession::exit()\n"
+              "{\n"
+              "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
+              "}", 0, false, false, false, false, &settings);
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int a)\n"
               "{\n"
               "        switch(a) {\n"

@@ -1591,7 +1591,7 @@ void CheckOther::checkUnreachableCode()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Token* secondBreak = 0;
         const Token* labelName = 0;
-        if (tok->str() == "(")
+        if (tok->link() && Token::Match(tok, "(|[|<"))
             tok = tok->link();
         else if (Token::Match(tok, "break|continue ;"))
             secondBreak = tok->tokAt(2);
@@ -1609,7 +1609,8 @@ void CheckOther::checkUnreachableCode()
             secondBreak = tok->tokAt(3);
             labelName = tok->next();
         } else if (Token::Match(tok, "%var% (") && _settings->library.isnoreturn(tok->str())) {
-            secondBreak = tok->linkAt(1)->tokAt(2);
+            if (!tok->function() || (tok->function()->token != tok && tok->function()->tokenDef != tok))
+                secondBreak = tok->linkAt(1)->tokAt(2);
         }
 
         // Statements follow directly, no line between them. (#3383)
