@@ -4137,7 +4137,7 @@ private:
               "    const int i = g();\n"
               "    memset(is, 1.0f + i, 40);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f + i' is a float, its representation is implementation defined.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
     }
 
     void redundantGetAndSetUserId() {

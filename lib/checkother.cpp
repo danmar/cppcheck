@@ -33,15 +33,25 @@ namespace {
     CheckOther instance;
 }
 
-static bool astIsFloat(const Token *tok)
+static bool astIsFloat(const Token *tok, bool unknown)
 {
-    if (tok->astOperand1() && astIsFloat(tok->astOperand1()))
+    if (tok->astOperand1() && astIsFloat(tok->astOperand1(),unknown))
         return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2()))
+    if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
         return true;
 
-    // TODO: check function calls, struct members, arrays, etc also
-    return !tok->variable() || Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
+    if (tok->isNumber())
+        return MathLib::isFloat(tok->str());
+
+    if (tok->isName()) {
+        // TODO: check function calls, struct members, arrays, etc also
+        if (!tok->variable())
+            return unknown;
+
+        return Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
+    }
+
+    return unknown;
 }
 
 static bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
@@ -1375,7 +1385,7 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!isSameExpression(expr1, expr2, _settings->library.functionpure))
                     continue;
 
-                const bool isfloat = astIsFloat(expr1) || MathLib::isFloat(value1) || astIsFloat(expr2) || MathLib::isFloat(value2);
+                const bool isfloat = astIsFloat(expr1,true) || MathLib::isFloat(value1) || astIsFloat(expr2,true) || MathLib::isFloat(value2);
 
                 // don't check floating point equality comparisons. that is bad
                 // and deserves different warnings.
@@ -1767,15 +1777,18 @@ void CheckOther::checkMemsetInvalid2ndParam()
                 const Token* secondParamTok = firstParamTok->nextArgument();
                 if (!secondParamTok)
                     continue;
-                const Variable* secondParamVar = secondParamTok->variable();
+
+                // Second parameter is zero float literal, i.e. 0.0f
+                if (Token::Match(secondParamTok,"%num% ,") && secondParamTok->str().find_first_not_of("0.f") == std::string::npos)
+                    continue;
+
+                const Token *top = secondParamTok;
+                while (top->astParent() && top->astParent()->str() != ",")
+                    top = top->astParent();
 
                 // Check if second parameter is a float variable or a float literal != 0.0f
-                // TODO: Use AST with astIsFloat() for catch expressions like 'a + 1.0f'
-                if (portability &&
-                    ((secondParamVar && Token::Match(secondParamVar->typeStartToken(), "float|double"))
-                     || (secondParamTok->isNumber() && MathLib::isFloat(secondParamTok->str()) &&
-                         MathLib::toDoubleNumber(secondParamTok->str()) != 0.0 && secondParamTok->next()->str() == ","))) {
-                    memsetFloatError(secondParamTok, secondParamTok->str());
+                if (portability && astIsFloat(top,false)) {
+                    memsetFloatError(secondParamTok, top->expressionString());
                 } else if (warning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                     const long long int value = MathLib::toLongNumber(secondParamTok->str());
                     if (value < -128 || value > 255)
@@ -2869,11 +2882,9 @@ void CheckOther::checkDuplicateExpression()
         if (scope->type != Scope::eFunction)
             continue;
 
-        // Experimental implementation
-        // TODO: check for duplicate separated expressions:  (a==1 || a==2 || a==1)
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|=|<<|>>")) {
-                if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1()))
+                if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
                 if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
                     duplicateExpressionError(tok, tok, tok->str());
