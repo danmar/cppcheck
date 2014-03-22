@@ -24,6 +24,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <deque>
 #include <set>
 #include <algorithm>
 
@@ -603,7 +604,7 @@ public:
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
 private:
-    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
+    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe, std::deque<const ::Type* > *anchestors = nullptr) const;
 };
 
 class CPPCHECKLIB Scope {

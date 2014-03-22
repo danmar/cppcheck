@@ -2029,7 +2029,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return false;
 }
 
-bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
+bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe, std::deque< const ::Type* > *anchestors) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
@@ -2065,9 +2065,19 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
             }
 
             if (!baseType->derivedFrom[i].type->derivedFrom.empty()) {
-                // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN
-                if ((baseType != baseType->derivedFrom[i].type) && isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))
-                    return true;
+                // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
+                // #5590 with a loop within the class hierarchie.
+                // We do so by tracking all previously checked types in a deque.
+                std::deque< const ::Type* > local_anchestors;
+                if (!anchestors) {
+                    anchestors=&local_anchestors;
+                }
+                anchestors->push_back(baseType);
+                if (std::find(anchestors->begin(), anchestors->end(), baseType->derivedFrom[i].type)==anchestors->end()) {
+                    if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe, anchestors))  {
+                        return true;
+                    }
+                }
             }
         } else {
             // unable to find base class so assume it has no virtual function
