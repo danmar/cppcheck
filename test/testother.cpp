@@ -2877,6 +2877,9 @@ private:
               "}", 0, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo() { xResAccess->exit(); }", 0, false, false, false, false, &settings);
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int a)\n"
               "{\n"
               "        switch(a) {\n"
