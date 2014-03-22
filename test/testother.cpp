@@ -2871,6 +2871,12 @@ private:
               "}", 0, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
+        check("void NeonSession::exit()\n"
+              "{\n"
+              "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
+              "}", 0, false, false, false, false, &settings);
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int a)\n"
               "{\n"
               "        switch(a) {\n"
