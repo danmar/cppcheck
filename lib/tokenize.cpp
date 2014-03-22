@@ -7465,6 +7465,11 @@ void Tokenizer::simplifyEnum()
                     enumName = tok1;
                     lastValue = 0;
                     tok1 = tok1->tokAt(2);
+                    if (tok1->str() == "," || tok1->str() == "}") {
+                        syntaxError(tok1);
+                        break;
+                    }
+
                     enumValueStart = tok1;
                     enumValueEnd = tok1;
                     int level = 0;

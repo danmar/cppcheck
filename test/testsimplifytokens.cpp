@@ -374,6 +374,7 @@ private:
         TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
+        TEST_CASE(invalid_enum); // #5600
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -7148,6 +7149,18 @@ private:
         tokenizer.tokenize(istr, "test.c");
         Token *x_token = tokenizer.list.front()->tokAt(5);
         ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token, tokenizer.tokens()));
+    }
+
+    void invalid_enum() { // #5600: missing include causes invalid enum
+        const char code [] = "enum {\n"
+                             "    NUM_OPCODES = \n"
+                             // #include "definition"
+                             "};\n"
+                             "struct bytecode {};\n"
+                             "jv jq_next() { opcode = ((opcode) +NUM_OPCODES);\n"
+                             "}";
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
     }
 
     void removestd() {
