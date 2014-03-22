@@ -100,7 +100,7 @@ void CheckStl::iterators()
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = var->nameToken(); tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+        for (const Token *tok2 = var->nameToken(); tok2 && tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
             if (invalidationScope && tok2 == invalidationScope->classEnd)
                 validIterator = true; // Assume that the iterator becomes valid again
             if (containerAssignScope && tok2 == containerAssignScope->classEnd)
@@ -208,7 +208,7 @@ void CheckStl::iterators()
 
             // bailout handling. Assume that the iterator becomes valid if we see else.
             // TODO: better handling
-            else if (tok2->str() == "else") {
+            else if (tok2 && tok2->str() == "else") {
                 validIterator = true;
             }
         }
