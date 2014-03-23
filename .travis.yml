@@ -1,8 +1,8 @@
 language: cpp
 
 compiler:
-  - gcc
   - clang
+  - gcc
 
 env:
   global:
@@ -11,10 +11,10 @@ env:
     - CXXFLAGS="-O2 -Wunreachable-code"
   matrix:
 #    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_KERNEL is the var that controlls if we download and check the kernel in that travis job
-    - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
     - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build VERIFY=1
     -
+    - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
 
 matrix:
 # do notify immediately about it when a job of a build fails.
