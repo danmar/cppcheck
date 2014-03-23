@@ -679,6 +679,8 @@ static void execute(const Token *expr,
             *result = result1 - result2;
         else if (expr->str() == "*")
             *result = result1 * result2;
+        else if (result2 == 0)
+            *error = true;
         else if (expr->str() == "/")
             *result = result1 / result2;
         else if (expr->str() == "%")
