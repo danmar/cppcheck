@@ -1844,8 +1844,14 @@ private:
     }
 
     void garbage() {
-        GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
-        (void)db;
+        {
+            GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
+            (void)db;
+        }
+        {
+            GET_SYMBOL_DB("{ }; void namespace A::f; { g() { int } }");
+            (void)db;
+        }
     }
 
     void findFunction1() {

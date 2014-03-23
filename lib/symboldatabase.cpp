@@ -80,8 +80,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     else if (Token::simpleMatch(tok2->next(), "= {") &&
                              tok2->linkAt(2)->next()->str() == ";")
                         tok = tok2->linkAt(2)->next();
-                    else if (Token::Match(tok2->next(), "(|{")  &&
-                             tok2->next()->link()->next()->str() == ";")
+                    else if (Token::Match(tok2->next(), "(|{") &&
+                             tok2->next()->link()->strAt(1) == ";")
                         tok = tok2->next()->link()->next();
                     else
                         break; // bail
