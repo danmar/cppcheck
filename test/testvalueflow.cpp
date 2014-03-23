@@ -645,7 +645,7 @@ private:
                "    for (int x = 0; x < 10; x = x / 0)\n"
                "        a[x] = 0;\n"
                "}";
-        testValueOfX(code, 3U, 0); // don't crash
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0)); // don't crash
 
         code = "void f() {\n"
                "    for (int x = 0; x < 10; x++)\n"

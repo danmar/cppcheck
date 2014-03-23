@@ -655,7 +655,7 @@ static void execute(const Token *expr,
             *error = true;
     }
 
-    else if (expr->str() == "++") {
+    else if (expr->str() == "++" || expr->str() == "--") {
         if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
             *error = true;
         else {
@@ -663,7 +663,7 @@ static void execute(const Token *expr,
             if (var == programMemory->end())
                 *error = true;
             else {
-                *result = var->second + 1;
+                *result = var->second + (expr->str() == "++" ? 1 : -1);
                 var->second = *result;
             }
         }
@@ -757,8 +757,7 @@ static bool valueFlowForLoop2(const Token *tok,
     if (error)
         return false;
     execute(secondExpression, &programMemory, &result, &error);
-    if (error)
-        return false;
+
     std::map<unsigned int, MathLib::bigint> startMemory(programMemory);
     std::map<unsigned int, MathLib::bigint> endMemory;
 
@@ -771,9 +770,10 @@ static bool valueFlowForLoop2(const Token *tok,
     }
 
     memory1->swap(startMemory);
-    memory2->swap(endMemory);
+    if (!error)
+        memory2->swap(endMemory);
 
-    return !error;
+    return true;
 }
 
 static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int varid, const MathLib::bigint value, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
