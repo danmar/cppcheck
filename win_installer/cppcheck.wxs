@@ -24,7 +24,7 @@
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
           </Component>
           <Component Id='RegistryEntries' Guid='$(var.registrykeysGUID)'>
-            <RegistryKey Root="HKCU" Key="SOFTWARE\$(var.ProductNameShort)" Action="createAndRemoveOnUninstall">
+            <RegistryKey Root="HKCU" Key="SOFTWARE\$(var.ProductNameShort)" ForceDeleteOnUninstall="yes">
               <RegistryValue Name="InstallationPath" Value="[INSTALLDIR]" Type="string" KeyPath="yes" />
               <RegistryValue Name="Version" Value="$(var.ProductVersion)" Type="string" />
             </RegistryKey>
@@ -54,12 +54,14 @@
             </Component>
           </Directory>
           <Directory Id='CfgsFolder' Name='cfg'>
-            <Component Id='Cfgs' Guid='$(var.cfgsGUID)'>
+            <Component Id='MandatoryCfgs' Guid='$(var.mandatoryCfgsGUID)'>
+              <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
+            </Component>
+            <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
-              <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
             </Component>
           </Directory>
@@ -114,6 +116,7 @@
         <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='InnoSetupCleanup' />
+        <ComponentRef Id='MandatoryCfgs' />
       </Feature>
       <Feature Id='CLI' Title='Command line interface' AllowAdvertise='no' Description='Cppcheck as a command line tool' Level='1'>
         <ComponentRef Id='cppcheck.exe' />
@@ -126,8 +129,8 @@
         </Feature>
         <ComponentRef Id='ProgramMenuDir' />
       </Feature>
-      <Feature Id='ConfigFiles' Title='Default configurations' AllowAdvertise='no' Description='Provide default configuration files, for example for standard library or GTK' Level='1'>
-        <ComponentRef Id='Cfgs' />
+      <Feature Id='ConfigFiles' Title='Additional configurations' AllowAdvertise='no' Description='Provide additional configuration files, for example for WinAPI, GTK and SDL' Level='1'>
+        <ComponentRef Id='OptionalCfgs' />
       </Feature>
       <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components">
         <MergeRef Id="CRT"/>
