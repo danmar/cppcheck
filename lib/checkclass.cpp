@@ -873,7 +873,7 @@ void CheckClass::privateFunctions()
         std::list<const Function*> FuncList;
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // Get private functions..
-            if (func->type == Function::eFunction && func->access == Private)
+            if (func->type == Function::eFunction && func->access == Private && !func->isOperator) // TODO: There are smarter ways to check private operator usage
                 FuncList.push_back(&*func);
         }
 
