@@ -490,6 +490,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                         break;
                     }
 
+                    if (var->isStatic()) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " bailout when conditional code that contains var is seen");
+                        break;
+                    }
+
                     // Remove conditional values
                     std::list<ValueFlow::Value>::iterator it;
                     for (it = values.begin(); it != values.end();) {

@@ -498,6 +498,13 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
 
+        code = "void f() {\n"
+               "    static int x = 0;\n"
+               "    if (x==0) x = getX();\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // function
         code = "void f() {\n"
                "    char *x = 0;\n"
