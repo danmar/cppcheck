@@ -3955,7 +3955,6 @@ void Tokenizer::simplifyFlowControl()
                 eraseDeadCode(tok, 0);
 
             } else if (Token::Match(tok,"return|goto") ||
-                       Token::Match(tok->previous(), "[;{}] exit (") ||
                        (Token::Match(tok->previous(), "[;{}] %var% (") &&
                         _settings->library.isnoreturn(tok->str())) ||
                        (tok->str() == "throw" && !isC())) {
@@ -8146,6 +8145,10 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             }
             tok->deleteNext();
         } else {        //no need to keep the other strings, remove them.
+            if (tok->strAt(1) == "while") {
+                if (tok->str() == "}" && tok->link()->strAt(-1) == "do")
+                    tok->link()->tokAt(-1)->deleteThis();
+            }
             tok->deleteNext();
         }
     }

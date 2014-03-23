@@ -183,6 +183,7 @@ private:
         TEST_CASE(comparisons);
 
         //remove dead code after flow control statements
+        TEST_CASE(simplifyFlowControl);
         TEST_CASE(flowControl);
 
         // Simplify nested strcat() calls
@@ -452,8 +453,6 @@ private:
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
-
-        TEST_CASE(simplifyFlowControl);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -472,9 +471,7 @@ private:
 
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
-    std::string tok(const std::string& code, bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
-        return tok(code.c_str(), simplify, type);
-    }
+
     std::string tok(const char code[], const char filename[]) {
         errout.str("");
 
@@ -483,6 +480,23 @@ private:
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
+        tokenizer.simplifyTokenList2();
+
+        return tokenizer.tokens()->stringifyList(0, false);
+    }
+
+    std::string tokWithStdLib(const char code[]) {
+        errout.str("");
+
+        Settings settings;
+        if (!settings.library.load("./testrunner", "../cfg/std.cfg") && !settings.library.load("./testrunner", "cfg/std.cfg")) {
+            complainMissingLib("std.cfg");
+            return "";
+        }
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(0, false);
@@ -3143,227 +3157,237 @@ private:
         ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
     }
 
+
+    void simplifyFlowControl() {
+        const char code1[] = "void f() {\n"
+                             "  return;\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { return ; }", tokWithStdLib(code1));
+
+        const char code2[] = "void f() {\n"
+                             "  exit();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { exit ( ) ; }", tokWithStdLib(code2));
+
+        const char code3[] = "void f() {\n"
+                             "  x.abort();\n"
+                             "  y();\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) { x . abort ( ) ; y ( ) ; }", tokWithStdLib(code3));
+    }
+
     void flowControl() {
-        std::list<std::string> beforedead;
-        //beforedead.push_back("return");
-        //beforedead.push_back("throw ( 10 )");
-        beforedead.push_back("exit ( 0 )");
-        //beforedead.push_back("abort ( )");
-        //beforedead.push_back("goto labels");
-        //beforedead.push_back("break");
-        //beforedead.push_back("continue");
+        {
+            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); foo(); }"));
+            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); if (m) foo(); }"));
+            ASSERT_EQUALS("void f ( int n ) { if ( n ) { exit ( 0 ) ; } foo ( ) ; }", tokWithStdLib("void f(int n) { if (n) { exit(0); } foo(); }"));
+            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); dead(); switch (n) { case 1: deadcode () ; default: deadcode (); } }"));
 
-        for (std::list<std::string>::iterator it = beforedead.begin(); it != beforedead.end(); ++it) {
-            {
-                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; foo(); }"));
-                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; if (m) foo(); }"));
-                ASSERT_EQUALS("void f ( int n ) { if ( n ) { " + *it + " ; } foo ( ) ; }",tok("void f(int n) { if (n) { " + *it + "; } foo(); }"));
-                ASSERT_EQUALS("void f ( ) { " + *it + " ; }", tok("void f() { " + *it + "; dead(); switch (n) { case 1: deadcode () ; default: deadcode (); } }"));
+            ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; exit ( 0 ) ; default : ; exit ( 0 ) ; } exit ( 0 ) ; }",
+                          tokWithStdLib("int f(int n) { switch (n) {case 0: exit(0); n*=2; default: exit(0); n*=6;} exit(0); foo();}"));
+            //ticket #3132
+            ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; exit ( 0 ) ; } }", tokWithStdLib("void f (int i) { goto label; switch(i) { label: exit(0); } }"));
+            //ticket #3148
+            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(exit(0)) }"));
+            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; , NULL ) }", tokWithStdLib("void f() { MACRO(exit(0);, NULL) }"));
+            ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(bar1, exit(0)) }"));
+            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ; bar2 , foo ) }", tokWithStdLib("void f() { MACRO(exit(0); bar2, foo) }"));
+        }
 
-                ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; " + *it + " ; default : ; " + *it + " ; } " + *it + " ; }",
-                              tok("int f(int n) { switch (n) {case 0: " + *it + "; n*=2; default: " + *it + "; n*=6;} " + *it + "; foo();}"));
-                //ticket #3132
-                ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; " + *it + " ; } }",tok("void f (int i) { goto label; switch(i) { label: " + *it + "; } }"));
-                //ticket #3148
-                ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ) }",tok("void f() { MACRO(" + *it + ") }"));
-                ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ; , NULL ) }",tok("void f() { MACRO(" + *it + ";, NULL) }"));
-                ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , " + *it + " ) }",tok("void f() { MACRO(bar1, " + *it + ") }"));
-                ASSERT_EQUALS("void f ( ) { MACRO ( " + *it + " ; bar2 , foo ) }",tok("void f() { MACRO(" + *it + "; bar2, foo) }"));
-            }
+        {
+            const char* code = "void f(){ "
+                               "   if (k>0) goto label; "
+                               "   exit(0); "
+                               "   if (tnt) "
+                               "   { "
+                               "       { "
+                               "           check(); "
+                               "           k=0; "
+                               "       } "
+                               "       label: "
+                               "       bar(); "
+                               "   } "
+                               "}";
+            ASSERT_EQUALS("void f ( ) { if ( k > 0 ) { goto label ; } exit ( 0 ) ; { label : ; bar ( ) ; } }", tokWithStdLib(code));
+        }
 
-            {
-                std::string code = "void f(){ "
-                                   "   if (k>0) goto label; "
-                                   "   " + *it + "; "
-                                   "   if (tnt) "
-                                   "   { "
-                                   "       { "
-                                   "           check(); "
-                                   "           k=0; "
-                                   "       } "
-                                   "       label: "
-                                   "       bar(); "
-                                   "   } "
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    {"
+                               "        boo();"
+                               "        while (n) { --n; }"
+                               "        {"
+                               "            label:"
+                               "            ok();"
+                               "        }"
+                               "    }"
+                               "}";
+            ASSERT_EQUALS("void foo ( ) { exit ( 0 ) ; { label : ; ok ( ) ; } }", tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case 1:"
+                               "            label:"
+                               "            foo(); break;"
+                               "        default:"
+                               "            break;"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case 1:"
+                               "            {"
+                               "                foo();"
+                               "            }"
+                               "            label:"
+                               "            bar();"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; bar ( ) ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case a:"
+                               "            {"
+                               "                foo();"
+                               "            }"
+                               "        case b|c:"
+                               "            bar();"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case 1:"
+                               "            label:"
+                               "            foo(); break;"
+                               "        default:"
+                               "            break; break;"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case 1:"
+                               "            label:"
+                               "            foo(); break; break;"
+                               "        default:"
+                               "            break;"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (n) {"
+                               "        case 1:"
+                               "            label:"
+                               "            foo(); break; break;"
+                               "        default:"
+                               "            break; break;"
+                               "    }"
+                               "}";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "int f() { "
+                               "switch (x) { case 1: exit(0); bar(); tack; { ticak(); exit(0) } exit(0);"
+                               "case 2: exit(0); { random(); } tack(); "
+                               "switch(y) { case 1: exit(0); case 2: exit(0); } "
+                               "exit(0); } exit(0); }";
+            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : ; exit ( 0 ) ; case 2 : ; exit ( 0 ) ; } exit ( 0 ) ; }",tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "int f() {"
+                               "switch (x) { case 1: exit(0); bar(); tack; { ticak(); exit(0); } exit(0);"
+                               "case 2: switch(y) { case 1: exit(0); bar2(); foo(); case 2: exit(0); }"
+                               "exit(0); } exit(0); }";
+            const char* expected = "int f ( ) {"
+                                   " switch ( x ) { case 1 : ; exit ( 0 ) ;"
+                                   " case 2 : ; switch ( y ) { case 1 : ; exit ( 0 ) ; case 2 : ; exit ( 0 ) ; }"
+                                   " exit ( 0 ) ; } exit ( 0 ) ; }";
+            ASSERT_EQUALS(expected,tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    switch (i) { case 0: switch (j) { case 0: exit(0); }"
+                               "        case 1: switch (j) { case -1: exit(0); }"
+                               "        case 2: switch (j) { case -2: exit(0); }"
+                               "        case 3: if (blah6) {exit(0);} break; } }";
+            const char* expected = "void foo ( ) {"
+                                   " switch ( i ) { case 0 : ; switch ( j ) { case 0 : ; exit ( 0 ) ; }"
+                                   " case 1 : ; switch ( j ) { case -1 : ; exit ( 0 ) ; }"
+                                   " case 2 : ; switch ( j ) { case -2 : ; exit ( 0 ) ; }"
+                                   " case 3 : ; if ( blah6 ) { exit ( 0 ) ; } break ; } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo () {"
+                               "    exit(0);"
+                               "    switch (i) { case 0: switch (j) { case 0: foo(); }"
+                               "        case 1: switch (j) { case -1: bar(); label:; ok(); }"
+                               "        case 3: if (blah6) { boo(); break; } } }";
+            const char* expected = "void foo ( ) { exit ( 0 ) ; { { label : ; ok ( ) ; } case 3 : ; if ( blah6 ) { boo ( ) ; break ; } } }";
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
+        }
+
+        {
+            const char* code = "void foo() {"
+                               "     switch ( t ) {"
+                               "     case 0:"
+                               "          if ( t ) switch ( b ) {}"
+                               "          break;"
+                               "     case 1:"
+                               "          exit(0);"
+                               "          return 0;"
+                               "     }"
+                               "     return 0;"
+                               "}";
+            const char* expected = "void foo ( ) {"
+                                   " switch ( t ) {"
+                                   " case 0 : ;"
+                                   " if ( t ) { switch ( b ) { } }"
+                                   " break ;"
+                                   " case 1 : ;"
+                                   " exit ( 0 ) ;"
+                                   " }"
+                                   " return 0 ; "
                                    "}";
-                ASSERT_EQUALS("void f ( ) { if ( k > 0 ) { goto label ; } " + *it + " ; { label : ; bar ( ) ; } }",tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    {"
-                                   "        boo();"
-                                   "        while (n) { --n; }"
-                                   "        {"
-                                   "            label:"
-                                   "            ok();"
-                                   "        }"
-                                   "    }"
-                                   "}";
-                ASSERT_EQUALS("void foo ( ) { " + *it + " ; { label : ; ok ( ) ; } }", tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case 1:"
-                                   "            label:"
-                                   "            foo(); break;"
-                                   "        default:"
-                                   "            break;"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case 1:"
-                                   "            {"
-                                   "                foo();"
-                                   "            }"
-                                   "            label:"
-                                   "            bar();"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; bar ( ) ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case a:"
-                                   "            {"
-                                   "                foo();"
-                                   "            }"
-                                   "        case b|c:"
-                                   "            bar();"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case 1:"
-                                   "            label:"
-                                   "            foo(); break;"
-                                   "        default:"
-                                   "            break; break;"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case 1:"
-                                   "            label:"
-                                   "            foo(); break; break;"
-                                   "        default:"
-                                   "            break;"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (n) {"
-                                   "        case 1:"
-                                   "            label:"
-                                   "            foo(); break; break;"
-                                   "        default:"
-                                   "            break; break;"
-                                   "    }"
-                                   "}";
-                std::string expected = "void foo ( ) { " + *it + " ; { label : ; foo ( ) ; break ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "int f() { "
-                                   "switch (x) { case 1: " + *it + "; bar(); tack; { ticak(); " + *it + " } " + *it + ";"
-                                   "case 2: " + *it + "; { random(); } tack(); "
-                                   "switch(y) { case 1: " + *it + "; case 2: " + *it + "; } "
-                                   "" + *it + "; } " + *it + "; }";
-                ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : ; " + *it + " ; case 2 : ; " + *it + " ; } " + *it + " ; }",tok(code));
-            }
-
-            {
-                std::string code = "int f() {"
-                                   "switch (x) { case 1: " + *it + "; bar(); tack; { ticak(); " + *it + "; } " + *it + ";"
-                                   "case 2: switch(y) { case 1: " + *it + "; bar2(); foo(); case 2: " + *it + "; }"
-                                   "" + *it + "; } " + *it + "; }";
-                std::string expected = "int f ( ) {"
-                                       " switch ( x ) { case 1 : ; " + *it + " ;"
-                                       " case 2 : ; switch ( y ) { case 1 : ; " + *it + " ; case 2 : ; " + *it + " ; }"
-                                       " " + *it + " ; } " + *it + " ; }";
-                ASSERT_EQUALS(expected,tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    switch (i) { case 0: switch (j) { case 0: " + *it + "; }"
-                                   "        case 1: switch (j) { case -1: " + *it + "; }"
-                                   "        case 2: switch (j) { case -2: " + *it + "; }"
-                                   "        case 3: if (blah6) {" + *it + ";} break; } }";
-                std::string expected = "void foo ( ) {"
-                                       " switch ( i ) { case 0 : ; switch ( j ) { case 0 : ; " + *it + " ; }"
-                                       " case 1 : ; switch ( j ) { case -1 : ; " + *it + " ; }"
-                                       " case 2 : ; switch ( j ) { case -2 : ; " + *it + " ; }"
-                                       " case 3 : ; if ( blah6 ) { " + *it + " ; } break ; } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo () {"
-                                   "    " + *it + ";"
-                                   "    switch (i) { case 0: switch (j) { case 0: foo(); }"
-                                   "        case 1: switch (j) { case -1: bar(); label:; ok(); }"
-                                   "        case 3: if (blah6) { boo(); break; } } }";
-                std::string expected = "void foo ( ) { " + *it + " ; { { label : ; ok ( ) ; } case 3 : ; if ( blah6 ) { boo ( ) ; break ; } } }";
-                ASSERT_EQUALS(expected, tok(code));
-            }
-
-            {
-                std::string code = "void foo() {"
-                                   "     switch ( t ) {"
-                                   "     case 0:"
-                                   "          if ( t ) switch ( b ) {}"
-                                   "          break;"
-                                   "     case 1:"
-                                   "          " + *it + ";"
-                                   "          return 0;"
-                                   "     }"
-                                   "     return 0;"
-                                   "}";
-                std::string expected = "void foo ( ) {"
-                                       " switch ( t ) {"
-                                       " case 0 : ;"
-                                       " if ( t ) { switch ( b ) { } }"
-                                       " break ;"
-                                       " case 1 : ;"
-                                       " " + *it + " ;"
-                                       " }"
-                                       " return 0 ; "
-                                       "}";
-                ASSERT_EQUALS(expected, tok(code));
-            }
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
         }
 
         {
@@ -3385,7 +3409,7 @@ private:
                                     " return ;"
                                     " } "
                                     "}";
-            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
         }
 
         {
@@ -3407,7 +3431,7 @@ private:
                                     " private:"
                                     " bool f ; "
                                     "} ;";
-            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
         }
 
         {
@@ -3432,8 +3456,11 @@ private:
                                     " private:"
                                     " bool f ; "
                                     "} ;";
-            ASSERT_EQUALS(expected, tok(code));
+            ASSERT_EQUALS(expected, tokWithStdLib(code));
         }
+
+        ASSERT_EQUALS("void foo ( ) { exit ( 0 ) ; }",
+                      tokWithStdLib("void foo() { do { exit(0); } while (true); }"));
     }
 
     void strcat1() {
@@ -7950,26 +7977,6 @@ private:
                             "}\n";
         ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
                       tok(code, true));
-    }
-
-    void simplifyFlowControl() {
-        const char code1[] = "void f() {\n"
-                             "  return;\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { return ; }", tok(code1,true));
-
-        const char code2[] = "void f() {\n"
-                             "  exit();\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { exit ( ) ; }", tok(code2,true));
-
-        const char code3[] = "void f() {\n"
-                             "  x.abort();\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { x . abort ( ) ; y ( ) ; }", tok(code3,true));
     }
 };
 
