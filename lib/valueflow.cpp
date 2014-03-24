@@ -688,16 +688,19 @@ static void execute(const Token *expr,
     }
 
     else if (expr->str() == "&&") {
-        execute(expr->astOperand1(), programMemory, result, error);
-        if (*error || *result == 0)
+        bool error1 = false;
+        execute(expr->astOperand1(), programMemory, result, &error1);
+        if (!error1 && *result == 0)
             *result = 0;
         else {
-            execute(expr->astOperand2(), programMemory, result, error);
-            // If there is an error, assume the result is not important
-            if (*error) {
-                *error = false;
+            bool error2 = false;
+            execute(expr->astOperand2(), programMemory, result, &error2);
+            if (error1 && error2)
+                *error = true;
+            if (error2)
                 *result = 1;
-            }
+            else
+                *result = !!*result;
         }
     }
 

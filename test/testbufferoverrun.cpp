@@ -1846,7 +1846,8 @@ private:
               "        data[x] = 0;\n"
               "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: data\n"
+                      "[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_continue() {
