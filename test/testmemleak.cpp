@@ -125,16 +125,14 @@ public:
     }
 
 private:
+    Settings settings1;
+
     void check(const char code[], const Settings *settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings1;
-        if (!settings) {
-            LOAD_LIB("gtk.cfg");
-            settings1.library = _lib;
+        if (!settings)
             settings = &settings1;
-        }
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -150,6 +148,8 @@ private:
 
 
     void run() {
+        LOAD_LIB_2(settings1.library, "gtk.cfg");
+
         // Check that getcode works correctly..
         TEST_CASE(testgetcode);
 
@@ -4241,9 +4241,8 @@ private:
 
     // Test that posix.cfg is configured correctly
     void posixcfg() {
-        LOAD_LIB("posix.cfg");
         Settings settings;
-        settings.library = _lib;
+        LOAD_LIB_2(settings.library, "posix.cfg");
 
         const char code[] = "void leaks() {\n"
                             "    void* leak1 = fdopendir();\n"
@@ -4255,17 +4254,19 @@ private:
                             "    void *p2 = opendir(); closedir(p2);\n"
                             "    void *p3 = socket(); close(p3);\n"
                             "}";
-        check(code,&settings);
+        check(code, &settings);
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: leak1\n"
                       "[test.cpp:5]: (error) Resource leak: leak2\n"
                       "[test.cpp:5]: (error) Resource leak: leak3\n", errout.str());
+
+        LOAD_LIB_2(settings.library, "gtk.cfg");
 
         check("void f(char *a) {\n"
               "    char *s = g_strdup(a);\n"
               "    mkstemp(s);\n"
               "    mkdtemp(s);\n"
               "    mktemp(s);\n"
-              "}");
+              "}", &settings);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
     }
 };
@@ -6115,25 +6116,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.standards.posix = true;
-
-        LOAD_LIB("gtk.cfg");
-        settings.library = _lib;
-
-        // Add some test allocation functions to the library.
-        // When not run as a unit test, these are read from
-        // an XML file (e.g. cfg/posix.cfg).
-        int id = 0;
-        while (!settings.library.ismemory(++id))
-            continue;
-        settings.library.setalloc("malloc", id);
-        settings.library.setalloc("calloc", id);
-        settings.library.setalloc("strdup", id);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6147,6 +6134,21 @@ private:
     }
 
     void run() {
+        settings.standards.posix = true;
+
+        LOAD_LIB_2(settings.library, "gtk.cfg");
+
+        // Add some test allocation functions to the library.
+        // When not run as a unit test, these are read from
+        // an XML file (e.g. cfg/posix.cfg).
+        int id = 0;
+        while (!settings.library.ismemory(++id))
+            continue;
+        settings.library.setalloc("malloc", id);
+        settings.library.setalloc("calloc", id);
+        settings.library.setalloc("strdup", id);
+
+
         // pass allocated memory to function..
         TEST_CASE(functionParameter);
         // never use leakable resource
@@ -6304,13 +6306,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        LOAD_LIB("gtk.cfg");
-        settings.library = _lib;
 
         // Preprocess...
         Preprocessor preprocessor(&settings, this);
@@ -6331,6 +6331,8 @@ private:
     }
 
     void run() {
+        LOAD_LIB_2(settings.library, "gtk.cfg");
+
         TEST_CASE(glib1);
     }
 

@@ -4874,9 +4874,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-            LOAD_LIB("std.cfg");
             Settings settings;
-            settings.library = _lib;
+            LOAD_LIB_2(settings.library, "std.cfg");
             check("void foo() {\n"
                   "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
                   "}", "test.cpp", false, false, false, true, &settings);

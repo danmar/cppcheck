@@ -29,9 +29,11 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_bitop);     // using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -75,10 +77,6 @@ private:
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        LOAD_LIB("std.cfg");
-        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

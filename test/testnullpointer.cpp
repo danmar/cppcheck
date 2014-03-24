@@ -29,9 +29,11 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -86,12 +88,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
         settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
-        _lib = Library();
-        LOAD_LIB("std.cfg");
-        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

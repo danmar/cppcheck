@@ -85,10 +85,10 @@ public:
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
 #ifdef _WIN32
-#define REQUIRE_LIB( NAME ) { if (!_lib.load("./testrunner", "../cfg/" NAME) && !_lib.load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
+#define LOAD_LIB_2( LIB, NAME ) { if (!(LIB).load("./testrunner", "../cfg/" NAME) && !(LIB).load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
 #else
-#define REQUIRE_LIB( NAME ) { if (!_lib.load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
+#define LOAD_LIB_2( LIB, NAME ) { if (!(LIB).load("./testrunner", "cfg/" NAME)) { complainMissingLib(NAME); return; } }
 #endif
-#define LOAD_LIB( NAME ) { REQUIRE_LIB(NAME); }
+#define LOAD_LIB( NAME ) { LOAD_LIB_2(_lib, NAME); }
 
 #endif
