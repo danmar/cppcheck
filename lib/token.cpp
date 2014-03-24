@@ -1264,7 +1264,7 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 
 void Token::printValueFlow() const
 {
-    int line = -1;
+    unsigned int line = 0;
     std::cout << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (tok->values.empty())

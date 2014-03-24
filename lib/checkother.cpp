@@ -48,7 +48,7 @@ static bool astIsFloat(const Token *tok, bool unknown)
         if (!tok->variable())
             return unknown;
 
-        return Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0);
+        return Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0) != nullptr;
     }
 
     return unknown;
