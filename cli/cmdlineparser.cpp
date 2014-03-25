@@ -895,7 +895,7 @@ void CmdLineParser::PrintHelp()
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
               "    -l <load>            Specifies that no new threads should be started if there\n"
               "                         are other threads running and the load average is at least\n"
-              "                         load (ignored on non UNIX-like systems)"
+              "                         load (ignored on non UNIX-like systems)\n"
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
               "                         language. Valid values are: c, c++\n"
