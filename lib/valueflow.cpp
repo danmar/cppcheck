@@ -791,7 +791,9 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
     // Is variable modified inside for loop
     bool modified = false;
     for (const Token *tok = bodyStart->next(); tok != bodyEnd; tok = tok->next()) {
-        if (Token::Match(tok, "%varid% =", varid)) {
+        if (tok->varId() == varid &&
+            (Token::Match(tok, "%varid% =|++|--", varid) ||
+             Token::Match(tok->previous(), "++|-- %varid%", varid))) {
             modified = true;
             break;
         }
@@ -825,9 +827,23 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
         }
 
         else if (Token::Match(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
+            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), varid)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
+                break;
+            }
             if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok2, "For loop variable stopping on {");
-            break;
+                bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
+            tok2 = tok2->next()->link();
+            if (Token::Match(tok2, "} else {")) {
+                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), varid)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
+                    break;
+                }
+
+                tok2 = tok2->linkAt(2);
+            }
         }
     }
 }
