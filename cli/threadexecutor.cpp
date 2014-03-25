@@ -339,11 +339,6 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
     _fileContents[path] = content;
 }
 
-bool ThreadExecutor::checkLoadAverage(size_t nchilds)
-{
-    return true;
-}
-
 unsigned int ThreadExecutor::check()
 {
     HANDLE *threadHandles = new HANDLE[_settings._jobs];
