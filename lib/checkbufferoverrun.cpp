@@ -2038,26 +2038,6 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
     reportError(tok, Severity::error, "negativeIndex", ostr.str());
 }
 
-void CheckBufferOverrun::negativeIndex()
-{
-    const char pattern[] = "[ %num% ]";
-    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern)) {
-        const MathLib::bigint index = MathLib::toLongNumber(tok->next()->str());
-        if (index < 0) {
-            // Negative index. Check if it's an array.
-            const Token *tok2 = tok;
-            while (tok2->strAt(-1) == "]")
-                tok2 = tok2->previous()->link();
-
-            if (tok2->previous() && tok2->previous()->varId()) {
-                const Variable *var = tok2->previous()->variable();
-                if (var && var->isArray())
-                    negativeIndexError(tok, index);
-            }
-        }
-    }
-}
-
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
     : _element_size(0), _declarationId(0)
 {

@@ -67,7 +67,6 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.negativeIndex();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.writeOutsideBufferSize();
     }
@@ -1759,8 +1758,7 @@ private:
               "    TEST test;\n"
               "    test.a[-1] = 3;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' accessed at index -1, which is out of bounds.\n"
-                      "[test.cpp:4]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_decr() {
