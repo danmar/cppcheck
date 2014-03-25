@@ -1885,7 +1885,8 @@ private:
               "        a[i] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: a\n"
+                      "[test.cpp:6]: (error) Array 'a[10]' accessed at index 19, which is out of bounds.\n", errout.str());
 
         // Ticket #2385 - No false positive
         check("void f() {\n"
