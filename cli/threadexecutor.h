@@ -87,6 +87,13 @@ private:
     std::list<std::string> _errorList;
     int _wpipe;
 
+    /**
+     * @brief Check load average condition
+     * @param nchilds - count of currently runned childs
+     * @return true - if new process can be started
+     */
+    bool checkLoadAverage(size_t nchilds);
+
 public:
     /**
      * @return true if support for threads exist.

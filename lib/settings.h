@@ -115,6 +115,9 @@ public:
         time. Default is 1. (-j N) */
     unsigned int _jobs;
 
+    /** @brief Load average value */
+    unsigned int _loadAverage;
+
     /** @brief If errors are found, this value is returned from main().
         Default value is 0. */
     int _exitCode;

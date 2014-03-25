@@ -138,6 +138,22 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     return 1;
 }
 
+bool ThreadExecutor::checkLoadAverage(size_t nchilds)
+{
+    if (!nchilds || !_settings._loadAverage) {
+        return true;
+    }
+
+    double sample;
+    if (getloadavg(&sample, 1) != 1) {
+        // disable load average cheking on getloadavg error
+        return true;
+    } else if (sample < _settings._loadAverage) {
+        return true;
+    }
+    return false;
+}
+
 unsigned int ThreadExecutor::check()
 {
     _fileCount = 0;
@@ -155,7 +171,8 @@ unsigned int ThreadExecutor::check()
     std::map<std::string, std::size_t>::const_iterator i = _files.begin();
     for (;;) {
         // Start a new child
-        if (i != _files.end() && rpipes.size() < _settings._jobs) {
+        size_t nchilds = rpipes.size();
+        if (i != _files.end() && nchilds < _settings._jobs && checkLoadAverage(nchilds)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -211,8 +228,10 @@ unsigned int ThreadExecutor::check()
             FD_ZERO(&rfds);
             for (std::list<int>::const_iterator rp = rpipes.begin(); rp != rpipes.end(); ++rp)
                 FD_SET(*rp, &rfds);
-
-            int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, NULL, NULL, NULL);
+            struct timeval tv; // for every second polling of load average condition
+            tv.tv_sec = 1;
+            tv.tv_usec = 0;
+            int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, NULL, NULL, &tv);
 
             if (r > 0) {
                 std::list<int>::iterator rp = rpipes.begin();
@@ -318,6 +337,11 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
 {
     _fileContents[path] = content;
+}
+
+bool ThreadExecutor::checkLoadAverage(size_t nchilds)
+{
+    return true;
 }
 
 unsigned int ThreadExecutor::check()

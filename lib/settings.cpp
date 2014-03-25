@@ -34,6 +34,7 @@ Settings::Settings()
       _relativePaths(false),
       _xml(false), _xml_version(1),
       _jobs(1),
+      _loadAverage(0),
       _exitCode(0),
       _showtime(SHOWTIME_NONE),
       _maxConfigs(12),
