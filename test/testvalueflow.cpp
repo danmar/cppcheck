@@ -655,6 +655,13 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
+
+        code = "void f() {\n"
+               "    for (int x = 0; x < 10; x++)\n"
+               "        x==0 ?\n"
+               "        0 : a[x];\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSubFunction() {

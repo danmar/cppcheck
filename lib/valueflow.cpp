@@ -663,6 +663,11 @@ static void execute(const Token *expr,
             if (var == programMemory->end())
                 *error = true;
             else {
+                if (var->second == 0 &&
+                    expr->str() == "--" &&
+                    expr->astOperand1()->variable() &&
+                    expr->astOperand1()->variable()->typeStartToken()->isUnsigned())
+                    *error = true; // overflow
                 *result = var->second + (expr->str() == "++" ? 1 : -1);
                 var->second = *result;
             }
@@ -800,8 +805,13 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             while (parent) {
                 const Token * const p = parent;
                 parent = parent->astParent();
-                if (parent && parent->str() == "?" && parent->astOperand2() == p)
+                if (parent && parent->str() == ":")
                     break;
+                if (parent && parent->str() == "?") {
+                    if (parent->astOperand2() != p)
+                        parent = NULL;
+                    break;
+                }
             }
             if (parent) {
                 if (settings->debugwarnings)

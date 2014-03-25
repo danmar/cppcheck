@@ -1183,6 +1183,23 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         else if (Token::Match(tok, "%varid% [", arrayInfo.declarationId())) {
             // Look for errors first
             for (int warn = 0; warn == 0 || warn == 1; ++warn) {
+                // Negative index..
+                for (const Token *tok2 = tok->next(); tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
+                    const Token *index = tok2->astOperand2();
+                    std::list<ValueFlow::Value>::const_iterator it;
+                    const ValueFlow::Value *val = nullptr;
+                    for (it = index->values.begin(); it != index->values.end(); ++it) {
+                        if (it->intvalue < 0) {
+                            val = &*it;
+                            if (val->condition == nullptr)
+                                break;
+                        }
+                    }
+                    if (val && !val->condition)
+                        negativeIndexError(index, val->intvalue);
+                }
+
+                // Index out of bounds..
                 std::vector<ValueFlow::Value> indexes;
                 unsigned int valuevarid = 0;
                 for (const Token *tok2 = tok->next(); indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {

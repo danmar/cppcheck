@@ -969,48 +969,48 @@ private:
                "    a[-1] = 0;\n"    // negative index
                "    a[" + charMaxPlusOne.str() + "] = 0;\n"   // 128/256 > CHAR_MAX
                "}\n").c_str());
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n", errout.str());
 
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[128] = 0;\n"   // 128 > SCHAR_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[128]' accessed at index 128, which is out of bounds.\n", errout.str());
 
         check("void f(unsigned char n) {\n"
               "    int a[n];\n"     // n <= UCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[256] = 0;\n"   // 256 > UCHAR_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[256]' accessed at index 256, which is out of bounds.\n", errout.str());
 
         check("void f(short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n", errout.str());
 
         check("void f(unsigned short n) {\n"
               "    int a[n];\n"     // n <= USHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[65536] = 0;\n" // 65536 > USHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[65536]' accessed at index 65536, which is out of bounds.\n", errout.str());
 
         check("void f(signed short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
               "    a[-1] = 0;\n"    // negative index
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n"
-                      "[test.cpp:3]: (error) Array index -1 is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' accessed at index 32768, which is out of bounds.\n", errout.str());
 
         check("void f(int n) {\n"
               "    int a[n];\n"     // n <= INT_MAX
@@ -1066,7 +1066,8 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i-1] = a[i];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n"
+                      "[test.cpp:5]: (error) Array index -1 is out of bounds.\n", errout.str());
     }
 
     void array_index_28() {
@@ -1789,7 +1790,8 @@ private:
               "        val[i+1] = val[i];\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index -9994 is out of bounds.\n"
+                      "[test.cpp:5]: (error) Array index -9995 is out of bounds.\n", errout.str());
     }
 
 
@@ -1872,7 +1874,7 @@ private:
               "        a[i - 1] = 0;\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Array 'a[2]' accessed at index -1, which is out of bounds", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array index -1 is out of bounds.\n", errout.str());
     }
 
     void array_index_for() {
@@ -1939,7 +1941,8 @@ private:
               "        some_condition ? 0 : a[i-1];\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array index -1 is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    int a[10];\n"
@@ -1948,7 +1951,8 @@ private:
               "        a[i-1] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n"
+                      "[test.cpp:5]: (error) Array index -1 is out of bounds.\n", errout.str());
     }
 
     void array_index_for_varid0() { // #4228: No varid for counter variable
