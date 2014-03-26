@@ -181,7 +181,7 @@ private:
               "    template<typename T> void foo( T t ) const;\n"
               "};\n"
               "template<typename T> void X::foo( T t ) const { }\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'bar' is never used.\n", errout.str());
     }
 
     void throwIsNotAFunction() {

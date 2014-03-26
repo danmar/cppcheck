@@ -21,6 +21,7 @@
 #include "checkunusedfunctions.h"
 #include "tokenize.h"
 #include "token.h"
+#include "symboldatabase.h"
 #include <cctype>
 //---------------------------------------------------------------------------
 
@@ -33,63 +34,36 @@
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
+    const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
+
     // Function declarations..
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-        if (tok->fileIndex() != 0)
-            continue;
-
-        // token contains a ':' => skip to next ; or {
-        if (tok->str().find(":") != std::string::npos) {
-            while (tok && tok->str().find_first_of(";{"))
-                tok = tok->next();
-            if (tok)
-                continue;
-            break;
-        }
-
-        // If this is a template function, skip it
-        if (tok->previous() && tok->previous()->str() == ">")
-            continue;
-
-        const Token *funcname = nullptr;
-
-        if (Token::Match(tok, "%type% %var% ("))
-            funcname = tok->next();
-        else if (Token::Match(tok, "%type% *|& %var% ("))
-            funcname = tok->tokAt(2);
-        else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2).c_str()))
-            funcname = tok->tokAt(2);
-
-        // Don't assume throw as a function name: void foo() throw () {}
-        if (Token::Match(tok->previous(), ")|const") || funcname == 0)
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
+        const Scope* scope = symbolDatabase->functionScopes[i];
+        const Function* func = scope->function;
+        if (!func || !func->token || scope->classStart->fileIndex() != 0)
             continue;
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
-        if (funcname->isAttributeConstructor() || funcname->isAttributeDestructor())
+        if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction)
             continue;
 
-        tok = funcname->linkAt(1);
+        // Don't care about templates
+        if (func->retDef->str() == "template")
+            continue;
 
-        // Check that ") {" is found..
-        if (! Token::Match(tok, ") const| {") &&
-            ! Token::Match(tok, ") const| throw ( ) {"))
-            funcname = 0;
+        FunctionUsage &usage = _functions[func->name()];
 
-        if (funcname) {
-            FunctionUsage &func = _functions[ funcname->str()];
+        if (!usage.lineNumber)
+            usage.lineNumber = func->token->linenr();
 
-            if (!func.lineNumber)
-                func.lineNumber = funcname->linenr();
-
-            // No filename set yet..
-            if (func.filename.empty()) {
-                func.filename = tokenizer.getSourceFilePath();
-            }
-            // Multiple files => filename = "+"
-            else if (func.filename != tokenizer.getSourceFilePath()) {
-                //func.filename = "+";
-                func.usedOtherFile |= func.usedSameFile;
-            }
+        // No filename set yet..
+        if (usage.filename.empty()) {
+            usage.filename = tokenizer.getSourceFilePath();
+        }
+        // Multiple files => filename = "+"
+        else if (usage.filename != tokenizer.getSourceFilePath()) {
+            //func.filename = "+";
+            usage.usedOtherFile |= usage.usedSameFile;
         }
     }
 
