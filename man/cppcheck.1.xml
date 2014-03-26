@@ -129,7 +129,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
       <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
@@ -422,20 +421,13 @@ There are false positives with this option. Each result must be carefully invest
       <varlistentry>
         <term><option>--rule=&lt;rule&gt;</option></term>
         <listitem>
-          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero.</para>
+          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>--rule-file=&lt;file&gt;</option></term>
         <listitem>
-          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-s</option></term>
-        <term><option>--style</option></term>
-        <listitem>
-          <para>Deprecated, use --enable=style</para>
+          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
