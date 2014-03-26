@@ -50,6 +50,7 @@ private:
         TEST_CASE(returnRef);
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
         TEST_CASE(initializer_list);
+        TEST_CASE(member_function_ternary);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -292,6 +293,20 @@ private:
               "    {}\n"
               "int m_i;\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void member_function_ternary() {
+        check("struct Foo {\n"
+              "    void F1() {}\n"
+              "    void F2() {}\n"
+              "};\n"
+              "int main(int argc, char *argv[]) {\n"
+              "    Foo foo;\n"
+              "    void (Foo::*ptr)();\n"
+              "    ptr = (argc > 1 && !strcmp(argv[1], \"F2\")) ? &Foo::F2 : &Foo::F1;\n"
+              "    (foo.*ptr)();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
