@@ -58,6 +58,7 @@ private:
         TEST_CASE(nullpointer21); // #4038 (fp: if (x) p=q; else return;)
         TEST_CASE(nullpointer23); // #4665 (false positive)
         TEST_CASE(nullpointer24); // #5082 fp: chained assignment
+        TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
@@ -1279,6 +1280,16 @@ private:
               "    *c = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer25() { // #5061
+        check("void f(int *data, int i)\n"
+              "{\n"
+              "    int *array = NULL;\n"
+              "    if (data == 1 && array[i] == 0)\n"
+              "        std::cout << \"test\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: array\n", errout.str());
     }
 
     void nullpointer_cast() { // #4692
