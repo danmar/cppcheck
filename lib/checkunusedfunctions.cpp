@@ -68,7 +68,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    const Token *scopeEnd = nullptr;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
@@ -163,31 +162,21 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (scopeEnd == nullptr) {
-            if (!Token::Match(tok, ")|= const| {"))
-                continue;
-            scopeEnd = tok;
-            while (scopeEnd->str() != "{")
-                scopeEnd = scopeEnd->next();
-            scopeEnd = scopeEnd->link();
-        } else if (tok == scopeEnd) {
-            scopeEnd = nullptr;
-            continue;
-        }
-
-
         const Token *funcname = nullptr;
 
-        if (Token::Match(tok->next(), "%var% (")) {
+        if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% (")) {
             funcname = tok->next();
         }
 
-        else if (Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
+        else if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
             funcname = tok->next();
         }
 
-        else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
+        else if (Token::Match(tok, "[;{}.,()[=+-/|!?:] &| %var% [(),;:}]")) {
             funcname = tok->next();
+            if (tok->str() == "&")
+                funcname = funcname->next();
+        }
 
         else if (Token::Match(tok, "[=(,] &| %var% :: %var%")) {
             funcname = tok->next();

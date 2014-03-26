@@ -49,6 +49,7 @@ private:
         TEST_CASE(operator1);   // #3195
         TEST_CASE(returnRef);
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
+        TEST_CASE(initializer_list);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -281,6 +282,16 @@ private:
         // Don't crash on wrong syntax
         check("int x __attribute__((constructor));\n"
               "int x __attribute__((destructor));");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initializer_list() {
+        check("int foo() { return 0; }\n"
+              "struct A {\n"
+              "    A() : m_i(foo())\n"
+              "    {}\n"
+              "int m_i;\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
