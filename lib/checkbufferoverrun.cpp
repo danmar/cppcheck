@@ -1186,6 +1186,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 // Negative index..
                 for (const Token *tok2 = tok->next(); tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
                     const Token *index = tok2->astOperand2();
+                    if (!index)
+						continue;
                     std::list<ValueFlow::Value>::const_iterator it;
                     const ValueFlow::Value *val = nullptr;
                     for (it = index->values.begin(); it != index->values.end(); ++it) {
