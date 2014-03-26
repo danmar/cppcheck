@@ -3559,7 +3559,7 @@ private:
             errout.str("");
             settings.checkConfiguration = true;
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found.\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
 
             pragmaOnce.clear();
             errout.str("");

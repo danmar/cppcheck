@@ -2378,7 +2378,9 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                 locationList.push_back(loc);
             }
             ErrorLogger::ErrorMessage errmsg(locationList, Severity::information,
-                                             (headerType==SystemHeader) ? "Include file: <" + header + "> not found." : "Include file: \"" + header + "\" not found.",
+                                             (headerType==SystemHeader) ?
+                                             "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
+                                             "Include file: \"" + header + "\" not found.",
                                              msgtype, false);
             errmsg.file0 = file0;
             _errorLogger->reportInfo(errmsg);
