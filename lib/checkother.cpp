@@ -1480,7 +1480,7 @@ void CheckOther::invalidFunctionUsage()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%var% ( !!)"))
                 continue;
-            const std::string functionName = tok->str();
+            const std::string& functionName = tok->str();
             int argnr = 1;
             const Token *argtok = tok->tokAt(2);
             while (argtok && argtok->str() != ")") {
@@ -3048,8 +3048,8 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse(void)
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
-                const std::string functionName = tok->str(); // store function name
-                const std::string varNameLeft = tok->tokAt(2)->str(); // get the left variable name
+                const std::string& functionName = tok->str(); // store function name
+                const std::string& varNameLeft = tok->tokAt(2)->str(); // get the left variable name
                 const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
                 const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
                 // compare varids: if they are not zero but equal

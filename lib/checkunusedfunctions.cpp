@@ -107,14 +107,14 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             while (qPropToken && qPropToken->str() != ")") {
                 if (settings->library.isexportedprefix(tok->str(), qPropToken->str())) {
                     const Token* qNextPropToken = qPropToken->next();
-                    const std::string value = qNextPropToken->str();
+                    const std::string& value = qNextPropToken->str();
                     if (_functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
                 }
                 if (settings->library.isexportedsuffix(tok->str(), qPropToken->str())) {
                     const Token* qNextPropToken = qPropToken->previous();
-                    const std::string value = qNextPropToken->str();
+                    const std::string& value = qNextPropToken->str();
                     if (value != ")" && _functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
@@ -130,7 +130,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (qPropToken->next()) {
                 qPropToken = qPropToken->next();
                 while (qPropToken && qPropToken->str() != ")") {
-                    const std::string value = qPropToken->str();
+                    const std::string& value = qPropToken->str();
                     if (!value.empty()) {
                         _functions[value].usedOtherFile = true;
                         break;

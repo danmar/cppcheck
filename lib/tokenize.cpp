@@ -1936,7 +1936,7 @@ void Tokenizer::simplifyArrayAccessSyntax()
     // 0[a] -> a[0]
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%num% [ %var% ]")) {
-            const std::string temp = tok->str();
+            std::string temp = tok->str();
             tok->str(tok->strAt(2));
             tok->tokAt(2)->str(temp);
         }
