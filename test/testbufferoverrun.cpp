@@ -3757,12 +3757,11 @@ private:
 
     void executionPaths4() {
         // Ticket #2386 - Segmentation fault upon strange syntax
-        epcheck("void f() {\n"
-                "    switch ( x ) {\n"
-                "        case struct Tree : break;\n"
-                "    }\n"
-                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(epcheck("void f() {\n"
+                             "    switch ( x ) {\n"
+                             "        case struct Tree : break;\n"
+                             "    }\n"
+                             "}"), InternalError);
     }
 
     void executionPaths5() {
