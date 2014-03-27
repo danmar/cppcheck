@@ -147,8 +147,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                     // make sure we have valid code
                     if (!tok2) {
-                        scopeList.pop_back();
-                        break;
+                        _tokenizer->syntaxError(tok);
                     }
                 }
 
@@ -157,8 +156,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // make sure we have valid code
                 if (!new_scope->classEnd) {
-                    scopeList.pop_back();
-                    break;
+                    _tokenizer->syntaxError(tok);
                 }
 
                 // make the new scope the current scope

@@ -1402,16 +1402,12 @@ private:
 
     void symboldatabase14() {
         // ticket #2589 - segmentation fault
-        check("struct B : A\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct B : A\n"), InternalError);
     }
 
     void symboldatabase15() {
         // ticket #2591 - segmentation fault
-        check("struct A :\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct A :\n"), InternalError);
     }
 
     void symboldatabase16() {
@@ -1444,9 +1440,7 @@ private:
 
     void symboldatabase20() {
         // ticket #3013 - segmentation fault
-        check("struct x : virtual y\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct x : virtual y\n"), InternalError);
     }
 
     void symboldatabase21() {
@@ -1850,6 +1844,9 @@ private:
         {
             GET_SYMBOL_DB("{ }; void namespace A::f; { g() { int } }");
             (void)db;
+        }
+        {
+            ASSERT_THROW(GET_SYMBOL_DB("class Foo {}; class Bar : public Foo"), InternalError);
         }
     }
 
