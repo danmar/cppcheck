@@ -76,7 +76,7 @@ void Token::update_property_info()
                 _type = eVariable;
             else if (_type != eVariable && _type != eFunction && _type != eType)
                 _type = eName;
-        } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
+        } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _type = eNumber;
         else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
             _type = eString;
