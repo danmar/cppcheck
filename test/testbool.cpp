@@ -423,7 +423,7 @@ private:
         ASSERT_EQUALS("",errout.str());
 
         check("void f(int a, int b, int c) { if (1 < !(a+b)) {} }");
-        TODO_ASSERT_EQUALS("error","",errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt3() {
@@ -438,12 +438,12 @@ private:
         check("void f() {\n"
               "  for(int i = 4; i > -1 < 5 ; --i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
 
         check("void f(int a, int b, int c) {\n"
               "  return (a > b) < c;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(int a, int b, int c) {\n"
               "  return x(a > b) < c;\n"
