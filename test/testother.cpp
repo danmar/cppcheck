@@ -6049,6 +6049,12 @@ private:
         checkOther.checkRedundantCopy();
     }
     void checkRedundantCopy() {
+        check_redundant_copy("const std::string& getA(){static std::string a;return a;}\n"
+                             "void foo() {\n"
+                             "    const std::string a = getA();\n"
+                             "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
+
         check_redundant_copy("class A{public:A(){}};\n"
                              "const A& getA(){static A a;return a;}\n"
                              "int main()\n"
