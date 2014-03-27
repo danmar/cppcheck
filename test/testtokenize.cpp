@@ -891,8 +891,11 @@ private:
                             " )\n"
                             "}";
 
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
         try {
-            tokenizeAndStringify(code);
+            tokenizer.tokenize(istr, "test.cpp");
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
             ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
@@ -5829,7 +5832,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
-        ASSERT_EQUALS(true, tokenizer.validate());
+        tokenizer.validate();
     }
 
     void vardecl_par2() {
@@ -5840,7 +5843,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
-        ASSERT_EQUALS(true, tokenizer.validate());
+        tokenizer.validate();
     }
 
     void vardec_static() {

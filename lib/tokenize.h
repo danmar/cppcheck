@@ -190,7 +190,7 @@ public:
       * @return true if found nothing or the syntax is correct.
       *         false if syntax is found to be wrong.
       */
-    bool simplifyLabelsCaseDefault();
+    void simplifyLabelsCaseDefault();
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
@@ -452,7 +452,7 @@ public:
      * into "void f(int x) {"
      * @return false only if there's a syntax error
      */
-    bool simplifyFunctionParameters();
+    void simplifyFunctionParameters();
 
     /**
      * Simplify templates
@@ -493,7 +493,7 @@ public:
 
     void simplifyDefaultAndDeleteInsideClass();
 
-    bool hasComplicatedSyntaxErrorsInTemplates();
+    void findComplicatedSyntaxErrorsInTemplates();
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
@@ -568,7 +568,7 @@ public:
      * @return false if there was a mismatch with tokens, this
      * should mean that source code was not valid.
      */
-    bool createLinks();
+    void createLinks();
 
     /**
      * Setup links between < and >.
@@ -589,7 +589,7 @@ public:
      * to catch problems in simplifyTokenList.
      * @return always true.
      */
-    bool validate() const;
+    void validate() const;
 
     /**
      * Remove __declspec()
@@ -719,6 +719,8 @@ public:
     void createSymbolDatabase();
     void deleteSymbolDatabase();
 
+    void printDebugOutput() const;
+
     Token *deleteInvalidTypedef(Token *typeDef);
 
     /**
@@ -738,7 +740,7 @@ public:
     /**
      * Output list of unknown types.
      */
-    void printUnknownTypes();
+    void printUnknownTypes() const;
 
 
     /**

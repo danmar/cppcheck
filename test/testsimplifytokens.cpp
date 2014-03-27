@@ -3853,7 +3853,7 @@ private:
 
         tokenizer.simplifyTokenList2();
 
-        ASSERT_EQUALS(true, tokenizer.validate());
+        tokenizer.validate();
     }
 
     void simplifyTypedef19() {
@@ -3916,7 +3916,7 @@ private:
 
         tokenizer.simplifyTokenList2();
 
-        ASSERT_EQUALS(true, tokenizer.validate());
+        tokenizer.validate();
     }
 
     void simplifyTypedef21() {

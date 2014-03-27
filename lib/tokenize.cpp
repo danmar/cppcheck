@@ -1649,10 +1649,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     // Concatenate double sharp: 'a ## b' -> 'ab'
     concatenateDoubleSharp();
 
-    if (!createLinks()) {
-        // Source has syntax errors, can't proceed
-        return false;
-    }
+    createLinks();
 
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
@@ -1690,15 +1687,11 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     return true;
 }
 
-bool Tokenizer::hasComplicatedSyntaxErrorsInTemplates()
+void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
 {
     const Token *tok = TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(list.front());
-    if (tok) {
+    if (tok)
         syntaxError(tok);
-        return true;
-    }
-
-    return false;
 }
 
 bool Tokenizer::hasEnumsWithTypedef()
@@ -2088,7 +2081,7 @@ static Token *skipTernaryOp(Token *tok)
 
 /** simplify labels and case|default in the code: add a ";" if not already in.*/
 
-bool Tokenizer::simplifyLabelsCaseDefault()
+void Tokenizer::simplifyLabelsCaseDefault()
 {
     bool executablescope = false;
     unsigned int indentlevel = 0;
@@ -2126,7 +2119,6 @@ bool Tokenizer::simplifyLabelsCaseDefault()
                     Token *tok1 = skipTernaryOp(tok);
                     if (!tok1) {
                         syntaxError(tok);
-                        return false;
                     }
                     tok = tok1;
                 }
@@ -2139,14 +2131,12 @@ bool Tokenizer::simplifyLabelsCaseDefault()
                     tok->insertToken(";");
             } else {
                 syntaxError(tok);
-                return false;
             }
         } else if (Token::Match(tok, "[;{}] %var% : !!;")) {
             tok = tok->tokAt(2);
             tok->insertToken(";");
         }
     }
-    return true;
 }
 
 
@@ -2624,7 +2614,7 @@ void Tokenizer::setVarId()
     }
 }
 
-static bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token* token, char open, char close)
+static void linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token* token, char open, char close)
 {
     if (token->str()[0] == open) {
         links.push(token);
@@ -2633,21 +2623,18 @@ static bool linkBrackets(Tokenizer* tokenizer, std::stack<const Token*>& type, s
         if (links.empty()) {
             // Error, { and } don't match.
             tokenizer->syntaxError(token, open);
-            return false;
         }
         if (type.top()->str()[0] != open) {
             tokenizer->syntaxError(type.top(), type.top()->str()[0]);
-            return false;
         }
         type.pop();
 
         Token::createMutualLinks(links.top(), token);
         links.pop();
     }
-    return (true);
 }
 
-bool Tokenizer::createLinks()
+void Tokenizer::createLinks()
 {
     std::stack<const Token*> type;
     std::stack<Token*> links1;
@@ -2658,38 +2645,27 @@ bool Tokenizer::createLinks()
             token->link(0);
         }
 
-        bool validSyntax = linkBrackets(this, type, links1, token, '{', '}');
-        if (!validSyntax)
-            return false;
+        linkBrackets(this, type, links1, token, '{', '}');
 
-        validSyntax = linkBrackets(this, type, links2, token, '(', ')');
-        if (!validSyntax)
-            return false;
+        linkBrackets(this, type, links2, token, '(', ')');
 
-        validSyntax = linkBrackets(this, type, links3, token, '[', ']');
-        if (!validSyntax)
-            return false;
+        linkBrackets(this, type, links3, token, '[', ']');
     }
 
     if (!links1.empty()) {
         // Error, { and } don't match.
         syntaxError(links1.top(), '{');
-        return false;
     }
 
     if (!links2.empty()) {
         // Error, ( and ) don't match.
         syntaxError(links2.top(), '(');
-        return false;
     }
 
     if (!links3.empty()) {
         // Error, [ and ] don't match.
         syntaxError(links3.top(), '[');
-        return false;
     }
-
-    return true;
 }
 
 void Tokenizer::createLinks2()
@@ -3052,10 +3028,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Concatenate double sharp: 'a ## b' -> 'ab'
     concatenateDoubleSharp();
 
-    if (!createLinks()) {
-        // Source has syntax errors, can't proceed
-        return false;
-    }
+    createLinks();
 
     // if (x) MACRO() ..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3130,15 +3103,13 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
-    if (!simplifyFunctionParameters())
-        return false;
+    simplifyFunctionParameters();
 
     // specify array size..
     arraySize();
 
     // simplify labels and 'case|default'-like syntaxes
-    if (!simplifyLabelsCaseDefault())
-        return false;
+    simplifyLabelsCaseDefault();
 
     // simplify '[;{}] * & ( %any% ) =' to '%any% ='
     simplifyMulAndParens();
@@ -3146,10 +3117,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
-    if (!_settings->library.markupFile(FileName)
-        && hasComplicatedSyntaxErrorsInTemplates()) {
-        list.deallocateTokens();
-        return false;
+    if (!_settings->library.markupFile(FileName)) {
+        findComplicatedSyntaxErrorsInTemplates();
     }
 
     if (_settings->terminated())
@@ -3228,10 +3197,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // to reproduce bad typedef, download upx-ucl from:
     // http://packages.debian.org/sid/upx-ucl
     // analyse the file src/stub/src/i386-linux.elf.interp-main.c
-    if (!validate()) {
-        // Source has syntax errors, can't proceed
-        return false;
-    }
+    validate();
 
     // enum..
     simplifyEnum();
@@ -3431,7 +3397,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     elseif();
 
-    return validate();
+    validate();
+    return true;
 }
 
 bool Tokenizer::simplifyTokenList2()
@@ -3629,68 +3596,68 @@ bool Tokenizer::simplifyTokenList2()
 
     while (simplifyMathFunctions()) {};
 
-    const bool bValidate = validate();
-    if (bValidate ||  // either anything is fine here...
-        (_settings->debug && _settings->_verbose) // or it could be dangerous to proceed, so we demand this combination of flags
-       ) {
-        list.front()->assignProgressValues();
+    validate();
 
+    list.front()->assignProgressValues();
 
-        // Create symbol database and then remove const keywords
-        createSymbolDatabase();
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "* const"))
-                tok->deleteNext();
-        }
-
-        list.createAst();
-
-        ValueFlow::setValues(&list, _errorLogger, _settings);
-
-        if (_settings->terminated())
-            return false;
-
-        if (_settings->debug) {
-            list.front()->printOut(0, list.getFiles());
-
-            if (_settings->_verbose)
-                _symbolDatabase->printOut("Symbol database");
-
-            list.front()->printAst(_settings->_verbose);
-
-            list.front()->printValueFlow();
-        }
-
-        if (_settings->debugwarnings) {
-            printUnknownTypes();
-
-            // #5054 - the typeStartToken() should come before typeEndToken()
-            for (const Token *tok = tokens(); tok; tok = tok->next()) {
-                if (tok->varId() == 0U)
-                    continue;
-
-                const Variable *var = tok->variable();
-                if (!var)
-                    continue;
-
-                const Token * typetok = var->typeStartToken();
-                while (typetok && typetok != var->typeEndToken())
-                    typetok = typetok->next();
-
-                if (typetok != var->typeEndToken()) {
-                    reportError(tok,
-                                Severity::debug,
-                                "debug",
-                                "Variable::typeStartToken() is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
-                }
-            }
-        }
+    // Create symbol database and then remove const keywords
+    createSymbolDatabase();
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "* const"))
+            tok->deleteNext();
     }
 
-    return bValidate;
+    list.createAst();
+
+    ValueFlow::setValues(&list, _errorLogger, _settings);
+
+    if (_settings->terminated())
+        return false;
+
+    printDebugOutput();
+
+    return true;
 }
 //---------------------------------------------------------------------------
 
+void Tokenizer::printDebugOutput() const
+{
+    if (_settings->debug) {
+        list.front()->printOut(0, list.getFiles());
+
+        if (_settings->_verbose && _symbolDatabase)
+            _symbolDatabase->printOut("Symbol database");
+
+        list.front()->printAst(_settings->_verbose);
+
+        list.front()->printValueFlow();
+    }
+
+    if (_settings->debugwarnings) {
+        printUnknownTypes();
+
+        // #5054 - the typeStartToken() should come before typeEndToken()
+        for (const Token *tok = tokens(); tok; tok = tok->next()) {
+            if (tok->varId() == 0U)
+                continue;
+
+            const Variable *var = tok->variable();
+            if (!var)
+                continue;
+
+            const Token * typetok = var->typeStartToken();
+            while (typetok && typetok != var->typeEndToken())
+                typetok = typetok->next();
+
+            if (typetok != var->typeEndToken()) {
+                reportError(tok,
+                            Severity::debug,
+                            "debug",
+                            "Variable::typeStartToken() is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
+            }
+        }
+    }
+}
 void Tokenizer::removeMacrosInGlobalScope()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -4845,7 +4812,7 @@ void Tokenizer::simplifyCasts()
 }
 
 
-bool Tokenizer::simplifyFunctionParameters()
+void Tokenizer::simplifyFunctionParameters()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "{" || tok->str() == "[" || tok->str() == "(") {
@@ -4941,7 +4908,6 @@ bool Tokenizer::simplifyFunctionParameters()
                 if (tok1->str() == ";") {
                     if (tokparam) {
                         syntaxError(tokparam);
-                        return false;
                     }
                     Token *tok2 = tok1->previous();
                     while (tok2->str() == "]")
@@ -4956,7 +4922,6 @@ bool Tokenizer::simplifyFunctionParameters()
                     if (argumentNames2.find(tok2->str()) != argumentNames2.end()) {
                         //same parameter names...
                         syntaxError(tok1);
-                        return false;
                     } else
                         argumentNames2[tok2->str()] = tok2;
 
@@ -5014,7 +4979,6 @@ bool Tokenizer::simplifyFunctionParameters()
             tok = tok->next()->link();
         }
     }
-    return true;
 }
 
 void Tokenizer::simplifyPointerToStandardType()
@@ -8158,11 +8122,13 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 
 void Tokenizer::syntaxError(const Token *tok) const
 {
+    printDebugOutput();
     throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 }
 
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
+    printDebugOutput();
     throw InternalError(tok,
                         std::string("Invalid number of character (") + c + ") " +
                         "when these macros are defined: '" + _configuration + "'.",
@@ -8183,6 +8149,7 @@ void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
+    printDebugOutput();
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 // ------------------------------------------------------------------------
@@ -8659,63 +8626,45 @@ void Tokenizer::removeExceptionSpecifications()
 
 
 
-bool Tokenizer::validate() const
+void Tokenizer::validate() const
 {
     std::stack<const Token *> linktok;
     const Token *lastTok = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         lastTok = tok;
         if (Token::Match(tok, "[{([]") || (tok->str() == "<" && tok->link())) {
-            if (tok->link() == nullptr) {
+            if (tok->link() == nullptr)
                 cppcheckError(tok);
-                return false;
-            }
 
             linktok.push(tok);
         }
 
         else if (Token::Match(tok, "[})]]") || (tok->str() == ">" && tok->link())) {
-            if (tok->link() == nullptr) {
+            if (tok->link() == nullptr)
                 cppcheckError(tok);
-                return false;
-            }
 
-            if (linktok.empty() == true) {
+            if (linktok.empty() == true)
                 cppcheckError(tok);
-                return false;
-            }
 
-            if (tok->link() != linktok.top()) {
+            if (tok->link() != linktok.top())
                 cppcheckError(tok);
-                return false;
-            }
 
-            if (tok != tok->link()->link()) {
+            if (tok != tok->link()->link())
                 cppcheckError(tok);
-                return false;
-            }
 
             linktok.pop();
         }
 
-        else if (tok->link() != nullptr) {
+        else if (tok->link() != nullptr)
             cppcheckError(tok);
-            return false;
-        }
     }
 
-    if (!linktok.empty()) {
+    if (!linktok.empty())
         cppcheckError(linktok.top());
-        return false;
-    }
 
     // Validate that the Tokenizer::list.back() is updated correctly during simplifications
-    if (lastTok != list.back()) {
+    if (lastTok != list.back())
         cppcheckError(lastTok);
-        return false;
-    }
-
-    return true;
 }
 
 std::string Tokenizer::simplifyString(const std::string &source)
@@ -10210,8 +10159,11 @@ void Tokenizer::simplifyReturnStrncat()
     }
 }
 
-void Tokenizer::printUnknownTypes()
+void Tokenizer::printUnknownTypes() const
 {
+    if (!_symbolDatabase)
+        return;
+
     std::multimap<std::string, const Token *> unknowns;
 
     for (unsigned int i = 1; i <= _varId; ++i) {
