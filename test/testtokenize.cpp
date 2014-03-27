@@ -777,7 +777,7 @@ private:
 
     void tokenize19() {
         // #3006 - added hasComplicatedSyntaxErrorsInTemplates to avoid segmentation fault
-        tokenizeAndStringify("x < () <");
+        ASSERT_THROW(tokenizeAndStringify("x < () <"), InternalError);
 
         // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
         ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
@@ -802,7 +802,7 @@ private:
 
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
     void tokenize24() {
-        tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }");
+        ASSERT_THROW(tokenizeAndStringify("enum { int f ( ) { return = } r = f ( ) ; }"), InternalError);
     }
 
     // #4239 - segfault for "f ( struct { int typedef T x ; } ) { }"
@@ -854,14 +854,12 @@ private:
 
         {
             const std::string code("struct A { template<int> struct { }; };");
-            ASSERT_EQUALS("", tokenizeAndStringify(code.c_str(), true));
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify(code.c_str(), true), InternalError);
         }
 
         {
             const std::string code("enum ABC { A,B, typedef enum { C } };");
-            tokenizeAndStringify(code.c_str(), true);
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify(code.c_str(), true), InternalError);
         }
 
         {
@@ -893,27 +891,32 @@ private:
                             " )\n"
                             "}";
 
-        tokenizeAndStringify(code);
+		try {
+			tokenizeAndStringify(code);
+			assertThrowFail(__FILE__, __LINE__);
+		}
+		catch (InternalError& e) {
+			ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
+			ASSERT_EQUALS("cppcheckError", e.id);
+			ASSERT_EQUALS(5, e.token->linenr());
+		}
     }
 
     void wrong_syntax4() {   // #3618
         const char code[] = "typedef void (x) (int);    return x&";
 
-        tokenizeAndStringify(code);
+        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
     void wrong_syntax_if_macro() {
         // #2518 #4171
-        tokenizeAndStringify("void f() { if MACRO(); }", false);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify("void f() { if MACRO(); }", false), InternalError);
 
         // #4668 - note there is no semicolon after MACRO()
-        tokenizeAndStringify("void f() { if (x) MACRO() {} }", false);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify("void f() { if (x) MACRO() {} }", false), InternalError);
 
         // #4810 - note there is no semicolon after MACRO()
-        tokenizeAndStringify("void f() { if (x) MACRO() else ; }", false);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify("void f() { if (x) MACRO() else ; }", false), InternalError);
     }
 
     void wrong_syntax_class_x_y() {
@@ -974,31 +977,23 @@ private:
 
         //wrong syntax
         {
-            tokenizeAndStringify("void f() {switch (n) { case: z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case: z(); break;}}"), InternalError);
 
-            tokenizeAndStringify("void f() {switch (n) { case;: z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case;: z(); break;}}"), InternalError);
 
-            tokenizeAndStringify("void f() {switch (n) { case {}: z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case {}: z(); break;}}"), InternalError);
 
-            tokenizeAndStringify("void f() {switch (n) { case 0?{1}:{2} : z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?{1}:{2} : z(); break;}}"), InternalError);
 
-            tokenizeAndStringify("void f() {switch (n) { case 0?1;:{2} : z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?1;:{2} : z(); break;}}"), InternalError);
 
-            tokenizeAndStringify("void f() {switch (n) { case 0?(1?{3:4}):2 : z(); break;}}");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?(1?{3:4}):2 : z(); break;}}"), InternalError);
 
             //ticket #4234
-            tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }"), InternalError);
 
             //ticket #4267
-            tokenizeAndStringify("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizeAndStringify("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }"), InternalError);
         }
     }
 
@@ -1007,15 +1002,15 @@ private:
     }
 
     void garbageCode2() { //#4300 (segmentation fault)
-        tokenizeAndStringify("enum { D = 1  struct  { } ; }  s.b = D;");
+        ASSERT_THROW(tokenizeAndStringify("enum { D = 1  struct  { } ; }  s.b = D;"), InternalError);
     }
 
     void garbageCode3() { //#4849 (segmentation fault in Tokenizer::simplifyStructDecl (invalid code))
-        tokenizeAndStringify("enum {  D = 2 s ; struct y  { x } ; } { s.a = C ; s.b = D ; }");
+        ASSERT_THROW(tokenizeAndStringify("enum {  D = 2 s ; struct y  { x } ; } { s.a = C ; s.b = D ; }"), InternalError);
     }
 
     void garbageCode4() { // #4887
-        tokenizeAndStringify("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }");
+        ASSERT_THROW(tokenizeAndStringify("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }"), InternalError);
     }
 
     void garbageCode5() { // #5168
@@ -1028,12 +1023,12 @@ private:
     }
 
     void garbageCode7() {
-        tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true);
+        ASSERT_THROW(tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true), InternalError);
         tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
     }
 
     void garbageCode8() {
-        tokenizeAndStringify("{ enum struct : };", true);
+        ASSERT_THROW(tokenizeAndStringify("{ enum struct : };", true), InternalError);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
@@ -1482,8 +1477,7 @@ private:
 
     void ifAddBraces20() { // #5012 - syntax error 'else }'
         const char code[] = "void f() { if(x) {} else }";
-        tokenizeAndStringify(code,true);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
     void whileAddBraces() {
@@ -1872,7 +1866,7 @@ private:
     void simplifyKnownVariables16() {
         // ticket #807 - segmentation fault when macro isn't found
         const char code[] = "void f ( ) { int n = 1; DISPATCH(while); }";
-        simplifyKnownVariables(code);
+        ASSERT_THROW(simplifyKnownVariables(code), InternalError);
     }
 
     void simplifyKnownVariables17() {
@@ -5367,17 +5361,15 @@ private:
 
     void simplifyFunctionParametersErrors() {
         //same parameters...
-        tokenizeAndStringify("void foo(x, x)\n"
-                             " int x;\n"
-                             " int x;\n"
-                             "{}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify("void foo(x, x)\n"
+                                          " int x;\n"
+                                          " int x;\n"
+                                          "{}\n"), InternalError);
 
-        tokenizeAndStringify("void foo(x, y)\n"
-                             " int x;\n"
-                             " int x;\n"
-                             "{}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tokenizeAndStringify("void foo(x, y)\n"
+                                          " int x;\n"
+                                          " int x;\n"
+                                          "{}\n"), InternalError);
 
         tokenizeAndStringify("void foo(int, int)\n"
                              "{}\n");
@@ -6221,8 +6213,7 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ({) when these macros are defined: ''.\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         {
@@ -6231,8 +6222,7 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         {
@@ -6255,8 +6245,7 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp", "ABC"));
-            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character (() when these macros are defined: 'ABC'.\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp", "ABC"), InternalError);
         }
 
         {
@@ -6268,8 +6257,7 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("[test.cpp:2]: (error) Invalid number of character ({) when these macros are defined: ''.\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         {
@@ -6281,8 +6269,7 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character ([) when these macros are defined: ''.\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         {
@@ -6296,8 +6283,14 @@ private:
             Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS("[test.cpp:2]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
+            try {
+                tokenizer.tokenize(istr, "test.cpp");
+                assertThrowFail(__FILE__, __LINE__);
+            } catch (InternalError& e) {
+                ASSERT_EQUALS("Invalid number of character (() when these macros are defined: ''.", e.errorMessage);
+                ASSERT_EQUALS("syntaxError", e.id);
+                ASSERT_EQUALS(2, e.token->linenr());
+            }
         }
     }
 
@@ -6361,8 +6354,7 @@ private:
             std::istringstream istr("x<y<int> xyz;\n");
             Settings settings;
             Tokenizer tokenizer(&settings, this);
-            tokenizer.tokenize(istr, "test.cpp");
-            ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         // bad code
@@ -6376,8 +6368,7 @@ private:
                                     "    >::type ConcreteVisitableOrDummy;\n");
             Settings settings;
             Tokenizer tokenizer(&settings, this);
-            tokenizer.tokenize(istr, "test.cpp");
-            ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
+            ASSERT_THROW(tokenizer.tokenize(istr, "test.cpp"), InternalError);
         }
 
         // code is ok, don't show syntax error
@@ -7194,7 +7185,7 @@ private:
         ASSERT_EQUALS("void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
         ASSERT_EQUALS("void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
         //don't crash with garbage code
-        ASSERT_EQUALS("switch(){ case}", labels_("switch(){case}"));
+        ASSERT_THROW(labels_("switch(){case}"), InternalError);
     }
 
     void simplifyInitVar() {

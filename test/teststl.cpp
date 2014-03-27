@@ -89,8 +89,6 @@ private:
         TEST_CASE(insert1);
         TEST_CASE(insert2);
 
-        TEST_CASE(invalidcode);
-
         TEST_CASE(stlBoundaries1);
         TEST_CASE(stlBoundaries2);
         TEST_CASE(stlBoundaries3);
@@ -1269,20 +1267,6 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidcode() {
-        errout.str("");
-        const std::string src = "void f()\n"
-                                "{\n"
-                                "    for (\n"
-                                "}\n";
-
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(src);
-        ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
     }
 
 

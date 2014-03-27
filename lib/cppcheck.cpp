@@ -399,22 +399,22 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
     } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile(Path::toNativeSeparators(FileName));
-        locationList.push_back(loc2);
         ErrorLogger::ErrorMessage::FileLocation loc;
         if (e.token) {
             loc.line = e.token->linenr();
             const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
             loc.setfile(fixedpath);
         } else {
+            ErrorLogger::ErrorMessage::FileLocation loc2;
+            loc2.setfile(Path::toNativeSeparators(FileName));
+            locationList.push_back(loc2);
             loc.setfile(_tokenizer.getSourceFilePath());
         }
         locationList.push_back(loc);
         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                Severity::error,
                                                e.errorMessage,
-                                               "cppcheckError",
+                                               e.id,
                                                false);
 
         _errorLogger.reportErr(errmsg);

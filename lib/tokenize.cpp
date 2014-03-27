@@ -8158,14 +8158,15 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 
 void Tokenizer::syntaxError(const Token *tok) const
 {
-    reportError(tok, Severity::error, "syntaxError", "syntax error");
+    throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 }
 
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
-    reportError(tok, Severity::error, "syntaxError",
-                std::string("Invalid number of character (") + c + ") " +
-                "when these macros are defined: '" + _configuration + "'.");
+    throw InternalError(tok,
+                        std::string("Invalid number of character (") + c + ") " +
+                        "when these macros are defined: '" + _configuration + "'.",
+                        InternalError::SYNTAX);
 }
 
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
@@ -8182,8 +8183,7 @@ void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    reportError(tok, Severity::error, "cppcheckError",
-                "Analysis failed. If the code is valid then please report this failure.");
+    throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 // ------------------------------------------------------------------------
 // Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
@@ -8828,8 +8828,6 @@ void Tokenizer::simplifyConst()
 void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Tokenizer t(settings, errorLogger);
-    t.syntaxError(0, ' ');
-    t.cppcheckError(0);
     t.duplicateTypedefError(0, 0, "variable");
     t.duplicateDeclarationError(0, 0, "variable");
     t.duplicateEnumError(0, 0, "variable");

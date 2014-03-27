@@ -2383,9 +2383,9 @@ private:
 
 
     void crash1() {
-        check("int f() {\n"
-              "    return if\n"
-              "}");
+        ASSERT_THROW(check("int f() {\n"
+                           "    return if\n"
+                           "}"), InternalError);
     }
 
     void nullpointer_internal_error() { // ticket #5080

@@ -116,7 +116,9 @@ private:
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        try {
+            tokenizer.tokenize(istr, "test.cpp");
+        } catch (...) {}
         return Token::Match(tokenizer.tokens(), pattern.c_str(), varid);
     }
 

@@ -582,11 +582,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Ticket #3480 - Don't crash garbage code
-        checkUninitVar("int f()\n"
-                       "{\n"
-                       "    return if\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkUninitVar("int f()\n"
+                                    "{\n"
+                                    "    return if\n"
+                                    "}"), InternalError);
 
         // Ticket #3873 (false positive)
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"

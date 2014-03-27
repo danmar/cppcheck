@@ -28,9 +28,17 @@
 #include <sstream>
 #include <vector>
 
-InternalError::InternalError(const Token *tok, const std::string &errorMsg) :
+InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
 {
+    switch (type) {
+    case SYNTAX:
+        id = "syntaxError";
+        break;
+    case INTERNAL:
+        id = "cppcheckError";
+        break;
+    }
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()

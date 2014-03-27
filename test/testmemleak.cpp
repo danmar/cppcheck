@@ -563,11 +563,11 @@ private:
         ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = new char[10]; memcpy(s,a);", "s", true));
 
         // #2112 - Segmentation fault in the getcode function
-        getcode("page *one = foo();\n"
-                "ASSERT(one, return 0)\n"
-                "const int two = rand();\n"
-                "return 0;\n"
-                "}", "one");
+        ASSERT_THROW(getcode("page *one = foo();\n"
+                             "ASSERT(one, return 0)\n"
+                             "const int two = rand();\n"
+                             "return 0;\n"
+                             "}", "one"), InternalError);
 
         // ticket #2336: calling member function with same name as a white_list function
         ASSERT_EQUALS(";;use;", getcode("char *s; foo.write(s);", "s"));
@@ -1407,14 +1407,13 @@ private:
 
     void switch4() {
         // See tickets #2518 #2555 #4171
-        check("void f() {\n"
-              "    switch MAKEWORD(1)\n"
-              "    {\n"
-              "    case 0:\n"
-              "        return;\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(check("void f() {\n"
+                           "    switch MAKEWORD(1)\n"
+                           "    {\n"
+                           "    case 0:\n"
+                           "        return;\n"
+                           "    }\n"
+                           "}"), InternalError);
     }
 
     void ret5() {
@@ -4224,9 +4223,9 @@ private:
     }
 
     void garbageCode() {
-        check("void h(int l) {\n"
-              "    while\n" // Don't crash (#3870)
-              "}");
+        ASSERT_THROW(check("void h(int l) {\n"
+                           "    while\n" // Don't crash (#3870)
+                           "}"), InternalError);
     }
 
     void ptrptr() {

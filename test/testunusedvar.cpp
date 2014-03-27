@@ -131,7 +131,6 @@ private:
         TEST_CASE(localvarStruct1);
         TEST_CASE(localvarStruct2);
         TEST_CASE(localvarStruct3);
-        TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
         TEST_CASE(localvarStructArray);
@@ -2863,13 +2862,6 @@ private:
                               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: x\n"
                            "[test.cpp:4]: (style) Unused variable: z\n", "", errout.str());
-    }
-
-    void localvarStruct4() {
-        /* This must not SIGSEGV: */
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    struct { \n");
     }
 
     void localvarStruct5() {

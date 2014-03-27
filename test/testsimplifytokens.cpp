@@ -2362,7 +2362,7 @@ private:
                             "    return sizeof...(args);\n"
                             "  }();\n"
                             "}";
-        tok(code);
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
@@ -5298,8 +5298,7 @@ private:
     }
 
     void simplifyTypedef81() { // ticket #2603 segmentation fault
-        checkSimplifyTypedef("typedef\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef("typedef\n"), InternalError);
 
         checkSimplifyTypedef("typedef constexpr\n");
         ASSERT_EQUALS("", errout.str());
@@ -5334,16 +5333,13 @@ private:
 
     void simplifyTypedef84() { // ticket #2630 (segmentation fault)
         const char code1[] = "typedef y x () x\n";
-        checkSimplifyTypedef(code1);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef(code1), InternalError);
 
         const char code2[] = "typedef struct template <>\n";
-        checkSimplifyTypedef(code2);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef(code2), InternalError);
 
         const char code3[] = "typedef ::<>\n";
-        checkSimplifyTypedef(code3);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef(code3), InternalError);
     }
 
     void simplifyTypedef85() { // ticket #2651
@@ -5604,8 +5600,7 @@ private:
 
     void simplifyTypedef96() { // ticket #2886 (segmentation fault)
         const char code[] = "typedef struct x { }\n";
-        tok(code);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void simplifyTypedef97() { // ticket #2983 (segmentation fault)
@@ -5649,8 +5644,7 @@ private:
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
         const char code[] = "typedef a x[];\n"
                             "y = x\n";
-        tok(code);
-        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void simplifyTypedef102() { // ticket #3004
@@ -5693,8 +5687,7 @@ private:
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
         const char code[] = "typedef int x[]; int main() { return x }";
-        tok(code);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void simplifyTypedefFunction1() {
@@ -6947,8 +6940,7 @@ private:
 
     void enum16() { // ticket #1988
         const char code[] = "enum D : auto * { FF = 0 };";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyEnum(code), InternalError);
     }
 
     void enum17() { // ticket #2381
@@ -7029,8 +7021,7 @@ private:
 
     void enum25() { // ticket #2966 (segmentation fault)
         const char code[] = "enum x :\n";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyEnum(code), InternalError);
     }
 
     void enum26() { // ticket #2975 (segmentation fault)
@@ -7041,8 +7032,7 @@ private:
 
     void enum27() { // ticket #3005 (segmentation fault)
         const char code[] = "enum : x\n";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:1]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyEnum(code), InternalError);
     }
 
     void enum28() {
@@ -7186,8 +7176,7 @@ private:
                              "struct bytecode {};\n"
                              "jv jq_next() { opcode = ((opcode) +NUM_OPCODES);\n"
                              "}";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("[test.cpp:3]: (error) syntax error\n", errout.str());
+        ASSERT_THROW(checkSimplifyEnum(code), InternalError);
     }
 
     void removestd() {
