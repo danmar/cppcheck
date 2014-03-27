@@ -140,7 +140,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     if (_settings._errorsOnly == false) {
         std::string fixedpath = Path::simplifyPath(filename.c_str());
         fixedpath = Path::toNativeSeparators(fixedpath);
-        _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
+        _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string(" ..."));
     }
 
     try {
@@ -211,7 +211,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             if (_settings._errorsOnly == false && it != configurations.begin()) {
                 std::string fixedpath = Path::simplifyPath(filename.c_str());
                 fixedpath = Path::toNativeSeparators(fixedpath);
-                _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
+                _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string(" ..."));
             }
 
             if (!_settings.userDefines.empty()) {
