@@ -92,6 +92,21 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
 
+        check("void foo(bool *p) {\n"
+              "    p = (x<y);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        check("void foo(bool *p) {\n"
+              "    p = (x||y);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        check("void foo(bool *p) {\n"
+              "    p = (x&&y);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
+
         // check against potential false positives
         check("void foo(bool *p) {\n"
               "    *p = false;\n"

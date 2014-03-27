@@ -28,6 +28,12 @@ namespace {
     CheckBool instance;
 }
 
+
+static bool astIsBool(const Token *expr)
+{
+    return Token::Match(expr, "%comp%|%bool%|%oror%|&&");
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
@@ -332,20 +338,14 @@ void CheckBool::checkAssignBoolToPointer()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% = %bool% ;")) {
-                // check if there is a deref
-                // *x.p = true;  // <- don't warn
-                // x.p = true;   // <- warn
-                const Token *prev = tok;
-                while (Token::Match(prev->tokAt(-2), "%var% ."))
-                    prev = prev->tokAt(-2);
-                if (Token::Match(prev->previous(), "[*.)]"))
+            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
+                const Token *lhs = tok->astOperand1();
+                while (lhs && lhs->str() == ".")
+                    lhs = lhs->astOperand2();
+                if (!lhs || !lhs->variable() || !lhs->variable()->isPointer())
                     continue;
 
-                // Is variable a pointer?
-                const Variable *var1(tok->variable());
-                if (var1 && var1->isPointer())
-                    assignBoolToPointerError(tok);
+                assignBoolToPointerError(tok);
             }
         }
     }
