@@ -2812,8 +2812,8 @@ private:
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
-                   "const std::string & Fred::foo() { return \"\"; }", 0, false, false);
-        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", "", errout.str());
+                   "const std::string & Fred::foo() { return \"\"; }");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"

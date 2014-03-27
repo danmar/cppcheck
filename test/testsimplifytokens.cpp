@@ -7664,22 +7664,37 @@ private:
     }
 
     void simplifyFunctionReturn() {
-        const char code[] = "typedef void (*testfp)();\n"
-                            "struct Fred\n"
-                            "{\n"
-                            "    testfp get1() { return 0; }\n"
-                            "    void ( * get2 ( ) ) ( ) { return 0 ; }\n"
-                            "    testfp get3();\n"
-                            "    void ( * get4 ( ) ) ( );\n"
-                            "};";
-        const char expected[] = "struct Fred "
-                                "{ "
-                                "void ( * get1 ( ) ) ( ) { return 0 ; } "
-                                "void ( * get2 ( ) ) ( ) { return 0 ; } "
-                                "void ( * get3 ( ) ) ( ) ; "
-                                "void ( * get4 ( ) ) ( ) ; "
-                                "} ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        {
+            const char code[] = "typedef void (*testfp)();\n"
+                                "struct Fred\n"
+                                "{\n"
+                                "    testfp get1() { return 0; }\n"
+                                "    void ( * get2 ( ) ) ( ) { return 0 ; }\n"
+                                "    testfp get3();\n"
+                                "    void ( * get4 ( ) ) ( );\n"
+                                "};";
+            const char expected[] = "struct Fred "
+                                    "{ "
+                                    "void ( * get1 ( ) ) ( ) { return 0 ; } "
+                                    "void ( * get2 ( ) ) ( ) { return 0 ; } "
+                                    "void ( * get3 ( ) ) ( ) ; "
+                                    "void ( * get4 ( ) ) ( ) ; "
+                                    "} ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+        {
+            const char code[] = "class Fred {\n"
+                                "    std::string s;\n"
+                                "    const std::string & foo();\n"
+                                "};\n"
+                                "const std::string & Fred::foo() { return \"\"; }";
+            const char expected[] = "class Fred { "
+                                    "std :: string s ; "
+                                    "const std :: string & foo ( ) ; "
+                                    "} ; "
+                                    "const std :: string & Fred :: foo ( ) { return \"\" ; }";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removeVoidFromFunction() {

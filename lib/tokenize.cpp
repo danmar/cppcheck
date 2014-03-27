@@ -5107,7 +5107,7 @@ bool Tokenizer::simplifyFunctionReturn()
         if (tok->str() == "{")
             tok = tok->link();
 
-        else if (Token::Match(tok, "%var% ( ) { return %bool%|%char%|%num%|%str% ; }")) {
+        else if (Token::Match(tok, "%var% ( ) { return %bool%|%char%|%num%|%str% ; }") && tok->strAt(-1) != "::") {
             const Token* const any = tok->tokAt(5);
 
             const std::string pattern("(|[|=|%cop% " + tok->str() + " ( ) ;|]|)|%cop%");
