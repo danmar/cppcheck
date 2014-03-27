@@ -891,15 +891,14 @@ private:
                             " )\n"
                             "}";
 
-		try {
-			tokenizeAndStringify(code);
-			assertThrowFail(__FILE__, __LINE__);
-		}
-		catch (InternalError& e) {
-			ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
-			ASSERT_EQUALS("cppcheckError", e.id);
-			ASSERT_EQUALS(5, e.token->linenr());
-		}
+        try {
+            tokenizeAndStringify(code);
+            assertThrowFail(__FILE__, __LINE__);
+        } catch (InternalError& e) {
+            ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
+            ASSERT_EQUALS("cppcheckError", e.id);
+            ASSERT_EQUALS(5, e.token->linenr());
+        }
     }
 
     void wrong_syntax4() {   // #3618

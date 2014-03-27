@@ -1423,7 +1423,7 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
 
 void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* ftok, const Token *scope_begin, const unsigned int varid, const MathLib::bigint total_size)
 {
-    const std::string funcname = ftok->str();
+    const std::string& funcname = ftok->str();
 
     const Token* bufParam = ftok->tokAt(2)->nextArgument();
     if (funcname == "readlinkat")
