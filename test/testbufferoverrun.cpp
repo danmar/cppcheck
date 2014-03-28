@@ -3684,7 +3684,7 @@ private:
     }
 
     void crash5() {
-        check("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
+        check("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }", true, "test.cpp", false); // Garbage code
     }
 
     void garbage1() { // Ticket #5203

@@ -304,6 +304,7 @@ private:
         TEST_CASE(varid_arrayFuncPar); // #5294
         TEST_CASE(varid_sizeofPassed); // #5295
         TEST_CASE(varid_classInFunction); // #5293
+        TEST_CASE(varid_pointerToArray); // #2645
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4737,6 +4738,32 @@ private:
                                            "}"));
     }
 
+    void varid_pointerToArray() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int ( * a1@1 ) [ 10 ] ;\n"
+                      "2: void f1 ( ) {\n"
+                      "3: int ( * a2@2 ) [ 10 ] ;\n"
+                      "4: int ( & a3@3 ) [ 10 ] ;\n"
+                      "5: }\n"
+                      "6: struct A {\n"
+                      "7: int ( & a4@4 ) [ 10 ] ;\n"
+                      "8: int f2 ( int i@5 ) { return a4@4 [ i@5 ] ; }\n"
+                      "9: int f3 ( int ( & a5@6 ) [ 10 ] , int i@7 ) { return a5@6 [ i@7 ] ; }\n"
+                      "10: } ;\n"
+                      "11: int f4 ( int ( & a6@8 ) [ 10 ] , int i@9 ) { return a6@8 [ i@9 ] ; }\n",
+                      tokenizeDebugListing("int (*a1)[10];\n" // pointer to array of 10 ints
+                                           "void f1() {\n"
+                                           "    int(*a2)[10];\n"
+                                           "    int(&a3)[10];\n"
+                                           "}\n"
+                                           "struct A {\n"
+                                           "    int(&a4)[10];\n"
+                                           "    int f2(int i) { return a4[i]; }\n"
+                                           "    int f3(int(&a5)[10], int i) { return a5[i]; }\n"
+                                           "};\n"
+                                           "int f4(int(&a6)[10], int i) { return a6[i]; }"));
+    }
+
     void varidclass1() {
         const std::string actual = tokenizeDebugListing(
                                        "class Fred\n"
@@ -4975,11 +5002,11 @@ private:
                                    "##file 0\n"
                                    "1: class A {\n"
                                    "2: public:\n"
-                                   "3: void f ( char ( & cl ) [ 10 ] ) ;\n"
-                                   "4: void g ( char cl@1 [ 10 ] ) ;\n"
+                                   "3: void f ( char ( & cl@1 ) [ 10 ] ) ;\n"
+                                   "4: void g ( char cl@2 [ 10 ] ) ;\n"
                                    "5: }\n"
-                                   "6: void Fred :: f ( char ( & cl ) [ 10 ] ) {\n"
-                                   "7: sizeof ( cl ) ;\n"
+                                   "6: void Fred :: f ( char ( & cl@3 ) [ 10 ] ) {\n"
+                                   "7: sizeof ( cl@3 ) ;\n"
                                    "8: }\n");
 
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));

@@ -2178,6 +2178,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
     unsigned int typeCount = 0;
     bool hasstruct = false;   // Is there a "struct" or "class"?
+    bool bracket = false;
     while (tok2) {
         if (tok2->isName()) {
             if (tok2->str() == "struct" || tok2->str() == "union" || (cpp && (tok2->str() == "class" || tok2->str() == "typename"))) {
@@ -2199,7 +2200,9 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (!Token::Match(tok2, ">|>>"))
                 break;
         } else if (tok2->str() == "&" || tok2->str() == "&&") {
-            ref = true;
+            ref = !bracket;
+        } else if (typeCount == 1 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "(|[")) {
+            bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (tok2->str() != "*" && tok2->str() != "::") {
             break;
         }
