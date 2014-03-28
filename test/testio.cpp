@@ -473,6 +473,13 @@ private:
               "    fclose(a.f2);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #1473
+        check("void foo() {\n"
+              "    FILE *a = fopen(\"aa\", \"r\");\n"
+              "    while (fclose(a)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout.str());
     }
 
     void fileIOwithoutPositioning() {
