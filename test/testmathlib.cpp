@@ -325,7 +325,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt(""));
     }
 
-    void isbin() {
+    void isbin() const {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isBin("0b0"));
         ASSERT_EQUALS(true, MathLib::isBin("0b1"));
@@ -381,7 +381,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative(""));
     }
 
-    void isoct() {
+    void isoct() const {
         // octal number format: [+|-]0[0-7][suffix]
         // positive testing
         ASSERT_EQUALS(true, MathLib::isOct("010"));
@@ -442,7 +442,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isOct("  -042ULL  "));
     }
 
-    void ishex() {
+    void ishex() const {
         // hex number syntax: [sign]0x[hexnumbers][suffix]
 
         // positive testing
@@ -592,7 +592,7 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
     }
 
-    void naninf() {
+    void naninf() const {
         ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "0.0")); // nan
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.0")); // inf
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)

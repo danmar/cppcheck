@@ -37,7 +37,7 @@ private:
         TEST_CASE(resource);
     }
 
-    void empty() {
+    void empty() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<def/>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
@@ -49,7 +49,7 @@ private:
         ASSERT(library.argumentChecks.empty());
     }
 
-    void function() {
+    void function() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -67,7 +67,7 @@ private:
         ASSERT(library.isnotnoreturn("foo"));
     }
 
-    void function_arg() {
+    void function_arg() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -92,7 +92,7 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][6].notbool);
     }
 
-    void function_arg_any() {
+    void function_arg_any() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "<function name=\"foo\">\n"
@@ -107,7 +107,7 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][-1].notuninit);
     }
 
-    void memory() {
+    void memory() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <memory>\n"
@@ -128,7 +128,7 @@ private:
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
     }
 
-    void resource() {
+    void resource() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <resource>\n"

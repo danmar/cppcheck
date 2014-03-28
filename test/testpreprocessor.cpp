@@ -2622,7 +2622,7 @@ private:
 
             // expand macros..
             errout.str("");
-            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+            OurPreprocessor::expandMacros(filedata, this);
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }

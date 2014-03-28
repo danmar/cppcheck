@@ -788,7 +788,7 @@ void CheckNullPointer::nullPointerByCheckAndDeRef()
                 }
 
                 // init function (global variables)
-                if (!var || !(var->isLocal() || var->isArgument()))
+                if (!(var->isLocal() || var->isArgument()))
                     break;
             }
 
