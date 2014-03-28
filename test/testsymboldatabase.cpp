@@ -135,6 +135,7 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(complexFunctionArrayPtr);
         TEST_CASE(hasSubClassConstructor);
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
@@ -835,6 +836,35 @@ private:
         }
     }
 
+    void complexFunctionArrayPtr() {
+        GET_SYMBOL_DB("int(*p1)[10]; \n"                            // pointer to array 10 of int
+                      "void(*p2)(char); \n"                         // pointer to function (char) returning void
+                      "int(*(*p3)(char))[10];\n"                    // pointer to function (char) returning pointer to array 10 of int
+                      "float(*(*p4)(char))(long); \n"               // pointer to function (char) returning pointer to function (long) returning float
+                      "short(*(*(p5) (char))(long))(double); \n"    // pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
+                      "int(*a1[10])(void); \n"                      // array 10 of pointer to function (void) returning int
+                      "float(*(*a2[10])(char))(long);\n"            // array 10 of pointer to func (char) returning pointer to func (long) returning float
+                      "short(*(*(*a3[10])(char))(long))(double);\n" // array 10 of pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
+                      "::boost::rational(&r_)[9];\n"                // reference to array of ::boost::rational
+                      "::boost::rational<T>(&r_)[9];");             // reference to array of ::boost::rational<T> (template!)
+
+        ASSERT(db != nullptr);
+
+        if (db) {
+            ASSERT_EQUALS(10, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(3) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(6) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(7) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(8) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(9) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(10) != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
         ASSERT(db != nullptr);

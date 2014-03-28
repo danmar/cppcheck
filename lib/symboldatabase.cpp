@@ -2408,7 +2408,7 @@ static const Token* skipScopeIdentifiers(const Token* tok)
 
 static const Token* skipPointers(const Token* tok)
 {
-    while (Token::Match(tok, "*|&|&&")) {
+    while (Token::Match(tok, "*|&|&&")  || (tok && tok->str() == "(" && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
     }
 
@@ -2446,7 +2446,7 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     if (Token::Match(localVarTok, "%var% ;|=")) {
         vartok = localVarTok;
         typetok = localTypeTok;
-    } else if (Token::Match(localVarTok, "%var% [") && localVarTok->str() != "operator") {
+    } else if (Token::Match(localVarTok, "%var% )|[") && localVarTok->str() != "operator") {
         vartok = localVarTok;
         typetok = localTypeTok;
     } else if ((isLocal() || type == Scope::eFunction) &&

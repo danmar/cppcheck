@@ -2177,6 +2177,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         return false;
 
     unsigned int typeCount = 0;
+    unsigned int singleNameCount = 0;
     bool hasstruct = false;   // Is there a "struct" or "class"?
     bool bracket = false;
     while (tok2) {
@@ -2184,6 +2185,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (tok2->str() == "struct" || tok2->str() == "union" || (cpp && (tok2->str() == "class" || tok2->str() == "typename"))) {
                 hasstruct = true;
                 typeCount = 0;
+                singleNameCount = 0;
             } else if (tok2->str() == "const") {
                 ;  // just skip "const"
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end() && tok2->previous()->str() != "::") {
@@ -2193,16 +2195,20 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                     break;
             } else {
                 ++typeCount;
+                ++singleNameCount;
             }
         } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                    Token::simpleMatch(tok2, "< >") /* Ticket #4764 */) {
             tok2 = tok2->findClosingBracket();
             if (!Token::Match(tok2, ">|>>"))
                 break;
+            singleNameCount = 1;
         } else if (tok2->str() == "&" || tok2->str() == "&&") {
             ref = !bracket;
-        } else if (typeCount == 1 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "(|[")) {
+        } else if (singleNameCount == 1 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "(|[")) {
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
+        } else if (tok2->str() == "::") {
+            singleNameCount = 0;
         } else if (tok2->str() != "*" && tok2->str() != "::") {
             break;
         }
