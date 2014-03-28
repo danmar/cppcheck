@@ -145,6 +145,7 @@ private:
         TEST_CASE(const57); // tickets #2669 and #2477
         TEST_CASE(const58); // ticket #2698
         TEST_CASE(const59); // ticket #4646
+        TEST_CASE(const60); // ticket #3322
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4766,6 +4767,31 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void const60() { // ticket #3322
+        checkConst("class MyString {\n"
+                   "public:\n"
+                   "    MyString() : m_ptr(0){}\n"
+                   "    MyString& operator+=( const MyString& rhs ) {\n"
+                   "            delete m_ptr;\n"
+                   "            m_ptr = new char[42];\n"
+                   "    }\n"
+                   "    MyString append( const MyString& str )\n"
+                   "    {       return operator+=( str ); } \n"
+                   "    char *m_ptr;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+        checkConst("class MyString {\n"
+                   "public:\n"
+                   "    MyString() : m_ptr(0){}\n"
+                   "    MyString& operator+=( const MyString& rhs );\n"
+                   "    MyString append( const MyString& str )\n"
+                   "    {       return operator+=( str ); } \n"
+                   "    char *m_ptr;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
