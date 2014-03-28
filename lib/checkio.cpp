@@ -182,7 +182,7 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
-                    if (Token::simpleMatch(tok, "fflush ( stdin )") && !_settings->standards.posix)
+                    if (Token::simpleMatch(tok, "fflush ( stdin )"))
                         fflushOnInputStreamError(tok, tok->strAt(2));
                     else {
                         fileTok = tok->tokAt(2);
