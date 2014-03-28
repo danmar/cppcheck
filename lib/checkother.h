@@ -273,7 +273,7 @@ private:
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
-    void oppositeInnerConditionError(const Token *tok);
+    void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
@@ -357,7 +357,7 @@ private:
         // style/warning
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName",false);
         c.checkCastIntToCharAndBackError(0,"func_name");
-        c.oppositeInnerConditionError(0);
+        c.oppositeInnerConditionError(0, 0);
         c.cstyleCastError(0);
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");

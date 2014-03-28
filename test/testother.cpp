@@ -297,13 +297,52 @@ private:
 
 
     void oppositeInnerCondition() {
-        check("void foo(int a, int b)\n"
-              "{\n"
+        check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(a!=b)\n"
               "            cout << a;\n"
-              "}", "test.cpp", true, true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+        check("void foo(int a) {\n"
+              "    if(a >= 50) {\n"
+              "        if(a < 50)\n"
+              "            cout << a;\n"
+              "        else\n"
+              "            cout << 100;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+        // #4186
+        check("void foo(int a) {\n"
+              "    if(a >= 50) {\n"
+              "        if(a > 50)\n"
+              "            cout << a;\n"
+              "        else\n"
+              "            cout << 100;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // 4170
+        check("class foo {\n"
+              "    void bar() {\n"
+              "        if (tok == '(') {\n"
+              "            next();\n"
+              "            if (tok == ',') {\n"
+              "                next();\n"
+              "                if (tok != ',') {\n"
+              "                    op->reg2 = asm_parse_reg();\n"
+              "                }\n"
+              "                skip(',');\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "    void next();\n"
+              "    const char *tok;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo(int i)\n"
               "{\n"
@@ -313,7 +352,7 @@ private:
               "           cout << a;\n"
               "       }\n"
               "    }\n"
-              "}", "test.cpp", true, true);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -328,7 +367,7 @@ private:
               "        if(i<5){\n"
               "        }\n"
               "    }\n"
-              "}", "test.cpp", true, true);
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
