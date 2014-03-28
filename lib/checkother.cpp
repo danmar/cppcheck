@@ -2546,10 +2546,8 @@ void CheckOther::checkDuplicateIf()
         const Token *tok1 = scope->classEnd;
 
         // check all the else if (...) statements
-        while ((Token::simpleMatch(tok1, "} else if (") &&
-                Token::simpleMatch(tok1->linkAt(3), ") {")) ||
-               (Token::simpleMatch(tok1, "} else { if (") &&
-                Token::simpleMatch(tok1->linkAt(4), ") {"))) {
+        while (Token::simpleMatch(tok1, "} else { if (") &&
+               Token::simpleMatch(tok1->linkAt(4), ") {")) {
             int conditionIndex=(tok1->strAt(3)=="(") ? 3 : 4;
             // get the expression from the token stream
             expression = tok1->tokAt(conditionIndex+1)->stringifyList(tok1->linkAt(conditionIndex));
