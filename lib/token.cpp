@@ -132,13 +132,10 @@ void Token::update_property_isStandardType()
     if (_str.size() < 3)
         return;
 
-    static const char * const stdtype[] = {"int", "char", "bool", "long", "short", "float", "double", "wchar_t", "size_t", "void", 0};
-    for (int i = 0; stdtype[i]; i++) {
-        if (_str == stdtype[i]) {
-            _isStandardType = true;
-            _type = eType;
-            break;
-        }
+    static const char * const stdtype[] = { "bool", "char", "char16_t", "char32_t", "double", "float", "int", "long", "short", "size_t", "void", "wchar_t"};
+    if (std::binary_search(stdtype, stdtype + sizeof(stdtype) / sizeof(stdtype[0]), _str)) {
+        _isStandardType = true;
+        _type = eType;
     }
 }
 
