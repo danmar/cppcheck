@@ -60,6 +60,7 @@ private:
         TEST_CASE(nullpointer24); // #5082 fp: chained assignment
         TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer26); // #3589
+        TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
         TEST_CASE(pointerCheckAndDeRef);     // check if pointer is null and then dereference it
@@ -1308,6 +1309,22 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointerSwitch() { // #2626
+        check("char *f(int x) {\n"
+              "    char *p = do_something();\n"
+              "    switch (x) {\n"
+              "      case 1:\n"
+              "        p = 0;\n"
+              "      case 2:\n"
+              "        *p = 0;\n"
+              "        break;\n"
+              "    }\n"
+              "    return p;\n"
+              "}", true, "test.cpp", false);
+        ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
     }
 
     void nullpointer_cast() { // #4692
