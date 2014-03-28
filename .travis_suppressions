@@ -4,6 +4,7 @@ duplicateBranch:build/checkunusedvar.cpp
 duplicateBranch:lib/checkunusedvar.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
 unreadVariable:test/testpreprocessor.cpp
+unreadVariable:test/testsymboldatabase.cpp
 *:gui/test*
 *:test/test.cxx
 
