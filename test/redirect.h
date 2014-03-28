@@ -61,6 +61,17 @@ public:
         _out.str("");
     }
 
+    /** Return what would be printed to cerr. See also clearErrout() */
+    std::string getErrout() const {
+        return _err.str();
+    }
+
+    /** Normally called after getErrout() to prevent same text to be returned
+    twice. */
+    void clearErrout() {
+        _err.str("");
+    }
+
 private:
     std::ostringstream _out;
     std::ostringstream _err;
@@ -71,5 +82,7 @@ private:
 #define REDIRECT RedirectOutputError redir;
 #define GET_REDIRECT_OUTPUT redir.getOutput()
 #define CLEAR_REDIRECT_OUTPUT redir.clearOutput()
+#define GET_REDIRECT_ERROUT redir.getErrout()
+#define CLEAR_REDIRECT_ERROUT redir.clearErrout()
 
 #endif

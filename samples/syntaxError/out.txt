@@ -1,0 +1,1 @@
+[samples\syntaxError\bad.c:2]: (error) Invalid number of character ({) when these macros are defined: 'A'.

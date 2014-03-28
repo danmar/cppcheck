@@ -63,6 +63,7 @@
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
+    <ClCompile Include="testsamples.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />

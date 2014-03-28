@@ -183,6 +183,7 @@ TESTOBJ =     test/options.o \
               test/testpostfixoperator.o \
               test/testpreprocessor.o \
               test/testrunner.o \
+              test/testsamples.o \
               test/testsimplifytokens.o \
               test/testsizeof.o \
               test/teststl.o \
@@ -484,6 +485,9 @@ test/testpreprocessor.o: test/testpreprocessor.cpp lib/cxx11emu.h test/testsuite
 
 test/testrunner.o: test/testrunner.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testrunner.o test/testrunner.cpp
+
+test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testsamples.o test/testsamples.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h lib/templatesimplifier.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
