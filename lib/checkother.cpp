@@ -3318,7 +3318,7 @@ void CheckOther::checkNegativeBitwiseShift()
                     continue;
                 if (!rhs->isNumber() && !rhs->variable())
                     continue;
-                if (!rhs->variable()->typeStartToken()->isStandardType())
+                if (rhs->variable() && !rhs->variable()->typeStartToken()->isStandardType())
                     continue;
             }
 
