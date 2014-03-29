@@ -1593,6 +1593,28 @@ const Function* Type::getFunction(const std::string& funcName) const
     return 0;
 }
 
+bool Type::hasCircularDependencies(std::set<BaseInfo>* anchestors) const
+{
+    std::set<BaseInfo> knownAnchestors;
+    if (!anchestors) {
+        anchestors=&knownAnchestors;
+    }
+    for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
+        if (!parent->type)
+            continue;
+        else if (this==parent->type)
+            return true;
+        else if (anchestors->find(*parent)!=anchestors->end())
+            return true;
+        else {
+            anchestors->insert(*parent);
+            if (parent->type->hasCircularDependencies(anchestors))
+                return true;
+        }
+    }
+    return false;
+}
+
 bool Variable::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok)
 {
     bool isArray = false;
@@ -2027,7 +2049,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return false;
 }
 
-bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe, std::deque< const ::Type* > *anchestors) const
+bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
@@ -2062,19 +2084,11 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe, std::
                 }
             }
 
-            if (!baseType->derivedFrom[i].type->derivedFrom.empty()) {
+            if (!baseType->derivedFrom[i].type->derivedFrom.empty() && !baseType->derivedFrom[i].type->hasCircularDependencies()) {
                 // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
                 // #5590 with a loop within the class hierarchie.
-                // We do so by tracking all previously checked types in a deque.
-                std::deque< const ::Type* > local_anchestors;
-                if (!anchestors) {
-                    anchestors=&local_anchestors;
-                }
-                anchestors->push_back(baseType);
-                if (std::find(anchestors->begin(), anchestors->end(), baseType->derivedFrom[i].type)==anchestors->end()) {
-                    if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe, anchestors))  {
-                        return true;
-                    }
+                if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))  {
+                    return true;
                 }
             }
         } else {

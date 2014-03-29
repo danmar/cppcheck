@@ -146,6 +146,7 @@ private:
         TEST_CASE(const58); // ticket #2698
         TEST_CASE(const59); // ticket #4646
         TEST_CASE(const60); // ticket #3322
+        TEST_CASE(const61); // ticket #5606
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4790,6 +4791,16 @@ private:
                    "    char *m_ptr;\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const61() { // ticket #5606 - don't crash
+        checkConst("class MixerParticipant : public MixerParticipant {\n"
+                   "    int GetAudioFrame();\n"
+                   "};\n"
+                   "int MixerParticipant::GetAudioFrame() {\n"
+                   "    return 0;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::GetAudioFrame' can be static.\n", errout.str());
     }
 
 

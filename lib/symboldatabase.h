@@ -66,7 +66,8 @@ public:
         Unknown, True, False
     } needInitialization;
 
-    struct BaseInfo {
+    class BaseInfo {
+    public:
         BaseInfo() :
             type(NULL), nameTok(NULL), access(Public), isVirtual(false) {
         }
@@ -76,6 +77,10 @@ public:
         const Token* nameTok;
         AccessControl access;  // public/protected/private
         bool isVirtual;
+        // allow ordering within containers
+        bool operator<(const BaseInfo& rhs) const {
+            return this->type < rhs.type;
+        }
     };
 
     struct FriendInfo {
@@ -107,6 +112,13 @@ public:
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
 
     const Function* getFunction(const std::string& funcName) const;
+
+    /**
+    * Check for circulare dependencies, i.e. loops within the class hierarchie
+    * @param anchestors list of anchestors. For internal usage only, clients should not supply this argument.
+    * @return true if there is a circular dependency
+    */
+    bool hasCircularDependencies(std::set<BaseInfo>* anchestors = 0) const;
 };
 
 /** @brief Information about a member variable. */
@@ -604,7 +616,7 @@ public:
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
 private:
-    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe, std::deque<const ::Type* > *anchestors = nullptr) const;
+    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
 };
 
 class CPPCHECKLIB Scope {

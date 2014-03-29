@@ -1139,8 +1139,8 @@ void CheckClass::operatorEq()
 void CheckClass::operatorEqReturnError(const Token *tok, const std::string &className)
 {
     reportError(tok, Severity::style, "operatorEq", "'" + className + "::operator=' should return '" + className + " &'.\n"
-      "The "+className+"::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '"+className+" &"+className+"::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
-    );
+                "The "+className+"::operator= does not conform to standard C/C++ behaviour. To conform to standard C/C++ behaviour, return a reference to self (such as: '"+className+" &"+className+"::operator=(..) { .. return *this; }'. For safety reasons it might be better to not fix this message. If you think that safety is always more important than conformance then please ignore/suppress this message. For more details about this topic, see the book \"Effective C++\" by Scott Meyers."
+               );
 }
 
 //---------------------------------------------------------------------------
@@ -1624,7 +1624,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     }
 
     // not found in this class
-    if (!scope->definedType->derivedFrom.empty()) {
+    if (!scope->definedType->derivedFrom.empty() && !scope->definedType->hasCircularDependencies()) {
         // check each base class
         for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
