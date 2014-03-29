@@ -3299,22 +3299,46 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 void CheckOther::checkNegativeBitwiseShift()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() != "<<" && tok->str() != ">>")
+                continue;
 
-            if ((Token::Match(tok,"%var% >>|<< %num%") || Token::Match(tok,"%num% >>|<< %num%")) && !Token::Match(tok->previous(),">>|<<")) {
-                if (tok->isName()) {
-                    const Variable *var = tok->variable();
-                    if (var && var->typeStartToken()->isStandardType() && (tok->strAt(2))[0] == '-')
-                        negativeBitwiseShiftError(tok);
-                } else {
-                    if ((tok->strAt(2))[0] == '-')
-                        negativeBitwiseShiftError(tok);
+            if (!tok->astOperand1() || !tok->astOperand2())
+                continue;
+
+            // don't warn if lhs is a class. this is an overloaded operator then
+            if (_tokenizer->isCPP()) {
+                const Token *rhs = tok->astOperand1();
+                while (Token::Match(rhs, "::|."))
+                    rhs = rhs->astOperand2();
+                if (!rhs)
+                    continue;
+                if (!rhs->isNumber() && !rhs->variable())
+                    continue;
+                if (!rhs->variable()->typeStartToken()->isStandardType())
+                    continue;
+            }
+
+            // Get negative rhs value. preferably a value which doesn't have 'condition'.
+            const ValueFlow::Value *value = nullptr;
+            for (std::list<ValueFlow::Value>::const_iterator it = tok->astOperand2()->values.begin();
+                 it != tok->astOperand2()->values.end();
+                 ++it) {
+                if (it->intvalue < 0) {
+                    if (value == nullptr || it->condition == nullptr)
+                        value = &(*it);
+                    if (value->condition == nullptr)
+                        break;
                 }
             }
+
+            if (!value)
+                continue;
+
+            negativeBitwiseShiftError(tok);
         }
     }
 }
@@ -3322,7 +3346,7 @@ void CheckOther::checkNegativeBitwiseShift()
 
 void CheckOther::negativeBitwiseShiftError(const Token *tok)
 {
-    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value.");
+    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour");
 }
 
 

@@ -6177,25 +6177,25 @@ private:
               "   int a; a = 123;\n"
               "   a << -1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
               "   a >> -1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
               "   a <<= -1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
               "   a >>= -1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   std::cout << -1;\n"
