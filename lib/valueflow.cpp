@@ -722,14 +722,21 @@ static void execute(const Token *expr,
 static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2)
 {
     tok = tok->tokAt(2);
-    if (!Token::Match(tok,"%type%| %var% = %num% ;"))
+    if (!Token::Match(tok,"%type%| %var% ="))
         return false;
     const Token * const vartok = tok->tokAt(Token::Match(tok, "%var% =") ? 0 : 1);
     if (vartok->varId() == 0U)
         return false;
     *varid = vartok->varId();
-    *num1 = MathLib::toLongNumber(vartok->strAt(2));
-    tok = vartok->tokAt(4);
+    const Token * const num1tok = Token::Match(vartok->tokAt(2), "%num% ;") ? vartok->tokAt(2) : nullptr;
+    if (num1tok)
+        *num1 = MathLib::toLongNumber(num1tok->str());
+    tok = vartok->tokAt(2);
+    while (Token::Match(tok, "%var%|%num%|%or%|+|-|*|/|&|[|]|("))
+        tok = (tok->str() == "(") ? tok->link()->next() : tok->next();
+    if (!tok || tok->str() != ";")
+        return false;
+    tok = tok->next();
     const Token *num2tok = nullptr;
     if (Token::Match(tok, "%varid% <|<=|!=", vartok->varId())) {
         tok = tok->next();
@@ -742,6 +749,8 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
     if (!num2tok)
         return false;
     *num2 = MathLib::toLongNumber(num2tok ? num2tok->str() : "0") - ((tok->str()=="<=") ? 0 : 1);
+    if (!num1tok)
+        *num1 = *num2;
     while (tok && tok->str() != ";")
         tok = tok->next();
     if (!num2tok || !Token::Match(tok, "; %varid% ++ ) {", vartok->varId()))

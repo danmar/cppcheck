@@ -961,6 +961,16 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             return;
     }
 
+    // ValueFlow array index..
+    if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
+        (declarationId == 0 && Token::Match(tok, (varnames + " [").c_str()))) {
+
+        const Token *tok2 = tok;
+        while (tok2->str() != "[")
+            tok2 = tok2->next();
+        valueFlowCheckArrayIndex(tok2, arrayInfo);
+    }
+
     // Array index..
     if ((declarationId > 0 && Token::Match(tok, "%varid% [ %num% ]", declarationId)) ||
         (declarationId == 0 && Token::Match(tok, (varnames + " [ %num% ]").c_str()))) {
@@ -1165,6 +1175,114 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     }
 }
 
+void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
+{
+    // Taking address?
+    bool addressOf = false;
+    {
+        const Token *tok2 = tok->astParent();
+        while (Token::Match(tok2, "%var%|.|::"))
+            tok2 = tok2->astParent();
+        addressOf = Token::Match(tok2, "&") && !(tok2->astOperand1() && tok2->astOperand2());
+    }
+
+    // Look for errors first
+    for (int warn = 0; warn == 0 || warn == 1; ++warn) {
+        // Negative index..
+        for (const Token *tok2 = tok; tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
+            const Token *index = tok2->astOperand2();
+            if (!index)
+                continue;
+            std::list<ValueFlow::Value>::const_iterator it;
+            const ValueFlow::Value *val = nullptr;
+            for (it = index->values.begin(); it != index->values.end(); ++it) {
+                if (it->intvalue < 0) {
+                    val = &*it;
+                    if (val->condition == nullptr)
+                        break;
+                }
+            }
+            if (val && !val->condition)
+                negativeIndexError(index, val->intvalue);
+        }
+
+        // Index out of bounds..
+        std::vector<ValueFlow::Value> indexes;
+        unsigned int valuevarid = 0;
+        for (const Token *tok2 = tok; indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
+            if (!tok2->astOperand2()) {
+                indexes.clear();
+                break;
+            }
+            const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(warn == 1);
+            if (!value) {
+                indexes.clear();
+                break;
+            }
+            if (valuevarid == 0U)
+                valuevarid = value->varId;
+            if (value->varId > 0 && valuevarid != value->varId) {
+                indexes.clear();
+                break;
+            }
+            if (value->intvalue < 0) {
+                indexes.clear();
+                break;
+            }
+            indexes.push_back(*value);
+        }
+        if (indexes.size() == arrayInfo.num().size()) {
+            // Check if the indexes point outside the whole array..
+            // char a[10][10];
+            // a[0][20]  <-- ok.
+            // a[9][20]  <-- error.
+
+            // total number of elements of array..
+            MathLib::bigint totalElements = 1;
+
+            // total index..
+            MathLib::bigint totalIndex = 0;
+
+            // calculate the totalElements and totalIndex..
+            for (unsigned int i = 0; i < indexes.size(); ++i) {
+                std::size_t ri = indexes.size() - 1 - i;
+                totalIndex += indexes[ri].intvalue * totalElements;
+                totalElements *= arrayInfo.num(ri);
+            }
+
+            // totalElements == 0 => Unknown size
+            if (totalElements == 0)
+                continue;
+
+            // taking address of 1 past end?
+            if (addressOf && totalIndex == totalElements)
+                continue;
+
+            // Is totalIndex in bounds?
+            if (totalIndex >= totalElements) {
+                arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                break;
+            }
+
+            // Is any array index out of bounds?
+            else {
+                // check each index for overflow
+                for (unsigned int i = 0; i < indexes.size(); ++i) {
+                    if (indexes[i].intvalue >= arrayInfo.num(i)) {
+                        // The access is still within the memory range for the array
+                        // so it may be intentional.
+                        if (_settings->inconclusive) {
+                            arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                            break; // only warn about the first one
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
 {
@@ -1181,108 +1299,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
         else if (Token::Match(tok, "%varid% [", arrayInfo.declarationId())) {
-            // Look for errors first
-            for (int warn = 0; warn == 0 || warn == 1; ++warn) {
-                // Negative index..
-                for (const Token *tok2 = tok->next(); tok2 && tok2->str() == "["; tok2 = tok2->link()->next()) {
-                    const Token *index = tok2->astOperand2();
-                    if (!index)
-                        continue;
-                    std::list<ValueFlow::Value>::const_iterator it;
-                    const ValueFlow::Value *val = nullptr;
-                    for (it = index->values.begin(); it != index->values.end(); ++it) {
-                        if (it->intvalue < 0) {
-                            val = &*it;
-                            if (val->condition == nullptr)
-                                break;
-                        }
-                    }
-                    if (val && !val->condition)
-                        negativeIndexError(index, val->intvalue);
-                }
-
-                // Index out of bounds..
-                std::vector<ValueFlow::Value> indexes;
-                unsigned int valuevarid = 0;
-                for (const Token *tok2 = tok->next(); indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
-                    if (!tok2->astOperand2()) {
-                        indexes.clear();
-                        break;
-                    }
-                    const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(warn == 1);
-                    if (!value) {
-                        indexes.clear();
-                        break;
-                    }
-                    if (valuevarid == 0U)
-                        valuevarid = value->varId;
-                    if (value->varId > 0 && valuevarid != value->varId) {
-                        indexes.clear();
-                        break;
-                    }
-                    if (value->intvalue < 0) {
-                        indexes.clear();
-                        break;
-                    }
-                    indexes.push_back(*value);
-                }
-                if (indexes.size() == arrayInfo.num().size()) {
-                    // Check if the indexes point outside the whole array..
-                    // char a[10][10];
-                    // a[0][20]  <-- ok.
-                    // a[9][20]  <-- error.
-
-                    // total number of elements of array..
-                    MathLib::bigint totalElements = 1;
-
-                    // total index..
-                    MathLib::bigint totalIndex = 0;
-
-                    // calculate the totalElements and totalIndex..
-                    for (unsigned int i = 0; i < indexes.size(); ++i) {
-                        std::size_t ri = indexes.size() - 1 - i;
-                        totalIndex += indexes[ri].intvalue * totalElements;
-                        totalElements *= arrayInfo.num(ri);
-                    }
-
-                    // totalElements == 0 => Unknown size
-                    if (totalElements == 0)
-                        continue;
-
-                    const Token *tok2 = tok->previous();
-                    while (tok2 && Token::Match(tok2->previous(), "%var% ."))
-                        tok2 = tok2->tokAt(-2);
-
-                    // just taking the address?
-                    const bool addr(tok2 && (tok2->str() == "&" ||
-                                             Token::simpleMatch(tok2->previous(), "& (")));
-
-                    // taking address of 1 past end?
-                    if (addr && totalIndex == totalElements)
-                        continue;
-
-                    // Is totalIndex in bounds?
-                    if (totalIndex >= totalElements) {
-                        arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                        break;
-                    }
-
-                    // Is any array index out of bounds?
-                    else {
-                        // check each index for overflow
-                        for (unsigned int i = 0; i < indexes.size(); ++i) {
-                            if (indexes[i].intvalue >= arrayInfo.num(i)) {
-                                // The access is still within the memory range for the array
-                                // so it may be intentional.
-                                if (_settings->inconclusive) {
-                                    arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                                    break; // only warn about the first one
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            valueFlowCheckArrayIndex(tok->next(), arrayInfo);
         }
 
         // Loop..

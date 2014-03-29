@@ -425,7 +425,8 @@ private:
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: val\n"
+                          "[test.cpp:6]: (error) Array 'val[50]' accessed at index 99, which is out of bounds.\n", errout.str());
         }
 
         {

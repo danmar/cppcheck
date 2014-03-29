@@ -231,6 +231,8 @@ private:
     void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
     void writeOutsideBufferSizeError(const Token *tok, const std::size_t stringLength, const MathLib::bigint writeLength, const std::string& functionName);
 
+    void valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo);
+
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBufferOverrun c(0, settings, errorLogger);
