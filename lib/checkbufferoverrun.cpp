@@ -971,17 +971,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         valueFlowCheckArrayIndex(tok2, arrayInfo);
     }
 
-    // Array index..
-    if ((declarationId > 0 && Token::Match(tok, "%varid% [ %num% ]", declarationId)) ||
-        (declarationId == 0 && Token::Match(tok, (varnames + " [ %num% ]").c_str()))) {
-        const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2 + varc));
-        if (index >= size) {
-            std::vector<MathLib::bigint> indexes;
-            indexes.push_back(index);
-            arrayIndexOutOfBoundsError(tok->tokAt(varc), arrayInfo, indexes);
-        }
-    }
-
     // If the result of pointer arithmetic means that the pointer is
     // out of bounds then this flag will be set.
     bool pointerIsOutOfBounds = false;
