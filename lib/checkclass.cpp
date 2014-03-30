@@ -1008,10 +1008,13 @@ void CheckClass::checkMemset()
                         type = t->classScope;
                 }
 
-                if (type)
-                    checkMemsetType(&(*scope), tok, type, false);
+                if (type) {
+                    std::list<const Scope *> parsedTypes;
+                    checkMemsetType(&(*scope), tok, type, false, parsedTypes);
+                }
             } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
-                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->typeScope(), true);
+                std::list<const Scope *> parsedTypes;
+                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
                 if (tok->variable()->typeScope()->numConstructors > 0 && _settings->isEnabled("warning"))
                     mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);
@@ -1020,12 +1023,17 @@ void CheckClass::checkMemset()
     }
 }
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes)
 {
+    // If type has been checked there is no need to check it again
+    if (std::find(parsedTypes.begin(), parsedTypes.end(), type) != parsedTypes.end())
+        return;
+    parsedTypes.push_back(type);
+
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
         if (type->definedType->derivedFrom[i].type && type->definedType->derivedFrom[i].type->classScope)
-            checkMemsetType(start, tok, type->definedType->derivedFrom[i].type->classScope, allocation);
+            checkMemsetType(start, tok, type->definedType->derivedFrom[i].type->classScope, allocation, parsedTypes);
     }
 
     // Warn if type is a class that contains any virtual functions
@@ -1062,7 +1070,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
             // check for known type
             else if (typeScope && typeScope != type)
-                checkMemsetType(start, tok, typeScope, allocation);
+                checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
         }
     }
 }
