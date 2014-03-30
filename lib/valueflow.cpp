@@ -235,9 +235,9 @@ static void valueFlowNumber(TokenList *tokenlist)
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        unsigned int varid;
-        MathLib::bigint num;
-        const Variable *var;
+        unsigned int varid=0;
+        MathLib::bigint num=0;
+        const Variable *var=0;
         if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
             if (tok->astOperand1()->isName() && tok->astOperand2()->isNumber()) {
                 varid = tok->astOperand1()->varId();
@@ -630,7 +630,7 @@ static void execute(const Token *expr,
     }
 
     else if (expr->isComparisonOp()) {
-        MathLib::bigint result1, result2;
+        MathLib::bigint result1(0), result2(0);
         execute(expr->astOperand1(), programMemory, &result1, error);
         execute(expr->astOperand2(), programMemory, &result2, error);
         if (expr->str() == "<")
@@ -675,7 +675,7 @@ static void execute(const Token *expr,
     }
 
     else if (expr->isArithmeticalOp() && expr->astOperand1() && expr->astOperand2()) {
-        MathLib::bigint result1, result2;
+        MathLib::bigint result1(0), result2(0);
         execute(expr->astOperand1(), programMemory, &result1, error);
         execute(expr->astOperand2(), programMemory, &result2, error);
         if (expr->str() == "+")
@@ -768,7 +768,7 @@ static bool valueFlowForLoop2(const Token *tok,
     tok = tok->linkAt(1);
 
     std::map<unsigned int, MathLib::bigint> programMemory;
-    MathLib::bigint result;
+    MathLib::bigint result(0);
     bool error = false;
     execute(firstExpression, &programMemory, &result, &error);
     if (error)
@@ -867,8 +867,8 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
 
         Token * const bodyStart = tok->linkAt(1)->next();
 
-        unsigned int varid;
-        MathLib::bigint num1, num2;
+        unsigned int varid(0);
+        MathLib::bigint num1(0), num2(0);
 
         if (valueFlowForLoop1(tok, &varid, &num1, &num2)) {
             valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
