@@ -205,11 +205,13 @@ static const Signaltype listofsignals[] = {
  * \return size of array
  * */
 template<typename T, int size>
-int GetArrayLength(T(&)[size])
+int GetArrayLength(const T(&)[size])
 {
     return size;
 }
 
+// 32 vs. 64bit
+#define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
 
 /*
  * Try to print the callstack.
@@ -218,34 +220,53 @@ int GetArrayLength(T(&)[size])
 static void print_stacktrace(FILE* f, bool demangling)
 {
 #if defined(__GNUC__)
-    void *array[50]= {0};
+    void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
     char **symbolstrings = backtrace_symbols(array, depth);
     if (symbolstrings) {
-        fprintf(f, "Callstack:\n");
+        fputs("Callstack:\n", f);
         const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
         for (int i = offset; i < depth; ++i) {
             const char * const symbol = symbolstrings[i];
+            //fprintf(f, "\"%s\"\n", symbol);
             char * realname = nullptr;
-            const char * const firstBracket = strchr(symbol, '(');
-            if (demangling && firstBracket) {
-                const char * const plus = strchr(firstBracket, '+');
-                if (plus) {
+            const char * const firstBracketName = strchr(symbol, '(');
+            const char * const firstBracketAddress = strchr(symbol, '[');
+            const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
+            const char * const beginAddress = firstBracketAddress+3;
+            const int addressLen = int(secondBracketAddress-beginAddress);
+            const int padLen = int(ADDRESSDISPLAYLENGTH-addressLen);
+            //fprintf(f, "AddressDisplayLength=%d    addressLen=%d      padLen=%d\n", ADDRESSDISPLAYLENGTH, addressLen, padLen);
+            if (demangling && firstBracketName) {
+                const char * const plus = strchr(firstBracketName, '+');
+                if (plus && (plus>(firstBracketName+1))) {
                     char input_buffer[512]= {0};
-                    strncpy(input_buffer, firstBracket+1, plus-firstBracket-1);
+                    strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
                     char output_buffer[1024]= {0};
                     size_t length = GetArrayLength(output_buffer);
                     int status=0;
                     realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
                 }
             }
-
-            fprintf(f, "%d. %s\n",
-                    i-offset, (realname) ? realname : symbolstrings[i]);
+           fprintf(f, "#%d 0x",
+			i-offset);
+		if (padLen>0)
+		  fprintf(f, "%0*d",
+                        padLen, 0);
+            if (realname) {
+		fprintf(f, "%.*s in %s\n",
+                        (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                        realname);
+	    }
+            else {
+                fprintf(f, "%.*s in %.*s\n",
+                        (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                        (int)(firstBracketAddress-symbol), symbol);
+	    }
         }
         free(symbolstrings);
     } else {
-        fprintf(f, "Callstack could not be obtained\n");
+        fputs("Callstack could not be obtained\n", f);
     }
 #endif
 }
@@ -269,26 +290,27 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
 {
     const char * const signame=signal_name(signo);
     bool bPrintCallstack=true;
+    FILE* f=stderr;
     switch (signo) {
     case SIGILL:
-        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+        fprintf(f, "Internal error (caught signal %d=%s at 0x%p)\n",
                 signo, signame, info->si_addr);
         break;
     case SIGFPE:
-        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+        fprintf(f, "Internal error (caught signal %d=%s at 0x%p)\n",
                 signo, signame, info->si_addr);
         break;
     case SIGSEGV:
-        fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+        fprintf(f, "Internal error (caught signal %d=%s at 0x%p)\n",
                 signo, signame, info->si_addr);
         break;
         /*
          case SIGBUS:
-            fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+            fprintf(f, "Internal error (caught signal %d=%s at 0x%p)\n",
                      signo, signame, info->si_addr);
            break;
          case SIGTRAP:
-           fprintf(stderr, "Internal error (caught signal %d=%s at 0x%p)\n",
+           fprintf(f, "Internal error (caught signal %d=%s at 0x%p)\n",
                     signo, signame, info->si_addr);
            break;
         */
@@ -296,13 +318,13 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         bPrintCallstack=false;
         break;
     default:
-        fprintf(stderr, "Internal error (caught signal %d)\n",
+        fprintf(f, "Internal error (caught signal %d)\n",
                 signo);
         break;
     }
     if (bPrintCallstack) {
-        print_stacktrace(stderr, false);
-        fprintf(stderr, "Please report this to the cppcheck developers!\n");
+        print_stacktrace(f, true);
+        fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
     abort();
 }
