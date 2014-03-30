@@ -80,6 +80,7 @@ private:
         TEST_CASE(garbageCode6); // #5214
         TEST_CASE(garbageCode7);
         TEST_CASE(garbageCode8); // #5511
+        TEST_CASE(garbageCode9); // #5604
 
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
@@ -1030,8 +1031,20 @@ private:
         tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
     }
 
-    void garbageCode8() {
+    void garbageCode8() { // #5604
         ASSERT_THROW(tokenizeAndStringify("{ enum struct : };", true), InternalError);
+        ASSERT_THROW(tokenizeAndStringify("int ScopedEnum{ template<typename T> { { e = T::error }; };\n"
+                                          "ScopedEnum1<int> se1; { enum class E : T { e = 0 = e ScopedEnum2<void*> struct UnscopedEnum3 { T{ e = 4 }; };\n"
+                                          "arr[(int) E::e]; }; UnscopedEnum3<int> e2 = f()\n"
+                                          "{ { e = e1; T::error } int test1 ue2; g() { enum class E { e = T::error }; return E::e; } int test2 = } \n"
+                                          "namespace UnscopedEnum { template<typename T> struct UnscopedEnum1 { E{ e = T::error }; }; UnscopedEnum1<int> { enum E : { e = 0 }; };\n"
+                                          "UnscopedEnum2<void*> ue3; template<typename T> struct UnscopedEnum3 { enum { }; }; int arr[E::e]; };\n"
+                                          "UnscopedEnum3<int> namespace template<typename T> int f() { enum E { e }; T::error }; return (int) E(); } int test1 int g() { enum E { e = E };\n"
+                                          "E::e; } int test2 = g<int>(); }", true), InternalError);
+    }
+
+    void garbageCode9() {
+        ASSERT_THROW(tokenizeAndStringify("enum { e = { } } ( ) { { enum { } } } { e } ", true), InternalError);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly

@@ -2562,10 +2562,12 @@ void Tokenizer::setVarId()
             if (tokStart) {
                 for (const Token *tok2 = tokStart->next(); tok2 != tokStart->link(); tok2 = tok2->next()) {
                     // skip parentheses..
-                    if (tok2->str() == "{")
-                        tok2 = tok2->link();
-                    else if (tok2->str() == "(")
-                        tok2 = tok2->link();
+                    if (tok2->link()) {
+                        if (tok2->str() == "{")
+                            tok2 = tok2->link();
+                        else if (tok2->str() == "(")
+                            tok2 = tok2->link();
+                    }
 
                     // Found a member variable..
                     else if (tok2->varId() > 0)
@@ -7575,9 +7577,11 @@ void Tokenizer::simplifyEnum()
                             // are there shadow variables in the scope?
                             std::set<std::string> shadowVars;
                             for (const Token *tok3 = tok2->next(); tok3 && tok3->str() != "}"; tok3 = tok3->next()) {
-                                if (tok3->str() == "{")
+                                if (tok3->str() == "{") {
                                     tok3 = tok3->link(); // skip inner scopes
-                                else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
+                                    if (tok3 == nullptr)
+                                        break;
+                                } else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
                                     const Token *prev = tok3->previous();
                                     if ((prev->isName() && !Token::Match(prev,"return|case|throw")) ||
                                         Token::Match(prev, "&|* %type% =")) {
