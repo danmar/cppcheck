@@ -330,203 +330,202 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // class function?
-                else if (tok->previous()->str() != "::" && isFunction(tok, scope, &funcStart, &argStart)) {
-                    Function function;
+                else if (isFunction(tok, scope, &funcStart, &argStart)) {
+                    if (tok->previous()->str() != "::") {
+                        Function function;
 
-                    // save the function definition argument start '('
-                    function.argDef = argStart;
+                        // save the function definition argument start '('
+                        function.argDef = argStart;
 
-                    // save the access type
-                    function.access = access[scope];
+                        // save the access type
+                        function.access = access[scope];
 
-                    // save the function name location
-                    function.tokenDef = funcStart;
+                        // save the function name location
+                        function.tokenDef = funcStart;
 
-                    // save the function parent scope
-                    function.nestedIn = scope;
+                        // save the function parent scope
+                        function.nestedIn = scope;
 
-                    // operator function
-                    if (function.tokenDef->str().find("operator") == 0) {
-                        function.isOperator = true;
+                        // operator function
+                        if (function.tokenDef->str().find("operator") == 0) {
+                            function.isOperator = true;
 
-                        // 'operator =' is special
-                        if (function.tokenDef->str() == "operator=")
-                            function.type = Function::eOperatorEqual;
-                    }
+                            // 'operator =' is special
+                            if (function.tokenDef->str() == "operator=")
+                                function.type = Function::eOperatorEqual;
+                        }
 
-                    // class constructor/destructor
-                    else if (function.tokenDef->str() == scope->className) {
-                        // destructor
-                        if (function.tokenDef->previous()->str() == "~")
-                            function.type = Function::eDestructor;
+                        // class constructor/destructor
+                        else if (function.tokenDef->str() == scope->className) {
+                            // destructor
+                            if (function.tokenDef->previous()->str() == "~")
+                                function.type = Function::eDestructor;
 
-                        // copy/move constructor?
-                        else if (Token::Match(function.tokenDef, "%var% ( const| %var% &|&& &| %var%| )") ||
-                                 Token::Match(function.tokenDef, "%var% ( const| %var% <")) {
-                            const Token* typTok = function.tokenDef->tokAt(2);
-                            if (typTok->str() == "const")
-                                typTok = typTok->next();
-                            if (typTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
-                                if (Token::Match(typTok->linkAt(1), "> & %var%| )"))
-                                    function.type = Function::eCopyConstructor;
-                                else if (Token::Match(typTok->linkAt(1), "> &&|& & %var%| )"))
+                            // copy/move constructor?
+                            else if (Token::Match(function.tokenDef, "%var% ( const| %var% &|&& &| %var%| )") ||
+                                     Token::Match(function.tokenDef, "%var% ( const| %var% <")) {
+                                const Token* typTok = function.tokenDef->tokAt(2);
+                                if (typTok->str() == "const")
+                                    typTok = typTok->next();
+                                if (typTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
+                                    if (Token::Match(typTok->linkAt(1), "> & %var%| )"))
+                                        function.type = Function::eCopyConstructor;
+                                    else if (Token::Match(typTok->linkAt(1), "> &&|& & %var%| )"))
+                                        function.type = Function::eMoveConstructor;
+                                    else
+                                        function.type = Function::eConstructor;
+                                } else if (typTok->strAt(1) == "&&" || typTok->strAt(2) == "&")
                                     function.type = Function::eMoveConstructor;
                                 else
-                                    function.type = Function::eConstructor;
-                            } else if (typTok->strAt(1) == "&&" || typTok->strAt(2) == "&")
-                                function.type = Function::eMoveConstructor;
+                                    function.type = Function::eCopyConstructor;
+
+                                if (typTok->str() != function.tokenDef->str())
+                                    function.type = Function::eConstructor; // Overwrite, if types are not identical
+                            }
+                            // regular constructor
                             else
-                                function.type = Function::eCopyConstructor;
+                                function.type = Function::eConstructor;
 
-                            if (typTok->str() != function.tokenDef->str())
-                                function.type = Function::eConstructor; // Overwrite, if types are not identical
+                            if (function.tokenDef->previous()->str() == "explicit")
+                                function.isExplicit = true;
                         }
-                        // regular constructor
+
+                        // function returning function pointer
+                        else if (tok->str() == "(") {
+                            function.retFuncPtr = true;
+                        }
+
+                        const Token *tok1 = tok;
+
+                        // look for end of previous statement
+                        while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
+                            // virtual function
+                            if (tok1->previous()->str() == "virtual") {
+                                function.isVirtual = true;
+                                break;
+                            }
+
+                            // static function
+                            else if (tok1->previous()->str() == "static") {
+                                function.isStatic = true;
+                                break;
+                            }
+
+                            // friend function
+                            else if (tok1->previous()->str() == "friend") {
+                                function.isFriend = true;
+                                break;
+                            }
+
+                            tok1 = tok1->previous();
+                        }
+
+                        // find the return type
+                        if (!function.isConstructor() && !function.isDestructor()) {
+                            while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const|struct|union"))
+                                tok1 = tok1->next();
+
+                            if (tok1)
+                                function.retDef = tok1;
+                        }
+
+                        const Token *end;
+
+                        if (!function.retFuncPtr)
+                            end = function.argDef->link();
                         else
-                            function.type = Function::eConstructor;
+                            end = tok->link()->next()->link();
 
-                        if (function.tokenDef->previous()->str() == "explicit")
-                            function.isExplicit = true;
-                    }
-
-                    // function returning function pointer
-                    else if (tok->str() == "(") {
-                        function.retFuncPtr = true;
-                    }
-
-                    const Token *tok1 = tok;
-
-                    // look for end of previous statement
-                    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
-                        // virtual function
-                        if (tok1->previous()->str() == "virtual") {
-                            function.isVirtual = true;
-                            break;
-                        }
-
-                        // static function
-                        else if (tok1->previous()->str() == "static") {
-                            function.isStatic = true;
-                            break;
-                        }
-
-                        // friend function
-                        else if (tok1->previous()->str() == "friend") {
-                            function.isFriend = true;
-                            break;
-                        }
-
-                        tok1 = tok1->previous();
-                    }
-
-                    // find the return type
-                    if (!function.isConstructor() && !function.isDestructor()) {
-                        while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const|struct|union"))
-                            tok1 = tok1->next();
-
-                        if (tok1)
-                            function.retDef = tok1;
-                    }
-
-                    const Token *end;
-
-                    if (!function.retFuncPtr)
-                        end = function.argDef->link();
-                    else
-                        end = tok->link()->next()->link();
-
-                    // const function
-                    if (end->next()->str() == "const")
-                        function.isConst = true;
-
-                    // count the number of constructors
-                    if (function.isConstructor())
-                        scope->numConstructors++;
-                    if (function.type == Function::eCopyConstructor ||
-                        function.type == Function::eMoveConstructor)
-                        scope->numCopyOrMoveConstructors++;
-
-                    // assume implementation is inline (definition and implementation same)
-                    function.token = function.tokenDef;
-                    function.arg = function.argDef;
-
-                    // out of line function
-                    if (Token::Match(end, ") const| ;")) {
-                        // find the function implementation later
-                        tok = end->next();
-                        if (tok->str() != ";")
-                            tok = tok->next();
-
-                        scope->functionList.push_back(function);
-                    }
-
-                    // default or delete
-                    else if (Token::Match(end, ") = default|delete ;")) {
-                        if (end->strAt(2) == "default")
-                            function.isDefault = true;
-                        else
-                            function.isDelete = true;
-
-                        tok = end->tokAt(3);
-
-                        scope->functionList.push_back(function);
-                    }
-
-                    // pure virtual function
-                    else if (Token::Match(end, ") const| = %any% ;")) {
-                        function.isPure = true;
-
+                        // const function
                         if (end->next()->str() == "const")
-                            tok = end->tokAt(4);
-                        else
+                            function.isConst = true;
+
+                        // count the number of constructors
+                        if (function.isConstructor())
+                            scope->numConstructors++;
+                        if (function.type == Function::eCopyConstructor ||
+                            function.type == Function::eMoveConstructor)
+                            scope->numCopyOrMoveConstructors++;
+
+                        // assume implementation is inline (definition and implementation same)
+                        function.token = function.tokenDef;
+                        function.arg = function.argDef;
+
+                        // out of line function
+                        if (Token::simpleMatch(end, ") ;")) {
+                            // find the function implementation later
+                            tok = end->next();
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // default or delete
+                        else if (Token::Match(end, ") = default|delete ;")) {
+                            if (end->strAt(2) == "default")
+                                function.isDefault = true;
+                            else
+                                function.isDelete = true;
+
                             tok = end->tokAt(3);
 
-                        scope->functionList.push_back(function);
-                    }
-
-                    // unknown macro (#5197)
-                    else if (Token::Match(end, ") %any% ;")) {
-                        tok = end->tokAt(3);
-
-                        scope->functionList.push_back(function);
-                    }
-
-                    // inline function
-                    else {
-                        function.isInline = true;
-                        function.hasBody = true;
-
-                        // find start of function '{'
-                        while (end && end->str() != "{")
-                            end = end->next();
-                        if (!end)
-                            continue;
-
-                        scope->functionList.push_back(function);
-
-                        Function* funcptr = &scope->functionList.back();
-                        const Token *tok2 = funcStart;
-
-                        addNewFunction(&scope, &tok2);
-                        if (scope) {
-                            scope->functionOf = function.nestedIn;
-                            scope->function = funcptr;
-                            scope->function->functionScope = scope;
+                            scope->functionList.push_back(function);
                         }
 
-                        tok = tok2;
+                        // pure virtual function
+                        else if (Token::Match(end, ") const| = %any% ;")) {
+                            function.isPure = true;
+
+                            if (end->next()->str() == "const")
+                                tok = end->tokAt(4);
+                            else
+                                tok = end->tokAt(3);
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // 'const' or unknown macro (#5197)
+                        else if (Token::Match(end, ") %any% ;")) {
+                            tok = end->tokAt(2);
+                            scope->functionList.push_back(function);
+                        }
+
+                        // inline function
+                        else {
+                            function.isInline = true;
+                            function.hasBody = true;
+
+                            // find start of function '{'
+                            while (end && end->str() != "{")
+                                end = end->next();
+                            if (!end)
+                                continue;
+
+                            scope->functionList.push_back(function);
+
+                            Function* funcptr = &scope->functionList.back();
+                            const Token *tok2 = funcStart;
+
+                            addNewFunction(&scope, &tok2);
+                            if (scope) {
+                                scope->functionOf = function.nestedIn;
+                                scope->function = funcptr;
+                                scope->function->functionScope = scope;
+                            }
+
+                            tok = tok2;
+                        }
                     }
-                }
 
-                // nested class or friend function?
-                else if (tok->previous()->str() == "::" && isFunction(tok, scope, &funcStart, &argStart)) {
-                    /** @todo check entire qualification for match */
-                    Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
-
-                    if (nested)
-                        addClassFunction(&scope, &tok, argStart);
+                    // nested class or friend function?
                     else {
-                        /** @todo handle friend functions */
+                        /** @todo check entire qualification for match */
+                        Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
+
+                        if (nested)
+                            addClassFunction(&scope, &tok, argStart);
+                        else {
+                            /** @todo handle friend functions */
+                        }
                     }
                 }
 

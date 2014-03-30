@@ -140,6 +140,7 @@ private:
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
+        TEST_CASE(memberFunctionOfUnknownClassMacro);
 
         TEST_CASE(classWithFriend);
 
@@ -952,6 +953,22 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
 
             ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
+        }
+    }
+
+    void memberFunctionOfUnknownClassMacro() {
+        GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE; };\n"
+                      "void ScVbaValidation::getFormula1() {\n"
+                      "    sal_uInt16 nFlags = 0;\n"
+                      "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
+                      "}");
+
+        ASSERT(db && errout.str() == "");
+
+        if (db) {
+            const Scope *scope = db->findScopeByName("getFormula1");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn == &db->scopeList.front());
         }
     }
 
