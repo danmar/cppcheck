@@ -2777,7 +2777,7 @@ void Tokenizer::sizeofAddParentheses()
 bool Tokenizer::simplifySizeof()
 {
     // Locate variable declarations and calculate the size
-    std::map<unsigned int, std::string> sizeOfVar;
+    std::map<unsigned int, unsigned int> sizeOfVar;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->varId() != 0 && sizeOfVar.find(tok->varId()) == sizeOfVar.end()) {
             const unsigned int varId = tok->varId();
@@ -2790,7 +2790,7 @@ bool Tokenizer::simplifySizeof()
                     continue;
                 }
 
-                sizeOfVar[varId] = MathLib::toString(size);
+                sizeOfVar[varId] = size;
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [;=]") ||
@@ -2799,14 +2799,14 @@ bool Tokenizer::simplifySizeof()
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = MathLib::toString(size * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(2))));
+                sizeOfVar[varId] = size * static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(2)));
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [,)]")) {
                 Token tempTok(0);
                 tempTok.str("*");
-                sizeOfVar[varId] = MathLib::toString(sizeOfType(&tempTok));
+                sizeOfVar[varId] = sizeOfType(&tempTok);
             }
         }
     }
@@ -2956,7 +2956,7 @@ bool Tokenizer::simplifySizeof()
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
-                tok->str(sizeOfVar[tok->varId()]);
+                tok->str(MathLib::toString(sizeOfVar[tok->varId()]));
                 ret = true;
             } else {
                 // don't try to replace size of variable if variable has
