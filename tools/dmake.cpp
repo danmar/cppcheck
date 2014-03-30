@@ -252,8 +252,11 @@ int main(int argc, char **argv)
          << "    CFG=\n"
          << "endif\n\n";
 
-    // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
-    fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
+    // enable backtrac
+    fout << "RDYNAMIC=-rdynamic\n";
+
+         // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
+         fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
          << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
          << "ifndef COMSPEC\n"
          << "    ifdef ComSpec\n"
@@ -270,6 +273,8 @@ int main(int argc, char **argv)
          << "\n"
          << "    ifeq ($(MSYSTEM),MINGW32)\n"
          << "        LDFLAGS=-lshlwapi\n"
+         << "    else\n"
+         << "        RDYNAMIC=-lshlwapi\n"
          << "    endif\n"
          << "else # !COMSPEC\n"
          << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
@@ -362,10 +367,10 @@ int main(int argc, char **argv)
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -rdynamic -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -rdynamic -std=c++0x -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
