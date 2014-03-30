@@ -4801,6 +4801,13 @@ private:
                    "    return 0;\n"
                    "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::GetAudioFrame' can be static.\n", errout.str());
+
+        checkConst("class MixerParticipant : public MixerParticipant {\n"
+                   "    bool InitializeFileReader() {\n"
+                   "       printf(\"music\");\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::InitializeFileReader' can be static.\n", errout.str());
     }
 
 
