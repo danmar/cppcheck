@@ -4808,6 +4808,25 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::InitializeFileReader' can be static.\n", errout.str());
+
+        // Based on an example from SVN source code causing an endless recursion within CheckClass::isConstMemberFunc()
+        // A more complete example including a template declaration like
+        //     template<typename K> class Hash{/* ... */};
+        // didn't .
+        checkConst("template<>\n"
+                   "class Hash<void> {\n"
+                   "protected:\n"
+                   "  typedef Key::key_type key_type;\n"
+                   "  void set(const Key& key);\n"
+                   "};\n"
+                   "template<typename K, int KeySize>\n"
+                   "class Hash : private Hash<void> {\n"
+                   "  typedef Hash<void> inherited;\n"
+                   "  void set(const Key& key) {\n"
+                   "      inherited::set(inherited::Key(key));\n"
+                   "  }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

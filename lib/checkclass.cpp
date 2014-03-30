@@ -1737,7 +1737,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom && derivedFrom->classScope) {
+            if (derivedFrom && derivedFrom->classScope && !derivedFrom->hasCircularDependencies()) {
                 if (isConstMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }
