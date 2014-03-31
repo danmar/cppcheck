@@ -131,6 +131,12 @@ private:
               "    s.p = true;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        // ticket #5627 - false positive: template
+        check("void f() {\n"
+              "    X *p = new ::std::pair<int,int>[rSize];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {

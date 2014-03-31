@@ -6840,6 +6840,24 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            // #5627
+            const char code[] = "new Foo<Bar>[10];";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->tokAt(2) == tok->linkAt(4));
+            ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(2));
+            ASSERT_EQUALS(true, tok->tokAt(5) == tok->linkAt(7));
+            ASSERT_EQUALS(true, tok->tokAt(7) == tok->linkAt(5));
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void removeExceptionSpecification1() {

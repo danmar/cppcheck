@@ -31,7 +31,7 @@ namespace {
 
 static bool astIsBool(const Token *expr)
 {
-    return Token::Match(expr, "%comp%|%bool%|%oror%|&&|!");
+    return Token::Match(expr, "%comp%|%bool%|%oror%|&&|!") && !expr->link();
 }
 
 //---------------------------------------------------------------------------
