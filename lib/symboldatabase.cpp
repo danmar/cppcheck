@@ -560,33 +560,19 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // function?
                 if (isFunction(tok, scope, &funcStart, &argStart)) {
-                    // has body?
-                    if (Token::Match(argStart->link(), ") const| {|:")) {
-                        Scope *old_scope = scope;
+                    bool retFuncPtr = Token::simpleMatch(argStart->link(), ") ) (");
+                    const Token* scopeBegin = argStart->link()->next();
 
-                        // class function
-                        if (tok->previous() && tok->previous()->str() == "::")
-                            addClassFunction(&scope, &tok, argStart);
-
-                        // class destructor
-                        else if (tok->previous() && tok->previous()->str() == "~" &&
-                                 tok->tokAt(-2) && tok->strAt(-2) == "::")
-                            addClassFunction(&scope, &tok, argStart);
-
-                        // regular function
-                        else
-                            addGlobalFunction(scope, tok, argStart, funcStart);
-
-                        // syntax error
-                        if (!scope) {
-                            scope = old_scope;
-                            break;
-                        }
+                    if (retFuncPtr)
+                        scopeBegin = scopeBegin->next()->link()->next();
+                    if (scopeBegin->isName()) { // Jump behind 'const' or unknown Macro
+                        scopeBegin = scopeBegin->next();
+                        if (scopeBegin->link() && scopeBegin->str() == "(") // Jump behind unknown macro of type THROW(...)
+                            scopeBegin = scopeBegin->link()->next();
                     }
 
-                    // function returning function pointer with body
-                    else if (Token::simpleMatch(argStart->link(), ") ) (") &&
-                             Token::Match(argStart->link()->linkAt(2), ") const| {")) {
+                    // has body?
+                    if (scopeBegin->str() == "{" || scopeBegin->str() == ":") {
                         tok = funcStart;
                         Scope *old_scope = scope;
 
@@ -594,10 +580,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (tok->previous()->str() == "::")
                             addClassFunction(&scope, &tok, argStart);
 
+                        // class destructor
+                        else if (tok->previous()->str() == "~" &&
+                                 tok->strAt(-2) == "::")
+                            addClassFunction(&scope, &tok, argStart);
+
                         // regular function
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
-                            function->retFuncPtr = true;
+                            function->retFuncPtr = retFuncPtr;
                         }
 
                         // syntax error?
@@ -606,9 +597,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             break;
                         }
                     }
-
-                    // function prototype
-                    else if (Token::simpleMatch(argStart->link(), ") ;")) {
+                    // function prototype?
+                    else if (scopeBegin->str() == ";") {
                         bool newFunc = true; // Is this function already in the database?
                         for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
                             if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0)) {
@@ -618,28 +608,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
 
                         // save function prototype in database
-                        if (newFunc)
-                            addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-
-                        tok = argStart->link()->next();
-                        continue;
-                    }
-
-                    // function returning function pointer prototype
-                    else if (Token::simpleMatch(argStart->link(), ") ) (") &&
-                             Token::simpleMatch(argStart->link()->linkAt(2), ") ;")) {
-                        bool newFunc = true; // Is this function already in the database?
-                        for (std::list<Function>::const_iterator i = scope->functionList.begin(); i != scope->functionList.end(); ++i) {
-                            if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef, argStart, "", 0))
-                                newFunc = false;
-                        }
-                        // save function prototype in database
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-                            func->retFuncPtr = true;
+                            func->retFuncPtr = retFuncPtr;
                         }
 
-                        tok = argStart->link()->linkAt(2)->next();
+                        tok = scopeBegin;
                         continue;
                     }
                 }
@@ -1000,14 +974,17 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     else if (Token::Match(tok, "%var% (") && tok->previous() &&
              (tok->previous()->isName() || tok->strAt(-1) == ">" || tok->strAt(-1) == "&" || tok->strAt(-1) == "*" || // Either a return type in front of tok
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
-              outerScope->isClassOrStruct()) && // or a ctor/dtor
-             (Token::Match(tok->next()->link(), ") const| ;|{|=") ||
-              (Token::Match(tok->next()->link(), ") %var% ;|{") && tok->next()->link()->next()->isUpperCaseName()) ||
-              Token::Match(tok->next()->link(), ") : ::| %var% (|::|<|{") ||
-              Token::Match(tok->next()->link(), ") = delete|default ;"))) {
-        *funcStart = tok;
-        *argStart = tok->next();
-        return true;
+              outerScope->isClassOrStruct())) { // or a ctor/dtor
+        const Token* tok2 = tok->next()->link()->next();
+        if ((Token::Match(tok2, "const| ;|{|=") ||
+             (Token::Match(tok2, "%var% ;|{") && tok2->isUpperCaseName()) ||
+             (Token::Match(tok2, "%var% (") && tok2->isUpperCaseName() && tok2->next()->link()->strAt(1) == "{") ||
+             Token::Match(tok2, ": ::| %var% (|::|<|{") ||
+             Token::Match(tok2, "= delete|default ;"))) {
+            *funcStart = tok;
+            *argStart = tok->next();
+            return true;
+        }
     }
 
     // template constructor?
