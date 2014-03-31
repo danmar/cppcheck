@@ -717,7 +717,7 @@ static Token * createAstAtToken(Token *tok)
                 tok2 = tok2->link();
                 if (!tok2)
                     break;
-            } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[;{}] %cop%|(")) {
+            } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 std::stack<Token *> operands;
                 compileExpression(tok2, operands);
