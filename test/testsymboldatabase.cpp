@@ -142,6 +142,7 @@ private:
         TEST_CASE(functionDeclarations);
         TEST_CASE(memberFunctionOfUnknownClassMacro1);
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
+        TEST_CASE(memberFunctionOfUnknownClassMacro3);
 
         TEST_CASE(classWithFriend);
 
@@ -974,6 +975,26 @@ private:
     }
 
     void memberFunctionOfUnknownClassMacro2() {
+        GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE {} };\n"
+                      "void getFormula1() {\n"
+                      "    sal_uInt16 nFlags = 0;\n"
+                      "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
+                      "}");
+
+        ASSERT(db && errout.str() == "");
+
+        if (db) {
+            const Scope *scope = db->findScopeByName("getFormula1");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn == &db->scopeList.front());
+
+            scope = db->findScopeByName("getServiceImplName");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn && scope->nestedIn->className == "ScVbaFormatCondition");
+        }
+    }
+
+    void memberFunctionOfUnknownClassMacro3() {
         GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() THROW(whatever); };\n"
                       "void ScVbaValidation::getFormula1() {\n"
                       "    sal_uInt16 nFlags = 0;\n"

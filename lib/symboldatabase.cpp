@@ -495,9 +495,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             function.hasBody = true;
 
                             // find start of function '{'
-                            while (end && end->str() != "{")
+                            while (end && end->str() != "{" && end->str() != ";")
                                 end = end->next();
-                            if (!end)
+                            if (!end || end->str() == ";")
                                 continue;
 
                             scope->functionList.push_back(function);
@@ -1415,9 +1415,12 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     Scope *new_scope = &scopeList.back();
 
     // skip to start of function
-    while (tok1 && ((tok1->str() != "{") || (tok1->previous() && tok1->previous()->isName() && tok1->strAt(-1) != "const" && Token::Match(tok1->link()->next(), "%type%|,|{")))) {
+    bool foundInitLit = false;
+    while (tok1 && (tok1->str() != "{" || (foundInitLit && tok1->previous()->isName()))) {
         if (tok1->str() == "(" || tok1->str() == "{")
             tok1 = tok1->link();
+        if (tok1->str() == ":")
+            foundInitLit = true;
         tok1 = tok1->next();
     }
 
