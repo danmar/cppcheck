@@ -248,21 +248,20 @@ static void print_stacktrace(FILE* f, bool demangling)
                     realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
                 }
             }
-           fprintf(f, "#%d 0x",
-			i-offset);
-		if (padLen>0)
-		  fprintf(f, "%0*d",
+            fprintf(f, "#%d 0x",
+                    i-offset);
+            if (padLen>0)
+                fprintf(f, "%0*d",
                         padLen, 0);
             if (realname) {
-		fprintf(f, "%.*s in %s\n",
+                fprintf(f, "%.*s in %s\n",
                         (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
                         realname);
-	    }
-            else {
+            } else {
                 fprintf(f, "%.*s in %.*s\n",
                         (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
                         (int)(firstBracketAddress-symbol), symbol);
-	    }
+            }
         }
         free(symbolstrings);
     } else {
