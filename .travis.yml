@@ -81,7 +81,6 @@ script:
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
-  - ./dmake
 #   now, if dmake modified the makefile, return false!
   - git diff --exit-code
 
