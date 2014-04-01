@@ -61,6 +61,12 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
     else
         return false;
 
+    // reinterpret_cast etc..
+    if (Token::Match(tok->tokAt(-3), "> ( & %var% ) [,)]") &&
+        tok->linkAt(-3) &&
+        Token::Match(tok->linkAt(-3)->tokAt(-2), "[,(] %type% <"))
+        tok = tok->linkAt(-3);
+
     // goto start of function call and get argnr
     unsigned int argnr = 0;
     while (tok && tok->str() != "(") {

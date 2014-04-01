@@ -513,6 +513,13 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    char *x = 0;\n"
+               "    getx(reinterpret_cast<void **>(&x));\n"
+               "    *x = 0;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"
