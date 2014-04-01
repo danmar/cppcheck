@@ -2084,6 +2084,22 @@ static bool isSignedChar(const Variable* var)
     return (isChar(var) && !var->typeStartToken()->isUnsigned());
 }
 
+static bool astIsSignedChar(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->str() == "*" && tok->astOperand1() && !tok->astOperand2()) {
+        const Variable *var = tok->astOperand1()->variable();
+        if (!var || !var->isPointer())
+            return false;
+        const Token *type = var ? var->typeStartToken() : nullptr;
+        while (type && type->str() == "const")
+            type = type->next();
+        return (type && type->str() == "char" && !type->isUnsigned());
+    }
+    return isSignedChar(tok->variable());
+}
+
 void CheckOther::checkCharVariable()
 {
     if (!_settings->isEnabled("warning"))
@@ -2094,7 +2110,7 @@ void CheckOther::checkCharVariable()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if ((tok->str() != ".") && Token::Match(tok->next(), "%var% [ %var% ]")) {
+            if (Token::Match(tok, "!!. %var% [ %var% ]")) {
                 const Variable* arrayvar = tok->next()->variable();
                 const Variable* indexvar = tok->tokAt(3)->variable();
                 const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
@@ -2102,38 +2118,33 @@ void CheckOther::checkCharVariable()
                     charArrayIndexError(tok->next());
             }
 
-            else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] %any% ;")) {
-                // is a char variable used in the calculation?
-                if (!isSignedChar(tok->tokAt(3)->variable()) &&
-                    !isSignedChar(tok->tokAt(5)->variable()))
+            else if (Token::Match(tok, "[&|^]")) {
+                const Token *tok2;
+                if (tok->astOperand1() && astIsSignedChar(tok->astOperand1()))
+                    tok2 = tok->astOperand2();
+                else if (tok->astOperand2() && astIsSignedChar(tok->astOperand2()))
+                    tok2 = tok->astOperand1();
+                else
                     continue;
 
                 // it's ok with a bitwise and where the other operand is 0xff or less..
-                if (tok->strAt(4) == "&") {
-                    if (tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
+                if (tok->str() == "&" && tok2 && tok2->isNumber() && MathLib::isGreater("0x100", tok2->str()))
+                    continue;
+
+                // is the result stored in a short|int|long?
+                if (tok->astParent() && tok->astParent()->str() == "=") {
+                    const Token *eq = tok->astParent();
+                    const Token *lhs = eq->astOperand1();
+                    if (lhs && lhs->str() == "*" && !lhs->astOperand2())
+                        lhs = lhs->astOperand1();
+                    while (lhs && lhs->str() == ".")
+                        lhs = lhs->astOperand2();
+                    if (!lhs || !lhs->isName())
                         continue;
-                    if (tok->tokAt(5)->isNumber() && MathLib::isGreater("0x100", tok->strAt(5)))
-                        continue;
+                    const Variable *var = lhs->variable();
+                    if (var && Token::Match(var->typeStartToken(), "short|int|long"))
+                        charBitOpError(tok); // This is an error..
                 }
-
-                // is the result stored in a short|int|long?
-                const Variable *var = tok->next()->variable();
-                if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
-                    charBitOpError(tok->tokAt(4)); // This is an error..
-            }
-
-            else if (Token::Match(tok, "[;{}] %var% = %any% [&^|] ( * %var% ) ;")) {
-                const Variable* var = tok->tokAt(7)->variable();
-                if (!var || !var->isPointer() || var->typeStartToken()->str() != "char" || var->typeStartToken()->isUnsigned())
-                    continue;
-                // it's ok with a bitwise and where the other operand is 0xff or less..
-                if (tok->strAt(4) == "&" && tok->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok->strAt(3)))
-                    continue;
-
-                // is the result stored in a short|int|long?
-                var = tok->next()->variable();
-                if (var && Token::Match(var->typeStartToken(), "short|int|long") && !var->isPointer() && !var->isArray())
-                    charBitOpError(tok->tokAt(4)); // This is an error..
             }
         }
     }
