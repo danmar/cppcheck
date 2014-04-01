@@ -960,14 +960,13 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 {
     // function returning function pointer? '... ( ... %var% ( ... ))( ... ) {'
     if (tok->str() == "(" &&
-        tok->link()->previous()->str() == ")" &&
-        tok->link()->next() &&
-        tok->link()->next()->str() == "(" &&
-        tok->link()->next()->link()->next() &&
-        Token::Match(tok->link()->next()->link()->next(), "{|;|const|=")) {
-        *funcStart = tok->link()->previous()->link()->previous();
-        *argStart = tok->link()->previous()->link();
-        return true;
+        tok->link()->previous()->str() == ")") {
+        const Token* tok2 = tok->link()->next();
+        if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
+            *funcStart = tok->link()->previous()->link()->previous();
+            *argStart = tok->link()->previous()->link();
+            return true;
+        }
     }
 
     // regular function?
@@ -988,12 +987,14 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     }
 
     // template constructor?
-    else if (Token::Match(tok, "%var% <") && Token::simpleMatch(tok->next()->link(), "> (") &&
-             (Token::Match(tok->next()->link()->next()->link(), ") const| ;|{|=") ||
-              Token::Match(tok->next()->link()->next()->link(), ") : ::| %var% (|::|<|{"))) {
-        *funcStart = tok;
-        *argStart = tok->next()->link()->next();
-        return true;
+    else if (Token::Match(tok, "%var% <") && Token::simpleMatch(tok->next()->link(), "> (")) {
+        const Token* tok2 = tok->next()->link()->next()->link();
+        if (Token::Match(tok2, ") const| ;|{|=") ||
+            Token::Match(tok2, ") : ::| %var% (|::|<|{")) {
+            *funcStart = tok;
+            *argStart = tok2->link();
+            return true;
+        }
     }
 
     return false;
