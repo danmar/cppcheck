@@ -3398,7 +3398,7 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
 
 void CheckOther::oppositeInnerCondition()
 {
-    if (!_settings->isEnabled("warning") || !_settings->inconclusive)
+    if (!_settings->isEnabled("warning"))
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -3407,50 +3407,46 @@ void CheckOther::oppositeInnerCondition()
         if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
             continue;
 
-        const Token *op1Tok, *op2Tok;
-        op1Tok = scope->classDef->tokAt(2);
-        op2Tok = scope->classDef->tokAt(4);
+        // Condition..
+        const Token *cond1 = scope->classDef->next()->astOperand2();
+        if (!cond1 || !cond1->isComparisonOp())
+            continue;
 
-        if (scope->classDef->strAt(6) == "{") {
+        const std::string comp1 = cond1->str();
 
-            const char *oppositeCondition = nullptr;
+        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") { if"))
+            continue;
 
-            if (scope->classDef->strAt(3) == "==")
-                oppositeCondition = "if|while ( %any% !=|<|>|<=|>= %any% )";
-            else if (scope->classDef->strAt(3) == "!=")
-                oppositeCondition = "if|while ( %any% ==|>=|<= %any% )";
-            else if (scope->classDef->strAt(3) == "<")
-                oppositeCondition = "if|while ( %any% >|>=|== %any% )";
-            else if (scope->classDef->strAt(3) == "<=")
-                oppositeCondition = "if|while ( %any% > %any% )";
-            else if (scope->classDef->strAt(3) == ">")
-                oppositeCondition = "if|while ( %any% <|<=|== %any% )";
-            else if (scope->classDef->strAt(3) == ">=")
-                oppositeCondition = "if|while ( %any% < %any% )";
+        const Token * const tok = scope->classDef->linkAt(1)->tokAt(2);
 
-            if (oppositeCondition) {
-                int flag = 0;
+        const Token *cond2 = tok->next()->astOperand2();
+        if (!cond2 || !cond2->isComparisonOp())
+            continue;
 
-                for (const Token* tok = scope->classStart; tok != scope->classEnd && flag == 0; tok = tok->next()) {
-                    if ((tok->str() == op1Tok->str() || tok->str() == op2Tok->str()) && (tok->next()->isAssignmentOp() || tok->next()->type() == Token::eIncDecOp))
-                        break;
+        // condition found .. get comparator
+        std::string comp2;
+        if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), _settings->library.functionpure) &&
+            isSameExpression(cond1->astOperand2(), cond2->astOperand2(), _settings->library.functionpure)) {
+            comp2 = cond2->str();
+        } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), _settings->library.functionpure) &&
+                   isSameExpression(cond1->astOperand2(), cond2->astOperand2(), _settings->library.functionpure)) {
+            comp2 = cond2->str();
+            if (comp2[0] == '>')
+                comp2[0] = '<';
+            else if (comp2[0] == '<')
+                comp2[0] = '>';
+        }
 
-                    if (Token::Match(tok, oppositeCondition)) {
-                        if ((tok->strAt(2) == op1Tok->str() && tok->strAt(4) == op2Tok->str()) || (tok->strAt(2) == op2Tok->str() && tok->strAt(4) == op1Tok->str()))
-                            oppositeInnerConditionError(scope->classDef, tok);
-                    } else if (Token::Match(tok, "%any% (")) {
-                        if (tok->function()) { // Check if it is a member function. If yes: bailout (TODO: this causes false negatives, since we do not check of which function this is a member
-                            const Function* func = tok->function();
-                            if (!func->isConst && (func->access == Private || func->access == Protected || func->access == Public))
-                                break;
-                        }
-                        if (op1Tok->varId() && Token::findmatch(tok->next(), "%varid%", tok->linkAt(1), op1Tok->varId()) != nullptr)
-                            break;
-                        if (op2Tok->varId() && Token::findmatch(tok->next(), "%varid%", tok->linkAt(1), op2Tok->varId()) != nullptr)
-                            break;
-                    }
-                }
-            }
+        // is condition opposite?
+        if ((comp1 == "==" && comp2 == "!=") ||
+            (comp1 == "!=" && comp2 == "==") ||
+            (comp1 == "<"  && comp2 == ">=") ||
+            (comp1 == "<=" && comp2 == ">")  ||
+            (comp1 == "<=" && comp2 == ">=") ||
+            (comp1 == ">"  && comp2 == "<=") ||
+            (comp1 == ">=" && comp2 == "<")  ||
+            (comp1 == ">=" && comp2 == "<=")) {
+            oppositeInnerConditionError(scope->classDef, tok);
         }
     }
 }
@@ -3460,7 +3456,7 @@ void CheckOther::oppositeInnerConditionError(const Token *tok1, const Token* tok
     std::list<const Token*> callstack;
     callstack.push_back(tok1);
     callstack.push_back(tok2);
-    reportError(callstack, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.", true);
+    reportError(callstack, Severity::warning, "oppositeInnerCondition", "Opposite conditions in nested 'if' blocks lead to a dead code block.");
 }
 
 

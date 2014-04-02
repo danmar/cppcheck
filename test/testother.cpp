@@ -302,7 +302,7 @@ private:
               "        if(a!=b)\n"
               "            cout << a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
         check("void foo(int a) {\n"
               "    if(a >= 50) {\n"
@@ -312,7 +312,7 @@ private:
               "            cout << 100;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning, inconclusive) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
         // #4186
         check("void foo(int a) {\n"
