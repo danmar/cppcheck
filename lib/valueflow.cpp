@@ -398,8 +398,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
             if (tok2->str() == "}") {
                 if (Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on }");
+                    if (settings->debugwarnings) {
+                        std::string errmsg = "Variable ";
+                        if (var)
+                            errmsg += var->nameToken()->str() + " ";
+                        errmsg += "stopping on }";
+                        bailout(tokenlist, errorLogger, tok2, errmsg);
+                    }
                     break;
                 } else {
                     tok2 = tok2->link();
