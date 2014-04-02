@@ -1182,17 +1182,9 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
             const Token *index = tok2->astOperand2();
             if (!index)
                 continue;
-            std::list<ValueFlow::Value>::const_iterator it;
-            const ValueFlow::Value *val = nullptr;
-            for (it = index->values.begin(); it != index->values.end(); ++it) {
-                if (it->intvalue < 0) {
-                    val = &*it;
-                    if (val->condition == nullptr)
-                        break;
-                }
-            }
-            if (val && !val->condition)
-                negativeIndexError(index, val->intvalue);
+            const ValueFlow::Value *value = index->getValueLE(-1LL,_settings);
+            if (value)
+                negativeIndexError(index, *value);
         }
 
         // Index out of bounds..
@@ -2044,6 +2036,15 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, MathLib::bigint in
     std::ostringstream ostr;
     ostr << "Array index " << index << " is out of bounds.";
     reportError(tok, Severity::error, "negativeIndex", ostr.str());
+}
+
+void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
+{
+    std::ostringstream ostr;
+    ostr << "Array index " << index.intvalue << " is out of bounds.";
+    if (index.condition)
+        ostr << " Otherwise there is useless condition at line " << index.condition->linenr() << ".";
+    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()

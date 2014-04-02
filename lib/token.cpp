@@ -19,6 +19,7 @@
 #include "token.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "settings.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -1278,3 +1279,46 @@ void Token::printValueFlow() const
         std::cout << "}" << std::endl;
     }
 }
+
+const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
+{
+    const ValueFlow::Value *ret = nullptr;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->intvalue <= val) {
+            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+                ret = &(*it);
+            if (!ret->inconclusive && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->inconclusive && !settings->inconclusive)
+            return nullptr;
+        if (ret->condition && !settings->isEnabled("warning"))
+            return nullptr;
+    }
+    return ret;
+}
+
+const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
+{
+    const ValueFlow::Value *ret = nullptr;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->intvalue >= val) {
+            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+                ret = &(*it);
+            if (!ret->inconclusive && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->inconclusive && !settings->inconclusive)
+            return nullptr;
+        if (ret->condition && !settings->isEnabled("warning"))
+            return nullptr;
+    }
+    return ret;
+}
+

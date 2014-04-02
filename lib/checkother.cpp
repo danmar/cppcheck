@@ -3335,22 +3335,9 @@ void CheckOther::checkNegativeBitwiseShift()
             }
 
             // Get negative rhs value. preferably a value which doesn't have 'condition'.
-            const ValueFlow::Value *value = nullptr;
-            for (std::list<ValueFlow::Value>::const_iterator it = tok->astOperand2()->values.begin();
-                 it != tok->astOperand2()->values.end();
-                 ++it) {
-                if (it->intvalue < 0) {
-                    if (value == nullptr || it->condition == nullptr)
-                        value = &(*it);
-                    if (value->condition == nullptr)
-                        break;
-                }
-            }
-
-            if (!value)
-                continue;
-
-            negativeBitwiseShiftError(tok);
+            const ValueFlow::Value *value = tok->astOperand2()->getValueLE(-1LL, _settings);
+            if (value)
+                negativeBitwiseShiftError(tok);
         }
     }
 }

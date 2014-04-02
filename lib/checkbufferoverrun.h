@@ -223,6 +223,7 @@ private:
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
     void negativeIndexError(const Token *tok, MathLib::bigint index);
+    void negativeIndexError(const Token *tok, const ValueFlow::Value &index);
     void cmdLineArgsError(const Token *tok);
     void pointerOutOfBoundsError(const Token *tok, const std::string &object);  // UB when result of calculation is out of bounds
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);

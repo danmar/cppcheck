@@ -32,6 +32,7 @@
 class Scope;
 class Function;
 class Variable;
+class Settings;
 
 /// @addtogroup Core
 /// @{
@@ -618,6 +619,9 @@ public:
         }
         return ret;
     }
+
+    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
+    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
 private:
 
