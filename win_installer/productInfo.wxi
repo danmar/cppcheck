@@ -11,6 +11,7 @@
   <?define cppcheckGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a48" ?>
   <?define cppcheckcoreGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a49" ?>
   <?define guiGUID = "D7D3FF8E-1D82-4215-B59B-4715A748C540" ?>
+  <?define qtplatformsGUID = "E2C326DF-11F1-4C05-A955-2E2D2A3B0515" ?>
   <?define guiTranslationsGUID = "24738151-890D-4fcc-824C-DA7FF63E0D7F" ?>
   <?define mandatoryCfgsGUID = "EE95621C-25E7-491A-8DE9-EA6E6967C176" ?>
   <?define optionalCfgsGUID = "3A8AE067-5F41-4D29-A35C-CC0FAB648608" ?>

@@ -10,5 +10,12 @@
   <?define CfgsDir = "..\cfg" ?>
   <?define HelpDir = "..\gui\help" ?>
   <?define QtDllDir = "..\bin" ?>
-  <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC100_CRT_x86.msm" ?>
+
+  <?if $(var.Platform) = x64 ?>
+    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC120_CRT_x64.msm" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+  <?else?>
+    <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC120_CRT_x86.msm" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+  <?endif?>
 </Include>
