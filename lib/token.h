@@ -69,7 +69,13 @@ public:
     explicit Token(Token **tokensBack);
     ~Token();
 
-    void str(const std::string &s);
+    template<typename T>
+    void str(T&& s) {
+        _str = s;
+        _varId = 0;
+
+        update_property_info();
+    }
 
     /**
      * Concatenate two (quoted) strings. Automatically cuts of the last/first character.
@@ -593,7 +599,8 @@ public:
     /**
      * Sets the original name.
      */
-    void originalName(const std::string & name) {
+    template<typename T>
+    void originalName(T&& name) {
         _originalName = name;
     }
 

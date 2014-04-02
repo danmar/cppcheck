@@ -112,11 +112,6 @@ std::string Settings::addEnabled(const std::string &str)
     return std::string("");
 }
 
-bool Settings::isEnabled(const std::string &str) const
-{
-    return bool(_enabled.find(str) != _enabled.end());
-}
-
 
 bool Settings::append(const std::string &filename)
 {

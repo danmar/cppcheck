@@ -149,7 +149,10 @@ public:
      * @param str id for the extra check, e.g. "style"
      * @return true if the check is enabled.
      */
-    bool isEnabled(const std::string &str) const;
+    template<typename T>
+    bool isEnabled(T&& str) const {
+        return bool(_enabled.find(str) != _enabled.end());
+    }
 
     /**
      * @brief Enable extra checks by id. See isEnabled()

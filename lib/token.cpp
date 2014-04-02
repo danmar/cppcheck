@@ -152,14 +152,6 @@ bool Token::isUpperCaseName() const
     return true;
 }
 
-void Token::str(const std::string &s)
-{
-    _str = s;
-    _varId = 0;
-
-    update_property_info();
-}
-
 void Token::concatStr(std::string const& b)
 {
     _str.erase(_str.length() - 1);
