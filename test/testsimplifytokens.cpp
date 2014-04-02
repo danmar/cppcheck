@@ -5241,8 +5241,7 @@ private:
 
     void simplifyTypedef75() { // ticket #2426
         const char code[] = "typedef _Packed struct S { long l; };\n";
-        const std::string expected = "";
-        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -2476,7 +2476,7 @@ private:
               "    char *p = a(len);\n"
               "    delete [] p;\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("char *a(char *a)\n"
               "{\n"
@@ -2491,7 +2491,7 @@ private:
               "    else\n"
               "        free(p);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("char *a()\n"
               "{\n"
@@ -2502,7 +2502,7 @@ private:
               "    char *p = a();\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("gchar *a()\n"
               "{\n"
               "    return g_malloc(10);\n"
@@ -2512,7 +2512,7 @@ private:
               "    gchar *p = a();\n"
               "    g_free(p);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void allocfunc3() {
@@ -2623,7 +2623,7 @@ private:
               "   foo(&tmp);\n"
               "   free(tmp);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("void foo(gchar **str)\n"
               "{\n"
               "    g_free(*str);\n"
@@ -2637,7 +2637,7 @@ private:
               "   foo(&tmp);\n"
               "   g_free(tmp);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         //#ticket 1789: getcode other function:
         check("void foo(char **str)\n"
@@ -2655,7 +2655,7 @@ private:
               "   foo(&tmp);\n"
               "   free(tmp);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2675,7 +2675,7 @@ private:
               "\n"
               "    free(expr);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("static FILE* data()\n"
               "{\n"
               "    return fopen(\"data.txt\",\"rt\");\n"
@@ -2691,7 +2691,7 @@ private:
               "\n"
               "    g_free(expr);\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 

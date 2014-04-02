@@ -57,7 +57,7 @@ private:
         TEST_CASE(valueFlowSubFunction);
     }
 
-    bool testValueOfX(const std::string &code, unsigned int linenr, int value) {
+    bool testValueOfX(const char code[], unsigned int linenr, int value) {
         Settings settings;
 
         // strcpy cfg
@@ -269,8 +269,8 @@ private:
                "  setx(x);\n"
                "  if (x == 1) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(std::string("void setx(int x);")+code, 2U, 1));
-        ASSERT_EQUALS(false, testValueOfX(std::string("void setx(int &x);")+code, 2U, 1));
+        ASSERT_EQUALS(true, testValueOfX((std::string("void setx(int x);")+code).c_str(), 2U, 1));
+        ASSERT_EQUALS(false, testValueOfX((std::string("void setx(int &x);")+code).c_str(), 2U, 1));
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 1));
 
         code = "void f(char* x) {\n"

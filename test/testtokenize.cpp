@@ -7103,8 +7103,7 @@ private:
     }
 
     void functionpointer4() {
-        const char code[] = ""
-                            "struct S\n"
+        const char code[] = "struct S\n"
                             "{\n"
                             "    typedef void (*FP)();\n"
                             "    virtual FP getFP();\n"
