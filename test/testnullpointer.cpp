@@ -1726,6 +1726,12 @@ private:
               "    return q ? p->x : 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+
+        check("int f(ABC *p) {\n" // FP : return &&
+              "    if (!p) {}\n"
+              "    return p && p->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
@@ -2215,8 +2221,8 @@ private:
     }
 
     void functioncalllibrary() {
-        Settings settings;
-        Tokenizer tokenizer(&settings,this);
+        Settings settings1;
+        Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b; x(a,b); }");
         tokenizer.tokenize(code,"test.c");
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
