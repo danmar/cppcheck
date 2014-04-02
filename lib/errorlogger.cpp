@@ -365,7 +365,7 @@ void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 {
     _file = file;
     _file = Path::fromNativeSeparators(_file);
-    _file = Path::simplifyPath(_file.c_str());
+    _file = Path::simplifyPath(_file);
 }
 
 std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const

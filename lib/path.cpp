@@ -58,26 +58,26 @@ std::string Path::fromNativeSeparators(std::string path)
     return path;
 }
 
-std::string Path::simplifyPath(const char *originalPath)
+std::string Path::simplifyPath(std::string originalPath)
 {
     // Skip ./ at the beginning
-    if (std::strlen(originalPath) > 2 && originalPath[0] == '.' &&
+    if (originalPath.size() > 2 && originalPath[0] == '.' &&
         originalPath[1] == '/') {
-        originalPath += 2;
+        originalPath = originalPath.erase(0, 2);
     }
 
     std::string subPath = "";
     std::vector<std::string> pathParts;
-    for (; *originalPath; ++originalPath) {
-        if (*originalPath == '/' || *originalPath == '\\') {
+    for (std::size_t i = 0; i < originalPath.size(); ++i) {
+        if (originalPath[i] == '/' || originalPath[i] == '\\') {
             if (subPath.length() > 0) {
                 pathParts.push_back(subPath);
                 subPath = "";
             }
 
-            pathParts.push_back(std::string(1 , *originalPath));
+            pathParts.push_back(std::string(1 , originalPath[i]));
         } else
-            subPath.append(1, *originalPath);
+            subPath.append(1, originalPath[i]);
     }
 
     if (subPath.length() > 0)

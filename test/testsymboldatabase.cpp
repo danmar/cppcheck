@@ -74,7 +74,7 @@ private:
         return 0;
     }
 
-    static const Function *findFunctionByName(const std::string& str, const Scope* startScope) {
+    static const Function *findFunctionByName(const char str[], const Scope* startScope) {
         const Scope* currScope = startScope;
         while (currScope && currScope->isExecutable()) {
             if (currScope->functionOf)
@@ -1301,15 +1301,15 @@ private:
     }
 
     void tryCatch1() {
-        const std::string str("void foo() {\n"
-                              "    try { }\n"
-                              "    catch (const Error1 & x) { }\n"
-                              "    catch (const X::Error2 & x) { }\n"
-                              "    catch (Error3 x) { }\n"
-                              "    catch (X::Error4 x) { }\n"
-                              "}");
-        GET_SYMBOL_DB(str.c_str())
-        check(str.c_str(), false);
+        const char str[] = "void foo() {\n"
+                           "    try { }\n"
+                           "    catch (const Error1 & x) { }\n"
+                           "    catch (const X::Error2 & x) { }\n"
+                           "    catch (Error3 x) { }\n"
+                           "    catch (X::Error4 x) { }\n"
+                           "}";
+        GET_SYMBOL_DB(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 5); // index 0 + 4 variables
         ASSERT(db && db->scopeList.size() == 7); // global + function + try + 4 catch
@@ -1602,23 +1602,23 @@ private:
 
     // #ticket #3561 (throw C++)
     void symboldatabase25() {
-        const std::string str("int main() {\n"
-                              "    foo bar;\n"
-                              "    throw bar;\n"
-                              "}");
-        GET_SYMBOL_DB(str.c_str());
-        check(str.c_str(), false);
+        const char str[] = "int main() {\n"
+                           "    foo bar;\n"
+                           "    throw bar;\n"
+                           "}";
+        GET_SYMBOL_DB(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
     }
 
     // #ticket #3561 (throw C)
     void symboldatabase26() {
-        const std::string str("int main() {\n"
-                              "    throw bar;\n"
-                              "}");
-        GET_SYMBOL_DB_C(str.c_str());
-        check(str.c_str(), false);
+        const char str[] = "int main() {\n"
+                           "    throw bar;\n"
+                           "}";
+        GET_SYMBOL_DB_C(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
     }
@@ -1958,7 +1958,7 @@ private:
                             expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;
                             std::stringstream actual;
                             actual << "Function call on line " << tok->linenr() << " calls function on line " << function->tokenDef->linenr() << std::endl;
-                            ASSERT_EQUALS(expected.str().c_str(), actual.str().c_str());
+                            ASSERT_EQUALS(expected.str(), actual.str());
                         }
                         index++;
                     }

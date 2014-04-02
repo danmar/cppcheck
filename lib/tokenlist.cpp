@@ -62,7 +62,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             return i;
 
     // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(Path::simplifyPath(fileName.c_str()));
+    _files.push_back(Path::simplifyPath(fileName));
     return static_cast<unsigned int>(_files.size() - 1);
 }
 

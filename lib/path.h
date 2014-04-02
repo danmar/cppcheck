@@ -57,7 +57,7 @@ public:
      * @param originalPath path to be simplified, must have / -separators.
      * @return simplified path
      */
-    static std::string simplifyPath(const char *originalPath);
+    static std::string simplifyPath(std::string originalPath);
 
     /**
      * @brief Lookup the path part from a filename (e.g., '/tmp/a.h' -> '/tmp/', 'a.h' -> '')

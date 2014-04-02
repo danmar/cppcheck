@@ -483,7 +483,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             if (!path.empty()) {
                 path = Path::fromNativeSeparators(path);
-                path = Path::simplifyPath(path.c_str());
+                path = Path::simplifyPath(path);
                 path = Path::removeQuotationMarks(path);
 
                 if (FileLister::isDirectory(path)) {

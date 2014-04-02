@@ -1372,19 +1372,18 @@ private:
 
 
     void switch2() {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "    char *str = new char[10];\n"
-                               "    switch (abc)\n"
-                               "    {\n"
-                               "        case 1:\n"
-                               "            delete [] str;\n"
-                               "            break;\n"
-                               "        default:\n"
-                               "            break;\n"
-                               "    };\n"
-                               "}");
-        check(code.c_str());
+        check("void f()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    switch (abc)\n"
+              "    {\n"
+              "        case 1:\n"
+              "            delete [] str;\n"
+              "            break;\n"
+              "        default:\n"
+              "            break;\n"
+              "    };\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: str\n", errout.str());
     }
 

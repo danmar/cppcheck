@@ -203,25 +203,23 @@ public:
     }
 
     std::string blockstart(const std::string &file) const {
-        std::string start;
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
         if (map_it != _executableblocks.end()) {
-            start = map_it->second.start();
+            return map_it->second.start();
         }
-        return start;
+        return std::string();
     }
 
     std::string blockend(const std::string &file) const {
-        std::string end;
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
         if (map_it != _executableblocks.end()) {
-            end = map_it->second.end();
+            return map_it->second.end();
         }
-        return end;
+        return std::string();
     }
 
     bool iskeyword(const std::string &file, const std::string &keyword) const {
@@ -305,10 +303,10 @@ private:
         void addBlock(const std::string& blockName) {
             _blocks.insert(blockName);
         }
-        std::string start() const {
+        const std::string& start() const {
             return _start;
         }
-        std::string end() const {
+        const std::string& end() const {
             return _end;
         }
         int offset() const {

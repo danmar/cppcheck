@@ -169,7 +169,7 @@ std::string Suppressions::FileMatcher::addFile(const std::string &name, unsigned
     } else if (name.empty()) {
         _globs["*"][0U] = false;
     } else {
-        _files[Path::simplifyPath(name.c_str())][line] = false;
+        _files[Path::simplifyPath(name)][line] = false;
     }
     return "";
 }

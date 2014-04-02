@@ -502,7 +502,7 @@ private:
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
-    std::string tokenizeDebugListing(const std::string &code, bool simplify = false, const char filename[] = "test.cpp") {
+    std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
