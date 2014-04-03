@@ -2110,11 +2110,10 @@ void CheckOther::checkCharVariable()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "!!. %var% [ %var% ]")) {
+            if (Token::Match(tok, "!!. %var% [") && astIsSignedChar(tok->tokAt(2)->astOperand2())) {
                 const Variable* arrayvar = tok->next()->variable();
-                const Variable* indexvar = tok->tokAt(3)->variable();
                 const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
-                if (isSignedChar(indexvar) && arraysize > 0x80)
+                if (arraysize > 0x80)
                     charArrayIndexError(tok->next());
             }
 
