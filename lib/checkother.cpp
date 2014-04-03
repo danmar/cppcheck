@@ -72,7 +72,7 @@ static bool isConstExpression(const Token *tok, const std::set<std::string> &con
     return isConstExpression(tok->astOperand1(),constFunctions) && isConstExpression(tok->astOperand2(),constFunctions);
 }
 
-static bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
+bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
 {
     if (tok1 == nullptr && tok2 == nullptr)
         return true;
@@ -165,6 +165,7 @@ static bool isOppositeCond(const Token * const cond1, const Token * const cond2,
             (comp1 == ">=" && comp2 == "<")  ||
             (comp1 == ">=" && comp2 == "<="));
 }
+
 
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
@@ -2557,69 +2558,6 @@ static bool expressionHasSideEffects(const Token *first, const Token *last)
     }
 
     return false;
-}
-
-void CheckOther::checkDuplicateIf()
-{
-    if (!_settings->isEnabled("style"))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        const Token* const tok = scope->classDef;
-        // only check if statements
-        if (scope->type != Scope::eIf || !tok)
-            continue;
-
-        std::map<std::string, const Token*> expressionMap;
-
-        // get the expression from the token stream
-        std::string expression = tok->tokAt(2)->stringifyList(tok->next()->link());
-
-        // save the expression and its location
-        expressionMap[expression] = tok;
-
-        // find the next else if (...) statement
-        const Token *tok1 = scope->classEnd;
-
-        // check all the else if (...) statements
-        while (Token::simpleMatch(tok1, "} else { if (") &&
-               Token::simpleMatch(tok1->linkAt(4), ") {")) {
-            int conditionIndex=(tok1->strAt(3)=="(") ? 3 : 4;
-            // get the expression from the token stream
-            expression = tok1->tokAt(conditionIndex+1)->stringifyList(tok1->linkAt(conditionIndex));
-
-            // try to look up the expression to check for duplicates
-            std::map<std::string, const Token *>::iterator it = expressionMap.find(expression);
-
-            // found a duplicate
-            if (it != expressionMap.end()) {
-                // check for expressions that have side effects and ignore them
-                if (!expressionHasSideEffects(tok1->tokAt(conditionIndex+1), tok1->linkAt(conditionIndex)->previous()))
-                    duplicateIfError(it->second, tok1->next());
-            }
-
-            // not a duplicate expression so save it and its location
-            else
-                expressionMap[expression] = tok1->next();
-
-            // find the next else if (...) statement
-            tok1 = tok1->linkAt(conditionIndex)->next()->link();
-        }
-    }
-}
-
-void CheckOther::duplicateIfError(const Token *tok1, const Token *tok2)
-{
-    std::list<const Token *> toks;
-    toks.push_back(tok2);
-    toks.push_back(tok1);
-
-    reportError(toks, Severity::style, "duplicateIf", "Duplicate conditions in 'if' and related 'else if'.\n"
-                "Duplicate conditions in 'if' and related 'else if'. This is suspicious and might indicate "
-                "a cut and paste or logic error. Please examine this code carefully to determine "
-                "if it is correct.");
 }
 
 //-----------------------------------------------------------------------------

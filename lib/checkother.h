@@ -30,6 +30,10 @@ class Token;
 class Function;
 class Variable;
 
+/** Is expressions same? */
+bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
+
+
 /// @addtogroup Checks
 /// @{
 
@@ -61,7 +65,6 @@ public:
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkSelfAssignment();
-        checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkUnreachableCode();
@@ -382,7 +385,6 @@ private:
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
-        c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");

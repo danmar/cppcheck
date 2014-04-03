@@ -153,8 +153,6 @@ private:
 
         TEST_CASE(incorrectStringCompare);
 
-        TEST_CASE(duplicateIf);
-        TEST_CASE(duplicateIf1); // ticket 3689
         TEST_CASE(duplicateBranch);
         TEST_CASE(duplicateBranch1); // tests extracted by http://www.viva64.com/en/b/0149/ ( Comparison between PVS-Studio and cppcheck ): Errors detected in Quake 3: Arena by PVS-Studio: Fragement 2
         TEST_CASE(duplicateBranch2); // empty macro
@@ -4502,91 +4500,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void duplicateIf() {
-        check("void f(int a, int &b) {\n"
-              "    if (a) { b = 1; }\n"
-              "    else { if (a) { b = 2; } }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (a) { b = 1; }\n"
-              "    else { if (a) { b = 2; } }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (a == 1) { b = 1; }\n"
-              "    else { if (a == 2) { b = 2; }\n"
-              "    else { if (a == 1) { b = 3; } } }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (a == 1) { b = 1; }\n"
-              "    else { if (a == 2) { b = 2; }\n"
-              "    else { if (a == 2) { b = 3; } } }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (a == 1) {\n"
-              "        b = 1;\n"
-              "        if (b == 1) { }\n" // condition is always true. must skip simplifications
-              "        else if (b == 1) { }\n"
-              "    } else if (a == 2) { b = 2; }\n"
-              "    else if (a == 2) { b = 3; }\n"
-              "}", 0, false, false, false, false);
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (style) Duplicate conditions in 'if' and related 'else if'.\n"
-                      "[test.cpp:5] -> [test.cpp:4]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (a++) { b = 1; }\n"
-              "    else { if (a++) { b = 2; }\n"
-              "    else { if (a++) { b = 3; } } }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "    if (!strtok(NULL," ")) { b = 1; }\n"
-              "    else { if (!strtok(NULL," ")) { b = 2; } }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int a, int &b) {\n"
-              "   x = x / 2;\n"
-              "   if (x < 100) { b = 1; }\n"
-              "   else { x = x / 2; if (x < 100) { b = 2; } }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(int i) {\n"
-              "   if(i == 0x02e2000000 || i == 0xa0c6000000)\n"
-              "       foo(i);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(const std::string &token)\n"
-              "{\n"
-              "   if( token == \"C\")\n"
-              "   {\n"
-              "        std::cout << \"C\";\n"
-              "   }\n"
-              "   else { if ( token == \"A\" )\n"
-              "   {\n"
-              "       std::cout << \"A\";\n"
-              "   }\n"
-              "   else { if ( token == \"A\" )\n"
-              "   {\n"
-              "       std::cout << \"A\";\n"
-              "   }\n"
-              "   }\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:7]: (style) Duplicate conditions in 'if' and related 'else if'.\n", errout.str());
-    }
-
     void duplicateBranch() {
         check("void f(int a, int &b) {\n"
               "    if (a)\n"
@@ -4815,30 +4728,6 @@ private:
 
         // #5535: Reference named like its type
         check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void duplicateIf1() { // ticket 3689 ( avoid false positive )
-
-        check("int fitInt(long long int nValue){\n"
-              "    if( nValue < 0x7fffffffLL )\n"
-              "    {\n"
-              "        return 32;\n"
-              "    }\n"
-              "    if( nValue < 0x7fffffffffffLL )\n"
-              "    {\n"
-              "        return 48;\n"
-              "    }\n"
-              "    else {\n"
-              "        if( nValue < 0x7fffffffffffffffLL )\n"
-              "        {\n"
-              "            return 64;\n"
-              "        } else\n"
-              "        {\n"
-              "            return -1;\n"
-              "        }\n"
-              "    }\n"
-              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

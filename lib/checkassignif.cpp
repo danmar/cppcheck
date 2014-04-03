@@ -249,9 +249,44 @@ void CheckAssignIf::comparisonError(const Token *tok, const std::string &bitop, 
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
 
+extern bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
 
+static bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+{
+    if (!cond1 || !cond2)
+        return false;
 
+    // same expressions
+    if (isSameExpression(cond1,cond2,constFunctions))
+        return true;
 
+    // bitwise overlap for example 'x&7' and 'x==1'
+    if (cond1->str() == "&" && cond1->astOperand1() && cond2->astOperand2()) {
+        const Token *expr1 = cond1->astOperand1();
+        const Token *num1  = cond1->astOperand2();
+        if (!num1->isNumber())
+            std::swap(expr1,num1);
+        if (!num1->isNumber() || MathLib::isNegative(num1->str()))
+            return false;
+
+        if (!Token::Match(cond2, "&|==") || !cond2->astOperand1() || !cond2->astOperand2())
+            return false;
+        const Token *expr2 = cond2->astOperand1();
+        const Token *num2  = cond2->astOperand2();
+        if (!num2->isNumber())
+            std::swap(expr2,num2);
+        if (!num2->isNumber() || MathLib::isNegative(num2->str()))
+            return false;
+
+        if (!isSameExpression(expr1,expr2,constFunctions))
+            return false;
+
+        const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
+        const MathLib::bigint value2 = MathLib::toLongNumber(num2->str());
+        return ((value1 & value2) == value2);
+    }
+    return false;
+}
 
 
 void CheckAssignIf::multiCondition()
@@ -262,37 +297,23 @@ void CheckAssignIf::multiCondition()
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type == Scope::eIf && Token::Match(i->classDef, "if ( %var% & %num% ) {")) {
-            const Token* const tok = i->classDef;
-            const unsigned int varid(tok->tokAt(2)->varId());
-            if (varid == 0)
-                continue;
+        if (i->type != Scope::eIf || !Token::simpleMatch(i->classDef, "if ("))
+            continue;
 
-            const MathLib::bigint num1 = MathLib::toLongNumber(tok->strAt(4));
-            if (num1 < 0)
-                continue;
+        const Token * const cond1 = i->classDef->next()->astOperand2();
 
-            const Token *tok2 = tok->linkAt(6);
-            while (Token::simpleMatch(tok2, "} else { if (")) {
-                // Goto '('
-                const Token * const opar = tok2->tokAt(4);
+        const Token * tok2 = i->classDef->next();
+        while (tok2) {
+            tok2 = tok2->link();
+            if (!Token::simpleMatch(tok2, ") {"))
+                break;
+            tok2 = tok2->linkAt(1);
+            if (!Token::simpleMatch(tok2, "} else { if ("))
+                break;
+            tok2 = tok2->tokAt(4);
 
-                // tok2: skip if-block
-                tok2 = opar->link();
-                if (Token::simpleMatch(tok2, ") {"))
-                    tok2 = tok2->next()->link();
-
-                // check condition..
-                if (Token::Match(opar, "( %varid% ==|& %num% &&|%oror%|)", varid)) {
-                    const MathLib::bigint num2 = MathLib::toLongNumber(opar->strAt(3));
-                    if (num2 < 0)
-                        continue;
-
-                    if ((num1 & num2) == num2) {
-                        multiConditionError(opar, tok->linenr());
-                    }
-                }
-            }
+            if (isOverlappingCond(cond1, tok2->astOperand2(), _settings->library.functionpure))
+                multiConditionError(tok2, cond1->linenr());
         }
     }
 }
