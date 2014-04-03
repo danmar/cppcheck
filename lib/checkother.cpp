@@ -1253,12 +1253,10 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 
 static std::string invertOperatorForOperandSwap(std::string s)
 {
-    for (std::string::size_type i = 0; i < s.length(); i++) {
-        if (s[i] == '>')
-            s[i] = '<';
-        else if (s[i] == '<')
-            s[i] = '>';
-    }
+    if (s[0] == '<')
+        s[0] = '>';
+    else if (s[0] == '>')
+        s[0] = '<';
     return s;
 }
 
