@@ -540,14 +540,14 @@ int Token::firstWordLen(const char *str)
         if (*(p) != '|')                        \
             return false;                       \
         ++(p);                                  \
-        ismulticomp = (*(p) && *(p) != ' ');    \
+        (ismulticomp) = (*(p) && *(p) != ' ');  \
         continue;                               \
     }                                           \
     if (*(p) == '|') {                          \
         while (*(p) && *(p) != ' ')             \
             ++(p);                              \
     }                                           \
-    ismulticomp = false;                        \
+    (ismulticomp) = false;                      \
 }
 
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
