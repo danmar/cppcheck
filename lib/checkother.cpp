@@ -134,7 +134,37 @@ static bool isSameExpression(const Token *tok1, const Token *tok2, const std::se
     return true;
 }
 
+static bool isOppositeCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+{
+    if (!cond1 || !cond1->isComparisonOp() || !cond2 || !cond2->isComparisonOp())
+        return false;
 
+    const std::string &comp1 = cond1->str();
+
+    // condition found .. get comparator
+    std::string comp2;
+    if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
+        isSameExpression(cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
+        comp2 = cond2->str();
+    } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
+               isSameExpression(cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
+        comp2 = cond2->str();
+        if (comp2[0] == '>')
+            comp2[0] = '<';
+        else if (comp2[0] == '<')
+            comp2[0] = '>';
+    }
+
+    // is condition opposite?
+    return ((comp1 == "==" && comp2 == "!=") ||
+            (comp1 == "!=" && comp2 == "==") ||
+            (comp1 == "<"  && comp2 == ">=") ||
+            (comp1 == "<=" && comp2 == ">")  ||
+            (comp1 == "<=" && comp2 == ">=") ||
+            (comp1 == ">"  && comp2 == "<=") ||
+            (comp1 == ">=" && comp2 == "<")  ||
+            (comp1 == ">=" && comp2 == "<="));
+}
 
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
@@ -3404,47 +3434,15 @@ void CheckOther::oppositeInnerCondition()
         if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
             continue;
 
+        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") { if ("))
+            continue;
+
         // Condition..
         const Token *cond1 = scope->classDef->next()->astOperand2();
-        if (!cond1 || !cond1->isComparisonOp())
-            continue;
+        const Token *cond2 = scope->classDef->linkAt(1)->tokAt(3)->astOperand2();
 
-        const std::string &comp1 = cond1->str();
-
-        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") { if"))
-            continue;
-
-        const Token * const tok = scope->classDef->linkAt(1)->tokAt(2);
-
-        const Token *cond2 = tok->next()->astOperand2();
-        if (!cond2 || !cond2->isComparisonOp())
-            continue;
-
-        // condition found .. get comparator
-        std::string comp2;
-        if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), _settings->library.functionpure) &&
-            isSameExpression(cond1->astOperand2(), cond2->astOperand2(), _settings->library.functionpure)) {
-            comp2 = cond2->str();
-        } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), _settings->library.functionpure) &&
-                   isSameExpression(cond1->astOperand2(), cond2->astOperand2(), _settings->library.functionpure)) {
-            comp2 = cond2->str();
-            if (comp2[0] == '>')
-                comp2[0] = '<';
-            else if (comp2[0] == '<')
-                comp2[0] = '>';
-        }
-
-        // is condition opposite?
-        if ((comp1 == "==" && comp2 == "!=") ||
-            (comp1 == "!=" && comp2 == "==") ||
-            (comp1 == "<"  && comp2 == ">=") ||
-            (comp1 == "<=" && comp2 == ">")  ||
-            (comp1 == "<=" && comp2 == ">=") ||
-            (comp1 == ">"  && comp2 == "<=") ||
-            (comp1 == ">=" && comp2 == "<")  ||
-            (comp1 == ">=" && comp2 == "<=")) {
-            oppositeInnerConditionError(scope->classDef, tok);
-        }
+        if (isOppositeCond(cond1, cond2, _settings->library.functionpure))
+            oppositeInnerConditionError(scope->classDef, cond2);
     }
 }
 
