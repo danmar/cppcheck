@@ -3411,7 +3411,7 @@ void CheckOther::oppositeInnerCondition()
         if (!cond1 || !cond1->isComparisonOp())
             continue;
 
-        const std::string comp1 = cond1->str();
+        const std::string &comp1 = cond1->str();
 
         if (!Token::simpleMatch(scope->classDef->linkAt(1), ") { if"))
             continue;
