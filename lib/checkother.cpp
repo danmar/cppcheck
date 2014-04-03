@@ -2550,7 +2550,7 @@ void CheckOther::checkDuplicateIf()
         std::string expression = tok->tokAt(2)->stringifyList(tok->next()->link());
 
         // save the expression and its location
-        expressionMap.insert(std::make_pair(expression, tok));
+        expressionMap[expression] = tok;
 
         // find the next else if (...) statement
         const Token *tok1 = scope->classEnd;
@@ -2574,7 +2574,7 @@ void CheckOther::checkDuplicateIf()
 
             // not a duplicate expression so save it and its location
             else
-                expressionMap.insert(std::make_pair(expression, tok1->next()));
+                expressionMap[expression] = tok1->next();
 
             // find the next else if (...) statement
             tok1 = tok1->linkAt(conditionIndex)->next()->link();
