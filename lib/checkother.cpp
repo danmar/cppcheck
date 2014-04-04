@@ -2536,31 +2536,6 @@ void CheckOther::incorrectStringBooleanError(const Token *tok, const std::string
 }
 
 //-----------------------------------------------------------------------------
-// check for duplicate expressions in if statements
-// if (a) { } else if (a) { }
-//-----------------------------------------------------------------------------
-
-static bool expressionHasSideEffects(const Token *first, const Token *last)
-{
-    for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
-        // check for assignment
-        if (tok->isAssignmentOp())
-            return true;
-
-        // check for inc/dec
-        else if (tok->type() == Token::eIncDecOp)
-            return true;
-
-        // check for function call
-        else if (Token::Match(tok, "%var% (") &&
-                 !(Token::Match(tok, "c_str|string") || tok->isStandardType()))
-            return true;
-    }
-
-    return false;
-}
-
-//-----------------------------------------------------------------------------
 // check for duplicate code in if and else branches
 // if (a) { b = true; } else { b = true; }
 //-----------------------------------------------------------------------------
