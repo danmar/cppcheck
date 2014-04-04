@@ -1714,8 +1714,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -2065,10 +2063,9 @@ private:
         errout.str("");
 
         // Tokenize..
-        Settings settings;
-        settings.debugwarnings = debugwarnings;
-        settings.library.returnuninitdata.insert("malloc");
-        Tokenizer tokenizer(&settings, this);
+        Settings settings1(settings);
+        settings1.debugwarnings = debugwarnings;
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
 
@@ -2081,7 +2078,7 @@ private:
                   "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
         checkuninitvar.testrunner = true;
         checkuninitvar.check();
     }
