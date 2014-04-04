@@ -162,6 +162,7 @@ private:
         TEST_CASE(uninitVarOperatorEqual); // ticket #2415
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
+        TEST_CASE(constructors_crash1);  // ticket #5641
     }
 
 
@@ -2899,6 +2900,16 @@ private:
               "    const int a;\n"
               "    B& operator=(const B& r) { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Ticket #5641 "Regression. Crash for 'C() _STLP_NOTHROW {}'"
+    void constructors_crash1() {
+        check("class C {\n"
+                          "public:\n"
+                          "  C() _STLP_NOTHROW {}\n"
+                          "  C(const C&) _STLP_NOTHROW {}\n"
+                          "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
