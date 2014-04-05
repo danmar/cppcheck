@@ -2906,10 +2906,10 @@ private:
     // Ticket #5641 "Regression. Crash for 'C() _STLP_NOTHROW {}'"
     void constructors_crash1() {
         check("class C {\n"
-                          "public:\n"
-                          "  C() _STLP_NOTHROW {}\n"
-                          "  C(const C&) _STLP_NOTHROW {}\n"
-                          "};\n");
+              "public:\n"
+              "  C() _STLP_NOTHROW {}\n"
+              "  C(const C&) _STLP_NOTHROW {}\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

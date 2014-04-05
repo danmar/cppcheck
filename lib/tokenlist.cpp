@@ -460,28 +460,30 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else {
             Token *name = tok;
             Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
+            Token *prev;
             tok = par->next();
             if (Token::Match(tok, ")|]")) {
+                prev = name;
                 par->astOperand1(name);
                 tok = tok->next();
             } else {
-                Token *prev = name;
+                prev = name;
                 tok = tok->previous();
-                while (Token::Match(tok, "(|[")) {
-                    Token *tok1 = tok;
+            }
+            while (Token::Match(tok, "(|[")) {
+                Token *tok1 = tok;
+                tok = tok->next();
+                while (Token::Match(tok,"%var% %var%")) // example: sizeof(struct S)
                     tok = tok->next();
-                    while (Token::Match(tok,"%var% %var%")) // example: sizeof(struct S)
-                        tok = tok->next();
-                    compileExpression(tok, op);
-                    if (!op.empty()) {
-                        tok1->astOperand2(op.top());
-                        op.pop();
-                    }
-                    tok1->astOperand1(prev);
-                    prev = tok1;
-                    if (Token::Match(tok, "]|)"))
-                        tok = tok->next();
+                compileExpression(tok, op);
+                if (!op.empty()) {
+                    tok1->astOperand2(op.top());
+                    op.pop();
                 }
+                tok1->astOperand1(prev);
+                prev = tok1;
+                if (Token::Match(tok, "]|)"))
+                    tok = tok->next();
             }
             op.push(par);
         }

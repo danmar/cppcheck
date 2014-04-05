@@ -10324,6 +10324,7 @@ private:
         ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
+        ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
     }
 
     void astbrackets() const { // []
