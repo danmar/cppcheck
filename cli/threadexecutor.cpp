@@ -140,18 +140,22 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
 bool ThreadExecutor::checkLoadAverage(size_t nchilds)
 {
+#ifdef __CYGWIN__  // getloadavg() is unsupported on Cygwin.
+    return true;
+#else
     if (!nchilds || !_settings._loadAverage) {
         return true;
     }
 
-    double sample;
+    double sample(0);
     if (getloadavg(&sample, 1) != 1) {
-        // disable load average cheking on getloadavg error
+        // disable load average checking on getloadavg error
         return true;
     } else if (sample < _settings._loadAverage) {
         return true;
     }
     return false;
+#endif
 }
 
 unsigned int ThreadExecutor::check()
