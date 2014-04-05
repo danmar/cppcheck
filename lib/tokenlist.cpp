@@ -460,14 +460,12 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op)
         } else {
             Token *name = tok;
             Token *par  = templatefunc ? tok->linkAt(1)->next() : tok->next();
-            Token *prev;
+            Token *prev = name;
             tok = par->next();
             if (Token::Match(tok, ")|]")) {
-                prev = name;
                 par->astOperand1(name);
                 tok = tok->next();
             } else {
-                prev = name;
                 tok = tok->previous();
             }
             while (Token::Match(tok, "(|[")) {
