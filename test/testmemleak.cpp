@@ -517,6 +517,8 @@ private:
         ASSERT_EQUALS(";;use_;", getcode("type *c; y = x + c->y;","c"));
         ASSERT_EQUALS(";;use_;", getcode("type *c; y = c->y + x;","c"));
         ASSERT_EQUALS(";;use_;", getcode("char *s; s = s + 1;", "s"));
+        ASSERT_EQUALS(";;dealloc;;", getcode("struct foo *s; free(s); printf(a,sizeof(*s));", "s"));
+        ASSERT_EQUALS(";;do{dealloc;;}while(var);", getcode("struct foo *s; do{free(s); printf(a,sizeof(*s));}while(s);", "s"));
 
         // use reference
         ASSERT_EQUALS(";;callfunc&use;", getcode("struct AB *ab; f(&ab);", "ab"));
