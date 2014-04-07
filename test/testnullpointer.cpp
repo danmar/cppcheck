@@ -82,6 +82,7 @@ private:
         TEST_CASE(crash1);
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
+        TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
 
         // Test that std.cfg is configured correctly
         TEST_CASE(stdcfg);
@@ -2533,6 +2534,25 @@ private:
 
         check("void f(char * p,char * q){ strtol (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
+    }
+
+    void nullpointerFputc() {
+        check("int main () {\n"
+            "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+            "fputc(000, fp);   \n"
+            "fclose(fp);\n"
+            "return 0 ;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main () {\n"
+            "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+            "char *nullstring=0;"
+            "fputc(*nullstring, fp);   \n"
+            "fclose(fp);\n"
+            "return 0 ;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: nullstring\n", errout.str());
     }
 };
 
