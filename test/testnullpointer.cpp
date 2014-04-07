@@ -2538,20 +2538,20 @@ private:
 
     void nullpointerFputc() {
         check("int main () {\n"
-            "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
-            "fputc(000, fp);   \n"
-            "fclose(fp);\n"
-            "return 0 ;\n"
-            "}\n");
+              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+              "fputc(000, fp);   \n"
+              "fclose(fp);\n"
+              "return 0 ;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("int main () {\n"
-            "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
-            "char *nullstring=0;"
-            "fputc(*nullstring, fp);   \n"
-            "fclose(fp);\n"
-            "return 0 ;\n"
-            "}\n");
+              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+              "char *nullstring=0;"
+              "fputc(*nullstring, fp);   \n"
+              "fclose(fp);\n"
+              "return 0 ;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: nullstring\n", errout.str());
     }
 };

@@ -349,7 +349,6 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
                 code);
         break;
     }
-    fprintf(stderr, "Please report this to the cppcheck developers!\n");
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
@@ -360,14 +359,13 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
  * TODO Check for multi-threading issues!
  *
  */
-int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* const argv[])
+int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
     __try {
-        return check_internal(cppCheck, argc, argv);
+        return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application..
-        fprintf(stderr, "Internal error\n");
         fprintf(stderr, "Please report this to the cppcheck developers!\n");
         return -1;
     }
@@ -379,18 +377,18 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppCheck, int argc, const char* co
     for (std::size_t s=0; s<GetArrayLength(listofsignals); ++s) {
         sigaction(listofsignals[s].signalnumber, &act, NULL);
     }
-    return check_internal(cppCheck, argc, argv);
+    return check_internal(cppcheck, argc, argv);
 #else
-    return check_internal(cppCheck, argc, argv);
+    return check_internal(cppcheck, argc, argv);
 #endif
 }
 
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const char* const argv[])
+int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const char* const argv[])
 {
-    Settings& settings = cppCheck.settings();
+    Settings& settings = cppcheck.settings();
     _settings = &settings;
     bool std = settings.library.load(argv[0], "std.cfg");
     bool posix = true;
@@ -436,7 +434,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const cha
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             if (!_settings->library.markupFile(i->first)
                 || !_settings->library.processMarkupAfterCode(i->first)) {
-                returnValue += cppCheck.check(i->first);
+                returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
                 if (!settings._errorsOnly)
                     reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
@@ -448,7 +446,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const cha
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
             if (_settings->library.markupFile(i->first) && _settings->library.processMarkupAfterCode(i->first)) {
-                returnValue += cppCheck.check(i->first);
+                returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
                 if (!settings._errorsOnly)
                     reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
@@ -456,7 +454,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const cha
             }
         }
 
-        cppCheck.checkFunctionUsage();
+        cppcheck.checkFunctionUsage();
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
@@ -469,7 +467,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppCheck, int /*argc*/, const cha
         reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
 
     if (!settings.checkConfiguration) {
-        cppCheck.tooManyConfigsError("",0U);
+        cppcheck.tooManyConfigsError("",0U);
 
         if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
