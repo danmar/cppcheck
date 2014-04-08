@@ -217,10 +217,9 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
 {
     reportError(tok, Severity::error, "negativeMemoryAllocationSize",
-                "Memory allocation size have to be greater or equal to 0.\n"
-                "Memory allocation size have to be greater or equal to 0."
-                "The allocation size of memory have to be greater or equal to 0 because"
-                "negative size have no speficied behaviour.");
+                "Memory allocation size is negative.\n"
+                "Memory allocation size is negative."
+                "Negative allocation size has no specified behaviour.");
 }
 
 //---------------------------------------------------------------------------
