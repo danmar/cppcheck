@@ -84,6 +84,7 @@ private:
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
         TEST_CASE(nullpointerMemchr);
+        TEST_CASE(nullpointerPutchar);
 
         // Test that std.cfg is configured correctly
         TEST_CASE(stdcfg);
@@ -2572,6 +2573,23 @@ private:
               "  p = memchr (s, 0, strlen(s));\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: s\n", errout.str());
+    }
+
+    void nullpointerPutchar() {
+        check("void f (char *c) {\n"
+              "  putchar(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f () {\n"
+              "  putchar(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f () {\n"
+              "  putchar(*0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 };
 
