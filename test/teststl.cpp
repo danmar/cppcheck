@@ -506,6 +506,13 @@ private:
               "    std::cout << (*iter) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+
+        check("void f() {\n"
+              "    auto x = *myList.begin();\n"
+              "    myList.erase(x);\n"
+              "    auto b = x.first;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void STLSize() {

@@ -77,6 +77,9 @@ void CheckStl::iterators()
         if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
             continue;
 
+        if (var->typeEndToken()->str() == "auto" && !Token::Match(var->typeEndToken(), "auto %var% ; %var% = %var% . begin|end ( )"))
+            continue;
+
         if (var->type()) { // If it is defined, ensure that it is defined like an iterator
             // look for operator* and operator++
             const Function* end = var->type()->getFunction("operator*");
