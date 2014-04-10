@@ -251,10 +251,6 @@ bool MathLib::isOct(const std::string& s)
 
 bool MathLib::isHex(const std::string& s)
 {
-    // return false, in case an empty string is provided
-    if (s.empty())
-        return false;
-
     enum {START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS} state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -403,45 +399,39 @@ bool MathLib::isBin(const std::string& s)
 
 bool MathLib::isInt(const std::string & s)
 {
-    // perform prechecks:
-    // ------------------
-    // first check, if a point is found, it is an floating point value
-    const std::string charsToIndicateAFloat=".eE";
-    if (s.find_last_of(charsToIndicateAFloat) != std::string::npos)
-        return false;
-
-    // remember position
-    unsigned long n = 0;
-    // eat up whitespace
-    while (std::isspace(s[n])) ++n;
-
-    // determine type
+    // check for two known types: hexadecimal and octal
     if (isHex(s) || isOct(s)) {
         return true;
     }
 
-    // check sign
-    if (s[n] == '-' || s[n] == '+') ++n;
-
-    // starts with digit
-    bool bStartsWithDigit=false;
-    while (std::isdigit(s[n])) {
-        bStartsWithDigit=true;
-        ++n;
+    enum {START, PLUSMINUS, DIGIT, SUFFIX} state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (isdigit(*it))
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (isdigit(*it))
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case DIGIT:
+            if (isdigit(*it))
+                state = DIGIT;
+            else
+                return isValidSuffix(it,s.end());
+            break;
+        case SUFFIX:
+            break;
+        }
     }
-
-    while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
-
-    if (!bStartsWithDigit)
-        return false;
-
-    // eat up whitespace
-    while (std::isspace(s[n]))
-        ++n;
-
-    // if everything goes good, we are at the end of the string and no digits/character
-    // is here --> return true, but if something was found e.g. 12E+12AA return false
-    return (n >= s.length());
+    return state == DIGIT;
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)

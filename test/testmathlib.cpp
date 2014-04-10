@@ -29,9 +29,6 @@ public:
 private:
 
     void run() {
-        TEST_CASE(calculate);
-        TEST_CASE(calculate1);
-        TEST_CASE(convert);
         TEST_CASE(isint);
         TEST_CASE(isbin);
         TEST_CASE(isoct);
@@ -45,6 +42,9 @@ private:
         TEST_CASE(isNotEqual)
         TEST_CASE(isLess)
         TEST_CASE(isLessEqual)
+        TEST_CASE(calculate);
+        TEST_CASE(calculate1);
+        TEST_CASE(convert);
         TEST_CASE(naninf)
     }
 
@@ -440,6 +440,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isOct("-042ULL  "));
         // front and trailing white space
         ASSERT_EQUALS(false, MathLib::isOct("  -042ULL  "));
+        ASSERT_EQUALS(false, MathLib::isOct("+042LUL+0"));
     }
 
     void ishex() const {
@@ -496,6 +497,9 @@ private:
         ASSERT_EQUALS(false, MathLib::isHex("-0x0ULLz"));
         ASSERT_EQUALS(false, MathLib::isHex("+0x0LLUz"));
         ASSERT_EQUALS(false, MathLib::isHex("-0x0LLUz"));
+        ASSERT_EQUALS(false, MathLib::isHex("0x0+0"));
+        ASSERT_EQUALS(false, MathLib::isHex("e2"));
+        ASSERT_EQUALS(false, MathLib::isHex("+E2"));
 
         // test empty string
         ASSERT_EQUALS(false, MathLib::isHex(""));
