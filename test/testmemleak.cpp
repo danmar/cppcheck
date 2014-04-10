@@ -4348,6 +4348,7 @@ private:
         TEST_CASE(free_member_in_sub_func);
 
         TEST_CASE(mismatch1);
+        TEST_CASE(mismatch2); // #5659
 
         // allocating member variable in public function
         TEST_CASE(func1);
@@ -5416,6 +5417,31 @@ private:
               "    delete [] pkt_buffer;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+    }
+
+    void mismatch2() { // #5659
+        check("namespace NS\n"
+              "{\n"
+              "class Foo\n"
+              "{\n"
+              "public:\n"
+              "  void fct();\n"
+              "\n"
+              "private:\n"
+              "  char* data_;\n"
+              "};\n"
+              "}\n"
+              "\n"
+              "using namespace NS;\n"
+              "\n"
+              "void Foo::fct()\n"
+              "{\n"
+              "  data_ = new char[42];\n"
+              "  delete data_;\n"
+              "  data_ = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:16]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
+                      "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
     }
 
     void func1() {

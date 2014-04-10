@@ -4108,8 +4108,7 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }");
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
     }
 
     void const36() { // ticket #2003

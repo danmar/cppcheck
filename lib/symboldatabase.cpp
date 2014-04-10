@@ -198,7 +198,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
-            using_info.scope = 0; // fill in later
+            using_info.scope = findNamespace(tok->tokAt(2), scope);
 
             scope->usingList.push_back(using_info);
 
@@ -669,12 +669,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // fill in using info
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
-            // check scope for match
-            scope = findScope(i->start->tokAt(2), &(*it));
-            if (scope) {
-                // set found scope
-                i->scope = scope;
-                break;
+            // only find if not already found
+            if (i->scope == nullptr) {
+                // check scope for match
+                scope = findScope(i->start->tokAt(2), &(*it));
+                if (scope) {
+                    // set found scope
+                    i->scope = scope;
+                    break;
+                }
             }
         }
     }
@@ -1314,6 +1317,31 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         Scope *scope1 = &(*it1);
 
         bool match = false;
+
+        // check in namespace if using found
+        if (*scope == scope1 && !scope1->usingList.empty()) {
+            std::list<Scope::UsingInfo>::const_iterator it2;
+            for (it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
+                if (it2->scope) {
+                    Function * func = findFunctionInScope(tok1, it2->scope);
+                    if (func) {
+                        if (!func->hasBody) {
+                            func->hasBody = true;
+                            func->token = *tok;
+                            func->arg = argStart;
+                            addNewFunction(scope, tok);
+                            if (*scope) {
+                                (*scope)->functionOf = func->nestedIn;
+                                (*scope)->function = &*func;
+                                (*scope)->function->functionScope = *scope;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope &&
@@ -2794,6 +2822,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     // not a valid path
     return 0;
 }
+
 //---------------------------------------------------------------------------
 
 const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope *startScope) const
@@ -2846,3 +2875,34 @@ const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope 
     // not a valid path
     return 0;
 }
+
+//---------------------------------------------------------------------------
+
+const Scope * SymbolDatabase::findNamespace(const Token * tok, const Scope * scope) const
+{
+    const Scope * s = findScope(tok, scope);
+
+    if (s)
+        return s;
+    else if (scope->nestedIn)
+        return findNamespace(tok, scope->nestedIn);
+
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *ns)
+{
+    const Function * function = ns->findFunction(func);
+
+    if (!function) {
+        const Scope * scope = ns->findRecordInNestedList(func->str());
+        if (scope && func->strAt(1) == "::") {
+            function = findFunctionInScope(func->tokAt(2), scope);
+        }
+    }
+
+    return const_cast<Function *>(function);
+}
+
