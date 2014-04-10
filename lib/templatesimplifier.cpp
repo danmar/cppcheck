@@ -800,6 +800,22 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
     return isLowerThanMulDiv(lower) || Token::Match(lower, "[*/%]");
 }
 
+template <typename T>
+std::string typeCorrectShift(const char cop, const Token* left, const Token* right)
+{
+    const T leftInt=MathLib::toLongNumber(left->str());
+    const T rightInt=MathLib::toLongNumber(right->str());
+
+    if (cop == '&' || cop == '|' || cop == '^')
+        return MathLib::calculate(left->str(), right->str(), cop);
+    else if (cop == '<') {
+        if (left->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
+            return MathLib::toString(leftInt << rightInt);
+    } else if (rightInt > 0)
+        return MathLib::toString(leftInt >> rightInt);
+
+    return "";
+}
 
 bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 {
@@ -828,18 +844,11 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
             const char cop = op->str()[0];
-            const MathLib::bigint leftInt(MathLib::toLongNumber(tok->str()));
-            const MathLib::bigint rightInt(MathLib::toLongNumber(tok->strAt(2)));
             std::string result;
-
-            if (cop == '&' || cop == '|' || cop == '^')
-                result = MathLib::calculate(tok->str(), tok->strAt(2), cop);
-            else if (cop == '<') {
-                if (tok->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
-                    result = MathLib::toString(leftInt << rightInt);
-            } else if (rightInt > 0)
-                result = MathLib::toString(leftInt >> rightInt);
-
+            if (tok->str().find_first_of("uU") != std::string::npos)
+                result = typeCorrectShift<MathLib::biguint>(cop, tok, tok->tokAt(2));
+            else
+                result = typeCorrectShift<MathLib::bigint>(cop, tok, tok->tokAt(2));
             if (!result.empty()) {
                 ret = true;
                 tok->str(result);

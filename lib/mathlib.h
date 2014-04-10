@@ -33,6 +33,7 @@
 class CPPCHECKLIB MathLib {
 public:
     typedef long long bigint;
+    typedef unsigned long long biguint;
 
     static bigint toLongNumber(const std::string & str);
     template<class T> static std::string toString(T value) {
