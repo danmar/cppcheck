@@ -665,6 +665,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // regular function
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+                            if (!function)
+                                _tokenizer->syntaxError(tok);
                             function->retFuncPtr = retFuncPtr;
 
                             // global functions can't be const but we have tests that are
@@ -692,10 +694,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
 
                         // syntax error?
-                        if (!scope) {
-                            scope = old_scope;
-                            break;
-                        }
+                        if (!scope)
+                            _tokenizer->syntaxError(tok);
                     }
                     // function prototype?
                     else if (scopeBegin->str() == ";") {

@@ -1938,6 +1938,13 @@ private:
         {
             ASSERT_THROW(GET_SYMBOL_DB("class Foo {}; class Bar : public Foo"), InternalError);
         }
+        {
+            ASSERT_THROW(GET_SYMBOL_DB("YY_DECL { switch (yy_act) {\n"
+                                       "    case 65: YY_BREAK\n"
+                                       "    case YY_STATE_EOF(block):\n"
+                                       "        yyterminate(); \n"
+                                       "} }"), InternalError); // #5663
+        }
     }
 
     void findFunction1() {
