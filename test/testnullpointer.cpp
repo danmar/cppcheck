@@ -88,6 +88,11 @@ private:
 
         // Test that std.cfg is configured correctly
         TEST_CASE(stdcfg);
+
+        // Load posix library file
+        LOAD_LIB_2(settings.library, "posix.cfg");
+        // Test that posix.cfg is configured correctly
+        TEST_CASE(posixcfg);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -2590,6 +2595,16 @@ private:
               "  putchar(*0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void posixcfg() {
+        const char errp[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n";
+
+        check("void f(FILE *p){ isatty (*p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(){ isatty (0);}");
+        ASSERT_EQUALS("",errout.str());
     }
 };
 
