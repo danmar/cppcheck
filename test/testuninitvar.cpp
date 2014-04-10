@@ -3265,6 +3265,15 @@ private:
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(void) {\n" // #5658
+                        "    struct Foo *foo;\n"
+                        "    while (true) {\n"
+                        "            foo = malloc(sizeof(*foo));\n"
+                        "            foo->x = 0;\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_4494() {

@@ -1607,7 +1607,10 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
                                 assign = false;
                                 break;
                             } else if (tok2->str() == "(") {
-                                ++indentlevel;
+                                if (Token::Match(tok2->astOperand1(), "sizeof"))
+                                    tok2 = tok2->link();
+                                else
+                                    ++indentlevel;
                             } else if (tok2->str() == ")") {
                                 if (indentlevel <= 1U)
                                     break;
