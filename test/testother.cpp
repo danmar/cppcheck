@@ -6249,6 +6249,13 @@ private:
               "}", nullptr, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    Foo bar = foo();\n"
+              "    bar();\n" // #5568. operator() called
+              "    bar = y();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Branch tests
         check("void f(int i) {\n"
               "    i = 1;\n"

@@ -772,6 +772,9 @@ void CheckOther::checkRedundantAssignment()
                 }
             } else if (Token::Match(tok, "%var% (")) { // Function call. Global variables might be used. Reset their status
                 const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
+                if (tok->varId()) // operator() or function pointer
+                    varAssignments.erase(tok->varId());
+
                 if (memfunc) {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
