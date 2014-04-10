@@ -5733,6 +5733,17 @@ private:
                                      "    Fred() { s = \"foo\"; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n" // #5640
+                                     "    std::string s;\n"
+                                     "    Fred() {\n"
+                                     "        char str[2];\n"
+                                     "        str[0] = c;\n"
+                                     "        str[1] = 0;\n"
+                                     "        s = str;\n"
+                                     "    }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
