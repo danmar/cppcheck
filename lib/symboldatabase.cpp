@@ -651,7 +651,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // has body?
                     if (scopeBegin->str() == "{" || scopeBegin->str() == ":") {
                         tok = funcStart;
-                        Scope *old_scope = scope;
 
                         // class function
                         if (tok->previous()->str() == "::")
