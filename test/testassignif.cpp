@@ -218,6 +218,13 @@ private:
               "    if (y==1) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // no crash on unary operator& (#5643)
+        check("SdrObject* ApplyGraphicToObject() {\n"
+              "    if (&rHitObject) {}\n"
+              "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatchingBitAnd() {
