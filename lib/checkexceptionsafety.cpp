@@ -192,7 +192,7 @@ void CheckExceptionSafety::noexceptThrows()
         if (scope->function && scope->function->isNoExcept &&
             (!scope->function->noexceptArg || scope->function->noexceptArg->str() == "true")) {
             for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() != "throw") {
+                if (tok->str() == "throw") {
                     noexceptThrowError(tok);
                 }
             }
@@ -213,7 +213,7 @@ void CheckExceptionSafety::nothrowThrows()
         // onlycheck throw() functions
         if (scope->function && scope->function->isThrow && !scope->function->throwArg) {
             for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() != "throw") {
+                if (tok->str() == "throw") {
                     nothrowThrowError(tok);
                 }
             }

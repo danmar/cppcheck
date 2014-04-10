@@ -317,12 +317,20 @@ private:
               "void func3() noexcept(false) { throw 1; }\n");
         ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in noexcept function.\n"
                       "[test.cpp:2]: (error) Exception thrown in noexcept function.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() noexcept { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nothrowThrow() {
         check("void func1() throw() { throw 1; }\n"
               "void func2() throw(int) { throw 1; }\n");
         ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in throw() function.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() throw() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
