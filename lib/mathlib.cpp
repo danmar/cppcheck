@@ -692,13 +692,6 @@ bool MathLib::isNullValue(const std::string &s)
         }
     }
     return state == LEADING_ZERO || state == ZERO || state == DOT || state == E_DIGIT || state == TRAILING_ZERO || state == TRAILING_F;
-    /*
-        for (size_t i = 0; i < str.size(); i++) {
-            if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
-                return false;
-        }
-        return !str.empty() && (std::isdigit(static_cast<unsigned char>(str[0])) || str[0] == '-' || str[0] == '+'); // Has to be a number
-    */
 }
 
 bool MathLib::isOctalDigit(char c)
