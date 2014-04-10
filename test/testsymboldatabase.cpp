@@ -217,6 +217,11 @@ private:
 
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
+
+        TEST_CASE(noexceptFunction1);
+        TEST_CASE(noexceptFunction2);
+        TEST_CASE(noexceptFunction3);
+        TEST_CASE(noexceptFunction4);
     }
 
     void array() const {
@@ -1980,6 +1985,104 @@ private:
         ASSERT_EQUALS(true,  callfunc != nullptr); // not null
         ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
     }
+
+#define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+                ASSERT_EQUALS(true, x != nullptr);                                       \
+                if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction1() {
+        GET_SYMBOL_DB("void func1() noexcept;\n"
+                      "void func2() noexcept { }\n"
+                      "void func3() noexcept(true);\n"
+                      "void func4() noexcept(true) { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(func1);
+            FUNC(func2);
+            FUNC(func3);
+            FUNC(func4);
+        }
+    }
+
+    void noexceptFunction2() {
+        GET_SYMBOL_DB("template <class T> void self_assign(T& t) noexcept(noexcept(t = t)) {t = t; }\n");
+
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(self_assign);
+        }
+    }
+
+#define CLASS_FUNC(x, y) const Function *x = findFunctionByName(#x, y); \
+                         ASSERT_EQUALS(true, x != nullptr);             \
+                         if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction3() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void func1() noexcept;\n"
+                      "    void func2() noexcept { }\n"
+                      "    void func3() noexcept(true);\n"
+                      "    void func4() noexcept(true) { }\n"
+                      "    void func5() const noexcept;\n"
+                      "    void func6() const noexcept { }\n"
+                      "    void func7() const noexcept(true);\n"
+                      "    void func8() const noexcept(true) { }\n"
+                      "    void func9() noexcept const;\n"
+                      "    void func10() noexcept const { }\n"
+                      "    void func11() noexcept(true) const;\n"
+                      "    void func12() noexcept(true) const { }\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *fred = db->findScopeByName("Fred");
+            ASSERT_EQUALS(true, fred != nullptr);
+            if (fred) {
+                CLASS_FUNC(func1, fred);
+                CLASS_FUNC(func2, fred);
+                CLASS_FUNC(func3, fred);
+                CLASS_FUNC(func4, fred);
+                CLASS_FUNC(func5, fred);
+                CLASS_FUNC(func6, fred);
+                CLASS_FUNC(func7, fred);
+                CLASS_FUNC(func8, fred);
+                CLASS_FUNC(func9, fred);
+                CLASS_FUNC(func10, fred);
+                CLASS_FUNC(func11, fred);
+                CLASS_FUNC(func12, fred);
+            }
+        }
+    }
+
+    void noexceptFunction4() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "   A(A&& a) {\n"
+                      "      throw std::runtime_error(\"err\");\n"
+                      "   }\n"
+                      "};\n"
+                      "class B {\n"
+                      "   A a;\n"
+                      "   B(B&& b) noexcept\n"
+                      "   :a(std::move(b.a)) { }\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *b = db->findScopeByName("B");
+            ASSERT_EQUALS(true, b != nullptr);
+            if (b) {
+                CLASS_FUNC(B, b);
+            }
+        }
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)

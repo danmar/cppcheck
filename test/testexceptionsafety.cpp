@@ -42,6 +42,8 @@ private:
         TEST_CASE(rethrowCopy4);
         TEST_CASE(rethrowCopy5);
         TEST_CASE(catchExceptionByValue);
+        TEST_CASE(noexceptThrow);
+        TEST_CASE(nothrowThrow);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -307,6 +309,20 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void noexceptThrow() {
+        check("void func1() noexcept { throw 1; }\n"
+              "void func2() noexcept(true) { throw 1; }\n"
+              "void func3() noexcept(false) { throw 1; }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in noexcept function.\n"
+                      "[test.cpp:2]: (error) Exception thrown in noexcept function.\n", errout.str());
+    }
+
+    void nothrowThrow() {
+        check("void func1() throw() { throw 1; }\n"
+              "void func2() throw(int) { throw 1; }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in throw() function.\n", errout.str());
     }
 };
 

@@ -544,8 +544,12 @@ public:
           isExplicit(false),
           isDefault(false),
           isDelete(false),
+          isNoExcept(false),
+          isThrow(false),
           isOperator(false),
-          retFuncPtr(false) {
+          retFuncPtr(false),
+          noexceptArg(nullptr),
+          throwArg(nullptr) {
     }
 
     const std::string &name() const {
@@ -610,8 +614,12 @@ public:
     bool isExplicit;       // is explicit
     bool isDefault;        // is default
     bool isDelete;         // is delete
+    bool isNoExcept;       // is noexcept
+    bool isThrow;          // is throw
     bool isOperator;       // is operator
     bool retFuncPtr;       // returns function pointer
+    const Token *noexceptArg;
+    const Token *throwArg;
 
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 

@@ -61,6 +61,8 @@ public:
         checkExceptionSafety.deallocThrow();
         checkExceptionSafety.checkRethrowCopy();
         checkExceptionSafety.checkCatchExceptionByValue();
+        checkExceptionSafety.noexceptThrows();
+        checkExceptionSafety.nothrowThrows();
     }
 
     /** Don't throw exceptions in destructors */
@@ -74,6 +76,12 @@ public:
 
     /** @brief %Check for exceptions that are caught by value instead of by reference */
     void checkCatchExceptionByValue();
+
+    /** @brief %Check for noexcept functions that throw */
+    void noexceptThrows();
+
+    /** @brief %Check for throw() functions that throw */
+    void nothrowThrows();
 
 private:
     /** Don't throw exceptions in destructors */
@@ -100,6 +108,16 @@ private:
                     "as a (const) reference which is usually recommended in C++.");
     }
 
+    /** Don't throw exceptions in noexcept functions */
+    void noexceptThrowError(const Token * const tok) {
+        reportError(tok, Severity::error, "exceptThrowInNoexecptFunction", "Exception thrown in noexcept function.");
+    }
+
+    /** Don't throw exceptions in throw() functions */
+    void nothrowThrowError(const Token * const tok) {
+        reportError(tok, Severity::error, "exceptThrowInNoThrowFunction", "Exception thrown in throw() function.");
+    }
+
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckExceptionSafety c(0, settings, errorLogger);
@@ -107,6 +125,8 @@ private:
         c.deallocThrowError(0, "p");
         c.rethrowCopyError(0, "varname");
         c.catchExceptionByValueError(0);
+        c.noexceptThrowError(0);
+        c.nothrowThrowError(0);
     }
 
     /** Short description of class (for --doc) */
@@ -120,7 +140,9 @@ private:
                "* Throwing exceptions in destructors\n"
                "* Throwing exception during invalid state\n"
                "* Throwing a copy of a caught exception instead of rethrowing the original exception\n"
-               "* Exception caught by value instead of by reference\n";
+               "* Exception caught by value instead of by reference\n"
+               "* Throwing exception in noexcept function\n"
+               "* Throwing exception in nothrow() function\n";
     }
 };
 /// @}

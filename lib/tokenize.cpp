@@ -3352,9 +3352,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Simplify the operator "?:"
     simplifyConditionOperator();
 
-    // remove exception specifications..
-    removeExceptionSpecifications();
-
     // Collapse operator name tokens into single token
     // operator = => operator=
     simplifyOperatorName();
@@ -3680,7 +3677,7 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(") {
             tok = tok->link();
             if (Token::Match(tok, ") %type% {") &&
-                !Token::Match(tok->next(), "const|namespace|class|struct|union"))
+                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept"))
                 tok->deleteNext();
         }
 
@@ -8618,30 +8615,6 @@ void Tokenizer::simplifyComma()
         }
     }
 }
-
-
-void Tokenizer::removeExceptionSpecifications()
-{
-    if (isC())
-        return;
-
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, ") const| throw|noexcept (")) {
-            if (tok->next()->str() == "const") {
-                Token::eraseTokens(tok->next(), tok->linkAt(3));
-                tok = tok->next();
-            } else
-                Token::eraseTokens(tok, tok->linkAt(2));
-            tok->deleteNext();
-        } else if (Token::Match(tok, ") const| noexcept ;|{|const")) {
-            if (tok->next()->str() == "const")
-                tok->next()->deleteNext();
-            else
-                tok->deleteNext();
-        }
-    }
-}
-
 
 
 void Tokenizer::validate() const

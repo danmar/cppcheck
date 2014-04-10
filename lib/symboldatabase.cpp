@@ -458,6 +458,72 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             scope->functionList.push_back(function);
                         }
 
+                        // noexcept;
+                        // const noexcept;
+                        else if (Token::Match(end, ") const| noexcept ;")) {
+                            function.isNoExcept = true;
+
+                            if (end->next()->str() == "const")
+                                tok = end->tokAt(3);
+                            else
+                                tok = end->tokAt(2);
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // noexcept const;
+                        else if (Token::simpleMatch(end, ") noexcept const ;")) {
+                            function.isNoExcept = true;
+
+                            tok = end->tokAt(3);
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // noexcept(...);
+                        // noexcept(...) const;
+                        else if (Token::simpleMatch(end, ") noexcept (") &&
+                                 Token::Match(end->linkAt(2), ") const| ;")) {
+                            function.isNoExcept = true;
+
+                            if (end->linkAt(2)->strAt(1) == "const")
+                                tok = end->linkAt(2)->tokAt(2);
+                            else
+                                tok = end->linkAt(2)->next();
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // const noexcept(...);
+                        else if (Token::simpleMatch(end, ") const noexcept (") &&
+                                 Token::simpleMatch(end->linkAt(3), ") ;")) {
+                            function.isNoExcept = true;
+
+                            tok = end->linkAt(3)->next();
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // throw()
+                        // const throw()
+                        else if (Token::Match(end, ") const| throw (") &&
+                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;") :
+                                  Token::Match(end->linkAt(2), ") ;"))) {
+                            function.isThrow = true;
+
+                            if (end->next()->str() == "const") {
+                                if (end->strAt(4) != ")")
+                                    function.throwArg = end->tokAt(4);
+                                tok = end->linkAt(3)->next();
+                            } else {
+                                if (end->strAt(3) != ")")
+                                    function.throwArg = end->tokAt(3);
+                                tok = end->linkAt(2)->next();
+                            }
+
+                            scope->functionList.push_back(function);
+                        }
+
                         // pure virtual function
                         else if (Token::Match(end, ") const| = %any% ;")) {
                             function.isPure = true;
@@ -480,6 +546,28 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else {
                             function.isInline = true;
                             function.hasBody = true;
+
+                            if (Token::Match(end, ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (end->strAt(1) == "const")
+                                    arg++;
+
+                                if (end->strAt(arg) == "(")
+                                    function.noexceptArg = end->tokAt(arg + 1);
+
+                                function.isNoExcept = true;
+                            } else if (Token::Match(end, ") const| throw (")) {
+                                int arg = 3;
+
+                                if (end->strAt(1) == "const")
+                                    arg++;
+
+                                if (end->strAt(arg) != ")")
+                                    function.throwArg = end->tokAt(arg);
+
+                                function.isThrow = true;
+                            }
 
                             // find start of function '{'
                             while (end && end->str() != "{" && end->str() != ";")
@@ -549,11 +637,13 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 if (isFunction(tok, scope, &funcStart, &argStart)) {
                     bool retFuncPtr = Token::simpleMatch(argStart->link(), ") ) (");
                     const Token* scopeBegin = argStart->link()->next();
-
                     if (retFuncPtr)
                         scopeBegin = scopeBegin->next()->link()->next();
                     if (scopeBegin->isName()) { // Jump behind 'const' or unknown Macro
                         scopeBegin = scopeBegin->next();
+                        if (scopeBegin->str() == "throw")
+                            scopeBegin = scopeBegin->next();
+
                         if (scopeBegin->link() && scopeBegin->str() == "(") // Jump behind unknown macro of type THROW(...)
                             scopeBegin = scopeBegin->link()->next();
                     }
@@ -576,6 +666,29 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
                             function->retFuncPtr = retFuncPtr;
+
+                            // global functions can't be const but we have tests that are
+                            if (Token::Match(argStart->link(), ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) == "(")
+                                    function->noexceptArg = argStart->link()->tokAt(arg + 1);
+
+                                function->isNoExcept = true;
+                            } else if (Token::Match(argStart->link(), ") const| throw (")) {
+                                int arg = 3;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) != ")")
+                                    function->throwArg = argStart->link()->tokAt(arg);
+
+                                function->isThrow = true;
+                            }
                         }
 
                         // syntax error?
@@ -598,6 +711,28 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
                             func->retFuncPtr = retFuncPtr;
+
+                            if (Token::Match(argStart->link(), ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) == "(")
+                                    func->noexceptArg = argStart->link()->tokAt(arg + 1);
+
+                                func->isNoExcept = true;
+                            } else if (Token::Match(argStart->link(), ") const| throw (")) {
+                                int arg = 3;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) != ")")
+                                    func->throwArg = argStart->link()->tokAt(arg);
+
+                                func->isThrow = true;
+                            }
                         }
 
                         tok = scopeBegin;
@@ -965,11 +1100,16 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct())) { // or a ctor/dtor
         const Token* tok2 = tok->next()->link()->next();
-        if ((Token::Match(tok2, "const| ;|{|=") ||
+        if (tok2 &&
+            (Token::Match(tok2, "const| ;|{|=") ||
              (Token::Match(tok2, "%var% ;|{") && tok2->isUpperCaseName()) ||
              (Token::Match(tok2, "%var% (") && tok2->isUpperCaseName() && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %var% (|::|<|{") ||
-             Token::Match(tok2, "= delete|default ;"))) {
+             Token::Match(tok2, "= delete|default ;") ||
+             Token::Match(tok2, "const| noexcept const| {|:|;") ||
+             (Token::Match(tok2, "const| noexcept|throw (") &&
+              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->tokAt(2)->link(), ") const| {|:|;")) :
+              (tok2->next() && Token::Match(tok2->next()->link(), ") const| {|:|;"))))) {
             *funcStart = tok;
             *argStart = tok->next();
             return true;
@@ -980,7 +1120,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     else if (Token::Match(tok, "%var% <") && Token::simpleMatch(tok->next()->link(), "> (")) {
         const Token* tok2 = tok->next()->link()->next()->link();
         if (Token::Match(tok2, ") const| ;|{|=") ||
-            Token::Match(tok2, ") : ::| %var% (|::|<|{")) {
+            Token::Match(tok2, ") : ::| %var% (|::|<|{") ||
+            Token::Match(tok->next()->link()->next()->link(), ") const| noexcept {|;|(")) {
             *funcStart = tok;
             *argStart = tok2->link();
             return true;
@@ -1772,8 +1913,12 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isExplicit: " << (func->isExplicit ? "true" : "false") << std::endl;
             std::cout << "        isDefault: " << (func->isDefault ? "true" : "false") << std::endl;
             std::cout << "        isDelete: " << (func->isDelete ? "true" : "false") << std::endl;
+            std::cout << "        isNoExcept: " << (func->isNoExcept ? "true" : "false") << std::endl;
+            std::cout << "        isThrow: " << (func->isThrow ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
             std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
+            std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
+            std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
             if (!func->isConstructor() && !func->isDestructor())

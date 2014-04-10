@@ -176,3 +176,48 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
             catchExceptionByValueError(i->classDef);
     }
 }
+
+
+//--------------------------------------------------------------------------
+//    void func() noexcept { throw x; }
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::noexceptThrows()
+{
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        // onlycheck noexcept functions
+        if (scope->function && scope->function->isNoExcept &&
+            (!scope->function->noexceptArg || scope->function->noexceptArg->str() == "true")) {
+            for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+                if (tok->str() != "throw") {
+                    noexceptThrowError(tok);
+                }
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------------------
+//    void func() throw() { throw x; }
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::nothrowThrows()
+{
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        // onlycheck throw() functions
+        if (scope->function && scope->function->isThrow && !scope->function->throwArg) {
+            for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+                if (tok->str() != "throw") {
+                    nothrowThrowError(tok);
+                }
+            }
+        }
+    }
+}
+
