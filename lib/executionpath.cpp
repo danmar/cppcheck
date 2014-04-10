@@ -350,7 +350,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                 return;
             }
 
-            tok = tok->next()->link();
+            const Token * const end = tok->next()->link();
+            while (tok && tok != end) {
+                if (Token::Match(tok, "[{,] & %var% [,}]"))
+                    ExecutionPath::bailOutVar(checks, tok->tokAt(2)->varId());
+                tok = tok->next();
+            }
             if (!tok) {
                 ExecutionPath::bailOut(checks);
                 return;

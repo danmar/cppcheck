@@ -1620,6 +1620,14 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
         }
 
+        // Ticket #5660 - False positive
+        checkUninitVar("int f() {\n"
+                       "    int result;\n"
+                       "    int *res[] = {&result};\n"
+                       "    foo(res);\n"
+                       "    return result;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // strncpy doesn't always null-terminate..
