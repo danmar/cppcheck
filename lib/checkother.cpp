@@ -1059,22 +1059,20 @@ void CheckOther::checkSuspiciousCaseInSwitch()
 
         for (const Token* tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
             if (tok->str() == "case") {
-                const Token* end = 0;
+                const Token* finding = nullptr;
                 for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == ":") {
-                        end = tok2;
+                    if (tok2->str() == ":")
                         break;
-                    }
-                    if (Token::Match(tok2, "[?;}{]")) {
+                    if (Token::Match(tok2, "[;}{]"))
                         break;
-                    }
-                }
+                    if (tok2->str() == "?")
+                        finding = nullptr;
 
-                if (end) {
-                    const Token* finding = Token::findmatch(tok->next(), "&&|%oror%", end);
-                    if (finding)
-                        suspiciousCaseInSwitchError(tok, finding->str());
+                    if (Token::Match(tok2, "&&|%oror%"))
+                        finding = tok2;
                 }
+                if (finding)
+                    suspiciousCaseInSwitchError(finding, finding->str());
             }
         }
     }
@@ -1108,20 +1106,20 @@ void CheckOther::checkSuspiciousEqualityComparison()
             //    for (i == 2; i < 10; i++)
             // or
             //    for (i = 0; i < 10; i == a)
-            const Token* tok2 = Token::findmatch(openParen, "[;(] %var% == %any% [;)]", closeParen);
-            if (tok2 && (tok2 == openParen || tok2->tokAt(4) == closeParen)) {
-                suspiciousEqualityComparisonError(tok2->tokAt(2));
-            }
+            if (Token::Match(openParen->next(), "%var% =="))
+                suspiciousEqualityComparisonError(openParen->tokAt(2));
+            if (Token::Match(closeParen->tokAt(-2), "== %any%"))
+                suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
             // Equality comparisons with 0 are simplified to negation. For instance,
             // (x == 0) is simplified to (!x), so also check for suspicious negation
             // in the initialization or increment-decrement parts of the for() loop.
             // For example:
             //    for (!i; i < 10; i++)
-            const Token* tok3 = Token::findmatch(openParen, "[;(] ! %var% [;)]", closeParen);
-            if (tok3 && (tok3 == openParen || tok3->tokAt(3) == closeParen)) {
-                suspiciousEqualityComparisonError(tok3->tokAt(2));
-            }
+            if (Token::Match(openParen->next(), "! %var%"))
+                suspiciousEqualityComparisonError(openParen->next());
+            if (Token::Match(closeParen->tokAt(-2), "! %var%"))
+                suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
             // Skip over for() loop conditions because "for (;running==1;)"
             // is a bit strange, but not necessarily incorrect.
