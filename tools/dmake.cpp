@@ -379,8 +379,8 @@ int main(int argc, char **argv)
     fout << "dmake:\ttools/dmake.cpp\n";
     fout << "\t$(CXX) -std=c++0x -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n";
     fout << "\t./dmake\n\n";
-    fout << "reduce:\ttools/reduce.cpp\n";
-    fout << "\t$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml lib/*.cpp externals/tinyxml/tinyxml2.cpp\n\n";
+    fout << "reduce:\ttools/reduce.cpp $(LIBOBJ)\n";
+    fout << "\t$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml $(LIBOBJ) externals/tinyxml/tinyxml2.cpp\n\n";
     fout << "clean:\n";
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
