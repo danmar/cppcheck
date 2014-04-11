@@ -3038,7 +3038,18 @@ const Scope * SymbolDatabase::findNamespace(const Token * tok, const Scope * sco
 
 Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *ns)
 {
-    const Function * function = ns->findFunction(func);
+    const Function * function = nullptr;
+
+    std::list<Function>::const_iterator it;
+
+    for (it = ns->functionList.begin(); it != ns->functionList.end(); ++it) {
+        if (it->name() == func->str()) {
+            if (Function::argsMatch(ns, func->tokAt(2), it->argDef->next(), "", 0)) {
+                function = &*it;
+                break;
+            }
+        }
+    }
 
     if (!function) {
         const Scope * scope = ns->findRecordInNestedList(func->str());
