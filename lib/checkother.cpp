@@ -1744,8 +1744,8 @@ void CheckOther::checkMemsetInvalid2ndParam()
                 if (!secondParamTok)
                     continue;
 
-                // Second parameter is zero float literal, i.e. 0.0f
-                if (Token::Match(secondParamTok,"%num% ,") && secondParamTok->str().find_first_not_of("0.f") == std::string::npos)
+                // Second parameter is zero literal, i.e. 0.0f
+                if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
                     continue;
 
                 const Token *top = secondParamTok;

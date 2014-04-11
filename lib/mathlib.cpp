@@ -600,15 +600,14 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
 
 bool MathLib::isNullValue(const std::string &str)
 {
-    return (str == "-0"        || str == "0"      || str == "+0"
-            || str == "-0.0"   || str == "0.0"    || str == "+0.0"
-            || str == "-0."    || str == "+0."
-            || str == "-0E-00" || str == "-0E+00" || str == "+0E+00" || str == "+0E-00"
-            || str == "-0e-00" || str == "-0e+00" || str == "+0e+00" || str == "+0e-00"
-            || str == "-0E-0");
+    for (size_t i = 0; i < str.size(); i++) {
+        if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
+            return false;
+    }
+    return !str.empty() && (std::isdigit(static_cast<unsigned char>(str[0])) || str[0] == '-' || str[0] == '+'); // Has to be a number
 }
 
 bool MathLib::isOctalDigit(char c)
 {
-    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7');
+    return (c >= '0' && c <= '7');
 }
