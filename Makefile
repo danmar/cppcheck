@@ -233,7 +233,7 @@ dmake:	tools/dmake.cpp
 	./dmake
 
 reduce:	tools/reduce.cpp $(LIBOBJ)
-	$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml $(LIBOBJ) externals/tinyxml/tinyxml2.cpp
+	$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.cpp
 
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1
