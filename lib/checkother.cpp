@@ -980,70 +980,35 @@ void CheckOther::checkSwitchCaseFallThrough()
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    if (!symbolDatabase)
-        return;
-
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type != Scope::eSwitch || !i->classStart) // Find the beginning of a switch
             continue;
 
         // Check the contents of the switch statement
         std::stack<std::pair<Token *, bool> > ifnest;
-        std::stack<Token *> loopnest;
-        std::stack<Token *> scopenest;
         bool justbreak = true;
         bool firstcase = true;
         for (const Token *tok2 = i->classStart; tok2 != i->classEnd; tok2 = tok2->next()) {
             if (Token::simpleMatch(tok2, "if (")) {
                 tok2 = tok2->next()->link()->next();
-                if (tok2->link() == nullptr) {
-                    std::ostringstream errmsg;
-                    errmsg << "unmatched if in switch: " << tok2->linenr();
-                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                    break;
-                }
                 ifnest.push(std::make_pair(tok2->link(), false));
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "while (")) {
                 tok2 = tok2->next()->link()->next();
-                // skip over "do { } while ( ) ;" case
-                if (tok2->str() == "{") {
-                    if (tok2->link() == nullptr) {
-                        std::ostringstream errmsg;
-                        errmsg << "unmatched while in switch: " << tok2->linenr();
-                        reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                        break;
-                    }
-                    loopnest.push(tok2->link());
-                }
+                if (tok2->link()) // skip over "do { } while ( ) ;" case
+                    tok2 = tok2->link();
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "do {")) {
-                tok2 = tok2->next();
-                if (tok2->link() == nullptr) {
-                    std::ostringstream errmsg;
-                    errmsg << "unmatched do in switch: " << tok2->linenr();
-                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                    break;
-                }
-                loopnest.push(tok2->link());
+                tok2 = tok2->next()->link();
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "for (")) {
-                tok2 = tok2->next()->link()->next();
-                if (tok2->link() == nullptr) {
-                    std::ostringstream errmsg;
-                    errmsg << "unmatched for in switch: " << tok2->linenr();
-                    reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                    break;
-                }
-                loopnest.push(tok2->link());
+                tok2 = tok2->next()->link()->next()->link();
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "switch (")) {
                 // skip over nested switch, we'll come to that soon
                 tok2 = tok2->next()->link()->next()->link();
             } else if (Token::Match(tok2, "break|continue|return|exit|goto|throw")) {
-                if (loopnest.empty()) {
-                    justbreak = true;
-                }
+                justbreak = true;
                 tok2 = Token::findsimplematch(tok2, ";");
             } else if (Token::Match(tok2, "case|default")) {
                 if (!justbreak && !firstcase) {
@@ -1052,51 +1017,21 @@ void CheckOther::checkSwitchCaseFallThrough()
                 tok2 = Token::findsimplematch(tok2, ":");
                 justbreak = true;
                 firstcase = false;
-            } else if (tok2->str() == "{") {
-                scopenest.push(tok2->link());
             } else if (tok2->str() == "}") {
                 if (!ifnest.empty() && tok2 == ifnest.top().first) {
                     if (tok2->next()->str() == "else") {
                         tok2 = tok2->tokAt(2);
                         ifnest.pop();
-                        if (tok2->link() == nullptr) {
-                            std::ostringstream errmsg;
-                            errmsg << "unmatched if in switch: " << tok2->linenr();
-                            reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                            break;
-                        }
                         ifnest.push(std::make_pair(tok2->link(), justbreak));
                         justbreak = false;
                     } else {
                         justbreak &= ifnest.top().second;
                         ifnest.pop();
                     }
-                } else if (!loopnest.empty() && tok2 == loopnest.top()) {
-                    loopnest.pop();
-                } else if (!scopenest.empty() && tok2 == scopenest.top()) {
-                    scopenest.pop();
-                } else {
-                    if (!ifnest.empty() || !loopnest.empty() || !scopenest.empty()) {
-                        std::ostringstream errmsg;
-                        errmsg << "unexpected end of switch: ";
-                        errmsg << "ifnest=" << ifnest.size();
-                        if (!ifnest.empty())
-                            errmsg << "," << ifnest.top().first->linenr();
-                        errmsg << ", loopnest=" << loopnest.size();
-                        if (!loopnest.empty())
-                            errmsg << "," << loopnest.top()->linenr();
-                        errmsg << ", scopenest=" << scopenest.size();
-                        if (!scopenest.empty())
-                            errmsg << "," << scopenest.top()->linenr();
-                        reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
-                    }
-                    // end of switch block
-                    break;
                 }
             } else if (tok2->str() != ";") {
                 justbreak = false;
             }
-
         }
     }
 }
