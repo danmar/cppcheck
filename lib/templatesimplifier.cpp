@@ -803,8 +803,8 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
 template <typename T>
 std::string typeCorrectShift(const char cop, const Token* left, const Token* right)
 {
-    const T leftInt=MathLib::toLongNumber(left->str());
-    const T rightInt=MathLib::toLongNumber(right->str());
+    const T leftInt=MathLib::toLongNumber<T>(left->str());
+    const T rightInt=MathLib::toLongNumber<T>(right->str());
 
     if (cop == '&' || cop == '|' || cop == '^')
         return MathLib::calculate(left->str(), right->str(), cop);

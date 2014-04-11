@@ -205,7 +205,7 @@ static const Signaltype listofsignals[] = {
  * \return size of array
  * */
 template<typename T, int size>
-int GetArrayLength(const T(&)[size])
+size_t GetArrayLength(const T(&)[size])
 {
     return size;
 }
