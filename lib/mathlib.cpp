@@ -397,13 +397,8 @@ bool MathLib::isBin(const std::string& s)
     return state == DIGITS;
 }
 
-bool MathLib::isInt(const std::string & s)
+bool MathLib::isDec(const std::string & s)
 {
-    // check for two known types: hexadecimal and octal
-    if (isHex(s) || isOct(s)) {
-        return true;
-    }
-
     enum {START, PLUSMINUS, DIGIT, SUFFIX} state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -432,6 +427,11 @@ bool MathLib::isInt(const std::string & s)
         }
     }
     return state == DIGIT;
+}
+
+bool MathLib::isInt(const std::string & s)
+{
+    return isDec(s) || isHex(s) || isOct(s);
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)
