@@ -981,17 +981,23 @@ void CheckStl::sizeError(const Token *tok)
                 "guaranteed to take constant time.");
 }
 
-static inline const Token *findRedundantCondition(const Token *start)
-{
-    return Token::findmatch(start, "if ( %var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) { %var% . remove ( %any% ) ;");
-}
-
 void CheckStl::redundantCondition()
 {
-    const Token *tok = findRedundantCondition(_tokenizer->tokens());
-    while (tok) {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
+        if (i->type != Scope::eIf && i->type != Scope::eElseIf)
+            continue;
+
+        const Token* tok = i->classDef->tokAt(2);
+        if (i->type == Scope::eElseIf)
+            tok = tok->next();
+
+        if (!Token::Match(tok, "%var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) { %var% . remove|erase ( %any% ) ;"))
+            continue;
+
         // Get tokens for the fields %var% and %any%
-        const Token *var1 = tok->tokAt(2);
+        const Token *var1 = tok;
         const Token *any1 = var1->tokAt(4);
         const Token *var2 = any1->tokAt(3);
         const Token *var3 = var2->tokAt(7);
@@ -1003,8 +1009,6 @@ void CheckStl::redundantCondition()
             any1->str() == any2->str()) {
             redundantIfRemoveError(tok);
         }
-
-        tok = findRedundantCondition(tok->next());
     }
 }
 
