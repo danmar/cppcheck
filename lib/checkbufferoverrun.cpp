@@ -1537,8 +1537,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 var = tok->next()->variable();
                 nextTok = 8;
             } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
-                       tok->next()->varId() > 0 &&
-                       nullptr != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
+                       tok->next()->variable() &&
+                       tok->next()->variable()->isPointer()) {
                 size = 1 + int(tok->tokAt(3)->strValue().size());
                 type = "char";
                 var = tok->next()->variable();

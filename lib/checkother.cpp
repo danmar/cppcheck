@@ -493,8 +493,7 @@ void CheckOther::warningOldStylePointerCast()
             continue;
 
         // Is "type" a class?
-        const std::string pattern("class|struct " + tok->strAt(1));
-        if (Token::findmatch(_tokenizer->tokens(), pattern.c_str(), tok))
+        if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
             cstyleCastError(tok);
     }
 }

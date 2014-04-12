@@ -533,8 +533,8 @@ void CheckStl::erase()
         }
 
         else if (i->type == Scope::eWhile && Token::Match(tok, "while ( %var% !=")) {
-            const unsigned int varid = tok->tokAt(2)->varId();
-            if (varid > 0 && Token::findmatch(_tokenizer->tokens(), "> :: iterator %varid%", varid))
+            const Variable* var = tok->tokAt(2)->variable();
+            if (var && Token::simpleMatch(var->typeEndToken()->tokAt(-2), "> :: iterator"))
                 EraseCheckLoop::checkScope(this, tok->tokAt(2));
         }
     }
@@ -1168,7 +1168,7 @@ void CheckStl::string_c_str()
                     string_c_strError(tok);
             } else if (Token::Match(tok, "[;{}] %var% = %var% (") &&
                        Token::Match(tok->linkAt(4), ") . c_str|data ( ) ;") &&
-                       Token::findmatch(_tokenizer->tokens(), ("std :: string|wstring " + tok->strAt(3) + " (").c_str())) {
+                       tok->tokAt(3)->function() && Token::Match(tok->tokAt(3)->function()->retDef, "std :: string|wstring %var%")) {
                 const Variable* var = tok->next()->variable();
                 if (var && var->isPointer())
                     string_c_strError(tok);
