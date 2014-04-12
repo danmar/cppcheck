@@ -63,6 +63,7 @@ private:
         TEST_CASE(tokenize28);  // #4725 (writing asm() around "^{}")
         TEST_CASE(tokenize29);  // #5506 (segmentation fault upon invalid code)
         TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
+        TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -839,6 +840,23 @@ private:
     // #5356 - segmentation fault upon invalid code
     void tokenize30() {
         tokenizeAndStringify("struct template<int { = }; > struct B { }; B < 0 > b;");
+    }
+
+    // #3503 - don't "simplify" SetFunction member function to a variable
+    void tokenize31() {
+        ASSERT_EQUALS("struct TTestClass { TTestClass ( ) { }\n"
+                      "void SetFunction ( Other * m_f ) { }\n"
+                      "} ;",
+                      tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
+                                           "    void SetFunction(Other(*m_f)()) { }\n"
+                                           "};"));
+
+        ASSERT_EQUALS("struct TTestClass { TTestClass ( ) { }\n"
+                      "void SetFunction ( Other * m_f ) ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
+                                           "    void SetFunction(Other(*m_f)());\n"
+                                           "};"));
     }
 
     void wrong_syntax1() {

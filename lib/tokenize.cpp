@@ -6061,9 +6061,14 @@ void Tokenizer::simplifyInitVar()
         if (tok->str() == "return")
             continue;
 
-        if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;") ||
-            Token::Match(tok, "%type% *| %var% ( %type% (")) {
+        if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;")) {
             tok = initVar(tok);
+        } else if (Token::Match(tok, "%type% *| %var% ( %type% (")) {
+            const Token* tok2 = tok->tokAt(2);
+            if (!tok2->link())
+                tok2 = tok2->next();
+            if (!tok2->link() || (tok2->link()->strAt(1) == ";" && !Token::simpleMatch(tok2->linkAt(2), ") (")))
+                tok = initVar(tok);
         } else if (Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ,")) {
             Token *tok1 = tok;
             while (tok1->str() != ",")
