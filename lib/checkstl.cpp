@@ -19,6 +19,7 @@
 #include "checkstl.h"
 #include "executionpath.h"
 #include "symboldatabase.h"
+#include "checknullpointer.h"
 #include <sstream>
 
 // Register this check class (by creating a static instance of it)
@@ -559,32 +560,21 @@ void CheckStl::pushback()
                 if (pointerId == 0 || containerId == 0)
                     continue;
 
-                // Count { , } and parentheses for tok2
-                int indent = 0;
                 bool invalidPointer = false;
-                std::string function;
-                for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "{" || tok2->str() == "(")
-                        ++indent;
-                    else if (tok2->str() == "}" || tok2->str() == ")") {
-                        if (indent == 0 && Token::simpleMatch(tok2, ") {"))
-                            tok2 = tok2->next();
-                        else
-                            --indent;
-                    }
-
+                const Token* function = nullptr;
+                const Token* end2 = tok->scope()->classEnd;
+                for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                     // push_back on vector..
                     if (Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear", containerId)) {
                         invalidPointer = true;
-                        function = tok2->strAt(2);
+                        function = tok2->tokAt(2);
                     }
 
                     // Using invalid pointer..
                     if (invalidPointer && tok2->varId() == pointerId) {
-                        if (tok2->previous()->str() == "*")
-                            invalidPointerError(tok2, function, tok2->str());
-                        else if (tok2->next()->str() == ".")
-                            invalidPointerError(tok2, function, tok2->str());
+                        bool unknown = false;
+                        if (CheckNullPointer::isPointerDeRef(tok2, unknown))
+                            invalidPointerError(tok2, function->str(), tok2->str());
                         break;
                     }
                 }
