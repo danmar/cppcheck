@@ -561,7 +561,7 @@ bool MathLib::isNullValue(const std::string &s)
             else if (*it == '.')
                 state = DOT;
             else
-                return isValidSuffix(it, s.end());
+                return false;
             break;
         case PLUSMINUS:
             if (*it == '0')

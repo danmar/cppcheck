@@ -751,6 +751,14 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("+00.00E+1f"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-00.00E+1f"));
 
+        // binary numbers
+        ASSERT_EQUALS(true, MathLib::isNullValue("0b00"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("+0b00"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("-0b00"));
+        // binary numbers (long)
+        ASSERT_EQUALS(true, MathLib::isNullValue("0b00L"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("+0b00L"));
+        ASSERT_EQUALS(true, MathLib::isNullValue("-0b00L"));
         // negative testing
         ASSERT_EQUALS(false, MathLib::isNullValue("0.1"));
         ASSERT_EQUALS(false, MathLib::isNullValue("1.0"));
@@ -760,6 +768,19 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue(""));
         ASSERT_EQUALS(false, MathLib::isNullValue("x"));
         ASSERT_EQUALS(false, MathLib::isNullValue("garbage"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0xx"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0x0x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0x000x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0b"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0bx"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0b0x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0b000x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0.0Ex"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0.0E-x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0.0E-1x"));
+        ASSERT_EQUALS(false, MathLib::isNullValue("0.0E-1fx"));
         // suffix LUL is not allowed
         ASSERT_EQUALS(false, MathLib::isNullValue("0LUL"));
         ASSERT_EQUALS(false, MathLib::isNullValue("+0LUL"));
