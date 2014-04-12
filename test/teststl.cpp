@@ -2343,6 +2343,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
 
+        check("void foo(std::string::iterator& i) {\n"
+              "    if(foo) { bar(); }\n"
+              "    else if (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
         // Test suggested correction doesn't report an error
         check("void foo(std::string::iterator& i) {\n"
               "    if (i != str.end() && std::isalpha(*i)) {\n"
@@ -2359,6 +2367,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        check("void foo(std::string::iterator& i) {\n"
+              "    do {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    } while (std::isalpha(*i) && i != str.end());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
 
         // Test "while" with "||" case
         check("void foo(std::string::iterator& i) {\n"

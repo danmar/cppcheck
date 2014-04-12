@@ -1471,10 +1471,14 @@ void CheckStl::checkDereferenceInvalidIterator()
     // be an iterator that is dereferenced before being checked for validity.
     const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
     for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
-        if (i->type == Scope::eIf || i->type == Scope::eWhile || i->type == Scope::eFor) {
+        if (i->type == Scope::eIf || i->type == Scope::eElseIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor) {
 
             const Token* const tok = i->classDef;
             const Token* startOfCondition = tok->next();
+            if (i->type == Scope::eElseIf)
+                startOfCondition = startOfCondition->next();
+            else if (i->type == Scope::eDo)
+                startOfCondition = startOfCondition->link()->tokAt(2);
             const Token* endOfCondition = startOfCondition->link();
             if (!endOfCondition)
                 continue;
