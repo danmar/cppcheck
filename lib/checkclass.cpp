@@ -577,7 +577,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             ftok = ftok->tokAt(2);
 
         // Skip "classname :: "
-        if (Token::Match(ftok, ":: %var% "))
+        if (Token::Match(ftok, ":: %var%"))
             ftok = ftok->next();
         while (Token::Match(ftok, "%var% ::"))
             ftok = ftok->tokAt(2);

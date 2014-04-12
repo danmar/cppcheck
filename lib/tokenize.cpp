@@ -2342,7 +2342,7 @@ static void setVarIdClassFunction(const std::string &classname,
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
             continue;
-        if (Token::Match(tok2->tokAt(-2), ("!!"+classname+" :: ").c_str()))
+        if (Token::Match(tok2->tokAt(-2), ("!!"+classname+" ::").c_str()))
             continue;
         if (Token::Match(tok2->tokAt(-2), "!!this . "))
             continue;

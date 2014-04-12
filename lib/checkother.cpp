@@ -2566,7 +2566,7 @@ void CheckOther::checkInvalidFree()
 
         // If a previously-allocated pointer is assigned a completely new value,
         // we can't know if any subsequent free() on that pointer is valid or not.
-        else if (Token::Match(tok, "%var% = ")) {
+        else if (Token::Match(tok, "%var% =")) {
             allocatedVariables.erase(tok->varId());
         }
 
@@ -2819,18 +2819,18 @@ void CheckOther::checkAlwaysTrueOrFalseStringCompare()
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp (")) {
-            if (Token::Match(tok->tokAt(2), "%str% , %str% ")) {
+            if (Token::Match(tok->tokAt(2), "%str% , %str%")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
                 alwaysTrueFalseStringCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% , %var% ")) {
+            } else if (Token::Match(tok->tokAt(2), "%var% , %var%")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var%  . c_str ( ) ")) {
+            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var%  . c_str ( )")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(8);
                 if (str1 == str2)
@@ -2923,7 +2923,7 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
 // Reference:
 // - http://www.cplusplus.com/reference/cmath/
 //-----------------------------------------------------------------------------
-void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse(void)
+void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 {
     if (!_settings->isEnabled("warning"))
         return;
