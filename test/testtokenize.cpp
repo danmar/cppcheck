@@ -324,6 +324,7 @@ private:
         TEST_CASE(varidclass13);
         TEST_CASE(varidclass14);
         TEST_CASE(varidclass15);  // initializer list
+        TEST_CASE(varidclass16);  // #4577
         TEST_CASE(varid_classnameshaddowsvariablename) // #3990
 
         TEST_CASE(file1);
@@ -5160,6 +5161,31 @@ private:
                                 "4: A ( ) ;\n"
                                 "5: } ;\n"
                                 "6: A :: A ( ) : a@1 ( 0 ) { b@2 = 1 ; }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass16() {
+        const char code[] = "struct A;\n"
+                            "typedef bool (A::* FuncPtr)();\n"
+                            "struct A {\n"
+                            "    FuncPtr pFun;\n"
+                            "    void setPFun(int mode);\n"
+                            "    bool funcNorm();\n"
+                            "};\n"
+                            "void A::setPFun(int mode) {\n"
+                            "    pFun = &A::funcNorm;\n"
+                            "}";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: struct A ;\n"
+                                "2:\n"
+                                "3: struct A {\n"
+                                "4: bool ( A :: * pFun@1 ) ( ) ;\n"
+                                "5: void setPFun ( int mode@2 ) ;\n"
+                                "6: bool funcNorm ( ) ;\n"
+                                "7: } ;\n"
+                                "8: void A :: setPFun ( int mode@3 ) {\n"
+                                "9: pFun@1 = & A :: funcNorm ;\n"
+                                "10: }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 

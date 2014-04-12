@@ -136,6 +136,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
         TEST_CASE(complexFunctionArrayPtr);
+        TEST_CASE(pointerToMemberFunction);
         TEST_CASE(hasSubClassConstructor);
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
@@ -873,6 +874,21 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
     }
+
+    void pointerToMemberFunction() {
+        GET_SYMBOL_DB("bool (A::*pFun)();"); // Pointer to member function of A, returning bool and taking no parameters
+
+        ASSERT(db != nullptr);
+
+        if (db) {
+            ASSERT_EQUALS(1, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            if (db->getVariableFromVarId(1))
+                ASSERT_EQUALS("pFun", db->getVariableFromVarId(1)->name());
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
         ASSERT(db != nullptr);

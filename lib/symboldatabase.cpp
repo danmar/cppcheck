@@ -2563,6 +2563,8 @@ static const Token* skipPointers(const Token* tok)
 {
     while (Token::Match(tok, "*|&|&&")  || (tok && tok->str() == "(" && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
+        if (tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
+            tok = tok->tokAt(2);
     }
 
     return tok;
