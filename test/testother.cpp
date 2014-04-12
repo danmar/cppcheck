@@ -134,7 +134,6 @@ private:
         TEST_CASE(incorrectLogicOperator6); // char literals
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
-        TEST_CASE(sameExpression);
 
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
@@ -4115,15 +4114,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
     }
 
-    void sameExpression() {
-        // #3868 - false positive (same expression on both sides of |)
-        check("void f(int x) {\n"
-              "    a = x ? A | B | C\n"
-              "          : A | B;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void memsetZeroBytes() {
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
@@ -4729,6 +4719,19 @@ private:
         // #5535: Reference named like its type
         check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
         ASSERT_EQUALS("", errout.str());
+
+        // #3868 - false positive (same expression on both sides of |)
+        check("void f(int x) {\n"
+              "    a = x ? A | B | C\n"
+              "          : A | B;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool a = bar.isSet() && bar->isSet();\n"
+              "    bool b = bar.isSet() && bar.isSet();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf

@@ -1746,6 +1746,7 @@ void Tokenizer::combineOperators()
             // replace "->" with "."
             else if (c1 == '-' && c2 == '>') {
                 tok->str(".");
+                tok->originalName("->");
                 tok->deleteNext();
                 continue;
             }

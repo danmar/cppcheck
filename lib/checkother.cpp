@@ -80,6 +80,8 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         return false;
     if (tok1->str() != tok2->str() || tok1->varId() != tok2->varId())
         return false;
+    if (tok1->str() == "." && tok1->originalName() != tok2->originalName())
+        return false;
     if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
         return false;
     if (tok1->isName() && tok1->next()->str() == "(") {
