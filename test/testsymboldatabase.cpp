@@ -49,6 +49,15 @@ public:
     }
 
 private:
+    void createSymbolDatabase(const char code[]) {
+        errout.str("");
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.getSymbolDatabase();
+    }
+
     const Scope si;
     const Token* vartok;
     const Token* typetok;
@@ -1966,14 +1975,14 @@ private:
             (void)db;
         }
         {
-            ASSERT_THROW(GET_SYMBOL_DB("class Foo {}; class Bar : public Foo"), InternalError);
+            ASSERT_THROW(createSymbolDatabase("class Foo {}; class Bar : public Foo"), InternalError);
         }
         {
-            ASSERT_THROW(GET_SYMBOL_DB("YY_DECL { switch (yy_act) {\n"
-                                       "    case 65: YY_BREAK\n"
-                                       "    case YY_STATE_EOF(block):\n"
-                                       "        yyterminate(); \n"
-                                       "} }"), InternalError); // #5663
+            ASSERT_THROW(createSymbolDatabase("YY_DECL { switch (yy_act) {\n"
+                                              "    case 65: YY_BREAK\n"
+                                              "    case YY_STATE_EOF(block):\n"
+                                              "        yyterminate(); \n"
+                                              "} }"), InternalError); // #5663
         }
     }
 
