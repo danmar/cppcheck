@@ -3945,7 +3945,7 @@ private:
             const char expected[] =
                 "class Fred { "
                 ""
-                "void ( * get ( ) ) ( ) { return test ; } "
+                "void * get ( ) { return test ; } "
                 "static void test ( ) { } "
                 "} ;";
 
@@ -3962,7 +3962,7 @@ private:
             const char expected[] =
                 "class Fred { "
                 ""
-                "void * ( * get ( ) ) ( void * ) { return test ; } "
+                "void * * get ( ) { return test ; } "
                 "static void * test ( void * p ) { return p ; } "
                 "} ;";
 
@@ -3979,7 +3979,7 @@ private:
             const char expected[] =
                 "class Fred { "
                 ""
-                "unsigned int * ( * get ( ) ) ( unsigned int * ) { return test ; } "
+                "unsigned int * * get ( ) { return test ; } "
                 "static unsigned int * test ( unsigned int * p ) { return p ; } "
                 "} ;";
 
@@ -3997,7 +3997,7 @@ private:
             const char expected[] =
                 "class Fred { "
                 ""
-                "const unsigned int * ( * get ( ) ) ( const unsigned int * ) { return test ; } "
+                "const unsigned int * * get ( ) { return test ; } "
                 "const static unsigned int * test ( const unsigned int * p ) { return p ; } "
                 "} ;";
 
@@ -4014,7 +4014,7 @@ private:
             const char expected[] =
                 "class Fred { "
                 ""
-                "void * ( * get ( int i ) ) ( void * ) { return test ; } "
+                "void * * get ( int i ) { return test ; } "
                 "static void * test ( void * p ) { return p ; } "
                 "} ;";
 
@@ -5416,11 +5416,11 @@ private:
         const char expected1[] = "namespace NS { "
                                  ""
                                  "class A { "
-                                 "int ( * f ( ) ) ( ) ; "
+                                 "int * f ( ) ; "
                                  "} ; "
                                  "} "
                                  "namespace NS { "
-                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "int * A :: f ( ) { } "
                                  "}";
         checkSimplifyTypedef(code1);
         ASSERT_EQUALS(expected1, tok(code1));
@@ -5436,10 +5436,10 @@ private:
         const char expected2[] = "namespace NS { "
                                  ""
                                  "class A { "
-                                 "int ( * f ( ) ) ( ) ; "
+                                 "int * f ( ) ; "
                                  "} ; "
                                  "} "
-                                 "int ( * NS :: A :: f ( ) ) ( ) { }";
+                                 "int * NS :: A :: f ( ) { }";
         checkSimplifyTypedef(code2);
         ASSERT_EQUALS(expected2, tok(code2));
         ASSERT_EQUALS("", errout.str());
@@ -5461,13 +5461,13 @@ private:
                                  "namespace NS2 { "
                                  ""
                                  "class A { "
-                                 "int ( * f ( ) ) ( ) ; "
+                                 "int * f ( ) ; "
                                  "} ; "
                                  "} "
                                  "} "
                                  "namespace NS1 { "
                                  "namespace NS2 { "
-                                 "int ( * A :: f ( ) ) ( ) { } "
+                                 "int * A :: f ( ) { } "
                                  "} "
                                  "}";
         checkSimplifyTypedef(code3);
@@ -5489,12 +5489,12 @@ private:
                                  "namespace NS2 { "
                                  ""
                                  "class A { "
-                                 "int ( * f ( ) ) ( ) ; "
+                                 "int * f ( ) ; "
                                  "} ; "
                                  "} "
                                  "} "
                                  "namespace NS1 { "
-                                 "int ( * NS2 :: A :: f ( ) ) ( ) { } "
+                                 "int * NS2 :: A :: f ( ) { } "
                                  "}";
         checkSimplifyTypedef(code4);
         ASSERT_EQUALS(expected4, tok(code4));
@@ -5588,8 +5588,7 @@ private:
                             "};\n";
         const char expected[] = "class symbol_table { "
                                 "public: "
-                                ""
-                                "expression_error :: error_code ( * f ) ( void * cbparam , const char * name , expression_space space ) ; "
+                                "expression_error :: error_code * f ; "
                                 "} ;";
 
         checkSimplifyTypedef(code);
@@ -6158,8 +6157,8 @@ private:
 
         // The expected result..
         const std::string expected("int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
-                                   "int ( * t2 ( bool ) ) ( int , int ) ; "
-                                   "int ( * t3 ( bool ) ) ( int , int ) ;");
+                                   "int * t2 ( bool ) ; "
+                                   "int * t3 ( bool ) ;");
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
@@ -6194,9 +6193,9 @@ private:
 
         // The expected result..
         const std::string expected("int * t1 ; " // simplified to regular pointer
-                                   "int ( * const t2 ) ( float ) ; "
+                                   "int * const t2 ; "
                                    "int * t3 ; " // volatile removed, gets simplified to regular pointer
-                                   "int ( * const t4 ) ( float ) ; " // volatile removed
+                                   "int * const t4 ; " // volatile removed
                                    "int ( C :: * t5 ) ( float ) ; "
                                    "int ( C :: * const t6 ) ( float ) ; "
                                    "int ( C :: * t7 ) ( float ) ; " // volatile removed
@@ -6226,13 +6225,13 @@ private:
         // The expected result..
         const std::string expected("struct Fred "
                                    "{ "
-                                   "void ( * get1 ( ) ) ( ) { return 0 ; } "
-                                   "void ( * get2 ( ) ) ( ) { return 0 ; } "
-                                   "void ( * get3 ( ) ) ( ) ; "
-                                   "void ( * get4 ( ) ) ( ) ; "
+                                   "void * get1 ( ) { return 0 ; } "
+                                   "void * get2 ( ) { return 0 ; } "
+                                   "void * get3 ( ) ; "
+                                   "void * get4 ( ) ; "
                                    "} ; "
-                                   "void ( * Fred :: get3 ( ) ) ( ) { return 0 ; } "
-                                   "void ( * Fred :: get4 ( ) ) ( ) { return 0 ; }");
+                                   "void * Fred :: get3 ( ) { return 0 ; } "
+                                   "void * Fred :: get4 ( ) { return 0 ; }");
 
         ASSERT_EQUALS(expected, tok(code, false));
 
@@ -7663,10 +7662,10 @@ private:
                                 "};";
             const char expected[] = "struct Fred "
                                     "{ "
-                                    "void ( * get1 ( ) ) ( ) { return 0 ; } "
-                                    "void ( * get2 ( ) ) ( ) { return 0 ; } "
-                                    "void ( * get3 ( ) ) ( ) ; "
-                                    "void ( * get4 ( ) ) ( ) ; "
+                                    "void * get1 ( ) { return 0 ; } "
+                                    "void * get2 ( ) { return 0 ; } "
+                                    "void * get3 ( ) ; "
+                                    "void * get4 ( ) ; "
                                     "} ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }

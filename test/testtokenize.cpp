@@ -437,6 +437,7 @@ private:
         TEST_CASE(functionpointer3);
         TEST_CASE(functionpointer4);
         TEST_CASE(functionpointer5);
+        TEST_CASE(functionpointer6);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -3881,7 +3882,7 @@ private:
     void varid40() {
         const char code[] ="extern \"C\" int (*a())();";
         ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: int ( * a ( ) ) ( ) ;\n",
+                      "1: int * a ( ) ;\n",
                       tokenizeDebugListing(code));
     }
 
@@ -7032,7 +7033,7 @@ private:
                                 "1: struct S\n"
                                 "2: {\n"
                                 "3:\n"
-                                "4: virtual void ( * getFP ( ) ) ( ) ;\n"
+                                "4: virtual void * getFP ( ) ;\n"
                                 "5: virtual void execute ( ) ;\n"
                                 "6: } ;\n"
                                 "7: void f ( ) {\n"
@@ -7046,6 +7047,18 @@ private:
         const char expected[] = "\n\n##file 0\n"
                                 "1: ; void * fp@1 [ ] = { 0 , 0 , 0 } ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code, false));
+    }
+
+    void functionpointer6() {
+        const char code1[] = ";void (*fp(f))(int);";
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: ; void * fp@1 ( f ) ;\n";
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
+
+        const char code2[] = ";std::string (*fp(f))(int);";
+        const char expected2[] = "\n\n##file 0\n"
+                                 "1: ; std :: string * fp@1 ( f ) ;\n";
+        ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
     }
 
     void removeRedundantAssignment() {

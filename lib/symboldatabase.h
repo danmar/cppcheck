@@ -547,7 +547,6 @@ public:
           isNoExcept(false),
           isThrow(false),
           isOperator(false),
-          retFuncPtr(false),
           noexceptArg(nullptr),
           throwArg(nullptr) {
     }
@@ -617,7 +616,6 @@ public:
     bool isNoExcept;       // is noexcept
     bool isThrow;          // is throw
     bool isOperator;       // is operator
-    bool retFuncPtr;       // returns function pointer
     const Token *noexceptArg;
     const Token *throwArg;
 

@@ -5053,25 +5053,35 @@ void Tokenizer:: simplifyFunctionPointers()
         else if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|,|(|public:|protected:|private:"))
             continue;
 
-        if (Token::Match(tok, "%type% *| *| ( * %var% [| ]| ) ("))
-            ;
-        else if (Token::Match(tok, "%type% %type% *| *| ( * %var% [| ]| ) ("))
+        while (Token::Match(tok, "%type%|:: %type%|::"))
             tok = tok->next();
-        else
+
+        Token *tok2 = (tok && tok->isName()) ? tok->next() : nullptr;
+        while (Token::Match(tok2, "*|&"))
+            tok2 = tok2->next();
+        if (!Token::Match(tok2, "( * %var%"))
+            continue;
+        tok2 = tok2->tokAt(2);
+        while (Token::Match(tok2, "%type%|:: %type%|::"))
+            tok2 = tok2->next();
+
+        if (!Token::Match(tok2, "%var% ) (") &&
+            !Token::Match(tok2, "%var% [ ] ) (") &&
+            !(Token::Match(tok2, "%var% (") && Token::Match(tok2->linkAt(1), ") ) (")))
             continue;
 
-        while (tok->next()->str() == "*")
+        while (tok->str() != "(")
             tok = tok->next();
 
         // check that the declaration ends
-        const Token *endTok = tok->next()->link()->next()->link();
-        if (!Token::Match(endTok, ") ;|,|)|=|["))
+        const Token *endTok = tok->link()->next()->link();
+        if (!Token::Match(endTok, ") ;|,|)|=|[|{"))
             continue;
 
         // ok simplify this function pointer to an ordinary pointer
-        Token::eraseTokens(tok->next()->link(), endTok->next());
-        tok->next()->link()->deleteThis();
-        tok->deleteNext();
+        Token::eraseTokens(tok->link(), endTok->next());
+        tok->link()->deleteThis();
+        tok->deleteThis();
     }
 }
 

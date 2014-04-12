@@ -377,11 +377,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.isExplicit = true;
                         }
 
-                        // function returning function pointer
-                        else if (tok->str() == "(") {
-                            function.retFuncPtr = true;
-                        }
-
                         const Token *tok1 = tok;
 
                         // look for end of previous statement
@@ -416,12 +411,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.retDef = tok1;
                         }
 
-                        const Token *end;
-
-                        if (!function.retFuncPtr)
-                            end = function.argDef->link();
-                        else
-                            end = tok->link()->next()->link();
+                        const Token *end = function.argDef->link();
 
                         // const function
                         if (end->next()->str() == "const")
@@ -635,10 +625,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // function?
                 if (isFunction(tok, scope, &funcStart, &argStart)) {
-                    bool retFuncPtr = Token::simpleMatch(argStart->link(), ") ) (");
                     const Token* scopeBegin = argStart->link()->next();
-                    if (retFuncPtr)
-                        scopeBegin = scopeBegin->next()->link()->next();
                     if (scopeBegin->isName()) { // Jump behind 'const' or unknown Macro
                         scopeBegin = scopeBegin->next();
                         if (scopeBegin->str() == "throw")
@@ -666,7 +653,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
                             if (!function)
                                 _tokenizer->syntaxError(tok);
-                            function->retFuncPtr = retFuncPtr;
 
                             // global functions can't be const but we have tests that are
                             if (Token::Match(argStart->link(), ") const| noexcept")) {
@@ -709,7 +695,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // save function prototype in database
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-                            func->retFuncPtr = retFuncPtr;
 
                             if (Token::Match(argStart->link(), ") const| noexcept")) {
                                 int arg = 2;
@@ -1529,17 +1514,11 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             func->hasBody = true;
                         } else if (func->type != Function::eDestructor && !destructor) {
                             // normal function?
-                            if (!func->retFuncPtr && (*tok)->next()->link()) {
+                            if ((*tok)->next()->link()) {
                                 if ((func->isConst && (*tok)->next()->link()->next()->str() == "const") ||
                                     (!func->isConst && (*tok)->next()->link()->next()->str() != "const")) {
                                     func->hasBody = true;
                                 }
-                            }
-
-                            // function returning function pointer?
-                            else if (func->retFuncPtr) {
-                                // todo check for const
-                                func->hasBody = true;
                             }
                         }
 
@@ -1915,7 +1894,6 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isNoExcept: " << (func->isNoExcept ? "true" : "false") << std::endl;
             std::cout << "        isThrow: " << (func->isThrow ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
-            std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
             std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
             std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;
