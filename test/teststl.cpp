@@ -72,6 +72,7 @@ private:
         TEST_CASE(eraseAssignByFunctionCall);
         TEST_CASE(eraseErase);
         TEST_CASE(eraseByValue);
+        TEST_CASE(eraseOnVector);
 
         TEST_CASE(pushback1);
         TEST_CASE(pushback2);
@@ -85,7 +86,6 @@ private:
         TEST_CASE(pushback10);
         TEST_CASE(pushback11);
         TEST_CASE(pushback12);
-
         TEST_CASE(insert1);
         TEST_CASE(insert2);
 
@@ -984,8 +984,55 @@ private:
               "    foo.erase(*it);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5669
+        check("void f() {\n"
+              "    HashSet_Ref::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_SetLoadedFactories.erase(*aIt);\n"
+              "    m_SetLoadedFactories.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::list<int>& m_ImplementationMap) {\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(*aIt);\n"
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
+
+        check("void f(const std::list<int>& m_ImplementationMap) {\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
+              "    std::list<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    m_ImplementationMap.erase(*bIt);\n"
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
+
+    void eraseOnVector() {
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(*aIt);\n" // All iterators become invalidated when erasing from std::vector
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
+
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
+              "    std::vector<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    m_ImplementationMap.erase(*bIt);\n" // All iterators become invalidated when erasing from std::vector
+              "    aIt = m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+    }
 
     void pushback1() {
         check("void f(const std::vector<int> &foo)\n"

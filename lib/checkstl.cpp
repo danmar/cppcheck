@@ -150,7 +150,7 @@ void CheckStl::iterators()
                 }
 
                 // invalidate the iterator if it is erased
-                else if (tok2->strAt(2) == std::string("erase")) {
+                else if (tok2->strAt(2) == "erase" && (tok2->strAt(4) != "*" || (container && tok2->varId() == container->declarationId()))) {
                     validIterator = false;
                     eraseToken = tok2;
                     invalidationScope = tok2->scope();
@@ -593,128 +593,100 @@ void CheckStl::pushback()
     }
 
     // Iterator becomes invalid after reserve, resize, insert, push_back or push_front..
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok, "vector <"))
-                continue;
+    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
-            // if iterator declaration inside for() loop
-            bool iteratorDeclaredInsideLoop = false;
-            if ((tok->tokAt(-2) && Token::simpleMatch(tok->tokAt(-2), "for (")) ||
-                (tok->tokAt(-4) && Token::simpleMatch(tok->tokAt(-4), "for ( std ::"))) {
-                iteratorDeclaredInsideLoop = true;
+        // Check that its an iterator
+        if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
+            continue;
+
+        // ... on std::vector
+        if (!Token::Match(var->typeStartToken(), "std| ::| vector <"))
+            continue;
+
+        // the variable id for the vector
+        unsigned int vectorid = 0;
+
+        const Token* validatingToken = 0;
+
+        std::string invalidIterator;
+        const Token* end2 = var->scope()->classEnd;
+        for (const Token *tok2 = var->nameToken(); tok2 != end2; tok2 = tok2->next()) {
+
+            if (validatingToken == tok2) {
+                invalidIterator.clear();
+                validatingToken = 0;
             }
 
-            while (tok && tok->str() != ">")
-                tok = tok->next();
-            if (!tok)
-                break;
-            if (!Token::Match(tok, "> :: iterator|const_iterator %var% =|;"))
-                continue;
-
-            const unsigned int iteratorid(tok->tokAt(3)->varId());
-            if (iteratorid == 0)
-                continue;
-
-            if (iteratorDeclaredInsideLoop && tok->strAt(4) == "=") {
-                // skip "> :: iterator|const_iterator"
-                tok = tok->tokAt(3);
+            // Using push_back or push_front inside a loop..
+            if (Token::simpleMatch(tok2, "for (")) {
+                tok2 = tok2->tokAt(2);
             }
 
-            // the variable id for the vector
-            unsigned int vectorid = 0;
+            if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %varid% != %var% . end|rend|cend|crend ( ) ; ++| %varid% ++| ) {", iteratorId)) {
+                // variable id for the loop iterator
+                const unsigned int varId(tok2->tokAt(2)->varId());
+                if (varId == 0)
+                    continue;
 
-            // count { , } and parentheses for tok2
-            int indent = 0;
+                const Token *pushbackTok = nullptr;
 
-            const Token* validatingToken = 0;
-
-            std::string invalidIterator;
-            for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "{" || tok2->str() == "(")
-                    ++indent;
-                else if (tok2->str() == "}" || tok2->str() == ")") {
-                    if (indent == 0 && Token::simpleMatch(tok2, ") {"))
-                        tok2 = tok2->next();
-                    else
-                        --indent;
-                }
-
-                if (validatingToken == tok2) {
-                    invalidIterator.clear();
-                    validatingToken = 0;
-                }
-
-                // Using push_back or push_front inside a loop..
-                if (Token::simpleMatch(tok2, "for (")) {
-                    tok2 = tok2->tokAt(2);
-                    ++indent;
-                }
-
-                if (Token::Match(tok2, "%varid% = %var% . begin|rbegin|cbegin|crbegin ( ) ; %varid% != %var% . end|rend|cend|crend ( ) ; ++| %varid% ++| ) {", iteratorid)) {
-                    // variable id for the loop iterator
-                    const unsigned int varId(tok2->tokAt(2)->varId());
-                    if (varId == 0)
-                        continue;
-
-                    const Token *pushbackTok = nullptr;
-
-                    // Count { and } for tok3
-                    const Token *tok3 = tok2->tokAt(20);
-                    for (const Token* const end3 = tok3->linkAt(-1); tok3 != end3; tok3 = tok3->next()) {
-                        if (tok3->str() == "break" || tok3->str() == "return") {
-                            pushbackTok = 0;
-                            break;
-                        } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize|clear (", varId) && !tok3->previous()->isAssignmentOp()) {
+                // Count { and } for tok3
+                const Token *tok3 = tok2->tokAt(20);
+                for (const Token* const end3 = tok3->linkAt(-1); tok3 != end3; tok3 = tok3->next()) {
+                    if (tok3->str() == "break" || tok3->str() == "return") {
+                        pushbackTok = 0;
+                        break;
+                    } else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve|resize|clear|erase (", varId) && !tok3->previous()->isAssignmentOp()) {
+                        if (tok3->strAt(2) != "erase" || (tok3->tokAt(4)->varId() != iteratorId && tok3->tokAt(5)->varId() != iteratorId)) // This case is handled in: CheckStl::iterators()
                             pushbackTok = tok3->tokAt(2);
-                        }
                     }
-
-                    if (pushbackTok)
-                        invalidIteratorError(pushbackTok, pushbackTok->str(), tok2->str());
                 }
 
-                // Assigning iterator..
-                if (Token::Match(tok2, "%varid% =", iteratorid)) {
-                    if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend|cbegin|cend|crbegin|crend|insert (")) {
-                        if (!invalidIterator.empty() && Token::Match(tok2->tokAt(4), "insert ( %varid% ,", iteratorid)) {
-                            invalidIteratorError(tok2, invalidIterator, tok2->strAt(6));
-                            break;
-                        }
-                        vectorid = tok2->tokAt(2)->varId();
-                        tok2 = tok2->linkAt(5);
-                    } else {
-                        vectorid = 0;
-                    }
-                    invalidIterator = "";
-                }
+                if (pushbackTok)
+                    invalidIteratorError(pushbackTok, pushbackTok->str(), tok2->str());
+            }
 
-                // push_back on vector..
-                if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear (", vectorid)) {
-                    if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid)) {
-                        invalidIteratorError(tok2, invalidIterator, tok2->strAt(4));
+            // Assigning iterator..
+            if (Token::Match(tok2, "%varid% =", iteratorId)) {
+                if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend|cbegin|cend|crbegin|crend|insert|erase|find (")) {
+                    if (!invalidIterator.empty() && Token::Match(tok2->tokAt(4), "insert|erase ( *| %varid% )|,", iteratorId)) {
+                        invalidIteratorError(tok2, invalidIterator, var->name());
                         break;
                     }
+                    vectorid = tok2->tokAt(2)->varId();
+                    tok2 = tok2->linkAt(5);
+                } else {
+                    vectorid = 0;
+                }
+                invalidIterator = "";
+            }
 
+            // push_back on vector..
+            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear|erase (", vectorid)) {
+                if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert|erase ( *| %varid% ,|)", iteratorId)) {
+                    invalidIteratorError(tok2, invalidIterator, var->name());
+                    break;
+                }
+
+                if (tok2->strAt(2) != "erase" || (tok2->tokAt(4)->varId() != iteratorId && tok2->tokAt(5)->varId() != iteratorId)) // This case is handled in: CheckStl::iterators()
                     invalidIterator = tok2->strAt(2);
-                    tok2 = tok2->linkAt(3);
-                }
+                tok2 = tok2->linkAt(3);
+            }
 
-                else if (tok2->str() == "return" || tok2->str() == "throw")
-                    validatingToken = Token::findsimplematch(tok2->next(), ";");
+            else if (tok2->str() == "return" || tok2->str() == "throw")
+                validatingToken = Token::findsimplematch(tok2->next(), ";");
 
-                // TODO: instead of bail out for 'else' try to check all execution paths.
-                else if (tok2->str() == "break" || tok2->str() == "else")
-                    invalidIterator.clear();
+            // TODO: instead of bail out for 'else' try to check all execution paths.
+            else if (tok2->str() == "break" || tok2->str() == "else")
+                invalidIterator.clear();
 
-                // Using invalid iterator..
-                if (!invalidIterator.empty()) {
-                    if (Token::Match(tok2, "++|--|*|+|-|(|,|=|!= %varid%", iteratorid))
-                        invalidIteratorError(tok2, invalidIterator, tok2->strAt(1));
-                    if (Token::Match(tok2, "%varid% ++|--|+|-|.", iteratorid))
-                        invalidIteratorError(tok2, invalidIterator, tok2->str());
-                }
+            // Using invalid iterator..
+            if (!invalidIterator.empty()) {
+                if (Token::Match(tok2, "++|--|*|+|-|(|,|=|!= %varid%", iteratorId))
+                    invalidIteratorError(tok2, invalidIterator, tok2->strAt(1));
+                if (Token::Match(tok2, "%varid% ++|--|+|-|.", iteratorId))
+                    invalidIteratorError(tok2, invalidIterator, tok2->str());
             }
         }
     }
