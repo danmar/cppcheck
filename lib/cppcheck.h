@@ -194,7 +194,6 @@ private:
      */
     virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
 
-    CheckUnusedFunctions _checkUnusedFunctions;
     ErrorLogger &_errorLogger;
 
     /** @brief Current preprocessor configuration */

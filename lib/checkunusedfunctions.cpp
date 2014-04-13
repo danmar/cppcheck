@@ -27,6 +27,9 @@
 
 
 
+// Register this check class
+CheckUnusedFunctions CheckUnusedFunctions::instance;
+
 
 //---------------------------------------------------------------------------
 // FUNCTION USAGE - Check for unused functions etc

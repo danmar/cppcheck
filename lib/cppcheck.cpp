@@ -282,7 +282,7 @@ void CppCheck::checkFunctionUsage()
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut("Checking usage of global functions..");
 
-        _checkUnusedFunctions.check(this);
+        CheckUnusedFunctions::instance.check(this);
 
         _settings._verbose = verbose_orig;
     }
@@ -359,7 +359,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
                 return;
 
@@ -368,7 +368,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-            _checkUnusedFunctions.parseTokens(_tokenizer, FileName, &_settings);
+            CheckUnusedFunctions::instance.parseTokens(_tokenizer, FileName, &_settings);
 
         executeRules("normal", _tokenizer);
 
@@ -382,7 +382,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
 
         // call all "runSimplifiedChecks" in all registered Check classes
-        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
                 return;
 
@@ -638,7 +638,7 @@ void CppCheck::getErrorMessages()
     tooManyConfigsError("",0U);
 
     // call all "getErrorMessages" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &_settings);
 
     Tokenizer::getErrorMessages(this, &_settings);
