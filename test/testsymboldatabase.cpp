@@ -225,6 +225,8 @@ private:
 
         TEST_CASE(garbage);
 
+        TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
+
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
 
@@ -1984,6 +1986,19 @@ private:
                                               "        yyterminate(); \n"
                                               "} }"), InternalError); // #5663
         }
+    }
+
+    void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
+        GET_SYMBOL_DB("TEST(a,b) {\n"
+                      "  std::vector<int> messages;\n"
+                      "  foo(messages[2].size());\n"
+                      "}");
+        const Variable * const var = db ? db->getVariableFromVarId(1U) : nullptr;
+        ASSERT(db &&
+               db->findScopeByName("TEST") &&
+               var &&
+               var->typeStartToken() &&
+               var->typeStartToken()->str() == "std");
     }
 
     void findFunction1() {

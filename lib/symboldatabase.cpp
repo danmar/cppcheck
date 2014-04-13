@@ -640,11 +640,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         tok = funcStart;
 
                         // class function
-                        if (tok->previous()->str() == "::")
+                        if (tok->previous() && tok->previous()->str() == "::")
                             addClassFunction(&scope, &tok, argStart);
 
                         // class destructor
-                        else if (tok->previous()->str() == "~" &&
+                        else if (tok->previous() &&
+                                 tok->previous()->str() == "~" &&
                                  tok->strAt(-2) == "::")
                             addClassFunction(&scope, &tok, argStart);
 
@@ -1098,6 +1099,17 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             *argStart = tok->next();
             return true;
         }
+    }
+
+    // UNKNOWN_MACRO(a,b) { ... }
+    else if (outerScope->type == Scope::eGlobal &&
+             Token::Match(tok, "%var% (") &&
+             tok->isUpperCaseName() &&
+             Token::Match(tok->linkAt(1), ") {") &&
+             (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+        *funcStart = tok;
+        *argStart = tok->next();
+        return true;
     }
 
     // template constructor?
