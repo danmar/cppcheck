@@ -413,7 +413,7 @@ private:
 };
 #define UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW if (callstackDepth.exhausted()) { return;}
 
-static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, const CallstackDepth callstackDepth), std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, CallstackDepth callstackDepth), std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     Token *unaryop = tok;
     tok = tok->next();
@@ -426,7 +426,7 @@ static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &
     op.push(unaryop);
 }
 
-static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, const CallstackDepth callstackDepth), std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, CallstackDepth callstackDepth), std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     Token *binop = tok;
     tok = tok->next();
@@ -447,10 +447,10 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, 
     op.push(binop);
 }
 
-static void compileDot(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth);
-static void compileExpression(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth);
+static void compileDot(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth);
+static void compileExpression(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth);
 
-static void compileTerm(Token *& tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     if (!tok)
@@ -557,7 +557,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, const CallstackDep
     }
 }
 
-static void compileScope(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileScope(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileTerm(tok,op, callstackDepth);
@@ -571,7 +571,7 @@ static void compileScope(Token *&tok, std::stack<Token*> &op, const CallstackDep
     }
 }
 
-static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileScope(tok,op, callstackDepth);
@@ -582,7 +582,7 @@ static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, const Cal
     }
 }
 
-static void compileDot(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileDot(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileParAndBrackets(tok,op, callstackDepth);
@@ -593,7 +593,7 @@ static void compileDot(Token *&tok, std::stack<Token*> &op, const CallstackDepth
     }
 }
 
-static void compileMulDiv(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileMulDiv(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileDot(tok,op, callstackDepth);
@@ -606,7 +606,7 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, const CallstackDe
     }
 }
 
-static void compileAddSub(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileAddSub(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileMulDiv(tok,op, callstackDepth);
@@ -617,7 +617,7 @@ static void compileAddSub(Token *&tok, std::stack<Token*> &op, const CallstackDe
     }
 }
 
-static void compileShift(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileShift(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileAddSub(tok,op, callstackDepth);
@@ -628,7 +628,7 @@ static void compileShift(Token *&tok, std::stack<Token*> &op, const CallstackDep
     }
 }
 
-static void compileRelComp(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileRelComp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileShift(tok,op, callstackDepth);
@@ -639,7 +639,7 @@ static void compileRelComp(Token *&tok, std::stack<Token*> &op, const CallstackD
     }
 }
 
-static void compileEqComp(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileEqComp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileRelComp(tok,op, callstackDepth);
@@ -650,7 +650,7 @@ static void compileEqComp(Token *&tok, std::stack<Token*> &op, const CallstackDe
     }
 }
 
-static void compileAnd(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileAnd(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileEqComp(tok,op, callstackDepth);
@@ -661,7 +661,7 @@ static void compileAnd(Token *&tok, std::stack<Token*> &op, const CallstackDepth
     }
 }
 
-static void compileXor(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileXor(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileAnd(tok,op, callstackDepth);
@@ -672,7 +672,7 @@ static void compileXor(Token *&tok, std::stack<Token*> &op, const CallstackDepth
     }
 }
 
-static void compileOr(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileOr(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileXor(tok,op, callstackDepth);
@@ -683,7 +683,7 @@ static void compileOr(Token *&tok, std::stack<Token*> &op, const CallstackDepth 
     }
 }
 
-static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileOr(tok,op, callstackDepth);
@@ -694,7 +694,7 @@ static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, const Callstack
     }
 }
 
-static void compileLogicOr(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileLogicOr(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileLogicAnd(tok,op, callstackDepth);
@@ -705,7 +705,7 @@ static void compileLogicOr(Token *&tok, std::stack<Token*> &op, const CallstackD
     }
 }
 
-static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileLogicOr(tok,op, callstackDepth);
@@ -716,7 +716,7 @@ static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, const Callstac
     }
 }
 
-static void compileAssign(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileAssign(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileTernaryOp(tok,op, callstackDepth);
@@ -727,7 +727,7 @@ static void compileAssign(Token *&tok, std::stack<Token*> &op, const CallstackDe
     }
 }
 
-static void compileComma(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileComma(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     compileAssign(tok,op, callstackDepth);
@@ -738,7 +738,7 @@ static void compileComma(Token *&tok, std::stack<Token*> &op, const CallstackDep
     }
 }
 
-static void compileExpression(Token *&tok, std::stack<Token*> &op, const CallstackDepth callstackDepth)
+static void compileExpression(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
 {
     UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     if (callstackDepth.exhausted())
