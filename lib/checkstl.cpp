@@ -1372,6 +1372,10 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 void CheckStl::uselessCalls()
 {
     // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
+    static const char* const stl_string[] = {
+        "string", "u16string", "u32string", "wstring"
+    };
+    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
     static const char* const stl_containers_with_empty_and_clear[] = {
         "deque", "forward_list", "list",
         "map", "multimap", "multiset", "set", "string",
@@ -1395,13 +1399,14 @@ void CheckStl::uselessCalls()
             } else if (tok->varId() && Token::Match(tok, "%var% . swap ( %var% )") &&
                        tok->varId() == tok->tokAt(4)->varId() && performance) {
                 uselessCallsSwapError(tok, tok->str());
-            } else if (Token::simpleMatch(tok, ". substr (") && performance) {
-                if (Token::Match(tok->tokAt(3), "0| )"))
+            } else if (Token::Match(tok, "%var% . substr (") && performance &&
+                       tok->variable() && tok->variable()->isStlType(stl_string)) {
+                if (Token::Match(tok->tokAt(4), "0| )"))
                     uselessCallsSubstrError(tok, false);
-                else if (tok->strAt(3) == "0" && tok->linkAt(2)->strAt(-1) == "npos") {
-                    if (!tok->linkAt(2)->previous()->variable()) // Make sure that its no variable
+                else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
+                    if (!tok->linkAt(3)->previous()->variable()) // Make sure that its no variable
                         uselessCallsSubstrError(tok, false);
-                } else if (Token::simpleMatch(tok->linkAt(2)->tokAt(-2), ", 0 )"))
+                } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
             } else if (Token::Match(tok, "[{};] %var% . empty ( ) ;") && warning &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
