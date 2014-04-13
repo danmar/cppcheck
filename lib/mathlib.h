@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <type_traits>
 #include "config.h"
 
 /// @addtogroup Core
@@ -69,8 +70,10 @@ public:
                 if (str[i] == '1')
                     ret |= 1;
             }
-            if (str[0] == '-')
-                ret = -ret;
+            if (std::is_signed<T>()) {
+                if (str[0] == '-')
+                    ret = -ret;
+            }
             return ret;
         }
 
