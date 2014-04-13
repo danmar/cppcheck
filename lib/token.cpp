@@ -28,6 +28,7 @@
 #include <sstream>
 #include <map>
 #include <stack>
+#include <climits>
 
 Token::Token(Token **t) :
     tokensBack(t),
@@ -1223,7 +1224,7 @@ void Token::printAst() const
 
 void Token::printValueFlow() const
 {
-    int line = -1;
+    unsigned int line = UINT_MAX;
     std::cout << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (tok->values.empty())
