@@ -25,6 +25,7 @@
 #include <tinyxml2.h>
 
 #include <cassert>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
@@ -211,6 +212,27 @@ std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
     return (xml_version<=1) ? "</results>" : "    </errors>\n</results>";
 }
 
+// There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
+// See #5300 "Invalid encoding in XML output"
+static std::string fixInvalidChars(const std::string& raw)
+{
+    std::string result;
+    result.reserve(raw.length());
+    std::string::const_iterator from=raw.begin();
+    while (from!=raw.end()) {
+        if (std::isprint(*from)) {
+            result.push_back(*from);
+        } else {
+            std::ostringstream es;
+            // straight cast to (unsigned) doesn't work out.
+            es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << (unsigned)(unsigned char)*from;
+            result += es.str();
+        }
+        ++from;
+    }
+    return result;
+}
+
 std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
 {
     // The default xml format
@@ -239,7 +261,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
         printer.PushAttribute("msg", _shortMessage.c_str());
-        printer.PushAttribute("verbose", _verboseMessage.c_str());
+        printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
         if (_inconclusive)
             printer.PushAttribute("inconclusive", "true");
 
