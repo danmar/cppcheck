@@ -787,7 +787,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
     }
     if (!num2tok)
         return false;
-    *num2 = MathLib::toLongNumber(num2tok ? num2tok->str() : "0") - ((tok->str()=="<=") ? 0 : 1);
+    *num2 = MathLib::toLongNumber(num2tok->str()) - ((tok->str()=="<=") ? 0 : 1);
     if (!num1tok)
         *num1 = *num2;
     while (tok && tok->str() != ";")
@@ -804,7 +804,6 @@ static bool valueFlowForLoop2(const Token *tok,
     const Token *firstExpression  = tok->next()->astOperand2()->astOperand1();
     const Token *secondExpression = tok->next()->astOperand2()->astOperand2()->astOperand1();
     const Token *thirdExpression = tok->next()->astOperand2()->astOperand2()->astOperand2();
-    tok = tok->linkAt(1);
 
     std::map<unsigned int, MathLib::bigint> programMemory;
     MathLib::bigint result(0);

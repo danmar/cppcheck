@@ -1601,7 +1601,7 @@ void CheckStl::readingEmptyStlContainer()
                     if (tok->strAt(-1) == "=")
                         readingEmptyStlContainerError(tok);
                     empty_map.erase(tok->varId());
-                } else if ((map && empty_map.find(tok->varId()) != empty_map.end()) || (!map && empty_nonmap.find(tok->varId()) != empty_nonmap.end()))
+                } else
                     readingEmptyStlContainerError(tok);
             } else if (Token::Match(tok, "%var% . %type% (")) {
                 // Member function call

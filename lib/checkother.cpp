@@ -2058,7 +2058,7 @@ static bool astIsSignedChar(const Token *tok)
         const Variable *var = tok->astOperand1()->variable();
         if (!var || !var->isPointer())
             return false;
-        const Token *type = var ? var->typeStartToken() : nullptr;
+        const Token *type = var->typeStartToken();
         while (type && type->str() == "const")
             type = type->next();
         return (type && type->str() == "char" && !type->isUnsigned());

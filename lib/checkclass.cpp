@@ -792,7 +792,7 @@ void CheckClass::initializationListUsage()
                                 tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
                                 allowed = false;
                                 break;
-                            } else if (var2 && (var2->isArray() && var2->isLocal())) { // Can't initialize an array
+                            } else if (var2 && (var2->isArray() && var2->isLocal())) { // Can't initialize with a local array
                                 allowed = false;
                                 break;
                             }

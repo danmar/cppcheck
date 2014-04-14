@@ -2928,10 +2928,6 @@ bool Tokenizer::simplifySizeof()
                         // We have variable++ or variable--, there should be
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
-                    } else if (parlevel > 0 && Token::simpleMatch(tempToken->next(), ") .")) {
-                        --parlevel;
-                        tempToken = tempToken->tokAt(2);
-                        continue;
                     }
 
                     // Ok, we should be clean. Add ) after tempToken
