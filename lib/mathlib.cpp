@@ -645,100 +645,27 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
     return toDoubleNumber(first) <= toDoubleNumber(second);
 }
 
-bool MathLib::isNullValue(const std::string &s)
+/*! \brief Does the string represent the numerical value of 0?
+ * In case leading or trailing white space is provided, the function
+ * returns false.
+ * Requirement for this function:
+ * - This code is allowed to be slow because of simplicity of the code.
+ *
+ * \param[in] str The string to check. In case the string is empty, the function returns false.
+ * \return Return true in case the string represents a numerical null value.
+ **/
+bool MathLib::isNullValue(const std::string &str)
 {
-    enum {START, PLUSMINUS, LEADING_ZERO, BIN_OR_HEX_PREFIX, DOT, TRAILING_ZERO, TRAILING_F, ZERO, E, E_PLUSMINUS, E_DIGIT} state = START;
-    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
-        switch (state) {
-        case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = LEADING_ZERO;
-            else if (*it == '.')
-                state = DOT;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
-            if (*it == '0')
-                state = LEADING_ZERO;
-            else
-                return false;
-            break;
-        case LEADING_ZERO:
-            if (*it == '0')
-                state = LEADING_ZERO;
-            else if (*it == 'b' || *it == 'B')
-                state = BIN_OR_HEX_PREFIX;
-            else if (*it == 'x' || *it == 'X')
-                state = BIN_OR_HEX_PREFIX;
-            else if (*it == '.')
-                state = DOT;
-            else if (*it == 'e' || *it == 'E')
-                state = E;
-            else
-                return isValidSuffix(it, s.end());
-            break;
-        case BIN_OR_HEX_PREFIX:
-            if (*it == '0')
-                state = ZERO;
-            else
-                return false;
-            break;
-        case ZERO:
-            if (*it == '0')
-                state = ZERO;
-            else
-                return isValidSuffix(it, s.end());
-            break;
-        case DOT:
-            if (*it == '0')
-                state = TRAILING_ZERO;
-            else if (*it == 'f' || *it == 'F')
-                state = TRAILING_F;
-            else if (*it == 'e' || *it == 'E')
-                state = E;
-            else
-                return false;
-            break;
-        case E:
-            if (*it == '+' || *it == '-')
-                state = E_PLUSMINUS;
-            else if (isdigit(*it))
-                state = E_DIGIT;
-            else
-                return false;
-            break;
-        case E_PLUSMINUS:
-            if (isdigit(*it))
-                state = E_DIGIT;
-            else
-                return false;
-            break;
-        case E_DIGIT:
-            if (isdigit(*it))
-                state = E_DIGIT;
-            else if (*it == 'f' || *it == 'F')
-                state = TRAILING_F;
-            else
-                return false;
-            break;
-        case TRAILING_ZERO:
-            if (*it == '0')
-                state = TRAILING_ZERO;
-            else if (*it == 'f' || *it == 'F')
-                state = TRAILING_F;
-            else if (*it == 'e' || *it == 'E')
-                state = E;
-            else
-                return false;
-            break;
-        default:
+    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
+        return false; // Has to be a number
+
+    for (size_t i = 0; i < str.size(); i++) {
+        if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
             return false;
-        }
+        if (str[i] == 'E' || str[i] == 'e')
+            return true;
     }
-    return state == LEADING_ZERO || state == ZERO || state == DOT || state == E_DIGIT || state == TRAILING_ZERO || state == TRAILING_F;
+    return true;
 }
 
 bool MathLib::isOctalDigit(char c)
