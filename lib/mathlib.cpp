@@ -25,6 +25,101 @@
 #include <cctype>
 #include <limits>
 
+MathLib::biguint MathLib::toULongNumber(const std::string & str) {
+        // hexadecimal numbers:
+        if (isHex(str)) {
+            if (str[0] == '-') {
+                biguint ret = 0;
+                std::istringstream istr(str);
+                istr >> std::hex >> ret;
+                return ret;
+            } else {
+                unsigned long long ret = 0;
+                std::istringstream istr(str);
+                istr >> std::hex >> ret;
+                return (biguint)ret;
+            }
+        }
+
+        // octal numbers:
+        if (isOct(str)) {
+            biguint ret = 0;
+            std::istringstream istr(str);
+            istr >> std::oct >> ret;
+            return ret;
+        }
+
+        // binary numbers:
+        if (isBin(str)) {
+            biguint ret = 0;
+            for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+                ret <<= 1;
+                if (str[i] == '1')
+                    ret |= 1;
+            }
+            /* if (str[0] == '-')
+                    ret = -ret; */
+            return ret;
+        }
+
+        if (isFloat(str)) {
+            return static_cast<biguint>(std::atof(str.c_str()));
+	}
+
+        biguint ret = 0;
+        std::istringstream istr(str);
+        istr >> ret;
+        return ret;
+}  
+
+MathLib::bigint MathLib::toLongNumber(const std::string & str) {
+        // hexadecimal numbers:
+        if (isHex(str)) {
+            if (str[0] == '-') {
+                bigint ret = 0;
+                std::istringstream istr(str);
+                istr >> std::hex >> ret;
+                return ret;
+            } else {
+                unsigned long long ret = 0;
+                std::istringstream istr(str);
+                istr >> std::hex >> ret;
+                return (bigint)ret;
+            }
+        }
+
+        // octal numbers:
+        if (isOct(str)) {
+            bigint ret = 0;
+            std::istringstream istr(str);
+            istr >> std::oct >> ret;
+            return ret;
+        }
+
+        // binary numbers:
+        if (isBin(str)) {
+            bigint ret = 0;
+            for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+                ret <<= 1;
+                if (str[i] == '1')
+                    ret |= 1;
+            }
+                if (str[0] == '-')
+                    ret = -ret;
+            return ret;
+        }
+
+        if (isFloat(str)) {
+            return static_cast<bigint>(std::atof(str.c_str()));
+	}
+
+        bigint ret = 0;
+        std::istringstream istr(str);
+        istr >> ret;
+        return ret;
+}
+
+
 double MathLib::toDoubleNumber(const std::string &str)
 {
     if (isHex(str))

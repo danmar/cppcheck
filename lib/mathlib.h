@@ -24,7 +24,6 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
-#include <type_traits>
 #include "config.h"
 
 /// @addtogroup Core
@@ -37,54 +36,8 @@ public:
     typedef long long bigint;
     typedef unsigned long long biguint;
 
-    template < class T = bigint >
-    static T toLongNumber(const std::string & str) {
-        // hexadecimal numbers:
-        if (isHex(str)) {
-            if (str[0] == '-') {
-                T ret = 0;
-                std::istringstream istr(str);
-                istr >> std::hex >> ret;
-                return ret;
-            } else {
-                unsigned long long ret = 0;
-                std::istringstream istr(str);
-                istr >> std::hex >> ret;
-                return (T)ret;
-            }
-        }
-
-        // octal numbers:
-        if (isOct(str)) {
-            T ret = 0;
-            std::istringstream istr(str);
-            istr >> std::oct >> ret;
-            return ret;
-        }
-
-        // binary numbers:
-        if (isBin(str)) {
-            T ret = 0;
-            for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
-                ret <<= 1;
-                if (str[i] == '1')
-                    ret |= 1;
-            }
-            if (std::is_signed<T>()) {
-                if (str[0] == '-')
-                    ret = -ret;
-            }
-            return ret;
-        }
-
-        if (isFloat(str))
-            return static_cast<T>(std::atof(str.c_str()));
-
-        T ret = 0;
-        std::istringstream istr(str);
-        istr >> ret;
-        return ret;
-    }
+    static bigint toLongNumber(const std::string & str);
+    static biguint toULongNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) {
         std::ostringstream result;

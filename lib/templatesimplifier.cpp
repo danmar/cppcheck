@@ -800,20 +800,35 @@ static bool isLowerEqualThanMulDiv(const Token* lower)
     return isLowerThanMulDiv(lower) || Token::Match(lower, "[*/%]");
 }
 
-template <typename T>
-std::string typeCorrectShift(const char cop, const Token* left, const Token* right)
+static std::string ShiftInt(const char cop, const Token* left, const Token* right)
 {
-    const T leftInt=MathLib::toLongNumber<T>(left->str());
-    const T rightInt=MathLib::toLongNumber<T>(right->str());
-
     if (cop == '&' || cop == '|' || cop == '^')
         return MathLib::calculate(left->str(), right->str(), cop);
-    else if (cop == '<') {
+    
+    const MathLib::bigint leftInt=MathLib::toLongNumber(left->str());
+    const MathLib::bigint rightInt=MathLib::toLongNumber(right->str());
+    if (cop == '<') {
         if (left->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
             return MathLib::toString(leftInt << rightInt);
-    } else if (rightInt > 0)
+    } else if (rightInt > 0) {
         return MathLib::toString(leftInt >> rightInt);
+    }
+    return "";
+}
 
+static std::string ShiftUInt(const char cop, const Token* left, const Token* right)
+{
+    if (cop == '&' || cop == '|' || cop == '^')
+        return MathLib::calculate(left->str(), right->str(), cop);
+    
+    const MathLib::biguint leftInt=MathLib::toULongNumber(left->str());
+    const MathLib::biguint rightInt=MathLib::toULongNumber(right->str());
+    if (cop == '<') {
+        if (left->previous()->str() != "<<") // Ensure that its not a shift operator as used for streams
+            return MathLib::toString(leftInt << rightInt);
+    } else {
+        return MathLib::toString(leftInt >> rightInt);
+    }
     return "";
 }
 
@@ -846,9 +861,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             const char cop = op->str()[0];
             std::string result;
             if (tok->str().find_first_of("uU") != std::string::npos)
-                result = typeCorrectShift<MathLib::biguint>(cop, tok, tok->tokAt(2));
+                result = ShiftUInt(cop, tok, tok->tokAt(2));
             else
-                result = typeCorrectShift<MathLib::bigint>(cop, tok, tok->tokAt(2));
+                result = ShiftInt(cop, tok, tok->tokAt(2));
             if (!result.empty()) {
                 ret = true;
                 tok->str(result);
