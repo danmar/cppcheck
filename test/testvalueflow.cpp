@@ -36,6 +36,8 @@ private:
     void run() {
         TEST_CASE(valueFlowNumber);
 
+        TEST_CASE(valueFlowBitAnd);
+
         TEST_CASE(valueFlowCalculations);
 
         TEST_CASE(valueFlowBeforeCondition);
@@ -627,6 +629,17 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 2)); // x is not 2 at line 8
+    }
+
+    void valueFlowBitAnd() {
+        const char *code;
+
+        code = "int f(int a) {\n"
+               "  int x = a & 0x80;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0x80));
     }
 
     void valueFlowForLoop() {

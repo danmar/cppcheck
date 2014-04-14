@@ -238,6 +238,34 @@ static void valueFlowNumber(TokenList *tokenlist)
     }
 }
 
+static void valueFlowBitAnd(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->str() != "&")
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        MathLib::bigint number;
+        if (MathLib::isInt(tok->astOperand1()->str()))
+            number = MathLib::toLongNumber(tok->astOperand1()->str());
+        else if (MathLib::isInt(tok->astOperand2()->str()))
+            number = MathLib::toLongNumber(tok->astOperand2()->str());
+        else
+            continue;
+
+        int bit = 0;
+        while (bit <= 60 && ((1LL<<bit) < number))
+            ++bit;
+
+        if ((1LL<<bit) == number) {
+            setTokenValue(tok, ValueFlow::Value(0));
+            setTokenValue(tok, ValueFlow::Value(number));
+        }
+    }
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -971,6 +999,7 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
         tok->values.clear();
 
     valueFlowNumber(tokenlist);
+    valueFlowBitAnd(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, errorLogger, settings);
