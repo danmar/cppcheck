@@ -392,32 +392,11 @@ static bool iscast(const Token *tok)
     return false;
 }
 
-/*! Instances of this class are used to track the depth of the callstack. Simply pass the current instance down
- *  the callstack!
- */
-class CallstackDepth {
-public:
-    explicit CallstackDepth(unsigned _depth) :
-        depth(_depth) {
-    }
-    CallstackDepth(const CallstackDepth& rhs)
-        : depth(rhs.depth+1) {
-    }
-    bool exhausted() const {
-        return depth >= MAX_CALLSTACK_DEPTH;
-    }
-private:
-    CallstackDepth& operator=(const CallstackDepth& rhs);
-    const unsigned depth;
-    static const unsigned MAX_CALLSTACK_DEPTH=300; // arbitrary limit: was sufficient to fix #5592 and run on cppcheck's own code
-};
-#define UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW if (callstackDepth.exhausted()) { return;}
-
-static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, CallstackDepth callstackDepth), std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, unsigned int depth), std::stack<Token*> &op, unsigned int depth)
 {
     Token *unaryop = tok;
     tok = tok->next();
-    f(tok,op, callstackDepth);
+    f(tok,op, depth);
 
     if (!op.empty()) {
         unaryop->astOperand1(op.top());
@@ -426,12 +405,12 @@ static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &
     op.push(unaryop);
 }
 
-static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, CallstackDepth callstackDepth), std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, unsigned int depth), std::stack<Token*> &op, unsigned int depth)
 {
     Token *binop = tok;
     tok = tok->next();
     if (tok)
-        f(tok,op, callstackDepth);
+        f(tok,op, depth);
 
     // TODO: Should we check if op is empty.
     // * Is it better to add assertion that it isn't?
@@ -447,12 +426,11 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, 
     op.push(binop);
 }
 
-static void compileDot(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth);
-static void compileExpression(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth);
+static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth);
+static void compileExpression(Token *&tok, std::stack<Token*> &op, unsigned int depth);
 
-static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
     if (!tok)
         return;
     if (Token::Match(tok, "L %str%|%char%"))
@@ -461,9 +439,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
         op.push(tok);
         tok = tok->next();
     } else if (Token::Match(tok, "+|-|~|*|&|!")) {
-        compileUnaryOp(tok, compileDot, op, callstackDepth);
+        compileUnaryOp(tok, compileDot, op, depth);
     } else if (tok->str() == "return") {
-        compileUnaryOp(tok, compileExpression, op, callstackDepth);
+        compileUnaryOp(tok, compileExpression, op, depth);
     } else if (tok->isName()) {
         const bool templatefunc = Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (");
         if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
@@ -475,7 +453,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
             op.push(tok);
             tok = tok->next()->link()->next();
             if (!Token::simpleMatch(tok, "{"))
-                compileTerm(tok,op, callstackDepth);
+                compileTerm(tok,op, depth);
         } else if (!Token::Match(tok->next(), "(|[") && !templatefunc) {
             op.push(tok);
             tok = tok->next();
@@ -495,7 +473,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
                 tok = tok->next();
                 while (Token::Match(tok,"%var% %var%")) // example: sizeof(struct S)
                     tok = tok->next();
-                compileExpression(tok, op, callstackDepth);
+                compileExpression(tok, op, depth);
                 if (!op.empty()) {
                     tok1->astOperand2(op.top());
                     op.pop();
@@ -518,7 +496,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
 
         if (pre) {
             // pre increment/decrement
-            compileUnaryOp(tok, compileDot, op, callstackDepth);
+            compileUnaryOp(tok, compileDot, op, depth);
         } else {
             // post increment/decrement
             tok->astOperand1(op.top());
@@ -530,7 +508,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
         if (iscast(tok)) {
             Token *unaryop = tok;
             tok = tok->link()->next();
-            compileDot(tok,op, callstackDepth);
+            compileDot(tok,op, depth);
 
             if (!op.empty()) {
                 unaryop->astOperand1(op.top());
@@ -541,14 +519,14 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
             // Parenthesized sub-expression
             Token *nextpar = tok->link()->next();
             tok = tok->next();
-            compileExpression(tok,op, callstackDepth);
+            compileExpression(tok,op, depth);
             tok = nextpar;
-            compileBinOp(tok, compileExpression, op, callstackDepth);
+            compileBinOp(tok, compileExpression, op, depth);
             tok = tok->next();
         } else {
             // Parenthesized sub-expression
             tok = tok->next();
-            compileExpression(tok,op, callstackDepth);
+            compileExpression(tok,op, depth);
             tok = tok->next();
         }
     } else if (tok->str() == "{") {
@@ -557,194 +535,177 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, CallstackDepth cal
     }
 }
 
-static void compileScope(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileScope(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileTerm(tok,op, callstackDepth);
+    compileTerm(tok,op, depth);
     while (tok) {
         if (tok->str() == "::") {
             if (tok->previous() && tok->previous()->isName())
-                compileBinOp(tok, compileTerm, op, callstackDepth);
+                compileBinOp(tok, compileTerm, op, depth);
             else
-                compileUnaryOp(tok, compileDot, op, callstackDepth);
+                compileUnaryOp(tok, compileDot, op, depth);
         } else break;
     }
 }
 
-static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileScope(tok,op, callstackDepth);
+    compileScope(tok,op, depth);
     while (tok) {
         if (tok->str() == "[") {
-            compileBinOp(tok, compileScope, op, callstackDepth);
+            compileBinOp(tok, compileScope, op, depth);
         } else break;
     }
 }
 
-static void compileDot(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileParAndBrackets(tok,op, callstackDepth);
+    compileParAndBrackets(tok,op, depth);
     while (tok) {
         if (tok->str() == ".") {
-            compileBinOp(tok, compileParAndBrackets, op, callstackDepth);
+            compileBinOp(tok, compileParAndBrackets, op, depth);
         } else break;
     }
 }
 
-static void compileMulDiv(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileDot(tok,op, callstackDepth);
+    compileDot(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "[*/%]")) {
             if (Token::Match(tok, "* [,)]"))
                 break;
-            compileBinOp(tok, compileDot, op, callstackDepth);
+            compileBinOp(tok, compileDot, op, depth);
         } else break;
     }
 }
 
-static void compileAddSub(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileAddSub(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileMulDiv(tok,op, callstackDepth);
+    compileMulDiv(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "+|-")) {
-            compileBinOp(tok, compileMulDiv, op, callstackDepth);
+            compileBinOp(tok, compileMulDiv, op, depth);
         } else break;
     }
 }
 
-static void compileShift(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileShift(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileAddSub(tok,op, callstackDepth);
+    compileAddSub(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "<<|>>")) {
-            compileBinOp(tok, compileAddSub, op, callstackDepth);
+            compileBinOp(tok, compileAddSub, op, depth);
         } else break;
     }
 }
 
-static void compileRelComp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileRelComp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileShift(tok,op, callstackDepth);
+    compileShift(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "<|<=|>=|>")) {
-            compileBinOp(tok, compileShift, op, callstackDepth);
+            compileBinOp(tok, compileShift, op, depth);
         } else break;
     }
 }
 
-static void compileEqComp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileEqComp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileRelComp(tok,op, callstackDepth);
+    compileRelComp(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "==|!=")) {
-            compileBinOp(tok, compileRelComp, op, callstackDepth);
+            compileBinOp(tok, compileRelComp, op, depth);
         } else break;
     }
 }
 
-static void compileAnd(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileAnd(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileEqComp(tok,op, callstackDepth);
+    compileEqComp(tok,op, depth);
     while (tok) {
         if (tok->str() == "&") {
-            compileBinOp(tok, compileEqComp, op, callstackDepth);
+            compileBinOp(tok, compileEqComp, op, depth);
         } else break;
     }
 }
 
-static void compileXor(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileXor(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileAnd(tok,op, callstackDepth);
+    compileAnd(tok,op, depth);
     while (tok) {
         if (tok->str() == "^") {
-            compileBinOp(tok, compileAnd, op, callstackDepth);
+            compileBinOp(tok, compileAnd, op, depth);
         } else break;
     }
 }
 
-static void compileOr(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileOr(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileXor(tok,op, callstackDepth);
+    compileXor(tok,op, depth);
     while (tok) {
         if (tok->str() == "|") {
-            compileBinOp(tok, compileXor, op, callstackDepth);
+            compileBinOp(tok, compileXor, op, depth);
         } else break;
     }
 }
 
-static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileOr(tok,op, callstackDepth);
+    compileOr(tok,op, depth);
     while (tok) {
         if (tok->str() == "&&") {
-            compileBinOp(tok, compileOr, op, callstackDepth);
+            compileBinOp(tok, compileOr, op, depth);
         } else break;
     }
 }
 
-static void compileLogicOr(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileLogicOr(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileLogicAnd(tok,op, callstackDepth);
+    compileLogicAnd(tok,op, depth);
     while (tok) {
         if (tok->str() == "||") {
-            compileBinOp(tok, compileLogicAnd, op, callstackDepth);
+            compileBinOp(tok, compileLogicAnd, op, depth);
         } else break;
     }
 }
 
-static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileLogicOr(tok,op, callstackDepth);
+    compileLogicOr(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "[?:]")) {
-            compileBinOp(tok, compileLogicOr, op, callstackDepth);
+            compileBinOp(tok, compileLogicOr, op, depth);
         } else break;
     }
 }
 
-static void compileAssign(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileAssign(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileTernaryOp(tok,op, callstackDepth);
+    compileTernaryOp(tok,op, depth);
     while (tok) {
         if (tok->str() == "=") {
-            compileBinOp(tok, compileTernaryOp, op, callstackDepth);
+            compileBinOp(tok, compileTernaryOp, op, depth);
         } else break;
     }
 }
 
-static void compileComma(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileComma(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    compileAssign(tok,op, callstackDepth);
+    compileAssign(tok,op, depth);
     while (tok) {
         if (tok->str() == ",") {
-            compileBinOp(tok, compileAssign, op, callstackDepth);
+            compileBinOp(tok, compileAssign, op, depth);
         } else break;
     }
 }
 
-static void compileExpression(Token *&tok, std::stack<Token*> &op, CallstackDepth callstackDepth)
+static void compileExpression(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    UGLY_BAILOUT_TO_AVOID_CALLSTACKOVERFLOW
-    if (callstackDepth.exhausted())
+    if (depth > 300)
         return; // ticket #5592
     if (tok)
-        compileComma(tok,op, callstackDepth);
+        compileComma(tok,op, depth+1U);
 }
 
 static Token * createAstAtToken(Token *tok)
@@ -761,7 +722,7 @@ static Token * createAstAtToken(Token *tok)
             } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 std::stack<Token *> operands;
-                compileExpression(tok2, operands, CallstackDepth(0));
+                compileExpression(tok2, operands, 0U);
                 if (tok2->str() == ";" || tok2->str() == ")")
                     break;
                 init1 = 0;
@@ -781,12 +742,12 @@ static Token * createAstAtToken(Token *tok)
         Token * const semicolon1 = tok2;
         tok2 = tok2->next();
         std::stack<Token *> operands2;
-        compileExpression(tok2, operands2, CallstackDepth(0));
+        compileExpression(tok2, operands2, 0U);
 
         Token * const semicolon2 = tok2;
         tok2 = tok2->next();
         std::stack<Token *> operands3;
-        compileExpression(tok2, operands3, CallstackDepth(0));
+        compileExpression(tok2, operands3, 0U);
 
         if (init != semicolon1)
             semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
@@ -817,7 +778,7 @@ static Token * createAstAtToken(Token *tok)
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
         std::stack<Token *> operands;
         Token * const tok1 = tok;
-        compileExpression(tok, operands, CallstackDepth(0));
+        compileExpression(tok, operands, 0U);
         Token * const endToken = tok;
         if (endToken == tok1)
             return tok1;
