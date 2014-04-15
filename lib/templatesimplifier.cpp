@@ -804,7 +804,7 @@ static std::string ShiftInt(const char cop, const Token* left, const Token* righ
 {
     if (cop == '&' || cop == '|' || cop == '^')
         return MathLib::calculate(left->str(), right->str(), cop);
-    
+
     const MathLib::bigint leftInt=MathLib::toLongNumber(left->str());
     const MathLib::bigint rightInt=MathLib::toLongNumber(right->str());
     if (cop == '<') {
@@ -820,7 +820,7 @@ static std::string ShiftUInt(const char cop, const Token* left, const Token* rig
 {
     if (cop == '&' || cop == '|' || cop == '^')
         return MathLib::calculate(left->str(), right->str(), cop);
-    
+
     const MathLib::biguint leftInt=MathLib::toULongNumber(left->str());
     const MathLib::biguint rightInt=MathLib::toULongNumber(right->str());
     if (cop == '<') {
