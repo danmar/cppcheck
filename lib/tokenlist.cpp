@@ -31,6 +31,12 @@
 #include <stack>
 
 
+// How many compileExpression recursions are allowed?
+// For practical code this could be endless. But in some special torture test
+// there needs to be a limit.
+static const unsigned int AST_MAX_DEPTH = 50U;
+
+
 TokenList::TokenList(const Settings* settings) :
     _front(0),
     _back(0),
@@ -702,7 +708,7 @@ static void compileComma(Token *&tok, std::stack<Token*> &op, unsigned int depth
 
 static void compileExpression(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    if (depth > 300)
+    if (depth > AST_MAX_DEPTH)
         return; // ticket #5592
     if (tok)
         compileComma(tok,op, depth+1U);
