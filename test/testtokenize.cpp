@@ -10240,6 +10240,10 @@ private:
 
         ASSERT_EQUALS("pf.pf.12,(&&", testAst("((p.f) && (p.f)(1,2))"));
 
+        // problems with: if (x[y]==z)
+        ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
+        ASSERT_EQUALS("ifbuff0[&(*1==(", testAst("if (*((DWORD*)&buff[0])==1){}"));
+
         // casts
         ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));
         ASSERT_EQUALS("a1(2+=",testAst("a=(t)1+2;"));
@@ -10257,7 +10261,6 @@ private:
         ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
-        ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
     }
 
     void astbrackets() const { // []
