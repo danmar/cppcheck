@@ -2782,7 +2782,9 @@ void CheckOther::checkDuplicateExpression()
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
                             if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
-                                duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
+                                // TODO: warn if variables are unchanged. See #5683
+                                // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
+                                ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
                             else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure))
                                 duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
                             if (!isConstExpression(ast1->astOperand2(), _settings->library.functionpure))
