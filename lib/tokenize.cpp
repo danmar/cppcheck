@@ -8540,17 +8540,18 @@ void Tokenizer::simplifyComma()
                 tok->str(";");
                 tok->insertToken("delete");
             } else {
+                bool replace = false;
                 for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
                     if (tok2->str() == "=") {
                         // Handle "a = 0, b = 0;"
-                        tok->str(";");
-                        break;
+                        replace = true;
                     } else if (Token::Match(tok2, "delete %var%") ||
                                Token::Match(tok2, "delete [ ] %var%")) {
                         // Handle "delete a, a = 0;"
-                        tok->str(";");
-                        break;
-                    } else if (Token::Match(tok2, "[:;,{}()]")) {
+                        replace = true;
+                    } else if (Token::Match(tok2, "[?:;,{}()]")) {
+                        if (replace && Token::Match(tok2, "[;{}]"))
+                            tok->str(";");
                         break;
                     }
                 }

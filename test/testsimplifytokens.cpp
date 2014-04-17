@@ -2895,6 +2895,11 @@ private:
         }
 
         {
+            const char code[] = "a ? b = c , d : e ;"; // do nothing
+            ASSERT_EQUALS(code, tok(code));
+        }
+
+        {
             const char code[] = "void f()\n"
                                 "{\n"
                                 "  A a,b;\n"
