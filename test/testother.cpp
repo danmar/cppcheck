@@ -83,6 +83,7 @@ private:
         TEST_CASE(varScope19);      // Ticket #4994
         TEST_CASE(varScope20);      // Ticket #5103
         TEST_CASE(varScope21);      // Ticket #5382
+        TEST_CASE(varScope22);      // Ticket #5684
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1254,6 +1255,32 @@ private:
                  "    return sizeof(test_array);\n"
                  "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope22() { // Ticket #5684 - "The scope of the variable 'p' can be reduced" - But it can not.
+        varScope("void foo() {\n"
+                 "   int* p( 42 );\n"
+                 "   int i = 0;\n"
+                 "   while ( i != 100 ) {\n"
+                 "      *p = i;\n"
+                 "      ++p;\n"
+                 "      ++i;\n"
+                 "   }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+        // try to avoid an obvious false negative after applying the fix for the example above:
+        varScope("void foo() {\n"
+                 "   int* p( 42 );\n"
+                 "   int i = 0;\n"
+                 "   int dummy = 0;\n"
+                 "   while ( i != 100 ) {\n"
+                 "      p = & dummy;\n"
+                 "      *p = i;\n"
+                 "      ++p;\n"
+                 "      ++i;\n"
+                 "   }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {

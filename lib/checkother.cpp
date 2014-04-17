@@ -1882,6 +1882,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         }
     }
 
+    bool bFirstAssignment=false;
     for (; tok != end; tok = tok->next()) {
         if (tok->str() == "goto")
             return false;
@@ -1916,6 +1917,12 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
             return false;
 
         if (Token::Match(tok, "& %varid%", var->declarationId())) // Taking address of variable
+            return false;
+
+        if (Token::Match(tok, "%varid% = %any%", var->declarationId()))
+            bFirstAssignment = true;
+
+        if (!bFirstAssignment && Token::Match(tok, "* %varid%", var->declarationId())) // dereferencing means access to previous content
             return false;
 
         if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
