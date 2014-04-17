@@ -266,7 +266,7 @@ public:
     void checkCastIntToCharAndBack();
 
     /** @brief %Check for using of comparison functions evaluating always to true or false. */
-    void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
+    void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
 private:
     bool isUnsigned(const Variable *var) const;

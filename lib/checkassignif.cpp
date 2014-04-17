@@ -264,6 +264,8 @@ static bool isOverlappingCond(const Token * const cond1, const Token * const con
     if (cond1->str() == "&" && cond1->astOperand1() && cond2->astOperand2()) {
         const Token *expr1 = cond1->astOperand1();
         const Token *num1  = cond1->astOperand2();
+        if (!num1) // unary operator&
+            return false;
         if (!num1->isNumber())
             std::swap(expr1,num1);
         if (!num1->isNumber() || MathLib::isNegative(num1->str()))

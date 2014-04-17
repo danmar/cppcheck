@@ -10,7 +10,7 @@ env:
 #   this also turns off the debug/warning cxxflags
     - CXXFLAGS="-O2 -Wunreachable-code"
   matrix:
-#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_KERNEL is the var that controlls if we download and check the kernel in that travis job
+#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_KERNEL is the var that controls if we download and check the kernel in that travis job
     - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build VERIFY=1
     -

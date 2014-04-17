@@ -238,6 +238,34 @@ static void valueFlowNumber(TokenList *tokenlist)
     }
 }
 
+static void valueFlowBitAnd(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->str() != "&")
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        MathLib::bigint number;
+        if (MathLib::isInt(tok->astOperand1()->str()))
+            number = MathLib::toLongNumber(tok->astOperand1()->str());
+        else if (MathLib::isInt(tok->astOperand2()->str()))
+            number = MathLib::toLongNumber(tok->astOperand2()->str());
+        else
+            continue;
+
+        int bit = 0;
+        while (bit <= 60 && ((1LL<<bit) < number))
+            ++bit;
+
+        if ((1LL<<bit) == number) {
+            setTokenValue(tok, ValueFlow::Value(0));
+            setTokenValue(tok, ValueFlow::Value(number));
+        }
+    }
+}
+
 static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -759,7 +787,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
     }
     if (!num2tok)
         return false;
-    *num2 = MathLib::toLongNumber(num2tok ? num2tok->str() : "0") - ((tok->str()=="<=") ? 0 : 1);
+    *num2 = MathLib::toLongNumber(num2tok->str()) - ((tok->str()=="<=") ? 0 : 1);
     if (!num1tok)
         *num1 = *num2;
     while (tok && tok->str() != ";")
@@ -776,7 +804,6 @@ static bool valueFlowForLoop2(const Token *tok,
     const Token *firstExpression  = tok->next()->astOperand2()->astOperand1();
     const Token *secondExpression = tok->next()->astOperand2()->astOperand2()->astOperand1();
     const Token *thirdExpression = tok->next()->astOperand2()->astOperand2()->astOperand2();
-    tok = tok->linkAt(1);
 
     std::map<unsigned int, MathLib::bigint> programMemory;
     MathLib::bigint result(0);
@@ -971,6 +998,7 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
         tok->values.clear();
 
     valueFlowNumber(tokenlist);
+    valueFlowBitAnd(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, errorLogger, settings);

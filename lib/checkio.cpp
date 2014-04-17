@@ -1139,6 +1139,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (argInfo.typeToken->originalName() != "ptrdiff_t")
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
+                                                case 'z':
+                                                    if (argInfo.typeToken->originalName() != "ssize_t")
+                                                        invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
+                                                    break;
                                                 default:
                                                     if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);

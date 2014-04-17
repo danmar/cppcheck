@@ -517,6 +517,8 @@ private:
         ASSERT_EQUALS(";;use_;", getcode("type *c; y = x + c->y;","c"));
         ASSERT_EQUALS(";;use_;", getcode("type *c; y = c->y + x;","c"));
         ASSERT_EQUALS(";;use_;", getcode("char *s; s = s + 1;", "s"));
+        ASSERT_EQUALS(";;dealloc;;", getcode("struct foo *s; free(s); printf(a,sizeof(*s));", "s"));
+        ASSERT_EQUALS(";;do{dealloc;;}while(var);", getcode("struct foo *s; do{free(s); printf(a,sizeof(*s));}while(s);", "s"));
 
         // use reference
         ASSERT_EQUALS(";;callfunc&use;", getcode("struct AB *ab; f(&ab);", "ab"));
@@ -4346,6 +4348,7 @@ private:
         TEST_CASE(free_member_in_sub_func);
 
         TEST_CASE(mismatch1);
+        TEST_CASE(mismatch2); // #5659
 
         // allocating member variable in public function
         TEST_CASE(func1);
@@ -5414,6 +5417,54 @@ private:
               "    delete [] pkt_buffer;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+    }
+
+    void mismatch2() { // #5659
+        check("namespace NS\n"
+              "{\n"
+              "class Foo\n"
+              "{\n"
+              "public:\n"
+              "  void fct();\n"
+              "\n"
+              "private:\n"
+              "  char* data_;\n"
+              "};\n"
+              "}\n"
+              "\n"
+              "using namespace NS;\n"
+              "\n"
+              "void Foo::fct()\n"
+              "{\n"
+              "  data_ = new char[42];\n"
+              "  delete data_;\n"
+              "  data_ = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:16]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
+                      "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
+
+        check("namespace NS\n"
+              "{\n"
+              "class Foo\n"
+              "{\n"
+              "public:\n"
+              "  void fct(int i);\n"
+              "\n"
+              "private:\n"
+              "  char* data_;\n"
+              "};\n"
+              "}\n"
+              "\n"
+              "using namespace NS;\n"
+              "\n"
+              "void Foo::fct(int i)\n"
+              "{\n"
+              "  data_ = new char[42];\n"
+              "  delete data_;\n"
+              "  data_ = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:16]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
+                      "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
     }
 
     void func1() {

@@ -217,10 +217,9 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
 {
     reportError(tok, Severity::error, "negativeMemoryAllocationSize",
-                "Memory allocation size have to be greater or equal to 0.\n"
-                "Memory allocation size have to be greater or equal to 0."
-                "The allocation size of memory have to be greater or equal to 0 because"
-                "negative size have no speficied behaviour.");
+                "Memory allocation size is negative.\n"
+                "Memory allocation size is negative."
+                "Negative allocation size has no specified behaviour.");
 }
 
 //---------------------------------------------------------------------------
@@ -1538,8 +1537,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 var = tok->next()->variable();
                 nextTok = 8;
             } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
-                       tok->next()->varId() > 0 &&
-                       nullptr != Token::findmatch(_tokenizer->tokens(), "[;{}] const| %type% * %varid% ;", tok->next()->varId())) {
+                       tok->next()->variable() &&
+                       tok->next()->variable()->isPointer()) {
                 size = 1 + int(tok->tokAt(3)->strValue().size());
                 type = "char";
                 var = tok->next()->variable();

@@ -65,6 +65,7 @@ private:
 
     void run() {
         TEST_CASE(deadlock_with_many_errors);
+        TEST_CASE(many_threads);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -82,6 +83,16 @@ private:
         oss << "  return 0;\n"
             << "}\n";
         check(2, 3, 3, oss.str());
+    }
+
+    void many_threads() {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "  char *a = malloc(10);\n";
+        oss << "  return 0;\n"
+            << "}";
+        check(20, 100, 100, oss.str());
     }
 
     void no_errors_more_files() {

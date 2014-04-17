@@ -544,8 +544,11 @@ public:
           isExplicit(false),
           isDefault(false),
           isDelete(false),
+          isNoExcept(false),
+          isThrow(false),
           isOperator(false),
-          retFuncPtr(false) {
+          noexceptArg(nullptr),
+          throwArg(nullptr) {
     }
 
     const std::string &name() const {
@@ -610,8 +613,11 @@ public:
     bool isExplicit;       // is explicit
     bool isDefault;        // is default
     bool isDelete;         // is delete
+    bool isNoExcept;       // is noexcept
+    bool isThrow;          // is throw
     bool isOperator;       // is operator
-    bool retFuncPtr;       // returns function pointer
+    const Token *noexceptArg;
+    const Token *throwArg;
 
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
@@ -828,6 +834,9 @@ private:
     void addNewFunction(Scope **info, const Token **tok);
     static bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart);
     const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
+    const Scope *findNamespace(const Token * tok, const Scope * scope) const;
+    Function *findFunctionInScope(const Token *func, const Scope *ns);
+
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;

@@ -198,7 +198,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
-            using_info.scope = 0; // fill in later
+            using_info.scope = findNamespace(tok->tokAt(2), scope);
 
             scope->usingList.push_back(using_info);
 
@@ -377,11 +377,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.isExplicit = true;
                         }
 
-                        // function returning function pointer
-                        else if (tok->str() == "(") {
-                            function.retFuncPtr = true;
-                        }
-
                         const Token *tok1 = tok;
 
                         // look for end of previous statement
@@ -416,12 +411,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 function.retDef = tok1;
                         }
 
-                        const Token *end;
-
-                        if (!function.retFuncPtr)
-                            end = function.argDef->link();
-                        else
-                            end = tok->link()->next()->link();
+                        const Token *end = function.argDef->link();
 
                         // const function
                         if (end->next()->str() == "const")
@@ -458,6 +448,72 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             scope->functionList.push_back(function);
                         }
 
+                        // noexcept;
+                        // const noexcept;
+                        else if (Token::Match(end, ") const| noexcept ;")) {
+                            function.isNoExcept = true;
+
+                            if (end->next()->str() == "const")
+                                tok = end->tokAt(3);
+                            else
+                                tok = end->tokAt(2);
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // noexcept const;
+                        else if (Token::simpleMatch(end, ") noexcept const ;")) {
+                            function.isNoExcept = true;
+
+                            tok = end->tokAt(3);
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // noexcept(...);
+                        // noexcept(...) const;
+                        else if (Token::simpleMatch(end, ") noexcept (") &&
+                                 Token::Match(end->linkAt(2), ") const| ;")) {
+                            function.isNoExcept = true;
+
+                            if (end->linkAt(2)->strAt(1) == "const")
+                                tok = end->linkAt(2)->tokAt(2);
+                            else
+                                tok = end->linkAt(2)->next();
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // const noexcept(...);
+                        else if (Token::simpleMatch(end, ") const noexcept (") &&
+                                 Token::simpleMatch(end->linkAt(3), ") ;")) {
+                            function.isNoExcept = true;
+
+                            tok = end->linkAt(3)->next();
+
+                            scope->functionList.push_back(function);
+                        }
+
+                        // throw()
+                        // const throw()
+                        else if (Token::Match(end, ") const| throw (") &&
+                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;") :
+                                  Token::Match(end->linkAt(2), ") ;"))) {
+                            function.isThrow = true;
+
+                            if (end->next()->str() == "const") {
+                                if (end->strAt(4) != ")")
+                                    function.throwArg = end->tokAt(4);
+                                tok = end->linkAt(3)->next();
+                            } else {
+                                if (end->strAt(3) != ")")
+                                    function.throwArg = end->tokAt(3);
+                                tok = end->linkAt(2)->next();
+                            }
+
+                            scope->functionList.push_back(function);
+                        }
+
                         // pure virtual function
                         else if (Token::Match(end, ") const| = %any% ;")) {
                             function.isPure = true;
@@ -480,6 +536,28 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else {
                             function.isInline = true;
                             function.hasBody = true;
+
+                            if (Token::Match(end, ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (end->strAt(1) == "const")
+                                    arg++;
+
+                                if (end->strAt(arg) == "(")
+                                    function.noexceptArg = end->tokAt(arg + 1);
+
+                                function.isNoExcept = true;
+                            } else if (Token::Match(end, ") const| throw (")) {
+                                int arg = 3;
+
+                                if (end->strAt(1) == "const")
+                                    arg++;
+
+                                if (end->strAt(arg) != ")")
+                                    function.throwArg = end->tokAt(arg);
+
+                                function.isThrow = true;
+                            }
 
                             // find start of function '{'
                             while (end && end->str() != "{" && end->str() != ";")
@@ -547,13 +625,12 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
                 // function?
                 if (isFunction(tok, scope, &funcStart, &argStart)) {
-                    bool retFuncPtr = Token::simpleMatch(argStart->link(), ") ) (");
                     const Token* scopeBegin = argStart->link()->next();
-
-                    if (retFuncPtr)
-                        scopeBegin = scopeBegin->next()->link()->next();
                     if (scopeBegin->isName()) { // Jump behind 'const' or unknown Macro
                         scopeBegin = scopeBegin->next();
+                        if (scopeBegin->str() == "throw")
+                            scopeBegin = scopeBegin->next();
+
                         if (scopeBegin->link() && scopeBegin->str() == "(") // Jump behind unknown macro of type THROW(...)
                             scopeBegin = scopeBegin->link()->next();
                     }
@@ -561,28 +638,50 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // has body?
                     if (scopeBegin->str() == "{" || scopeBegin->str() == ":") {
                         tok = funcStart;
-                        Scope *old_scope = scope;
 
                         // class function
-                        if (tok->previous()->str() == "::")
+                        if (tok->previous() && tok->previous()->str() == "::")
                             addClassFunction(&scope, &tok, argStart);
 
                         // class destructor
-                        else if (tok->previous()->str() == "~" &&
+                        else if (tok->previous() &&
+                                 tok->previous()->str() == "~" &&
                                  tok->strAt(-2) == "::")
                             addClassFunction(&scope, &tok, argStart);
 
                         // regular function
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
-                            function->retFuncPtr = retFuncPtr;
+                            if (!function)
+                                _tokenizer->syntaxError(tok);
+
+                            // global functions can't be const but we have tests that are
+                            if (Token::Match(argStart->link(), ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) == "(")
+                                    function->noexceptArg = argStart->link()->tokAt(arg + 1);
+
+                                function->isNoExcept = true;
+                            } else if (Token::Match(argStart->link(), ") const| throw (")) {
+                                int arg = 3;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) != ")")
+                                    function->throwArg = argStart->link()->tokAt(arg);
+
+                                function->isThrow = true;
+                            }
                         }
 
                         // syntax error?
-                        if (!scope) {
-                            scope = old_scope;
-                            break;
-                        }
+                        if (!scope)
+                            _tokenizer->syntaxError(tok);
                     }
                     // function prototype?
                     else if (scopeBegin->str() == ";") {
@@ -597,7 +696,28 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // save function prototype in database
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-                            func->retFuncPtr = retFuncPtr;
+
+                            if (Token::Match(argStart->link(), ") const| noexcept")) {
+                                int arg = 2;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) == "(")
+                                    func->noexceptArg = argStart->link()->tokAt(arg + 1);
+
+                                func->isNoExcept = true;
+                            } else if (Token::Match(argStart->link(), ") const| throw (")) {
+                                int arg = 3;
+
+                                if (argStart->link()->strAt(1) == "const")
+                                    arg++;
+
+                                if (argStart->link()->strAt(arg) != ")")
+                                    func->throwArg = argStart->link()->tokAt(arg);
+
+                                func->isThrow = true;
+                            }
                         }
 
                         tok = scopeBegin;
@@ -669,12 +789,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // fill in using info
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
-            // check scope for match
-            scope = findScope(i->start->tokAt(2), &(*it));
-            if (scope) {
-                // set found scope
-                i->scope = scope;
-                break;
+            // only find if not already found
+            if (i->scope == nullptr) {
+                // check scope for match
+                scope = findScope(i->start->tokAt(2), &(*it));
+                if (scope) {
+                    // set found scope
+                    i->scope = scope;
+                    break;
+                }
             }
         }
     }
@@ -962,22 +1085,39 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct())) { // or a ctor/dtor
         const Token* tok2 = tok->next()->link()->next();
-        if ((Token::Match(tok2, "const| ;|{|=") ||
+        if (tok2 &&
+            (Token::Match(tok2, "const| ;|{|=") ||
              (Token::Match(tok2, "%var% ;|{") && tok2->isUpperCaseName()) ||
              (Token::Match(tok2, "%var% (") && tok2->isUpperCaseName() && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %var% (|::|<|{") ||
-             Token::Match(tok2, "= delete|default ;"))) {
+             Token::Match(tok2, "= delete|default ;") ||
+             Token::Match(tok2, "const| noexcept const| {|:|;") ||
+             (Token::Match(tok2, "const| noexcept|throw (") &&
+              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->tokAt(2)->link(), ") const| {|:|;")) :
+              (tok2->next() && Token::Match(tok2->next()->link(), ") const| {|:|;"))))) {
             *funcStart = tok;
             *argStart = tok->next();
             return true;
         }
     }
 
+    // UNKNOWN_MACRO(a,b) { ... }
+    else if (outerScope->type == Scope::eGlobal &&
+             Token::Match(tok, "%var% (") &&
+             tok->isUpperCaseName() &&
+             Token::Match(tok->linkAt(1), ") {") &&
+             (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+        *funcStart = tok;
+        *argStart = tok->next();
+        return true;
+    }
+
     // template constructor?
     else if (Token::Match(tok, "%var% <") && Token::simpleMatch(tok->next()->link(), "> (")) {
         const Token* tok2 = tok->next()->link()->next()->link();
         if (Token::Match(tok2, ") const| ;|{|=") ||
-            Token::Match(tok2, ") : ::| %var% (|::|<|{")) {
+            Token::Match(tok2, ") : ::| %var% (|::|<|{") ||
+            Token::Match(tok->next()->link()->next()->link(), ") const| noexcept {|;|(")) {
             *funcStart = tok;
             *argStart = tok2->link();
             return true;
@@ -1314,6 +1454,31 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         Scope *scope1 = &(*it1);
 
         bool match = false;
+
+        // check in namespace if using found
+        if (*scope == scope1 && !scope1->usingList.empty()) {
+            std::list<Scope::UsingInfo>::const_iterator it2;
+            for (it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
+                if (it2->scope) {
+                    Function * func = findFunctionInScope(tok1, it2->scope);
+                    if (func) {
+                        if (!func->hasBody) {
+                            func->hasBody = true;
+                            func->token = *tok;
+                            func->arg = argStart;
+                            addNewFunction(scope, tok);
+                            if (*scope) {
+                                (*scope)->functionOf = func->nestedIn;
+                                (*scope)->function = &*func;
+                                (*scope)->function->functionScope = *scope;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         if (scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((*scope == scope1->nestedIn) || (*scope &&
@@ -1361,17 +1526,11 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             func->hasBody = true;
                         } else if (func->type != Function::eDestructor && !destructor) {
                             // normal function?
-                            if (!func->retFuncPtr && (*tok)->next()->link()) {
+                            if ((*tok)->next()->link()) {
                                 if ((func->isConst && (*tok)->next()->link()->next()->str() == "const") ||
                                     (!func->isConst && (*tok)->next()->link()->next()->str() != "const")) {
                                     func->hasBody = true;
                                 }
-                            }
-
-                            // function returning function pointer?
-                            else if (func->retFuncPtr) {
-                                // todo check for const
-                                func->hasBody = true;
                             }
                         }
 
@@ -1744,8 +1903,11 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isExplicit: " << (func->isExplicit ? "true" : "false") << std::endl;
             std::cout << "        isDefault: " << (func->isDefault ? "true" : "false") << std::endl;
             std::cout << "        isDelete: " << (func->isDelete ? "true" : "false") << std::endl;
+            std::cout << "        isNoExcept: " << (func->isNoExcept ? "true" : "false") << std::endl;
+            std::cout << "        isThrow: " << (func->isThrow ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
-            std::cout << "        retFuncPtr: " << (func->retFuncPtr ? "true" : "false") << std::endl;
+            std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
+            std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;
             std::cout << "        argDef: " << _tokenizer->list.fileLine(func->argDef) << std::endl;
             if (!func->isConstructor() && !func->isDestructor())
@@ -2391,6 +2553,8 @@ static const Token* skipPointers(const Token* tok)
 {
     while (Token::Match(tok, "*|&|&&")  || (tok && tok->str() == "(" && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
+        if (tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
+            tok = tok->tokAt(2);
     }
 
     return tok;
@@ -2794,6 +2958,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     // not a valid path
     return 0;
 }
+
 //---------------------------------------------------------------------------
 
 const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope *startScope) const
@@ -2846,3 +3011,45 @@ const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope 
     // not a valid path
     return 0;
 }
+
+//---------------------------------------------------------------------------
+
+const Scope * SymbolDatabase::findNamespace(const Token * tok, const Scope * scope) const
+{
+    const Scope * s = findScope(tok, scope);
+
+    if (s)
+        return s;
+    else if (scope->nestedIn)
+        return findNamespace(tok, scope->nestedIn);
+
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *ns)
+{
+    const Function * function = nullptr;
+
+    std::list<Function>::const_iterator it;
+
+    for (it = ns->functionList.begin(); it != ns->functionList.end(); ++it) {
+        if (it->name() == func->str()) {
+            if (Function::argsMatch(ns, func->tokAt(2), it->argDef->next(), "", 0)) {
+                function = &*it;
+                break;
+            }
+        }
+    }
+
+    if (!function) {
+        const Scope * scope = ns->findRecordInNestedList(func->str());
+        if (scope && func->strAt(1) == "::") {
+            function = findFunctionInScope(func->tokAt(2), scope);
+        }
+    }
+
+    return const_cast<Function *>(function);
+}
+

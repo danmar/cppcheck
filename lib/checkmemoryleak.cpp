@@ -582,7 +582,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             tok->str() == "realloc" ||
             tok->str() == "return" ||
             tok->str() == "switch" ||
-            tok->str() == "while") {
+            tok->str() == "while" ||
+            tok->str() == "sizeof") {
             return 0;
         }
 

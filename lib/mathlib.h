@@ -21,6 +21,7 @@
 #define mathlibH
 //---------------------------------------------------------------------------
 
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include "config.h"
@@ -33,8 +34,11 @@
 class CPPCHECKLIB MathLib {
 public:
     typedef long long bigint;
+    typedef unsigned long long biguint;
 
     static bigint toLongNumber(const std::string & str);
+    static biguint toULongNumber(const std::string & str);
+
     template<class T> static std::string toString(T value) {
         std::ostringstream result;
         result << value;
@@ -46,6 +50,7 @@ public:
     static bool isFloat(const std::string &str);
     static bool isNegative(const std::string &str);
     static bool isPositive(const std::string &str);
+    static bool isDec(const std::string & str);
     static bool isHex(const std::string& str);
     static bool isOct(const std::string& str);
     static bool isBin(const std::string& str);

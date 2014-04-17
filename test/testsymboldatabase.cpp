@@ -49,6 +49,15 @@ public:
     }
 
 private:
+    void createSymbolDatabase(const char code[]) {
+        errout.str("");
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.getSymbolDatabase();
+    }
+
     const Scope si;
     const Token* vartok;
     const Token* typetok;
@@ -136,6 +145,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
         TEST_CASE(complexFunctionArrayPtr);
+        TEST_CASE(pointerToMemberFunction);
         TEST_CASE(hasSubClassConstructor);
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
@@ -215,8 +225,15 @@ private:
 
         TEST_CASE(garbage);
 
+        TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
+
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
+
+        TEST_CASE(noexceptFunction1);
+        TEST_CASE(noexceptFunction2);
+        TEST_CASE(noexceptFunction3);
+        TEST_CASE(noexceptFunction4);
     }
 
     void array() const {
@@ -706,7 +723,9 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
@@ -714,10 +733,10 @@ private:
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && function->hasBody && function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
-            ASSERT(function && function->retDef == tokenizer.tokens()->tokAt(3));
+            ASSERT(function && function->retDef == functionToken->previous());
 
             ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
         }
@@ -730,14 +749,16 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && !function->hasBody);
         }
     }
@@ -749,7 +770,9 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(12));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens()->linkAt(2), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
@@ -757,7 +780,7 @@ private:
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && function->hasBody && !function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         }
@@ -770,15 +793,17 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(3));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
-            ASSERT(function && function->hasBody && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody);
         }
     }
 
@@ -789,15 +814,17 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
-            ASSERT(function && function->hasBody && function->isInline && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody && function->isInline);
         }
     }
 
@@ -808,15 +835,17 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
-            ASSERT(function && !function->hasBody && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && !function->hasBody);
         }
     }
 
@@ -827,15 +856,17 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(23));
+            const Token * const functionToken = Token::findmatch(tokenizer.tokens()->linkAt(2), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
-            ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody && !function->isInline);
         }
     }
 
@@ -868,6 +899,21 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
     }
+
+    void pointerToMemberFunction() {
+        GET_SYMBOL_DB("bool (A::*pFun)();"); // Pointer to member function of A, returning bool and taking no parameters
+
+        ASSERT(db != nullptr);
+
+        if (db) {
+            ASSERT_EQUALS(1, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            if (db->getVariableFromVarId(1))
+                ASSERT_EQUALS("pFun", db->getVariableFromVarId(1)->name());
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
     void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
         ASSERT(db != nullptr);
@@ -1931,8 +1977,28 @@ private:
             (void)db;
         }
         {
-            ASSERT_THROW(GET_SYMBOL_DB("class Foo {}; class Bar : public Foo"), InternalError);
+            ASSERT_THROW(createSymbolDatabase("class Foo {}; class Bar : public Foo"), InternalError);
         }
+        {
+            ASSERT_THROW(createSymbolDatabase("YY_DECL { switch (yy_act) {\n"
+                                              "    case 65: YY_BREAK\n"
+                                              "    case YY_STATE_EOF(block):\n"
+                                              "        yyterminate(); \n"
+                                              "} }"), InternalError); // #5663
+        }
+    }
+
+    void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
+        GET_SYMBOL_DB("TEST(a,b) {\n"
+                      "  std::vector<int> messages;\n"
+                      "  foo(messages[2].size());\n"
+                      "}");
+        const Variable * const var = db ? db->getVariableFromVarId(1U) : nullptr;
+        ASSERT(db &&
+               db->findScopeByName("TEST") &&
+               var &&
+               var->typeStartToken() &&
+               var->typeStartToken()->str() == "std");
     }
 
     void findFunction1() {
@@ -1980,6 +2046,104 @@ private:
         ASSERT_EQUALS(true,  callfunc != nullptr); // not null
         ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
     }
+
+#define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+                ASSERT_EQUALS(true, x != nullptr);                                       \
+                if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction1() {
+        GET_SYMBOL_DB("void func1() noexcept;\n"
+                      "void func2() noexcept { }\n"
+                      "void func3() noexcept(true);\n"
+                      "void func4() noexcept(true) { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(func1);
+            FUNC(func2);
+            FUNC(func3);
+            FUNC(func4);
+        }
+    }
+
+    void noexceptFunction2() {
+        GET_SYMBOL_DB("template <class T> void self_assign(T& t) noexcept(noexcept(t = t)) {t = t; }\n");
+
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(self_assign);
+        }
+    }
+
+#define CLASS_FUNC(x, y) const Function *x = findFunctionByName(#x, y); \
+                         ASSERT_EQUALS(true, x != nullptr);             \
+                         if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction3() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void func1() noexcept;\n"
+                      "    void func2() noexcept { }\n"
+                      "    void func3() noexcept(true);\n"
+                      "    void func4() noexcept(true) { }\n"
+                      "    void func5() const noexcept;\n"
+                      "    void func6() const noexcept { }\n"
+                      "    void func7() const noexcept(true);\n"
+                      "    void func8() const noexcept(true) { }\n"
+                      "    void func9() noexcept const;\n"
+                      "    void func10() noexcept const { }\n"
+                      "    void func11() noexcept(true) const;\n"
+                      "    void func12() noexcept(true) const { }\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *fred = db->findScopeByName("Fred");
+            ASSERT_EQUALS(true, fred != nullptr);
+            if (fred) {
+                CLASS_FUNC(func1, fred);
+                CLASS_FUNC(func2, fred);
+                CLASS_FUNC(func3, fred);
+                CLASS_FUNC(func4, fred);
+                CLASS_FUNC(func5, fred);
+                CLASS_FUNC(func6, fred);
+                CLASS_FUNC(func7, fred);
+                CLASS_FUNC(func8, fred);
+                CLASS_FUNC(func9, fred);
+                CLASS_FUNC(func10, fred);
+                CLASS_FUNC(func11, fred);
+                CLASS_FUNC(func12, fred);
+            }
+        }
+    }
+
+    void noexceptFunction4() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "   A(A&& a) {\n"
+                      "      throw std::runtime_error(\"err\");\n"
+                      "   }\n"
+                      "};\n"
+                      "class B {\n"
+                      "   A a;\n"
+                      "   B(B&& b) noexcept\n"
+                      "   :a(std::move(b.a)) { }\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *b = db->findScopeByName("B");
+            ASSERT_EQUALS(true, b != nullptr);
+            if (b) {
+                CLASS_FUNC(B, b);
+            }
+        }
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)

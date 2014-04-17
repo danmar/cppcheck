@@ -4137,7 +4137,7 @@ private:
               "   a = new int[-1];\n"
               "   delete [] a;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -4145,7 +4145,7 @@ private:
               "   a = malloc( -10 );\n"
               "   free(a);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -4153,7 +4153,7 @@ private:
               "   a = malloc( -10);\n"
               "   free(a);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -4161,7 +4161,7 @@ private:
               "   a = alloca( -10 );\n"
               "   free(a);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size have to be greater or equal to 0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
     }
 };
 

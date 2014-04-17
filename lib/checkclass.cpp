@@ -577,7 +577,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             ftok = ftok->tokAt(2);
 
         // Skip "classname :: "
-        if (Token::Match(ftok, ":: %var% "))
+        if (Token::Match(ftok, ":: %var%"))
             ftok = ftok->next();
         while (Token::Match(ftok, "%var% ::"))
             ftok = ftok->tokAt(2);
@@ -790,6 +790,9 @@ void CheckClass::initializationListUsage()
                             const Variable* var2 = tok2->variable();
                             if (var2 && var2->scope() == owner &&
                                 tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
+                                allowed = false;
+                                break;
+                            } else if (var2 && (var2->isArray() && var2->isLocal())) { // Can't initialize with a local array
                                 allowed = false;
                                 break;
                             }

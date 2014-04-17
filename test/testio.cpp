@@ -2735,6 +2735,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #5486
+        check("void foo() {\n"
+              "    ssize_t test = 0;\n"
+              "    printf(\"%zd\", test);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings

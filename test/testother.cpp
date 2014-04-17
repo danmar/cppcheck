@@ -83,6 +83,7 @@ private:
         TEST_CASE(varScope19);      // Ticket #4994
         TEST_CASE(varScope20);      // Ticket #5103
         TEST_CASE(varScope21);      // Ticket #5382
+        TEST_CASE(varScope22);      // Ticket #5684
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -134,7 +135,6 @@ private:
         TEST_CASE(incorrectLogicOperator6); // char literals
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
-        TEST_CASE(sameExpression);
 
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
@@ -1255,6 +1255,32 @@ private:
                  "    return sizeof(test_array);\n"
                  "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope22() { // Ticket #5684 - "The scope of the variable 'p' can be reduced" - But it can not.
+        varScope("void foo() {\n"
+                 "   int* p( 42 );\n"
+                 "   int i = 0;\n"
+                 "   while ( i != 100 ) {\n"
+                 "      *p = i;\n"
+                 "      ++p;\n"
+                 "      ++i;\n"
+                 "   }\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+        // try to avoid an obvious false negative after applying the fix for the example above:
+        varScope("void foo() {\n"
+                 "   int* p( 42 );\n"
+                 "   int i = 0;\n"
+                 "   int dummy = 0;\n"
+                 "   while ( i != 100 ) {\n"
+                 "      p = & dummy;\n"
+                 "      *p = i;\n"
+                 "      ++p;\n"
+                 "      ++i;\n"
+                 "   }\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[]) {
@@ -4115,15 +4141,6 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
     }
 
-    void sameExpression() {
-        // #3868 - false positive (same expression on both sides of |)
-        check("void f(int x) {\n"
-              "    a = x ? A | B | C\n"
-              "          : A | B;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void memsetZeroBytes() {
         check("void f() {\n"
               "    memset(p, 10, 0x0);\n"
@@ -4640,7 +4657,12 @@ private:
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        check("void foo() {\n"
+              "    if (x!=2 && (x=y) && x!=2) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
               "    if (a && b || a && b) {}\n"
@@ -4729,6 +4751,19 @@ private:
         // #5535: Reference named like its type
         check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
         ASSERT_EQUALS("", errout.str());
+
+        // #3868 - false positive (same expression on both sides of |)
+        check("void f(int x) {\n"
+              "    a = x ? A | B | C\n"
+              "          : A | B;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool a = bar.isSet() && bar->isSet();\n"
+              "    bool b = bar.isSet() && bar.isSet();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
@@ -6247,6 +6282,13 @@ private:
               "    bar(i);\n" // Passed as argument
               "    i = 1;\n"
               "}", nullptr, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    Foo bar = foo();\n"
+              "    bar();\n" // #5568. operator() called
+              "    bar = y();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // Branch tests

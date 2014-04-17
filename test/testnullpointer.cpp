@@ -82,9 +82,17 @@ private:
         TEST_CASE(crash1);
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
+        TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
+        TEST_CASE(nullpointerMemchr);
+        TEST_CASE(nullpointerPutchar);
 
         // Test that std.cfg is configured correctly
         TEST_CASE(stdcfg);
+
+        // Load posix library file
+        LOAD_LIB_2(settings.library, "posix.cfg");
+        // Test that posix.cfg is configured correctly
+        TEST_CASE(posixcfg);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -2533,6 +2541,70 @@ private:
 
         check("void f(char * p,char * q){ strtol (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
+    }
+
+    void nullpointerFputc() {
+        check("int main () {\n"
+              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+              "fputc(000, fp);   \n"
+              "fclose(fp);\n"
+              "return 0 ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main () {\n"
+              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
+              "char *nullstring=0;"
+              "fputc(*nullstring, fp);   \n"
+              "fclose(fp);\n"
+              "return 0 ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: nullstring\n", errout.str());
+    }
+
+    void nullpointerMemchr() {
+        check("void f (char *p, char *s) {\n"
+              "  p = memchr (s, 'p', strlen(s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f (char *p, char *s) {\n"
+              "  p = memchr (s, 0, strlen(s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f (char *p) {\n"
+              "  char *s = 0;\n"
+              "  p = memchr (s, 0, strlen(s));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: s\n", errout.str());
+    }
+
+    void nullpointerPutchar() {
+        check("void f (char *c) {\n"
+              "  putchar(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f () {\n"
+              "  putchar(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f () {\n"
+              "  putchar(*0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void posixcfg() {
+        const char errp[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n";
+
+        check("void f(FILE *p){ isatty (*p);if(!p){}}");
+        ASSERT_EQUALS(errp,errout.str());
+
+        check("void f(){ isatty (0);}");
+        ASSERT_EQUALS("",errout.str());
     }
 };
 

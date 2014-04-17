@@ -1620,6 +1620,14 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
         }
 
+        // Ticket #5660 - False positive
+        checkUninitVar("int f() {\n"
+                       "    int result;\n"
+                       "    int *res[] = {&result};\n"
+                       "    foo(res);\n"
+                       "    return result;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // strncpy doesn't always null-terminate..
@@ -3254,6 +3262,15 @@ private:
                         "    while (x) {\n"
                         "        for (i = 0; i < 5; i++)\n"
                         "            a[i] = b[i];\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(void) {\n" // #5658
+                        "    struct Foo *foo;\n"
+                        "    while (true) {\n"
+                        "            foo = malloc(sizeof(*foo));\n"
+                        "            foo->x = 0;\n"
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());

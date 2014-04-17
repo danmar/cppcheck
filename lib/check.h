@@ -41,7 +41,16 @@
 class CPPCHECKLIB Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    explicit Check(const std::string &aname);
+    explicit Check(const std::string &aname)
+        : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname) {
+        for (std::list<Check*>::iterator i = instances().begin(); i != instances(). end(); ++i) {
+            if ((*i)->name() > aname) {
+                instances().insert(i, this);
+                return;
+            }
+        }
+        instances().push_back(this);
+    }
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -49,9 +58,8 @@ public:
     }
 
     virtual ~Check() {
-#if !defined(DJGPP) && !defined(__sun)
-        instances().remove(this);
-#endif
+        if (!_tokenizer)
+            instances().remove(this);
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
@@ -140,22 +148,6 @@ private:
     void operator=(const Check &);
     Check(const Check &);
 };
-
-namespace std {
-    /** compare the names of Check classes, used when sorting the Check descendants */
-    template <> struct less<Check *> {
-        bool operator()(const Check *p1, const Check *p2) const {
-            return (p1->name() < p2->name());
-        }
-    };
-}
-
-inline Check::Check(const std::string &aname)
-    : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname)
-{
-    instances().push_back(this);
-    instances().sort(std::less<Check *>());
-}
 
 /// @}
 //---------------------------------------------------------------------------

@@ -4108,8 +4108,7 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }");
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
     }
 
     void const36() { // ticket #2003
@@ -5732,6 +5731,17 @@ private:
         checkInitializationListUsage("class Fred {\n" // #4332
                                      "    static std::string s;\n"
                                      "    Fred() { s = \"foo\"; }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n" // #5640
+                                     "    std::string s;\n"
+                                     "    Fred() {\n"
+                                     "        char str[2];\n"
+                                     "        str[0] = c;\n"
+                                     "        str[1] = 0;\n"
+                                     "        s = str;\n"
+                                     "    }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
     }
