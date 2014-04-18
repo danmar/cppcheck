@@ -523,7 +523,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 Token * const end   = start->link();
                 if (Token::findmatch(start, "%varid%", end, varid)) {
                     // TODO: don't check noreturn scopes
-                    if (number_of_if > 0U) {
+                    if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
                         break;

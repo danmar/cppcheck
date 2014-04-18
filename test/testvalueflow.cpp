@@ -594,6 +594,15 @@ private:
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 32));
 
+        code = "void f() {\n" // #5656 - FP
+               "    int x = 0;\n"
+               "    if (!x) {\n"
+               "        x = getx();\n"
+               "    }\n"
+               "    y = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"
