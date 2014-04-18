@@ -2605,6 +2605,15 @@ private:
 
         check("void f(){ isatty (0);}");
         ASSERT_EQUALS("",errout.str());
+
+        check("void f(char *p){ mkdir (p, 0);}");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(char *p){ int i = 0; mkdir (p, i);}");
+        ASSERT_EQUALS("",errout.str());
+
+        check("void f(char *p){ mkdir (p, *0);}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Null pointer dereference\n",errout.str());
     }
 };
 
