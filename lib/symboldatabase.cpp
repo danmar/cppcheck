@@ -48,9 +48,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // find all scopes
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
-        _errorLogger->reportProgress(_tokenizer->getSourceFilePath(),
-                                     "SymbolDatabase",
-                                     tok->progressValue());
+        if (_errorLogger)
+            _errorLogger->reportProgress(_tokenizer->getSourceFilePath(),
+                                         "SymbolDatabase",
+                                         tok->progressValue());
         // Locate next class
         if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
             tok->strAt(-1) != "friend") {
