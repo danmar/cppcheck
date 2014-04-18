@@ -174,10 +174,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                     return No;
                 return Fd;
             }
-        }
 
-        if (Token::simpleMatch(tok2, "popen ("))
-            return Pipe;
+            if (Token::simpleMatch(tok2, "popen ("))
+                return Pipe;
+        }
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
         const int alloctype = settings1->library.alloc(tok2->str());
