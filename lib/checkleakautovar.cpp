@@ -263,8 +263,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             const Token *tok2 = tok->linkAt(1);
             if (Token::simpleMatch(tok2, ") {")) {
-                VarInfo varInfo1(*varInfo);
-                VarInfo varInfo2(*varInfo);
+                VarInfo varInfo1(*varInfo);  // VarInfo for if code
+                VarInfo varInfo2(*varInfo);  // VarInfo for else code
 
                 if (Token::Match(tok->next(), "( %var% )")) {
                     varInfo2.erase(tok->tokAt(2)->varId());
@@ -274,6 +274,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     varInfo1.erase(tok->tokAt(3)->varId());
                 } else if (Token::Match(tok->next(), "( %var% ( ! %var% ) )|&&")) {
                     varInfo1.erase(tok->tokAt(5)->varId());
+                } else if (Token::Match(tok->next(), "( %var% < 0 )|&&")) {
+                    varInfo1.erase(tok->tokAt(2)->varId());
+                } else if (Token::Match(tok->next(), "( 0 > %var% )|&&")) {
+                    varInfo1.erase(tok->tokAt(4)->varId());
+                } else if (Token::Match(tok->next(), "( %var% > 0 )|&&")) {
+                    varInfo2.erase(tok->tokAt(2)->varId());
+                } else if (Token::Match(tok->next(), "( 0 < %var% )|&&")) {
+                    varInfo2.erase(tok->tokAt(4)->varId());
                 }
 
                 checkScope(tok2->next(), &varInfo1, notzero);
