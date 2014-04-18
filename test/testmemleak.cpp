@@ -4242,6 +4242,7 @@ private:
     // Test that posix.cfg is configured correctly
     void posixcfg() {
         Settings settings;
+        settings.standards.posix = true;
         LOAD_LIB_2(settings.library, "posix.cfg");
 
         const char code[] = "void leaks() {\n"
@@ -4258,6 +4259,13 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: leak1\n"
                       "[test.cpp:5]: (error) Resource leak: leak2\n"
                       "[test.cpp:5]: (error) Resource leak: leak3\n", errout.str());
+
+        const char code2[] = "int main() {\n"
+                             "  int fileDescriptor = socket(AF_INET, SOCK_STREAM, 0);\n"
+                             "  close(fileDescriptor);\n"
+                             "}";
+        check(code2, &settings);
+        ASSERT_EQUALS("", errout.str());
 
         LOAD_LIB_2(settings.library, "gtk.cfg");
 

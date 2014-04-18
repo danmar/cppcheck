@@ -162,7 +162,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return File;
 
         if (settings1->standards.posix) {
-            if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
+            if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
                 unsigned int num = countParameters(tok2);
