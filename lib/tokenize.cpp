@@ -8564,7 +8564,7 @@ void Tokenizer::simplifyComma()
 
         // find "; return" pattern before comma
         for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
-            if (Token::Match(tok2, "[;{}]")) {
+            if (Token::Match(tok2, "[;{}?]")) {
                 break;
 
             } else if (tok2->str() == ")" || tok2->str() == "]" ||
