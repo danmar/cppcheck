@@ -34,6 +34,7 @@ private:
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(memory);
+        TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
     }
 
@@ -126,6 +127,29 @@ private:
 
         ASSERT(Library::ismemory(library.alloc("CreateX")));
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
+    }
+    void memory2() const {
+        const char xmldata1[] = "<?xml version=\"1.0\"?>\n"
+                                "<def>\n"
+                                "  <memory>\n"
+                                "    <alloc>malloc</alloc>\n"
+                                "    <dealloc>free</dealloc>\n"
+                                "  </memory>\n"
+                                "</def>";
+        const char xmldata2[] = "<?xml version=\"1.0\"?>\n"
+                                "<def>\n"
+                                "  <memory>\n"
+                                "    <alloc>foo</alloc>\n"
+                                "    <dealloc>free</dealloc>\n"
+                                "  </memory>\n"
+                                "</def>";
+
+        Library library;
+        library.loadxmldata(xmldata1, sizeof(xmldata1));
+        library.loadxmldata(xmldata2, sizeof(xmldata2));
+
+        ASSERT_EQUALS(library.dealloc("free"), library.alloc("malloc"));
+        ASSERT_EQUALS(library.dealloc("free"), library.alloc("foo"));
     }
 
     void resource() const {

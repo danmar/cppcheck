@@ -92,19 +92,35 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(),"memory")==0 || strcmp(node->Name(),"resource")==0) {
-            if (strcmp(node->Name(), "memory")==0)
-                while (!ismemory(++allocid));
-            else
-                while (!isresource(++allocid));
+            // get allocationId to use..
+            int allocationId = 0;
+            for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
+                if (strcmp(memorynode->Name(),"dealloc")==0) {
+                    const std::map<std::string,int>::const_iterator it = _dealloc.find(memorynode->GetText());
+                    if (it != _dealloc.end()) {
+                        allocationId = it->second;
+                        break;
+                    }
+                }
+            }
+            if (allocationId == 0) {
+                if (strcmp(node->Name(), "memory")==0)
+                    while (!ismemory(++allocid));
+                else
+                    while (!isresource(++allocid));
+                allocationId = allocid;
+            }
+
+            // add alloc/dealloc/use functions..
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 if (strcmp(memorynode->Name(),"alloc")==0) {
-                    _alloc[memorynode->GetText()] = allocid;
+                    _alloc[memorynode->GetText()] = allocationId;
                     const char *init = memorynode->Attribute("init");
                     if (init && strcmp(init,"false")==0) {
                         returnuninitdata.insert(memorynode->GetText());
                     }
                 } else if (strcmp(memorynode->Name(),"dealloc")==0)
-                    _dealloc[memorynode->GetText()] = allocid;
+                    _dealloc[memorynode->GetText()] = allocationId;
                 else if (strcmp(memorynode->Name(),"use")==0)
                     use.insert(memorynode->GetText());
                 else
