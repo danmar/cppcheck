@@ -63,6 +63,7 @@ public:
         checkExceptionSafety.checkCatchExceptionByValue();
         checkExceptionSafety.noexceptThrows();
         checkExceptionSafety.nothrowThrows();
+        checkExceptionSafety.unhandledExceptionSpecification();
     }
 
     /** Don't throw exceptions in destructors */
@@ -82,6 +83,9 @@ public:
 
     /** @brief %Check for throw() functions that throw */
     void nothrowThrows();
+
+    /** @brief %Check for unhandled exception specification */
+    void unhandledExceptionSpecification();
 
 private:
     /** Don't throw exceptions in destructors */
@@ -118,6 +122,18 @@ private:
         reportError(tok, Severity::error, "exceptThrowInNoThrowFunction", "Exception thrown in throw() function.");
     }
 
+    /** Missing exception specification */
+    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
+        std::string str1(tok1 ? tok1->str() : "foo");
+        std::list<const Token*> locationList;
+        locationList.push_back(tok1);
+        locationList.push_back(tok2);
+        reportError(locationList, Severity::warning, "unhandledExceptionSpecification",
+                    "Unhandled exception specification when calling function " + str1 + "().\n"
+                    "Unhandled exception specification when calling function " + str1 + "(). "
+                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.");
+    }
+
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckExceptionSafety c(0, settings, errorLogger);
@@ -127,6 +143,7 @@ private:
         c.catchExceptionByValueError(0);
         c.noexceptThrowError(0);
         c.nothrowThrowError(0);
+        c.unhandledExceptionSpecificationError(0, 0, "funcname");
     }
 
     /** Short description of class (for --doc) */
@@ -142,7 +159,8 @@ private:
                "* Throwing a copy of a caught exception instead of rethrowing the original exception\n"
                "* Exception caught by value instead of by reference\n"
                "* Throwing exception in noexcept function\n"
-               "* Throwing exception in nothrow() function\n";
+               "* Throwing exception in nothrow() function\n"
+               "* Unhandled exception specification when calling function foo()\n";
     }
 };
 /// @}

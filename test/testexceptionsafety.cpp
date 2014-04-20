@@ -44,6 +44,7 @@ private:
         TEST_CASE(catchExceptionByValue);
         TEST_CASE(noexceptThrow);
         TEST_CASE(nothrowThrow);
+        TEST_CASE(unhandledExceptionSpecification); // #4800
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -312,11 +313,15 @@ private:
     }
 
     void noexceptThrow() {
-        check("void func1() noexcept { throw 1; }\n"
-              "void func2() noexcept(true) { throw 1; }\n"
-              "void func3() noexcept(false) { throw 1; }\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in noexcept function.\n"
-                      "[test.cpp:2]: (error) Exception thrown in noexcept function.\n", errout.str());
+        check("void func1() noexcept(false) { throw 1; }\n"
+              "void func2() noexcept { throw 1; }\n"
+              "void func3() noexcept(true) { throw 1; }\n"
+              "void func4() noexcept(false) { throw 1; }\n"
+              "void func5() noexcept(true) { func1(); }\n"
+              "void func6() noexcept(false) { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in noexcept function.\n"
+                      "[test.cpp:3]: (error) Exception thrown in noexcept function.\n"
+                      "[test.cpp:5]: (error) Exception thrown in noexcept function.\n", errout.str());
 
         // avoid false positives
         check("const char *func() noexcept { return 0; }\n");
@@ -324,13 +329,32 @@ private:
     }
 
     void nothrowThrow() {
-        check("void func1() throw() { throw 1; }\n"
-              "void func2() throw(int) { throw 1; }\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Exception thrown in throw() function.\n", errout.str());
+        check("void func1() throw(int) { throw 1; }\n"
+              "void func2() throw() { throw 1; }\n"
+              "void func3() throw(int) { throw 1; }\n"
+              "void func4() throw() { func1(); }\n"
+              "void func5() throw(int) { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in throw() function.\n"
+                      "[test.cpp:4]: (error) Exception thrown in throw() function.\n", errout.str());
 
         // avoid false positives
         check("const char *func() throw() { return 0; }\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void unhandledExceptionSpecification() { // #4800
+        check("void myThrowingFoo() throw(MyException) {\n"
+              "  throw MyException();\n"
+              "}\n"
+              "void myNonCatchingFoo() {\n"
+              "  myThrowingFoo();\n"
+              "}\n"
+              "void myCatchingFoo() {\n"
+              "  try {\n"
+              "    myThrowingFoo();\n"
+              "  } catch(MyException &) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (warning) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
     }
 };
 

@@ -188,12 +188,26 @@ void CheckExceptionSafety::noexceptThrows()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        // onlycheck noexcept functions
+        // only check noexcept functions
         if (scope->function && scope->function->isNoExcept &&
             (!scope->function->noexceptArg || scope->function->noexceptArg->str() == "true")) {
             for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() == "throw") {
+                if (tok->str() == "try") {
+                    break;
+                } else if (tok->str() == "throw") {
                     noexceptThrowError(tok);
+                    break;
+                } else if (tok->function()) {
+                    const Function * called = tok->function();
+                    // check if called function has an exception specification
+                    if (called->isThrow && called->throwArg) {
+                        noexceptThrowError(tok);
+                        break;
+                    } else if (called->isNoExcept && called->noexceptArg &&
+                               called->noexceptArg->str() != "true") {
+                        noexceptThrowError(tok);
+                        break;
+                    }
                 }
             }
         }
@@ -210,11 +224,54 @@ void CheckExceptionSafety::nothrowThrows()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        // onlycheck throw() functions
+        // only check throw() functions
         if (scope->function && scope->function->isThrow && !scope->function->throwArg) {
             for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() == "throw") {
+                if (tok->str() == "try") {
+                    break;
+                } else if (tok->str() == "throw") {
                     nothrowThrowError(tok);
+                    break;
+                } else if (tok->function()) {
+                    const Function * called = tok->function();
+                    // check if called function has an exception specification
+                    if (called->isThrow && called->throwArg) {
+                        nothrowThrowError(tok);
+                        break;
+                    } else if (called->isNoExcept && called->noexceptArg &&
+                               called->noexceptArg->str() != "true") {
+                        nothrowThrowError(tok);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------------------
+//    void func() { functionWithExceptionSpecification(); }
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::unhandledExceptionSpecification()
+{
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        // only check functions without exception epecification
+        if (scope->function && !scope->function->isThrow) {
+            for (const Token *tok = scope->function->functionScope->classStart->next();
+                 tok != scope->function->functionScope->classEnd; tok = tok->next()) {
+                if (tok->str() == "try") {
+                    break;
+                } else if (tok->function()) {
+                    const Function * called = tok->function();
+                    // check if called function has an exception specification
+                    if (called->isThrow && called->throwArg) {
+                        unhandledExceptionSpecificationError(tok, called->tokenDef, scope->function->name());
+                        break;
+                    }
                 }
             }
         }
