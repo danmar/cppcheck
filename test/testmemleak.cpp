@@ -330,7 +330,6 @@ private:
         TEST_CASE(getc_function);
 
         TEST_CASE(open_function);
-        TEST_CASE(open_fdopen);
         TEST_CASE(creat_function);
         TEST_CASE(close_function);
         TEST_CASE(fd_functions);
@@ -3876,19 +3875,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void open_fdopen() {
-        // Ticket #2830
-        Settings settings;
-        settings.standards.posix = true;
-        check("void f(const char *path)\n"
-              "{\n"
-              "    int fd = open(path, O_RDONLY);\n"
-              "    FILE *f = fdopen(fd, x);\n"
-              "    fclose(f);\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void creat_function() {
         Settings settings;
         settings.standards.posix = true;
@@ -4266,6 +4252,20 @@ private:
                              "}";
         check(code2, &settings);
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #2830
+        check("void f(const char *path) {\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    FILE *f = fdopen(fd, x);\n"
+              "    fclose(f);\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #1416
+        check("void f(void) {\n"
+              "    FILE *f = fdopen(0, \"r\");\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: f\n", errout.str());
 
         LOAD_LIB_2(settings.library, "gtk.cfg");
 

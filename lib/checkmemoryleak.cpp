@@ -184,6 +184,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (alloctype > 0) {
             if (alloctype == settings1->library.dealloc("free"))
                 return Malloc;
+            if (alloctype == settings1->library.dealloc("fclose"))
+                return File;
             return Library::ismemory(alloctype) ? OtherMem : OtherRes;
         }
     }
@@ -612,7 +614,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (noreturn.find(tok->str()) != noreturn.end() && tok->strAt(-1) != "=")
         return "exit";
 
-    if (varid > 0 && (getAllocationType(tok, varid) != No || getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
+    if (varid > 0 && (getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
         return 0;
 
     if (callstack.size() > 2)
