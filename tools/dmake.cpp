@@ -296,7 +296,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -include lib/cxx11emu.h  -DNDEBUG -Wall");
     } else {
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
