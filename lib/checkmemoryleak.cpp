@@ -180,7 +180,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         }
 
         // Does tok2 point on "g_malloc", "g_strdup", ..
-        const int alloctype = settings1->library.alloc(tok2->str());
+        const int alloctype = settings1->library.alloc(tok2);
         if (alloctype > 0) {
             if (alloctype == settings1->library.dealloc("free"))
                 return Malloc;
@@ -271,7 +271,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
     // Does tok2 point on "g_free", etc ..
     if (Token::Match(tok, "%type% ( %varid% )", varid)) {
-        const int dealloctype = settings1->library.dealloc(tok->str());
+        const int dealloctype = settings1->library.dealloc(tok);
         if (dealloctype > 0)
             return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
     }
@@ -309,7 +309,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return Pipe;
 
     if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
-        int type = settings1->library.dealloc(tok->str());
+        int type = settings1->library.dealloc(tok);
         if (type > 0)
             return Library::ismemory(type) ? OtherMem : OtherRes;
     }
@@ -2764,7 +2764,7 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
         if (Token::Match(tok, "{|}|; %var% (")) {
             tok = tok->next();
-            const int allocationId = _settings->library.alloc(tok->str());
+            const int allocationId = _settings->library.alloc(tok);
             if (allocationId > 0)
                 returnValueNotUsedError(tok, tok->str());
         }

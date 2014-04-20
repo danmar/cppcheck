@@ -24,6 +24,7 @@
 #include "config.h"
 #include "path.h"
 #include "mathlib.h"
+#include "token.h"
 
 #include <map>
 #include <set>
@@ -50,13 +51,23 @@ public:
     bool loadxmldata(const char xmldata[], std::size_t len);
     bool load(const tinyxml2::XMLDocument &doc);
 
-    /** get allocation id for function (by name) */
-    int alloc(const std::string &name) const {
+    /** get allocation id for function by name */
+    int alloc(const char name[]) const {
         return getid(_alloc, name);
     }
 
-    /** get deallocation id for function (by name) */
-    int dealloc(const std::string &name) const {
+    /** get allocation id for function */
+    int alloc(const Token *tok) const {
+        return tok->function() ? 0 : getid(_alloc, tok->str());
+    }
+
+    /** get deallocation id for function */
+    int dealloc(const Token *tok) const {
+        return tok->function() ? 0 : getid(_dealloc, tok->str());
+    }
+
+    /** get deallocation id for function by name */
+    int dealloc(const char name[]) const {
         return getid(_dealloc, name);
     }
 

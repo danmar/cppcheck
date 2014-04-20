@@ -232,7 +232,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // allocation?
             if (Token::Match(tok->tokAt(2), "%type% (")) {
-                int i = _settings->library.alloc(tok->strAt(2));
+                int i = _settings->library.alloc(tok->tokAt(2));
                 if (i > 0) {
                     alloctype[tok->varId()] = i;
                 }
@@ -255,7 +255,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (innerTok->str() == ")")
                     break;
                 if (innerTok->str() == "(" && innerTok->previous()->isName()) {
-                    const int deallocId = _settings->library.dealloc(tok->str());
+                    const int deallocId = _settings->library.dealloc(tok);
                     functionCall(innerTok->previous(), varInfo, deallocId);
                     innerTok = innerTok->link();
                 }
@@ -343,7 +343,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Function call..
         else if (Token::Match(tok, "%type% (") && tok->str() != "return") {
-            const int dealloc = _settings->library.dealloc(tok->str());
+            const int dealloc = _settings->library.dealloc(tok);
 
             functionCall(tok, varInfo, dealloc);
 
