@@ -158,6 +158,23 @@ static bool bailoutSelfAssignment(const Token * const tok)
     return false;
 }
 
+static bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid)
+{
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() == varid) {
+            if (Token::Match(tok, "%var% ="))
+                return true;
+
+            const Token *parent = tok->astParent();
+            while (parent && parent->str() == ".")
+                parent = parent->astParent();
+            if (Token::Match(parent, "++|--"))
+                return true;
+        }
+    }
+    return false;
+}
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 {
@@ -316,8 +333,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 const Token * const start = tok2->link()->next();
                 const Token * const end   = start->link();
 
-                if (Token::findmatch(start,"++|-- %varid%",end,varid) ||
-                    Token::findmatch(start,"%varid% ++|--|=",end,varid)) {
+                if (isVariableChanged(start,end,varid)) {
                     varid = 0U;
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
@@ -445,7 +461,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
 
                     const Token *start = tok2;
                     const Token *end   = start->link();
-                    if (Token::findmatch(start,"++|--| %varid% ++|--|=",end,varid)) {
+                    if (isVariableChanged(start,end,varid)) {
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
                         break;
@@ -554,8 +570,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     break;
                 }
 
-                if (Token::findmatch(start, "++|-- %varid%", end, varid) ||
-                    Token::findmatch(start, "%varid% ++|--|=", end, varid)) {
+                if (isVariableChanged(start, end, varid)) {
                     if (number_of_if == 0 &&
                         Token::simpleMatch(tok2, "if (") &&
                         !(Token::simpleMatch(end, "} else {") &&
@@ -836,16 +851,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
-    bool modified = false;
-    for (const Token *tok = bodyStart->next(); tok != bodyEnd; tok = tok->next()) {
-        if (tok->varId() == varid &&
-            (Token::Match(tok, "%varid% =|++|--", varid) ||
-             Token::Match(tok->previous(), "++|-- %varid%", varid))) {
-            modified = true;
-            break;
-        }
-    }
-    if (modified)
+    if (isVariableChanged(bodyStart, bodyEnd, varid))
         return;
 
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
