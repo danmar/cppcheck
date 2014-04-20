@@ -590,6 +590,9 @@ public:
     bool isAttributeConst() const {
         return tokenDef->isAttributeConst();
     }
+    bool isAttributeNothrow() const {
+        return tokenDef->isAttributeNothrow();
+    }
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition

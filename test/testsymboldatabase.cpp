@@ -234,6 +234,8 @@ private:
         TEST_CASE(noexceptFunction2);
         TEST_CASE(noexceptFunction3);
         TEST_CASE(noexceptFunction4);
+
+        TEST_CASE(nothrowAttributeFunction);
     }
 
     void array() const {
@@ -2141,6 +2143,20 @@ private:
             if (b) {
                 CLASS_FUNC(B, b);
             }
+        }
+    }
+
+    void nothrowAttributeFunction() {
+        GET_SYMBOL_DB("void func() __attribute__((nothrow));\n"
+                      "void func() { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNothrow());
         }
     }
 

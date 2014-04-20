@@ -356,6 +356,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (warning) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
     }
+
+    void nothrowAttributeThrow() {
+        check("void func1() throw(int) { throw 1; }\n"
+              "void func2() __attribute((nothrow)); void func1() { throw 1; }\n"
+              "void func3() __attribute((nothrow)); void func1() { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in __attribute__((nothrow)) function.\n"
+                      "[test.cpp:3]: (error) Exception thrown in __attribute__((nothrow)) function.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestExceptionSafety)

@@ -312,6 +312,12 @@ public:
     void isAttributeConst(bool value) {
         _isAttributeConst = value;
     }
+    bool isAttributeNothrow() const {
+        return _isAttributeNothrow;
+    }
+    void isAttributeNothrow(bool value) {
+        _isAttributeNothrow = value;
+    }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
@@ -695,6 +701,7 @@ private:
     bool _isAttributeUnused;       // __attribute__((unused))
     bool _isAttributePure;         // __attribute__((pure))
     bool _isAttributeConst;        // __attribute__((const))
+    bool _isAttributeNothrow;      // __attribute__((nothrow))
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */

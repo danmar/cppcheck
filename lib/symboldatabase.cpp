@@ -657,6 +657,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // regular function
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+
                             if (!function)
                                 _tokenizer->syntaxError(tok);
 
@@ -1363,6 +1364,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
             const_cast<Token *>(tok)->isAttributeDestructor(i->tokenDef->isAttributeDestructor());
             const_cast<Token *>(tok)->isAttributePure(i->tokenDef->isAttributePure());
             const_cast<Token *>(tok)->isAttributeConst(i->tokenDef->isAttributeConst());
+            const_cast<Token *>(tok)->isAttributeNothrow(i->tokenDef->isAttributeNothrow());
             break;
         }
     }
@@ -1911,6 +1913,9 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isNoExcept: " << (func->isNoExcept ? "true" : "false") << std::endl;
             std::cout << "        isThrow: " << (func->isThrow ? "true" : "false") << std::endl;
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
+            std::cerr << "        isAttributeConst: " << (func->isAttributeConst() ? "true" : "false") << std::endl;
+            std::cerr << "        isAttributePure: " << (func->isAttributePure() ? "true" : "false") << std::endl;
+            std::cerr << "        isAttributeNothrow: " << (func->isAttributeNothrow() ? "true" : "false") << std::endl;
             std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
             std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;

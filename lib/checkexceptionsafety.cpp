@@ -178,44 +178,48 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
 }
 
 
-//--------------------------------------------------------------------------
-//    void func() noexcept { throw x; }
-//--------------------------------------------------------------------------
-void CheckExceptionSafety::noexceptThrows()
+static const Token * functionThrowsRecursive(const Function * function, std::set<const Function *> & recursive)
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    // check for recursion and bail if found
+    if (recursive.find(function) != recursive.end())
+        return nullptr;
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        // only check noexcept functions
-        if (scope->function && scope->function->isNoExcept &&
-            (!scope->function->noexceptArg || scope->function->noexceptArg->str() == "true")) {
-            for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() == "try") {
-                    break;
-                } else if (tok->str() == "throw") {
-                    noexceptThrowError(tok);
-                    break;
-                } else if (tok->function()) {
-                    const Function * called = tok->function();
-                    // check if called function has an exception specification
-                    if (called->isThrow && called->throwArg) {
-                        noexceptThrowError(tok);
-                        break;
-                    } else if (called->isNoExcept && called->noexceptArg &&
-                               called->noexceptArg->str() != "true") {
-                        noexceptThrowError(tok);
-                        break;
-                    }
-                }
+    for (const Token *tok = function->functionScope->classStart->next();
+         tok != function->functionScope->classEnd; tok = tok->next()) {
+        if (tok->str() == "try") {
+            // just bail for now
+            break;
+        }
+        if (tok->str() == "throw") {
+            return tok;
+        } else if (tok->function()) {
+            const Function * called = tok->function();
+            // check if called function has an exception specification
+            if (called->isThrow && called->throwArg) {
+                return tok;
+            } else if (called->isNoExcept && called->noexceptArg &&
+                       called->noexceptArg->str() != "true") {
+                return tok;
+            } else if (functionThrowsRecursive(called, recursive)) {
+                return tok;
             }
         }
     }
+
+    return nullptr;
+}
+
+static const Token * functionThrows(const Function * function)
+{
+    std::set<const Function *>  recursive;
+
+    return functionThrowsRecursive(function, recursive);
 }
 
 //--------------------------------------------------------------------------
+//    void func() noexcept { throw x; }
 //    void func() throw() { throw x; }
+//    void func() __attribute__((nothrow)); void func() { throw x; }
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::nothrowThrows()
 {
@@ -224,27 +228,27 @@ void CheckExceptionSafety::nothrowThrows()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        // only check throw() functions
-        if (scope->function && scope->function->isThrow && !scope->function->throwArg) {
-            for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-                if (tok->str() == "try") {
-                    break;
-                } else if (tok->str() == "throw") {
-                    nothrowThrowError(tok);
-                    break;
-                } else if (tok->function()) {
-                    const Function * called = tok->function();
-                    // check if called function has an exception specification
-                    if (called->isThrow && called->throwArg) {
-                        nothrowThrowError(tok);
-                        break;
-                    } else if (called->isNoExcept && called->noexceptArg &&
-                               called->noexceptArg->str() != "true") {
-                        nothrowThrowError(tok);
-                        break;
-                    }
-                }
-            }
+
+        // check noexcept functions
+        if (scope->function && scope->function->isNoExcept &&
+            (!scope->function->noexceptArg || scope->function->noexceptArg->str() == "true")) {
+            const Token *throws = functionThrows(scope->function);
+            if (throws)
+                noexceptThrowError(throws);
+        }
+
+        // check throw() functions
+        else if (scope->function && scope->function->isThrow && !scope->function->throwArg) {
+            const Token *throws = functionThrows(scope->function);
+            if (throws)
+                nothrowThrowError(throws);
+        }
+
+        // check __attribute__((nothrow)) functions
+        else if (scope->function && scope->function->isAttributeNothrow()) {
+            const Token *throws = functionThrows(scope->function);
+            if (throws)
+                nothrowAttributeThrowError(throws);
         }
     }
 }

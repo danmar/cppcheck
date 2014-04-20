@@ -61,7 +61,6 @@ public:
         checkExceptionSafety.deallocThrow();
         checkExceptionSafety.checkRethrowCopy();
         checkExceptionSafety.checkCatchExceptionByValue();
-        checkExceptionSafety.noexceptThrows();
         checkExceptionSafety.nothrowThrows();
         checkExceptionSafety.unhandledExceptionSpecification();
     }
@@ -78,10 +77,7 @@ public:
     /** @brief %Check for exceptions that are caught by value instead of by reference */
     void checkCatchExceptionByValue();
 
-    /** @brief %Check for noexcept functions that throw */
-    void noexceptThrows();
-
-    /** @brief %Check for throw() functions that throw */
+    /** @brief %Check for functions that throw that shouldn't */
     void nothrowThrows();
 
     /** @brief %Check for unhandled exception specification */
@@ -122,6 +118,11 @@ private:
         reportError(tok, Severity::error, "exceptThrowInNoThrowFunction", "Exception thrown in throw() function.");
     }
 
+    /** Don't throw exceptions in __attribute__((nothrow))  functions */
+    void nothrowAttributeThrowError(const Token * const tok) {
+        reportError(tok, Severity::error, "exceptThrowInAttributeNoThrowFunction", "Exception thrown in __attribute__((nothrow)) function.");
+    }
+
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
         std::string str1(tok1 ? tok1->str() : "foo");
@@ -143,6 +144,7 @@ private:
         c.catchExceptionByValueError(0);
         c.noexceptThrowError(0);
         c.nothrowThrowError(0);
+        c.nothrowAttributeThrowError(0);
         c.unhandledExceptionSpecificationError(0, 0, "funcname");
     }
 
@@ -160,6 +162,7 @@ private:
                "* Exception caught by value instead of by reference\n"
                "* Throwing exception in noexcept function\n"
                "* Throwing exception in nothrow() function\n"
+               "* Throwing exception in __attribute__((nothrow)) function\n"
                "* Unhandled exception specification when calling function foo()\n";
     }
 };

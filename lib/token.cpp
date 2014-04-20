@@ -56,6 +56,7 @@ Token::Token(Token **t) :
     _isAttributeUnused(false),
     _isAttributePure(false),
     _isAttributeConst(false),
+    _isAttributeNothrow(false),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr)
@@ -196,6 +197,7 @@ void Token::deleteThis()
         _isAttributeUnused = _next->_isAttributeUnused;
         _isAttributePure = _next->_isAttributePure;
         _isAttributeConst = _next->_isAttributeConst;
+        _isAttributeNothrow = _next->_isAttributeNothrow;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -223,6 +225,7 @@ void Token::deleteThis()
         _isAttributeUnused = _previous->_isAttributeUnused;
         _isAttributePure = _previous->_isAttributePure;
         _isAttributeConst = _previous->_isAttributeConst;
+        _isAttributeNothrow = _previous->_isAttributeNothrow;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;
