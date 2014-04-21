@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <map>
 #include <cassert>
+#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -1598,30 +1599,30 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
             } else {
                 if (isVariableUsage(tok, var.isPointer(), alloc, _tokenizer->isCPP()))
                     usetok = tok;
-                else {
-                    bool assign = true;
-                    if (tok->strAt(1) == "=") {
-                        unsigned int indentlevel = 0; // Handle '(a=1)..'
-                        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                            if (tok2->varId() == var.declarationId()) {
-                                assign = false;
-                                break;
-                            } else if (tok2->str() == "(") {
-                                if (Token::Match(tok2->astOperand1(), "sizeof"))
-                                    tok2 = tok2->link();
-                                else
-                                    ++indentlevel;
-                            } else if (tok2->str() == ")") {
-                                if (indentlevel <= 1U)
-                                    break;
-                                --indentlevel;
-                            } else if (tok2->str() == ";" || tok2->str() == ",") {
-                                break;
-                            }
+                else if (tok->strAt(1) == "=") {
+                    // Is var used in rhs?
+                    bool rhs = false;
+                    std::stack<const Token *> tokens;
+                    tokens.push(tok->next()->astOperand2());
+                    while (!tokens.empty()) {
+                        const Token *t = tokens.top();
+                        tokens.pop();
+                        if (!t)
+                            continue;
+                        if (t->varId() == var.declarationId()) {
+                            // var is used in rhs
+                            rhs = true;
+                            break;
                         }
+                        if (Token::simpleMatch(t->previous(),"sizeof ("))
+                            continue;
+                        tokens.push(t->astOperand1());
+                        tokens.push(t->astOperand2());
                     }
-                    if (assign)
+                    if (!rhs)
                         return true;
+                } else {
+                    return true;
                 }
             }
         }
