@@ -7024,6 +7024,12 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteThis();
             ret = true;
         }
+
+        if (Token::Match(tok->previous(), "%type% ( * %var% ) [") && tok->previous()->isStandardType()) {
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
     }
     return ret;
 }

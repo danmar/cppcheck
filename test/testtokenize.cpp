@@ -366,6 +366,7 @@ private:
         TEST_CASE(removeParentheses15);      // Ticket #4142
         TEST_CASE(removeParentheses16);      // Ticket #4423 '*(x.y)='
         TEST_CASE(removeParentheses17);      // Don't remove parentheses in 'a ? b : (c>0 ? d : e);'
+        TEST_CASE(removeParentheses18);      // 'float(*a)[2]' => 'float *a[2]'
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -4777,9 +4778,9 @@ private:
 
     void varid_pointerToArray() {
         ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: int ( * a1@1 ) [ 10 ] ;\n"
+                      "1: int * a1@1 [ 10 ] ;\n"
                       "2: void f1 ( ) {\n"
-                      "3: int ( * a2@2 ) [ 10 ] ;\n"
+                      "3: int * a2@2 [ 10 ] ;\n"
                       "4: int ( & a3@3 ) [ 10 ] ;\n"
                       "5: }\n"
                       "6: struct A {\n"
@@ -5627,6 +5628,10 @@ private:
 
     void removeParentheses17() { // a ? b : (c > 0 ? d : e)
         ASSERT_EQUALS("a ? b : ( c > 0 ? d : e ) ;", tokenizeAndStringify("a?b:(c>0?d:e);", false));
+    }
+
+    void removeParentheses18() {
+        ASSERT_EQUALS("float * a [ 2 ] ;", tokenizeAndStringify("float(*a)[2];", false));
     }
 
     void tokenize_double() {
