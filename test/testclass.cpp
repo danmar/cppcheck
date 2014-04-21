@@ -147,6 +147,7 @@ private:
         TEST_CASE(const59); // ticket #4646
         TEST_CASE(const60); // ticket #3322
         TEST_CASE(const61); // ticket #5606
+        TEST_CASE(const62); // ticket #5701
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4828,6 +4829,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const62() {
+        checkConst("class A {\n"
+                   "    private:\n"
+                   "         std::unordered_map<unsigned int,unsigned int> _hash;\n"
+                   "    public:\n"
+                   "         A() : _hash() {}\n"
+                   "         unsigned int fetch(unsigned int key)\n" // cannot be 'const'
+                   "         {\n"
+                   "             return _hash[key];\n"
+                   "         }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
