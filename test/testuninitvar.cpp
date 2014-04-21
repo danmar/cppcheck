@@ -3274,6 +3274,14 @@ private:
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void f(void) {\n"
+                        "  int i;\n"
+                        "  while (x) {\n"
+                        "    for (i=0,y=i;;){}\n"
+                        "  }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_4494() {
