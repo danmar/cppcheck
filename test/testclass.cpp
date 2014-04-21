@@ -183,6 +183,7 @@ private:
         TEST_CASE(pureVirtualFunctionCallPrevented);
 
         TEST_CASE(duplInheritedMembers);
+        TEST_CASE(invalidInitializerList);
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -1970,12 +1971,12 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA<double>' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
     }
 
-    void checkNoConstructor(const char code[]) {
+    void checkNoConstructor(const char code[], const char* level="style") {
         // Clear the error log
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled(level);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5974,6 +5975,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void invalidInitializerList() {
+        ASSERT_THROW(checkNoConstructor("struct R1 {\n"
+                                        "  int a;\n"
+                                        "  R1 () : a { }\n"
+                                        "};\n", "warning"), InternalError);
+    }
 };
 
 REGISTER_TEST(TestClass)
