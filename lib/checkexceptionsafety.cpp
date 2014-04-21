@@ -184,6 +184,9 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
     if (recursive.find(function) != recursive.end())
         return nullptr;
 
+    if (!function->functionScope)
+        return nullptr;
+
     for (const Token *tok = function->functionScope->classStart->next();
          tok != function->functionScope->classEnd; tok = tok->next()) {
         if (tok->str() == "try") {
