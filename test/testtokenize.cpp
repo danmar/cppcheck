@@ -10219,6 +10219,13 @@ private:
         if (!tokenList.createTokens(istr,"test.cpp"))
             return "ERROR";
 
+        for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "%or%|<<|>>|+|-|*|/|%|&|^ =")) {
+                tok->str(tok->str() + "=");
+                tok->deleteNext();
+            }
+        }
+
         // Set links..
         std::stack<Token *> links;
         for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -10264,6 +10271,18 @@ private:
         ASSERT_EQUALS("abc=,", testAst("a,b=c"));
         ASSERT_EQUALS("a-1+", testAst("-a+1"));
         ASSERT_EQUALS("ab++-c-", testAst("a-b++-c"));
+
+        // assignment operators
+        ASSERT_EQUALS("ab>>=", testAst("a>>=b;"));
+        ASSERT_EQUALS("ab<<=", testAst("a<<=b;"));
+        ASSERT_EQUALS("ab+=",  testAst("a+=b;"));
+        ASSERT_EQUALS("ab-=",  testAst("a-=b;"));
+        ASSERT_EQUALS("ab*=",  testAst("a*=b;"));
+        ASSERT_EQUALS("ab/=",  testAst("a/=b;"));
+        ASSERT_EQUALS("ab%=",  testAst("a%=b;"));
+        ASSERT_EQUALS("ab&=",  testAst("a&=b;"));
+        ASSERT_EQUALS("ab|=",  testAst("a|=b;"));
+        ASSERT_EQUALS("ab^=",  testAst("a^=b;"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));

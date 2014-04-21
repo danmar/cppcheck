@@ -696,7 +696,8 @@ static void compileAssign(Token *&tok, std::stack<Token*> &op, unsigned int dept
 {
     compileTernaryOp(tok,op, depth);
     while (tok) {
-        if (tok->str() == "=") {
+        if (tok->str() == "=" || tok->str() == "<<=" || tok->str() == ">>=" ||
+            (tok->str().size() == 2U && tok->str()[1] == '=' && std::strchr("+-*/%&|^",tok->str()[0]))) {
             compileBinOp(tok, compileTernaryOp, op, depth);
         } else break;
     }
