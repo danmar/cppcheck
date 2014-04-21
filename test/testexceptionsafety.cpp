@@ -46,6 +46,7 @@ private:
         TEST_CASE(nothrowThrow);
         TEST_CASE(unhandledExceptionSpecification); // #4800
         TEST_CASE(nothrowAttributeThrow);
+        TEST_CASE(nothrowAttributeThrow2); // #5703
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -369,6 +370,15 @@ private:
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nothrowAttributeThrow2() {
+        check("class foo {\n"
+              "  void copyMemberValues() throw () {\n"
+              "      copyMemberValues();\n"
+              "   }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

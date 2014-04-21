@@ -181,7 +181,7 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
 static const Token * functionThrowsRecursive(const Function * function, std::set<const Function *> & recursive)
 {
     // check for recursion and bail if found
-    if (recursive.find(function) != recursive.end())
+    if (!recursive.insert(function).second)
         return nullptr;
 
     if (!function->functionScope)
