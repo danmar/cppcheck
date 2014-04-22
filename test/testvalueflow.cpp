@@ -594,6 +594,16 @@ private:
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 32));
 
+        code = "void f() {\n"
+               "    int x = 32;\n"
+               "    if (a==1) { z=x+12; }\n"
+               "    if (a==2) { z=x+32; }\n"
+               "    z = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 32));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 32));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 32));
+
         code = "void f() {\n" // #5656 - FP
                "    int x = 0;\n"
                "    if (!x) {\n"

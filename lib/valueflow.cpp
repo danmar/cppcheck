@@ -527,17 +527,30 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
             continue;
         std::list<ValueFlow::Value> values = tok->astOperand2()->values;
 
+        const bool constValue = tok->astOperand2()->isNumber();
+        int indentlevel = 0;
         unsigned int number_of_if = 0;
+        int varusagelevel = -1;
 
         for (Token *tok2 = tok; tok2 && tok2 != endToken; tok2 = tok2->next()) {
+            if (indentlevel >= 0 && tok2->str() == "{")
+                ++indentlevel;
+            else if (indentlevel >= 0 && tok2->str() == "}")
+                --indentlevel;
+
             if (Token::Match(tok2, "sizeof|typeof|typeid ("))
                 tok2 = tok2->linkAt(1);
 
             // conditional block of code that assigns variable..
-            if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+            else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
                 Token * const start = tok2->linkAt(1)->next();
                 Token * const end   = start->link();
-                if (Token::findmatch(start, "%varid%", end, varid)) {
+                bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
+                                isVariableChanged(start,end,varid) :
+                                (nullptr != Token::findmatch(start, "%varid%", end, varid));
+                if (varusage) {
+                    varusagelevel = indentlevel;
+
                     // TODO: don't check noreturn scopes
                     if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
                         if (settings->debugwarnings)
@@ -586,7 +599,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                 }
             }
 
-            else if (tok2->str() == "}") {
+            else if (tok2->str() == "}" && indentlevel == varusagelevel) {
                 ++number_of_if;
 
                 // Set "conditional" flag for all values
