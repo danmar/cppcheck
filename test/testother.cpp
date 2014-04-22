@@ -1651,6 +1651,10 @@ private:
         // #3473 - no warning if "log" is a variable
         check("Fred::Fred() : log(0) { }");
         ASSERT_EQUALS("", errout.str());
+
+        // #5748
+        check("void f() { foo.log(0); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_acos() {

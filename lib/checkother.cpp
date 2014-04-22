@@ -2345,7 +2345,8 @@ void CheckOther::checkMathFunctions()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
-            if (Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
+            if (!Token::Match(tok->previous(),".|->")
+                && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
                 bool isNegative = MathLib::isNegative(tok->strAt(2));
                 bool isInt = MathLib::isInt(tok->strAt(2));
                 bool isFloat = MathLib::isFloat(tok->strAt(2));
