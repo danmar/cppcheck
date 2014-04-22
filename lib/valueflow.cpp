@@ -409,6 +409,14 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     break;
                 }
 
+                if (Token::Match(tok2->previous(), "sizeof|.")) {
+                    const Token *prev = tok2->previous();
+                    while (Token::Match(prev,"%var%|.") && prev->str() != "sizeof")
+                        prev = prev->previous();
+                    if (Token::Match(prev,"sizeof"))
+                        continue;
+                }
+
                 // assigned by subfunction?
                 bool inconclusive = false;
                 if (bailoutFunctionPar(tok2,val2.condition ? val2 : val, settings, &inconclusive)) {
