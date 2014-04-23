@@ -3079,6 +3079,17 @@ private:
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
+        // #5707
+        check("extern int i,j\n"
+              "int foo() {\n"
+              "    switch(i) {\n"
+              "        default: j=1; break;\n"
+              "    }\n"
+              "    return 0;\n"
+              "    j=2;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:7]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+
         check("int foo() {\n"
               "    return 0;\n"
               "  label:\n"

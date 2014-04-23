@@ -1619,6 +1619,7 @@ void CheckOther::checkUnreachableCode()
 
             if (!tok)
                 break;
+            tok = tok->previous(); // Will be advanced again by for loop
         }
     }
 }
