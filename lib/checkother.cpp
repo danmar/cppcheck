@@ -2197,7 +2197,7 @@ void CheckOther::checkIncompleteStatement()
             // no warning if this is the last statement in a ({})
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(")
-                    tok2 = tok->link();
+                    tok2 = tok2->link();
                 else if (Token::Match(tok2, "[;{}]")) {
                     bailout = Token::simpleMatch(tok2, "; } )");
                     break;
