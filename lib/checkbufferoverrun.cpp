@@ -945,6 +945,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     if (size == 0)  // unknown size
         return;
 
+    if (tok->str() == "return") {
+        tok = tok->next();
+        if (!tok)
+            return;
+    }
+
     const MathLib::bigint total_size = arrayInfo.element_size() * arrayInfo.num(0);
     const unsigned int declarationId = arrayInfo.declarationId();
 
@@ -952,13 +958,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    const unsigned char varc = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
-
-    if (tok->str() == "return") {
-        tok = tok->next();
-        if (!tok)
-            return;
-    }
+    const unsigned char varcount = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
 
     // ValueFlow array index..
     if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
@@ -992,7 +992,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if ((declarationId > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [ %num% ]", declarationId))) ||
             (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
             std::vector<MathLib::bigint> indexes;
-            const Token *tok2 = tok->tokAt(2 + varc);
+            const Token *tok2 = tok->tokAt(2 + varcount);
             for (; Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {
                 const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(1));
                 indexes.push_back(index);
@@ -1039,7 +1039,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                 // Is totalIndex in bounds?
                 if (totalIndex > totalElements || totalIndex < 0) {
-                    arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
+                    arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
                 }
                 // Is any array index out of bounds?
                 else {
@@ -1047,14 +1047,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     for (unsigned int i = 0; i < indexes.size(); ++i) {
                         if (indexes[i] >= arrayInfo.num(i)) {
                             if (indexes.size() == 1U) {
-                                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
+                                arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
                                 break; // only warn about the first one
                             }
 
                             // The access is still within the memory range for the array
                             // so it may be intentional.
                             else if (_settings->inconclusive) {
-                                arrayIndexOutOfBoundsError(tok->tokAt(1 + varc), arrayInfo, indexes);
+                                arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
                                 break; // only warn about the first one
                             }
                         }
@@ -1088,7 +1088,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // Writing data into array..
         if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
             (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
-            const std::size_t len = Token::getStrLength(tok->tokAt(varc + 4));
+            const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
             if (total_size > 0 && len >= (unsigned int)total_size) {
                 bufferOverrunError(tok, declarationId > 0 ? std::string() : varnames);
                 continue;
@@ -1113,12 +1113,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             const Token *tok2 = tok;
 
             while (Token::Match(tok2, strcatPattern.c_str(), declarationId)) {
-                charactersAppend += Token::getStrLength(tok2->tokAt(4 + varc));
+                charactersAppend += Token::getStrLength(tok2->tokAt(4 + varcount));
                 if (charactersAppend >= static_cast<std::size_t>(total_size)) {
                     bufferOverrunError(tok2);
                     break;
                 }
-                tok2 = tok2->tokAt(7 + varc);
+                tok2 = tok2->tokAt(7 + varcount);
             }
         }
 
@@ -1132,9 +1132,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // snprintf..
         const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
         if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
-            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varc));
+            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varcount));
             if (n > total_size)
-                outOfBoundsError(tok->tokAt(4 + varc), "snprintf size", true, n, total_size);
+                outOfBoundsError(tok->tokAt(4 + varcount), "snprintf size", true, n, total_size);
         }
 
         // Check function call..
