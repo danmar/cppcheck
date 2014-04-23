@@ -59,6 +59,7 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test5);
+        TEST_CASE(test6);
         TEST_CASE(test_numeric);
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
@@ -121,6 +122,15 @@ private:
               "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
+    }
+
+    void test6() {
+        // dont crash
+        check("void f() {\n"
+              "  1 == (two + three);\n"
+              "  2 != (two + three);\n"
+              "  (one + two) != (two + three);\n"
+              "}");
     }
 
     void test_numeric() {
