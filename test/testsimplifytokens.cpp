@@ -373,6 +373,7 @@ private:
         TEST_CASE(enum40);
         TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
         TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
+        TEST_CASE(enum43); // lhs in assignment
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
         TEST_CASE(invalid_enum); // #5600
@@ -7159,6 +7160,12 @@ private:
         const char code[] = "enum { A = f<int,2>() };\n"
                             "a = A;";
         ASSERT_EQUALS("a = f < int , 2 > ( ) ;", checkSimplifyEnum(code));
+    }
+
+    void enum43() { // lhs in assignment
+        const char code[] = "enum { A, B };\n"
+                            "A = 1;";
+        ASSERT_EQUALS("A = 1 ;", checkSimplifyEnum(code));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function

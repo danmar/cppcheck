@@ -7648,10 +7648,10 @@ void Tokenizer::simplifyEnum()
                         ev = &(enumValues.find(tok2->str())->second);
                         if (!duplicateDefinition(&tok2, ev->name)) {
                             if (tok2->strAt(-1) == "::" ||
-                                Token::Match(tok2->next(), "::|[")) {
+                                Token::Match(tok2->next(), "::|[|=")) {
                                 // Don't replace this enum if:
                                 // * it's preceded or followed by "::"
-                                // * it's followed by "["
+                                // * it's followed by "[" or "="
                             } else {
                                 simplify = true;
                                 ev = &(enumValues.find(tok2->str())->second);
