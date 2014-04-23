@@ -367,6 +367,31 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // see linux revision 1f80c0cc
+        check("int generic_write_sync(int,int,int);\n"
+              "\n"
+              "void cifs_writev(int i) {\n"
+              "   int rc = __generic_file_aio_write();\n"
+              "   if (rc > 0){\n"
+              "       err = generic_write_sync(file, iocb->ki_pos - rc, rc);\n"
+              "       if(rc < 0) {\n"  // <- condition is always false
+              "           err = rc;\n"
+              "       }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+        check("void f(struct ABC *abc) {\n"
+              "   struct AB *ab = abc->ab;\n"
+              "   if (ab->a == 123){\n"
+              "       do_something(abc);\n" // might change ab->a
+              "       if (ab->a != 123) {\n"
+              "           err = rc;\n"
+              "       }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void emptyBrackets() {

@@ -161,11 +161,11 @@ static bool isOppositeCond(const Token * const cond1, const Token * const cond2,
     return ((comp1 == "==" && comp2 == "!=") ||
             (comp1 == "!=" && comp2 == "==") ||
             (comp1 == "<"  && comp2 == ">=") ||
+            (comp1 == "<"  && comp2 == ">")  ||
             (comp1 == "<=" && comp2 == ">")  ||
-            (comp1 == "<=" && comp2 == ">=") ||
             (comp1 == ">"  && comp2 == "<=") ||
-            (comp1 == ">=" && comp2 == "<")  ||
-            (comp1 == ">=" && comp2 == "<="));
+            (comp1 == ">"  && comp2 == "<")  ||
+            (comp1 == ">=" && comp2 == "<"));
 }
 
 
@@ -3293,12 +3293,68 @@ void CheckOther::oppositeInnerCondition()
         if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
             continue;
 
-        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") { if ("))
+        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") {"))
+            continue;
+
+        bool nonlocal = false; // nonlocal variable used in condition
+        std::set<unsigned int> vars; // variables used in condition
+        for (const Token *cond = scope->classDef; cond != scope->classDef->linkAt(1); cond = cond->next()) {
+            if (cond->varId()) {
+                vars.insert(cond->varId());
+                const Variable *var = cond->variable();
+                nonlocal |= (var && (!var->isLocal() || var->isStatic()));
+                // TODO: if var is pointer check what it points at
+                nonlocal |= (var && var->isPointer());
+            }
+        }
+
+        // parse until inner condition is reached..
+        const Token *ifToken = nullptr;
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "if (")) {
+                ifToken = tok;
+                break;
+            }
+            if (Token::Match(tok,"%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
+                break;
+            else if (tok->varId() && vars.find(tok->varId()) != vars.end()) {
+                if (Token::Match(tok, "%var% ++|--|="))
+                    break;
+                if (Token::Match(tok->previous(), "++|--|& %var%"))
+                    break;
+                if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+                    // is variable unchanged? default is false..
+                    bool unchanged = true;
+
+                    // locate start parentheses in function call..
+                    unsigned int argumentNumber = 0;
+                    const Token *start = tok;
+                    while (start && !Token::Match(start, "[;{}(]")) {
+                        if (start->str() == ")")
+                            start = start->link();
+                        else if (start->str() == ",")
+                            ++argumentNumber;
+                        start = start->previous();
+                    }
+
+                    start = start ? start->previous() : nullptr;
+                    if (start && start->function()) {
+                        const Variable *arg = start->function()->getArgumentVar(argumentNumber);
+                        if (arg && !arg->isPointer() && !arg->isReference())
+                            unchanged = true;
+                    }
+
+                    if (!unchanged)
+                        break;
+                }
+            }
+        }
+        if (!ifToken)
             continue;
 
         // Condition..
         const Token *cond1 = scope->classDef->next()->astOperand2();
-        const Token *cond2 = scope->classDef->linkAt(1)->tokAt(3)->astOperand2();
+        const Token *cond2 = ifToken->next()->astOperand2();
 
         if (isOppositeCond(cond1, cond2, _settings->library.functionpure))
             oppositeInnerConditionError(scope->classDef, cond2);
