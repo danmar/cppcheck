@@ -2283,7 +2283,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 
         // If endfile is encountered, we have moved to a next file in our stack,
         // so remove last path in our list.
-        while ((endfilePos = code.find("\n#endfile", endfilePos)) != std::string::npos && endfilePos < pos) {
+        while (!paths.empty() && (endfilePos = code.find("\n#endfile", endfilePos)) != std::string::npos && endfilePos < pos) {
             paths.pop_back();
             endfilePos += 9; // size of #endfile
         }

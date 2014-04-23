@@ -300,6 +300,8 @@ private:
         TEST_CASE(validateCfg);
 
         TEST_CASE(if_sizeof);
+
+        TEST_CASE(double_include); // #5717
     }
 
 
@@ -4020,6 +4022,18 @@ private:
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
         ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
+    }
+
+    void double_include() {
+        const char code[] = "int x";
+
+        Preprocessor preprocessor(nullptr, this);
+        std::list<std::string> includePaths;
+        includePaths.push_back(".");
+        includePaths.push_back(".");
+        std::map<std::string,std::string> defs;
+        std::set<std::string> pragmaOnce;
+        preprocessor.handleIncludes(code, "123.h", includePaths, defs, pragmaOnce, std::list<std::string>());
     }
 };
 
