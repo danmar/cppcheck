@@ -2178,7 +2178,7 @@ void CheckOther::checkIncompleteStatement()
         else if (Token::simpleMatch(tok,"> {") && tok->link())
             tok = tok->next()->link();
 
-        else if (Token::Match(tok, "[;{}] %str%") || Token::Match(tok, "[;{}] %num%")) {
+        else if (Token::Match(tok, "[;{}] %str%|%num%")) {
             // No warning if numeric constant is followed by a "." or ","
             if (Token::Match(tok->next(), "%num% [,.]"))
                 continue;
@@ -2190,6 +2190,18 @@ void CheckOther::checkIncompleteStatement()
                     bailout = true;
                 else if (tok2->str() == ";")
                     break;
+            }
+            if (bailout)
+                continue;
+
+            // no warning if this is the last statement in a ({})
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    tok2 = tok->link();
+                else if (Token::Match(tok2, "[;{}]")) {
+                    bailout = Token::simpleMatch(tok2, "; } )");
+                    break;
+                }
             }
             if (bailout)
                 continue;

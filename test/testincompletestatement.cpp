@@ -69,6 +69,7 @@ private:
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
         TEST_CASE(cpp11init);           // #5493 : int i{1};
+        TEST_CASE(block);               // ({ do_something(); 0; })
     }
 
     void test1() {
@@ -225,6 +226,13 @@ private:
     void cpp11init() {
         check("void f() {\n"
               "    int x{1};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void block() {
+        check("void f() {\n"
+              "    ({ do_something(); 0; });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

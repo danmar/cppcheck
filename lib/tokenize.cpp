@@ -1880,6 +1880,9 @@ void Tokenizer::simplifyRoundCurlyParentheses()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "[;{}] ( {") &&
                Token::simpleMatch(tok->linkAt(2), "} ) ;")) {
+            Token *end = tok->linkAt(2)->tokAt(-3);
+            if (Token::Match(end, "[;{}] %num%|%str% ;"))
+                end->deleteNext(2);
             tok->linkAt(2)->previous()->deleteNext(3);
             tok->deleteNext(2);
         }
