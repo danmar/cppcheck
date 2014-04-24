@@ -83,7 +83,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
@@ -294,6 +294,18 @@ int main(int argc, char **argv)
          << "endif # COMSPEC\n"
          << "\n";
 
+    // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
+    fout << "# Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
+         << "# with tinyxml2 and Cygwin.\n"
+         << "ifdef COMSPEC\n"
+         << "    uname_S := $(shell uname -s)\n"
+         << "\n"
+         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
+         << "        UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
+         << "    endif # CYGWIN\n"
+         << "endif # COMSPEC\n"
+         << "\n";
+
     // Makefile settings..
     if (release) {
         makeConditionalVariable(fout, "CXXFLAGS", "-O2 -include lib/cxx11emu.h  -DNDEBUG -Wall");
@@ -402,4 +414,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
