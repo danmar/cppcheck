@@ -818,8 +818,6 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
 void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &arrayInfo, bool &bailout)
 {
     bailout = false;
-    const Token *tok2 = tok->tokAt(2);
-    const MathLib::bigint size = arrayInfo.num(0);
 
     // Check if there is a break in the body..
     {
@@ -828,6 +826,9 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
         if (Token::findsimplematch(bodyStart, "break ;", bodyEnd))
             return;
     }
+
+    const Token *tok2 = tok->tokAt(2);
+    const MathLib::bigint size = arrayInfo.num(0);
 
     std::string counter_name;
     unsigned int counter_varid = 0;
@@ -951,7 +952,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             return;
     }
 
-    const MathLib::bigint total_size = arrayInfo.element_size() * arrayInfo.num(0);
+    const MathLib::bigint total_size = arrayInfo.element_size() * size;
     const unsigned int declarationId = arrayInfo.declarationId();
 
     std::string varnames;
