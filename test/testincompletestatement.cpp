@@ -245,6 +245,12 @@ private:
               "    ({ do_something(); 0; });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "out:\n"
+              "    ({ do_something(); 0; });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
