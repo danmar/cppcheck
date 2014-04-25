@@ -10216,7 +10216,7 @@ private:
     }
 
 
-    static std::string testAst(const char code[]) {
+    static std::string testAst(const char code[],bool verbose=false) {
         // tokenize given code..
         const Settings settings;
         TokenList tokenList(&settings);
@@ -10250,6 +10250,9 @@ private:
         tokenList.createAst();
 
         // Return stringified AST
+        if (verbose)
+            return tokenList.front()->astTop()->astStringVerbose(0,0);
+
         std::string ret;
         std::set<const Token *> astTop;
         for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -10329,6 +10332,15 @@ private:
         // problems with: if (x[y]==z)
         ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
         ASSERT_EQUALS("ifbuff0[&(*1==(", testAst("if (*((DWORD*)&buff[0])==1){}"));
+        ASSERT_EQUALS("=\n"
+                      "|-x\n"
+                      "`-(\n"
+                      "  `-.\n"
+                      "    |-[\n"
+                      "    | |-a\n"
+                      "    | `-i\n"
+                      "    `-f\n",
+                      testAst("x = ((a[i]).f)();", true));
 
         // casts
         ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));

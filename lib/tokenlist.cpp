@@ -533,8 +533,18 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
             tok = tok->next();
             compileExpression(tok,op, depth);
             tok = nextpar;
-            compileBinOp(tok, compileExpression, op, depth);
-            tok = tok->next();
+            if (Token::simpleMatch(tok,"( )")) {
+                if (!op.empty()) {
+                    Token *f = op.top();
+                    op.pop();
+                    tok->astOperand1(f);
+                    op.push(tok);
+                }
+                tok = tok->tokAt(2);
+            } else {
+                compileBinOp(tok, compileExpression, op, depth);
+                tok = tok->next();
+            }
         } else {
             // Parenthesized sub-expression
             tok = tok->next();
