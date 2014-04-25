@@ -116,10 +116,14 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg>
+      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg> 
+      <arg choice="opt"><option>--include=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inconclusive</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>-l&lt;load&gt;</option></arg>
       <arg choice="opt"><option>--language=&lt;language&gt;</option></arg>
       <arg choice="opt"><option>--library=&lt;cfg&gt;</option></arg>
       <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
@@ -310,6 +314,26 @@ First given path is searched for contained header files first. If paths are rela
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>--config-exclude=&lt;dir&gt;</option></term>
+        <listitem>
+          <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers 
+(but not sources) matching the prefix will not be considered for evaluation of configuration alternatives.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--config-exclude-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>A file that contains a list of config-excludes.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--include=&lt;file&gt;</option></term>
+        <listitem>
+          <para>Force inclusion of a file before the checked file. Can be used for example when checking the Linux kernel, 
+where autoconf.h needs to be included for every file compiled. Works the same way as the GCC -include option.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-i &lt;dir&gt;</option></term>
         <listitem>
           <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter.
@@ -334,6 +358,13 @@ There are false positives with this option. Each result must be carefully invest
         <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-l &lt;load&gt;</option></term>
+        <listitem>
+          <para>Specifies that no new threads should be started if there are other threads running and the load average is at least
+&lt;load&gt; (ignored on non UNIX-like systems)</para>
         </listitem>
       </varlistentry>
       <varlistentry>
