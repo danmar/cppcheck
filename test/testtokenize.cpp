@@ -10332,6 +10332,9 @@ private:
         // problems with: if (x[y]==z)
         ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
         ASSERT_EQUALS("ifbuff0[&(*1==(", testAst("if (*((DWORD*)&buff[0])==1){}"));
+        ASSERT_EQUALS("ifp*0[1==(", testAst("if((*p)[0]==1)"));
+
+        // problems with: x=expr
         ASSERT_EQUALS("=\n"
                       "|-x\n"
                       "`-(\n"
@@ -10341,7 +10344,7 @@ private:
                       "    | `-i\n"
                       "    `-f\n",
                       testAst("x = ((a[i]).f)();", true));
-        ASSERT_EQUALS("ifp*0[1==(", testAst("if((*p)[0]==1)"));
+        ASSERT_EQUALS("abcde.++[.=", testAst("a = b.c[++(d.e)];"));
 
         // casts
         ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));

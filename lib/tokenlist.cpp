@@ -499,9 +499,9 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
         }
     } else if (Token::Match(tok, "++|--")) {
         bool pre = false;
-        if (tok->next() && tok->next()->isName())
+        if (Token::Match(tok->next(), "%var%|("))
             pre = true;
-        else if (!op.empty() && !op.top()->isOp())
+        else if (!op.empty() && !Token::Match(tok->previous(), "(|[") && !op.top()->isOp())
             pre = false;
         else
             pre = true;
