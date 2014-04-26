@@ -596,8 +596,11 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int dept
     compileDot(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "[*/%]")) {
-            if (Token::Match(tok, "* [,)]"))
+            if (Token::Match(tok, "* [*,)]")) {
+                while (tok->next() && tok->str() == "*")
+                    tok = tok->next();
                 break;
+            }
             compileBinOp(tok, compileDot, op, depth);
         } else break;
     }

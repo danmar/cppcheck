@@ -10345,6 +10345,7 @@ private:
                       "    `-f\n",
                       testAst("x = ((a[i]).f)();", true));
         ASSERT_EQUALS("abcde.++[.=", testAst("a = b.c[++(d.e)];"));
+        ASSERT_EQUALS("abc(1+=", testAst("a = b(c**)+1;"));
 
         // casts
         ASSERT_EQUALS("a1(2(+=",testAst("a=(t)1+(t)2;"));
