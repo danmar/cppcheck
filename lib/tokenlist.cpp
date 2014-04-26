@@ -576,6 +576,7 @@ static void compileParAndBrackets(Token *&tok, std::stack<Token*> &op, unsigned 
     while (tok) {
         if (tok->str() == "[") {
             compileBinOp(tok, compileScope, op, depth);
+            tok = tok->next();
         } else break;
     }
 }
