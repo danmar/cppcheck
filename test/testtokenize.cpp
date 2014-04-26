@@ -504,6 +504,7 @@ private:
         TEST_CASE(simplifyOperatorName5);
         TEST_CASE(simplifyOperatorName6); // ticket #3194
         TEST_CASE(simplifyOperatorName7); // ticket #4619
+        TEST_CASE(simplifyOperatorName8); // ticket #5706
 
         TEST_CASE(simplifyNull);
 
@@ -8126,6 +8127,32 @@ private:
         const char code1[] = "value_type * operator += (int);";
         const char result1[] = "value_type * operator+= ( int ) ;";
         ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+    }
+
+    void simplifyOperatorName8() { // ticket #5706
+        const char code1[] = "value_type * operator += (int) noexcept ;";
+        const char result1[] = "value_type * operator+= ( int ) noexcept ;";
+        ASSERT_EQUALS(result1, tokenizeAndStringify(code1,false));
+
+        const char code2[] = "value_type * operator += (int) noexcept ( true ) ;";
+        const char result2[] = "value_type * operator+= ( int ) noexcept ( true ) ;";
+        ASSERT_EQUALS(result2, tokenizeAndStringify(code2,false));
+
+        const char code3[] = "value_type * operator += (int) throw ( ) ;";
+        const char result3[] = "value_type * operator+= ( int ) throw ( ) ;";
+        ASSERT_EQUALS(result3, tokenizeAndStringify(code3,false));
+
+        const char code4[] = "value_type * operator += (int) const noexcept ;";
+        const char result4[] = "value_type * operator+= ( int ) const noexcept ;";
+        ASSERT_EQUALS(result4, tokenizeAndStringify(code4,false));
+
+        const char code5[] = "value_type * operator += (int) const noexcept ( true ) ;";
+        const char result5[] = "value_type * operator+= ( int ) const noexcept ( true ) ;";
+        ASSERT_EQUALS(result5, tokenizeAndStringify(code5,false));
+
+        const char code6[] = "value_type * operator += (int) const throw ( ) ;";
+        const char result6[] = "value_type * operator+= ( int ) const throw ( ) ;";
+        ASSERT_EQUALS(result6, tokenizeAndStringify(code6,false));
     }
 
     void simplifyNull() {

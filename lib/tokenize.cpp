@@ -10025,6 +10025,22 @@ void Tokenizer::deleteSymbolDatabase()
     _symbolDatabase = 0;
 }
 
+static bool operatorEnd(const Token * tok)
+{
+    if (Token::Match(tok, ") const|volatile| noexcept| [=;{),]"))
+        return true;
+
+    if (Token::Match(tok, ") const|volatile| noexcept|throw (")) {
+        int offset = 2;
+        if (tok->strAt(1) == "const" || tok->strAt(1) == "volatile")
+            ++offset;
+        if (Token::Match(tok->linkAt(offset), ") [=;{),]"))
+            return true;
+    }
+
+    return false;
+}
+
 void Tokenizer::simplifyOperatorName()
 {
     if (isC())
@@ -10060,7 +10076,7 @@ void Tokenizer::simplifyOperatorName()
                 }
                 if (Token::Match(par, "( *| )")) {
                     // break out and simplify..
-                    if (Token::Match(par, "( ) const| [=;{),]"))
+                    if (operatorEnd(par->next()))
                         break;
 
                     while (par->str() != ")") {
@@ -10073,7 +10089,7 @@ void Tokenizer::simplifyOperatorName()
                 }
             }
 
-            if (par && Token::Match(par->link(), ") const| [=;{),]")) {
+            if (par && operatorEnd(par->link())) {
                 tok->str("operator" + op);
                 Token::eraseTokens(tok, par);
             }
