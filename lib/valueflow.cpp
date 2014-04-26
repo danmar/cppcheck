@@ -531,6 +531,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         int indentlevel = 0;
         unsigned int number_of_if = 0;
         int varusagelevel = -1;
+        bool returnStatement = false;  // current statement is a return, stop analysis at the ";"
 
         for (Token *tok2 = tok; tok2 && tok2 != endToken; tok2 = tok2->next()) {
             if (indentlevel >= 0 && tok2->str() == "{")
@@ -611,11 +612,17 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     tok2 = tok2->linkAt(2);
             }
 
-            else if (Token::Match(tok2, "break|continue")) {
+            else if (indentlevel <= 0 && Token::Match(tok2, "break|continue")) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
                 break;
             }
+
+            else if (indentlevel <= 0 && tok2->str() == "return")
+                returnStatement = true;
+
+            else if (returnStatement && tok2->str() == ";")
+                break;
 
             if (tok2->varId() == varid) {
                 // bailout: assignment
