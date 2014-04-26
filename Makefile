@@ -364,7 +364,7 @@ $(SRCDIR)/suppressions.o: lib/suppressions.cpp lib/cxx11emu.h lib/suppressions.h
 $(SRCDIR)/symboldatabase.o: lib/symboldatabase.cpp lib/cxx11emu.h lib/symboldatabase.h lib/config.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/check.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/symboldatabase.o $(SRCDIR)/symboldatabase.cpp
 
-$(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/cxx11emu.h lib/templatesimplifier.h lib/config.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenlist.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
+$(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/cxx11emu.h lib/templatesimplifier.h lib/config.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenlist.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/templatesimplifier.o $(SRCDIR)/templatesimplifier.cpp
 
 $(SRCDIR)/timer.o: lib/timer.cpp lib/cxx11emu.h lib/timer.h lib/config.h
