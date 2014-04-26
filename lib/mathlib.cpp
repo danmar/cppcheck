@@ -152,86 +152,88 @@ bool MathLib::isFloat(const std::string &s)
 {
     if (s.empty())
         return false;
-    enum {START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F} state = START;
+    enum class State {
+        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F
+    } state = State::START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
-        case START:
+        case State::START:
             if (*it=='+' || *it=='-')
-                state=BASE_PLUSMINUS;
+                state=State::BASE_PLUSMINUS;
             else if (*it=='.')
-                state=LEADING_DECIMAL;
+                state=State::LEADING_DECIMAL;
             else if (std::isdigit(*it))
-                state=BASE_DIGITS1;
+                state=State::BASE_DIGITS1;
             else
                 return false;
             break;
-        case BASE_PLUSMINUS:
+        case State::BASE_PLUSMINUS:
             if (*it=='.')
-                state=LEADING_DECIMAL;
+                state=State::LEADING_DECIMAL;
             else if (std::isdigit(*it))
-                state=BASE_DIGITS1;
+                state=State::BASE_DIGITS1;
             else if (*it=='e' || *it=='E')
-                state=E;
+                state=State::E;
             else
                 return false;
             break;
-        case LEADING_DECIMAL:
+        case State::LEADING_DECIMAL:
             if (std::isdigit(*it))
-                state=BASE_DIGITS2;
+                state=State::BASE_DIGITS2;
             else if (*it=='e' || *it=='E')
-                state=E;
+                state=State::E;
             else
                 return false;
             break;
-        case BASE_DIGITS1:
+        case State::BASE_DIGITS1:
             if (*it=='e' || *it=='E')
-                state=E;
+                state=State::E;
             else if (*it=='.')
-                state=TRAILING_DECIMAL;
+                state=State::TRAILING_DECIMAL;
             else if (!std::isdigit(*it))
                 return false;
             break;
-        case TRAILING_DECIMAL:
+        case State::TRAILING_DECIMAL:
             if (*it=='e' || *it=='E')
-                state=E;
+                state=State::E;
             else if (std::isdigit(*it))
-                state=BASE_DIGITS2;
+                state=State::BASE_DIGITS2;
             else
                 return false;
             break;
-        case BASE_DIGITS2:
+        case State::BASE_DIGITS2:
             if (*it=='e' || *it=='E')
-                state=E;
+                state=State::E;
             else if (*it=='f' || *it=='F')
-                state=F;
+                state=State::F;
             else if (!std::isdigit(*it))
                 return false;
             break;
-        case E:
+        case State::E:
             if (*it=='+' || *it=='-')
-                state=MANTISSA_PLUSMINUS;
+                state=State::MANTISSA_PLUSMINUS;
             else if (std::isdigit(*it))
-                state=MANTISSA_DIGITS;
+                state=State::MANTISSA_DIGITS;
             else
                 return false;
             break;
-        case MANTISSA_PLUSMINUS:
+        case State::MANTISSA_PLUSMINUS:
             if (!std::isdigit(*it))
                 return false;
             else
-                state=MANTISSA_DIGITS;
+                state=State::MANTISSA_DIGITS;
             break;
-        case MANTISSA_DIGITS:
+        case State::MANTISSA_DIGITS:
             if (*it=='f' || *it=='F')
-                state=F;
+                state=State::F;
             else if (!std::isdigit(*it))
                 return false;
             break;
-        case F:
+        case State::F:
             return false;
         }
     }
-    return (state==BASE_DIGITS2 || state == MANTISSA_DIGITS || state == TRAILING_DECIMAL || state == F);
+    return (state==State::BASE_DIGITS2 || state==State::MANTISSA_DIGITS || state==State::TRAILING_DECIMAL || state==State::F);
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -260,124 +262,126 @@ bool MathLib::isPositive(const std::string &s)
  **/
 bool MathLib::isOct(const std::string& s)
 {
-    enum {START, PLUSMINUS, OCTAL_PREFIX, DIGITS} state = START;
+    enum class Status {
+        START, PLUSMINUS, OCTAL_PREFIX, DIGITS
+    } state = Status::START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
+                state = Status::PLUSMINUS;
             else if (*it == '0')
-                state = OCTAL_PREFIX;
+                state = Status::OCTAL_PREFIX;
             else
                 return false;
             break;
-        case PLUSMINUS:
+        case Status::PLUSMINUS:
             if (*it == '0')
-                state = OCTAL_PREFIX;
+                state =Status:: OCTAL_PREFIX;
             else
                 return false;
             break;
-        case OCTAL_PREFIX:
+        case Status::OCTAL_PREFIX:
             if (isOctalDigit(*it))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return false;
             break;
-        case DIGITS:
+        case Status::DIGITS:
             if (isOctalDigit(*it))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return isValidSuffix(it,s.end());
             break;
-        default:
-            return false;
         }
     }
-    return state == DIGITS;
+    return state == Status::DIGITS;
 }
 
 bool MathLib::isHex(const std::string& s)
 {
-    enum {START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS} state = START;
+    enum class Status {
+        START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS
+    } state = Status::START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
+                state = Status::PLUSMINUS;
             else if (*it == '0')
-                state = HEX_PREFIX;
+                state = Status::HEX_PREFIX;
             else
                 return false;
             break;
-        case PLUSMINUS:
+        case Status::PLUSMINUS:
             if (*it == '0')
-                state = HEX_PREFIX;
+                state = Status::HEX_PREFIX;
             else
                 return false;
             break;
-        case HEX_PREFIX:
+        case Status::HEX_PREFIX:
             if (*it == 'x' || *it == 'X')
-                state = DIGIT;
+                state = Status::DIGIT;
             else
                 return false;
             break;
-        case DIGIT:
+        case Status::DIGIT:
             if (isxdigit(*it))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return false;
             break;
-        case DIGITS:
+        case Status::DIGITS:
             if (isxdigit(*it))
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return isValidSuffix(it,s.end());
             break;
-        default:
-            return false;
         }
     }
-    return state == DIGITS;
+    return state == Status::DIGITS;
 }
 
 bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_iterator end)
 {
-    enum {START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU} state = START;
+    enum class Status {
+        START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU
+    } state = Status::START;
     for (; it != end; ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == 'u' || *it == 'U')
-                state = SUFFIX_U;
+                state = Status::SUFFIX_U;
             else if (*it == 'l' || *it == 'L')
-                state = SUFFIX_L;
+                state = Status::SUFFIX_L;
             else
                 return false;
             break;
-        case SUFFIX_U:
+        case Status::SUFFIX_U:
             if (*it == 'l' || *it == 'L')
-                state = SUFFIX_UL; // UL
+                state = Status::SUFFIX_UL; // UL
             else
                 return false;
             break;
-        case SUFFIX_UL:
+        case Status::SUFFIX_UL:
             if (*it == 'l' || *it == 'L')
-                state = SUFFIX_ULL; // ULL
+                state = Status::SUFFIX_ULL; // ULL
             else
                 return false;
             break;
-        case SUFFIX_L:
+        case Status::SUFFIX_L:
             if (*it == 'u' || *it == 'U')
-                state = SUFFIX_LU; // LU
+                state = Status::SUFFIX_LU; // LU
             else if (*it == 'l' || *it == 'L')
-                state = SUFFIX_LL; // LL
+                state = Status::SUFFIX_LL; // LL
             else
                 return false;
             break;
-        case SUFFIX_LU:
+        case Status::SUFFIX_LU:
             return false;
-        case SUFFIX_LL:
+        case Status::SUFFIX_LL:
             if (*it == 'u' || *it == 'U')
-                state = SUFFIX_LLU; // LLU
+                state = Status::SUFFIX_LLU; // LLU
             else
                 return false;
             break;
@@ -385,9 +389,9 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
             return false;
         }
     }
-    return (state == SUFFIX_U)  || (state == SUFFIX_L)
-           || (state == SUFFIX_UL) || (state == SUFFIX_LU)   || (state == SUFFIX_LL)
-           || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
+    return (state == Status::SUFFIX_U)  || (state == Status::SUFFIX_L)
+           || (state == Status::SUFFIX_UL) || (state == Status::SUFFIX_LU)   || (state == Status::SUFFIX_LL)
+           || (state == Status::SUFFIX_ULL) || (state == Status::SUFFIX_LLU);
 }
 
 /*! \brief Does the string represent a binary number?
@@ -401,78 +405,80 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
  **/
 bool MathLib::isBin(const std::string& s)
 {
-    enum {START, PLUSMINUS, GNU_BIN_PREFIX, DIGIT, DIGITS} state = START;
+    enum class Status {
+        START, PLUSMINUS, GNU_BIN_PREFIX, DIGIT, DIGITS
+    } state = Status::START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
+                state = Status::PLUSMINUS;
             else if (*it == '0')
-                state = GNU_BIN_PREFIX;
+                state = Status::GNU_BIN_PREFIX;
             else
                 return false;
             break;
-        case PLUSMINUS:
+        case Status::PLUSMINUS:
             if (*it == '0')
-                state = GNU_BIN_PREFIX;
+                state = Status::GNU_BIN_PREFIX;
             else
                 return false;
             break;
-        case GNU_BIN_PREFIX:
+        case Status::GNU_BIN_PREFIX:
             if (*it == 'b' || *it == 'B')
-                state = DIGIT;
+                state = Status::DIGIT;
             else
                 return false;
             break;
-        case DIGIT:
+        case Status::DIGIT:
             if (*it == '0' || *it == '1')
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return false;
             break;
-        case DIGITS:
+        case Status::DIGITS:
             if (*it == '0' || *it == '1')
-                state = DIGITS;
+                state = Status::DIGITS;
             else
                 return isValidSuffix(it,s.end());
             break;
-        default:
-            return false;
         }
     }
-    return state == DIGITS;
+    return state == Status::DIGITS;
 }
 
 bool MathLib::isDec(const std::string & s)
 {
-    enum {START, PLUSMINUS, DIGIT, SUFFIX} state = START;
+    enum class Status {
+        START, PLUSMINUS, DIGIT, SUFFIX
+    } state = Status::START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
-        case START:
+        case Status::START:
             if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
+                state = Status::PLUSMINUS;
             else if (isdigit(*it))
-                state = DIGIT;
+                state = Status::DIGIT;
             else
                 return false;
             break;
-        case PLUSMINUS:
+        case Status::PLUSMINUS:
             if (isdigit(*it))
-                state = DIGIT;
+                state = Status::DIGIT;
             else
                 return false;
             break;
-        case DIGIT:
+        case Status::DIGIT:
             if (isdigit(*it))
-                state = DIGIT;
+                state = Status::DIGIT;
             else
                 return isValidSuffix(it,s.end());
             break;
-        case SUFFIX:
+        case Status::SUFFIX:
             break;
         }
     }
-    return state == DIGIT;
+    return state == Status::DIGIT;
 }
 
 bool MathLib::isInt(const std::string & s)
