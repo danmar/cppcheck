@@ -20,6 +20,7 @@
 #include "mathlib.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "tokenize.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include <algorithm>
@@ -126,10 +127,9 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
             tok = tok->link();
 
         // skip executing scopes..
-        if (Token::simpleMatch(tok, ") {") || Token::Match(tok, ") %var% {") || Token::Match(tok, "[;,=] {")) {
-            while (tok->str() != "{")
-                tok = tok->next();
-            tok = tok->link();
+        const Token *start = Tokenizer::startOfExecutableScope(tok);
+        if (start) {
+            tok = start->link();
         }
 
         // skip executing scopes (ticket #1985)..
@@ -342,7 +342,8 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
 
         // don't remove constructor
         if (tok2->str() == "explicit" ||
-            (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") && Token::simpleMatch(tok2->next()->link(), ") {"))) {
+            (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") &&
+             Tokenizer::startOfExecutableScope(const_cast<const Token *>(tok2->next()->link())))) {
             Token::eraseTokens(tok, tok2);
             tok->deleteThis();
             return true;

@@ -776,12 +776,25 @@ public:
     */
     static bool isTwoNumber(const std::string &s);
 
+    /**
+    * Helper function to check for start of function execution scope.
+    * Do not use this in checks.  Use the symbol database.
+    * @param tok --> pointer to end parentheses of parameter list
+    * @return pointer to start brace of function scope or nullptr if not start.
+    */
+    static const Token * startOfExecutableScope(const Token * tok);
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
 
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
+
+    static Token * startOfFunction(Token * tok);
+    static Token * startOfExecutableScope(Token * tok) {
+        return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
+    }
 
     /** settings */
     const Settings * _settings;

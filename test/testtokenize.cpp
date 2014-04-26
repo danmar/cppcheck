@@ -575,6 +575,8 @@ private:
         TEST_CASE(astunaryop);
         TEST_CASE(astfunction);
         TEST_CASE(asttemplate);
+
+        TEST_CASE(startOfExecutableScope);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -739,11 +741,11 @@ private:
 
     // ticket #2118 - invalid syntax error
     void tokenize12() {
-        tokenizeAndStringify("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
-                             "    for (unsigned i = 0 ; i < count; i++) {\n"
-                             "    }\n"
-                             "});");
-        ASSERT_EQUALS("", errout.str());
+        const char code[] = "Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
+                            "    for (unsigned i = 0 ; i < count; i++) {\n"
+                            "    }\n"
+                            "});";
+        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
     // bailout if there is "@" - it is not handled well
@@ -10461,6 +10463,35 @@ private:
         const std::string code = preprocessor.getcode(filedata, "", "");
 
         tokenizeAndStringify(code.c_str()); // just survive...
+    }
+
+    bool isStartOfExecutableScope(int offset, const char code[]) {
+        const Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        return Tokenizer::startOfExecutableScope(tokenizer.tokens()->tokAt(offset)) != nullptr;
+    }
+
+    void startOfExecutableScope() {
+        ASSERT(isStartOfExecutableScope(3, "void foo() { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() const { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() volatile { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() noexcept { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() NOEXCEPT { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() CONST NOEXCEPT { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() const noexcept { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() noexcept(true) { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() const noexcept(true) { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() throw() { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() THROW() { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() CONST THROW() { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() const throw() { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() throw(int) { }"));
+        ASSERT(isStartOfExecutableScope(3, "void foo() const throw(int) { }"));
+        ASSERT(isStartOfExecutableScope(2, "foo() : a(1) { }"));
+        ASSERT(isStartOfExecutableScope(2, "foo() : a(1), b(2) { }"));
     }
 
 };
