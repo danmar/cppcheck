@@ -623,6 +623,17 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
 
+        code = "void f () {\n"
+               "    ST * x =  g_pST;\n"
+               "    if (x->y == 0) {\n"
+               "        x = NULL;\n"
+               "        goto label;\n"
+               "    }\n"
+               "    a = x->y;\n"
+               "label:\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"

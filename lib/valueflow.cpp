@@ -612,7 +612,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
                     tok2 = tok2->linkAt(2);
             }
 
-            else if (indentlevel <= 0 && Token::Match(tok2, "break|continue")) {
+            else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
                 break;
