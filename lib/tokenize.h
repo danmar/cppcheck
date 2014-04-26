@@ -187,8 +187,6 @@ public:
     void arraySize();
 
     /** Simplify labels and 'case|default' syntaxes.
-      * @return true if found nothing or the syntax is correct.
-      *         false if syntax is found to be wrong.
       */
     void simplifyLabelsCaseDefault();
 
@@ -450,7 +448,6 @@ public:
     /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
-     * @return false only if there's a syntax error
      */
     void simplifyFunctionParameters();
 
@@ -564,9 +561,6 @@ public:
 
     /**
      * Setup links for tokens so that one can call Token::link().
-     *
-     * @return false if there was a mismatch with tokens, this
-     * should mean that source code was not valid.
      */
     void createLinks();
 
@@ -587,7 +581,6 @@ public:
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList.
-     * @return always true.
      */
     void validate() const;
 

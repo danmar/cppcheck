@@ -258,14 +258,13 @@ private:
     /**
      * Search includes from code and append code from the included
      * file
-     * @param code The source code to modify
+     * @param[in,out] code The source code to modify
      * @param filePath Relative path to file to check e.g. "src/main.cpp"
      * @param includePaths List of paths where include files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
-     * @return modified source code
      */
     void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
 

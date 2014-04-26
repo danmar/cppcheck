@@ -447,7 +447,7 @@ public:
      * @param varid Print varids. (Style: "varname@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param linenumbers Print line number in front of each line
-     * @param linebreaks Insert \n into string when line number changes
+     * @param linebreaks Insert "\n" into string when line number changes
      * @param files print Files as numbers or as names (if fileNames is given)
      * @param fileNames Vector of filenames. Used (if given) to print filenames as strings instead of numbers.
      * @param end Stringification ends before this token is reached. 0 to stringify until end of list.

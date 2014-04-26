@@ -375,7 +375,6 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
             break;
         case SUFFIX_LU:
             return false;
-            break;
         case SUFFIX_LL:
             if (*it == 'u' || *it == 'U')
                 state = SUFFIX_LLU; // LLU

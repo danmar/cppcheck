@@ -6637,7 +6637,7 @@ private:
 
     void checkPipeParameterSize() { // #3521
         check("void f(){\n"
-              "int pipefd[1];\n" //<--  array of two integers is needed
+              "int pipefd[1];\n" // <--  array of two integers is needed
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
@@ -6661,7 +6661,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(){\n"
-              "int pipefd[1];\n" //<--  array of two integers is needed
+              "int pipefd[1];\n" // <--  array of two integers is needed
               "if (pipe2(pipefd,0) == -1) {\n"
               "    return;\n"
               "  }\n"
