@@ -5107,6 +5107,20 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
                            "",
                            errout.str());
+
+        // Ticket #5734
+        check("int foo(char c) {\n"
+              "return c == '42';}", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+        check("int foo(char c) {\n"
+              "return c == '42';}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+        check("int foo(char c) {\n"
+              "return c == \"42\"[0];}", "test.cpp", false, true, false, false);
+        ASSERT_EQUALS("", errout.str());
+        check("int foo(char c) {\n"
+              "return c == \"42\"[0];}", "test.c", false, true, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {

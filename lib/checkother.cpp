@@ -2914,6 +2914,9 @@ void CheckOther::checkSuspiciousStringCompare()
 
             if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
                 continue;
+	    // rough filter for index access (#5734). Might cause false negatives in multidimensional structures
+            if (Token::simpleMatch(varTok->tokAt(1), "[") || Token::simpleMatch(litTok->tokAt(1), "["))
+                continue;
 
             if ((varTok->type() == Token::eString || varTok->type() == Token::eVariable) && (litTok->type() == Token::eString || litTok->type() == Token::eVariable) && litTok->type() != varTok->type()) {
                 if (varTok->type() == Token::eString)
