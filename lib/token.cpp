@@ -462,6 +462,8 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
 
 bool Token::simpleMatch(const Token *tok, const char pattern[])
 {
+    if (!tok)
+        return false; // shortcut
     const char *current, *next;
 
     current = pattern;
@@ -591,7 +593,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                     multicompare(p,tok->isName(),ismulticomp);
                 } else { // %varid%
                     if (varid == 0) {
-                        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
+                        throw InternalError(tok, "Internal error. Tokentch called with varid 0. Please report this to Cppcheck developers");
                     }
 
                     if (tok->varId() != varid)

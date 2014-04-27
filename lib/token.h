@@ -93,7 +93,7 @@ public:
     void deleteNext(unsigned long index = 1);
 
     /**
-     * Returns token in given index, related to this token.
+     * @return token in given index, related to this token.
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
@@ -103,7 +103,7 @@ public:
     }
 
     /**
-     * Returns the link to the token in given index, related to this token.
+     * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
     const Token *linkAt(int index) const;
@@ -111,6 +111,10 @@ public:
         return const_cast<Token *>(static_cast<const Token *>(this)->linkAt(index));
     }
 
+    /**
+     * @return String of the token in given index, related to this token.
+     * If that token does not exist, an emptry string is being returned.
+     */
     const std::string &strAt(int index) const;
 
     /**
@@ -185,7 +189,7 @@ public:
     static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
 
     /**
-     * Return length of C-string.
+     * @return length of C-string.
      *
      * Should be called for %%str%% tokens only.
      *
@@ -194,7 +198,7 @@ public:
     static std::size_t getStrLength(const Token *tok);
 
     /**
-     * Return char of C-string at index (possible escaped "\\n")
+     * @return char of C-string at index (possible escaped "\\n")
      *
      * Should be called for %%str%% tokens only.
      *
@@ -447,7 +451,7 @@ public:
      * @param varid Print varids. (Style: "varname@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param linenumbers Print line number in front of each line
-     * @param linebreaks Insert "\n" into string when line number changes
+     * @param linebreaks Insert "\\n" into string when line number changes
      * @param files print Files as numbers or as names (if fileNames is given)
      * @param fileNames Vector of filenames. Used (if given) to print filenames as strings instead of numbers.
      * @param end Stringification ends before this token is reached. 0 to stringify until end of list.
@@ -500,7 +504,7 @@ public:
     }
 
     /**
-     * Returns a pointer to the scope containing this token.
+     * @return a pointer to the scope containing this token.
      */
     const Scope *scope() const {
         return _scope;
@@ -519,7 +523,7 @@ public:
     }
 
     /**
-     * Returns a pointer to the Function associated with this token.
+     * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
         return _type == eFunction ? _function : 0;
@@ -538,7 +542,7 @@ public:
     }
 
     /**
-     * Returns a pointer to the variable associated with this token.
+     * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
         return _type == eVariable ? _variable : 0;
@@ -582,7 +586,7 @@ public:
     }
 
     /**
-     * Returns the first token of the next argument. Does only work on argument
+     * @return the first token of the next argument. Does only work on argument
      * lists. Returns 0, if there is no next argument
      */
     Token* nextArgument() const;
@@ -596,7 +600,7 @@ public:
     Token* findClosingBracket();
 
     /**
-     * Returns the original name.
+     * @return the original name.
      */
     const std::string & originalName() const {
         return _originalName;
