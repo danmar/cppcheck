@@ -6647,6 +6647,14 @@ private:
               "    strcpy(buf, string);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Buffer 'buf' is being written before its old content has been used.\n", errout.str());
+
+        // #5689 - use return value of strcpy
+        check("int f(void* a) {\n"
+              "    int i = atoi(strcpy(a, foo));\n"
+              "    strncpy(a, 0, bar);\n"
+              "    return i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varFuncNullUB() { // #4482

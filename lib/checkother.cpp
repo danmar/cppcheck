@@ -776,7 +776,7 @@ void CheckOther::checkRedundantAssignment()
                 if (tok->varId()) // operator() or function pointer
                     varAssignments.erase(tok->varId());
 
-                if (memfunc) {
+                if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
                     const Token* param1 = tok->tokAt(2);
                     writtenArgumentsEnd = param1->next();
                     if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
