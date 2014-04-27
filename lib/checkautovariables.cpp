@@ -78,7 +78,7 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return (var && var->isLocal() && !var->isStatic() && var->isArray());
+    return (var && var->isLocal() && !var->isStatic() && var->isArray() && !var->isPointer());
 }
 
 // Verification that we really take the address of a local variable

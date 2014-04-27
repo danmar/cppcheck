@@ -501,6 +501,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
+        // #5732
+        check("int main() {\n"
+              "   long (*pKoeff)[256] = new long[9][256];\n"
+              "   delete[] pKoeff;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main() {\n"
+              "   long *pKoeff[256];\n"
+              "   delete[] pKoeff;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
     }
 
     void testassign1() { // Ticket #1819
