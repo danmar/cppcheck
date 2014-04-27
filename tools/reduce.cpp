@@ -70,7 +70,7 @@ public:
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;
@@ -581,7 +581,7 @@ int main(int argc, char *argv[])
     bool def = false;
     bool maxconfigs = false;
 
-    for (int i = 1, includePathIndex = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             print = true;
         else if (strcmp(argv[i], "--hang") == 0)
