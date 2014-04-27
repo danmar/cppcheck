@@ -48,7 +48,7 @@ public:
         m_timerResults = tr;
     }
 
-    /** Returns the source file path. e.g. "file.cpp" */
+    /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
     /** Is the code C. Used for bailouts */
@@ -494,7 +494,7 @@ public:
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
-     * @return returns true if simplifcations performed and false otherwise.
+     * @return true if simplifcations performed and false otherwise.
      */
     bool simplifyMathFunctions();
 

@@ -187,7 +187,7 @@ public:
             void setfile(const std::string &file);
 
             /**
-             * Returns the location as a string. Format: [file:line]
+             * @return the location as a string. Format: [file:line]
              */
             std::string stringify() const;
 
@@ -216,7 +216,8 @@ public:
          * @param verbose use verbose message
          * @param outputFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
-         */
+        * @return formatted string
+               */
         std::string toString(bool verbose, const std::string &outputFormat = "") const;
 
         std::string serialize() const;

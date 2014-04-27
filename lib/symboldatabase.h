@@ -723,7 +723,7 @@ public:
     /**
      * @brief get the number of nested scopes that are not functions
      *
-     * This returns the number of user defined types (class, struct, union)
+     * @return the number of user defined types (class, struct, union)
      * that are defined in this user defined type or namespace.
      */
     unsigned int getNestedNonFunctions() const;
