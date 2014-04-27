@@ -456,7 +456,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
         compileUnaryOp(tok, compileExpression, op, depth);
     } else if (tok->isName()) {
         const bool templatefunc = Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (");
-        if (Token::Match(tok->next(), "++|--")) {  // post increment / decrement
+        if (!Token::Match(tok->previous(), ".|::") && Token::Match(tok->next(), "++|--")) {  // post increment / decrement
             tok = tok->next();
             tok->astOperand1(tok->previous());
             op.push(tok);
@@ -492,8 +492,13 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
                 }
                 tok1->astOperand1(prev);
                 prev = tok1;
-                if (Token::Match(tok, "]|)"))
+                if (Token::Match(tok, "]|)")) {
                     tok = tok->next();
+                    if (depth==1U && Token::Match(tok,"++|--") && op.empty()) {
+                        tok->astOperand1(tok->previous()->link());
+                        tok = tok->next();
+                    }
+                }
             }
             op.push(par);
         }
@@ -566,6 +571,8 @@ static void compileScope(Token *&tok, std::stack<Token*> &op, unsigned int depth
                 compileBinOp(tok, compileTerm, op, depth);
             else
                 compileUnaryOp(tok, compileDot, op, depth);
+            if (depth==1U && Token::Match(tok,"++|--"))
+                compileTerm(tok,op,depth);
         } else break;
     }
 }
@@ -587,6 +594,8 @@ static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth)
     while (tok) {
         if (tok->str() == ".") {
             compileBinOp(tok, compileParAndBrackets, op, depth);
+            if (depth==1U && Token::Match(tok,"++|--"))
+                compileTerm(tok,op,depth);
         } else break;
     }
 }

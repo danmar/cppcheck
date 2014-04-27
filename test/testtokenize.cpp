@@ -10257,6 +10257,9 @@ private:
             if (Token::Match(tok, "%or%|<<|>>|+|-|*|/|%|&|^ =")) {
                 tok->str(tok->str() + "=");
                 tok->deleteNext();
+            } else if (Token::simpleMatch(tok, ": :")) {
+                tok->str("::");
+                tok->deleteNext();
             }
         }
 
@@ -10407,6 +10410,10 @@ private:
         ASSERT_EQUALS("1a--+", testAst("1 + --a"));
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
+        ASSERT_EQUALS("ab.++", testAst("++a.b;"));
+        ASSERT_EQUALS("ab.++", testAst("a.b++;"));
+        ASSERT_EQUALS("ab::++", testAst("a::b++;"));
+        ASSERT_EQUALS("c5[--*", testAst("*c[5]--;"));
 
         // Unary :: operator
         ASSERT_EQUALS("abc?d12,(::e/:=",testAst("a = b ? c : ::d(1,2) / e;"));
