@@ -392,6 +392,16 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5731 - fp when undeclared variable is used
+        check("void f() {\n"
+              "   if (x == -1){\n"
+              "       x = do_something();\n"
+              "       if (x != -1) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void emptyBrackets() {

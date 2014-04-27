@@ -3321,6 +3321,9 @@ void CheckOther::oppositeInnerCondition()
                 nonlocal |= (var && (!var->isLocal() || var->isStatic()));
                 // TODO: if var is pointer check what it points at
                 nonlocal |= (var && var->isPointer());
+            } else if (cond->isName()) {
+                // varid is 0. this is possibly a nonlocal variable..
+                nonlocal |= (cond->astParent() && cond->astParent()->isConstOp());
             }
         }
 
