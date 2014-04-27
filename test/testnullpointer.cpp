@@ -2136,9 +2136,9 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 #else
-      return;
+        return;
 #endif
-      
+
     }
 
     void functioncall() {    // #3443 - function calls

@@ -2914,7 +2914,7 @@ void CheckOther::checkSuspiciousStringCompare()
 
             if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
                 continue;
-	    // rough filter for index access (#5734). Might cause false negatives in multidimensional structures
+            // rough filter for index access (#5734). Might cause false negatives in multidimensional structures
             if (Token::simpleMatch(varTok->tokAt(1), "[") || Token::simpleMatch(litTok->tokAt(1), "["))
                 continue;
 
