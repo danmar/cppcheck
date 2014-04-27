@@ -317,6 +317,8 @@ void CheckSizeof::sizeofVoid()
                     // Check for cast expression
                     if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
                         continue;
+                    if (tok2->strAt(-1) == "&") // Check for reference operator
+                        continue;
                 }
                 arithOperationsOnVoidPointerError(tok, varname,
                                                   var->typeStartToken()->stringifyList(var->typeEndToken()->next()));
