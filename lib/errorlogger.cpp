@@ -220,7 +220,7 @@ static std::string fixInvalidChars(const std::string& raw)
     result.reserve(raw.length());
     std::string::const_iterator from=raw.begin();
     while (from!=raw.end()) {
-        if (std::isprint(*from)) {
+        if (std::isprint(static_cast<unsigned char>(*from))) {
             result.push_back(*from);
         } else {
             std::ostringstream es;
