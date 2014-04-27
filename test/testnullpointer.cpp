@@ -2081,8 +2081,7 @@ private:
 
     void nullpointerStdStream() {
         // TODO: Refactor these tests and re-enable them
-        return;
-
+#if 0
         check("void f(std::ifstream& is) {\n"
               "    char* p = 0;\n"
               "    is >> p;\n"
@@ -2136,6 +2135,10 @@ private:
               "    std::cout << i;\n" // Its no char* (#4240)
               "}", true);
         ASSERT_EQUALS("", errout.str());
+#else
+      return;
+#endif
+      
     }
 
     void functioncall() {    // #3443 - function calls
