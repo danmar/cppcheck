@@ -396,7 +396,7 @@ static bool iscast(const Token *tok)
         if (tok2->str() == ")")
             return tok2->previous()->str() == "*" ||
                    (Token::Match(tok2, ") %any%") &&
-                    (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,?:]")));
+                    (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,?:.]")));
         if (!Token::Match(tok2, "%var%|*|&|::"))
             return false;
     }
