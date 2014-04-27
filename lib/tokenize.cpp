@@ -5135,7 +5135,11 @@ void Tokenizer:: simplifyFunctionPointers()
         Token *tok2 = (tok && tok->isName()) ? tok->next() : nullptr;
         while (Token::Match(tok2, "*|&"))
             tok2 = tok2->next();
-        if (!Token::Match(tok2, "( * %var%"))
+        if (!tok2 || tok2->str() != "(")
+            continue;
+        while (Token::Match(tok2, "(|:: %type%"))
+            tok2 = tok2->tokAt(2);
+        if (!Token::Match(tok2, "(|:: * %var%"))
             continue;
         tok2 = tok2->tokAt(2);
         while (Token::Match(tok2, "%type%|:: %type%|::"))
@@ -5157,6 +5161,8 @@ void Tokenizer:: simplifyFunctionPointers()
         // ok simplify this function pointer to an ordinary pointer
         Token::eraseTokens(tok->link(), endTok->next());
         tok->link()->deleteThis();
+        while (Token::Match(tok, "( %type% ::"))
+            tok->deleteNext(2);
         tok->deleteThis();
     }
 }

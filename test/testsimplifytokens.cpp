@@ -4751,7 +4751,7 @@ private:
                                 "F f;";
 
             // The expected result..
-            const std::string expected("void ( X :: * f ) ( ) ;");
+            const std::string expected("void * f ;");
             ASSERT_EQUALS(expected, tok(code));
         }
     }
@@ -5995,9 +5995,9 @@ private:
             const std::string expected("C f1 ( ) ; "
                                        "C * f2 ; " // this gets simplified to a regular pointer
                                        "C ( & f3 ) ( ) ; "
-                                       "C ( C :: * f4 ) ( ) ; "
+                                       "C * f4 ; "
                                        "C ( C :: * f5 ) ( ) const ; "
-                                       "C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "C * f6 ; " // volatile is removed
                                        "C ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6026,9 +6026,9 @@ private:
             const std::string expected("const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
-                                       "const C ( C :: * f4 ) ( ) ; "
+                                       "const C * f4 ; "
                                        "const C ( C :: * f5 ) ( ) const ; "
-                                       "const C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * f6 ; " // volatile is removed
                                        "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6056,9 +6056,9 @@ private:
             const std::string expected("const C f1 ( ) ; "
                                        "const C * f2 ; " // this gets simplified to a regular pointer
                                        "const C ( & f3 ) ( ) ; "
-                                       "const C ( C :: * f4 ) ( ) ; "
+                                       "const C * f4 ; "
                                        "const C ( C :: * f5 ) ( ) const ; "
-                                       "const C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * f6 ; " // volatile is removed
                                        "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6086,9 +6086,9 @@ private:
             const std::string expected("C * f1 ( ) ; "
                                        "C * * f2 ; " // this gets simplified to a regular pointer
                                        "C * ( & f3 ) ( ) ; "
-                                       "C * ( C :: * f4 ) ( ) ; "
+                                       "C * * f4 ; "
                                        "C * ( C :: * f5 ) ( ) const ; "
-                                       "C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "C * * f6 ; " // volatile is removed
                                        "C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6116,9 +6116,9 @@ private:
             const std::string expected("const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
-                                       "const C * ( C :: * f4 ) ( ) ; "
+                                       "const C * * f4 ; "
                                        "const C * ( C :: * f5 ) ( ) const ; "
-                                       "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * * f6 ; " // volatile is removed
                                        "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6147,9 +6147,9 @@ private:
             const std::string expected("const C * f1 ( ) ; "
                                        "const C * * f2 ; " // this gets simplified to a regular pointer
                                        "const C * ( & f3 ) ( ) ; "
-                                       "const C * ( C :: * f4 ) ( ) ; "
+                                       "const C * * f4 ; "
                                        "const C * ( C :: * f5 ) ( ) const ; "
-                                       "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * * f6 ; " // volatile is removed
                                        "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
             ASSERT_EQUALS(expected, tok(code));
 
@@ -6207,10 +6207,10 @@ private:
                                    "int * const t2 ; "
                                    "int * t3 ; " // volatile removed, gets simplified to regular pointer
                                    "int * const t4 ; " // volatile removed
-                                   "int ( C :: * t5 ) ( float ) ; "
-                                   "int ( C :: * const t6 ) ( float ) ; "
-                                   "int ( C :: * t7 ) ( float ) ; " // volatile removed
-                                   "int ( C :: * const t8 ) ( float ) ; " // volatile removed
+                                   "int * t5 ; "
+                                   "int * const t6 ; "
+                                   "int * t7 ; " // volatile removed
+                                   "int * const t8 ; " // volatile removed
                                    "int ( :: C :: * t9 ) ( float ) ; "
                                    "int ( :: C :: * const t10 ) ( float ) ; "
                                    "int ( :: C :: * t11 ) ( float ) ; " // volatile removed

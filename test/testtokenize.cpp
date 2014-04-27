@@ -440,6 +440,7 @@ private:
         TEST_CASE(functionpointer4);
         TEST_CASE(functionpointer5);
         TEST_CASE(functionpointer6);
+        TEST_CASE(functionpointer7);
 
         TEST_CASE(removeRedundantAssignment);
 
@@ -5189,7 +5190,7 @@ private:
                                 "1: struct A ;\n"
                                 "2:\n"
                                 "3: struct A {\n"
-                                "4: bool ( A :: * pFun@1 ) ( ) ;\n"
+                                "4: bool * pFun@1 ;\n"
                                 "5: void setPFun ( int mode@2 ) ;\n"
                                 "6: bool funcNorm ( ) ;\n"
                                 "7: } ;\n"
@@ -7072,6 +7073,13 @@ private:
         const char expected2[] = "\n\n##file 0\n"
                                  "1: ; std :: string * fp@1 ( f ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
+    }
+
+    void functionpointer7() {
+        const char code1[] = "void (X::*y)();";
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: void * y@1 ;\n";
+        ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
     }
 
     void removeRedundantAssignment() {
