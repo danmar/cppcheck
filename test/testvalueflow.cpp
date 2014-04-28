@@ -455,7 +455,22 @@ private:
                 "out:"
                 "    if (x==123){}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on goto label\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: variable x stopping on goto label\n", errout.str());
+
+        // #5721 - FP
+        bailout("static void f(int rc) {\n"
+                "    ABC* abc = getabc();\n"
+                "    if (!abc) { goto out };\n"
+                "\n"
+                "    abc->majortype = 0;\n"
+                "    if (FAILED(rc)) {}\n"
+                "\n"
+                "out:\n"
+                "    if (abc) {}\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of abc\n"
+                      "[test.cpp:8]: (debug) ValueFlow bailout: variable abc stopping on goto label\n",
+                      errout.str());
     }
 
     void valueFlowAfterAssign() {

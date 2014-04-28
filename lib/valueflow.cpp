@@ -440,6 +440,13 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             if (tok2->str() == ")" && Token::Match(tok2->link()->previous(), "typeof|sizeof ("))
                 tok2 = tok2->link();
 
+            // goto label
+            if (Token::Match(tok2, "[;{}] %var% :")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2->next(), "variable " + var->nameToken()->str() + " stopping on goto label");
+                break;
+            }
+
             if (tok2->str() == "}") {
                 if (Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
                     if (settings->debugwarnings) {
@@ -486,13 +493,6 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on " + parent->str());
                     break;
                 }
-            }
-
-            // goto label
-            if (Token::Match(tok2, "[;{}] %var% :")) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on goto label");
-                break;
             }
         }
     }
