@@ -723,7 +723,7 @@ static void execute(const Token *expr,
 
     else if (expr->str() == "=") {
         execute(expr->astOperand2(), programMemory, result, error);
-        if (expr->astOperand1() && expr->astOperand1()->varId())
+        if (!*error && expr->astOperand1() && expr->astOperand1()->varId())
             (*programMemory)[expr->astOperand1()->varId()] = *result;
         else
             *error = true;

@@ -743,6 +743,13 @@ private:
                "        0 : a[x];\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    int x;\n"
+               "    for (int i = 0; x = bar[i]; i++)\n"
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSubFunction() {
