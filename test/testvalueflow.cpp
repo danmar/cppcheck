@@ -374,6 +374,12 @@ private:
                "    if (x==63){}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 63));
+
+        code = "void f(int *x) {\n"
+               "    char a[sizeof x.y];\n"
+               "    if (x==0){}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 
     void valueFlowBeforeConditionIfElse() { // bailout: if/else/etc
