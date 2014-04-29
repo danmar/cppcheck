@@ -10384,7 +10384,7 @@ private:
                       "    | `-i\n"
                       "    `-f\n",
                       testAst("x = ((a[i]).f)();", true));
-        ASSERT_EQUALS("abcde.++[.=", testAst("a = b.c[++(d.e)];"));
+        ASSERT_EQUALS("abc.de.++[=", testAst("a = b.c[++(d.e)];"));
         ASSERT_EQUALS("abc(1+=", testAst("a = b(c**)+1;"));
         ASSERT_EQUALS("abc.=", testAst("a = (b).c;"));
 
@@ -10411,7 +10411,7 @@ private:
         ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
         ASSERT_EQUALS("a1[0[", testAst("a[1][0]"));
         ASSERT_EQUALS("ab0[=", testAst("a=(b)[0];"));
-        ASSERT_EQUALS("abc0[.=", testAst("a=b.c[0];"));
+        ASSERT_EQUALS("abc.0[=", testAst("a=b.c[0];"));
         ASSERT_EQUALS("ab0[1[=", testAst("a=b[0][1];"));
     }
 
