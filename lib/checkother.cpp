@@ -480,21 +480,25 @@ void CheckOther::warningOldStylePointerCast()
     if (!_settings->isEnabled("style") || !_tokenizer->isCPP())
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Old style pointer casting..
-        if (!Token::Match(tok, "( const| %type% * ) (| %var%") &&
-            !Token::Match(tok, "( const| %type% * ) (| new"))
-            continue;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            // Old style pointer casting..
+            if (!Token::Match(tok, "( const| %type% * ) (| %var%") &&
+                !Token::Match(tok, "( const| %type% * ) (| new"))
+                continue;
 
-        if (tok->strAt(1) == "const")
-            tok = tok->next();
+            if (tok->strAt(1) == "const")
+                tok = tok->next();
 
-        if (tok->strAt(4) == "const")
-            continue;
+            if (tok->strAt(4) == "const")
+                continue;
 
-        // Is "type" a class?
-        if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
-            cstyleCastError(tok);
+            // Is "type" a class?
+            if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
+                cstyleCastError(tok);
+        }
     }
 }
 

@@ -1324,6 +1324,7 @@ private:
 
         Settings settings;
         settings.addEnabled("style");
+        settings.standards.cpp = Standards::CPP03; // #5560
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this);
@@ -1389,6 +1390,16 @@ private:
                                  "{\n"
                                  "  virtual void abc(const B *) const = 0;\n"
                                  "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5560
+        checkOldStylePointerCast("class C;\n"
+                                 "\n"
+                                 "class B\n"
+                                 "{ virtual G* createGui(S*, C*) const = 0; };\n"
+                                 "\n"
+                                 "class MS : public M\n"
+                                 "{ virtual void addController(C*) override {} };");
         ASSERT_EQUALS("", errout.str());
     }
 
