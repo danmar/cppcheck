@@ -10109,15 +10109,30 @@ void Tokenizer::deleteSymbolDatabase()
 
 static bool operatorEnd(const Token * tok)
 {
-    if (Token::Match(tok, ") const|volatile| noexcept| [=;{),]"))
-        return true;
+    if (tok && tok->str() == ")") {
+        tok = tok->next();
+        while (tok && !Token::Match(tok, "[=;{),]")) {
+            if (tok->str() == "const" || tok->str() == "volatile") {
+                tok = tok->next();
+            } else if (tok->str() == "noexcept") {
+                tok = tok->next();
+                if (tok && tok->str() == "(") {
+                    tok = tok->link()->next();
+                }
+            } else if (tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
+                tok = tok->next()->link()->next();
+            }
+            // unknown macros ") MACRO {" and ") MACRO(...) {"
+            else if (tok->isUpperCaseName()) {
+                tok = tok->next();
+                if (tok && tok->str() == "(") {
+                    tok = tok->link()->next();
+                }
+            } else
+                return false;
+        }
 
-    if (Token::Match(tok, ") const|volatile| noexcept|throw (")) {
-        int offset = 2;
-        if (tok->strAt(1) == "const" || tok->strAt(1) == "volatile")
-            ++offset;
-        if (Token::Match(tok->linkAt(offset), ") [=;{),]"))
-            return true;
+        return true;
     }
 
     return false;
@@ -10140,7 +10155,8 @@ void Tokenizer::simplifyOperatorName()
                     op += par->str();
                     par = par->next();
                     // merge namespaces eg. 'operator std :: string () const {'
-                    if (par && par->str() == "::" && par->next() && par->next()->isName()) {
+                    if (par && par->str() == "::" && par->next() &&
+                        (par->next()->isName() || Token::Match(par->next(), ".|%op%"))) {
                         op += par->str();
                         par = par->next();
                     }
@@ -10175,6 +10191,16 @@ void Tokenizer::simplifyOperatorName()
                 tok->str("operator" + op);
                 Token::eraseTokens(tok, par);
             }
+        }
+    }
+
+    if (_settings->debugwarnings) {
+        const Token *tok = list.front();
+
+        while ((tok = Token::findsimplematch(tok, "operator")) != nullptr) {
+            reportError(tok, Severity::debug, "debug",
+                        "simplifyOperatorName: found unsimplified operator name");
+            tok = tok->next();
         }
     }
 }
