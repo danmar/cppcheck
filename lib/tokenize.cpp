@@ -103,7 +103,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
     std::stack<Token *> links;
     Token *tok2 = dest;
     unsigned int linenrs = dest->linenr();
-    unsigned int commonFileIndex = dest->fileIndex();
+    const unsigned int commonFileIndex = dest->fileIndex();
     for (const Token *tok = first; tok != last->next(); tok = tok->next()) {
         tok2->insertToken(tok->str());
         tok2 = tok2->next();
@@ -2640,7 +2640,7 @@ void Tokenizer::setVarId()
             std::map<std::string, unsigned int> varlist;
             const Token* tokStart = Token::findsimplematch(tok, "{");
             if (tokStart) {
-                for (const Token *tok2 = tokStart->next(); tok2 != tokStart->link(); tok2 = tok2->next()) {
+                for (const Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
                     // skip parentheses..
                     if (tok2->link()) {
                         if (tok2->str() == "{")
@@ -5234,7 +5234,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 continue;
         } else if (tok->str() == "(") {
             if (isCPP()) {
-                for (Token * tok2 = tok; tok2 != tok->link(); tok2 = tok2->next()) {
+                for (Token * tok2 = tok; tok2 && tok2 != tok->link(); tok2 = tok2->next()) {
                     if (Token::Match(tok2, "[(,] [")) {
                         // lambda function at tok2->next()
                         // find start of lambda body
