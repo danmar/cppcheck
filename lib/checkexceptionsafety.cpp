@@ -261,6 +261,9 @@ void CheckExceptionSafety::nothrowThrows()
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
