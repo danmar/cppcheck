@@ -34,7 +34,7 @@ private:
 
 
 
-    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true) {
+    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true, const char* filename=nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -45,7 +45,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, (filename)?filename:"test.cpp");
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
@@ -89,6 +89,7 @@ private:
         TEST_CASE(testautovar_return4); // ticket #3030
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
         TEST_CASE(testassign2);  // Ticket #2765
 
@@ -513,6 +514,16 @@ private:
               "   delete[] pKoeff;\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
+
+    }
+
+    void testinvaliddealloc_C() {
+        // #5691
+        check("void svn_repos_dir_delta2() {\n"
+              "  struct context c;\n"
+              "      SVN_ERR(delete(&c, root_baton, src_entry, pool));\n"
+              "}\n", false, true, "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testassign1() { // Ticket #1819
