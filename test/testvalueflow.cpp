@@ -655,6 +655,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
 
+        code = "void f() {\n" // #5752 - FP
+               "    int *x = 0;\n"
+               "    if (x && *x == 123) {\n"
+               "        getx(*x);\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"

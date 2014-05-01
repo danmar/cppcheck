@@ -28,6 +28,11 @@
 #include <stack>
 
 
+static void execute(const Token *expr,
+                    std::map<unsigned int, MathLib::bigint> * const programMemory,
+                    MathLib::bigint *result,
+                    bool *error);
+
 //static void printvalues(const Token *tok)
 //{
 //    if (tok->values.empty())
@@ -98,6 +103,29 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
         return true;
 
     return arg && !arg->isConst() && arg->isReference();
+}
+
+/**
+ * Is condition always false when variable has given value?
+ * \param condition   top ast token in condition
+ * \param varid       variable id for variable
+ * \param value       value of variable
+ */
+static bool conditionIsFalse(const Token *condition, unsigned int varid, const ValueFlow::Value &value)
+{
+    if (!condition)
+        return false;
+    if (condition->str() == "&&") {
+        bool result1 = conditionIsFalse(condition->astOperand1(), varid, value);
+        bool result2 = result1 ? true : conditionIsFalse(condition->astOperand2(), varid, value);
+        return result2;
+    }
+    std::map<unsigned int, MathLib::bigint> programMemory;
+    programMemory[varid] = value.intvalue;
+    MathLib::bigint result = 0;
+    bool error = false;
+    execute(condition, &programMemory, &result, &error);
+    return !error && result == 0;
 }
 
 /**
@@ -552,6 +580,22 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // conditional block of code that assigns variable..
             else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+                // Should scope be skipped because variable value is checked?
+                bool skip = false;
+                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                    if (conditionIsFalse(tok2->next()->astOperand2(), varid, *it)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    // goto '{'
+                    tok2 = tok2->linkAt(1)->next();
+                    // goto '}'
+                    tok2 = tok2->link();
+                    continue;
+                }
+
                 Token * const start = tok2->linkAt(1)->next();
                 Token * const end   = start->link();
                 bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
