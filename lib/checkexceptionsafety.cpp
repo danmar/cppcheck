@@ -270,7 +270,9 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         // only check functions without exception epecification
-        if (scope->function && !scope->function->isThrow) {
+        if (scope->function && !scope->function->isThrow &&
+            scope->className != "main" && scope->className != "wmain" &&
+            scope->className != "_tmain" && scope->className != "WinMain") {
             for (const Token *tok = scope->function->functionScope->classStart->next();
                  tok != scope->function->functionScope->classEnd; tok = tok->next()) {
                 if (tok->str() == "try") {

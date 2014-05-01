@@ -44,7 +44,8 @@ private:
         TEST_CASE(catchExceptionByValue);
         TEST_CASE(noexceptThrow);
         TEST_CASE(nothrowThrow);
-        TEST_CASE(unhandledExceptionSpecification); // #4800
+        TEST_CASE(unhandledExceptionSpecification1); // #4800
+        TEST_CASE(unhandledExceptionSpecification2);
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
     }
@@ -344,7 +345,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void unhandledExceptionSpecification() { // #4800
+    void unhandledExceptionSpecification1() { // #4800
         check("void myThrowingFoo() throw(MyException) {\n"
               "  throw MyException();\n"
               "}\n"
@@ -357,6 +358,15 @@ private:
               "  } catch(MyException &) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (warning) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
+    }
+
+    void unhandledExceptionSpecification2() {
+        check("void f() const throw (std::runtime_error);\n"
+              "int main()\n"
+              "{\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nothrowAttributeThrow() {
