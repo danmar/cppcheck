@@ -54,8 +54,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
 
-    TranslationHandler* th = new TranslationHandler(&app);
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
+
+    // Set data dir..
+    foreach(const QString arg, app.arguments()) {
+        if (arg.startsWith("--data-dir=")) {
+            settings->setValue("DATADIR", arg.mid(11));
+            return 0;
+        }
+    }
+
+    TranslationHandler* th = new TranslationHandler(&app);
     th->SetLanguage(settings->value(SETTINGS_LANGUAGE, th->SuggestLanguage()).toString());
 
     if (!CheckArgs(app.arguments(), settings))
@@ -82,12 +91,6 @@ bool CheckArgs(const QStringList &args, QSettings * const settings)
     if (args.contains("-v") || args.contains("--version")) {
         ShowVersion();
         return false;
-    }
-    foreach(const QString arg, args) {
-        if (arg.startsWith("--data-dir=")) {
-            settings->setValue("DATADIR", arg.mid(11));
-            return false;
-        }
     }
     return true;
 }
