@@ -3207,7 +3207,8 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
     reportError(tok, Severity::performance, "redundantCopyLocalConst",
                 "Use const reference for '" + varname + "' to avoid unnecessary data copying.\n"
                 "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
-                "the unnecessary data copying by converting '" + varname + "' to const reference.");
+                "the unnecessary data copying by converting '" + varname + "' to const reference.",
+                true); // since #5618 that check became inconlusive
 }
 
 //---------------------------------------------------------------------------

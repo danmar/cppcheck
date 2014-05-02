@@ -6091,7 +6091,7 @@ private:
                              "void foo() {\n"
                              "    const std::string a = getA();\n"
                              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
 
         check_redundant_copy("class A{public:A(){}};\n"
                              "const A& getA(){static A a;return a;}\n"
@@ -6100,7 +6100,7 @@ private:
                              "    const A a = getA();\n"
                              "    return 0;\n"
                              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance, inconclusive) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
 
         check_redundant_copy("const int& getA(){static int a;return a;}\n"
                              "int main()\n"
@@ -6126,7 +6126,7 @@ private:
                              "    const A a(getA());\n"
                              "    return 0;\n"
                              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance, inconclusive) Use const reference for 'a' to avoid unnecessary data copying.\n", errout.str());
 
         check_redundant_copy("const int& getA(){static int a;return a;}\n"
                              "int main()\n"
@@ -6168,6 +6168,19 @@ private:
                              "    const B b(getA());\n"
                              "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5618
+        check_redundant_copy("class Token {\n"
+                             "public:\n"
+                             "    const std::string& str();\n"
+                             "};\n"
+                             "void simplifyArrayAccessSyntax() {\n"
+                             "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
+                             "        const std::string temp = tok->str();\n"
+                             "        tok->str(tok->strAt(2));\n"
+                             "    }\n"
+                             "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (performance, inconclusive) Use const reference for 'temp' to avoid unnecessary data copying.\n", errout.str());
     }
 
     void checkNegativeShift() {
