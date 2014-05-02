@@ -129,10 +129,10 @@ private:
         std::list<const Token*> locationList;
         locationList.push_back(tok1);
         locationList.push_back(tok2);
-        reportError(locationList, Severity::warning, "unhandledExceptionSpecification",
+        reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"
                     "Unhandled exception specification when calling function " + str1 + "(). "
-                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.");
+                    "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", true);
     }
 
     /** Generate all possible errors (for --errorlist) */

@@ -356,8 +356,8 @@ private:
               "  try {\n"
               "    myThrowingFoo();\n"
               "  } catch(MyException &) {}\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (warning) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
     }
 
     void unhandledExceptionSpecification2() {
@@ -365,7 +365,7 @@ private:
               "int main()\n"
               "{\n"
               "    f();\n"
-              "}\n");
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 

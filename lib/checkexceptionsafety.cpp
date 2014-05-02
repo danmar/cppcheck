@@ -261,7 +261,7 @@ void CheckExceptionSafety::nothrowThrows()
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
-    if (!_settings->isEnabled("warning"))
+    if (!_settings->isEnabled("style") || !_settings->inconclusive)
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
