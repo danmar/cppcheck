@@ -3568,6 +3568,13 @@ private:
             settings.nomsg.addSuppression("missingIncludeSystem");
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
             ASSERT_EQUALS("", errout.str());
+
+            pragmaOnce.clear();
+            errout.str("");
+            settings = Settings();
+            settings.nomsg.addSuppression("missingInclude");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
+            ASSERT_EQUALS("", errout.str());
         }
 
         // #3285 - #elif

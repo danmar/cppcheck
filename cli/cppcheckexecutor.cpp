@@ -163,6 +163,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Preprocessor::missingIncludeFlag = false;
+    Preprocessor::missingSystemIncludeFlag = false;
 
     CppCheck cppCheck(*this, true);
 
@@ -469,7 +470,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);
 
-        if (settings.isEnabled("missingInclude") && Preprocessor::missingIncludeFlag) {
+        if (settings.isEnabled("missingInclude") && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
             const std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
             ErrorLogger::ErrorMessage msg(callStack,
                                           Severity::information,
@@ -479,7 +480,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                           "files are found. Please check your project's include directories and add all of them "
                                           "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
                                           "--check-config.",
-                                          "missingInclude",
+                                          Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
                                           false);
             reportInfo(msg);
         }

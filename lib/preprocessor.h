@@ -57,6 +57,7 @@ public:
     Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
 
     static bool missingIncludeFlag;
+    static bool missingSystemIncludeFlag;
 
     /**
      * Extract the code for each configuration

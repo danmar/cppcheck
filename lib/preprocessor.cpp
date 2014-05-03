@@ -34,6 +34,7 @@
 #include <stack>
 
 bool Preprocessor::missingIncludeFlag;
+bool Preprocessor::missingSystemIncludeFlag;
 
 char Preprocessor::macroChar = char(1);
 
@@ -2365,26 +2366,33 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    const std::string msgtype = (headerType==SystemHeader)?"missingIncludeSystem":"missingInclude";
-    if (!_settings->nomsg.isSuppressed(msgtype, Path::fromNativeSeparators(filename), linenr)) {
-        missingIncludeFlag = true;
-        if (_errorLogger && _settings->checkConfiguration) {
+    const std::string fname = Path::fromNativeSeparators(filename);
+    if (_settings->nomsg.isSuppressed("missingInclude", fname, linenr))
+        return;
+    if (headerType == SystemHeader && _settings->nomsg.isSuppressed("missingIncludeSystem", fname, linenr))
+        return;
 
-            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-            if (!filename.empty()) {
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.line = linenr;
-                loc.setfile(Path::toNativeSeparators(filename));
-                locationList.push_back(loc);
-            }
-            ErrorLogger::ErrorMessage errmsg(locationList, Severity::information,
-                                             (headerType==SystemHeader) ?
-                                             "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
-                                             "Include file: \"" + header + "\" not found.",
-                                             msgtype, false);
-            errmsg.file0 = file0;
-            _errorLogger->reportInfo(errmsg);
+    if (headerType == SystemHeader)
+        missingSystemIncludeFlag = true;
+    else
+        missingIncludeFlag = true;
+    if (_errorLogger && _settings->checkConfiguration) {
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        if (!filename.empty()) {
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.line = linenr;
+            loc.setfile(Path::toNativeSeparators(filename));
+            locationList.push_back(loc);
         }
+        ErrorLogger::ErrorMessage errmsg(locationList, Severity::information,
+                                         (headerType==SystemHeader) ?
+                                         "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
+                                         "Include file: \"" + header + "\" not found.",
+                                         (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
+                                         false);
+        errmsg.file0 = file0;
+        _errorLogger->reportInfo(errmsg);
     }
 }
 
