@@ -1633,6 +1633,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds.\n", errout.str());
 
+        check("void f() {\n"
+              "  int a[2][2];\n"
+              "  p = &a[2][0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // unknown dim..
         check("void f()\n"
               "{\n"
