@@ -10332,6 +10332,9 @@ private:
         ASSERT_EQUALS("ab|=",  testAst("a|=b;"));
         ASSERT_EQUALS("ab^=",  testAst("a^=b;"));
 
+        // assignments are executed from right to left
+        ASSERT_EQUALS("abc==", testAst("a=b=c;"));
+
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
         testAst("char a[1]=\"\";"); // don't crash
