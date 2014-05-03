@@ -7086,6 +7086,7 @@ bool Tokenizer::simplifyRedundantParentheses()
 
         while (Token::Match(tok->previous(), "[{([,] ( !!{") &&
                Token::Match(tok->link(), ") [;,])]") &&
+               !Token::simpleMatch(tok->tokAt(-2), "operator ,") && // Ticket #5709
                !Token::findsimplematch(tok, ",", tok->link())) {
             // We have "( ... )", remove the parentheses
             tok->link()->deleteThis();
@@ -10161,7 +10162,7 @@ void Tokenizer::simplifyOperatorName()
                     }
                     done = false;
                 }
-                if (Token::Match(par, ".|%op%")) {
+                if (Token::Match(par, ".|%op%|,")) {
                     op += par->str();
                     par = par->next();
                     done = false;

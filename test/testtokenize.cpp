@@ -507,6 +507,7 @@ private:
         TEST_CASE(simplifyOperatorName6); // ticket #3194
         TEST_CASE(simplifyOperatorName7); // ticket #4619
         TEST_CASE(simplifyOperatorName8); // ticket #5706
+        TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
 
         TEST_CASE(simplifyNull);
 
@@ -8171,6 +8172,11 @@ private:
         const char code6[] = "value_type * operator += (int) const throw ( ) ;";
         const char result6[] = "value_type * operator+= ( int ) const throw ( ) ;";
         ASSERT_EQUALS(result6, tokenizeAndStringify(code6,false));
+    }
+
+    void simplifyOperatorName9() { // Ticket #5709
+        const char code[] = "struct R { R operator, ( R b ) ; } ;";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void simplifyNull() {
