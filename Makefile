@@ -238,7 +238,7 @@ test:	all
 check:	all
 	./testrunner -g -q
 
-dmake:	tools/dmake.o
+dmake:	tools/dmake.o cli/filelister.o lib/path.o
 	$(CXX) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
 	./dmake
 
