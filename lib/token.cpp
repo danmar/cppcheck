@@ -84,17 +84,8 @@ void Token::update_property_info()
             _type = eString;
         else if (_str.length() > 1 && _str[0] == '\'' && _str[_str.length()-1] == '\'')
             _type = eChar;
-        else if (_str == "="   ||
-                 _str == "+="  ||
-                 _str == "-="  ||
-                 _str == "*="  ||
-                 _str == "/="  ||
-                 _str == "%="  ||
-                 _str == "&="  ||
-                 _str == "^="  ||
-                 _str == "|="  ||
-                 _str == "<<=" ||
-                 _str == ">>=")
+        else if (_str == "="   || _str == "<<=" || _str == ">>=" ||
+                 (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|",_str[0])))
             _type = eAssignmentOp;
         else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
             _type = eExtendedOp;

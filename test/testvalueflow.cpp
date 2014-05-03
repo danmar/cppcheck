@@ -508,6 +508,13 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
 
         code = "void f() {\n"
+               "    int x = 0;\n"
+               "    y = x += z;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n"
                "    static int x = 2;\n"
                "    x++;\n"
                "    return x;\n"

@@ -678,7 +678,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             if (tok2->varId() == varid) {
                 // bailout: assignment
-                if (Token::Match(tok2->previous(), "!!* %var% =")) {
+                if (Token::Match(tok2->previous(), "!!* %var% %op%") && tok2->next()->isAssignmentOp()) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                     break;

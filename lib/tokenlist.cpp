@@ -417,14 +417,6 @@ static void compileUnaryOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &
     op.push(unaryop);
 }
 
-static bool isAssignment(const Token *tok)
-{
-    return (tok->str() == "=" ||
-            tok->str() == "<<=" ||
-            tok->str() == ">>=" ||
-            (tok->str().size() == 2U && tok->str()[1] == '=' && std::strchr("+-*/%&|^",tok->str()[0])));
-}
-
 static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, unsigned int depth), std::stack<Token*> &op, unsigned int depth)
 {
     Token *binop = tok;
@@ -433,7 +425,7 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, 
         f(tok,op, depth);
 
     // Assignment operators are executed in right-to-left order
-    if (tok && isAssignment(binop) && isAssignment(tok))
+    if (binop->isAssignmentOp() && tok && tok->isAssignmentOp())
         compileBinOp(tok,f,op,depth);
 
     // TODO: Should we check if op is empty.
@@ -726,7 +718,7 @@ static void compileAssign(Token *&tok, std::stack<Token*> &op, unsigned int dept
 {
     compileTernaryOp(tok,op, depth);
     while (tok) {
-        if (isAssignment(tok)) {
+        if (tok->isAssignmentOp()) {
             compileBinOp(tok, compileTernaryOp, op, depth);
         } else break;
     }
