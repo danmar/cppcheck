@@ -417,6 +417,7 @@ private:
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(syntax_error_templates_2);
         TEST_CASE(syntax_error_templates_3); // Ticket #5605 - invalid template declaration
+        TEST_CASE(syntax_error_templates_4); // Ticket #5743 - Segmentation fault upon valid code
 
         TEST_CASE(removeKeywords);
 
@@ -6503,6 +6504,15 @@ private:
         tokenizeAndStringify("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
         tokenizeAndStringify("() template < T = typename = x > struct a {} { f <int> () }");
         tokenizeAndStringify("template < T = typename = > struct a { f <int> }");
+    }
+
+    void syntax_error_templates_4() { // Ticket #5743
+        tokenizeAndStringify("template <class T> struct C {}; "
+                             "template <class T = C<int>> struct A { "
+                             "   A(T t = T()) {} "
+                             "}; "
+                             "template <class T> struct B { void foo(); }; "
+                             "template <class T> void B<T>::foo() {}");
     }
 
     void removeKeywords() {
