@@ -3950,16 +3950,28 @@ private:
               "    if (s[i] == 'x' && i < y) {\n"
               "    }"
               "}");
+        ASSERT_EQUALS("", errout.str()); // No message because i is unknown and thus gets no varid. Avoid an internalError here.
+
+        check("void f(const char s[], int i) {\n"
+              "    if (s[i] == 'x' && i < y) {\n"
+              "    }"
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
 
         check("void f(const char s[]) {\n"
-              "    for (i = 0; s[i] == 'x' && i < y; ++i) {\n"
+              "    for (int i = 0; s[i] == 'x' && i < y; ++i) {\n"
               "    }"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
 
         check("void f(const int a[], unsigned i) {\n"
               "    if((a[i] < 2) && (i <= 42)) {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
+
+        check("void f(const int a[], unsigned i) {\n"
+              "    if((a[i] < 2) && (42 >= i)) {\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());

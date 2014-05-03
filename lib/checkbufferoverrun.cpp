@@ -2101,10 +2101,15 @@ void CheckBufferOverrun::arrayIndexThenCheck()
         const Scope * const scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [ %var% ]")) {
-                const std::string& indexName(tok->strAt(2));
+                tok = tok->tokAt(2);
+                unsigned int indexID = tok->varId();
+                if (!indexID)
+                    continue;
+
+                const std::string& indexName(tok->str());
 
                 // skip array index..
-                tok = tok->tokAt(4);
+                tok = tok->tokAt(2);
                 while (tok && tok->str() == "[")
                     tok = tok->link()->next();
 
@@ -2117,13 +2122,14 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                     tok = tok->tokAt(2);
 
                 // skip close parenthesis
-                if (tok->str() == ")") {
+                if (tok->str() == ")")
                     tok = tok->next();
-                }
 
                 // check if array index is ok
                 // statement can be closed in parentheses, so "(| " is using
-                if (Token::Match(tok, ("&& (| " + indexName + " <|<=").c_str()))
+                if (Token::Match(tok, "&& (| %varid% <|<=", indexID))
+                    arrayIndexThenCheckError(tok, indexName);
+                else if (Token::Match(tok, "&& (| %any% >|>= %varid%", indexID))
                     arrayIndexThenCheckError(tok, indexName);
             }
         }
