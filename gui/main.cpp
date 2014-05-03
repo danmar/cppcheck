@@ -37,7 +37,7 @@
 
 void ShowUsage();
 void ShowVersion();
-bool CheckArgs(const QStringList &args, QSettings * const settings);
+bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
 {
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     TranslationHandler* th = new TranslationHandler(&app);
     th->SetLanguage(settings->value(SETTINGS_LANGUAGE, th->SuggestLanguage()).toString());
 
-    if (!CheckArgs(app.arguments(), settings))
+    if (!CheckArgs(app.arguments()))
         return 0;
 
     app.setWindowIcon(QIcon(":icon.png"));
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
 // Check only arguments needing action before GUI is shown.
 // Rest of the arguments are handled in MainWindow::HandleCLIParams()
-bool CheckArgs(const QStringList &args, QSettings * const settings)
+bool CheckArgs(const QStringList &args)
 {
     if (args.contains("-h") || args.contains("--help")) {
         ShowUsage();
