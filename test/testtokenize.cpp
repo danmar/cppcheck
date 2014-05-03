@@ -416,6 +416,7 @@ private:
         TEST_CASE(syntax_error);
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(syntax_error_templates_2);
+        TEST_CASE(syntax_error_templates_3); // Ticket #5605 - invalid template declaration
 
         TEST_CASE(removeKeywords);
 
@@ -6495,6 +6496,10 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         tokenizer.tokenize(istr, "test.cpp");   // shouldn't segfault
+    }
+
+    void syntax_error_templates_3() { // Ticket #5605
+        tokenizeAndStringify("template < T = typename = > struct a { f <int> }");
     }
 
     void removeKeywords() {

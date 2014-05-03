@@ -529,7 +529,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 ++templatepar;
 
             // default parameter value
-            else if (tok->str() == "=")
+            else if (Token::Match(tok, "= !!>"))
                 eq.push_back(tok);
         }
         if (eq.empty() || classname.empty())
