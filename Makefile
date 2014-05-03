@@ -238,12 +238,12 @@ test:	all
 check:	all
 	./testrunner -g -q
 
-dmake:	tools/dmake.cpp
-	$(CXX) -std=c++0x -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)
+dmake:	tools/dmake.o
+	$(CXX) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
 	./dmake
 
-reduce:	tools/reduce.cpp $(LIBOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.cpp $(LDFLAGS) $(RDYNAMIC)
+reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)
 
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1
@@ -552,4 +552,10 @@ test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib
 
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
+
+tools/dmake.o: tools/dmake.cpp lib/cxx11emu.h cli/filelister.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o tools/dmake.o tools/dmake.cpp
+
+tools/reduce.o: tools/reduce.cpp lib/cxx11emu.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o tools/reduce.o tools/reduce.cpp
 

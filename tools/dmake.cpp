@@ -160,6 +160,9 @@ int main(int argc, char **argv)
 
     std::vector<std::string> testfiles;
     getCppFiles(testfiles, "test/");
+	
+    std::vector<std::string> toolsfiles;
+    getCppFiles(toolsfiles, "tools/");
 
     if (libfiles.empty() && clifiles.empty() && testfiles.empty()) {
         std::cerr << "No files found. Are you in the correct directory?" << std::endl;
@@ -363,15 +366,15 @@ int main(int argc, char **argv)
 
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =      " << objfile(libfiles[0]);
-    for (unsigned int i = 1; i < libfiles.size(); ++i)
+    for (size_t i = 1; i < libfiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(libfiles[i]);
     fout << "\n\n";
     fout << "CLIOBJ =      " << objfile(clifiles[0]);
-    for (unsigned int i = 1; i < clifiles.size(); ++i)
+    for (size_t i = 1; i < clifiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(clifiles[i]);
     fout << "\n\n";
     fout << "TESTOBJ =     " << objfile(testfiles[0]);
-    for (unsigned int i = 1; i < testfiles.size(); ++i)
+    for (size_t i = 1; i < testfiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
 
@@ -388,11 +391,11 @@ int main(int argc, char **argv)
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
-    fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -std=c++0x -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n";
+    fout << "dmake:\ttools/dmake.o\n";
+    fout << "\t$(CXX) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)\n";
     fout << "\t./dmake\n\n";
-    fout << "reduce:\ttools/reduce.cpp $(LIBOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.cpp $(LDFLAGS) $(RDYNAMIC)\n\n";
+    fout << "reduce:\ttools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "clean:\n";
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
@@ -411,6 +414,7 @@ int main(int argc, char **argv)
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, externalfiles, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
     return 0;
 }
