@@ -537,7 +537,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 if (Token::Match(tok, ">|>> class|struct %var%"))
                     classname = tok->strAt(2);
                 templateParmDepth -= (1 + (tok->str() == ">>"));
-                if(0 == templateParmDepth)
+                if (0 == templateParmDepth)
                     break;
             }
 
@@ -547,7 +547,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
 
             // default parameter value
             else if (Token::Match(tok, "= !!>")) {
-                if(defaultedArgPos.insert(templatepar).second) {
+                if (defaultedArgPos.insert(templatepar).second) {
                     eq.push_back(tok);
                 } else {
                     // Ticket #5605: Syntax error (two equal signs for the same parameter), bail out
