@@ -350,12 +350,12 @@ private:
     }
 
     void doublefree4() {  // #5451 - exit
-        check("void foo(char *p) {\n"
-              "   if (x) {\n"
-              "       free(p)\n"
-              "       exit(1);\n"
-              "   }\n"
-              "   free(p);\n"
+        check("void f(char *p) {\n"
+              "  if (x) {\n"
+              "    free(p);\n"
+              "    exit(1);\n"
+              "  }\n"
+              "  free(p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

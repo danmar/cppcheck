@@ -168,14 +168,6 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->str() == "(" && tok->previous()->isName()) {
             functionCall(tok->previous(), varInfo, NOALLOC);
             tok = tok->link();
-
-            if (Token::simpleMatch(tok,") ; }")) {
-                bool unknown = false;
-                const bool noreturn = _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown);
-                if (noreturn)
-                    varInfo->clear();
-            }
-
             continue;
         }
 
@@ -361,15 +353,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (dealloc == NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 const std::string &functionName(tok->link()->previous()->str());
                 bool unknown = false;
-                if (_settings->library.leakignore.find(functionName) == _settings->library.leakignore.end() &&
-                    _settings->library.use.find(functionName) == _settings->library.use.end() &&
-                    _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
-                    if (unknown) {
-                        //const std::string &functionName(tok->link()->previous()->str());
-                        varInfo->possibleUsageAll(functionName);
-                    } else {
+                if (_tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown)) {
+                    if (!unknown)
                         varInfo->clear();
-                    }
+                    else if (_settings->library.leakignore.find(functionName) == _settings->library.leakignore.end() &&
+                             _settings->library.use.find(functionName) == _settings->library.use.end())
+                        varInfo->possibleUsageAll(functionName);
                 }
             }
 
