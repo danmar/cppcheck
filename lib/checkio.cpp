@@ -718,14 +718,18 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                         else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::size_t" ||
                                                                  argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                                  argInfo.typeToken->originalName() == "intmax_t" ||
                                                                  argInfo.typeToken->originalName() == "uintmax_t")
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
@@ -738,7 +742,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     } else if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
-                                                               argInfo.typeToken->originalName() != "size_t")
+                                                               argInfo.typeToken->originalName() != "std::ptrdiff_t" &&
+                                                               argInfo.typeToken->originalName() != "size_t" &&
+                                                               argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'j':
@@ -746,11 +752,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "size_t" &&
+                                                        argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 't':
-                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'L':
@@ -761,7 +769,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     if (argInfo.typeToken->str() != "int")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
@@ -799,11 +809,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                         else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                                  argInfo.typeToken->originalName() == "intmax_t")
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
@@ -814,7 +826,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
-                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                               argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'j':
@@ -823,11 +836,14 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     break;
                                                 case 'z':
                                                     if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
-                                                        argInfo.typeToken->originalName() != "ssize_t")
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "ssize_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ssize_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 't':
-                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
                                                 case 'L':
@@ -838,6 +854,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     if (argInfo.typeToken->str() != "int")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                                     break;
@@ -872,11 +889,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                         else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::size_t" ||
                                                                  argInfo.typeToken->originalName() == "uintmax_t")
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
@@ -887,7 +906,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
-                                                    } else if (argInfo.typeToken->originalName() != "size_t")
+                                                    } else if (argInfo.typeToken->originalName() != "size_t" &&
+                                                               argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'j':
@@ -895,17 +915,20 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "size_t" &&
+                                                        argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 't':
-                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
                                                 case 'L':
                                                     if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
@@ -913,6 +936,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     if (argInfo.typeToken->str() != "int")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
+                                                             argInfo.typeToken->originalName() == "ssize_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ssize_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                                     break;
@@ -1056,11 +1082,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "size_t" &&
+                                                        argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 't':
-                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'I':
@@ -1071,7 +1099,9 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                                     } else if (!(argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::size_t" ||
                                                                  argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                                  argInfo.typeToken->originalName() == "WPARAM" ||
                                                                  argInfo.typeToken->originalName() == "UINT_PTR" ||
                                                                  argInfo.typeToken->originalName() == "LONG_PTR" ||
@@ -1113,11 +1143,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                         else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                                  argInfo.typeToken->originalName() == "intmax_t")
                                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t")
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
@@ -1126,7 +1158,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 't':
-                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'I':
@@ -1136,17 +1169,20 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t")
+                                                    } else if (argInfo.typeToken->originalName() != "ptrdiff_t" &&
+                                                               argInfo.typeToken->originalName() != "std::ptrdiff_t")
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "ssize_t")
+                                                    if (argInfo.typeToken->originalName() != "ssize_t" &&
+                                                        argInfo.typeToken->originalName() != "std::ssize_t")
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 default:
                                                     if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     else if (argInfo.typeToken->originalName() == "ptrdiff_t" ||
+                                                             argInfo.typeToken->originalName() == "std::ptrdiff_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t")
                                                         invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                                     break;
@@ -1179,11 +1215,13 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         if (argInfo.typeToken->str() != "long" || !argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                         else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                                 argInfo.typeToken->originalName() == "std::size_t" ||
                                                                  argInfo.typeToken->originalName() == "uintmax_t")
                                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     } else if (argInfo.typeToken->str() != "long" || argInfo.typeToken->isLong())
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "uintmax_t")
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
@@ -1192,7 +1230,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'z':
-                                                    if (argInfo.typeToken->originalName() != "size_t")
+                                                    if (argInfo.typeToken->originalName() != "size_t" &&
+                                                        argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 case 'I':
@@ -1202,13 +1241,15 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     } else if (specifier.find("I32") != std::string::npos) {
                                                         if (argInfo.typeToken->str() != "int" || argInfo.typeToken->isLong())
                                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
-                                                    } else if (argInfo.typeToken->originalName() != "size_t")
+                                                    } else if (argInfo.typeToken->originalName() != "size_t" &&
+                                                               argInfo.typeToken->originalName() != "std::size_t")
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
                                                 default:
                                                     if (!Token::Match(argInfo.typeToken, "bool|char|short|int"))
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     else if (argInfo.typeToken->originalName() == "size_t" ||
+                                                             argInfo.typeToken->originalName() == "std::size_t" ||
                                                              argInfo.typeToken->originalName() == "intmax_t")
                                                         invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                                     break;
