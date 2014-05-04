@@ -239,7 +239,7 @@ check:	all
 	./testrunner -g -q
 
 dmake:	tools/dmake.o cli/filelister.o lib/path.o
-	$(CXX) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
 	./dmake
 
 reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
