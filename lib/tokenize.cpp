@@ -6990,6 +6990,11 @@ bool Tokenizer::simplifyRedundantParentheses()
         if (tok->str() != "(")
             continue;
 
+        if (Token::Match(tok->link(), ") %num%")) {
+            tok = tok->link();
+            continue;
+        }
+
         // !!operator = ( x ) ;
         if (tok->strAt(-2) != "operator" &&
             tok->previous() && tok->previous()->str() == "=" &&

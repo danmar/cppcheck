@@ -367,6 +367,7 @@ private:
         TEST_CASE(removeParentheses16);      // Ticket #4423 '*(x.y)='
         TEST_CASE(removeParentheses17);      // Don't remove parentheses in 'a ? b : (c>0 ? d : e);'
         TEST_CASE(removeParentheses18);      // 'float(*a)[2]' => 'float *a[2]'
+        TEST_CASE(removeParentheses19);      // ((typeof(x) *)0)
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5640,6 +5641,10 @@ private:
         ASSERT_EQUALS("float * a [ 2 ] ;", tokenizeAndStringify("float(*a)[2];", false));
     }
 
+    void removeParentheses19() {
+        ASSERT_EQUALS("( ( ( typeof ( X ) ) * ) 0 )", tokenizeAndStringify("(((typeof(X))*)0)", false));
+    }
+
     void tokenize_double() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -10326,6 +10331,8 @@ private:
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
         ASSERT_EQUALS("12*34*+", testAst("1*2+3*4"));
         ASSERT_EQUALS("12*34*5*+", testAst("1*2+3*4*5"));
+        ASSERT_EQUALS("0(r.&", testAst("(&((typeof(x))0).r);"));
+        ASSERT_EQUALS("0(r.&", testAst("&((typeof(x))0).r;"));
 
         // Various tests of precedence
         ASSERT_EQUALS("ab::c+", testAst("a::b+c"));
