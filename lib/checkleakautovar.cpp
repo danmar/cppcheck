@@ -168,6 +168,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->str() == "(" && tok->previous()->isName()) {
             functionCall(tok->previous(), varInfo, NOALLOC);
             tok = tok->link();
+
+            if (Token::simpleMatch(tok,") ; }")) {
+                bool unknown = false;
+                const bool noreturn = _tokenizer->IsScopeNoReturn(tok->tokAt(2), &unknown);
+                if (noreturn)
+                    varInfo->clear();
+            }
+
             continue;
         }
 

@@ -57,6 +57,7 @@ private:
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
         TEST_CASE(doublefree3); // #4914
+        TEST_CASE(doublefree4); // #5451 - FP when exit is called
 
         // exit
         TEST_CASE(exit1);
@@ -345,6 +346,17 @@ private:
               "   return;"
               "}"
              );
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree4() {  // #5451 - exit
+        check("void foo(char *p) {\n"
+              "   if (x) {\n"
+              "       free(p)\n"
+              "       exit(1);\n"
+              "   }\n"
+              "   free(p);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

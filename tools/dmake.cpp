@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 
     std::vector<std::string> testfiles;
     getCppFiles(testfiles, "test/");
-	
+
     std::vector<std::string> toolsfiles;
     getCppFiles(toolsfiles, "tools/");
 
