@@ -48,6 +48,7 @@ private:
         TEST_CASE(unhandledExceptionSpecification2);
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
+        TEST_CASE(nothrowDeclspecThrow);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -371,12 +372,10 @@ private:
 
     void nothrowAttributeThrow() {
         check("void func1() throw(int) { throw 1; }\n"
-              "void func2() __attribute((nothrow)); void func1() { throw 1; }\n"
-              "void func3() __attribute((nothrow)); void func1() { func1(); }\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in __attribute__((nothrow)) function.\n"
-                           "[test.cpp:3]: (error) Exception thrown in __attribute__((nothrow)) function.\n",
-                           "",
-                           errout.str());
+              "void func2() __attribute((nothrow)); void func2() { throw 1; }\n"
+              "void func3() __attribute((nothrow)); void func3() { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in __attribute__((nothrow)) function.\n"
+                      "[test.cpp:3]: (error) Exception thrown in __attribute__((nothrow)) function.\n", errout.str());
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
@@ -392,6 +391,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nothrowDeclspecThrow() {
+        check("void func1() throw(int) { throw 1; }\n"
+              "void __declspec(nothrow) func2() { throw 1; }\n"
+              "void __declspec(nothrow) func3() { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in __declspec(nothrow) function.\n"
+                      "[test.cpp:3]: (error) Exception thrown in __declspec(nothrow) function.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestExceptionSafety)

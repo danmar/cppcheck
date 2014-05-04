@@ -154,6 +154,7 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     _back->isAttributePure(tok->isAttributePure());
     _back->isAttributeConst(tok->isAttributeConst());
     _back->isAttributeNothrow(tok->isAttributeNothrow());
+    _back->isDeclspecNothrow(tok->isDeclspecNothrow());
 }
 //---------------------------------------------------------------------------
 // InsertTokens - Copy and insert tokens
@@ -189,6 +190,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->isAttributePure(src->isAttributePure());
         dest->isAttributeConst(src->isAttributeConst());
         dest->isAttributeNothrow(src->isAttributeNothrow());
+        dest->isDeclspecNothrow(src->isDeclspecNothrow());
         src  = src->next();
         --n;
     }

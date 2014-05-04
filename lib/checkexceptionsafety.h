@@ -123,6 +123,11 @@ private:
         reportError(tok, Severity::error, "exceptThrowInAttributeNoThrowFunction", "Exception thrown in __attribute__((nothrow)) function.");
     }
 
+    /** Don't throw exceptions in __declspec(nothrow)  functions */
+    void nothrowDeclspecThrowError(const Token * const tok) {
+        reportError(tok, Severity::error, "exceptThrowInDeclspecNoThrowFunction", "Exception thrown in __declspec(nothrow) function.");
+    }
+
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
         std::string str1(tok1 ? tok1->str() : "foo");
@@ -145,6 +150,7 @@ private:
         c.noexceptThrowError(0);
         c.nothrowThrowError(0);
         c.nothrowAttributeThrowError(0);
+        c.nothrowDeclspecThrowError(0);
         c.unhandledExceptionSpecificationError(0, 0, "funcname");
     }
 
@@ -163,6 +169,7 @@ private:
                "* Throwing exception in noexcept function\n"
                "* Throwing exception in nothrow() function\n"
                "* Throwing exception in __attribute__((nothrow)) function\n"
+               "* Throwing exception in __declspec(nothrow) function\n"
                "* Unhandled exception specification when calling function foo()\n";
     }
 };

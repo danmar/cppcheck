@@ -322,6 +322,12 @@ public:
     void isAttributeNothrow(bool value) {
         _isAttributeNothrow = value;
     }
+    bool isDeclspecNothrow() const {
+        return _isDeclspecNothrow;
+    }
+    void isDeclspecNothrow(bool value) {
+        _isDeclspecNothrow = value;
+    }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
@@ -706,6 +712,7 @@ private:
     bool _isAttributePure;         // __attribute__((pure))
     bool _isAttributeConst;        // __attribute__((const))
     bool _isAttributeNothrow;      // __attribute__((nothrow))
+    bool _isDeclspecNothrow;       // __declspec(nothrow)
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */

@@ -593,6 +593,9 @@ public:
     bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }
+    bool isDeclspecNothrow() const {
+        return tokenDef->isDeclspecNothrow();
+    }
 
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition

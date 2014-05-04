@@ -236,6 +236,7 @@ private:
         TEST_CASE(noexceptFunction4);
 
         TEST_CASE(nothrowAttributeFunction);
+        TEST_CASE(nothrowDeclspecFunction);
     }
 
     void array() const {
@@ -2157,6 +2158,19 @@ private:
             ASSERT_EQUALS(true, func != nullptr);
             if (func)
                 ASSERT_EQUALS(true, func->isAttributeNothrow());
+        }
+    }
+
+    void nothrowDeclspecFunction() {
+        GET_SYMBOL_DB("void __declspec(nothrow) func() { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isDeclspecNothrow());
         }
     }
 

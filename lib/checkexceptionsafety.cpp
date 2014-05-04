@@ -253,6 +253,13 @@ void CheckExceptionSafety::nothrowThrows()
             if (throws)
                 nothrowAttributeThrowError(throws);
         }
+
+        // check __declspec(nothrow) functions
+        else if (scope->function && scope->function->isDeclspecNothrow()) {
+            const Token *throws = functionThrows(scope->function);
+            if (throws)
+                nothrowDeclspecThrowError(throws);
+        }
     }
 }
 

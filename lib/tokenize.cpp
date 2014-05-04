@@ -121,6 +121,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->isAttributePure(tok->isAttributePure());
         tok2->isAttributeConst(tok->isAttributeConst());
         tok2->isAttributeNothrow(tok->isAttributeNothrow());
+        tok2->isDeclspecNothrow(tok->isDeclspecNothrow());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up
@@ -3215,14 +3216,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
+    // remove calling conventions __cdecl, __stdcall..
+    simplifyCallingConvention();
+
     // Remove __declspec()
     simplifyDeclspec();
 
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
-
-    // remove calling conventions __cdecl, __stdcall..
-    simplifyCallingConvention();
 
     // remove __attribute__((?))
     simplifyAttribute();
@@ -9147,6 +9148,15 @@ void Tokenizer::simplifyDeclspec()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next()) {
+            if (tok->strAt(2) == "nothrow") {
+                Token *tok1 = tok->next()->link()->next();
+                while (tok1 && !Token::Match(tok1, "%var%")) {
+                    tok1 = tok1->next();
+                }
+                if (tok1) {
+                    tok1->isDeclspecNothrow(true);
+                }
+            }
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }
