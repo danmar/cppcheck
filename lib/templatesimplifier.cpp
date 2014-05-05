@@ -240,12 +240,6 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (Token::Match(tok, "& ::| %var%"))
             tok = tok->next();
 
-        // Skip '='
-        if (Token::Match(tok, "="))
-            tok = tok->next();
-        if (!tok)
-            return 0;
-
         // skip std::
         if (tok && tok->str() == "::")
             tok = tok->next();
@@ -514,31 +508,20 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
         //     x = y
         // this list will contain all the '=' tokens for such arguments
         std::list<Token *> eq;
-        // and this set the position of parameters with a default value
-        std::set<std::size_t> defaultedArgPos;
 
         // parameter number. 1,2,3,..
         std::size_t templatepar = 1;
-
-        // parameter depth
-        std::size_t templateParmDepth = 0;
 
         // the template classname. This will be empty for template functions
         std::string classname;
 
         // Scan template declaration..
         for (Token *tok = *iter1; tok; tok = tok->next()) {
-
-            if (tok->str() == "<" && templateParameters(tok))
-                ++templateParmDepth;
-
             // end of template parameters?
-            if (tok->str() == ">" || tok->str() == ">>") {
-                if (Token::Match(tok, ">|>> class|struct %var%"))
+            if (tok->str() == ">") {
+                if (Token::Match(tok, "> class|struct %var%"))
                     classname = tok->strAt(2);
-                templateParmDepth -= (1 + (tok->str() == ">>"));
-                if (0 == templateParmDepth)
-                    break;
+                break;
             }
 
             // next template parameter
@@ -546,15 +529,8 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 ++templatepar;
 
             // default parameter value
-            else if (Token::Match(tok, "= !!>")) {
-                if (defaultedArgPos.insert(templatepar).second) {
-                    eq.push_back(tok);
-                } else {
-                    // Ticket #5605: Syntax error (two equal signs for the same parameter), bail out
-                    eq.clear();
-                    break;
-                }
-            }
+            else if (tok->str() == "=")
+                eq.push_back(tok);
         }
         if (eq.empty() || classname.empty())
             continue;
