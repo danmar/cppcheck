@@ -194,6 +194,8 @@ private:
         TEST_CASE(checkCommaSeparatedReturn);
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
+
+        TEST_CASE(trac5759);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -7060,6 +7062,15 @@ private:
               "   return isgreaterequal(x,y) && islessequal(x,y) && islessgreater(x,y) && isgreater(x,y) && isless(x,y);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac5759() {
+        // don't crash #5759
+        check("template<>\n"
+              "struct X\n"
+              "{};\n"
+              "X<&S::i,S> x  = X<&S::i,S>();\n"
+              "X<&S::i,S> x2 = X<&S2::i,S>();\n");
     }
 };
 
