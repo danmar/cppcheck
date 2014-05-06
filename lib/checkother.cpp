@@ -148,8 +148,8 @@ static bool isOppositeCond(const Token * const cond1, const Token * const cond2,
     if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
         isSameExpression(cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
         comp2 = cond2->str();
-    } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
-               isSameExpression(cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
+    } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand2(), constFunctions) &&
+               isSameExpression(cond1->astOperand2(), cond2->astOperand1(), constFunctions)) {
         comp2 = cond2->str();
         if (comp2[0] == '>')
             comp2[0] = '<';
@@ -3342,7 +3342,8 @@ void CheckOther::oppositeInnerCondition()
             }
             if (Token::Match(tok,"%type% (") && nonlocal) // function call -> bailout if there are nonlocal variables
                 break;
-            else if (tok->varId() && vars.find(tok->varId()) != vars.end()) {
+            else if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
+                     (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%var% ++|--|="))
                     break;
                 if (Token::Match(tok->previous(), "++|--|& %var%"))
