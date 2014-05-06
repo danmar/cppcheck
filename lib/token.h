@@ -253,80 +253,89 @@ public:
         return _type == eBoolean;
     }
 
+    unsigned int flags() const {
+        return _flags;
+    }
+    void flags(unsigned int flags_) {
+        _flags = flags_;
+    }
     bool isUnsigned() const {
-        return _isUnsigned;
+        return getFlag(fIsUnsigned);
     }
     void isUnsigned(bool sign) {
-        _isUnsigned = sign;
+        setFlag(fIsUnsigned, sign);
     }
     bool isSigned() const {
-        return _isSigned;
+        return getFlag(fIsSigned);
     }
     void isSigned(bool sign) {
-        _isSigned = sign;
+        setFlag(fIsSigned, sign);
     }
     bool isPointerCompare() const {
-        return _isPointerCompare;
+        return getFlag(fIsPointerCompare);
     }
     void isPointerCompare(bool b) {
-        _isPointerCompare = b;
+        setFlag(fIsPointerCompare, b);
     }
     bool isLong() const {
-        return _isLong;
+        return getFlag(fIsLong);
     }
     void isLong(bool size) {
-        _isLong = size;
+        setFlag(fIsLong, size);
     }
     bool isStandardType() const {
-        return _isStandardType;
+        return getFlag(fIsStandardType);
+    }
+    void isStandardType(bool b) {
+        setFlag(fIsStandardType, b);
     }
     bool isExpandedMacro() const {
-        return _isExpandedMacro;
+        return getFlag(fIsExpandedMacro);
     }
     void isExpandedMacro(bool m) {
-        _isExpandedMacro = m;
+        setFlag(fIsExpandedMacro, m);
     }
     bool isAttributeConstructor() const {
-        return _isAttributeConstructor;
+        return getFlag(fIsAttributeConstructor);
     }
     void isAttributeConstructor(bool ac) {
-        _isAttributeConstructor = ac;
+        setFlag(fIsAttributeConstructor, ac);
     }
     bool isAttributeDestructor() const {
-        return _isAttributeDestructor;
+        return getFlag(fIsAttributeDestructor);
     }
     void isAttributeDestructor(bool value) {
-        _isAttributeDestructor = value;
+        setFlag(fIsAttributeDestructor, value);
     }
     bool isAttributeUnused() const {
-        return _isAttributeUnused;
+        return getFlag(fIsAttributeUnused);
     }
     void isAttributeUnused(bool unused) {
-        _isAttributeUnused = unused;
+        setFlag(fIsAttributeUnused, unused);
     }
     bool isAttributePure() const {
-        return _isAttributePure;
+        return getFlag(fIsAttributePure);
     }
     void isAttributePure(bool value) {
-        _isAttributePure = value;
+        setFlag(fIsAttributePure, value);
     }
     bool isAttributeConst() const {
-        return _isAttributeConst;
+        return getFlag(fIsAttributeConst);
     }
     void isAttributeConst(bool value) {
-        _isAttributeConst = value;
+        setFlag(fIsAttributeConst, value);
     }
     bool isAttributeNothrow() const {
-        return _isAttributeNothrow;
+        return getFlag(fIsAttributeNothrow);
     }
     void isAttributeNothrow(bool value) {
-        _isAttributeNothrow = value;
+        setFlag(fIsAttributeNothrow, value);
     }
     bool isDeclspecNothrow() const {
-        return _isDeclspecNothrow;
+        return getFlag(fIsDeclspecNothrow);
     }
     void isDeclspecNothrow(bool value) {
-        _isDeclspecNothrow = value;
+        setFlag(fIsDeclspecNothrow, value);
     }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
@@ -700,19 +709,42 @@ private:
     unsigned int _progressValue;
 
     Type _type;
-    bool _isUnsigned;
-    bool _isSigned;
-    bool _isPointerCompare;
-    bool _isLong;
-    bool _isStandardType;
-    bool _isExpandedMacro;
-    bool _isAttributeConstructor;  // __attribute__((constructor)) __attribute__((constructor(priority)))
-    bool _isAttributeDestructor;   // __attribute__((destructor))  __attribute__((destructor(priority)))
-    bool _isAttributeUnused;       // __attribute__((unused))
-    bool _isAttributePure;         // __attribute__((pure))
-    bool _isAttributeConst;        // __attribute__((const))
-    bool _isAttributeNothrow;      // __attribute__((nothrow))
-    bool _isDeclspecNothrow;       // __declspec(nothrow)
+
+    enum {
+        fIsUnsigned             = (1 << 0),
+        fIsSigned               = (1 << 1),
+        fIsPointerCompare       = (1 << 2),
+        fIsLong                 = (1 << 3),
+        fIsStandardType         = (1 << 4),
+        fIsExpandedMacro        = (1 << 5),
+        fIsAttributeConstructor = (1 << 6),  // __attribute__((constructor)) __attribute__((constructor(priority)))
+        fIsAttributeDestructor  = (1 << 7),  // __attribute__((destructor))  __attribute__((destructor(priority)))
+        fIsAttributeUnused      = (1 << 8),  // __attribute__((unused))
+        fIsAttributePure        = (1 << 9),  // __attribute__((pure))
+        fIsAttributeConst       = (1 << 10), // __attribute__((const))
+        fIsAttributeNothrow     = (1 << 11), // __attribute__((nothrow))
+        fIsDeclspecNothrow      = (1 << 12)  // __declspec(nothrow)
+    };
+
+    unsigned int _flags;
+
+    /**
+     * Get specified flag state.
+     * @param flag_ flag to get state of
+     * @return true if flag set or false in flag not set
+     */
+    bool getFlag(int flag_) const {
+        return bool((_flags & flag_) != 0);
+    }
+
+    /**
+     * Set specified flag state.
+     * @param flag_ flag to set state
+     * @param state_ new state of flag
+     */
+    void setFlag(int flag_, bool state_) {
+        _flags = state_ ? _flags | flag_ : _flags & ~flag_;
+    }
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */

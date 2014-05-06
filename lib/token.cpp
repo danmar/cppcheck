@@ -45,19 +45,7 @@ Token::Token(Token **t) :
     _linenr(0),
     _progressValue(0),
     _type(eNone),
-    _isUnsigned(false),
-    _isSigned(false),
-    _isPointerCompare(false),
-    _isLong(false),
-    _isStandardType(false),
-    _isExpandedMacro(false),
-    _isAttributeConstructor(false),
-    _isAttributeDestructor(false),
-    _isAttributeUnused(false),
-    _isAttributePure(false),
-    _isAttributeConst(false),
-    _isAttributeNothrow(false),
-    _isDeclspecNothrow(false),
+    _flags(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr)
@@ -121,14 +109,14 @@ void Token::update_property_info()
 
 void Token::update_property_isStandardType()
 {
-    _isStandardType = false;
+    isStandardType(false);
 
     if (_str.size() < 3)
         return;
 
     static const char * const stdtype[] = { "bool", "char", "char16_t", "char32_t", "double", "float", "int", "long", "short", "size_t", "void", "wchar_t"};
     if (std::binary_search(stdtype, stdtype + sizeof(stdtype) / sizeof(stdtype[0]), _str)) {
-        _isStandardType = true;
+        isStandardType(true);
         _type = eType;
     }
 }
@@ -178,19 +166,7 @@ void Token::deleteThis()
     if (_next) { // Copy next to this and delete next
         _str = _next->_str;
         _type = _next->_type;
-        _isUnsigned = _next->_isUnsigned;
-        _isSigned = _next->_isSigned;
-        _isPointerCompare = _next->_isPointerCompare;
-        _isLong = _next->_isLong;
-        _isStandardType = _next->_isStandardType;
-        _isExpandedMacro = _next->_isExpandedMacro;
-        _isAttributeConstructor = _next->_isAttributeConstructor;
-        _isAttributeDestructor = _next->_isAttributeDestructor;
-        _isAttributeUnused = _next->_isAttributeUnused;
-        _isAttributePure = _next->_isAttributePure;
-        _isAttributeConst = _next->_isAttributeConst;
-        _isAttributeNothrow = _next->_isAttributeNothrow;
-        _isDeclspecNothrow = _next->_isDeclspecNothrow;
+        _flags = _next->_flags;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -207,19 +183,7 @@ void Token::deleteThis()
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
         _str = _previous->_str;
         _type = _previous->_type;
-        _isUnsigned = _previous->_isUnsigned;
-        _isSigned = _previous->_isSigned;
-        _isPointerCompare = _previous->_isPointerCompare;
-        _isLong = _previous->_isLong;
-        _isStandardType = _previous->_isStandardType;
-        _isExpandedMacro = _previous->_isExpandedMacro;
-        _isAttributeConstructor = _previous->_isAttributeConstructor;
-        _isAttributeDestructor = _previous->_isAttributeDestructor;
-        _isAttributeUnused = _previous->_isAttributeUnused;
-        _isAttributePure = _previous->_isAttributePure;
-        _isAttributeConst = _previous->_isAttributeConst;
-        _isAttributeNothrow = _previous->_isAttributeNothrow;
-        _isDeclspecNothrow = _previous->_isDeclspecNothrow;
+        _flags = _previous->_flags;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;
