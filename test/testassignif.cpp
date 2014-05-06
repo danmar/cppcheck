@@ -225,6 +225,17 @@ private:
               "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5695: increment
+        check("void f(int a0, int n) {\n"
+              "  int c = a0 & 3;\n"
+              "  for (int a = 0; a < n; a++) {\n"
+              "    c++;\n"
+              "    if (c == 4)\n"
+              "      c  = 0;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatchingBitAnd() {

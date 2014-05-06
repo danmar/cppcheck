@@ -99,6 +99,8 @@ bool CheckAssignIf::assignIfParseScope(const Token * const assignTok,
             }
             return true;
         }
+        if (Token::Match(tok2, "++|-- %varid%", varid) || Token::Match(tok2, "%varid% ++|--", varid))
+            return true;
         if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
             unsigned int argumentNumber = 0;
             const Token *ftok;
