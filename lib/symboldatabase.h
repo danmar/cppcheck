@@ -134,7 +134,8 @@ class CPPCHECKLIB Variable {
         fIsPointer   = (1 << 6), /** @brief pointer variable */
         fIsReference = (1 << 7), /** @brief reference variable */
         fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
-        fHasDefault  = (1 << 9)  /** @brief function argument with default value */
+        fHasDefault  = (1 << 9), /** @brief function argument with default value */
+        fIsStlType   = (1 << 10) /** @brief STL type ('std::') */
     };
 
     /**
@@ -174,8 +175,7 @@ public:
           _access(access_),
           _flags(0),
           _type(type_),
-          _scope(scope_),
-          _stlType(false) {
+          _scope(scope_) {
         evaluate();
     }
 
@@ -454,7 +454,7 @@ public:
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     bool isStlType() const {
-        return _stlType;
+        return getFlag(fIsStlType);
     }
 
     /**
@@ -469,7 +469,7 @@ public:
      */
     template <std::size_t array_length>
     bool isStlType(const char* const(&stlTypes)[array_length]) const {
-        return _stlType && std::binary_search(stlTypes, stlTypes + array_length, _start->strAt(2));
+        return isStlType() && std::binary_search(stlTypes, stlTypes + array_length, _start->strAt(2));
     }
 
 private:
@@ -510,9 +510,6 @@ private:
 
     /** @brief array dimensions */
     std::vector<Dimension> _dimensions;
-
-    /** @brief true if variable is of STL type */
-    bool _stlType;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
     void evaluate();

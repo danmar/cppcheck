@@ -1174,7 +1174,7 @@ void Variable::evaluate()
         setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
     if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
-        _stlType = Token::simpleMatch(_start, "std ::");
+        setFlag(fIsStlType, Token::simpleMatch(_start, "std ::"));
     }
     if (_access == Argument) {
         tok = _name;
@@ -1828,6 +1828,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isReference: " << (var->isReference() ? "true" : "false") << std::endl;
     std::cout << indent << "    isRValueRef: " << (var->isRValueReference() ? "true" : "false") << std::endl;
     std::cout << indent << "    hasDefault: " << (var->hasDefault() ? "true" : "false") << std::endl;
+    std::cout << indent << "    isStlType: " << (var->isStlType() ? "true" : "false") << std::endl;
     std::cout << indent << "_type: ";
     if (var->type()) {
         std::cout << var->type()->name();
