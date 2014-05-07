@@ -375,7 +375,7 @@ private:
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
+        c.redundantConditionError(0, "If x > 11 the condition x > 10 is always true.");
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
