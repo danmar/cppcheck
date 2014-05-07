@@ -3563,7 +3563,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("std::string foo() {\n"
-                              "    std::string s;\n" // Class instances are initialized. Assignement is not necessary
+                              "    std::string s;\n" // Class instances are initialized. Assignment is not necessary
                               "    return s;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
