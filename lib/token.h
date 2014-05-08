@@ -733,7 +733,7 @@ private:
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag_) const {
+    bool getFlag(unsigned int flag_) const {
         return bool((_flags & flag_) != 0);
     }
 
@@ -742,7 +742,7 @@ private:
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(int flag_, bool state_) {
+    void setFlag(unsigned int flag_, bool state_) {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
