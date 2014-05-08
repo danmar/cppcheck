@@ -7022,7 +7022,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[,;{}] ( %var% ) .")) {
+        if (Token::Match(tok->previous(), "[(,;{}] ( %var% ) .")) {
             // Remove the parentheses
             tok->deleteThis();
             tok->deleteNext();
