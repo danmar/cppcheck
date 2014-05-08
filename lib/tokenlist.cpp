@@ -578,8 +578,20 @@ static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth)
             compileBinOp(tok, compileScope, op, depth);
             if (depth==1U && Token::Match(tok,"++|--"))
                 compileTerm(tok,op,depth);
-        } else if (tok->str() == "[") {
+        } else break;
+    }
+}
+
+static void compileBrackets(Token *&tok, std::stack<Token*> &op, unsigned int depth)
+{
+    compileDot(tok,op, depth);
+    while (tok) {
+        if (tok->str() == ".") { // compile dot and brackets from left to right. Example: "a.b[c]"
             compileBinOp(tok, compileScope, op, depth);
+            if (depth==1U && Token::Match(tok,"++|--"))
+                compileTerm(tok,op,depth);
+        } else if (tok->str() == "[") {
+            compileBinOp(tok, compileDot, op, depth);
             tok = tok->next();
         } else break;
     }
@@ -587,7 +599,7 @@ static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 
 static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileDot(tok,op, depth);
+    compileBrackets(tok,op, depth);
     while (tok) {
         if (Token::Match(tok, "[*/%]")) {
             if (Token::Match(tok, "* [*,)]")) {
@@ -595,7 +607,7 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int dept
                     tok = tok->next();
                 break;
             }
-            compileBinOp(tok, compileDot, op, depth);
+            compileBinOp(tok, compileBrackets, op, depth);
         } else break;
     }
 }

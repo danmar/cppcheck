@@ -10389,6 +10389,7 @@ private:
         ASSERT_EQUALS("ifa(0[1==(", testAst("if(a()[0]==1){}"));
         ASSERT_EQUALS("ifbuff0[&(*1==(", testAst("if (*((DWORD*)&buff[0])==1){}"));
         ASSERT_EQUALS("ifp*0[1==(", testAst("if((*p)[0]==1)"));
+        ASSERT_EQUALS("ifab.cd.[e==(", testAst("if(a.b[c.d]==e){}"));
 
         // problems with: x=expr
         ASSERT_EQUALS("=\n"
