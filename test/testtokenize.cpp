@@ -292,6 +292,7 @@ private:
         TEST_CASE(varid_in_class12);    // #4637 - method
         TEST_CASE(varid_in_class13);    // #4637 - method
         TEST_CASE(varid_in_class14);
+        TEST_CASE(varid_in_class15);    // #5533 - functions
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4564,6 +4565,18 @@ private:
                       "5: list@1 . do_something ( ) ;\n"
                       "6: Tokenizer :: list@1 . do_something ( ) ;\n"
                       "7: }\n", tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid_in_class15() { // #5533 - functions
+        const char code[] = "class Fred {\n"
+                            "  void x(int a) const;\n"
+                            "  void y() { a=0; }\n" // <- unknown variable
+                            "}\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Fred {\n"
+                      "2: void x ( int a@1 ) const ;\n"
+                      "3: void y ( ) { a = 0 ; }\n"
+                      "4: }\n", tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_initList() {

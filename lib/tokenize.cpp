@@ -2485,9 +2485,9 @@ void Tokenizer::setVarId()
             initlist = Token::simpleMatch(tok->link(), ") :");
 
             // function declarations
-        } else if (!executableScope.top() && tok->str() == "(" && Token::simpleMatch(tok->link(), ") ;")) {
+        } else if (!executableScope.top() && tok->str() == "(" && Token::Match(tok->link(), ") const| ;")) {
             scopeInfo.push(variableId);
-        } else if (!executableScope.top() && Token::simpleMatch(tok, ") ;")) {
+        } else if (!executableScope.top() && Token::Match(tok, ") const| ;")) {
             variableId.swap(scopeInfo.top());
             scopeInfo.pop();
 
