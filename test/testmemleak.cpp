@@ -5620,6 +5620,7 @@ private:
         TEST_CASE(trac5030);
 
         TEST_CASE(varid); // #5201: Analysis confused by (variable).attribute notation
+        TEST_CASE(varid_2); // #5315: Analysis confused by ((variable).attribute) notation
     }
 
     void err() {
@@ -6157,6 +6158,16 @@ private:
               "    return;\n"
               "}", /*fname=*/0, /*isCPP=*/false);
         TODO_ASSERT_EQUALS("[test.c:9]: (error) Memory leak: s.state_check_buff\n", "", errout.str());
+    }
+
+    void varid_2() { // #5315
+        check("typedef struct foo { char *realm; } foo;\n"
+              "void build_principal() {\n"
+              "  foo f;\n"
+              "  ((f)->realm) = strdup(realm);\n"
+              "  if(f->realm == NULL) {}\n"
+              "}", /*fname=*/0, /*isCPP=*/false);
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", errout.str());
     }
 };
 
