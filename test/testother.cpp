@@ -4974,6 +4974,12 @@ private:
               "    if (*a-- != b || *a-- != b) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // assignment
+        check("void f() {\n"
+              "  while (*(a+=2)==*(b+=2) && *(a+=2)==*(b+=2)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression5() {  // #3749 - macros with same values

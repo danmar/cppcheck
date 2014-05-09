@@ -114,7 +114,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         if (t1 != end1 || t2 != end2)
             return false;
     }
-    if (Token::Match(tok1, "++|--"))
+    if (Token::Match(tok1, "++|--") || tok1->isAssignmentOp())
         return false;
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
         const Token *t1 = tok1->next();
