@@ -9573,7 +9573,7 @@ void Tokenizer::simplifyNamespaceStd()
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
-        if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), ".|::") && stdFunctions.find(tok->str()) != stdFunctions.end())
+        if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), ".|::") && !Token::Match(tok->linkAt(1)->next(), "%var%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
             insert = true;
         else if (Token::Match(tok, "%var% <") && !Token::Match(tok->previous(), ".|::") && stdTemplates.find(tok->str()) != stdTemplates.end())
             insert = true;
