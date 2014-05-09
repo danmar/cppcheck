@@ -120,8 +120,8 @@ inline int TIXML_SNPRINTF( char* buffer, size_t size, const char* format, ... )
 	http://semver.org/
 */
 static const int TIXML2_MAJOR_VERSION = 2;
-static const int TIXML2_MINOR_VERSION = 0;
-static const int TIXML2_PATCH_VERSION = 2;
+static const int TIXML2_MINOR_VERSION = 1;
+static const int TIXML2_PATCH_VERSION = 0;
 
 namespace tinyxml2
 {
@@ -1964,7 +1964,7 @@ public:
     /** If streaming, start writing an element.
         The element must be closed with CloseElement()
     */
-    void OpenElement( const char* name, bool compactMode );
+    void OpenElement( const char* name, bool compactMode=false );
     /// If streaming, add an attribute to an open element.
     void PushAttribute( const char* name, const char* value );
     void PushAttribute( const char* name, int value );
@@ -1972,7 +1972,7 @@ public:
     void PushAttribute( const char* name, bool value );
     void PushAttribute( const char* name, double value );
     /// If streaming, close the Element.
-    virtual void CloseElement( bool compactMode );
+    virtual void CloseElement( bool compactMode=false );
 
     /// Add a text node.
     void PushText( const char* text, bool cdata=false );
