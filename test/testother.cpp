@@ -3721,6 +3721,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
+
+        check("void f() {\n"
+              "    if (a % 2 + b % 2 == 2)\n"
+              "        foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator1() {
