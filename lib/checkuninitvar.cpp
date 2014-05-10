@@ -1872,6 +1872,9 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
                 if (Token::Match(argStart, "const struct| %type% * const| %var% [,)]"))
                     return false;
             }
+
+            else if (Token::Match(ftok ? ftok->previous() : nullptr, "= * ("))
+                return false;
         }
         return true;
     }
@@ -1889,6 +1892,14 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, boo
         return true;
 
     else if (!isPointer && Token::Match(tok->previous(), "= %var% ;"))
+        return true;
+
+    // = *(&var);
+    else if (!isPointer &&
+             Token::simpleMatch(tok->astParent(),"&") &&
+             Token::simpleMatch(tok->astParent()->astParent(),"*") &&
+             Token::Match(tok->astParent()->astParent()->astParent(), "= * (| &") &&
+             tok->astParent()->astParent()->astParent()->astOperand2() == tok->astParent()->astParent())
         return true;
 
     else if (_settings->experimental &&
