@@ -136,6 +136,7 @@ private:
         TEST_CASE(template41);  // #4710 - const in instantiation not handled perfectly
         TEST_CASE(template42);  // #4878 - variadic templates
         TEST_CASE(template43);  // #5097 - assert due to '>>' not treated as end of template instantiation
+        TEST_CASE(template44);  // #5297 - TemplateSimplifier::simplifyCalculations not eager enough
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2379,6 +2380,16 @@ private:
         tok(code); // Don't assert
     }
 
+    void template44() { // #5297
+        tok("template<class T> struct StackContainer {"
+            "  void foo(int i) {"
+            "    if (0 >= 1 && i<0) {}"
+            "  }"
+            "};"
+            "template<class T> class ZContainer : public StackContainer<T> {};"
+            "struct FGSTensor {};"
+            "class FoldedZContainer : public ZContainer<FGSTensor> {};");
+    }
 
     void template_default_parameter() {
         {
