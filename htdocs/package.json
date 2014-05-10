@@ -17,10 +17,10 @@
     "lint": "node run-tests"
   },
   "dependencies": {
-    "clean-css": "~2.1.6",
+    "clean-css": "~2.1.8",
     "csslint": "~0.10.0",
-    "jshint": "~2.4.4",
-    "shelljs": "~0.2.6",
+    "jshint": "~2.5.1",
+    "shelljs": "~0.3.0",
     "uglify-js": "~2.4.13"
   },
   "jshintConfig": {
@@ -36,7 +36,6 @@
     "quotmark": "double",
     "shelljs": true,
     "strict": true,
-    "trailing": true,
     "undef": true,
     "unused": true
   },

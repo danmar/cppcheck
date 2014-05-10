@@ -36,13 +36,12 @@
         // pack.css
         var inCss = cat(["site/css/normalize.css",
                          "site/css/all.css",
-                         "site/css/demo.css"
-        ]);
+                         "site/css/demo.css"]);
 
         var minifier = new CleanCSS({
-                keepSpecialComments: 0,
-                compatibility: "ie8"
-            });
+            keepSpecialComments: 0,
+            compatibility: "ie8"
+        });
 
         fs.writeFileSync("site/css/pack.css", minifier.minify(inCss), "utf8");
 
