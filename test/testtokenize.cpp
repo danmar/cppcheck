@@ -418,7 +418,7 @@ private:
         TEST_CASE(syntax_error);
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(syntax_error_templates_2);
-        TEST_CASE(syntax_error_templates_3); // Ticket #5605 - invalid template declaration
+        TEST_CASE(syntax_error_templates_3); // Ticket #5605, #5759, #5762, #5774
 
         TEST_CASE(removeKeywords);
 
@@ -6517,7 +6517,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");   // shouldn't segfault
     }
 
-    void syntax_error_templates_3() { // Ticket #5605, #5759, #5762
+    void syntax_error_templates_3() { // Ticket #5605, #5759, #5762, #5774
         tokenizeAndStringify("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }");
         tokenizeAndStringify("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
         tokenizeAndStringify("() template < T = typename = x > struct a {} { f <int> () }");
@@ -6529,6 +6529,10 @@ private:
         tokenizeAndStringify("template <typename T> struct A {}; "
                              "template <> struct A<void> {}; "
                              "void foo(const void* f = 0) {}");
+        tokenizeAndStringify("template<typename... T> struct A { "
+                             "  static const int s = 0; "
+                             "}; "
+                             "A<int> a;");
     }
 
     void removeKeywords() {
