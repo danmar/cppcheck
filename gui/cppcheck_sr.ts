@@ -805,7 +805,7 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation>Srpski</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="97"/>
+        <location filename="main.cpp" line="100"/>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -821,7 +821,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="110"/>
+        <location filename="main.cpp" line="113"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1413,22 +1413,22 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="201"/>
+        <location filename="settingsdialog.cpp" line="203"/>
         <source>Add a new application</source>
         <translation type="unfinished">Add a new application</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="234"/>
+        <location filename="settingsdialog.cpp" line="236"/>
         <source>Modify an application</source>
         <translation type="unfinished">Modify an application</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="261"/>
+        <location filename="settingsdialog.cpp" line="263"/>
         <source>[Default]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="312"/>
+        <location filename="settingsdialog.cpp" line="314"/>
         <source>Select include directory</source>
         <translation type="unfinished"></translation>
     </message>

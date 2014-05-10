@@ -827,7 +827,7 @@ Möchten Sie die Datei von der Liste der zuletzt benutzten Projekte entfernen?</
         <translation>Serbisch</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="97"/>
+        <location filename="main.cpp" line="100"/>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -856,7 +856,7 @@ Options:
         </translation>
     </message>
     <message>
-        <location filename="main.cpp" line="110"/>
+        <location filename="main.cpp" line="113"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation>Cppcheck GUI - Kommandozeilenparameter</translation>
     </message>
@@ -1454,22 +1454,22 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
         <translation>kA</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="201"/>
+        <location filename="settingsdialog.cpp" line="203"/>
         <source>Add a new application</source>
         <translation>Neue Anwendung hinzufügen</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="234"/>
+        <location filename="settingsdialog.cpp" line="236"/>
         <source>Modify an application</source>
         <translation>Anwendung ändern</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="261"/>
+        <location filename="settingsdialog.cpp" line="263"/>
         <source>[Default]</source>
         <translation>[Standard]</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="312"/>
+        <location filename="settingsdialog.cpp" line="314"/>
         <source>Select include directory</source>
         <translation>Wähle Include-Verzeichnis</translation>
     </message>

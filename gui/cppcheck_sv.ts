@@ -880,7 +880,7 @@ Options:
     -v, --version  Show program version</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="97"/>
+        <location filename="main.cpp" line="100"/>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -896,7 +896,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="110"/>
+        <location filename="main.cpp" line="113"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation>Cppcheck GUI - Command line parameters</translation>
     </message>
@@ -1498,22 +1498,22 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
         <translation>Ej tillgängligt</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="201"/>
+        <location filename="settingsdialog.cpp" line="203"/>
         <source>Add a new application</source>
         <translation>Lägg till program</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="234"/>
+        <location filename="settingsdialog.cpp" line="236"/>
         <source>Modify an application</source>
         <translation>Ändra program</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="261"/>
+        <location filename="settingsdialog.cpp" line="263"/>
         <source>[Default]</source>
         <translation>[Förvald]</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="312"/>
+        <location filename="settingsdialog.cpp" line="314"/>
         <source>Select include directory</source>
         <translation>Välj include mapp</translation>
     </message>
