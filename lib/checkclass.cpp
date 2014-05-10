@@ -1760,7 +1760,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed)
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..

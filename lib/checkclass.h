@@ -213,7 +213,7 @@ private:
     bool isMemberVar(const Scope *scope, const Token *tok) const;
     bool isMemberFunc(const Scope *scope, const Token *tok) const;
     bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
-    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
+    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
