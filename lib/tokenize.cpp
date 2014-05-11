@@ -7107,13 +7107,12 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        // Simplify "!!operator !!(%var%|)) ( %num%|%bool% ) %op%|;|,|)"
+        // Simplify "!!operator !!%var%|)|>|>> ( %num%|%bool% ) %op%|;|,|)"
         if (Token::Match(tok, "( %bool%|%num% ) %cop%|;|,|)") &&
             tok->strAt(-2) != "operator" &&
             tok->previous() &&
-            !tok->previous()->isName() &&
-            tok->previous()->str() != ")" &&
-            (!isCPP() || tok->previous()->str() != ">")) {
+            !Token::Match(tok->previous(), "%var%|)") &&
+            (!(isCPP() && Token::Match(tok->previous(),">|>>")))) {
             tok->link()->deleteThis();
             tok->deleteThis();
             ret = true;

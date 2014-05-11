@@ -369,6 +369,7 @@ private:
         TEST_CASE(removeParentheses17);      // Don't remove parentheses in 'a ? b : (c>0 ? d : e);'
         TEST_CASE(removeParentheses18);      // 'float(*a)[2]' => 'float *a[2]'
         TEST_CASE(removeParentheses19);      // ((typeof(x) *)0)
+        TEST_CASE(removeParentheses20);      // Ticket #5479: a<b<int>>(2);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5656,6 +5657,10 @@ private:
 
     void removeParentheses19() {
         ASSERT_EQUALS("( ( ( typeof ( X ) ) * ) 0 )", tokenizeAndStringify("(((typeof(X))*)0)", false));
+    }
+
+    void removeParentheses20() {
+        ASSERT_EQUALS("a < b < int > > ( 2 ) ;", tokenizeAndStringify("a<b<int>>(2);", false));
     }
 
     void tokenize_double() {
