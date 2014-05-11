@@ -203,7 +203,7 @@ private:
     }
 
     // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>* analyzedFunctions=nullptr);
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
