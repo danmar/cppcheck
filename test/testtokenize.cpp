@@ -10408,7 +10408,7 @@ private:
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
 
-        ASSERT_EQUALS("a0>bc/?d:", testAst("(a>0) ? (b/(c)) : d;"));
+        ASSERT_EQUALS("a0>bc/d:?", testAst("(a>0) ? (b/(c)) : d;"));
         ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
 
         ASSERT_EQUALS("absizeofd(ef.+(=", testAst("a = b(sizeof(c d) + e.f)"));
@@ -10462,7 +10462,7 @@ private:
         ASSERT_EQUALS("a1(2+=",testAst("a=(t*)1+2;"));
         ASSERT_EQUALS("a1(2+=",testAst("a=(t&)1+2;"));
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
-        ASSERT_EQUALS("ab1?0:=", testAst("a=(b)?1:0;"));
+        ASSERT_EQUALS("ab10:?=", testAst("a=(b)?1:0;"));
 
         // ({..})
         ASSERT_EQUALS("a{+d+ bc+", testAst("a+({b+c;})+d"));
@@ -10493,11 +10493,11 @@ private:
         ASSERT_EQUALS("c5[--*", testAst("*c[5]--;"));
 
         // Unary :: operator
-        ASSERT_EQUALS("abc?d12,(::e/:=",testAst("a = b ? c : ::d(1,2) / e;"));
+        ASSERT_EQUALS("abcd12,(::e/:?=",testAst("a = b ? c : ::d(1,2) / e;"));
 
         // how is "--" handled here:
-        ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + --c : 1"));
-        ASSERT_EQUALS("ab4<<c--+?1:", testAst("a ? (b << 4) + c-- : 1"));
+        ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + --c : 1"));
+        ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + c-- : 1"));
     }
 
     void astfunction() const { // function calls

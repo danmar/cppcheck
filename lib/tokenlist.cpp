@@ -408,11 +408,11 @@ static void compileBinOp(Token *&tok, void (*f)(Token *&, std::stack<Token*> &, 
     Token *binop = tok;
     tok = tok->next();
     if (tok)
-        f(tok,op, depth);
+        f(tok, op, depth);
 
-    // Assignment operators are executed in right-to-left order
-    if (binop->isAssignmentOp() && tok && tok->isAssignmentOp())
-        compileBinOp(tok,f,op,depth);
+    // Assignment and ternary operators are executed in right-to-left order
+    if ((binop->isAssignmentOp() || Token::Match(binop, "[:?]")) && tok && (tok->isAssignmentOp() || Token::Match(tok, "[:?]")))
+        compileBinOp(tok, f, op, depth);
 
     // TODO: Should we check if op is empty.
     // * Is it better to add assertion that it isn't?
@@ -702,32 +702,24 @@ static void compileLogicOr(Token *&tok, std::stack<Token*> &op, unsigned int dep
     }
 }
 
-static void compileTernaryOp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
+static void compileAssignTernary(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileLogicOr(tok,op, depth);
+    compileLogicOr(tok, op, depth);
     while (tok) {
-        if (Token::Match(tok, "[?:]")) {
+        // TODO: http://en.cppreference.com/w/cpp/language/operator_precedence says:
+        //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
+        if (tok->isAssignmentOp() || Token::Match(tok, "[?:]")) {
             compileBinOp(tok, compileLogicOr, op, depth);
-        } else break;
-    }
-}
-
-static void compileAssign(Token *&tok, std::stack<Token*> &op, unsigned int depth)
-{
-    compileTernaryOp(tok,op, depth);
-    while (tok) {
-        if (tok->isAssignmentOp()) {
-            compileBinOp(tok, compileTernaryOp, op, depth);
         } else break;
     }
 }
 
 static void compileComma(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileAssign(tok,op, depth);
+    compileAssignTernary(tok, op, depth);
     while (tok) {
         if (tok->str() == ",") {
-            compileBinOp(tok, compileAssign, op, depth);
+            compileBinOp(tok, compileAssignTernary, op, depth);
         } else break;
     }
 }
