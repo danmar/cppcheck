@@ -67,6 +67,7 @@ private:
         TEST_CASE(operatorEqRetRefThis4); // ticket #1451
         TEST_CASE(operatorEqRetRefThis5); // ticket #1550
         TEST_CASE(operatorEqRetRefThis6); // ticket #2479
+        TEST_CASE(operatorEqRetRefThis7); // ticket #5782 endless recursion
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -891,6 +892,25 @@ private:
             "UString& UString::operator=( const UString& s ) {\n"
             "    return assign( s );\n"
             "}");
+    }
+
+    void operatorEqRetRefThis7() { // ticket #5782 Endless recursion in CheckClass::checkReturnPtrThis()
+        checkOpertorEqRetRefThis(
+            "class basic_fbstring {\n"
+            "  basic_fbstring& operator=(int il) {\n"
+            "    return assign();\n"
+            "  }\n"
+            "  basic_fbstring& assign() {\n"
+            "    return replace();\n"
+            "  }\n"
+            "  basic_fbstring& replaceImplDiscr() {\n"
+            "    return replace();\n"
+            "  }\n"
+            "  basic_fbstring& replace() {\n"
+            "    return replaceImplDiscr();\n"
+            "  }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self
