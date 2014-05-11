@@ -329,6 +329,64 @@ void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::strin
                 " operator could cause unexpected results.");
 }
 
+//-------------------------------------------------------------------------------
+// Using Boolean in arithmetic operation
+// bool a,b;
+// a + b, a - b, etc.
+//-------------------------------------------------------------------------------
+
+void CheckBool::checkArithmeticOnBoolean()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    if (!_tokenizer->isCPP())
+        return;
+
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * const scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->type() != Token::eArithmeticalOp)
+                continue;
+            bool first_token_bool = false;
+            bool second_token_bool = false;
+            const Token * const arithmetic_op_token = tok;
+            const Token * const first_token = tok->previous();
+            if (first_token->varId()) {
+                if (isBool(first_token->variable())) {
+                    first_token_bool = true;
+                } else {
+                    continue;
+                }
+
+            }
+            const Token * const second_token = tok->next();
+            if (second_token->varId()) {
+                if (isBool(second_token->variable())) {
+                    second_token_bool = true;
+                } else {
+                    continue;
+                }
+            }
+            if ((first_token_bool == true) && (second_token_bool == true)) {
+                checkArithmeticOnBooleanError(first_token->next(), first_token->str(), arithmetic_op_token->str() ,second_token->str());
+            }
+        }
+    }
+}
+
+void CheckBool::checkArithmeticOnBooleanError(const Token * const tok, const std::string &firstBool, const std::string &arithmeticOperation, const std::string &secondBool)
+{
+    reportError(tok, Severity::style, "arithmeticOnBoolean",
+                "Boolean used in arithmetic operation.\n"
+                "The variables '" + firstBool + "' and '" + secondBool + "' are of type 'bool'. "
+                "Using them in arithmetic an operation ('" + arithmeticOperation +  "') "
+                "could cause unexpected results and lead to confusion.");
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CheckBool::checkAssignBoolToPointer()
