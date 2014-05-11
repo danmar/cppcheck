@@ -64,7 +64,7 @@ static bool isConstExpression(const Token *tok, const std::set<std::string> &con
         else if (tok->function() && !tok->function()->isConst)
             return false;
     }
-    if (Token::Match(tok, "++|--"))
+    if (tok->type() == Token::eIncDecOp)
         return false;
     // bailout when we see ({..})
     if (tok->str() == "{")
@@ -114,7 +114,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         if (t1 != end1 || t2 != end2)
             return false;
     }
-    if (Token::Match(tok1, "++|--") || tok1->isAssignmentOp())
+    if (tok1->type() == Token::eIncDecOp || tok1->isAssignmentOp())
         return false;
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
         const Token *t1 = tok1->next();

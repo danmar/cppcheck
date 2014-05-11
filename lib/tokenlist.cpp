@@ -446,7 +446,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
         compileUnaryOp(tok, compileExpression, op, depth);
     } else if (tok->isName()) {
         const bool templatefunc = Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (");
-        if (!Token::Match(tok->previous(), ".|::") && Token::Match(tok->next(), "++|--")) {  // post increment / decrement
+        if (!Token::Match(tok->previous(), ".|::") && tok->next() && tok->next()->type() == Token::eIncDecOp) {  // post increment / decrement
             tok = tok->next();
             tok->astOperand1(tok->previous());
             op.push(tok);
@@ -487,7 +487,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
                 prev = tok1;
                 if (Token::Match(tok, "]|)")) {
                     tok = tok->next();
-                    if (depth==1U && Token::Match(tok,"++|--") && op.empty()) {
+                    if (depth == 1U && tok && tok->type() == Token::eIncDecOp && op.empty()) {
                         tok->astOperand1(tok->previous()->link());
                         tok = tok->next();
                     }
@@ -495,7 +495,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
             }
             op.push(par);
         }
-    } else if (Token::Match(tok, "++|--")) {
+    } else if (tok->type() == Token::eIncDecOp) {
         bool pre = false;
         if (Token::Match(tok->next(), "%var%|("))
             pre = true;
@@ -564,7 +564,7 @@ static void compileScope(Token *&tok, std::stack<Token*> &op, unsigned int depth
                 compileBinOp(tok, compileTerm, op, depth);
             else
                 compileUnaryOp(tok, compileDot, op, depth);
-            if (depth==1U && Token::Match(tok,"++|--"))
+            if (depth == 1U && tok && tok->type() == Token::eIncDecOp)
                 compileTerm(tok,op,depth);
         } else break;
     }
@@ -576,7 +576,7 @@ static void compileDot(Token *&tok, std::stack<Token*> &op, unsigned int depth)
     while (tok) {
         if (tok->str() == ".") {
             compileBinOp(tok, compileScope, op, depth);
-            if (depth==1U && Token::Match(tok,"++|--"))
+            if (depth == 1U && tok && tok->type() == Token::eIncDecOp)
                 compileTerm(tok,op,depth);
         } else break;
     }
@@ -588,7 +588,7 @@ static void compileBrackets(Token *&tok, std::stack<Token*> &op, unsigned int de
     while (tok) {
         if (tok->str() == ".") { // compile dot and brackets from left to right. Example: "a.b[c]"
             compileBinOp(tok, compileScope, op, depth);
-            if (depth==1U && Token::Match(tok,"++|--"))
+            if (depth == 1U && tok && tok->type() == Token::eIncDecOp)
                 compileTerm(tok,op,depth);
         } else if (tok->str() == "[") {
             compileBinOp(tok, compileDot, op, depth);
@@ -751,7 +751,7 @@ static Token * createAstAtToken(Token *tok)
                 tok2 = tok2->link();
                 if (!tok2)
                     break;
-            } else if (Token::Match(tok2, "%var% %op%|(|[|.|=|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
+            } else if (Token::Match(tok2, "%var% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                 init1 = tok2;
                 std::stack<Token *> operands;
                 compileExpression(tok2, operands, 0U);
@@ -807,7 +807,7 @@ static Token * createAstAtToken(Token *tok)
     if (Token::Match(tok, "%type% <") && Token::Match(tok->linkAt(1), "> !!("))
         return tok->linkAt(1);
 
-    if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|=|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
+    if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%var% %op%|(|[|.|::") || Token::Match(tok->previous(), "[;{}] %cop%|( !!{")) {
         std::stack<Token *> operands;
         Token * const tok1 = tok;
         compileExpression(tok, operands, 0U);
