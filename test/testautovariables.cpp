@@ -515,6 +515,29 @@ private:
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
 
+        check("int main() {\n"
+              "   long *pKoeff[256];\n"
+              "   free (pKoeff);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
+
+        check("void foo() {\n"
+              "   int& intref = Getter();\n"
+              "   delete *intref;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void foo() {\n"
+              "   FOO& fooref = Getter();\n"
+              "   delete *fooref;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "   MyObj& obj = *new MyObj;\n"
+              "   delete &obj;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void testinvaliddealloc_C() {

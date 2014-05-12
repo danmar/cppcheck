@@ -202,7 +202,7 @@ void CheckAutoVariables::autoVariables()
                     errorInvalidDeallocation(tok);
             } else if (Token::Match(tok, "free ( & %var% ) ;") || (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
-                if (tok && tok->variable() && tok->variable()->isLocal())
+                if (isAutoVar(tok))
                     errorInvalidDeallocation(tok);
             }
         }
