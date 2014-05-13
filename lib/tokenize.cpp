@@ -1519,7 +1519,7 @@ void Tokenizer::simplifyTypedef()
 void Tokenizer::simplifyMulAndParens()
 {
     if (!list.front())
-      return;
+        return;
     for (Token *tok = list.front()->tokAt(3); tok; tok = tok->next()) {
         if (tok->isName()) {
             //fix ticket #2784 - improved by ticket #3184

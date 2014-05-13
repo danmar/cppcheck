@@ -1241,7 +1241,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             if (_settings->debugwarnings && errorlogger) {
                 std::list<const Token *> callstack(1, tok);
                 errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug",
-                                      "Failed to instantiate template. The checking continues anyway.", false));
+                                       "Failed to instantiate template. The checking continues anyway.", false));
             }
             if (typeForNewName.empty())
                 continue;
