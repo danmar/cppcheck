@@ -214,6 +214,7 @@ private:
         TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyExternC);
+        TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -6580,6 +6581,13 @@ private:
         ASSERT_EQUALS("if ( ! ! x ) { ; }", actual);
     }
 
+    void simplifyKeyword() {
+        const char code[] = "void f (int a [ static 5] );";
+
+        const std::string actual(tokenizeAndStringify(code, true));
+
+        ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", actual);
+    }
 
     /**
      * tokenize "signed i" => "signed int i"

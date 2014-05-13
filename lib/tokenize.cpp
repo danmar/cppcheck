@@ -1519,7 +1519,7 @@ void Tokenizer::simplifyTypedef()
 void Tokenizer::simplifyMulAndParens()
 {
     if (!list.front())
-      return;
+        return;
     for (Token *tok = list.front()->tokAt(3); tok; tok = tok->next()) {
         if (tok->isName()) {
             //fix ticket #2784 - improved by ticket #3184
@@ -9248,7 +9248,7 @@ void Tokenizer::simplifyAttribute()
     }
 }
 
-// Remove "volatile", "inline", "register", "restrict", "override", "final" and "constexpr"
+// Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet
@@ -9265,6 +9265,11 @@ void Tokenizer::simplifyKeyword()
             while (tok->str() == "restrict") {
                 tok->deleteThis();
             }
+
+            // simplify static keyword:
+            // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
+            if (Token::Match(tok, "[ static "))
+                tok->deleteNext();
         }
     }
 
