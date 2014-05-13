@@ -9268,8 +9268,9 @@ void Tokenizer::simplifyKeyword()
 
             // simplify static keyword:
             // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
-            if (Token::Match(tok, "[ static "))
+            if (Token::Match(tok, "[ static %num%")) {
                 tok->deleteNext();
+            }
         }
     }
 
