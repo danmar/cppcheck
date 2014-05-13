@@ -7417,7 +7417,7 @@ void Tokenizer::simplifyEnum()
             tok = tok->previous();
         }
 
-        if (tok->next() &&
+        if (tok && tok->next() &&
             (!tok->previous() || (tok->previous()->str() != "enum")) &&
             Token::Match(tok, "class|struct|namespace")) {
             className = tok->next()->str();
