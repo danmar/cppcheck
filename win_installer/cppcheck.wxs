@@ -156,6 +156,7 @@
     <UIRef Id="WixUI_FeatureTree"/>
 
     <Icon Id='cppcheckgui.exe' SourceFile='$(var.GuiBuildDir)\cppcheck-gui.exe' />
+    <Property Id="ARPPRODUCTICON" Value="cppcheckgui.exe" />
 
     <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
     <WixVariable Id="WixUIBannerBmp" Value="images\banner.jpg" />
