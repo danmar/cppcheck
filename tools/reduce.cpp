@@ -105,12 +105,14 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
     return test(settings, filedata, line, line);
 }
 
+#ifdef GDB_HELPERS
 static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
 {
     std::cout << filedata.size();
     for (int i = i1; i < i2; ++i)
         std::cout << i << ":" << filedata[i] << std::endl;
 }
+#endif
 
 static std::vector<std::string> readfile(const std::string &filename)
 {
