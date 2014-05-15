@@ -7566,11 +7566,13 @@ void Tokenizer::simplifyEnum()
                             --level;
                         else if (Token::Match(enumValueEnd, "%type% <") && isCPP() && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
                             Token *endtoken = enumValueEnd->tokAt(2);
-                            while (Token::Match(endtoken,"%any% *| [,>]") && (endtoken->isName() || endtoken->isNumber())) {
+                            while ((Token::Match(endtoken,"%any% *| [,>]") || Token::Match(endtoken,"%any% :: %any%")) && (endtoken->isName() || endtoken->isNumber())) {
                                 endtoken = endtoken->next();
                                 if (endtoken->str() == "*")
                                     endtoken = endtoken->next();
                                 if (endtoken->str() == ",")
+                                    endtoken = endtoken->next();
+                                if (endtoken->str() == "::")
                                     endtoken = endtoken->next();
                             }
                             if (endtoken->str() == ">") {
