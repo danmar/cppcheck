@@ -228,8 +228,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     unsigned int level = 0;
 
     while (tok) {
-        // skip const
-        if (tok->str() == "const")
+        // skip const/volatile
+        if (Token::Match(tok, "const|volatile"))
             tok = tok->next();
 
         // skip struct/union
@@ -278,8 +278,11 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // Function pointer or prototype..
-        while (tok && (tok->str() == "(" || tok->str() == "["))
+        while (tok && (tok->str() == "(" || tok->str() == "[")) {
             tok = tok->link()->next();
+            while (tok && Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
+                tok = tok->next();
+        }
         if (!tok)
             return 0;
 

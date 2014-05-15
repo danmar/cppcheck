@@ -420,6 +420,7 @@ private:
         TEST_CASE(syntax_error_templates_1);
         TEST_CASE(syntax_error_templates_2);
         TEST_CASE(syntax_error_templates_3); // Ticket #5605, #5759, #5762, #5774
+        TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
 
         TEST_CASE(removeKeywords);
 
@@ -6538,6 +6539,33 @@ private:
                              "  static const int s = 0; "
                              "}; "
                              "A<int> a;");
+    }
+
+    void template_member_ptr() { // Ticket #5786
+        tokenizeAndStringify("struct A {}; "
+                             "struct B { "
+                             "template <void (A::*)() const> struct BB {}; "
+                             "template <bool BT> static bool foo(int) { return true; } "
+                             "void bar() { bool b = foo<true>(0); }"
+                             "};");
+        tokenizeAndStringify("struct A {}; "
+                             "struct B { "
+                             "template <void (A::*)() volatile> struct BB {}; "
+                             "template <bool BT> static bool foo(int) { return true; } "
+                             "void bar() { bool b = foo<true>(0); }"
+                             "};");
+        tokenizeAndStringify("struct A {}; "
+                             "struct B { "
+                             "template <void (A::*)() const volatile> struct BB {}; "
+                             "template <bool BT> static bool foo(int) { return true; } "
+                             "void bar() { bool b = foo<true>(0); }"
+                             "};");
+        tokenizeAndStringify("struct A {}; "
+                             "struct B { "
+                             "template <void (A::*)() volatile const> struct BB {}; "
+                             "template <bool BT> static bool foo(int) { return true; } "
+                             "void bar() { bool b = foo<true>(0); }"
+                             "};");
     }
 
     void removeKeywords() {
