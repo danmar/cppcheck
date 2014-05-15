@@ -522,13 +522,8 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
 
         check("void foo() {\n"
-              "   int& intref = Getter();\n"
-              "   delete *intref;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-        check("void foo() {\n"
-              "   FOO& fooref = Getter();\n"
-              "   delete *fooref;\n"
+              "   const intPtr& intref = Getter();\n"
+              "   delete intref;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
