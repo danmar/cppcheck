@@ -137,6 +137,7 @@ private:
         TEST_CASE(template42);  // #4878 - variadic templates
         TEST_CASE(template43);  // #5097 - assert due to '>>' not treated as end of template instantiation
         TEST_CASE(template44);  // #5297 - TemplateSimplifier::simplifyCalculations not eager enough
+        TEST_CASE(template45);  // #5814 - syntax error reported for valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2389,6 +2390,17 @@ private:
             "template<class T> class ZContainer : public StackContainer<T> {};"
             "struct FGSTensor {};"
             "class FoldedZContainer : public ZContainer<FGSTensor> {};");
+    }
+
+    void template45() { // #5814
+        tok("namespace Constants { const int fourtytwo = 42; } "
+            "template <class T, int U> struct TypeMath { "
+            "  static const int mult = sizeof(T) * U; "
+            "}; "
+            "template <class T> struct FOO { "
+            "  enum { value = TypeMath<T, Constants::fourtytwo>::something }; "
+            "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_default_parameter() {
