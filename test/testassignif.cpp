@@ -38,7 +38,7 @@ private:
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
         TEST_CASE(multicompare);       // mismatching comparisons
         TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
-		TEST_CASE(invalidMissingSemicolon); // crash as of #5867
+        TEST_CASE(invalidMissingSemicolon); // crash as of #5867
     }
 
     void check(const char code[]) {
@@ -379,9 +379,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-	
-    void invalidMissingSemicolon()
-    {
+
+    void invalidMissingSemicolon() {
         // simply survive - a syntax error would be even better
         check("void f(int x) {\n"
               " x = 42\n"

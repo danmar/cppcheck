@@ -552,8 +552,8 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
-		const int sign_first = (isPositive(first)) ? 1 : -1;
-		const int sign_second = (isPositive(second)) ? 1 : -1;
+        const int sign_first = (isPositive(first)) ? 1 : -1;
+        const int sign_second = (isPositive(second)) ? 1 : -1;
         return (sign_first*sign_second == 1) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
