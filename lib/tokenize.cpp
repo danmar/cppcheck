@@ -7558,23 +7558,17 @@ void Tokenizer::simplifyEnum()
 
                     enumValueStart = tok1;
                     enumValueEnd = tok1;
-                    int level = 0;
-                    while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]") || level)) {
-                        if (Token::Match(enumValueEnd, "(|["))
-                            ++level;
-                        else if (Token::Match(enumValueEnd->next(), "]|)"))
-                            --level;
-                        else if (Token::Match(enumValueEnd, "%type% <") && isCPP() && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
-                            Token *endtoken = enumValueEnd->tokAt(2);
-                            while ((Token::Match(endtoken,"%any% *| [,>]") || Token::Match(endtoken,"%any% :: %any%")) && (endtoken->isName() || endtoken->isNumber())) {
+                    while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]"))) {
+                        if (Token::Match(enumValueEnd, "(|[")) {
+                            enumValueEnd = enumValueEnd->link();
+                            continue;
+                        } else if (Token::Match(enumValueEnd, "%type% <") && isCPP() && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
+                            Token *endtoken = enumValueEnd->next();
+                            do {
                                 endtoken = endtoken->next();
-                                if (endtoken->str() == "*")
+                                if (Token::Match(endtoken, "*|,|::|typename"))
                                     endtoken = endtoken->next();
-                                if (endtoken->str() == ",")
-                                    endtoken = endtoken->next();
-                                if (endtoken->str() == "::")
-                                    endtoken = endtoken->next();
-                            }
+                            } while (Token::Match(endtoken, "%var%|%num% *| [,>]") || Token::Match(endtoken, "%var%|%num% :: %any%"));
                             if (endtoken->str() == ">") {
                                 enumValueEnd = endtoken;
                                 if (Token::simpleMatch(endtoken, "> ( )"))

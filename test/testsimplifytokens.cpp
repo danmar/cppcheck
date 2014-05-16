@@ -138,6 +138,7 @@ private:
         TEST_CASE(template43);  // #5097 - assert due to '>>' not treated as end of template instantiation
         TEST_CASE(template44);  // #5297 - TemplateSimplifier::simplifyCalculations not eager enough
         TEST_CASE(template45);  // #5814 - syntax error reported for valid code
+        TEST_CASE(template46);  // #5816 - syntax error reported for valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2400,6 +2401,18 @@ private:
             "template <class T> struct FOO { "
             "  enum { value = TypeMath<T, Constants::fourtytwo>::something }; "
             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template46() { // #5816
+        tok("template<class T, class U> struct A { static const int value = 0; }; "
+            "template <class T> struct B { "
+            "  enum { value = A<typename T::type, int>::value }; "
+            "};");
+        ASSERT_EQUALS("", errout.str());
+        tok("template <class T, class U> struct A {}; "
+            "enum { e = sizeof(A<int, int>) }; "
+            "template <class T, class U> struct B {};");
         ASSERT_EQUALS("", errout.str());
     }
 
