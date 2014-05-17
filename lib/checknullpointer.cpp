@@ -883,7 +883,7 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::simpleMatch(tok->previous(), ">> 0")) { // Only checking input stream operations is safe here, because otherwise 0 can be an integer as well
                 const Token* tok2 = tok->previous(); // Find start of statement
                 for (; tok2; tok2 = tok2->previous()) {
-                    if (Token::Match(tok2->previous(), ";|{|}|:"))
+                    if (Token::Match(tok2->previous(), ";|{|}|:|("))
                         break;
                 }
                 if (Token::simpleMatch(tok2, "std :: cin"))
@@ -1064,4 +1064,3 @@ void CheckNullPointer::nullPointerDefaultArgError(const Token *tok, const std::s
 {
     reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname);
 }
-

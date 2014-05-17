@@ -2132,6 +2132,15 @@ private:
               "    std::cout << i;\n" // Its no char* (#4240)
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        // #5811 false postive: (error) Null pointer dereference
+        check("using namespace std;\n"
+              "std::string itoip(int ip) {\n"
+              "    stringstream out;\n"
+              "    out << ((ip >> 0) & 0xFF);\n"
+              "    return out.str();\n"
+              "}n", true, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls
