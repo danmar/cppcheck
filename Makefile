@@ -261,6 +261,10 @@ install: cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
 	install htmlreport/cppcheck-htmlreport ${BIN}
+ifdef CFGDIR 
+	install -d ${CFGDIR}
+	install -m 644 cfg/* ${CFGDIR}
+endif
 
 
 ###### Build

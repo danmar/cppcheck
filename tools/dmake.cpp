@@ -27,6 +27,11 @@
 
 #include "../cli/filelister.h"
 
+static std::string builddir(std::string filename);
+static std::string objfile(std::string cppfile);
+static void getDeps(const std::string &filename, std::vector<std::string> &depfiles);
+
+
 std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
@@ -406,7 +411,11 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";
-    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n\n";
+    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
+    fout << "ifdef CFGDIR \n";
+    fout << "\tinstall -d ${CFGDIR}\n";
+    fout << "\tinstall -m 644 cfg/* ${CFGDIR}\n";
+    fout << "endif\n\n";
 
     fout << "\n###### Build\n\n";
 
