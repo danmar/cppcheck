@@ -2080,13 +2080,11 @@ private:
     }
 
     void nullpointerStdStream() {
-        // TODO: Refactor these tests and re-enable them
-#if 0
         check("void f(std::ifstream& is) {\n"
               "    char* p = 0;\n"
               "    is >> p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", "", errout.str());
 
         check("void f(const std::ostringstream& oss, char* q) {\n"
               "    char const* p = 0;\n" // Simplification makes detection of bug difficult
@@ -2095,10 +2093,9 @@ private:
               "    if(q == 0)\n"
               "        oss << foo << q;\n"
               "}", false, "test.cpp", false);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n"
-                           "[test.cpp:4]: (error) Possible null pointer dereference: p\n"
-                           "[test.cpp:6] -> [test.cpp:5]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n",
-                           "[test.cpp:6] -> [test.cpp:5]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:4]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:6] -> [test.cpp:5]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void f(const char* p) {\n"
               "    if(p == 0) {\n"
@@ -2135,10 +2132,6 @@ private:
               "    std::cout << i;\n" // Its no char* (#4240)
               "}", true);
         ASSERT_EQUALS("", errout.str());
-#else
-        return;
-#endif
-
     }
 
     void functioncall() {    // #3443 - function calls
