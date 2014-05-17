@@ -886,6 +886,8 @@ void CheckNullPointer::nullConstantDereference()
                     if (Token::Match(tok2->previous(), ";|{|}|:|("))
                         break;
                 }
+                if (tok2->previous()->str()=="(")
+                    continue;
                 if (Token::simpleMatch(tok2, "std :: cin"))
                     nullPointerError(tok);
                 if (tok2 && tok2->varId() != 0) {

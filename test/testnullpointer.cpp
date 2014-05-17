@@ -2141,6 +2141,15 @@ private:
               "    return out.str();\n"
               "}n", true, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
+        // avoid regression from first fix attempt for #5811...
+        check("void deserialize(const std::string &data) {\n"
+              "std::istringstream iss(data);\n"
+              "unsigned int len = 0;\n"
+              "if (!(iss >> len))\n"
+              "    return;\n"
+              "}\n", true, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void functioncall() {    // #3443 - function calls
