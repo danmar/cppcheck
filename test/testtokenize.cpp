@@ -10441,6 +10441,8 @@ private:
 
         ASSERT_EQUALS("absizeofd(ef.+(=", testAst("a = b(sizeof(c d) + e.f)"));
 
+        ASSERT_EQUALS("a*b***", testAst("*a * **b;")); // Correctly distinguish between unary and binary operator*
+
         // for
         ASSERT_EQUALS("for;;(", testAst("for(;;)"));
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
@@ -10469,6 +10471,9 @@ private:
         ASSERT_EQUALS("ifbuff0[&(*1==(", testAst("if (*((DWORD*)&buff[0])==1){}"));
         ASSERT_EQUALS("ifp*0[1==(", testAst("if((*p)[0]==1)"));
         ASSERT_EQUALS("ifab.cd.[e==(", testAst("if(a.b[c.d]==e){}"));
+
+        ASSERT_EQUALS("iftp-notei1-[->note>0==tp-notei1-[->type>4>||(", testAst("if ((tp->note[i - 1]->note == 0) || (tp->note[i - 1]->type > 4)) {}"));
+        ASSERT_EQUALS("a-bi[j1+[>", testAst("a->b[i][j+1]"));
 
         // problems with: x=expr
         ASSERT_EQUALS("=\n"
@@ -10521,7 +10526,7 @@ private:
         ASSERT_EQUALS("c5[--*", testAst("*c[5]--;"));
 
         // Unary :: operator
-        ASSERT_EQUALS("abcd12,(::e/:?=",testAst("a = b ? c : ::d(1,2) / e;"));
+        ASSERT_EQUALS("abcd::12,(e/:?=", testAst("a = b ? c : ::d(1,2) / e;"));
 
         // how is "--" handled here:
         ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + --c : 1"));
@@ -10544,8 +10549,9 @@ private:
         ASSERT_EQUALS("a(3==", testAst("a<int>()==3"));
         ASSERT_EQUALS("ab(== f(", testAst("a == b<c>(); f();"));
 
-        ASSERT_EQUALS("publica::b::", testAst("class C : public ::a::b<bool> { };"));
-        ASSERT_EQUALS("f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
+        // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
+        ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
+        ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
     }
 
     void compileLimits() {
