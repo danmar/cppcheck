@@ -230,6 +230,7 @@ static const char *signal_name(int signo)
 /*
  * Try to print the callstack.
  * That is very sensitive to the operating system, hardware, compiler and runtime!
+ * The code is not meant for production environment, it's using functions not whitelisted for usage in a signal handler function.
  */
 static void print_stacktrace(FILE* f, bool demangling)
 {
@@ -249,7 +250,6 @@ static void print_stacktrace(FILE* f, bool demangling)
             const char * const beginAddress = firstBracketAddress+3;
             const int addressLen = int(secondBracketAddress-beginAddress);
             const int padLen = int(ADDRESSDISPLAYLENGTH-addressLen);
-            //fprintf(f, "AddressDisplayLength=%d    addressLen=%d      padLen=%d\n", ADDRESSDISPLAYLENGTH, addressLen, padLen);
             if (demangling && firstBracketName) {
                 const char * const plus = strchr(firstBracketName, '+');
                 if (plus && (plus>(firstBracketName+1))) {
@@ -261,8 +261,9 @@ static void print_stacktrace(FILE* f, bool demangling)
                     realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
                 }
             }
-            fprintf(f, "#%d  0x",
-                    i-offset);
+            const int ordinal=i-offset;
+            fprintf(f, "#%-2d 0x",
+                    ordinal);
             if (padLen>0)
                 fprintf(f, "%0*d",
                         padLen, 0);
