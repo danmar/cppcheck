@@ -430,19 +430,7 @@ void CheckOther::clarifyStatement()
                     tok2=tok2->previous();
 
                 if (Token::Match(tok2, "[{};]")) {
-                    tok = tok->tokAt(2);
-                    for (;;) {
-                        if (tok->str() == "[")
-                            tok = tok->link()->next();
-
-                        if (Token::Match(tok, ".|:: %var%")) {
-                            if (tok->strAt(2) == "(")
-                                tok = tok->linkAt(2)->next();
-                            else
-                                tok = tok->tokAt(2);
-                        } else
-                            break;
-                    }
+                    tok = tok->astOperand1();
                     if (Token::Match(tok, "++|-- [;,]"))
                         clarifyStatementError(tok);
                 }
@@ -3026,10 +3014,10 @@ void CheckOther::checkModuloAlwaysTrueFalse()
             if (!tok->isComparisonOp())
                 continue;
             const Token *num,*modulo;
-            if (Token::simpleMatch(tok->astOperand1(),"%") && Token::Match(tok->astOperand2(),"%num%")) {
+            if (Token::simpleMatch(tok->astOperand1(), "%") && Token::Match(tok->astOperand2(), "%num%")) {
                 modulo = tok->astOperand1();
                 num    = tok->astOperand2();
-            } else if (Token::Match(tok->astOperand1(),"%num%") && Token::simpleMatch(tok->astOperand2(),"%")) {
+            } else if (Token::Match(tok->astOperand1(), "%num%") && Token::simpleMatch(tok->astOperand2(), "%")) {
                 num    = tok->astOperand1();
                 modulo = tok->astOperand2();
             } else {
@@ -3218,15 +3206,13 @@ void CheckOther::checkRedundantCopy()
         } else
             continue;
 
-        const Token* tok = startTok->tokAt(2);
-        while (tok && Token::Match(tok, "%var% .|::"))
-            tok = tok->tokAt(2);
-        if (!Token::Match(tok, "%var% ("))
+        const Token* tok = startTok->next()->astOperand2();
+        if (!Token::Match(tok->previous(), "%var% ("))
             continue;
-        if (!Token::Match(tok->linkAt(1), ") )| ;")) // bailout for usage like "const A a = getA()+3"
+        if (!Token::Match(tok->link(), ") )| ;")) // bailout for usage like "const A a = getA()+3"
             continue;
 
-        const Function* func = tok->function();
+        const Function* func = tok->previous()->function();
         if (func && func->tokenDef->strAt(-1) == "&") {
             redundantCopyError(startTok, startTok->str());
         }
