@@ -1496,12 +1496,8 @@ void CheckOther::invalidFunctionUsage()
         if (varid == 0)
             continue;
 
-        // goto ","
-        const Token *tok2 = tok->tokAt(3);
-        while (tok2->str() != ",")
-            tok2 = tok2->next();
-
-        tok2 = tok2->next(); // Jump behind ","
+        // goto next argument
+        const Token *tok2 = tok->tokAt(2)->nextArgument();
 
         if (tok->str() == "snprintf" || tok->str() == "swprintf") { // Jump over second parameter for snprintf and swprintf
             tok2 = tok2->nextArgument();
@@ -2238,14 +2234,12 @@ void CheckOther::strPlusChar()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[=(] %str% + %any%")) {
-                // char constant..
-                if (tok->tokAt(3)->type() == Token::eChar)
-                    strPlusCharError(tok->next());
+            if (tok->str() == "+" && tok->astOperand2()) {
+                if (tok->astOperand1()->type() == Token::eString) { // string literal...
+                    if (tok->astOperand2() && (tok->astOperand2()->type() == Token::eChar || isChar(tok->astOperand2()->variable()))) // added to char variable or char constant
+                        strPlusCharError(tok);
+                }
 
-                // char variable..
-                if (isChar(tok->tokAt(3)->variable()))
-                    strPlusCharError(tok->next());
             }
         }
     }
@@ -2352,7 +2346,7 @@ void CheckOther::checkMathFunctions()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
-            if (!Token::Match(tok->previous(),".|->")
+            if (tok->strAt(-1) != "."
                 && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
                 bool isNegative = MathLib::isNegative(tok->strAt(2));
                 bool isInt = MathLib::isInt(tok->strAt(2));
