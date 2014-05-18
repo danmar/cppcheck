@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
 
 #include "checkinternal.h"
 #include "symboldatabase.h"
@@ -315,4 +315,4 @@ void CheckInternal::redundantNextPreviousError(const Token* tok, const std::stri
                 "Call to 'Token::" + func1 + "()' followed by 'Token::" + func2 + "()' can be simplified.");
 }
 
-#endif // #ifndef NDEBUG
+#endif // #ifdef CHECK_INTERNAL

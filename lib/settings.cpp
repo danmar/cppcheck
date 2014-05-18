@@ -84,7 +84,7 @@ std::string Settings::addEnabled(const std::string &str)
         id.insert("information");
         id.insert("missingInclude");
         id.insert("unusedFunction");
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
         id.insert("internal");
 #endif
     }

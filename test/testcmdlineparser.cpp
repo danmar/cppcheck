@@ -71,7 +71,7 @@ private:
         TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
@@ -516,7 +516,7 @@ private:
         ASSERT(settings.isEnabled("missingInclude"));
     }
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
     void enabledInternal() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};

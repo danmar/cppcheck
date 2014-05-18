@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
 
 #include "tokenize.h"
 #include "checkinternal.h"
@@ -340,4 +340,4 @@ private:
 
 REGISTER_TEST(TestInternal)
 
-#endif // #ifndef NDEBUG
+#endif // #ifdef CHECK_INTERNAL
