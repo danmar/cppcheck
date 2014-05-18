@@ -168,7 +168,7 @@ public:
         return arg && arg->strz;
     }
 
-    bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
+    bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint& argvalue) const;
 
     std::string validarg(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);

@@ -632,7 +632,7 @@ public:
     /** Values of token */
     std::list<ValueFlow::Value> values;
 
-    const ValueFlow::Value * getValue(const MathLib::bigint val) const {
+    const ValueFlow::Value * getValue(const MathLib::bigint& val) const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
             if (it->intvalue == val)
@@ -652,8 +652,8 @@ public:
         return ret;
     }
 
-    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
-    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
+    const ValueFlow::Value * getValueLE(const MathLib::bigint& val, const Settings *settings) const;
+    const ValueFlow::Value * getValueGE(const MathLib::bigint& val, const Settings *settings) const;
 
 private:
 

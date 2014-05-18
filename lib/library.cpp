@@ -312,7 +312,7 @@ bool Library::load(const tinyxml2::XMLDocument &doc)
     return true;
 }
 
-bool Library::isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const
+bool Library::isargvalid(const std::string &functionName, int argnr, const MathLib::bigint& argvalue) const
 {
     const ArgumentChecks *ac = getarg(functionName, argnr);
     if (!ac || ac->valid.empty())

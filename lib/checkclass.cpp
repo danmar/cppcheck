@@ -1028,7 +1028,7 @@ void CheckClass::checkMemset()
     }
 }
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes)
+void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope * >& parsedTypes)
 {
     // If type has been checked there is no need to check it again
     if (std::find(parsedTypes.begin(), parsedTypes.end(), type) != parsedTypes.end())
