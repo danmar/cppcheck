@@ -423,16 +423,16 @@ void CheckOther::clarifyStatement()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "* %var%")) {
+            if (Token::Match(tok, "* %var%") && tok->astOperand1()) {
                 const Token *tok2=tok->previous();
 
                 while (tok2 && tok2->str() == "*")
-                    tok2=tok2->previous();
+                    tok2 = tok2->previous();
 
                 if (Token::Match(tok2, "[{};]")) {
-                    tok = tok->astOperand1();
-                    if (Token::Match(tok, "++|-- [;,]"))
-                        clarifyStatementError(tok);
+                    tok2 = tok->astOperand1();
+                    if (Token::Match(tok2, "++|-- [;,]"))
+                        clarifyStatementError(tok2);
                 }
             }
         }
