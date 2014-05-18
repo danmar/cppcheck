@@ -120,7 +120,7 @@ PVS-Studio is commercial, however there is a free trial.</p>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
   <li>Ask questions in the <a href="http://sourceforge.net/apps/phpbb/cppcheck/">discussion forum</a>
-  or at the IRC channel <a href="irc://irc.freenode.net/">#cppcheck</a></li>
+  or at the IRC channel <a href="irc://irc.freenode.net/#cppcheck">#cppcheck</a></li>
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
 
