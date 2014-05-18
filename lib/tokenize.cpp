@@ -8613,11 +8613,8 @@ void Tokenizer::simplifyComma()
         }
 
         // Skip unhandled template specifiers..
-        if (Token::Match(tok, "%var% <")) {
-            Token* tok2 = tok->next()->link();
-            if (tok2)
-                tok = tok2;
-        }
+        if (tok->link() && tok->str() == "<")
+            tok = tok->link();
 
         if (!tok->next() || tok->str() != ",")
             continue;
@@ -8629,27 +8626,25 @@ void Tokenizer::simplifyComma()
             tok->str(";");
         }
 
-        if (tok->previous() && tok->tokAt(-2)) {
-            if (Token::Match(tok->tokAt(-2), "delete %var% , %var% ;") &&
-                tok->next()->varId() != 0) {
-                // Handle "delete a, b;"
-                tok->str(";");
-                tok->insertToken("delete");
-            } else {
-                bool replace = false;
-                for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
-                    if (tok2->str() == "=") {
-                        // Handle "a = 0, b = 0;"
-                        replace = true;
-                    } else if (Token::Match(tok2, "delete %var%") ||
-                               Token::Match(tok2, "delete [ ] %var%")) {
-                        // Handle "delete a, a = 0;"
-                        replace = true;
-                    } else if (Token::Match(tok2, "[?:;,{}()]")) {
-                        if (replace && Token::Match(tok2, "[;{}]"))
-                            tok->str(";");
-                        break;
-                    }
+        if (Token::Match(tok->tokAt(-2), "delete %var% , %var% ;") &&
+            tok->next()->varId() != 0) {
+            // Handle "delete a, b;"
+            tok->str(";");
+            tok->insertToken("delete");
+        } else if (tok->tokAt(-2)) {
+            bool replace = false;
+            for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
+                if (tok2->str() == "=") {
+                    // Handle "a = 0, b = 0;"
+                    replace = true;
+                } else if (Token::Match(tok2, "delete %var%") ||
+                           Token::Match(tok2, "delete [ ] %var%")) {
+                    // Handle "delete a, a = 0;"
+                    replace = true;
+                } else if (Token::Match(tok2, "[?:;,{}()]")) {
+                    if (replace && Token::Match(tok2, "[;{}]"))
+                        tok->str(";");
+                    break;
                 }
             }
         }
@@ -9773,7 +9768,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
-                while (tok->next() && Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+                while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
                     tok->next()->deleteNext();
                     tok->next()->deleteThis();
                     tok->next()->deleteNext();
@@ -9886,7 +9881,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->deleteThis();
                 tok->deleteNext();
                 tok->isLong(true);
-                while (tok->next() && Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+                while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
                     tok->next()->deleteNext();
                     tok->next()->deleteThis();
                     tok->next()->deleteNext();
