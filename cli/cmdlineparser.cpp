@@ -770,8 +770,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
     }
 
-    if (argc <= 1)
+    if (argc <= 1) {
         _showHelp = true;
+        _exitAfterPrint = true;
+    }
 
     if (_showHelp) {
         PrintHelp();
