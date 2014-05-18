@@ -299,15 +299,15 @@ void CheckSizeof::sizeofVoid()
                     while (Token::simpleMatch(tok2->previous(), ".")) {
                         isMember = true;
                         if (Token::simpleMatch(tok2->tokAt(-2), ")"))
-                            tok2 = tok2->tokAt(-2)->link();
+                            tok2 = tok2->linkAt(-2);
                         else if (Token::simpleMatch(tok2->tokAt(-2), "]"))
-                            tok2 = tok2->tokAt(-2)->link()->previous();
+                            tok2 = tok2->linkAt(-2)->previous();
                         else
                             tok2 = tok2->tokAt(-2);
                     }
                     if (isMember) {
                         // Get 'struct.member' complete name (without spaces)
-                        varname = tok2->stringifyList(tok->tokAt(index)->next());
+                        varname = tok2->stringifyList(tok->tokAt(index+1));
                         varname.erase(remove_if(varname.begin(), varname.end(),
                                                 static_cast<int (*)(int)>(std::isspace)), varname.end());
                     }

@@ -502,8 +502,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // throw()
                         // const throw()
                         else if (Token::Match(end, ") const| throw (") &&
-                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;") :
-                                  Token::Match(end->linkAt(2), ") ;"))) {
+                                 (end->next()->str() == "const" ? Token::simpleMatch(end->linkAt(3), ") ;") :
+                                  Token::simpleMatch(end->linkAt(2), ") ;"))) {
                             function.isThrow = true;
 
                             if (end->next()->str() == "const") {
@@ -1099,7 +1099,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              Token::Match(tok2, "= delete|default ;") ||
              Token::Match(tok2, "const| noexcept const| {|:|;") ||
              (Token::Match(tok2, "const| noexcept|throw (") &&
-              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->tokAt(2)->link(), ") const| {|:|;")) :
+              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->linkAt(2), ") const| {|:|;")) :
               (tok2->next() && Token::Match(tok2->next()->link(), ") const| {|:|;"))))) {
             *funcStart = tok;
             *argStart = tok->next();
@@ -1111,7 +1111,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     else if (outerScope->type == Scope::eGlobal &&
              Token::Match(tok, "%var% (") &&
              tok->isUpperCaseName() &&
-             Token::Match(tok->linkAt(1), ") {") &&
+             Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
         *funcStart = tok;
         *argStart = tok->next();

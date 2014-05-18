@@ -241,13 +241,13 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip 'typename...' (Ticket #5774)
-        if (Token::Match(tok, "typename . . .")) {
+        if (Token::simpleMatch(tok, "typename . . .")) {
             tok = tok->tokAt(4);
             continue;
         }
 
         // Skip '='
-        if (Token::Match(tok, "="))
+        if (tok && tok->str() == "=")
             tok = tok->next();
         if (!tok)
             return 0;

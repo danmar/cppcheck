@@ -640,9 +640,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -660,9 +660,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -680,9 +680,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -726,7 +726,7 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -752,7 +752,7 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -773,7 +773,7 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens()->linkAt(2), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens()->linkAt(2), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -796,7 +796,7 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -817,7 +817,7 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -838,7 +838,7 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens(), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -859,7 +859,7 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Token * const functionToken = Token::findmatch(tokenizer.tokens()->linkAt(2), "func");
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens()->linkAt(2), "func");
 
             const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
@@ -2043,7 +2043,7 @@ private:
                       "    float t;\n"
                       "    func(x, &t);\n"
                       "}");
-        const Token *callfunc = Token::findmatch(tokenizer.tokens(), "func ( x , & t ) ;");
+        const Token *callfunc = Token::findsimplematch(tokenizer.tokens(), "func ( x , & t ) ;");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
         ASSERT_EQUALS(true,  callfunc != nullptr); // not null

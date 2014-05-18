@@ -441,7 +441,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     const Token *prev = tok2->previous();
                     while (Token::Match(prev,"%var%|.") && prev->str() != "sizeof")
                         prev = prev->previous();
-                    if (Token::Match(prev,"sizeof"))
+                    if (prev && prev->str() == "sizeof")
                         continue;
                 }
 

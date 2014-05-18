@@ -142,8 +142,14 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         }
 
         // Check for real errors
-        if (pattern.find_first_of("%") != std::string::npos || pattern.find("!!") != std::string::npos)
-            complexPatternError(tok, pattern, funcname);
+        if (pattern.length() > 1) {
+            for (size_t i = 0; i < pattern.length() - 1; i++) {
+                if (pattern[i] == '%' && pattern[i + 1] != ' ')
+                    complexPatternError(tok, pattern, funcname);
+                else if (pattern[i] == '!' && pattern[i + 1] == '!')
+                    complexPatternError(tok, pattern, funcname);
+            }
+        }
     }
 }
 

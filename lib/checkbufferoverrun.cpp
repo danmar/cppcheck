@@ -1172,7 +1172,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
         const Token *tok2 = tok->astParent();
         while (Token::Match(tok2, "%var%|.|::|["))
             tok2 = tok2->astParent();
-        addressOf = Token::Match(tok2, "&") && !(tok2->astOperand1() && tok2->astOperand2());
+        addressOf = tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
     }
 
     // Look for errors first

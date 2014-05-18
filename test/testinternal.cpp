@@ -105,6 +105,12 @@ private:
               "    Token::findsimplematch(tok, \"foobar\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::findsimplematch(tok, \"%\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplePatternSquareBrackets() {
