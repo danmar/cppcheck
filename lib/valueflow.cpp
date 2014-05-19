@@ -951,7 +951,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             setTokenValue(tok2, value1);
         }
 
-        else if (Token::Match(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
+        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
             if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), varid)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
@@ -960,7 +960,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
             tok2 = tok2->next()->link();
-            if (Token::Match(tok2, "} else {")) {
+            if (Token::simpleMatch(tok2, "} else {")) {
                 if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), varid)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
