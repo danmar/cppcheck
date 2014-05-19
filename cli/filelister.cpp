@@ -149,7 +149,7 @@ bool FileLister::isDirectory(const std::string &path)
 
 bool FileLister::fileExists(const std::string &path)
 {
-    return (MyFileExists(path) == TRUE);
+    return (MyFileExists(path) != FALSE);
 }
 
 

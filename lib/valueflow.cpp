@@ -879,7 +879,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         *num1 = *num2;
     while (tok && tok->str() != ";")
         tok = tok->next();
-    if (!num2tok || !Token::Match(tok, "; %varid% ++ ) {", vartok->varId()))
+    if (!Token::Match(tok, "; %varid% ++ ) {", vartok->varId()))
         return false;
     return true;
 }
