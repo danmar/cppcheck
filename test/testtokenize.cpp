@@ -10384,7 +10384,7 @@ private:
 
         // Basic AST validation
         for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";")
+            if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";" && tok->str() != ":")
                 return "Op2 but no Op1 for token: " + tok->str();
         }
 
@@ -10433,6 +10433,8 @@ private:
         ASSERT_EQUALS("ab|=",  testAst("a|=b;"));
         ASSERT_EQUALS("ab^=",  testAst("a^=b;"));
 
+        ASSERT_EQUALS("ab*c*.(+return", testAst("return a + ((*b).*c)();"));
+
         // assignments are executed from right to left
         ASSERT_EQUALS("abc==", testAst("a=b=c;"));
 
@@ -10465,6 +10467,9 @@ private:
         ASSERT_EQUALS("ifx( i0= whilei(", testAst("if (x) { ({ int i = 0; while(i); }) };"));
         ASSERT_EQUALS("ifx( BUG_ON{!( i0= whilei(", testAst("if (x) { BUG_ON(!({int i=0; while(i);})); }"));
         ASSERT_EQUALS("v0= while{( v0= while{( v0=", testAst("({ v = 0; }); while (({ v = 0; }) != 0); while (({ v = 0; }) != 0);"));
+
+
+        ASSERT_EQUALS("abc.1:?1+bd.1:?+=", testAst("a =(b.c ? : 1) + 1 + (b.d ? : 1);"));
     }
 
     void astpar() const { // parentheses

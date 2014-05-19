@@ -473,7 +473,7 @@ static void compileScope(Token *&tok, std::stack<Token*> &op, unsigned int depth
 static bool isPrefixUnary(const Token* tok)
 {
     if (!tok->previous()
-        || (Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|return|throw")
+        || (Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|.|return|throw")
             && (tok->previous()->type() != Token::eIncDecOp || tok->type() == Token::eIncDecOp)))
         return true;
 
@@ -486,7 +486,7 @@ static void compilePrecedence2(Token *&tok, std::stack<Token*> &op, unsigned int
     while (tok) {
         if (tok->type() == Token::eIncDecOp && !isPrefixUnary(tok)) {
             compileUnaryOp(tok, compileScope, op, depth);
-        } else if (tok->str() == ".") {
+        } else if (tok->str() == "." && tok->strAt(1) != "*") {
             compileBinOp(tok, compileScope, op, depth);
         } else if (tok->str() == "[") {
             Token* tok2 = tok;
@@ -530,9 +530,19 @@ static void compilePrecedence3(Token *&tok, std::stack<Token*> &op, unsigned int
     }
 }
 
-static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int depth)
+static void compilePointerToElem(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
     compilePrecedence3(tok, op, depth);
+    while (tok) {
+        if (Token::simpleMatch(tok, ". *")) {
+            compileBinOp(tok, compilePrecedence3, op, depth);
+        } else break;
+    }
+}
+
+static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int depth)
+{
+    compilePointerToElem(tok, op, depth);
     while (tok) {
         if (Token::Match(tok, "[*/%]")) {
             if (Token::Match(tok, "* [*,)]")) {
@@ -540,11 +550,10 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int dept
                 while (tok2->next() && tok2->str() == "*")
                     tok2 = tok2->next();
                 if (Token::Match(tok2, "[,)]")) {
-                    //tok = tok2->next();
                     break;
                 }
             }
-            compileBinOp(tok, compilePrecedence3, op, depth);
+            compileBinOp(tok, compilePointerToElem, op, depth);
         } else break;
     }
 }
@@ -646,6 +655,9 @@ static void compileAssignTernary(Token *&tok, std::stack<Token*> &op, unsigned i
         // TODO: http://en.cppreference.com/w/cpp/language/operator_precedence says:
         //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
         if (tok->isAssignmentOp() || Token::Match(tok, "[?:]")) {
+            if (tok->str() == "?" && tok->strAt(1) == ":") {
+                op.push(0);
+            }
             compileBinOp(tok, compileAssignTernary, op, depth);
         } else break;
     }
