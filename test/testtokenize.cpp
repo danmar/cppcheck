@@ -10358,6 +10358,9 @@ private:
             } else if (Token::simpleMatch(tok, ": :")) {
                 tok->str("::");
                 tok->deleteNext();
+            } else if (Token::Match(tok, ">|<|= =")) {
+                tok->str(tok->str() + tok->strAt(1));
+                tok->deleteNext();
             }
         }
 
@@ -10378,6 +10381,12 @@ private:
 
         // Create AST..
         tokenList.createAst();
+
+        // Basic AST validation
+        for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+            if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";")
+                return "Op2 but no Op1 for token: " + tok->str();
+        }
 
         // Return stringified AST
         if (verbose)
@@ -10446,7 +10455,7 @@ private:
         // for
         ASSERT_EQUALS("for;;(", testAst("for(;;)"));
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
-        TODO_ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", "fori1=current0=,i<NUM=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
+        ASSERT_EQUALS("fori1=current0=,iNUM<=i++;;(", testAst("for(i = (1), current = 0; i <= (NUM); ++i)"));
         ASSERT_EQUALS("foreachxy,((", testAst("for(each(x,y)){}"));  // it's not well-defined what this ast should be
         ASSERT_EQUALS("forab:(", testAst("for (int a : b);"));
         ASSERT_EQUALS("forx*0=yz;;(", testAst("for(*x=0;y;z)"));
@@ -10472,8 +10481,8 @@ private:
         ASSERT_EQUALS("ifp*0[1==(", testAst("if((*p)[0]==1)"));
         ASSERT_EQUALS("ifab.cd.[e==(", testAst("if(a.b[c.d]==e){}"));
 
-        ASSERT_EQUALS("iftp-notei1-[->note>0==tp-notei1-[->type>4>||(", testAst("if ((tp->note[i - 1]->note == 0) || (tp->note[i - 1]->type > 4)) {}"));
-        ASSERT_EQUALS("a-bi[j1+[>", testAst("a->b[i][j+1]"));
+        ASSERT_EQUALS("iftpnote.i1-[note.0==tpnote.i1-[type.4>||(", testAst("if ((tp.note[i - 1].note == 0) || (tp.note[i - 1].type > 4)) {}"));
+        ASSERT_EQUALS("ab.i[j1+[", testAst("a.b[i][j+1]"));
 
         // problems with: x=expr
         ASSERT_EQUALS("=\n"
@@ -10524,6 +10533,7 @@ private:
         ASSERT_EQUALS("ab.++", testAst("a.b++;"));
         ASSERT_EQUALS("ab::++", testAst("a::b++;"));
         ASSERT_EQUALS("c5[--*", testAst("*c[5]--;"));
+        ASSERT_EQUALS("a*bc:?return", testAst("return *a ? b : c;"));
 
         // Unary :: operator
         ASSERT_EQUALS("abcd::12,(e/:?=", testAst("a = b ? c : ::d(1,2) / e;"));

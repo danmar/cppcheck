@@ -473,7 +473,7 @@ static void compileScope(Token *&tok, std::stack<Token*> &op, unsigned int depth
 static bool isPrefixUnary(const Token* tok)
 {
     if (!tok->previous()
-        || (Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,")
+        || (Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|return|throw")
             && (tok->previous()->type() != Token::eIncDecOp || tok->type() == Token::eIncDecOp)))
         return true;
 
