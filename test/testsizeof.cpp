@@ -293,6 +293,9 @@ private:
 
         check("return sizeof(foo)*bar;");
         ASSERT_EQUALS("", errout.str());
+
+        check("return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeof() {

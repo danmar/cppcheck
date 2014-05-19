@@ -247,6 +247,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
     if (!_settings->isEnabled("warning") || !_settings->inconclusive)
         return;
 
+    // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token* const end = tok->linkAt(1);
@@ -254,7 +255,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
             if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
                 if (end->strAt(1) == "/")
                     divideSizeofError(tok);
-            } else if (Token::simpleMatch(end, ") * sizeof"))
+            } else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
                 multiplySizeofError(tok);
         }
     }
