@@ -302,10 +302,10 @@ private:
 
     void matchAny() const {
         givenACodeSampleToTokenize varBitOrVar("abc|def", true);
-        ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% | %var%"));
+        ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% %or% %var%"));
 
         givenACodeSampleToTokenize varLogOrVar("abc||def", true);
-        ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
+        ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% %oror% %var%"));
     }
 
     void matchSingleChar() const {
