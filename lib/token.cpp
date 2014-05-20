@@ -1285,3 +1285,12 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     return ret;
 }
 
+void Token::assignProgressValues(Token *tok)
+{
+    unsigned int total_count = 0;
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        ++total_count;
+    unsigned int count = 0;
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        tok2->_progressValue = count++ * 100 / total_count;
+}

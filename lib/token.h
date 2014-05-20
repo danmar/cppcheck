@@ -591,14 +591,7 @@ public:
     }
 
     /** Calculate progress values for all tokens */
-    void assignProgressValues() {
-        unsigned int total_count = 0;
-        for (Token *tok = this; tok; tok = tok->next())
-            ++total_count;
-        unsigned int count = 0;
-        for (Token *tok = this; tok; tok = tok->next())
-            tok->_progressValue = count++ * 100 / total_count;
-    }
+    static void assignProgressValues(Token *tok);
 
     /**
      * @return the first token of the next argument. Does only work on argument

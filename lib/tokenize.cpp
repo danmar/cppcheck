@@ -1518,6 +1518,8 @@ void Tokenizer::simplifyTypedef()
 
 void Tokenizer::simplifyMulAndParens()
 {
+    if (!list.front())
+      return;
     for (Token *tok = list.front()->tokAt(3); tok; tok = tok->next()) {
         if (tok->isName()) {
             //fix ticket #2784 - improved by ticket #3184
@@ -2243,7 +2245,7 @@ void Tokenizer::simplifyTemplates()
 
     TemplateSimplifier::simplifyTemplates(
         list,
-        *_errorLogger,
+        _errorLogger,
         _settings,
         _codeWithTemplates);
 }
@@ -3474,7 +3476,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifyArrayAccessSyntax();
 
-    list.front()->assignProgressValues();
+    Token::assignProgressValues(list.front());
 
     removeRedundantSemicolons();
 
@@ -3687,7 +3689,7 @@ bool Tokenizer::simplifyTokenList2()
 
     validate();
 
-    list.front()->assignProgressValues();
+    Token::assignProgressValues(list.front());
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();

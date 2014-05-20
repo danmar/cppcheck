@@ -360,7 +360,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     addtoken(CurrentToken, lineno, FileIndex, true);
     if (!CurrentToken.empty())
         _back->isExpandedMacro(expandedMacro);
-    _front->assignProgressValues();
+    Token::assignProgressValues(_front);
 
     for (unsigned int i = 1; i < _files.size(); i++)
         _files[i] = Path::getRelativePath(_files[i], _settings->_basePaths);

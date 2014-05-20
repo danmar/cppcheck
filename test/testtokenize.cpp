@@ -25,6 +25,7 @@
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include <cstring>
 #include <stack>
+#include <cassert>
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture {
@@ -611,7 +612,10 @@ private:
                 errout << line << "\n";
         }
 
-        return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+        if (tokenizer.tokens())
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+        else
+            return "";
     }
 
 
