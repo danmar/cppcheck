@@ -235,6 +235,9 @@ private:
         TEST_CASE(noexceptFunction3);
         TEST_CASE(noexceptFunction4);
 
+        TEST_CASE(throwFunction1);
+        TEST_CASE(throwFunction2);
+
         TEST_CASE(nothrowAttributeFunction);
         TEST_CASE(nothrowDeclspecFunction);
     }
@@ -2051,7 +2054,7 @@ private:
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
-                ASSERT_EQUALS(true, x != nullptr);                                       \
+                ASSERT_EQUALS(true, x != nullptr);                                  \
                 if (x) ASSERT_EQUALS(true, x->isNoExcept);
 
     void noexceptFunction1() {
@@ -2095,10 +2098,10 @@ private:
                       "    void func6() const noexcept { }\n"
                       "    void func7() const noexcept(true);\n"
                       "    void func8() const noexcept(true) { }\n"
-                      "    void func9() noexcept const;\n"
-                      "    void func10() noexcept const { }\n"
-                      "    void func11() noexcept(true) const;\n"
-                      "    void func12() noexcept(true) const { }\n"
+                      "    void func9() noexcept = 0;\n"
+                      "    void func10() noexcept = 0;\n"
+                      "    void func11() const noexcept(true) = 0;\n"
+                      "    void func12() const noexcept(true) = 0;\n"
                       "};");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
@@ -2143,6 +2146,67 @@ private:
             ASSERT_EQUALS(true, b != nullptr);
             if (b) {
                 CLASS_FUNC(B, b);
+            }
+        }
+    }
+
+#define FUNC_THROW(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+                      ASSERT_EQUALS(true, x != nullptr);                                  \
+                      if (x) ASSERT_EQUALS(true, x->isThrow);
+
+    void throwFunction1() {
+        GET_SYMBOL_DB("void func1() throw();\n"
+                      "void func2() throw() { }\n"
+                      "void func3() throw(int);\n"
+                      "void func4() throw(int) { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC_THROW(func1);
+            FUNC_THROW(func2);
+            FUNC_THROW(func3);
+            FUNC_THROW(func4);
+        }
+    }
+
+#define CLASS_FUNC_THROW(x, y) const Function *x = findFunctionByName(#x, y); \
+                               ASSERT_EQUALS(true, x != nullptr);             \
+                               if (x) ASSERT_EQUALS(true, x->isThrow);
+    void throwFunction2() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void func1() throw();\n"
+                      "    void func2() throw() { }\n"
+                      "    void func3() throw(int);\n"
+                      "    void func4() throw(int) { }\n"
+                      "    void func5() const throw();\n"
+                      "    void func6() const throw() { }\n"
+                      "    void func7() const throw(int);\n"
+                      "    void func8() const throw(int) { }\n"
+                      "    void func9() throw() = 0;\n"
+                      "    void func10() throw(int) = 0;\n"
+                      "    void func11() const throw() = 0;\n"
+                      "    void func12() const throw(int) = 0;\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *fred = db->findScopeByName("Fred");
+            ASSERT_EQUALS(true, fred != nullptr);
+            if (fred) {
+                CLASS_FUNC_THROW(func1, fred);
+                CLASS_FUNC_THROW(func2, fred);
+                CLASS_FUNC_THROW(func3, fred);
+                CLASS_FUNC_THROW(func4, fred);
+                CLASS_FUNC_THROW(func5, fred);
+                CLASS_FUNC_THROW(func6, fred);
+                CLASS_FUNC_THROW(func7, fred);
+                CLASS_FUNC_THROW(func8, fred);
+                CLASS_FUNC_THROW(func9, fred);
+                CLASS_FUNC_THROW(func10, fred);
+                CLASS_FUNC_THROW(func11, fred);
+                CLASS_FUNC_THROW(func12, fred);
             }
         }
     }

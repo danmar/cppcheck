@@ -454,8 +454,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         }
 
                         // noexcept;
+                        // noexcept = 0;
                         // const noexcept;
-                        else if (Token::Match(end, ") const| noexcept ;")) {
+                        // const noexcept = 0;
+                        else if (Token::Match(end, ") const| noexcept ;|=")) {
                             function.isNoExcept = true;
 
                             if (end->next()->str() == "const")
@@ -463,47 +465,43 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             else
                                 tok = end->tokAt(2);
 
-                            scope->functionList.push_back(function);
-                        }
-
-                        // noexcept const;
-                        else if (Token::simpleMatch(end, ") noexcept const ;")) {
-                            function.isNoExcept = true;
-
-                            tok = end->tokAt(3);
+                            if (Token::Match(tok, "= %any% ;")) {
+                                function.isPure = true;
+                                tok = tok->tokAt(2);
+                            }
 
                             scope->functionList.push_back(function);
                         }
 
                         // noexcept(...);
-                        // noexcept(...) const;
-                        else if (Token::simpleMatch(end, ") noexcept (") &&
-                                 Token::Match(end->linkAt(2), ") const| ;")) {
-                            function.isNoExcept = true;
-
-                            if (end->linkAt(2)->strAt(1) == "const")
-                                tok = end->linkAt(2)->tokAt(2);
-                            else
-                                tok = end->linkAt(2)->next();
-
-                            scope->functionList.push_back(function);
-                        }
-
+                        // noexcept(...) = 0;
                         // const noexcept(...);
-                        else if (Token::simpleMatch(end, ") const noexcept (") &&
-                                 Token::simpleMatch(end->linkAt(3), ") ;")) {
+                        // const noexcept(...) = 0;
+                        else if (Token::Match(end, ") const| noexcept (") &&
+                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;|=") :
+                                  Token::Match(end->linkAt(2), ") ;|="))) {
                             function.isNoExcept = true;
 
-                            tok = end->linkAt(3)->next();
+                            if (end->next()->str() == "const")
+                                tok = end->tokAt(3);
+                            else
+                                tok = end->tokAt(2);
+
+                            if (Token::Match(tok, "= %any% ;")) {
+                                function.isPure = true;
+                                tok = tok->tokAt(2);
+                            }
 
                             scope->functionList.push_back(function);
                         }
 
-                        // throw()
-                        // const throw()
+                        // throw();
+                        // throw() = 0;
+                        // const throw();
+                        // const throw() = 0;
                         else if (Token::Match(end, ") const| throw (") &&
-                                 (end->next()->str() == "const" ? Token::simpleMatch(end->linkAt(3), ") ;") :
-                                  Token::simpleMatch(end->linkAt(2), ") ;"))) {
+                                 (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;|=") :
+                                  Token::Match(end->linkAt(2), ") ;|="))) {
                             function.isThrow = true;
 
                             if (end->next()->str() == "const") {
@@ -514,6 +512,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 if (end->strAt(3) != ")")
                                     function.throwArg = end->tokAt(3);
                                 tok = end->linkAt(2)->next();
+                            }
+
+                            if (Token::Match(tok, "= %any% ;")) {
+                                function.isPure = true;
+                                tok = tok->tokAt(2);
                             }
 
                             scope->functionList.push_back(function);
@@ -1097,10 +1100,10 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              (Token::Match(tok2, "%var% (") && tok2->isUpperCaseName() && tok2->next()->link()->strAt(1) == "{") ||
              Token::Match(tok2, ": ::| %var% (|::|<|{") ||
              Token::Match(tok2, "= delete|default ;") ||
-             Token::Match(tok2, "const| noexcept const| {|:|;") ||
+             Token::Match(tok2, "const| noexcept {|:|;|=") ||
              (Token::Match(tok2, "const| noexcept|throw (") &&
-              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->linkAt(2), ") const| {|:|;")) :
-              (tok2->next() && Token::Match(tok2->next()->link(), ") const| {|:|;"))))) {
+              tok2->str() == "const" ? (tok2->tokAt(2) && Token::Match(tok2->linkAt(2), ") const| {|:|;|=")) :
+              (tok2->next() && Token::Match(tok2->next()->link(), ") {|:|;|="))))) {
             *funcStart = tok;
             *argStart = tok->next();
             return true;

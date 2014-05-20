@@ -43,11 +43,17 @@ void CheckExceptionSafety::destructors()
         if (j) {
             // only looking for destructors
             if (j->type == Function::eDestructor) {
-                // Inspect this destructor..
+                // Inspect this destructor.
                 for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
                     // Skip try blocks
                     if (Token::simpleMatch(tok, "try {")) {
                         tok = tok->next()->link();
+                    }
+
+                    // Skip uncaught execptions
+                    if (Token::simpleMatch(tok, "if ( ! std :: uncaught_exception ( ) ) {")) {
+                        tok = tok->next()->link(); // end of if ( ... )
+                        tok = tok->next()->link(); // end of { ... }
                     }
 
                     // throw found within a destructor

@@ -5903,6 +5903,14 @@ private:
                                      "{if (b) pure();}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
 
+        // ticket # 5831
+        checkPureVirtualFunctionCall("class abc {\n"
+                                     "public:\n"
+                                     "  virtual ~abc() throw() {}\n"
+                                     "  virtual void def(void* g) throw () = 0;\n"
+                                     "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void pureVirtualFunctionCallOtherClass() {

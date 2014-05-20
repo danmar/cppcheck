@@ -100,6 +100,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("class x {\n"
+              "    ~x() {\n"
+              "        if(!std::uncaught_exception()) {\n"
+              "            throw e;\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deallocThrow1() {
