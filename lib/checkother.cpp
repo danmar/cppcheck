@@ -78,6 +78,10 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
+    if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
+        tok1 = tok1->astOperand2();
+    if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
+        tok2 = tok2->astOperand2();
     if (tok1->str() != tok2->str() || tok1->varId() != tok2->varId())
         return false;
     if (tok1->str() == "." && tok1->originalName() != tok2->originalName())
@@ -1151,63 +1155,6 @@ void CheckOther::suspiciousEqualityComparisonError(const Token* tok)
                 "Found suspicious equality comparison. Did you intend to assign a value instead?", true);
 }
 
-
-//---------------------------------------------------------------------------
-//    int x = 1;
-//    x = x;            // <- redundant assignment to self
-//
-//    int y = y;        // <- redundant initialization to self
-//---------------------------------------------------------------------------
-static bool isTypeWithoutSideEffects(const Tokenizer *tokenizer, const Variable* var)
-{
-    return ((var && (!var->isClass() || var->isPointer() || var->isStlType())) || !tokenizer->isCPP());
-}
-
-static inline const Token *findSelfAssignPattern(const Token *start)
-{
-    return Token::findmatch(start, "%var% = %var% ;|=|)");
-}
-
-void CheckOther::checkSelfAssignment()
-{
-    if (!_settings->isEnabled("warning"))
-        return;
-
-    const Token *tok = findSelfAssignPattern(_tokenizer->tokens());
-    while (tok) {
-        if (Token::Match(tok->previous(), "[;{}.]") &&
-            tok->varId() && tok->varId() == tok->tokAt(2)->varId() &&
-            isTypeWithoutSideEffects(_tokenizer, tok->variable())) {
-            bool err = true;
-
-            // no false positive for 'x = x ? x : 1;'
-            // it is simplified to 'if (x) { x=x; } else { x=1; }'. The simplification
-            // always write all tokens on 1 line (even if the statement is several lines), so
-            // check if the linenr is the same for all the tokens.
-            if (Token::Match(tok->tokAt(-2), ") { %var% = %var% ; } else { %varid% =", tok->varId())) {
-                // Find the 'if' token
-                const Token *tokif = tok->linkAt(-2)->previous();
-
-                // find the '}' that terminates the 'else'-block
-                const Token *else_end = tok->linkAt(6);
-
-                if (tokif && else_end && tokif->linenr() == else_end->linenr())
-                    err = false;
-            }
-
-            if (err)
-                selfAssignmentError(tok, tok->str());
-        }
-
-        tok = findSelfAssignPattern(tok->next());
-    }
-}
-
-void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning,
-                "selfAssignment", "Redundant assignment of '" + varname + "' to itself.");
-}
 
 //---------------------------------------------------------------------------
 //    if ((x != 1) || (x != 3))            // expression always true
@@ -2778,6 +2725,21 @@ namespace {
 // (x == x), (x && x), (x || x)
 // (x.y == x.y), (x.y && x.y), (x.y || x.y)
 //---------------------------------------------------------------------------
+
+static bool isWithoutSideEffects(const Tokenizer *tokenizer, const Token* tok)
+{
+    if (!tokenizer->isCPP())
+        return true;
+
+    while (tok && tok->astOperand2() && tok->astOperand2()->str() != "(")
+        tok = tok->astOperand2();
+    if (tok->varId()) {
+        const Variable* var = tok->variable();
+        return var && (!var->isClass() || var->isPointer() || var->isStlType());
+    }
+    return true;
+}
+
 void CheckOther::checkDuplicateExpression()
 {
     if (!_settings->isEnabled("style"))
@@ -2796,22 +2758,30 @@ void CheckOther::checkDuplicateExpression()
             continue;
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|=|<<|>>")) {
+            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>")) {
+                bool assignment = tok->str() == "=";
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
-                    duplicateExpressionError(tok, tok, tok->str());
-                else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure))
+                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
+                    if (isWithoutSideEffects(_tokenizer, tok->astOperand1())) {
+                        if (assignment) {
+                            // Need a hack to cope with our ternary operator simplification:
+                            if (!Token::Match(tok->tokAt(-2), "{ %var% = %var% ; } else { %varid% = !!%varid%", tok->previous()->varId()))
+                                selfAssignmentError(tok, tok->strAt(-1));
+                        } else
+                            duplicateExpressionError(tok, tok, tok->str());
+                    }
+                } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
+                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
-                            if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure))
+                            if (isSameExpression(ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, ast1->astOperand1()))
                                 // TODO: warn if variables are unchanged. See #5683
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
                                 ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                            else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure))
+                            else if (isSameExpression(ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, ast1->astOperand2()))
                                 duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
                             if (!isConstExpression(ast1->astOperand2(), _settings->library.functionpure))
                                 break;
@@ -2834,6 +2804,12 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.");
+}
+
+void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning,
+                "selfAssignment", "Redundant assignment of '" + varname + "' to itself.");
 }
 
 //---------------------------------------------------------------------------

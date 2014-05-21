@@ -64,7 +64,6 @@ public:
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkSelfAssignment();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkUnreachableCode();
@@ -193,9 +192,6 @@ public:
 
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
-
-    /** @brief %Check for assigning a variable to itself*/
-    void checkSelfAssignment();
 
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();

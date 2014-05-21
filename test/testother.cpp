@@ -3384,23 +3384,29 @@ private:
     void selfAssignment() {
         check("void foo()\n"
               "{\n"
-              "        int x = 1;\n"
-              "        x = x;\n"
-              "        return 0;\n"
+              "    int x = 1;\n"
+              "    x = x;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "        int x = x;\n"
+              "    int x = x;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
-              "        std::string var = var = \"test\";\n"
+              "    std::string var = var = \"test\";\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", "", errout.str());
+
+        check("struct A { int b; };\n"
+              "void foo(A* a1, A* a2) {\n"
+              "    a1->b = a1->b;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1->b' to itself.\n", "[test.cpp:3]: (warning) Redundant assignment of 'b' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -3411,9 +3417,9 @@ private:
 
         check("void foo()\n"
               "{\n"
-              "        int x = 1;\n"
-              "        x = x + 1;\n"
-              "        return 0;\n"
+              "    int x = 1;\n"
+              "    x = x + 1;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -3433,7 +3439,7 @@ private:
         // #2502 - non-primitive type -> there might be some side effects
         check("void foo()\n"
               "{\n"
-              "        Fred fred; fred = fred;\n"
+              "    Fred fred; fred = fred;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -3471,6 +3477,15 @@ private:
               "    this->var = var;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
+
+        check("class Foo {\n"
+              "    int var;\n"
+              "    void func(int var);\n"
+              "};\n"
+              "void Foo::func(int var) {\n"
+              "    this->var = var;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
@@ -4997,6 +5012,17 @@ private:
               "    if (dynamic_cast<B*>(src) || dynamic_cast<B*>(src)) {}\n"
               "}\n", "test.cpp", false, false, false, false); // don't run simplifications
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+
+        // #5819
+        check("Vector func(Vector vec1) {\n"
+              "    return fabs(vec1 & vec1 & vec1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("Vector func(int vec1) {\n"
+              "    return fabs(vec1 & vec1 & vec1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
 
     }
 
