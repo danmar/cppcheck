@@ -6345,6 +6345,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("char** x(const char* str) {\n"
+              "    char* ptr[] = { malloc(10), malloc(5), strdup(str) };\n"
+              "    return ptr;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void x()\n"
               "{\n"
               "    42,malloc(42);\n"

@@ -2762,7 +2762,7 @@ void CheckMemoryLeakNoVar::check()
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-        if (Token::Match(tok, "{|}|; %var% (")) {
+        if (Token::Match(tok, "{|}|; %var% (") && tok->strAt(-1) != "=") {
             tok = tok->next();
             const int allocationId = _settings->library.alloc(tok);
             if (allocationId > 0)
