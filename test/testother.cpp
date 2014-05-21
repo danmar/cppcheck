@@ -165,6 +165,7 @@ private:
 
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
+        TEST_CASE(suspiciousStringCompare_char);
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
 
@@ -5229,6 +5230,33 @@ private:
         check("int foo(char c) {\n"
               "return c == \"42\"[0];}", "test.c", false, true, false, false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void suspiciousStringCompare_char() {
+        check("bool foo(char* c) {\n"
+              "    return c == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return '\\0' != c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char c) {\n"
+              "    return c == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char c) {\n"
+              "    return c == 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(char* c) {\n"
+              "    if(c == '\\0') bar();\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", "", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {

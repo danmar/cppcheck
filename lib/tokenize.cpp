@@ -1833,11 +1833,12 @@ void Tokenizer::simplifyNull()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "NULL" && !Token::Match(tok->previous(), "[(,] NULL [,)]"))
             tok->str("0");
-        else if (tok->str() == "__null" || tok->str() == "'\\0'" || tok->str() == "'\\x0'")
+        else if (tok->str() == "__null" || tok->str() == "'\\0'" || tok->str() == "'\\x0'") {
+            tok->originalName(tok->str());
             tok->str("0");
-        else if (tok->isNumber() &&
-                 MathLib::isInt(tok->str()) &&
-                 MathLib::toLongNumber(tok->str()) == 0)
+        } else if (tok->isNumber() &&
+                   MathLib::isInt(tok->str()) &&
+                   MathLib::toLongNumber(tok->str()) == 0)
             tok->str("0");
     }
 
@@ -4394,7 +4395,6 @@ void Tokenizer::simplifyCompoundAssignment()
 
             // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
             if (Token::Match(tok, "+=|-= 0 ;") ||
-                Token::Match(tok, "+=|-= '\\0' ;") ||
                 Token::simpleMatch(tok, "|= 0 ;") ||
                 Token::Match(tok, "*=|/= 1 ;")) {
                 tok = tok1;

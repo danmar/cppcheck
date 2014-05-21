@@ -2900,16 +2900,18 @@ void CheckOther::checkSuspiciousStringCompare()
             if (Token::simpleMatch(varTok->tokAt(1), "[") || Token::simpleMatch(litTok->tokAt(1), "["))
                 continue;
 
-            if ((varTok->type() == Token::eString || varTok->type() == Token::eVariable) && (litTok->type() == Token::eString || litTok->type() == Token::eVariable) && litTok->type() != varTok->type()) {
-                if (varTok->type() == Token::eString)
-                    std::swap(varTok, litTok);
+            if (varTok->type() == Token::eString || varTok->type() == Token::eNumber)
+                std::swap(varTok, litTok);
+            const Variable *var = varTok->variable();
+            if (!var)
+                continue;
 
-                const Variable *var = varTok->variable();
-                if (var) {
-                    if (_tokenizer->isC() ||
-                        (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
-                        suspiciousStringCompareError(tok, var->name());
-                }
+            if (_tokenizer->isC() ||
+                (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]"))) {
+                if (litTok->type() == Token::eString)
+                    suspiciousStringCompareError(tok, var->name());
+                else if (litTok->type() == Token::eNumber && litTok->originalName() == "'\\0'")
+                    suspiciousStringCompareError_char(tok, var->name());
             }
         }
     }
@@ -2919,6 +2921,12 @@ void CheckOther::suspiciousStringCompareError(const Token* tok, const std::strin
 {
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
                 "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?");
+}
+
+void CheckOther::suspiciousStringCompareError_char(const Token* tok, const std::string& var)
+{
+    reportError(tok, Severity::warning, "charLiteralWithCharPtrCompare",
+                "Char literal compared with pointer '" + var + "'. Did you intend to dereference it?");
 }
 
 //-----------------------------------------------------------------------------
