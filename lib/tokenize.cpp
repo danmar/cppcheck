@@ -2426,7 +2426,9 @@ static void setVarIdClassFunction(const std::string &classname,
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
             continue;
-        if (Token::Match(tok2->tokAt(-2), ("!!"+classname+" ::").c_str()))
+        if (Token::Match(tok2->tokAt(-2), ("!!" + classname + " ::").c_str()))
+            continue;
+        if (Token::Match(tok2->tokAt(-4), "%var% :: %var% ::")) // Currently unsupported
             continue;
         if (Token::Match(tok2->tokAt(-2), "!!this . "))
             continue;
@@ -2643,12 +2645,14 @@ void Tokenizer::setVarId()
             std::map<std::string, unsigned int> varlist;
             const Token* tokStart = Token::findsimplematch(tok, "{");
             if (tokStart) {
-                for (const Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
+                for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
                     // skip parentheses..
                     if (tok2->link()) {
-                        if (tok2->str() == "{")
+                        if (tok2->str() == "{") {
+                            if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
+                                setVarIdClassFunction(classname, tok2, tok2->link(), varlist, &structMembers, &_varId);
                             tok2 = tok2->link();
-                        else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
+                        } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
                             tok2 = tok2->link();
                     }
 

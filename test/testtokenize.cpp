@@ -295,6 +295,7 @@ private:
         TEST_CASE(varid_in_class13);    // #4637 - method
         TEST_CASE(varid_in_class14);
         TEST_CASE(varid_in_class15);    // #5533 - functions
+        TEST_CASE(varid_in_class16);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4583,6 +4584,18 @@ private:
                       "1: class Fred {\n"
                       "2: void x ( int a@1 ) const ;\n"
                       "3: void y ( ) { a = 0 ; }\n"
+                      "4: }\n", tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid_in_class16() { // Set varId for inline member functions
+        const char code[] = "class Fred {\n"
+                            "    int x;\n"
+                            "    void foo(int x) { this->x = x; }\n"
+                            "}\n";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Fred {\n"
+                      "2: int x@1 ;\n"
+                      "3: void foo ( int x@2 ) { this . x@1 = x@2 ; }\n"
                       "4: }\n", tokenizeDebugListing(code, false, "test.cpp"));
     }
 
