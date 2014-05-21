@@ -2894,7 +2894,7 @@ void CheckOther::checkSuspiciousStringCompare()
             const Token* varTok = tok;
             const Token* litTok = tok->tokAt(2);
 
-            if (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+")
+            if (!_tokenizer->isC() && (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+"))
                 continue;
             // rough filter for index access (#5734). Might cause false negatives in multidimensional structures
             if (Token::simpleMatch(varTok->tokAt(1), "[") || Token::simpleMatch(litTok->tokAt(1), "["))
@@ -2906,11 +2906,13 @@ void CheckOther::checkSuspiciousStringCompare()
             if (!var)
                 continue;
 
-            if (_tokenizer->isC() ||
-                (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]"))) {
-                if (litTok->type() == Token::eString)
+
+            if (litTok->type() == Token::eString) {
+                if (_tokenizer->isC() ||
+                    (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
                     suspiciousStringCompareError(tok, var->name());
-                else if (litTok->type() == Token::eNumber && litTok->originalName() == "'\\0'")
+            } else if (litTok->type() == Token::eNumber && litTok->originalName() == "'\\0'") {
+                if (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]"))
                     suspiciousStringCompareError_char(tok, var->name());
             }
         }

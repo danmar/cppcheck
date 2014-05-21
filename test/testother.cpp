@@ -5176,8 +5176,23 @@ private:
 
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
-              "}");
+              "}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return \"x\" == c+foo;\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+
+        check("bool foo(Foo c) {\n"
+              "    return \"x\" == c.foo;\n"
+              "}", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(Foo c) {\n"
+              "    return \"x\" == c.foo;\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
 
         check("bool foo(const std::string& c) {\n"
               "    return \"x\" == c;\n"
@@ -5250,6 +5265,21 @@ private:
 
         check("bool foo(char c) {\n"
               "    return c == 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return *c == 0;\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return *c == 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(Foo* c) {\n"
+              "    return 0 == c->x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
