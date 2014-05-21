@@ -361,19 +361,49 @@ private:
         ASSERT_EQUALS("", errout.str());
 
 
-        check("void foo(int& i)\n"
-              "{\n"
+        check("void foo(int& i) {\n"
               "    i=6;\n"
               "}\n"
-              "void bar(int i)\n"
-              "{\n"
-              "    if(i>5){\n"
+              "void bar(int i) {\n"
+              "    if(i>5) {\n"
               "        foo(i);\n"
-              "        if(i<5){\n"
+              "        if(i<5) {\n"
               "        }\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int& i);\n"
+              "void bar() {\n"
+              "    int i; i = func();\n"
+              "    if(i>5) {\n"
+              "        foo(i);\n"
+              "        if(i<5) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int i);\n"
+              "void bar(int i) {\n"
+              "    if(i>5) {\n"
+              "        foo(i);\n"
+              "        if(i<5) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+        check("void foo(int i);\n"
+              "void bar() {\n"
+              "    int i; i = func();\n"
+              "    if(i>5) {\n"
+              "        foo(i);\n"
+              "        if(i<5) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
 
         // see linux revision 1f80c0cc
         check("int generic_write_sync(int,int,int);\n"

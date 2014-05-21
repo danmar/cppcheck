@@ -3334,9 +3334,9 @@ void CheckOther::oppositeInnerCondition()
             if (cond->varId()) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
-                nonlocal |= (var && (!var->isLocal() || var->isStatic()));
+                nonlocal |= (var && (!var->isLocal() || var->isStatic()) && !var->isArgument());
                 // TODO: if var is pointer check what it points at
-                nonlocal |= (var && var->isPointer());
+                nonlocal |= (var && (var->isPointer() || var->isReference()));
             } else if (cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
                 nonlocal |= (cond->astParent() && cond->astParent()->isConstOp());
@@ -3360,17 +3360,14 @@ void CheckOther::oppositeInnerCondition()
                     break;
                 if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
                     // is variable unchanged? default is false..
-                    bool unchanged = true;
+                    bool unchanged = false;
 
                     // locate start parentheses in function call..
                     unsigned int argumentNumber = 0;
-                    const Token *start = tok;
-                    while (start && !Token::Match(start, "[;{}(]")) {
-                        if (start->str() == ")")
-                            start = start->link();
-                        else if (start->str() == ",")
-                            ++argumentNumber;
-                        start = start->previous();
+                    const Token *start = tok->previous();
+                    while (start && start->str() == ",") {
+                        start = start->astParent();
+                        ++argumentNumber;
                     }
 
                     start = start ? start->previous() : nullptr;
