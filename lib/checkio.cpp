@@ -44,19 +44,15 @@ void CheckIO::checkCoutCerrMisusage()
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        bool firstCout = false;
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (tok->str() == "(")
-                tok = tok->link();
-
-            if (Token::Match(tok, "std :: cout|cerr")) {
-                if (firstCout && tok->strAt(-1) == "<<" && tok->strAt(3) != ".") {
-                    coutCerrMisusageError(tok, tok->strAt(2));
-                    firstCout = false;
-                } else if (tok->strAt(3) == "<<")
-                    firstCout = true;
-            } else if (firstCout && tok->str() == ";")
-                firstCout = false;
+            if (Token::Match(tok, "std :: cout|cerr !!.") && tok->next()->astParent() && tok->next()->astParent()->astOperand1() == tok->next()) {
+                const Token* tok2 = tok->next();
+                while (tok2->astParent() && tok2->astParent()->str() == "<<") {
+                    tok2 = tok2->astParent();
+                    if (tok2->astOperand2() && Token::Match(tok2->astOperand2()->previous(), "std :: cout|cerr"))
+                        coutCerrMisusageError(tok, tok2->astOperand2()->strAt(1));
+                }
+            }
         }
     }
 }

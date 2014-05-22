@@ -98,6 +98,12 @@ private:
 
         check(
             "void foo() {\n"
+            "  std::cout << (std::cout);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout.str());
+
+        check(
+            "void foo() {\n"
             "  std::cout << \"xyz\" << std::cout;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout.str());
@@ -118,6 +124,12 @@ private:
         check(
             "void foo() {\n"
             "  std::cout << std::cout.good();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "void foo() {\n"
+            "    unknownObject << std::cout;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
 
