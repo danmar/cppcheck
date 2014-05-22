@@ -6525,10 +6525,8 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
                 valueIsPointer = true;
         }
 
-        // float value should contain a "."
-        else if (tok2->tokAt(2)->isNumber() &&
-                 floatvar &&
-                 value.find(".") == std::string::npos) {
+        // Add a '.0' to a decimal value and therefore convert it to an floating point number.
+        else if (MathLib::isDec(tok2->tokAt(2)->str()) && floatvar) {
             value += ".0";
         }
 

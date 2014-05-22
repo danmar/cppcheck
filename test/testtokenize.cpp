@@ -3179,6 +3179,19 @@ private:
                              "    return a;"
                              "}";
         ASSERT_EQUALS("double f ( ) { return 0.0 ; }", tokenizeAndStringify(code2,true));
+
+        // Ticket #5485
+        const char code3[] = "void f() {"
+                             "    double a = 1e+007;\n"
+                             "    std::cout << a;\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\nstd :: cout << 1e+007 ;\n}", tokenizeAndStringify(code3,true));
+
+        const char code4[] = "void f() {"
+                             "    double a = 1;\n"
+                             "    std::cout << a;\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\nstd :: cout << 1.0 ;\n}", tokenizeAndStringify(code4,true));
     }
 
     void simplifyKnownVariablesFunctionCalls() {
