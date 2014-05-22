@@ -51,6 +51,9 @@ static bool astIsFloat(const Token *tok, bool unknown)
         return Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0) != nullptr;
     }
 
+    if (tok->isOp())
+        return false;
+
     return unknown;
 }
 
@@ -133,11 +136,21 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
     // bailout when we see ({..})
     if (tok1->str() == "{")
         return false;
-    if (!isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions))
-        return false;
-    if (!isSameExpression(tok1->astOperand2(), tok2->astOperand2(), constFunctions))
-        return false;
-    return true;
+    bool noncommuative_equals =
+        isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions);
+    noncommuative_equals = noncommuative_equals &&
+                           isSameExpression(tok1->astOperand2(), tok2->astOperand2(), constFunctions);
+
+    if (noncommuative_equals)
+        return true;
+
+    bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "+|*|%or%|%oror%|&|&&|^|==|!=");
+    bool commuative_equals = commutative &&
+                             isSameExpression(tok1->astOperand2(), tok2->astOperand1(), constFunctions);
+    commuative_equals = commuative_equals &&
+                        isSameExpression(tok1->astOperand1(), tok2->astOperand2(), constFunctions);
+
+    return commuative_equals;
 }
 
 static bool isOppositeCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)

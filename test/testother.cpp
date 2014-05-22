@@ -4817,6 +4817,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
 
+        check("void foo(int a, int b) {\n"
+              "    if ((a | b) == (a | b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
         check("void foo() {\n"
               "    if (a1[a2[c & 0xff] & 0xff]) {}\n"
               "}");
@@ -4892,6 +4897,22 @@ private:
               "    bool b = bar.isSet() && bar.isSet();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
+
+        check("void foo() {\n"
+              "    if ((b + a) | (a + b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+
+        check("void foo() {\n"
+              "    if ((b > a) | (a > b)) {}\n" // > is not commutative
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if ((b + a) > (a + b)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '>'.\n", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
