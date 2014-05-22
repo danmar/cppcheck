@@ -295,10 +295,14 @@ private:
 
         check("void foo(struct ABC *abc) {\n"
               "    bar(abc->a);\n"
+              "    bar(x, abc->a);\n"
+              "    bar(x, y, abc->a);\n"
               "    if (!abc)\n"
               "        ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (warning) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n"
+                      "[test.cpp:3] -> [test.cpp:5]: (warning) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n"
+                      "[test.cpp:4] -> [test.cpp:5]: (warning) Possible null pointer dereference: abc - otherwise it is redundant to check it against null.\n", errout.str());
 
         check("void foo(ABC *abc) {\n"
               "    if (abc->a == 3) {\n"
@@ -619,7 +623,7 @@ private:
               "    if (!p)\n"
               "        ;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
 
         // while
         check("void f(int *p) {\n"
@@ -2377,7 +2381,22 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int *p = 0) {\n"
-              "    std::cout << p ? *p : 0;\n"
+              "    std::cout << p ? *p : 0;\n" // Due to operator precedence, this is equivalent to: (std::cout << p) ? *p : 0;
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str()); // Check the first branch of ternary
+
+        check("void f(char *p = 0) {\n"
+              "    std::cout << p ? *p : 0;\n" // Due to operator precedence, this is equivalent to: (std::cout << p) ? *p : 0;
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    std::cout << (p ? *p : 0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *p = 0) {\n"
+              "    std::cout << p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2442,6 +2461,11 @@ private:
               "    *p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p = 0) {\n"
+              "    int var1 = x ? *p : 5;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
     }
 
 

@@ -327,34 +327,33 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         "stringstream", "wistringstream", "wostringstream", "wstringstream"
     };
 
-    const bool inconclusive = unknown;
-
     unknown = false;
 
-    const Token* prev = tok->previous();
-    while (prev->str() == "." || prev->str() == "::") { // Skip over previous member dereferences
-        prev = prev->previous();
-        while (prev->link() && (prev->str() == "]" || prev->str() == ">"))
-            prev = prev->link()->previous();
-        prev = prev->previous();
+    const Token* parent = tok->astParent();
+    if (!parent)
+        return false;
+    bool firstOperand = parent->astOperand1() == tok;
+    while (parent->str() == "(" && (parent->astOperand2() == nullptr && parent->strAt(1) != ")")) { // Skip over casts
+        parent = parent->astParent();
+        if (!parent)
+            return false;
     }
-    while (prev->str() == ")") // Skip over casts
-        prev = prev->link()->previous();
 
     // Dereferencing pointer..
-    if (prev->str() == "*" && (Token::Match(prev->previous(), "return|throw|;|{|}|:|[|(|,") || prev->previous()->isOp()) && !Token::Match(prev->tokAt(-2), "sizeof|decltype|typeof"))
+    if (parent->str() == "*" && !parent->astOperand2() && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
+        return true;
+
+    // array access
+    if (parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
         return true;
 
     // read/write member variable
-    if (!Token::simpleMatch(prev->previous(), "& (") && !Token::Match(prev->previous(), "sizeof|decltype|typeof (") && prev->str() != "&" && Token::Match(tok->next(), ". %var%")) {
-        if (tok->strAt(3) != "(")
+    if (firstOperand && parent->str() == "." && (!parent->astParent() || parent->astParent()->str() != "&")) {
+        if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
             return true;
         unknown = true;
         return false;
     }
-
-    if (Token::Match(tok, "%var% [") && (prev->str() != "&" || Token::Match(tok->next()->link()->next(), "[.(]")))
-        return true;
 
     if (Token::Match(tok, "%var% ("))
         return true;
@@ -365,19 +364,19 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         return true;
 
     // std::string dereferences nullpointers
-    if (Token::Match(prev->tokAt(-3), "std :: string|wstring (") && tok->strAt(1) == ")")
+    if (Token::Match(parent->tokAt(-3), "std :: string|wstring (") && tok->strAt(1) == ")")
         return true;
-    if (Token::Match(prev->previous(), "%var% (") && tok->strAt(1) == ")") {
+    if (Token::Match(parent->previous(), "%var% (") && tok->strAt(1) == ")") {
         const Variable* var = tok->tokAt(-2)->variable();
         if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
             return true;
     }
 
     // streams dereference nullpointers
-    if (Token::Match(prev, "<<|>>")) {
+    if (Token::Match(parent, "<<|>>") && !firstOperand) {
         const Variable* var = tok->variable();
         if (var && var->isPointer() && Token::Match(var->typeStartToken(), "char|wchar_t")) { // Only outputting or reading to char* can cause problems
-            const Token* tok2 = prev; // Find start of statement
+            const Token* tok2 = parent; // Find start of statement
             for (; tok2; tok2 = tok2->previous()) {
                 if (Token::Match(tok2->previous(), ";|{|}|:"))
                     break;
@@ -393,63 +392,14 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     }
 
     const Variable *ovar = nullptr;
-    if (Token::Match(tok, "%var% ==|!= %var%"))
-        ovar = tok->tokAt(2)->variable();
-    else if (Token::Match(prev->previous(), "%var% ==|!="))
-        ovar = tok->tokAt(-2)->variable();
-    else if (Token::Match(prev->previous(), "%var% =|+") && Token::Match(tok->next(), ")|]|,|;|+"))
-        ovar = tok->tokAt(-2)->variable();
+    if (Token::Match(parent, "+|==|!=") || (parent->str() == "=" && !firstOperand)) {
+        if (parent->astOperand1() == tok && parent->astOperand2())
+            ovar = parent->astOperand2()->variable();
+        else if (parent->astOperand2() == tok)
+            ovar = parent->astOperand1()->variable();
+    }
     if (ovar && !ovar->isPointer() && !ovar->isArray() && Token::Match(ovar->typeStartToken(), "std :: string|wstring !!::"))
         return true;
-
-    // Check if it's NOT a pointer dereference.
-    // This is most useful in inconclusive checking
-    if (inconclusive) {
-        // Not a dereference..
-        if (Token::Match(tok, "%var% ="))
-            return false;
-
-        // OK to delete a null
-        if (Token::simpleMatch(prev, "delete") || Token::Match(prev->tokAt(-2), "delete [ ]"))
-            return false;
-
-        // OK to check if pointer is null
-        // OK to take address of pointer
-        if (Token::Match(prev, "!|&"))
-            return false;
-
-        // OK to check pointer in "= p ? : "
-        if (tok->next()->str() == "?" &&
-            (Token::Match(prev, "return|throw|;|{|}|:|[|(|,") || prev->isAssignmentOp()))
-            return false;
-
-        // OK to pass pointer to function
-        if (Token::Match(prev, "[(,]") && Token::Match(tok->next(), "[,)]") &&
-            (prev->str() != "(" ||
-             Token::Match(prev->previous(), "%var% (")))
-            return false;
-
-        // Compare pointer
-        if (Token::Match(prev, "(|&&|%oror%|==|!="))
-            return false;
-        if (Token::Match(tok, "%var% &&|%oror%|==|!=|)"))
-            return false;
-
-        // Taking address
-        if (Token::Match(prev, "return|=") && tok->strAt(1) == ";")
-            return false;
-
-        // (void)var
-        if (Token::Match(prev, "[{;}]") && tok->strAt(1) == ";")
-            return false;
-
-        // Shift pointer (e.g. to cout, but its no char* (see above))
-        if (Token::Match(prev, "<<|>>"))
-            return false;
-
-        // unknown if it's a dereference
-        unknown = true;
-    }
 
     // assume that it's not a dereference (no false positives)
     return false;
@@ -962,7 +912,17 @@ void CheckNullPointer::nullPointerDefaultArgument()
             for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
 
                 // If we encounter a possible NULL-pointer check, skip over its body
-                if (Token::simpleMatch(tok, "if ( "))  {
+                if (tok->str() == "?") { // TODO: Skip this if the condition is unrelated to the variables
+                    // Find end of statement
+                    tok = tok->astOperand2();
+                    while (tok && !Token::Match(tok, ")|;")) {
+                        if (tok->link() && Token::Match(tok, "(|[|<|{"))
+                            tok = tok->link();
+                        tok = tok->next();
+                    }
+                    if (!tok)
+                        break;
+                } else if (Token::simpleMatch(tok, "if ( "))  {
                     bool dependsOnPointer = false;
                     const Token *endOfCondition = tok->next()->link();
                     if (!endOfCondition)
