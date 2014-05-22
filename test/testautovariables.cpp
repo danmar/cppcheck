@@ -104,6 +104,8 @@ private:
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
+        TEST_CASE(returnReferenceLiteral);
+        TEST_CASE(returnReferenceCalculation);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -843,6 +845,45 @@ private:
               "std::string a();\n"
               "std::string &b() {\n"
               "    return a(12);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceLiteral() {
+        check("const std::string &a() {\n"
+              "    return \"foo\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("const std::string a() {\n"
+              "    return \"foo\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceCalculation() {
+        check("const std::string &a(const std::string& str) {\n"
+              "    return \"foo\" + str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("int& a(int b) {\n"
+              "    return 2*(b+1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("const std::string &a(const std::string& str) {\n"
+              "    return str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const std::string &a(int bar) {\n"
+              "    return foo(bar + 1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const std::string a(const std::string& str) {\n"
+              "    return \"foo\" + str;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -344,6 +344,9 @@ void CheckAutoVariables::returnReference()
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
             for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+                if (tok2->str() != "return")
+                    continue;
+
                 // return..
                 if (Token::Match(tok2, "return %var% ;")) {
                     // is the returned variable a local variable?
@@ -373,6 +376,11 @@ void CheckAutoVariables::returnReference()
                         // report error..
                         errorReturnTempReference(tok2);
                     }
+                }
+
+                // Return reference to a literal or the result of a calculation
+                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral())) {
+                    errorReturnTempReference(tok2);
                 }
             }
         }
