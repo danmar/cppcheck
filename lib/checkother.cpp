@@ -511,7 +511,12 @@ void CheckOther::warningOldStylePointerCast()
 
 void CheckOther::cstyleCastError(const Token *tok)
 {
-    reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
+    reportError(tok, Severity::style, "cstyleCast",
+                "C-style pointer casting\n"
+                "C-style pointer casting detected. C++ offers four different kinds of casts as replacements: "
+                "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
+                "each of those automatically, thus it is considered safer it the programmer explicitly states "
+                "which kind of cast is expected.");
 }
 
 //---------------------------------------------------------------------------
