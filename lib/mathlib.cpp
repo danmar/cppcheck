@@ -24,7 +24,6 @@
 #include <cmath>
 #include <cctype>
 #include <limits>
-#include <limits>
 
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
