@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 
 /// @addtogroup Checks
 /// @{

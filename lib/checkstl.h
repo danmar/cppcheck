@@ -25,7 +25,6 @@
 #include "config.h"
 #include "check.h"
 
-class Token;
 
 /// @addtogroup Checks
 /// @{

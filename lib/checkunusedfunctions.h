@@ -24,8 +24,6 @@
 
 #include "config.h"
 #include "check.h"
-#include "tokenize.h"
-#include "errorlogger.h"
 
 /// @addtogroup Checks
 /** @brief Check for functions never called */

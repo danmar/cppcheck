@@ -23,7 +23,6 @@
 #include "checkbufferoverrun.h"
 
 #include "tokenize.h"
-#include "errorlogger.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
 

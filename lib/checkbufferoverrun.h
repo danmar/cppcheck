@@ -24,15 +24,11 @@
 
 #include "config.h"
 #include "check.h"
-#include "settings.h"
 #include "mathlib.h"
 #include <list>
 #include <vector>
 #include <string>
 
-class ErrorLogger;
-class Token;
-class Tokenizer;
 class Variable;
 
 /// @addtogroup Checks

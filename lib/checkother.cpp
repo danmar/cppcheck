@@ -21,7 +21,6 @@
 #include "checkother.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "templatesimplifier.h"
 
 #include <cmath> // fabs()
 #include <stack>

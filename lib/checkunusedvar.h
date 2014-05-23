@@ -21,14 +21,12 @@
 #define checkunusedvarH
 //---------------------------------------------------------------------------
 
-#include <map>
-
 #include "config.h"
 #include "check.h"
-#include "settings.h"
+
+#include <map>
 
 class Type;
-class Token;
 class Scope;
 class Variables;
 

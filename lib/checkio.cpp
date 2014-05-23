@@ -20,8 +20,6 @@
 #include "checkio.h"
 
 #include "tokenize.h"
-#include "token.h"
-#include "errorlogger.h"
 #include "symboldatabase.h"
 
 #include <cctype>

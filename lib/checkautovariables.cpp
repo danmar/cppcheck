@@ -22,9 +22,7 @@
 
 #include "checkautovariables.h"
 #include "symboldatabase.h"
-#include "checkuninitvar.h"
 
-#include <list>
 #include <string>
 
 //---------------------------------------------------------------------------

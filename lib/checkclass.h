@@ -24,7 +24,6 @@
 #include "config.h"
 #include "check.h"
 
-class Token;
 class Scope;
 class Function;
 

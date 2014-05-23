@@ -26,10 +26,7 @@
 #include "checkother.h"   // <- doubleFreeError
 
 #include "tokenize.h"
-#include "errorlogger.h"
 #include "symboldatabase.h"
-
-#include <fstream>
 
 //---------------------------------------------------------------------------
 

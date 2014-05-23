@@ -25,6 +25,9 @@
 #include "config.h"
 #include "check.h"
 
+#include <map>
+#include <set>
+
 
 class CPPCHECKLIB VarInfo {
 public:
