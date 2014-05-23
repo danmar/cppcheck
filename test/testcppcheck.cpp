@@ -21,6 +21,7 @@
 #include "cppcheckexecutor.h"
 #include "testsuite.h"
 #include "path.h"
+#include "check.h"
 
 #include <algorithm>
 #include <list>

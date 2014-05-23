@@ -19,6 +19,7 @@
 
 #include "preprocessor.h" // Preprocessor
 #include "tokenize.h" // Tokenizer
+#include "checkunusedfunctions.h"
 
 #include "check.h"
 #include "path.h"

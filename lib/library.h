@@ -30,7 +30,6 @@
 #include <set>
 #include <string>
 #include <list>
-#include <algorithm>
 
 class TokenList;
 namespace tinyxml2 {

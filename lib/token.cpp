@@ -29,6 +29,7 @@
 #include <sstream>
 #include <map>
 #include <stack>
+#include <algorithm>
 
 bool Token::_isCPP = true;
 

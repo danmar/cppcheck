@@ -25,7 +25,7 @@
 #include "errorlogger.h"
 
 #include <string>
-#include <sstream>
+#include <ostream>
 #include <climits>
 #include <iostream>
 

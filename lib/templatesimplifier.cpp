@@ -19,7 +19,6 @@
 #include "templatesimplifier.h"
 #include "mathlib.h"
 #include "token.h"
-#include "tokenlist.h"
 #include "tokenize.h"
 #include "errorlogger.h"
 #include "settings.h"

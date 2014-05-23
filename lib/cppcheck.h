@@ -24,11 +24,12 @@
 #include "config.h"
 #include "settings.h"
 #include "errorlogger.h"
-#include "checkunusedfunctions.h"
 
 #include <string>
 #include <list>
 #include <istream>
+
+class Tokenizer;
 
 /// @addtogroup Core
 /// @{

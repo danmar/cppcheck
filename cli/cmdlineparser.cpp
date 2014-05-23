@@ -22,6 +22,7 @@
 #include "path.h"
 #include "settings.h"
 #include "timer.h"
+#include "check.h"
 
 #include <algorithm>
 #include <iostream>
