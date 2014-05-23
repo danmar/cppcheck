@@ -2414,6 +2414,12 @@ private:
             "enum { e = sizeof(A<int, int>) }; "
             "template <class T, class U> struct B {};");
         ASSERT_EQUALS("", errout.str());
+        tok("template<class T, class U> struct A { static const int value = 0; }; "
+            "template<class T> struct B { typedef int type; }; "
+            "template <class T> struct C { "
+            "  enum { value = A<typename B<T>::type, int>::value }; "
+            "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_default_parameter() {
