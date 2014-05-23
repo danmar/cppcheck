@@ -364,13 +364,13 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // ; { ... }
-        if (Token::Match(tok->previous(), "[;{}:] {")) {
+        if (tok && Token::Match(tok->previous(), "[;{}:] {")) {
             ExecutionPath::checkScope(tok->next(), checks);
             tok = tok->link();
             continue;
         }
 
-        if (tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
+        if (tok && tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
             // what variable ids should the numberOfIf be counted for?
             std::set<unsigned int> countif;
 
