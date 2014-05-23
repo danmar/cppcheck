@@ -7572,7 +7572,9 @@ void Tokenizer::simplifyEnum()
                                 endtoken = endtoken->next();
                                 if (Token::Match(endtoken, "*|,|::|typename"))
                                     endtoken = endtoken->next();
-                            } while (Token::Match(endtoken, "%var%|%num% *| [,>]") || Token::Match(endtoken, "%var%|%num% :: %any%"));
+                                if (endtoken->str() == "<" && TemplateSimplifier::templateParameters(endtoken))
+                                    endtoken = endtoken->findClosingBracket();
+                            } while (Token::Match(endtoken, "%var%|%num% *| [,>]") || Token::Match(endtoken, "%var%|%num% ::|< %any%"));
                             if (endtoken->str() == ">") {
                                 enumValueEnd = endtoken;
                                 if (Token::simpleMatch(endtoken, "> ( )"))
