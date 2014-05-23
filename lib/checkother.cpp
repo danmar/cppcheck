@@ -3169,8 +3169,10 @@ static bool constructorTakesReference(const Scope * const classScope)
         if (func->isConstructor()) {
             const Function &constructor = *func;
             for (std::size_t argnr = 0U; argnr < constructor.argCount(); argnr++) {
-                if (constructor.getArgumentVar(argnr)->isReference())
+                const Variable * const argVar = constructor.getArgumentVar(argnr);
+                if (argVar && argVar->isReference()) {
                     return true;
+                }
             }
         }
     }
