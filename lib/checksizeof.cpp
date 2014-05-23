@@ -310,7 +310,7 @@ void CheckSizeof::sizeofVoid()
                         // Get 'struct.member' complete name (without spaces)
                         varname = tok2->stringifyList(tok->next());
                         varname.erase(std::remove_if(varname.begin(), varname.end(),
-                                                static_cast<int (*)(int)>(std::isspace)), varname.end());
+                                                     static_cast<int (*)(int)>(std::isspace)), varname.end());
                     }
                 }
                 // Check for cast on operations with '+|-'

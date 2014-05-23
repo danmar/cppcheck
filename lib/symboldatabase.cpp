@@ -23,11 +23,11 @@
 #include "token.h"
 #include "settings.h"
 #include "errorlogger.h"
-#include "check.h"
 
 #include <string>
 #include <sstream>
 #include <climits>
+#include <iostream>
 
 //---------------------------------------------------------------------------
 

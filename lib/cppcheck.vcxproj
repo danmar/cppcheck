@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
+    <ClCompile Include="check.cpp" />
     <ClCompile Include="check64bit.cpp" />
     <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkassignif.cpp" />

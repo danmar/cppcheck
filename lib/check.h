@@ -28,7 +28,6 @@
 #include "errorlogger.h"
 
 #include <list>
-#include <iostream>
 #include <set>
 
 /// @addtogroup Core
@@ -41,16 +40,7 @@
 class CPPCHECKLIB Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    explicit Check(const std::string &aname)
-        : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname) {
-        for (std::list<Check*>::iterator i = instances().begin(); i != instances(). end(); ++i) {
-            if ((*i)->name() > aname) {
-                instances().insert(i, this);
-                return;
-            }
-        }
-        instances().push_back(this);
-    }
+    explicit Check(const std::string &aname);
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -111,9 +101,7 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg) {
-        std::cout << errmsg.toXML(true, 1) << std::endl;
-    }
+    static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
     bool inconclusiveFlag() const {
         return _settings && _settings->inconclusive;

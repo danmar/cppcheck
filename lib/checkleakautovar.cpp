@@ -28,6 +28,7 @@
 #include "tokenize.h"
 #include "symboldatabase.h"
 
+#include <iostream>
 //---------------------------------------------------------------------------
 
 const int DEALLOC = -1;
