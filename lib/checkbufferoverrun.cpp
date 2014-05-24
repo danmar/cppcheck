@@ -2102,7 +2102,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 // statement can be closed in parentheses, so "(| " is using
                 if (Token::Match(tok, "&& (| %varid% <|<=", indexID))
                     arrayIndexThenCheckError(tok, indexName);
-                else if (Token::Match(tok, "&& (| %any% >|>= %varid%", indexID))
+                else if (Token::Match(tok, "&& (| %any% >|>= %varid% !!+", indexID))
                     arrayIndexThenCheckError(tok, indexName);
             }
         }

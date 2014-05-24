@@ -3976,6 +3976,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Array index 'i' is used before limits check.\n", errout.str());
 
+        check("void f(char* e, int y) {\n"
+              "    if (e[y] == '/' && elen > y + 1 && e[y + 1] == '?') {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // this one doesn't work for now, hopefully in the future
         check("void f(const int a[], unsigned i) {\n"
               "    if(a[i] < func(i) && i <= 42) {\n"
