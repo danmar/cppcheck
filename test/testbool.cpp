@@ -36,6 +36,7 @@ private:
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
         TEST_CASE(incrementBoolean);
         TEST_CASE(assignBoolToPointer);
+        TEST_CASE(assignBoolToFloat);
 
         TEST_CASE(comparisonOfBoolExpressionWithInt1);
         TEST_CASE(comparisonOfBoolExpressionWithInt2);
@@ -137,6 +138,23 @@ private:
               "    X *p = new ::std::pair<int,int>[rSize];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignBoolToFloat() {
+        check("void foo1() {\n"
+              "    double d = false;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean value assigned to floating point variable.\n", errout.str());
+
+        check("void foo2() {\n"
+              "    float d = true;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean value assigned to floating point variable.\n", errout.str());
+
+        check("void foo3() {\n"
+              "    long double d = (2>1);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Boolean value assigned to floating point variable.\n", "", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {

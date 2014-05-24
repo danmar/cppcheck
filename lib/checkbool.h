@@ -52,6 +52,7 @@ public:
         // Checks
         checkBool.checkComparisonOfBoolExpressionWithInt();
         checkBool.checkComparisonOfBoolWithInt();
+        checkBool.checkAssignBoolToFloat();
         checkBool.pointerArithBool();
     }
 
@@ -82,6 +83,9 @@ public:
     /** @brief assigning bool to pointer */
     void checkAssignBoolToPointer();
 
+    /** @brief assigning bool to float */
+    void checkAssignBoolToFloat();
+
     /** @brief %Check for using bool in bitwise expression */
     void checkBitwiseOnBoolean();
 
@@ -101,6 +105,7 @@ private:
     void comparisonOfBoolWithIntError(const Token *tok, const std::string &expression, bool n0o1);
     void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void assignBoolToPointerError(const Token *tok);
+    void assignBoolToFloatError(const Token *tok);
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void pointerArithBoolError(const Token *tok);

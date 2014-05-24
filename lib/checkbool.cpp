@@ -472,3 +472,29 @@ void CheckBool::pointerArithBoolError(const Token *tok)
                 "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
                 "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.");
 }
+
+void CheckBool::checkAssignBoolToFloat()
+{
+    if (!_tokenizer->isCPP())
+        return;
+    if (!_settings->isEnabled("style"))
+        return;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "!!* %var% = %bool% ;")) {
+                const Variable *var = symbolDatabase->getVariableFromVarId(tok->next()->varId());
+                if (var->isFloatingType())
+                    assignBoolToFloatError(tok->next());
+            }
+        }
+    }
+}
+
+void CheckBool::assignBoolToFloatError(const Token *tok)
+{
+    reportError(tok, Severity::style, "assignBoolToFloat",
+                "Boolean value assigned to floating point variable.");
+}
