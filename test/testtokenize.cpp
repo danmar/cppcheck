@@ -585,6 +585,7 @@ private:
         TEST_CASE(astunaryop);
         TEST_CASE(astfunction);
         TEST_CASE(asttemplate);
+        TEST_CASE(astcast);
 
         TEST_CASE(startOfExecutableScope);
     }
@@ -10384,55 +10385,31 @@ private:
     static std::string testAst(const char code[],bool verbose=false) {
         // tokenize given code..
         const Settings settings;
-        TokenList tokenList(&settings);
+        Tokenizer tokenList(&settings, nullptr);
         std::istringstream istr(code);
-        if (!tokenList.createTokens(istr,"test.cpp"))
+        if (!tokenList.list.createTokens(istr,"test.cpp"))
             return "ERROR";
 
-        for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "%or%|<<|>>|+|-|*|/|%|&|^ =")) {
-                tok->str(tok->str() + "=");
-                tok->deleteNext();
-            } else if (Token::simpleMatch(tok, ": :")) {
-                tok->str("::");
-                tok->deleteNext();
-            } else if (Token::Match(tok, ">|<|= =")) {
-                tok->str(tok->str() + tok->strAt(1));
-                tok->deleteNext();
-            }
-        }
-
-        // Set links..
-        std::stack<Token *> links;
-        for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "(|[|{"))
-                links.push(tok);
-            else if (!links.empty() && Token::Match(tok,")|]|}")) {
-                Token::createMutualLinks(links.top(), tok);
-                links.pop();
-            } else if (Token::Match(tok, "< %type% >")) {
-                Token::createMutualLinks(tok, tok->tokAt(2));
-            } else if (Token::Match(tok, "< %type% * >")) {
-                Token::createMutualLinks(tok, tok->tokAt(3));
-            }
-        }
+        tokenList.combineOperators();
+        tokenList.createLinks();
+        tokenList.createLinks2();
 
         // Create AST..
-        tokenList.createAst();
+        tokenList.list.createAst();
 
         // Basic AST validation
-        for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";" && tok->str() != ":")
                 return "Op2 but no Op1 for token: " + tok->str();
         }
 
         // Return stringified AST
         if (verbose)
-            return tokenList.front()->astTop()->astStringVerbose(0,0);
+            return tokenList.list.front()->astTop()->astStringVerbose(0, 0);
 
         std::string ret;
         std::set<const Token *> astTop;
-        for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
                 astTop.insert(tok->astTop());
                 if (!ret.empty())
@@ -10504,7 +10481,7 @@ private:
         ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
         ASSERT_EQUALS("ifx( i0= whilei(", testAst("if (x) { ({ int i = 0; while(i); }) };"));
         ASSERT_EQUALS("ifx( BUG_ON{!( i0= whilei(", testAst("if (x) { BUG_ON(!({int i=0; while(i);})); }"));
-        ASSERT_EQUALS("v0= while{( v0= while{( v0=", testAst("({ v = 0; }); while (({ v = 0; }) != 0); while (({ v = 0; }) != 0);"));
+        ASSERT_EQUALS("v0= while{0!=( v0= while{0!=( v0=", testAst("({ v = 0; }); while (({ v = 0; }) != 0); while (({ v = 0; }) != 0);"));
 
 
         ASSERT_EQUALS("abc.1:?1+bd.1:?+=", testAst("a =(b.c ? : 1) + 1 + (b.d ? : 1);"));
@@ -10605,6 +10582,13 @@ private:
         // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
         ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
         ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
+    }
+
+    void astcast() const {
+        ASSERT_EQUALS("ac&(=", testAst("a = (long)&c;"));
+        ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
+        ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
+        ASSERT_EQUALS("ac(=", testAst("a = (some<strange, type>)c;"));
     }
 
     void compileLimits() {

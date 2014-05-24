@@ -185,22 +185,6 @@ static bool isOppositeCond(const Token * const cond1, const Token * const cond2,
             (comp1 == ">=" && comp2 == "<"));
 }
 
-static bool isPossibleCast(const Token * const startPar)
-{
-    if (!Token::Match(startPar, "( %type%"))
-        return false;
-    const Token *tok;
-    for (tok = startPar->tokAt(2); tok; tok = tok->next()) {
-        if (tok->str() == ")")
-            return true;
-        if (tok->varId()>0)
-            return false;
-        if (!Token::Match(tok,"%type%|*|&"))
-            return false;
-    }
-    return tok != nullptr;
-}
-
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
 // If this return value is stored in a character variable and then compared
@@ -2068,8 +2052,8 @@ void CheckOther::checkCharVariable()
                 else
                     continue;
 
-                // (x) & y => if x is a possible type then assume & is a address-of operator
-                if (Token::simpleMatch(tok->previous(), ") &") && isPossibleCast(tok->linkAt(-1)))
+                // Don't care about address-of operator
+                if (!tok->astOperand2())
                     continue;
 
                 // it's ok with a bitwise and where the other operand is 0xff or less..
