@@ -381,19 +381,20 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
         return true;
 
+    bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         if (tok2->link() && tok2->str() == "<")
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")")
-            return tok2->previous()->str() == "*" ||
+            return type || tok2->previous()->str() == "*" ||
                    (Token::Match(tok2, ") %any%") &&
                     (tok2->strAt(1) == "&" || (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,?:.]"))));
         if (!Token::Match(tok2, "%var%|*|&|::"))
             return false;
 
         if (tok2->isStandardType())
-            return true;
+            type = true;
     }
 
     return false;
@@ -550,7 +551,7 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int dept
 {
     compilePointerToElem(tok, op, depth);
     while (tok) {
-        if (Token::Match(tok, "[*/%]")) {
+        if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1())) {
             if (Token::Match(tok, "* [*,)]")) {
                 Token* tok2 = tok;
                 while (tok2->next() && tok2->str() == "*")
@@ -566,9 +567,9 @@ static void compileMulDiv(Token *&tok, std::stack<Token*> &op, unsigned int dept
 
 static void compileAddSub(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileMulDiv(tok,op, depth);
+    compileMulDiv(tok, op, depth);
     while (tok) {
-        if (Token::Match(tok, "+|-")) {
+        if (Token::Match(tok, "+|-") && !tok->astOperand1()) {
             compileBinOp(tok, compileMulDiv, op, depth);
         } else break;
     }
@@ -576,7 +577,7 @@ static void compileAddSub(Token *&tok, std::stack<Token*> &op, unsigned int dept
 
 static void compileShift(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileAddSub(tok,op, depth);
+    compileAddSub(tok, op, depth);
     while (tok) {
         if (Token::Match(tok, "<<|>>")) {
             compileBinOp(tok, compileAddSub, op, depth);
@@ -586,7 +587,7 @@ static void compileShift(Token *&tok, std::stack<Token*> &op, unsigned int depth
 
 static void compileRelComp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileShift(tok,op, depth);
+    compileShift(tok, op, depth);
     while (tok) {
         if (Token::Match(tok, "<|<=|>=|>")) {
             compileBinOp(tok, compileShift, op, depth);
@@ -596,7 +597,7 @@ static void compileRelComp(Token *&tok, std::stack<Token*> &op, unsigned int dep
 
 static void compileEqComp(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileRelComp(tok,op, depth);
+    compileRelComp(tok, op, depth);
     while (tok) {
         if (Token::Match(tok, "==|!=")) {
             compileBinOp(tok, compileRelComp, op, depth);
@@ -606,9 +607,9 @@ static void compileEqComp(Token *&tok, std::stack<Token*> &op, unsigned int dept
 
 static void compileAnd(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileEqComp(tok,op, depth);
+    compileEqComp(tok, op, depth);
     while (tok) {
-        if (tok->str() == "&") {
+        if (tok->str() == "&" && !tok->astOperand1()) {
             compileBinOp(tok, compileEqComp, op, depth);
         } else break;
     }
@@ -616,7 +617,7 @@ static void compileAnd(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 
 static void compileXor(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileAnd(tok,op, depth);
+    compileAnd(tok, op, depth);
     while (tok) {
         if (tok->str() == "^") {
             compileBinOp(tok, compileAnd, op, depth);
@@ -626,7 +627,7 @@ static void compileXor(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 
 static void compileOr(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileXor(tok,op, depth);
+    compileXor(tok, op, depth);
     while (tok) {
         if (tok->str() == "|") {
             compileBinOp(tok, compileXor, op, depth);
@@ -636,7 +637,7 @@ static void compileOr(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 
 static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileOr(tok,op, depth);
+    compileOr(tok, op, depth);
     while (tok) {
         if (tok->str() == "&&") {
             compileBinOp(tok, compileOr, op, depth);
@@ -646,7 +647,7 @@ static void compileLogicAnd(Token *&tok, std::stack<Token*> &op, unsigned int de
 
 static void compileLogicOr(Token *&tok, std::stack<Token*> &op, unsigned int depth)
 {
-    compileLogicAnd(tok,op, depth);
+    compileLogicAnd(tok, op, depth);
     while (tok) {
         if (tok->str() == "||") {
             compileBinOp(tok, compileLogicAnd, op, depth);

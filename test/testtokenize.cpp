@@ -373,6 +373,7 @@ private:
         TEST_CASE(removeParentheses18);      // 'float(*a)[2]' => 'float *a[2]'
         TEST_CASE(removeParentheses19);      // ((typeof(x) *)0)
         TEST_CASE(removeParentheses20);      // Ticket #5479: a<b<int>>(2);
+        TEST_CASE(removeParentheses21);      // Don't "simplify" casts
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5696,6 +5697,10 @@ private:
         ASSERT_EQUALS("a < b < int > > ( 2 ) ;", tokenizeAndStringify("a<b<int>>(2);", false));
     }
 
+    void removeParentheses21() {
+        ASSERT_EQUALS("a = ( int ) - b ;", tokenizeAndStringify("a = ((int)-b);", false));
+    }
+
     void tokenize_double() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -10595,6 +10600,8 @@ private:
         ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
         ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
         ASSERT_EQUALS("ac(=", testAst("a = (some<strange, type>)c;"));
+
+        ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
     }
 
     void compileLimits() {
