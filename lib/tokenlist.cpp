@@ -383,7 +383,7 @@ static bool iscast(const Token *tok)
 
     bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-        if (tok2->link() && tok2->str() == "<")
+        while (tok2->link() && Token::Match(tok2, "(|[|<"))
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")")
