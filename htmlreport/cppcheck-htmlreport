@@ -132,7 +132,7 @@ HTML_FOOTER = """
         <ul>
           <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
           <li>Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></li>
-          <li>IRC: #cppcheck at irc.freenode.net</li>
+          <li>IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></li>
         </ul>
       </div>
     </div>
