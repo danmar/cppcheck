@@ -254,7 +254,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // Skip casts
         if (tok->str() == "(") {
             tok = tok->link();
-            if(tok)
+            if (tok)
                 tok = tok->next();
         }
 
