@@ -155,6 +155,12 @@ private:
               "    long double d = (2>1);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Boolean value assigned to floating point variable.\n", "", errout.str());
+
+        // stability - don't crash:
+        check("void foo4() {\n"
+              "    unknown = false;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void comparisonOfBoolExpressionWithInt1() {
