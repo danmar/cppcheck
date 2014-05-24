@@ -229,32 +229,6 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
-/**
- * @brief This is a helper class to be used with std::find_if
- */
-class TokenStrEquals {
-public:
-    /**
-     * @param str Token::str() is compared against this.
-     */
-    explicit TokenStrEquals(const std::string &str)
-        : value(str) {
-    }
-
-    /**
-     * Called automatically by std::find_if
-     * @param tok Token inside the list
-     */
-    bool operator()(const Token *tok) const {
-        return value == tok->str();
-    }
-
-private:
-    TokenStrEquals& operator=(const TokenStrEquals&); // disallow assignments
-
-    const std::string value;
-};
-
 
 /**
  * bailout if variable is used inside if/else/switch block or if there is "break"
@@ -2192,4 +2166,3 @@ void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std
                 "The number of bytes to write (" + MathLib::toString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::toString(stringLength)+ " bytes)."
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
-
