@@ -292,7 +292,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     const char * const signame = signal_name(signo);
     const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
-    FILE* f=stderr;
+    FILE* f=CppCheckExecutor::getExceptionOutput()=="stderr" ? stderr : stdout;
     fputs("Internal error: cppcheck received signal ", f);
     fputs(signame, f);
     fputs(", ", f);
@@ -334,15 +334,16 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
 {
     // TODO we should try to extract more information here
     //   - address, read/write
+    FILE *f = stdout;
     switch (ex->ExceptionRecord->ExceptionCode) {
     case EXCEPTION_ACCESS_VIOLATION:
-        fprintf(stderr, "Internal error (EXCEPTION_ACCESS_VIOLATION)\n");
+        fprintf(f, "Internal error (EXCEPTION_ACCESS_VIOLATION)\n");
         break;
     case EXCEPTION_IN_PAGE_ERROR:
-        fprintf(stderr, "Internal error (EXCEPTION_IN_PAGE_ERROR)\n");
+        fprintf(f, "Internal error (EXCEPTION_IN_PAGE_ERROR)\n");
         break;
     default:
-        fprintf(stderr, "Internal error (%d)\n",
+        fprintf(f, "Internal error (%d)\n",
                 code);
         break;
     }
@@ -359,11 +360,12 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
+    FILE *f = stdout;
     __try {
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application..
-        fprintf(stderr, "Please report this to the cppcheck developers!\n");
+        fprintf(f, "Please report this to the cppcheck developers!\n");
         return -1;
     }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
@@ -558,3 +560,13 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
         reportErr(msg.toString(_settings->_verbose, _settings->_outputFormat));
     }
 }
+
+void CppCheckExecutor::setExceptionOutput(const std::string& fn)
+{
+    exceptionOutput=fn;
+}
+const std::string& CppCheckExecutor::getExceptionOutput()
+{
+    return exceptionOutput;
+}
+std::string CppCheckExecutor::exceptionOutput;

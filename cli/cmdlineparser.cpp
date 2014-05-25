@@ -18,6 +18,7 @@
 
 #include "cmdlineparser.h"
 #include "cppcheck.h"
+#include "cppcheckexecutor.h"
 #include "filelister.h"
 #include "path.h"
 #include "settings.h"
@@ -136,6 +137,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         // (Experimental) exception handling inside cppcheck client
         else if (std::strcmp(argv[i], "--exception-handling") == 0)
             _settings->exceptionHandling = true;
+        else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+            _settings->exceptionHandling = true;
+            const std::string exceptionOutfilename=&(argv[i][21]);
+            CppCheckExecutor::setExceptionOutput(exceptionOutfilename);
+        }
 
         // Inconclusive checking (still in testing phase)
         else if (std::strcmp(argv[i], "--inconclusive") == 0)

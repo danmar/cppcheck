@@ -87,6 +87,15 @@ public:
      */
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
+    /**
+     * @param fn file name to be used from exception handler
+     */
+    static void setExceptionOutput(const std::string& fn);
+    /**
+    * @return file name to be used for output from exception handler
+    */
+    static const std::string& getExceptionOutput();
+
 protected:
 
     /**
@@ -150,6 +159,11 @@ private:
      * Report progress time
      */
     std::time_t time1;
+
+    /**
+     * Output file name for exception handler
+     */
+    static std::string exceptionOutput;
 
     /**
      * Has --errorlist been given?
