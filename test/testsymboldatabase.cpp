@@ -220,6 +220,7 @@ private:
         TEST_CASE(symboldatabase40); // ticket #5153
         TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
         TEST_CASE(symboldatabase42); // only put variables in variable list
+        TEST_CASE(symboldatabase43); // #4738
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1861,6 +1862,13 @@ private:
         const Scope * const fscope = db ? db->findScopeByName("f") : nullptr;
         ASSERT(!!fscope);
         ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
+    }
+
+    void symboldatabase43() { // ticket #4738
+        check("void f() {\n"
+              "    new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isImplicitlyVirtual() {
