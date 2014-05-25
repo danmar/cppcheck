@@ -451,6 +451,7 @@ static void compileTerm(Token *& tok, std::stack<Token*> &op, unsigned int depth
         tok = tok->next();
     } else if (tok->str() == "return") {
         compileUnaryOp(tok, compileExpression, op, depth);
+        op.pop();
     } else if (tok->isName()) {
         while (tok->next() && tok->next()->isName())
             tok = tok->next();
@@ -496,18 +497,36 @@ static void compilePrecedence2(Token *&tok, std::stack<Token*> &op, unsigned int
         } else if (tok->str() == "." && tok->strAt(1) != "*") {
             compileBinOp(tok, compileScope, op, depth);
         } else if (tok->str() == "[") {
-            Token* tok2 = tok;
-            compileBinOp(tok, compileExpression, op, depth);
-            tok = tok2->link()->next();
+            if (isPrefixUnary(tok) && tok->link()->strAt(1) == "(") { // Lambda
+                // What we do here:
+                // - Nest the round bracket under the square bracket.
+                // - Nest what follows the lambda (if anything) with the lambda opening [
+                // - Compile the content of the lambda function as separate tree
+                Token* squareBracket = tok;
+                Token* roundBracket = squareBracket->link()->next();
+                Token* curlyBracket = Token::findsimplematch(roundBracket->link()->next(), "{");
+                tok = curlyBracket->next();
+                compileExpression(tok, op, depth);
+                op.push(roundBracket);
+                compileUnaryOp(squareBracket, 0, op, depth);
+                tok = curlyBracket->link()->next();
+                //compilePrecedence2(tok, op, depth);
+            } else {
+                Token* tok2 = tok;
+                compileBinOp(tok, compileExpression, op, depth);
+                tok = tok2->link()->next();
+            }
         } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
+            bool opPrevTopSquare = op.size() > 0 && op.top() && op.top()->str() == "[";
             compileExpression(tok, op, depth);
             tok = tok2;
             if ((tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|throw"))
                 || tok->strAt(-1) == "]"
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
-                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1)))) { // Don't treat brackets to clarify precedence as function calls
+                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
+                || (tok->strAt(-1) == "}" && opPrevTopSquare)) {
                 if (tok->strAt(1) != ")")
                     compileBinOp(tok, 0, op, depth);
                 else

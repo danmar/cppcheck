@@ -587,6 +587,7 @@ private:
         TEST_CASE(astfunction);
         TEST_CASE(asttemplate);
         TEST_CASE(astcast);
+        TEST_CASE(astlambda);
 
         TEST_CASE(startOfExecutableScope);
     }
@@ -10603,6 +10604,15 @@ private:
         ASSERT_EQUALS("afoveon_avgimage((foveon_avgimage((+=", testAst("a = foveon_avg(((short(*)[4]) image)) + foveon_avg(((short(*)[4]) image));"));
 
         ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
+    }
+
+    void astlambda() const {
+        ASSERT_EQUALS("([(return 0return", testAst("return [](){ return 0; }();"));
+        ASSERT_EQUALS("([(return 0return", testAst("return []() -> int { return 0; }();"));
+        ASSERT_EQUALS("([(return 0return", testAst("return [something]() -> int { return 0; }();"));
+        ASSERT_EQUALS("([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+
+        ASSERT_EQUALS("x([= 0return", testAst("x = [](){return 0; };"));
     }
 
     void compileLimits() {
