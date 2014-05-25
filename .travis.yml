@@ -78,6 +78,8 @@ script:
   - ./tools/test_showtimetop5.sh
 # check the files in cgf dir with xmllint
   - xmllint --noout cfg/*
+# check matchcompiler
+  - ./tools/test_matchcompiler.py
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
