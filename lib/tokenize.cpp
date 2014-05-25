@@ -4711,8 +4711,8 @@ bool Tokenizer::simplifyConstTernaryOp()
         if (tok->str() != "?")
             continue;
 
-        if (!Token::Match(tok->tokAt(-2), "<|=|,|(|[|{|}|;|case|return %bool%|%num%") &&
-            !Token::Match(tok->tokAt(-4), "<|=|,|(|[|{|}|;|case|return ( %bool%|%num% )"))
+        if (!Token::Match(tok->tokAt(-2), "<|=|,|(|[|{|}|;|case|return %bool%|%num%|%var%") &&
+            !Token::Match(tok->tokAt(-4), "<|=|,|(|[|{|}|;|case|return ( %bool%|%num%|%var% )"))
             continue;
 
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
@@ -4728,6 +4728,9 @@ bool Tokenizer::simplifyConstTernaryOp()
         //handle the GNU extension: "x ? : y" <-> "x ? x : y"
         if (semicolon->previous() == tok->next())
             tok->insertToken(tok->strAt(-offset));
+
+        if (!Token::Match(tok->tokAt(-offset), "%bool%|%num%"))
+            continue; // We can't do anything more as we don't know the variable's value
 
         // go back before the condition, if possible
         tok = tok->tokAt(-2);
