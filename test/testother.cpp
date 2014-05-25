@@ -61,6 +61,7 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
+        TEST_CASE(strPlusChar4);     // Ticket #5857 - Crash upon invalid input
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
@@ -891,7 +892,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void strPlusChar4() { // Ticket #5857
+        strPlusChar("void test() { int +; }");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void varScope(const char code[]) {
         // Clear the error buffer..
