@@ -127,7 +127,7 @@ HTML_FOOTER = """
       </div>
       <div id="footer">
         <p>
-          Cppcheck - a tool for static C/C++ code analysis
+          Cppcheck %s - a tool for static C/C++ code analysis
         </p>
         <ul>
           <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
@@ -167,6 +167,7 @@ class CppCheckHandler(XmlContentHandler):
         XmlContentHandler.__init__(self)
         self.errors = []
         self.version = '1'
+        self.versionCppcheck = '';
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -190,6 +191,8 @@ class CppCheckHandler(XmlContentHandler):
         })
 
     def handleVersion2(self, name, attributes):
+        if name == 'cppcheck':
+            self.versionCppcheck = attributes['version']
         if name == 'error':
             self.errors.append({
                 'file': '',
@@ -345,7 +348,7 @@ if __name__ == '__main__':
                          error['id'], error['severity'], error_class,
                          error['msg']))
         output_file.write('</table>')
-        output_file.write(HTML_FOOTER)
+        output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),
