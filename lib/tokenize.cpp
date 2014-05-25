@@ -2065,8 +2065,6 @@ void Tokenizer::arraySize()
     }
 }
 
-static Token *skipTernaryOp(Token *);
-
 static Token *skipTernaryOp(Token *tok)
 {
     if (!tok || tok->str() != "?")
