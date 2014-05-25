@@ -194,6 +194,7 @@ struct Signaltype {
 #define DECLARE_SIGNAL(x) {x, #x}
 static const Signaltype listofsignals[] = {
     // don't care: SIGABRT,
+    DECLARE_SIGNAL(SIGBUS),
     DECLARE_SIGNAL(SIGFPE),
     DECLARE_SIGNAL(SIGILL),
     DECLARE_SIGNAL(SIGINT),
@@ -298,21 +299,111 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     fputs(", ", f);
     fputs(sigtext, f);
     switch (signo) {
-    case SIGILL:
-        fprintf(f, " (at 0x%p).\n",
-                info->si_addr);
-        break;
+    case SIGBUS:
+        switch (info->si_code) {
+        case BUS_ADRALN: // invalid address alignment
+            fprintf(f, " - BUS_ADRALN");
+            break;
+        case BUS_ADRERR: // nonexistent physical address
+            fprintf(f, " - BUS_ADRERR");
+            break;
+        case BUS_OBJERR: // object-specific hardware error
+            fprintf(f, " - BUS_OBJERR");
+            break;
+#ifdef BUS_MCEERR_AR
+        case BUS_MCEERR_AR: // Hardware memory error consumed on a machine check;
+            fprintf(f, " - BUS_MCEERR_AR");
+            break;
+#endif
+#ifdef BUS_MCEERR_AO
+        case BUS_MCEERR_AO: // Hardware memory error detected in process but not consumed
+            fprintf(f, " - BUS_MCEERR_AO");
+            break;
+#endif
+        default:
+            break;
+        }
     case SIGFPE:
+        switch (info->si_code) {
+        case FPE_INTDIV: //     integer divide by zero
+            fprintf(f, " - FPE_INTDIV");
+            break;
+        case FPE_INTOVF: //     integer overflow
+            fprintf(f, " - FPE_INTOVF");
+            break;
+        case FPE_FLTDIV: //     floating-point divide by zero
+            fprintf(f, " - FPE_FLTDIV");
+            break;
+        case FPE_FLTOVF: //     floating-point overflow
+            fprintf(f, " - FPE_FLTOVF");
+            break;
+        case FPE_FLTUND: //     floating-point underflow
+            fprintf(f, " - FPE_FLTUND");
+            break;
+        case FPE_FLTRES: //     floating-point inexact result
+            fprintf(f, " - FPE_FLTRES");
+            break;
+        case FPE_FLTINV: //     floating-point invalid operation
+            fprintf(f, " - FPE_FLTINV");
+            break;
+        case FPE_FLTSUB: //     subscript out of range
+            fprintf(f, " - FPE_FLTSUB");
+            break;
+        default:
+            break;
+        }
         fprintf(f, " (at 0x%p).\n",
                 info->si_addr);
         break;
-    case SIGSEGV:
+    case SIGILL:
+        switch (info->si_code) {
+        case ILL_ILLOPC: //     illegal opcode
+            fprintf(f, " - ILL_ILLOPC");
+            break;
+        case ILL_ILLOPN: //    illegal operand
+            fprintf(f, " - ILL_ILLOPN");
+            break;
+        case ILL_ILLADR: //    illegal addressing mode
+            fprintf(f, " - ILL_ILLADR");
+            break;
+        case ILL_ILLTRP: //    illegal trap
+            fprintf(f, " - ILL_ILLTRP");
+            break;
+        case ILL_PRVOPC: //    privileged opcode
+            fprintf(f, " - ILL_PRVOPC");
+            break;
+        case ILL_PRVREG: //    privileged register
+            fprintf(f, " - ILL_PRVREG");
+            break;
+        case ILL_COPROC: //    coprocessor error
+            fprintf(f, " - ILL_COPROC");
+            break;
+        case ILL_BADSTK: //    internal stack error
+            fprintf(f, " - ILL_BADSTK");
+            break;
+        default:
+            break;
+        }
         fprintf(f, " (at 0x%p).\n",
                 info->si_addr);
         break;
     case SIGINT:
         bPrintCallstack=false;
         fprintf(f, ".\n");
+        break;
+    case SIGSEGV:
+        switch (info->si_code) {
+        case SEGV_MAPERR: //    address not mapped to object
+            fprintf(f, " - SEGV_MAPERR");
+            break;
+        case SEGV_ACCERR: //    invalid permissions for mapped object
+            fprintf(f, " - SEGV_ACCERR");
+            break;
+        default:
+            break;
+        }
+        fprintf(f, " (at 0x%p).\n",
+                info->si_addr);
         break;
     default:
         fputs(".\n", f);
@@ -565,8 +656,10 @@ void CppCheckExecutor::setExceptionOutput(const std::string& fn)
 {
     exceptionOutput=fn;
 }
+
 const std::string& CppCheckExecutor::getExceptionOutput()
 {
     return exceptionOutput;
 }
+
 std::string CppCheckExecutor::exceptionOutput;
