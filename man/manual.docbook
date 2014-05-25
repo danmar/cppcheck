@@ -714,6 +714,22 @@ Checking test.c...
     appreciate if you upload it to us.</para>
 
     <section>
+      <title>Using your own custom .cfg file</title>
+
+      <para>You can create and use your own .cfg files for your
+      projects.</para>
+
+      <para>The command line cppcheck will try to load custom .cfg files from
+      the working path - execute cppcheck from the path where the .cfg files
+      are.</para>
+
+      <para>The cppcheck GUI will try to load custom .cfg files from the
+      project file path. The custom .cfg files should be shown in the
+      <literal>Edit Project File</literal> dialog that you open from the
+      <literal>File</literal> menu.</para>
+    </section>
+
+    <section>
       <title>Memory/resource leaks</title>
 
       <para>Here is an example program:</para>
