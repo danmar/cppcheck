@@ -510,7 +510,6 @@ static void compilePrecedence2(Token *&tok, std::stack<Token*> &op, unsigned int
                 op.push(roundBracket);
                 compileUnaryOp(squareBracket, 0, op, depth);
                 tok = curlyBracket->link()->next();
-                //compilePrecedence2(tok, op, depth);
             } else {
                 Token* tok2 = tok;
                 compileBinOp(tok, compileExpression, op, depth);
@@ -519,7 +518,7 @@ static void compilePrecedence2(Token *&tok, std::stack<Token*> &op, unsigned int
         } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
-            bool opPrevTopSquare = op.size() > 0 && op.top() && op.top()->str() == "[";
+            bool opPrevTopSquare = !op.empty() && op.top() && op.top()->str() == "[";
             compileExpression(tok, op, depth);
             tok = tok2;
             if ((tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|throw"))
