@@ -518,23 +518,23 @@ bool MainWindow::LoadLibrary(Library *library, QString filename)
     // Try to load the library from the project folder..
     if (mProject) {
         QString path = QFileInfo(mProject->GetProjectFile()->GetFilename()).canonicalPath();
-        if (library->load(NULL, (path+"/"+filename).toLatin1()))
+        if (library->load(NULL, (path+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
             return true;
     }
 
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    if (library->load(NULL, (appPath+"/"+filename).toLatin1()))
+    if (library->load(NULL, (appPath+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
         return true;
-    if (library->load(NULL, (appPath+"/cfg/"+filename).toLatin1()))
+    if (library->load(NULL, (appPath+"/cfg/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
         return true;
 
     // Try to load the library from the cfg subfolder..
     const QString datadir = mSettings->value("DATADIR", QString()).toString();
     if (!datadir.isEmpty()) {
-        if (library->load(NULL, (datadir+"/"+filename).toLatin1()))
+        if (library->load(NULL, (datadir+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
             return true;
-        if (library->load(NULL, (datadir+"/cfg/"+filename).toLatin1()))
+        if (library->load(NULL, (datadir+"/cfg/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
             return true;
     }
 

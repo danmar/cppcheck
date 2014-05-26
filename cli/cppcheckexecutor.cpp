@@ -480,10 +480,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 {
     Settings& settings = cppcheck.settings();
     _settings = &settings;
-    bool std = settings.library.load(argv[0], "std.cfg");
+    bool std = (settings.library.load(argv[0], "std.cfg").errorcode == Library::ErrorCode::OK);
     bool posix = true;
     if (settings.standards.posix)
-        posix = settings.library.load(argv[0], "posix.cfg");
+        posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::ErrorCode::OK);
 
     if (!std || !posix) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;

@@ -493,7 +493,7 @@ private:
         errout.str("");
 
         Settings settings;
-        if (!settings.library.load("./testrunner", "../cfg/std.cfg") && !settings.library.load("./testrunner", "cfg/std.cfg")) {
+        if ((settings.library.load("./testrunner", "../cfg/std.cfg").errorcode != Library::ErrorCode::OK) && (settings.library.load("./testrunner", "cfg/std.cfg").errorcode != Library::ErrorCode::OK)) {
             complainMissingLib("std.cfg");
             return "";
         }

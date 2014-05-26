@@ -46,9 +46,22 @@ class CPPCHECKLIB Library {
 public:
     Library();
 
-    bool load(const char exename [], const char path []);
+    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, BAD_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE, BAD_ATTRIBUTE_VALUE };
+
+    class Error {
+    public:
+        Error() : errorcode(ErrorCode::OK) , reason("") {}
+        explicit Error(ErrorCode e) : errorcode(e) , reason("") {}
+        Error(ErrorCode e, const std::string &r) : errorcode(e), reason(r) {}
+        ErrorCode     errorcode;
+        std::string   reason;
+    };
+
+    Error load(const char exename [], const char path []);
+    Error load(const tinyxml2::XMLDocument &doc);
+
+    /** this is primarily meant for unit tests. it only returns true/false */
     bool loadxmldata(const char xmldata[], std::size_t len);
-    bool load(const tinyxml2::XMLDocument &doc);
 
     /** get allocation id for function by name */
     int alloc(const char name[]) const {
