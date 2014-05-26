@@ -273,7 +273,7 @@ if __name__ == '__main__':
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print('Processing errors')
-    for filename, data in files.items():
+    for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
         errors = data['errors']
 
@@ -327,7 +327,7 @@ if __name__ == '__main__':
         output_file.write('<table>')
         output_file.write(
             '<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
-        for filename, data in files.items():
+        for filename, data in sorted(files.items()):
             output_file.write(
                 "<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
