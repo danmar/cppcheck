@@ -513,32 +513,39 @@ void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-bool MainWindow::LoadLibrary(Library *library, QString filename)
+Library::Error MainWindow::LoadLibrary(Library *library, QString filename)
 {
+    Library::Error ret;
+
     // Try to load the library from the project folder..
     if (mProject) {
         QString path = QFileInfo(mProject->GetProjectFile()->GetFilename()).canonicalPath();
-        if (library->load(NULL, (path+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
-            return true;
+        ret = library->load(NULL, (path+"/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
     }
 
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    if (library->load(NULL, (appPath+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
-        return true;
-    if (library->load(NULL, (appPath+"/cfg/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
-        return true;
+    ret = library->load(NULL, (appPath+"/"+filename).toLatin1());
+    if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+        return ret;
+    ret = library->load(NULL, (appPath+"/cfg/"+filename).toLatin1());
+    if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+        return ret;
 
     // Try to load the library from the cfg subfolder..
     const QString datadir = mSettings->value("DATADIR", QString()).toString();
     if (!datadir.isEmpty()) {
-        if (library->load(NULL, (datadir+"/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
-            return true;
-        if (library->load(NULL, (datadir+"/cfg/"+filename).toLatin1()).errorcode == Library::ErrorCode::OK)
-            return true;
+        ret = library->load(NULL, (datadir+"/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
+        ret = library->load(NULL, (datadir+"/cfg/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
     }
 
-    return false;
+    return ret;
 }
 
 Settings MainWindow::GetCppcheckSettings()
@@ -562,8 +569,35 @@ Settings MainWindow::GetCppcheckSettings()
         QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
             const QString filename = library + ".cfg";
-            if (!LoadLibrary(&result.library, filename))
-                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
+            const Library::Error error = LoadLibrary(&result.library, filename);
+            if (error.errorcode != Library::ErrorCode::OK) {
+                QString errmsg;
+                switch (error.errorcode) {
+                case Library::ErrorCode::OK:
+                    break;
+                case Library::ErrorCode::FILE_NOT_FOUND:
+                    errmsg = tr("File not found");
+                    break;
+                case Library::ErrorCode::BAD_XML:
+                    errmsg = tr("Bad XML");
+                    break;
+                case Library::ErrorCode::BAD_ELEMENT:
+                    errmsg = tr("Unexpected element");
+                    break;
+                case Library::ErrorCode::MISSING_ATTRIBUTE:
+                    errmsg = tr("Missing attribute");
+                    break;
+                case Library::ErrorCode::BAD_ATTRIBUTE:
+                    errmsg = tr("Bad attribute");
+                    break;
+                case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
+                    errmsg = tr("Bad attribute value");
+                    break;
+                }
+                if (!error.reason.empty())
+                    errmsg += " '" + QString::fromStdString(error.reason) + "'";
+                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename).arg(errmsg));
+            }
         }
 
         QStringList suppressions = pfile->GetSuppressions();
@@ -605,10 +639,10 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    bool std = LoadLibrary(&result.library, "std.cfg");
+    bool std = (LoadLibrary(&result.library, "std.cfg").errorcode == Library::ErrorCode::OK);
     bool posix = true;
     if (result.standards.posix)
-        posix = LoadLibrary(&result.library, "posix.cfg");
+        posix = (LoadLibrary(&result.library, "posix.cfg").errorcode == Library::ErrorCode::OK);
 
     if (!std || !posix)
         QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located.").arg(!std ? "std.cfg" : "posix.cfg"));
