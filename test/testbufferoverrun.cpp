@@ -169,6 +169,7 @@ private:
         TEST_CASE(buffer_overrun_25); // #4096
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
+        TEST_CASE(buffer_overrun_28); // Out of bound char array access
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2717,6 +2718,11 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_28() {
+        check("char c = \"abc\"[4];");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Buffer is accessed out of bounds: \"abc\"\n", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch() {
