@@ -1244,7 +1244,7 @@ void Token::printValueFlow() const
     }
 }
 
-const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
+const ValueFlow::Value * Token::getValueLE(const MathLib::bigint& val, const Settings *settings) const
 {
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
@@ -1265,7 +1265,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     return ret;
 }
 
-const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
+const ValueFlow::Value * Token::getValueGE(const MathLib::bigint& val, const Settings *settings) const
 {
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;

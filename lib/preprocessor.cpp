@@ -1135,7 +1135,7 @@ std::string Preprocessor::getdef(std::string line, bool def)
 }
 
 /** Simplify variable in variable map. */
-static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables)
+static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string>& seenVariables)
 {
     // TODO: handle function-macros too.
 
@@ -1732,7 +1732,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         condition = "0";
 }
 
-bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::string def)
+bool Preprocessor::match_cfg_def(std::map<std::string, std::string>& cfg, std::string def)
 {
     /*
         std::cout << "cfg: \"";
