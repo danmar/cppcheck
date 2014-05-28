@@ -2213,7 +2213,7 @@ void CheckOther::checkZeroDivision()
                     continue;
             }
             zerodivError(tok,false);
-        } else if (Token::Match(tok, "[/%]") && tok->astOperand2() && !tok->astOperand2()->values.empty()) {
+        } else if (Token::Match(tok, "[/%]") && tok->astOperand2()) {
             // Value flow..
             const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
             if (value) {
