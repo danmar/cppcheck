@@ -2323,8 +2323,8 @@ private:
             ASSERT_EQUALS(false, ul->isFloatingType());
         }
         const Variable *ll = db->getVariableFromVarId(11);
-        ASSERT(ui != nullptr);
-        if (ui) {
+        ASSERT(ll != nullptr);
+        if (ll) {
             ASSERT_EQUALS("ll", ll->nameToken()->str());
             ASSERT_EQUALS(true, ll->isIntegralType());
             ASSERT_EQUALS(false, ll->isFloatingType());
