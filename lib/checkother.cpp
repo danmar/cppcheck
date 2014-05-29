@@ -3189,6 +3189,8 @@ void CheckOther::checkRedundantCopy()
             continue;
 
         const Token* tok = startTok->next()->astOperand2();
+        if (!tok)
+            continue;
         if (!Token::Match(tok->previous(), "%var% ("))
             continue;
         if (!Token::Match(tok->link(), ") )| ;")) // bailout for usage like "const A a = getA()+3"

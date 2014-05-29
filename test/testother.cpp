@@ -6358,6 +6358,14 @@ private:
                              "    }\n"
                              "}\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:7]: (performance, inconclusive) Use const reference for 'temp' to avoid unnecessary data copying.\n", errout.str());
+
+        // #5890 - crash: wesnoth desktop_util.cpp / unicode.hpp
+        check_redundant_copy("typedef std::vector<char> X;\n"
+                             "X f<X>(const X &in) {\n"
+                             "    const X s = f<X>(in);\n"
+                             "    return f<X>(s);\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNegativeShift() {
