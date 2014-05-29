@@ -62,7 +62,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 {
     Settings& settings = cppcheck->settings();
     CmdLineParser parser(&settings);
-    bool success = parser.ParseFromArgs(argc, argv);
+    const bool success = parser.ParseFromArgs(argc, argv);
 
     if (success) {
         if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
@@ -323,6 +323,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         default:
             break;
         }
+        fprintf(f, " (at 0x%p).\n",
+                info->si_addr);
+        break;
     case SIGFPE:
         switch (info->si_code) {
         case FPE_INTDIV: //     integer divide by zero
