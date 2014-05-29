@@ -577,36 +577,36 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
 
-    total_size["fgets"] = 2; // The second argument for fgets can't exceed the total size of the array
-    total_size["memcmp"] = 3;
-    total_size["memcpy"] = 3;
-    total_size["memmove"] = 3;
-    total_size["memchr"] = 3;
+    if (!(Token::simpleMatch(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))) {
 
-    if (par == 1) {
-        // reading from array
-        // if it is zero terminated properly there won't be buffer overruns
-        total_size["strncat"] = 3;
-        total_size["strncpy"] = 3;
-        total_size["memset"] = 3;
-        total_size["fread"] = 1001;     // parameter 2 * parameter 3
-        total_size["fwrite"] = 1001;    // parameter 2 * parameter 3
-    }
+        total_size["fgets"] = 2; // The second argument for fgets can't exceed the total size of the array
+        total_size["memcmp"] = 3;
+        total_size["memcpy"] = 3;
+        total_size["memmove"] = 3;
+        total_size["memchr"] = 3;
 
-    else if (par == 2) {
-        if (_settings->standards.posix) {
-            total_size["read"] = 3;
-            total_size["pread"] = 3;
-            total_size["write"] = 3;
-            total_size["recv"] = 3;
-            total_size["recvfrom"] = 3;
-            total_size["send"] = 3;
-            total_size["sendto"] = 3;
+        if (par == 1) {
+            // reading from array
+            // if it is zero terminated properly there won't be buffer overruns
+            total_size["strncat"] = 3;
+            total_size["strncpy"] = 3;
+            total_size["memset"] = 3;
+            total_size["fread"] = 1001;     // parameter 2 * parameter 3
+            total_size["fwrite"] = 1001;    // parameter 2 * parameter 3
+        }
+
+        else if (par == 2) {
+            if (_settings->standards.posix) {
+                total_size["read"] = 3;
+                total_size["pread"] = 3;
+                total_size["write"] = 3;
+                total_size["recv"] = 3;
+                total_size["recvfrom"] = 3;
+                total_size["send"] = 3;
+                total_size["sendto"] = 3;
+            }
         }
     }
-
-    if (Token::simpleMatch(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))
-        total_size.clear();
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end()) {
