@@ -5198,21 +5198,6 @@ bool Tokenizer::simplifyFunctionReturn()
     return ret;
 }
 
-
-static void incdec(std::string &value, const std::string &op)
-{
-    int ivalue = 0;
-    std::istringstream istr(value);
-    istr >> ivalue;
-    if (op == "++")
-        ++ivalue;
-    else if (op == "--")
-        --ivalue;
-    std::ostringstream ostr;
-    ostr << ivalue;
-    value = ostr.str();
-}
-
 void Tokenizer::simplifyVarDecl(bool only_k_r_fpar)
 {
     simplifyVarDecl(list.front(), nullptr, only_k_r_fpar);
@@ -6918,7 +6903,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 tok3->varId(valueVarId);
                 tok3->deleteNext();
             }
-            incdec(value, op);
+            value = MathLib::incdec(value, op);
             if (!Token::simpleMatch((*tok2)->tokAt(-2), "for (")) {
                 (*tok2)->tokAt(2)->str(value);
                 (*tok2)->tokAt(2)->varId(valueVarId);
@@ -6928,7 +6913,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
         if (indentlevel == indentlevel3 && Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
             !Token::Match(tok3->tokAt(3), "[.[]")) {
-            incdec(value, tok3->next()->str());
+            value = MathLib::incdec(value, tok3->next()->str());
             (*tok2)->tokAt(2)->str(value);
             (*tok2)->tokAt(2)->varId(valueVarId);
             if (Token::Match(tok3, "[;{}] %any% %any% ;")) {

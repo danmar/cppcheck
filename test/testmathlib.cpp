@@ -47,6 +47,7 @@ private:
         TEST_CASE(convert);
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
+        TEST_CASE(incdec);
     }
 
     void isGreater() const {
@@ -780,6 +781,25 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("x"));
         ASSERT_EQUALS(false, MathLib::isNullValue("garbage"));
         ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
+    }
+
+    void incdec() {
+        // increment
+        {
+            MathLib::biguint num = ~10U;
+            const std::string op = "++";
+            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
+            const MathLib::biguint incrementedNum = MathLib::toULongNumber(strNum);
+            ASSERT_EQUALS(num + 1U, incrementedNum);
+        }
+        // decrement
+        {
+            MathLib::biguint num = ~10U;
+            const std::string op = "--";
+            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
+            const MathLib::biguint decrementedNum = MathLib::toULongNumber(strNum);
+            ASSERT_EQUALS(num - 1U, decrementedNum);
+        }
     }
 };
 
