@@ -448,6 +448,16 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5874 - array
+        check("void testOppositeConditions2() {\n"
+              "  int array[2] = { 0, 0 };\n"
+              "  if (array[0] < 2) {\n"
+              "    array[0] += 5;\n"
+              "    if (array[0] > 2) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void emptyBrackets() {

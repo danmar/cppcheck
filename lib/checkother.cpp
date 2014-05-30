@@ -3345,6 +3345,13 @@ void CheckOther::oppositeInnerCondition()
                      (!tok->varId() && nonlocal)) {
                 if (Token::Match(tok, "%var% ++|--|="))
                     break;
+                if (Token::Match(tok,"%var% [")) {
+                    const Token *tok2 = tok->linkAt(1);
+                    while (Token::simpleMatch(tok2, "] ["))
+                        tok2 = tok2->linkAt(1);
+                    if (Token::simpleMatch(tok2, "] ="))
+                        break;
+                }
                 if (Token::Match(tok->previous(), "++|--|& %var%"))
                     break;
                 if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
