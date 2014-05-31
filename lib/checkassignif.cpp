@@ -55,7 +55,7 @@ void CheckAssignIf::assignIf()
                 const Token *endToken = Token::findsimplematch(tok, ";");
 
                 // Casting address
-                if (Token::Match(endToken->tokAt(-4), "* ) & %any% ;"))
+                if (endToken && Token::Match(endToken->tokAt(-4), "* ) & %any% ;"))
                     endToken = nullptr;
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
