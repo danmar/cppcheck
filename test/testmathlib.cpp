@@ -599,8 +599,18 @@ private:
 
     void naninf() const {
         ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "0.0")); // nan
+		ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("-0.0", "0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("-0.f", "0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("-0.0", "-0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("-.0", "-0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "-0.f")); // nan (#5875)
+		ASSERT_EQUALS("nan.0", MathLib::divide("0.f", "-0.f")); // nan (#5875)
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.0")); // inf
+		ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.f")); // inf (#5875)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)
+		ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0f")); // -inf (#5142)
+		ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
     void isNullValue() const {

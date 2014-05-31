@@ -549,12 +549,12 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
         return toString(toLongNumber(first) / b);
-    } else if (second == "0.0") {
-        if (first=="0.0" || first=="+0.0")
+    } else if (isNullValue(second)) {
+        if (isNullValue(first))
             return "nan.0";
-        if (first=="-0.0")
-            return "-nan.0";
-        return (first[0] == '-') ? "-inf.0" : "inf.0";
+		const int sign_first = (isPositive(first)) ? 1 : -1;
+		const int sign_second = (isPositive(second)) ? 1 : -1;
+        return (sign_first*sign_second == 1) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 }
