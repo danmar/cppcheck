@@ -29,7 +29,7 @@
 #include <sstream>
 #include <cctype>
 #include <stack>
-
+#include <cassert>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -270,8 +270,11 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             continue;
         }
 
+        // Preprocessor should ensure code doesn't contain any extended ascii / utf / etc.
+        assert(CurrentToken.empty() || (CurrentToken[0] & 0x80) == 0);
+
         if (ch == '.' &&
-            CurrentToken.length() > 0 &&
+            !CurrentToken.empty() &&
             std::isdigit(CurrentToken[0])) {
             // Don't separate doubles "5.4"
         } else if (std::strchr("+-", ch) &&
