@@ -6423,3 +6423,59 @@ private:
     }
 };
 static TestMemleakGLib testMemleakGLib;
+
+
+
+
+
+class TestMemleakWindows : public TestFixture {
+public:
+    TestMemleakWindows() : TestFixture("TestMemleakWindows") {
+    }
+
+private:
+    Settings settings;
+
+    void check(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Preprocess...
+        Preprocessor preprocessor(&settings, this);
+        std::istringstream istrpreproc(code);
+        std::map<std::string, std::string> actual;
+        preprocessor.preprocess(istrpreproc, actual, "test.c");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(actual[""]);
+        tokenizer.tokenize(istr, "test.c");
+        tokenizer.simplifyTokenList2();
+
+        // Check for memory leaks..
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.checkReallocUsage();
+        checkMemoryLeak.check();
+    }
+
+    void run() {
+        LOAD_LIB_2(settings.library, "windows.cfg");
+
+        TEST_CASE(openfileNoLeak);
+    }
+
+    void openfileNoLeak() {
+        check("void f() {"
+              "  OFSTRUCT OfStr;"
+              "  int hFile = OpenFile(\"file\", &OfStr, 0);"
+              "}");
+        ASSERT_EQUALS("[test.c:1]: (error) Resource leak: hFile\n", errout.str());
+
+        check("void f() {"
+              "  OFSTRUCT OfStr;"
+              "  int hFile = OpenFile(\"file\", &OfStr, OF_EXIST);"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.c:1]: (error) Resource leak: hFile\n", errout.str());
+    }
+};
+static TestMemleakWindows testMemleakWindows;
