@@ -51,7 +51,7 @@ body {
     margin: 30px;
     overflow: auto;
     padding: 5px 20px;
-    width: auto;
+    width: 60em;
 }
 
 #header {
@@ -62,14 +62,16 @@ body {
     float: left;
     margin-top: 5px;
     text-align: left;
-    width: 100px;
-    height: auto;
+    width: 130px;
+    height: 50em;
     position: fixed;
+    overflow: auto;
 }
 
 #menu > a {
     display: block;
-    margin-left: 10px;
+    margin-left: 8px;
+    font: 12px;
 }
 
 #content {
@@ -81,7 +83,7 @@ body {
     margin: 5px;
     padding: 0 10px 10px 10px;
     width: 80%;
-    padding-left: 70px;
+    padding-left: 100px;
 }
 
 .linenos {
@@ -116,8 +118,9 @@ HTML_HEAD = """
       <div id="header">
         <h1>Cppcheck report - %s</h1>
       </div>
-      <div id="menu">
+      <div id="menu" dir="rtl">
         <a href="index.html">Defect list</a>
+        <br>
 """
 
 HTML_HEAD_END = """
@@ -307,6 +310,9 @@ if __name__ == '__main__':
                               (options.title,
                                #htmlFormatter.get_style_defs('.highlight'),
                                options.title))
+            for error in errors:
+                output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+
             output_file.write(HTML_HEAD_END)
             lexer = guess_lexer_for_filename(source_filename, '')
             if options.source_encoding:
