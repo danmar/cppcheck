@@ -272,11 +272,11 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
         if (ch == '.' &&
             CurrentToken.length() > 0 &&
-            std::isdigit(CurrentToken[0])) {
+            std::isdigit(static_cast<unsigned char>(CurrentToken[0]))) {
             // Don't separate doubles "5.4"
         } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
-                   std::isdigit(CurrentToken[0]) &&
+                   std::isdigit(static_cast<unsigned char>(CurrentToken[0])) &&
                    (CurrentToken[CurrentToken.length()-1] == 'e' ||
                     CurrentToken[CurrentToken.length()-1] == 'E') &&
                    !MathLib::isHex(CurrentToken)) {
