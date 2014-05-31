@@ -61,6 +61,7 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
+        TEST_CASE(strPlusChar4);     // ast
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
@@ -901,6 +902,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void strPlusChar4() {
+        // don't crash
+        strPlusChar("int test() { int +; }");
+    }
 
 
     void varScope(const char code[]) {

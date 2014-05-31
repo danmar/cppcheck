@@ -2182,12 +2182,11 @@ void CheckOther::strPlusChar()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->str() == "+" && tok->astOperand2()) {
-                if (tok->astOperand1()->type() == Token::eString) { // string literal...
+            if (tok->str() == "+") {
+                if (tok->astOperand1() && (tok->astOperand1()->type() == Token::eString)) { // string literal...
                     if (tok->astOperand2() && (tok->astOperand2()->type() == Token::eChar || isChar(tok->astOperand2()->variable()))) // added to char variable or char constant
                         strPlusCharError(tok);
                 }
-
             }
         }
     }
