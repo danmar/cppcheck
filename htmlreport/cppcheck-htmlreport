@@ -110,9 +110,6 @@ HTML_HEAD = """
     <meta charset="utf-8">
     <title>Cppcheck - HTML report - %s</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-%s
-    </style>
   </head>
   <body>
     <div id="page">
@@ -305,7 +302,7 @@ if __name__ == '__main__':
                      'w') as output_file:
             output_file.write(HTML_HEAD %
                               (options.title,
-                               htmlFormatter.get_style_defs('.highlight'),
+                               #htmlFormatter.get_style_defs('.highlight'),
                                options.title))
 
             lexer = guess_lexer_for_filename(source_filename, '')
@@ -325,13 +322,13 @@ if __name__ == '__main__':
     print('Creating index.html')
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, '', options.title))
-        output_file.write('<table>')
+        output_file.write(HTML_HEAD % (options.title, options.title))
+        output_file.write('       <table>\n')
         output_file.write(
-            '<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
+            '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             output_file.write(
-                "<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
             for error in data['errors']:
                 if error['severity'] == 'error':
@@ -341,15 +338,15 @@ if __name__ == '__main__':
 
                 if error['id'] == 'missingInclude':
                     output_file.write(
-                        '<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+                        '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
                         (error['id'], error['severity'], error['msg']))
                 else:
                     output_file.write(
-                        "<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                        "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
                         (data['htmlfile'], error['line'], error['line'],
                          error['id'], error['severity'], error_class,
                          error['msg']))
-        output_file.write('</table>')
+        output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print('Creating style.css file')
