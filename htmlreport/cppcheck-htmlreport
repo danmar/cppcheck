@@ -118,6 +118,9 @@ HTML_HEAD = """
       </div>
       <div id="menu">
         <a href="index.html">Defect list</a>
+"""
+
+HTML_HEAD_END = """
       </div>
       <div id="content">
 """
@@ -304,7 +307,7 @@ if __name__ == '__main__':
                               (options.title,
                                #htmlFormatter.get_style_defs('.highlight'),
                                options.title))
-
+            output_file.write(HTML_HEAD_END)
             lexer = guess_lexer_for_filename(source_filename, '')
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
@@ -323,6 +326,7 @@ if __name__ == '__main__':
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
         output_file.write(HTML_HEAD % (options.title, options.title))
+        output_file.write(HTML_HEAD_END)
         output_file.write('       <table>\n')
         output_file.write(
             '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
