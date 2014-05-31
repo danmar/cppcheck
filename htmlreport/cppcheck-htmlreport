@@ -64,6 +64,7 @@ body {
     text-align: left;
     width: 100px;
     height: auto;
+    position: fixed;
 }
 
 #menu > a {
@@ -80,6 +81,7 @@ body {
     margin: 5px;
     padding: 0 10px 10px 10px;
     width: 80%;
+    padding-left: 70px;
 }
 
 .linenos {
