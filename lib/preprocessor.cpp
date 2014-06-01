@@ -38,7 +38,7 @@ bool Preprocessor::missingSystemIncludeFlag;
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
+Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger), _foundUnhandledChars(false)
 {
 
 }
@@ -486,6 +486,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                    << "Neither unicode nor extended ASCII are supported. "
                    << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
             writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
+            _foundUnhandledChars = true;
         }
 
         if (_settings && _settings->terminated())
