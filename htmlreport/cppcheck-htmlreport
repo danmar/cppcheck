@@ -48,10 +48,10 @@ body {
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    margin: 30px;
+    margin: 10px;
     overflow: auto;
-    padding: 5px 20px;
-    width: 60em;
+    padding: 5px 10px;
+    width: auto;
 }
 
 #header {
@@ -62,28 +62,38 @@ body {
     float: left;
     margin-top: 5px;
     text-align: left;
-    width: 130px;
-    height: 50em;
+    width: 150px;
+    height: 75%;
     position: fixed;
     overflow: auto;
+    z-index: 1;
 }
 
 #menu > a {
     display: block;
-    margin-left: 8px;
+    margin-left: 10px;
     font: 12px;
+    z-index: 1;
+}
+
+.highlighttable {
+    background-color:white;
+    z-index: 10;
+    position: relative;
+    margin: -10 px;
 }
 
 #content {
+    background-color: white;
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    border-left: thin solid #aaa;
     float: left;
     margin: 5px;
+    margin-left: 10px;
     padding: 0 10px 10px 10px;
     width: 80%;
-    padding-left: 100px;
+    padding-left: 150px;
 }
 
 .linenos {
@@ -119,8 +129,8 @@ HTML_HEAD = """
         <h1>Cppcheck report - %s</h1>
       </div>
       <div id="menu" dir="rtl">
-        <a href="index.html">Defect list</a>
-        <br>
+       <a href="index.html">Defect list</a>
+       <br>
 """
 
 HTML_HEAD_END = """
