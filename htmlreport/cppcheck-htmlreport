@@ -126,7 +126,7 @@ HTML_HEAD = """
   <body>
     <div id="page">
       <div id="header">
-        <h1>Cppcheck report - %s</h1>
+        <h1>Cppcheck report - %s: %s </h1>
       </div>
       <div id="menu" dir="rtl">
        <a href="index.html">Defect list</a>
@@ -319,7 +319,9 @@ if __name__ == '__main__':
             output_file.write(HTML_HEAD %
                               (options.title,
                                #htmlFormatter.get_style_defs('.highlight'),
-                               options.title))
+                               options.title,
+                               filename))
+
             for error in errors:
                 output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
 
@@ -341,7 +343,7 @@ if __name__ == '__main__':
     print('Creating index.html')
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, options.title))
+        output_file.write(HTML_HEAD % (options.title, options.title, ''))
         output_file.write(HTML_HEAD_END)
         output_file.write('       <table>\n')
         output_file.write(
