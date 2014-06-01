@@ -139,6 +139,8 @@ void CheckSizeof::checkSizeofForPointerSize()
             } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
                 variable = tok->tokAt(2);
                 variable2 = variable->nextArgument();
+                if (!variable2)
+                    continue;
                 tokVar = variable2->nextArgument();
 
             } else {

@@ -40,6 +40,7 @@ private:
         TEST_CASE(sizeofForNumericParameter);
         TEST_CASE(suspiciousSizeofCalculation);
         TEST_CASE(sizeofVoid);
+        TEST_CASE(customStrncat);
     }
 
     void check(const char code[]) {
@@ -633,6 +634,14 @@ private:
               "  (foo[0]).data++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+    }
+
+    void customStrncat() {
+        // Ensure we don't crash on custom-defined strncat, ticket #5875
+        check("char strncat ();\n"
+              "int main () {\n"
+              "  return strncat ();\n"
+              "}\n");
     }
 
 };
