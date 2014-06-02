@@ -245,6 +245,8 @@ private:
         TEST_CASE(varTypesIntegral); // known integral
         TEST_CASE(varTypesFloating); // known floating
         TEST_CASE(varTypesOther);    // (un)known
+
+        TEST_CASE(functionPrototype); // ticket #5867
     }
 
     void array() const {
@@ -2401,6 +2403,17 @@ private:
             ASSERT_EQUALS(false, b->isIntegralType());
             ASSERT_EQUALS(false, b->isFloatingType());
         }
+    }
+
+    void functionPrototype() {
+        check("int foo(int x) {\n"
+              "    extern int func1();\n"
+              "    extern int func2(int);\n"
+              "    int func3();\n"
+              "    int func4(int);\n"
+              "    return func4(x);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
