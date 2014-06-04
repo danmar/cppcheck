@@ -1581,7 +1581,8 @@ void Tokenizer::simplifyMulAndParens()
 
 bool Tokenizer::tokenize(std::istream &code,
                          const char FileName[],
-                         const std::string &configuration)
+                         const std::string &configuration,
+                         bool noSymbolDB_AST)
 {
     // make sure settings specified
     assert(_settings);
@@ -1598,21 +1599,22 @@ bool Tokenizer::tokenize(std::istream &code,
 
     Token::isCPP(isCPP());
     if (simplifyTokenList1(FileName)) {
-        createSymbolDatabase();
+        if (!noSymbolDB_AST) {
+            createSymbolDatabase();
 
-        // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
-        for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
-            const Variable* var = _symbolDatabase->getVariableFromVarId(i);
-            if (var && var->isRValueReference()) {
-                const_cast<Token*>(var->typeEndToken())->str("&");
-                const_cast<Token*>(var->typeEndToken())->insertToken("&");
-                const_cast<Token*>(var->typeEndToken()->next())->scope(var->typeEndToken()->scope());
+            // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
+            for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
+                const Variable* var = _symbolDatabase->getVariableFromVarId(i);
+                if (var && var->isRValueReference()) {
+                    const_cast<Token*>(var->typeEndToken())->str("&");
+                    const_cast<Token*>(var->typeEndToken())->insertToken("&");
+                    const_cast<Token*>(var->typeEndToken()->next())->scope(var->typeEndToken()->scope());
+                }
             }
+
+            list.createAst();
+            ValueFlow::setValues(&list, _errorLogger, _settings);
         }
-
-        list.createAst();
-
-        ValueFlow::setValues(&list, _errorLogger, _settings);
 
         return true;
     }

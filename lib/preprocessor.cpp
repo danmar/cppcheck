@@ -1806,7 +1806,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 Tokenizer tokenizer(_settings, _errorLogger);
                 line.erase(0, sizeof("#pragma endasm"));
                 std::istringstream tempIstr(line);
-                tokenizer.tokenize(tempIstr, "");
+                tokenizer.tokenize(tempIstr, "", "", true);
                 if (Token::Match(tokenizer.tokens(), "( %var% = %any% )")) {
                     ret << "asm(" << tokenizer.tokens()->strAt(1) << ");";
                 }
