@@ -800,6 +800,8 @@ private:
             const MathLib::biguint decrementedNum = MathLib::toULongNumber(strNum);
             ASSERT_EQUALS(num - 1U, decrementedNum);
         }
+        // invalid operation
+        ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
     }
 };
 

@@ -548,7 +548,6 @@ std::string MathLib::incdec(const std::string & var, const std::string & op)
 
     throw InternalError(0, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
     return "";
-
 }
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
