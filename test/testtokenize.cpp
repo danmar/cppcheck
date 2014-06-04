@@ -4795,6 +4795,9 @@ private:
                       tokenizeDebugListing("class C {\n"
                                            "    C(int&& a);\n"
                                            "};"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( int & & ) ;\n", tokenizeDebugListing("void foo(int&&);"));
     }
 
     void varid_arrayFuncPar() {

@@ -3493,6 +3493,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     elseif();
 
+    // Simplify nameless rValue references - named ones are simplified later
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "&& [,)]")) {
+            tok->str("&");
+            tok->insertToken("&");
+        }
+    }
+
     validate();
     return true;
 }
