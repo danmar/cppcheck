@@ -838,13 +838,13 @@ private:
 
 
     void parentheses1() {
-        ASSERT_EQUALS("<= 110 ;", tok("<= (10+100);"));
+        ASSERT_EQUALS("a <= 110 ;", tok("a <= (10+100);"));
         ASSERT_EQUALS("while ( x ( ) == -1 ) { }", tok("while((x()) == -1){ }"));
     }
 
     void parenthesesVar() {
         // remove parentheses..
-        ASSERT_EQUALS("= p ;", tok("= (p);"));
+        ASSERT_EQUALS("a = p ;", tok("a = (p);"));
         ASSERT_EQUALS("if ( a < p ) { }", tok("if(a<(p)){}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
@@ -859,7 +859,7 @@ private:
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } p = 1 ; }", tok("void f(){int p; if ( p ) { } (p) = 1;}"));
 
         // keep parentheses..
-        ASSERT_EQUALS("= a ;", tok("= (char)a;"));
+        ASSERT_EQUALS("b = a ;", tok("b = (char)a;"));
         ASSERT_EQUALS("cast < char * > ( p )", tok("cast<char *>(p)"));
         ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( 2 * p == 0 ) { } }", tok("void f(){int p; if (2*p == 0) {}}"));
@@ -3071,8 +3071,8 @@ private:
         }
 
         {
-            const char code[] = "= 1 ? 0 : ({ 0; });";
-            ASSERT_EQUALS("= 0 ;", tok(code));
+            const char code[] = "a = 1 ? 0 : ({ 0; });";
+            ASSERT_EQUALS("a = 0 ;", tok(code));
         }
 
         //GNU extension: "x ?: y" <-> "x ? x : y"
@@ -4611,9 +4611,11 @@ private:
                              "union A;");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The union 'A' forward declaration is unnecessary. Type union is already declared earlier.\n", errout.str());
 
-        checkSimplifyTypedef("typedef std::map<std::string, int> A;\n"
-                             "class A;");
+        const char code [] = "typedef std::map<std::string, int> A;\n"
+                             "class A;";
+        checkSimplifyTypedef(code);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) The class 'A' forward declaration is unnecessary. Type class is already declared earlier.\n", errout.str());
+        TODO_ASSERT_EQUALS("class A ;", "class std :: map < std :: string , int > ;", tok(code));
     }
 
     void simplifyTypedef43() {

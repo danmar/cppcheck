@@ -339,8 +339,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int &b) {\n"
-              "    if (!strtok(NULL," ")) { b = 1; }\n"
-              "    else { if (!strtok(NULL," ")) { b = 2; } }\n"
+              "    if (!strtok(NULL, \" \")) { b = 1; }\n"
+              "    else { if (!strtok(NULL, \" \")) { b = 2; } }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
