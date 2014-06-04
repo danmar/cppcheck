@@ -51,6 +51,27 @@ TokenList::~TokenList()
 
 //---------------------------------------------------------------------------
 
+const std::string& TokenList::getSourceFilePath() const
+{
+    if (getFiles().empty()) {
+        static const std::string empty;
+        return empty;
+    }
+    return getFiles()[0];
+}
+
+bool TokenList::isC() const
+{
+    return _settings->enforcedLang == Settings::C || (_settings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
+}
+
+bool TokenList::isCPP() const
+{
+    return _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+}
+
+//---------------------------------------------------------------------------
+
 // Deallocate lists..
 void TokenList::deallocateTokens()
 {

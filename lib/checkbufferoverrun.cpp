@@ -1502,7 +1502,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             // nextTok : number of tokens used in variable declaration - used to skip to next statement.
             int nextTok = 0;
 
-            _errorLogger->reportProgress(_tokenizer->getSourceFilePath(),
+            _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
                                          "Check (BufferOverrun::checkGlobalAndLocalVariable)",
                                          tok->progressValue());
 

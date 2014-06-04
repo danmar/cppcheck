@@ -413,7 +413,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             ErrorLogger::ErrorMessage::FileLocation loc2;
             loc2.setfile(Path::toNativeSeparators(FileName));
             locationList.push_back(loc2);
-            loc.setfile(_tokenizer.getSourceFilePath());
+            loc.setfile(_tokenizer.list.getSourceFilePath());
         }
         locationList.push_back(loc);
         const ErrorLogger::ErrorMessage errmsg(locationList,

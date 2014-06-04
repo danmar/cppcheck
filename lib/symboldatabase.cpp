@@ -49,7 +49,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
         if (_errorLogger)
-            _errorLogger->reportProgress(_tokenizer->getSourceFilePath(),
+            _errorLogger->reportProgress(_tokenizer->list.getSourceFilePath(),
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class

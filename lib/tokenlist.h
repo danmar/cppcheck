@@ -40,6 +40,15 @@ public:
         _settings = settings;
     }
 
+    /** @return the source file path. e.g. "file.cpp" */
+    const std::string& getSourceFilePath() const;
+
+    /** Is the code C. Used for bailouts */
+    bool isC() const;
+
+    /** Is the code CPP. Used for bailouts */
+    bool isCPP() const;
+
     /**
      * Delete all tokens in given token list
      * @param tok token list to delete

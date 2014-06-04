@@ -61,10 +61,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // No filename set yet..
         if (usage.filename.empty()) {
-            usage.filename = tokenizer.getSourceFilePath();
+            usage.filename = tokenizer.list.getSourceFilePath();
         }
         // Multiple files => filename = "+"
-        else if (usage.filename != tokenizer.getSourceFilePath()) {
+        else if (usage.filename != tokenizer.list.getSourceFilePath()) {
             //func.filename = "+";
             usage.usedOtherFile |= usage.usedSameFile;
         }
@@ -92,7 +92,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                         _functions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
                         FunctionUsage &func = _functions[markupVarToken->str()];
-                        func.filename = tokenizer.getSourceFilePath();
+                        func.filename = tokenizer.list.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
                         else

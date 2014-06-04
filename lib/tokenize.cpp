@@ -10495,25 +10495,6 @@ void Tokenizer::simplifyMathExpressions()
     }
 }
 
-const std::string& Tokenizer::getSourceFilePath() const
-{
-    if (list.getFiles().empty()) {
-        static const std::string empty;
-        return empty;
-    }
-    return list.getFiles()[0];
-}
-
-bool Tokenizer::isC() const
-{
-    return _settings->enforcedLang == Settings::C || (_settings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
-}
-
-bool Tokenizer::isCPP() const
-{
-    return _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
-}
-
 void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
     const std::list<const Token*> callstack(1, tok);
