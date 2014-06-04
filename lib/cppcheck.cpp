@@ -481,7 +481,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
             // determine location..
             ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.setfile(tokenizer.getSourceFilePath());
+            loc.setfile(tokenizer.list.getSourceFilePath());
             loc.line = 0;
 
             std::size_t len = 0;

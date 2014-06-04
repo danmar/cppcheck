@@ -37,7 +37,7 @@ Library::Error Library::load(const char exename[], const char path[])
         while (p.find(",") != std::string::npos) {
             const std::string::size_type pos = p.find(",");
             const Error &e = load(exename, p.substr(0,pos).c_str());
-            if (e.errorcode != ErrorCode::OK)
+            if (e.errorcode != OK)
                 return e;
             p = p.substr(pos+1);
         }
@@ -63,7 +63,7 @@ Library::Error Library::load(const char exename[], const char path[])
             const std::string cfgfolder(CFGDIR);
 #else
             if (!exename)
-                return Error(ErrorCode::FILE_NOT_FOUND);
+                return Error(FILE_NOT_FOUND);
             const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(exename)) + "cfg");
 #endif
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
@@ -72,13 +72,13 @@ Library::Error Library::load(const char exename[], const char path[])
         }
     }
 
-    return (error == tinyxml2::XML_NO_ERROR) ? load(doc) : Error(ErrorCode::BAD_XML);
+    return (error == tinyxml2::XML_NO_ERROR) ? load(doc) : Error(BAD_XML);
 }
 
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
-    return (tinyxml2::XML_NO_ERROR == doc.Parse(xmldata, len)) && (load(doc).errorcode == ErrorCode::OK);
+    return (tinyxml2::XML_NO_ERROR == doc.Parse(xmldata, len)) && (load(doc).errorcode == OK);
 }
 
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
@@ -86,10 +86,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 
     if (rootnode == nullptr)
-        return Error(ErrorCode::BAD_XML);
+        return Error(BAD_XML);
 
     if (strcmp(rootnode->Name(),"def") != 0)
-        return Error(ErrorCode::BAD_ELEMENT, rootnode->Name());
+        return Error(BAD_ELEMENT, rootnode->Name());
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(),"memory")==0 || strcmp(node->Name(),"resource")==0) {
@@ -125,17 +125,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 else if (strcmp(memorynode->Name(),"use")==0)
                     use.insert(memorynode->GetText());
                 else
-                    return Error(ErrorCode::BAD_ELEMENT, memorynode->Name());
+                    return Error(BAD_ELEMENT, memorynode->Name());
             }
         }
 
         else if (strcmp(node->Name(),"define")==0) {
             const char *name = node->Attribute("name");
             if (name == nullptr)
-                return Error(ErrorCode::MISSING_ATTRIBUTE, "name");
+                return Error(MISSING_ATTRIBUTE, "name");
             const char *value = node->Attribute("value");
             if (value == nullptr)
-                return Error(ErrorCode::MISSING_ATTRIBUTE, "value");
+                return Error(MISSING_ATTRIBUTE, "value");
             defines.push_back(std::string("#define ") +
                               name +
                               " " +
@@ -146,7 +146,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         else if (strcmp(node->Name(),"function")==0) {
             const char *name = node->Attribute("name");
             if (name == nullptr)
-                return Error(ErrorCode::MISSING_ATTRIBUTE, "name");
+                return Error(MISSING_ATTRIBUTE, "name");
 
             for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
                 if (strcmp(functionnode->Name(),"noreturn")==0)
@@ -182,7 +182,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             // Validate the validation expression
                             const char *p = argnode->GetText();
                             if (!std::isdigit(*p))
-                                return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, argnode->GetText());
+                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
                             for (; *p; p++) {
                                 if (std::isdigit(*p))
                                     continue;
@@ -190,7 +190,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                     continue;
                                 if (*p == ',' && *(p+1) != ',')
                                     continue;
-                                return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, argnode->GetText());
+                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
                             }
 
                             // Set validation expression
@@ -198,7 +198,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         }
 
                         else
-                            return Error(ErrorCode::BAD_ATTRIBUTE, argnode->Name());
+                            return Error(BAD_ATTRIBUTE, argnode->Name());
                     }
                     argumentChecks[name][nr].notbool   = notbool;
                     argumentChecks[name][nr].notnull   = notnull;
@@ -213,18 +213,18 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
                     _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
                 } else
-                    return Error(ErrorCode::BAD_ELEMENT, functionnode->Name());
+                    return Error(BAD_ELEMENT, functionnode->Name());
             }
         }
 
         else if (strcmp(node->Name(), "reflection") == 0) {
             for (const tinyxml2::XMLElement *reflectionnode = node->FirstChildElement(); reflectionnode; reflectionnode = reflectionnode->NextSiblingElement()) {
                 if (strcmp(reflectionnode->Name(), "call") != 0)
-                    return Error(ErrorCode::BAD_ELEMENT, reflectionnode->Name());
+                    return Error(BAD_ELEMENT, reflectionnode->Name());
 
                 const char * const argString = reflectionnode->Attribute("arg");
                 if (!argString)
-                    return Error(ErrorCode::MISSING_ATTRIBUTE, "arg");
+                    return Error(MISSING_ATTRIBUTE, "arg");
 
                 _reflection[reflectionnode->GetText()] = atoi(argString);
             }
@@ -233,7 +233,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         else if (strcmp(node->Name(), "markup") == 0) {
             const char * const extension = node->Attribute("ext");
             if (!extension)
-                return Error(ErrorCode::MISSING_ATTRIBUTE, "ext");
+                return Error(MISSING_ATTRIBUTE, "ext");
             _markupExtensions.insert(extension);
 
             const char * const reporterrors = node->Attribute("reporterrors");
@@ -247,18 +247,18 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (strcmp(librarynode->Name(), "keyword") == 0)
                             _keywords[extension].insert(librarynode->Attribute("name"));
                         else
-                            return Error(ErrorCode::BAD_ELEMENT, librarynode->Name());
+                            return Error(BAD_ELEMENT, librarynode->Name());
                     }
                 }
 
                 else if (strcmp(markupnode->Name(), "exported") == 0) {
                     for (const tinyxml2::XMLElement *exporter = markupnode->FirstChildElement(); exporter; exporter = exporter->NextSiblingElement()) {
                         if (strcmp(exporter->Name(), "exporter") != 0)
-                            return Error(ErrorCode::BAD_ELEMENT, exporter->Name());
+                            return Error(BAD_ELEMENT, exporter->Name());
 
                         const char * const prefix = exporter->Attribute("prefix");
                         if (!prefix)
-                            return Error(ErrorCode::MISSING_ATTRIBUTE, "prefix");
+                            return Error(MISSING_ATTRIBUTE, "prefix");
 
                         for (const tinyxml2::XMLElement *e = exporter->FirstChildElement(); e; e = e->NextSiblingElement()) {
                             if (strcmp(e->Name(), "prefix") == 0)
@@ -266,7 +266,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             else if (strcmp(e->Name(), "suffix") == 0)
                                 _exporters[prefix].addSuffix(e->GetText());
                             else
-                                return Error(ErrorCode::BAD_ELEMENT, e->Name());
+                                return Error(BAD_ELEMENT, e->Name());
                         }
                     }
                 }
@@ -276,7 +276,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (strcmp(librarynode->Name(), "importer") == 0)
                             _importers[extension].insert(librarynode->GetText());
                         else
-                            return Error(ErrorCode::BAD_ELEMENT, librarynode->Name());
+                            return Error(BAD_ELEMENT, librarynode->Name());
                     }
                 }
 
@@ -298,19 +298,19 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         }
 
                         else
-                            return Error(ErrorCode::BAD_ELEMENT, blocknode->Name());
+                            return Error(BAD_ELEMENT, blocknode->Name());
                     }
                 }
 
                 else
-                    return Error(ErrorCode::BAD_ELEMENT, markupnode->Name());
+                    return Error(BAD_ELEMENT, markupnode->Name());
             }
         }
 
         else
-            return Error(ErrorCode::BAD_ELEMENT, node->Name());
+            return Error(BAD_ELEMENT, node->Name());
     }
-    return Error(ErrorCode::OK);
+    return Error(OK);
 }
 
 bool Library::isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const
