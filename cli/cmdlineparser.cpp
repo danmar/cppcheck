@@ -507,24 +507,24 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             Library::Error err = _settings->library.load(argv[0], argv[i]+10);
             std::string errmsg;
             switch (err.errorcode) {
-            case Library::ErrorCode::OK:
+            case Library::OK:
                 break;
-            case Library::ErrorCode::FILE_NOT_FOUND:
+            case Library::FILE_NOT_FOUND:
                 errmsg = "File not found";
                 break;
-            case Library::ErrorCode::BAD_XML:
+            case Library::BAD_XML:
                 errmsg = "Bad XML";
                 break;
-            case Library::ErrorCode::BAD_ELEMENT:
+            case Library::BAD_ELEMENT:
                 errmsg = "Unexpected element";
                 break;
-            case Library::ErrorCode::MISSING_ATTRIBUTE:
+            case Library::MISSING_ATTRIBUTE:
                 errmsg = "Missing attribute";
                 break;
-            case Library::ErrorCode::BAD_ATTRIBUTE:
+            case Library::BAD_ATTRIBUTE:
                 errmsg = "Bad attribute";
                 break;
-            case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
+            case Library::BAD_ATTRIBUTE_VALUE:
                 errmsg = "Bad attribute value";
                 break;
             }
