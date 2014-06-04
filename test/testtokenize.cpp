@@ -582,6 +582,7 @@ private:
         // AST data
         TEST_CASE(astexpr);
         TEST_CASE(astpar);
+        TEST_CASE(astnewdelete);
         TEST_CASE(astbrackets);
         TEST_CASE(astunaryop);
         TEST_CASE(astfunction);
@@ -10500,6 +10501,23 @@ private:
 
 
         ASSERT_EQUALS("abc.1:?1+bd.1:?+=", testAst("a =(b.c ? : 1) + 1 + (b.d ? : 1);"));
+
+        ASSERT_EQUALS("catch.(", testAst("try {} catch (...) {}"));
+
+        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&);"));
+        ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar& &);")); // Rvalue reference - simplified from && to & & by real tokenizer
+        ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
+    }
+
+    void astnewdelete() const {
+        ASSERT_EQUALS("aintnew=", testAst("a = new int;"));
+        ASSERT_EQUALS("aintnew=", testAst("a = new int[4];"));
+        ASSERT_EQUALS("aFoonew=", testAst("a = new Foo(bar);"));
+        ASSERT_EQUALS("aFoonew=", testAst("a = new Foo<bar>();"));
+        ASSERT_EQUALS("adelete", testAst("delete a;"));
+        ASSERT_EQUALS("adelete", testAst("delete (a);"));
+        ASSERT_EQUALS("adelete", testAst("delete[] a;"));
+        ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
     }
 
     void astpar() const { // parentheses
@@ -10550,6 +10568,9 @@ private:
         ASSERT_EQUALS("QT_WA{{,( QT_WA{{,( x1=",
                       testAst("QT_WA({},{x=0;});" // don't hang
                               "QT_WA({x=1;},{x=2;});"));
+
+        // function pointer
+        TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
     }
 
     void astbrackets() const { // []
