@@ -50,7 +50,7 @@ public:
 
     class Error {
     public:
-        Error() : errorcode(ErrorCode::OK) , reason("") {}
+        Error() : errorcode(OK) , reason("") {}
         explicit Error(ErrorCode e) : errorcode(e) , reason("") {}
         Error(ErrorCode e, const std::string &r) : errorcode(e), reason(r) {}
         ErrorCode     errorcode;
