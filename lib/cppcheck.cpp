@@ -380,7 +380,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (!_simplify)
             return;
 
-        Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
+        Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList2();
         timer3.Stop();
         if (!result)
