@@ -345,8 +345,11 @@ private:
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %var%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
 
-        givenACodeSampleToTokenize noType("delete", true);
-        ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
+        givenACodeSampleToTokenize noType1_cpp("delete", true, true);
+        ASSERT_EQUALS(false, Token::Match(noType1_cpp.tokens(), "%type%"));
+
+        givenACodeSampleToTokenize noType1_c("delete", true, false);
+        ASSERT_EQUALS(true, Token::Match(noType1_c.tokens(), "%type%"));
 
         givenACodeSampleToTokenize noType2("void delete", true);
         ASSERT_EQUALS(false, Token::Match(noType2.tokens(), "!!foo %type%"));

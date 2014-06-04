@@ -58,7 +58,7 @@ private:
 
 public:
     enum Type {
-        eVariable, eType, eFunction, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Name (unknown identifier)
+        eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, // Literals: Number, String, Character, User defined literal (C++11)
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
@@ -213,8 +213,17 @@ public:
     void type(Type t) {
         _type = t;
     }
+    void isKeyword(bool kwd) {
+        if (kwd)
+            _type = eKeyword;
+        else if (_type == eKeyword)
+            _type = eName;
+    }
+    bool isKeyword() const {
+        return _type == eKeyword;
+    }
     bool isName() const {
-        return _type == eName || _type == eType || _type == eVariable || _type == eFunction ||
+        return _type == eName || _type == eType || _type == eVariable || _type == eFunction || _type == eKeyword ||
                _type == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
     bool isUpperCaseName() const;
@@ -754,8 +763,6 @@ private:
     // original name like size_t
     std::string _originalName;
 
-    static bool _isCPP;
-
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
@@ -805,12 +812,6 @@ public:
     void printAst(bool verbose) const;
 
     void printValueFlow() const;
-    static void isCPP(bool isCPP) {
-        _isCPP = isCPP;
-    }
-    static bool isCPP() {
-        return _isCPP;
-    }
 };
 
 /// @}

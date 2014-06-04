@@ -31,7 +31,6 @@
 #include <stack>
 #include <algorithm>
 
-bool Token::_isCPP = true;
 
 Token::Token(Token **t) :
     tokensBack(t),
@@ -66,7 +65,7 @@ void Token::update_property_info()
         else if (_str[0] == '_' || std::isalpha((unsigned char)_str[0])) { // Name
             if (_varId)
                 _type = eVariable;
-            else if (_type != eVariable && _type != eFunction && _type != eType)
+            else if (_type != eVariable && _type != eFunction && _type != eType && _type != eKeyword)
                 _type = eName;
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _type = eNumber;
@@ -565,7 +564,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Type (%type%)
             {
                 p += 5;
-                multicompare(p, tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !Token::isCPP()), ismulticomp);
+                multicompare(p, tok->isName() && tok->varId() == 0 && !tok->isKeyword(), ismulticomp);
             }
             break;
             case 'a':
