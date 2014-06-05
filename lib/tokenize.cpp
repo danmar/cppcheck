@@ -7150,7 +7150,7 @@ void Tokenizer::simplifyReference()
         if (start) {
             tok = start;
             // replace references in this scope..
-            Token * const end = tok->next()->link();
+            Token * const end = tok->link();
             for (Token *tok2 = tok; tok2 && tok2 != end; tok2 = tok2->next()) {
                 // found a reference..
                 if (Token::Match(tok2, "[;{}] %type% & %var% (|= %var% )| ;")) {
@@ -7169,6 +7169,7 @@ void Tokenizer::simplifyReference()
                     tok2->deleteNext(6+(tok->strAt(6)==")" ? 1 : 0));
                 }
             }
+            tok = end;
         }
     }
 }
