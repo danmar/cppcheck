@@ -196,6 +196,8 @@ private:
         TEST_CASE(checkCommaSeparatedReturn);
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
+
+        TEST_CASE(integerOverflow) // #5895
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -7244,6 +7246,16 @@ private:
         check("bool f(int x, int y){\n"
               "   return isgreaterequal(x,y) && islessequal(x,y) && islessgreater(x,y) && isgreater(x,y) && isless(x,y);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void integerOverflow() { // 5895
+        // no signed integer overflow should happen
+        check("#define A 0x89504e470d0a1a0a\n"
+              "#define B 0x8a4d4e470d0a1a0a\n"
+              "void f(unsigned long long ull) {\n"
+              "    if (ull == A || ull == B);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
