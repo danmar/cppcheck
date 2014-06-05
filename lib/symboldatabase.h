@@ -843,8 +843,6 @@ public:
     bool isCPP() const;
 
 private:
-
-    // Needed by Borland C++:
     friend class Scope;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
