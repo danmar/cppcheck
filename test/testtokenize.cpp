@@ -589,6 +589,7 @@ private:
         TEST_CASE(asttemplate);
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
+        TEST_CASE(astGarbage);
 
         TEST_CASE(startOfExecutableScope);
     }
@@ -10471,9 +10472,7 @@ private:
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
-        testAst("char a[1]=\"\";"); // don't crash
-        testAst("int f(char argv[]);"); // don't crash
-        testAst("--"); // don't crash
+        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
 
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
@@ -10604,10 +10603,11 @@ private:
         ASSERT_EQUALS("1f2(+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
-        testAst("extern unsigned f(const char *);"); // don't crash
-        testAst("extern void f(const char *format, ...);"); // don't crash
-        testAst("extern int for_each_commit_graft(int (*)(int*), void *);"); // don't crash
-        testAst("for (;;) {}"); // don't crash
+        ASSERT_EQUALS("fargv[(", testAst("int f(char argv[]);"));
+        ASSERT_EQUALS("fchar(", testAst("extern unsigned f(const char *);"));
+        ASSERT_EQUALS("fcharformat*.,(", testAst("extern void f(const char *format, ...);"));
+        ASSERT_EQUALS("for_each_commit_graftint((void,(", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
+        ASSERT_EQUALS("for;;(", testAst("for (;;) {}"));
         ASSERT_EQUALS("xsizeofvoid(=", testAst("x=sizeof(void*)"));
     }
 
@@ -10666,6 +10666,14 @@ private:
         const std::string code = preprocessor.getcode(filedata, "", "");
 
         tokenizeAndStringify(code.c_str()); // just survive...
+    }
+
+    void astGarbage() {
+        testAst("--"); // don't crash
+
+        testAst("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
+                "int #define for (i = avx_test i < c[i]; i++)\n"
+                "b[i + 3] = a[i] * {}"); // Don't hang (#5787)
     }
 
     bool isStartOfExecutableScope(int offset, const char code[]) {
