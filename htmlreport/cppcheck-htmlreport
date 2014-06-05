@@ -21,10 +21,17 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    background-color: black;
     font: 13px Arial, Verdana, Sans-Serif;
     margin: 0;
-    padding: 0;
+    width: auto;
+}
+
+h1 {
+	margin: 10px;
+}
+
+#footer > p {
+	margin: 4px;
 }
 
 .error {
@@ -40,18 +47,6 @@ body {
 
 .highlight .hll {
     padding: 1px;
-}
-
-#page {
-    background-color: white;
-    border: 2px solid #aaa;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    margin: 10px;
-    overflow: auto;
-    padding: 5px 10px;
-    width: auto;
 }
 
 #header {
@@ -127,7 +122,6 @@ HTML_HEAD = """
    </style>
   </head>
   <body>
-    <div id="page">
       <div id="header">
         <h1>Cppcheck report - %s: %s </h1>
       </div>
@@ -145,15 +139,13 @@ HTML_FOOTER = """
       </div>
       <div id="footer">
         <p>
-          Cppcheck %s - a tool for static C/C++ code analysis
-        </p>
-        <ul>
-          <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
-          <li>Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></li>
-          <li>IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></li>
-        </ul>
+         Cppcheck %s - a tool for static C/C++ code analysis</br>
+         </br>
+         Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></br>
+         Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></br>
+         IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
+        <p>
       </div>
-    </div>
   </body>
 </html>
 """
