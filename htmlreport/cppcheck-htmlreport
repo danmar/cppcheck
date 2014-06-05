@@ -122,6 +122,9 @@ HTML_HEAD = """
     <meta charset="utf-8">
     <title>Cppcheck - HTML report - %s</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+%s
+   </style>
   </head>
   <body>
     <div id="page">
@@ -318,7 +321,7 @@ if __name__ == '__main__':
                      'w') as output_file:
             output_file.write(HTML_HEAD %
                               (options.title,
-                               #htmlFormatter.get_style_defs('.highlight'),
+                               htmlFormatter.get_style_defs('.highlight'),
                                options.title,
                                filename))
 
@@ -343,7 +346,7 @@ if __name__ == '__main__':
     print('Creating index.html')
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, options.title, ''))
+        output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
         output_file.write(HTML_HEAD_END)
         output_file.write('       <table>\n')
         output_file.write(
