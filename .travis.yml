@@ -34,7 +34,7 @@ before_install:
 
 script:
 # download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
-  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal 11" /tmp/kernel.cppcheck; exit; fi
+  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal" /tmp/kernel.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
