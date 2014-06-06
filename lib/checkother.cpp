@@ -1223,7 +1223,7 @@ template<class T> static T getvalue(const int test, const T value1, const T valu
     case 2:
         return value1;
     case 3:
-        return (T)(value1*0.5 + value2*0.5);
+        return (value1 + value2) / (T)2;
     case 4:
         return value2;
     case 5: {
