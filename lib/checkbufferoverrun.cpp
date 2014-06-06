@@ -281,10 +281,10 @@ static const Token *for_init(const Token *tok, unsigned int &varid, std::string 
 
         varid = tok->varId();
         varname = tok->str();
-        tok = tok->tokAt(4);
-
         if (varid == 0)
             return 0;  // failed
+
+        tok = tok->tokAt(4);
     } else if (Token::Match(tok, "%type% %var% = %any% ;")) {
         if (tok->tokAt(3)->isNumber()) {
             init_value = tok->strAt(3);
