@@ -8772,7 +8772,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
         unsigned int sz = 0;    // size of stringdata
         if (str[i+1] == 'x') {
             sz = 2;
-            while (std::isxdigit((unsigned char)str[i+sz]) && sz < 4)
+            while (sz < 4 && std::isxdigit((unsigned char)str[i+sz]))
                 sz++;
             if (sz > 2) {
                 std::istringstream istr(str.substr(i+2, sz-2));
@@ -8780,7 +8780,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
             }
         } else if (MathLib::isOctalDigit(str[i+1])) {
             sz = 2;
-            while (MathLib::isOctalDigit(str[i+sz]) && sz < 4)
+            while (sz < 4 && MathLib::isOctalDigit(str[i+sz]))
                 sz++;
             std::istringstream istr(str.substr(i+1, sz-1));
             istr >> std::oct >> c;
@@ -9012,7 +9012,6 @@ void Tokenizer::simplifyStructDecl()
     }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        Token *restart;
 
         // check for start of scope and determine if it is in a function
         if (tok->str() == "{")
@@ -9038,7 +9037,7 @@ void Tokenizer::simplifyStructDecl()
             tok = next->link();
             if (!tok)
                 break; // see #4869 segmentation fault in Tokenizer::simplifyStructDecl (invalid code)
-            restart = next;
+            Token *restart = next;
 
             // check for named type
             if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=")) {
@@ -9061,16 +9060,16 @@ void Tokenizer::simplifyStructDecl()
 
         // check for anonymous struct/union
         else if (Token::Match(tok, "struct|union {")) {
-            bool inFunction = skip.top();
+            const bool inFunction = skip.top();
             skip.push(false);
             Token *tok1 = tok;
 
-            restart = tok->next();
+            Token *restart = tok->next();
             tok = tok->next()->link();
 
             // unnamed anonymous struct/union so possibly remove it
             if (tok && tok->next() && tok->next()->str() == ";") {
-                if (tok1->str() == "union" && inFunction) {
+                if (inFunction && tok1->str() == "union") {
                     // Try to create references in the union..
                     Token *tok2 = tok1->tokAt(2);
                     while (tok2) {
@@ -9099,7 +9098,7 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 // don't remove unnamed anonymous unions from a class, struct or union
-                if (!(tok1->str() == "union" && !inFunction)) {
+                if (!(!inFunction && tok1->str() == "union")) {
                     skip.pop();
                     tok1->deleteThis();
                     if (tok1->next() == tok) {
