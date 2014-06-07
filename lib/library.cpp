@@ -181,6 +181,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         else if (strcmp(argnode->Name(), "valid") == 0) {
                             // Validate the validation expression
                             const char *p = argnode->GetText();
+                            if (*p == '-')
+                                ++p;
                             if (!std::isdigit(*p))
                                 return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
                             for (; *p; p++) {
@@ -321,6 +323,10 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
     TokenList tokenList(0);
     std::istringstream istr(ac->valid + ',');
     tokenList.createTokens(istr,"");
+    if (Token::Match(tokenList.front(), "- %num% -")) {
+        tokenList.front()->str("-" + tokenList.front()->strAt(1));
+        tokenList.front()->deleteNext();
+    }
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
             return true;

@@ -33,6 +33,7 @@ private:
         TEST_CASE(function);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
+        TEST_CASE(function_arg_valid);
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
@@ -76,8 +77,7 @@ private:
                                "    <arg nr=\"2\"><not-null/></arg>\n"
                                "    <arg nr=\"3\"><formatstr/></arg>\n"
                                "    <arg nr=\"4\"><strz/></arg>\n"
-                               "    <arg nr=\"5\"><valid>1-</valid></arg>\n"
-                               "    <arg nr=\"6\"><not-bool/></arg>\n"
+                               "    <arg nr=\"5\"><not-bool/></arg>\n"
                                "  </function>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
@@ -89,8 +89,7 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][2].notnull);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][3].formatstr);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][4].strz);
-        ASSERT_EQUALS("1-", library.argumentChecks["foo"][5].valid);
-        ASSERT_EQUALS(true, library.argumentChecks["foo"][6].notbool);
+        ASSERT_EQUALS(true, library.argumentChecks["foo"][5].notbool);
     }
 
     void function_arg_any() const {
@@ -106,6 +105,45 @@ private:
         Library library;
         library.load(doc);
         ASSERT_EQUALS(true, library.argumentChecks["foo"][-1].notuninit);
+    }
+
+    void function_arg_valid() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"><valid>1-</valid></arg>\n"
+                               "    <arg nr=\"2\"><valid>-7-0</valid></arg>\n"
+                               "    <arg nr=\"3\"><valid>1-5,8</valid></arg>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+
+        // 1-
+        ASSERT_EQUALS(false, library.isargvalid("foo", 1, -10));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 1, 0));
+        ASSERT_EQUALS(true, library.isargvalid("foo", 1, 1));
+        ASSERT_EQUALS(true, library.isargvalid("foo", 1, 10));
+
+        // -7-0
+        ASSERT_EQUALS(false, library.isargvalid("foo", 2, -10));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, -7));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, -3));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, 0));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 2, 1));
+
+        // 1-5,8
+        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 0));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 1));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 3));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 5));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 6));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 7));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 8));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 9));
     }
 
     void memory() const {
