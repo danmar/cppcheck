@@ -7251,10 +7251,8 @@ private:
 
     void integerOverflow() { // 5895
         // no signed integer overflow should happen
-        check("#define A 0x89504e470d0a1a0a\n"
-              "#define B 0x8a4d4e470d0a1a0a\n"
-              "void f(unsigned long long ull) {\n"
-              "    if (ull == A || ull == B);\n"
+        check("void f(unsigned long long ull) {\n"
+              "    if (ull == 0x89504e470d0a1a0a || ull == 0x8a4d4e470d0a1a0a) ;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
