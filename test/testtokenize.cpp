@@ -412,6 +412,7 @@ private:
         TEST_CASE(vardecl23);  // #4276 - segmentation fault
         TEST_CASE(vardecl24);  // #4187 - variable declaration within lambda function
         TEST_CASE(vardecl25);  // #4799 - segmentation fault
+        TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -6353,6 +6354,13 @@ private:
                              "void A::a() {\n"
                              "   b = new d(  [this]( const P & p) -> double { return this->func(p);}  );\n"
                              "}");
+    }
+
+    void vardecl26() { // #5907
+        const char code[] = "extern int *new, obj, player;";
+        const char expected[] = "extern int * new ; extern int obj ; extern int player ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Unspecified, "test.c"));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void volatile_variables() {

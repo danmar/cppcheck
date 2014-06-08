@@ -5257,7 +5257,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
             continue;
 
         Token *type0 = tok;
-        if (!Token::Match(type0, "::| %type%"))
+        if (!Token::Match(type0, "::|extern| %type%"))
             continue;
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
             continue;
@@ -5267,7 +5267,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
-        if (tok2->str() == "::") {
+        if (Token::Match(tok2, "::|extern")) {
             tok2 = tok2->next();
             typelen++;
         }
