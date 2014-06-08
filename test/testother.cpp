@@ -219,7 +219,7 @@ private:
         if (posix) {
             const char cfg[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"usleep\"> <arg nr=\"1\"><valid>0-999999</valid></arg> </function>\n"
+                               "  <function name=\"usleep\"> <arg nr=\"1\"><valid>0:999999</valid></arg> </function>\n"
                                "</def>";
             tinyxml2::XMLDocument xmldoc;
             xmldoc.Parse(cfg, sizeof(cfg));
@@ -768,7 +768,7 @@ private:
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"memset\"> <arg nr=\"3\"><not-bool/></arg> </function>\n"
-                           "  <function name=\"strtol\"> <arg nr=\"3\"><valid>0,2-36</valid></arg> </function>\n"
+                           "  <function name=\"strtol\"> <arg nr=\"3\"><valid>0,2:36</valid></arg> </function>\n"
                            "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
@@ -794,10 +794,10 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         invalidFunctionUsage("int f() { strtol(a,b,sizeof(a)!=12); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (comparison result) but the valid values are '0,2-36'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (comparison result) but the valid values are '0,2:36'.\n", errout.str());
 
         invalidFunctionUsage("int f() { strtol(a,b,1); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2-36'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2:36'.\n", errout.str());
 
         invalidFunctionUsage("int f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
@@ -7156,12 +7156,12 @@ private:
         check("void f(){\n"
               "usleep(1000000);\n"
               "}",nullptr,false,false,true);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000000 but the valid values are '0-999999'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000000 but the valid values are '0:999999'.\n", errout.str());
 
         check("void f(){\n"
               "usleep(1000001);\n"
               "}",nullptr,false,false,true);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000001 but the valid values are '0-999999'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is 1000001 but the valid values are '0:999999'.\n", errout.str());
     }
 
     void checkCommaSeparatedReturn() {

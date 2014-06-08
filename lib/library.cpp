@@ -181,19 +181,24 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         else if (strcmp(argnode->Name(), "valid") == 0) {
                             // Validate the validation expression
                             const char *p = argnode->GetText();
-                            if (*p == '-')
-                                ++p;
-                            if (!std::isdigit(*p))
-                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
+                            bool error = false;
+                            bool range = false;
                             for (; *p; p++) {
                                 if (std::isdigit(*p))
-                                    continue;
-                                if (*p == '-' && std::isdigit(*(p-1)))
-                                    continue;
-                                if (*p == ',' && *(p+1) != ',')
-                                    continue;
-                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
+                                    error |= (*(p+1) == '-');
+                                else if (*p == ':')
+                                    error |= range;
+                                else if (*p == '-')
+                                    error |= (!std::isdigit(*(p+1)));
+                                else if (*p == ',')
+                                    range = false;
+                                else
+                                    error = true;
+
+                                range |= (*p == ':');
                             }
+                            if (error)
+                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
 
                             // Set validation expression
                             valid = argnode->GetText();
@@ -337,18 +342,20 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
     TokenList tokenList(0);
     std::istringstream istr(ac->valid + ',');
     tokenList.createTokens(istr,"");
-    if (Token::Match(tokenList.front(), "- %num% -")) {
-        tokenList.front()->str("-" + tokenList.front()->strAt(1));
-        tokenList.front()->deleteNext();
+    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"- %num%")) {
+            tok->str("-" + tok->strAt(1));
+            tok->deleteNext();
+        }
     }
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
             return true;
-        if (Token::Match(tok, "%num% - %num%") && argvalue >= MathLib::toLongNumber(tok->str()) && argvalue <= MathLib::toLongNumber(tok->strAt(2)))
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toLongNumber(tok->str()) && argvalue <= MathLib::toLongNumber(tok->strAt(2)))
             return true;
-        if (Token::Match(tok, "%num% - ,") && argvalue >= MathLib::toLongNumber(tok->str()))
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toLongNumber(tok->str()))
             return true;
-        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,"- %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
             return true;
     }
     return false;

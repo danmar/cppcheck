@@ -112,9 +112,11 @@ private:
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
-                               "    <arg nr=\"1\"><valid>1-</valid></arg>\n"
-                               "    <arg nr=\"2\"><valid>-7-0</valid></arg>\n"
-                               "    <arg nr=\"3\"><valid>1-5,8</valid></arg>\n"
+                               "    <arg nr=\"1\"><valid>1:</valid></arg>\n"
+                               "    <arg nr=\"2\"><valid>-7:0</valid></arg>\n"
+                               "    <arg nr=\"3\"><valid>1:5,8</valid></arg>\n"
+                               "    <arg nr=\"4\"><valid>-1,5</valid></arg>\n"
+                               "    <arg nr=\"5\"><valid>:1,5</valid></arg>\n"
                                "  </function>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
@@ -145,6 +147,15 @@ private:
         ASSERT_EQUALS(false, library.isargvalid("foo", 3, 7));
         ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 8));
         ASSERT_EQUALS(false, library.isargvalid("foo", 3, 9));
+
+        // -1,5
+        ASSERT_EQUALS(false, library.isargvalid("foo", 4, -10));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 4, -1));
+
+        // :1,5
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 5, -10));
+        ASSERT_EQUALS(true,  library.isargvalid("foo", 5, 1));
+        ASSERT_EQUALS(false, library.isargvalid("foo", 5, 2));
     }
 
     void memory() const {
