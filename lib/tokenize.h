@@ -798,6 +798,9 @@ private:
         return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
     }
 
+    /** Set pod types */
+    void setPodTypes();
+
     /** settings */
     const Settings * _settings;
 

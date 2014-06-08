@@ -2457,8 +2457,12 @@ static bool isInitList(const Token *tok)
 void Tokenizer::setVarId()
 {
     // Clear all variable ids
-    for (Token *tok = list.front(); tok; tok = tok->next())
-        tok->varId(0);
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isName())
+            tok->varId(0);
+    }
+
+    setPodTypes();
 
     // Variable declarations can't start with "return" etc.
     std::set<std::string> notstart;
@@ -10518,4 +10522,25 @@ void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::
         _errorLogger->reportErr(errmsg);
     else
         Check::reportError(errmsg);
+}
+
+void Tokenizer::setPodTypes()
+{
+    if (_settings) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (!tok->isName())
+                continue;
+
+            // pod type
+            const struct Library::PodType *podType = _settings->library.podtype(tok->str());
+            if (podType) {
+                const Token *prev = tok->previous();
+                while (prev && prev->isName())
+                    prev = prev->previous();
+                if (prev && !Token::Match(prev, ";|{|}|,|("))
+                    continue;
+                tok->isStandardType(true);
+            }
+        }
+    }
 }
