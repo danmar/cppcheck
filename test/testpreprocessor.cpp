@@ -302,6 +302,7 @@ private:
         TEST_CASE(if_sizeof);
 
         TEST_CASE(double_include); // #5717
+        TEST_CASE(invalid_ifs)// #5909
     }
 
 
@@ -4041,6 +4042,27 @@ private:
         std::map<std::string,std::string> defs;
         std::set<std::string> pragmaOnce;
         preprocessor.handleIncludes(code, "123.h", includePaths, defs, pragmaOnce, std::list<std::string>());
+    }
+
+    void invalid_ifs()  {
+        const char filedata[] = "#ifdef\n"
+                                "#endif\n"
+                                "#ifdef !\n"
+                                "#endif\n"
+                                "#if defined\n"
+                                "#endif\n"
+                                "#define f(x) x\n"
+                                "#if f(2\n"
+                                "#endif\n"
+                                "int x;\n";
+
+        // Preprocess => don't crash..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
     }
 };
 

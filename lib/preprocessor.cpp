@@ -1432,7 +1432,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         }
 
         else if (line.compare(0, 5, "#else") == 0 && ! deflist.empty()) {
-            if (deflist.back() == "!") {
+            if (deflist.back() == "!" && !ndeflist.empty()) {
                 deflist.back() = ndeflist.back();
                 ndeflist.pop_back();
             } else {
@@ -1442,7 +1442,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         }
 
         else if (line.compare(0, 6, "#endif") == 0 && ! deflist.empty()) {
-            if (deflist.back() == "!")
+            if (deflist.back() == "!" && !ndeflist.empty())
                 ndeflist.pop_back();
             deflist.pop_back();
         }
