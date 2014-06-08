@@ -37,6 +37,7 @@ private:
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
+        TEST_CASE(podtype);
     }
 
     void empty() const {
@@ -209,6 +210,22 @@ private:
 
         ASSERT(Library::isresource(library.alloc("CreateX")));
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
+    }
+
+    void podtype() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <podtype name=\"s16\" sizeof=\"2\"/>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+
+        const struct Library::PodType *type = library.podtype("s16");
+        ASSERT_EQUALS(2U,   type ? type->size : 0U);
+        ASSERT_EQUALS(0,    type ? type->sign : '?');
     }
 };
 

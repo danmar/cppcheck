@@ -309,6 +309,20 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (strcmp(node->Name(), "podtype") == 0) {
+            const char * const name = node->Attribute("name");
+            if (!name)
+                return Error(MISSING_ATTRIBUTE, "name");
+            PodType podType = {0};
+            const char * const size = node->Attribute("sizeof");
+            if (size)
+                podType.size = atoi(size);
+            const char * const sign = node->Attribute("sign");
+            if (sign)
+                podType.sign = *sign;
+            podtypes[name] = podType;
+        }
+
         else
             return Error(BAD_ELEMENT, node->Name());
     }

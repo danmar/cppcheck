@@ -290,6 +290,15 @@ public:
     std::set<std::string> returnuninitdata;
     std::vector<std::string> defines; // to provide some library defines
 
+    struct PodType {
+        unsigned int   size;
+        char           sign;
+    };
+    const struct PodType *podtype(const std::string &name) const {
+        const std::map<std::string, struct PodType>::const_iterator it = podtypes.find(name);
+        return (it != podtypes.end()) ? &(it->second) : nullptr;
+    }
+
 private:
     class ExportedFunctions {
     public:
@@ -359,7 +368,7 @@ private:
     std::map<std::string, std::set<std::string> > _importers; // keywords that import variables/functions
     std::map<std::string,int> _reflection; // invocation of reflection
     std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
-
+    std::map<std::string, struct PodType> podtypes; // pod types
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
 
