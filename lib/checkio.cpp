@@ -1404,7 +1404,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     break;
                 } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
                     tok1 = tok1->link();
-                else if (tok1->str() == "<" && tok1->link())
+                else if (tok1->link() && tok1->str() == "<")
                     tok1 = tok1->link();
 
                 // check for some common well known functions
@@ -1419,10 +1419,13 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                             tempToken->str("long");
                             if (settings->sizeof_long != 8)
                                 tempToken->isLong(true);
-                        } else if (settings->sizeof_size_t == 4 && settings->sizeof_long == 4)
-                            tempToken->str("long");
-                        else if (settings->sizeof_size_t == 4)
-                            tempToken->str("int");
+                        } else if (settings->sizeof_size_t == 4) {
+                            if (settings->sizeof_long == 4) {
+                                tempToken->str("long");
+                            } else {
+                                tempToken->str("int");
+                            }
+                        }
 
                         tempToken->originalName("size_t");
                         tempToken->isUnsigned(true);

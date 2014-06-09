@@ -138,8 +138,6 @@ void CheckClass::constructors()
                 if (var->hasDefault())
                     usage[count].init = true;
 
-                bool inconclusive = false;
-
                 if (usage[count].assign || usage[count].init || var->isStatic())
                     continue;
 
@@ -169,14 +167,19 @@ void CheckClass::constructors()
                     }
                 }
 
+                bool inconclusive = false;
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
                 if (!var->isPointer() &&
                     !(var->type() && var->type()->needInitialization != Type::True) &&
                     (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
                     bool stdtype = false;
-                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next())
-                        stdtype |= type->isStandardType();
+                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next()) {
+                        if (type->isStandardType()) {
+                            stdtype = true;
+                            break;
+                        }
+                    }
                     if (!stdtype) {
                         if (_settings->inconclusive)
                             inconclusive = true;
@@ -942,7 +945,8 @@ void CheckClass::checkMemset()
                 const Token* arg1 = tok->tokAt(2);
                 const Token* arg3 = arg1;
                 arg3 = arg3->nextArgument();
-                arg3 = (arg3 != nullptr) ? arg3->nextArgument() : nullptr;
+                if (arg3)
+                    arg3 = arg3->nextArgument();
                 if (!arg3)
                     // weird, shouldn't happen: memset etc should have
                     // 3 arguments.
@@ -1268,12 +1272,11 @@ void CheckClass::operatorEqToSelf()
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
-        std::list<Function>::const_iterator func;
-
         // skip classes with multiple inheritance
         if (scope->definedType->derivedFrom.size() > 1)
             continue;
 
+        std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody) {
                 // make sure that the operator takes an object of the same type as *this, otherwise we can't detect self-assignment checks
