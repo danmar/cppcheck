@@ -1820,7 +1820,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         const std::string def = getdef(line, true);
         const std::string ndef = getdef(line, false);
 
-        const bool emptymatch = matching_ifdef.empty() | matched_ifdef.empty();
+        const bool emptymatch = matching_ifdef.empty() || matched_ifdef.empty();
 
         if (line.compare(0, 8, "#define ") == 0) {
             match = true;
@@ -1842,8 +1842,14 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 }
             }
 
-            for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it)
-                match &= bool(*it);
+            if (match) {
+                for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it) {
+                    if (!bool(*it)) {
+                        match = false;
+                        break;
+                    }
+                }
+            }
 
             if (match) {
                 std::string::size_type pos = line.find_first_of(" (", 8);
@@ -1915,8 +1921,12 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
         if (!line.empty() && line[0] == '#') {
             match = true;
-            for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it)
-                match &= bool(*it);
+            for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it) {
+                if (!bool(*it)) {
+                    match = false;
+                    break;
+                }
+            }
         }
 
         // #error => return ""
