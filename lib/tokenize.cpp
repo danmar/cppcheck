@@ -3908,7 +3908,7 @@ void Tokenizer::simplifyRealloc()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "(" || tok->str() == "[" ||
-            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
+            (tok->previous() && tok->str() == "{" && tok->previous()->str() == "="))
             tok = tok->link();
         else if (Token::Match(tok, "[;{}] %var% = realloc (")) {
             tok = tok->tokAt(3);
@@ -3987,7 +3987,7 @@ void Tokenizer::simplifyFlowControl()
     for (Token *begin = list.front(); begin; begin = begin->next()) {
 
         if (begin->str() == "(" || begin->str() == "[" ||
-            (begin->str() == "{" && begin->previous() && begin->strAt(-1) == "="))
+            (begin->previous() && begin->str() == "{" && begin->strAt(-1) == "="))
             begin = begin->link();
 
         //function scope
@@ -4430,7 +4430,7 @@ void Tokenizer::simplifyCompoundAssignment()
                             break;
                         }
 
-                        someOperator |= (tok2->isOp() || tok2->str() == "?");
+                        someOperator = someOperator || tok2->isOp() || tok2->str() == "?";
                     }
                 }
 
@@ -4473,7 +4473,7 @@ void Tokenizer::simplifyConditionOperator()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "(" || tok->str() == "[" ||
-            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
+            (tok->previous() && tok->str() == "{" && tok->previous()->str() == "="))
             tok = tok->link();
 
         if (Token::Match(tok, "[{};] *| %var% = %any% ? %any% : %any% ;") ||
@@ -4734,7 +4734,7 @@ bool Tokenizer::simplifyConstTernaryOp()
 
         // Find the token ":" then go to the next token
         Token *semicolon = skipTernaryOp(tok);
-        if (!semicolon || semicolon->previous()->str() != ":" || !semicolon->next())
+        if (!semicolon || !semicolon->next() || semicolon->previous()->str() != ":")
             continue;
 
         //handle the GNU extension: "x ? : y" <-> "x ? x : y"
@@ -4773,7 +4773,7 @@ bool Tokenizer::simplifyConstTernaryOp()
                 else if (endTok->str() == "?")
                     ++ternaryOplevel;
                 else if (Token::Match(endTok, ")|}|]|;|,|:")) {
-                    if (endTok->str() == ":" && ternaryOplevel)
+                    if (ternaryOplevel && endTok->str() == ":")
                         --ternaryOplevel;
                     else {
                         Token::eraseTokens(semicolon->tokAt(-2), endTok);
@@ -5331,15 +5331,15 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
             for (Token *tok3 = tok2; tok3; tok3 = tok3->next()) {
                 ++typelen;
 
-                if (tok3->str() == "<" && !parens) {
+                if (!parens && tok3->str() == "<") {
                     ++indentlevel;
-                } else if (tok3->str() == ">" && !parens) {
+                } else if (!parens && tok3->str() == ">") {
                     if (indentlevel == 0) {
                         tok2 = tok3->next();
                         break;
                     }
                     --indentlevel;
-                } else if (tok3->str() == ">>" && !parens) {
+                } else if (!parens && tok3->str() == ">>") {
                     if (indentlevel <= 1U) {
                         tok2 = tok3->next();
                         break;
@@ -5367,13 +5367,13 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         //pattern: "%type% *| ... *| const| %var% ,|="
         if (Token::Match(tok2, "%type%") ||
             (tok2 && tok2->previous() && tok2->previous()->str() == ">")) {
-            bool ispointer = false;
             Token *varName = tok2;
             if (!tok2->previous() || tok2->previous()->str() != ">")
                 varName = varName->next();
             else
                 --typelen;
             //skip all the pointer part
+            bool ispointer = false;
             while (varName && varName->str() == "*") {
                 ispointer = true;
                 varName = varName->next();
@@ -5484,10 +5484,12 @@ void Tokenizer::simplifyPlatformTypes()
             type = isLong;
         else
             type = isLongLong;
-    } else if (_settings->sizeof_size_t == 4 && _settings->sizeof_long == 4)
-        type = isLong;
-    else if (_settings->sizeof_size_t == 4)
-        type = isInt;
+    } else if (_settings->sizeof_size_t == 4) {
+        if (_settings->sizeof_long == 4)
+            type = isLong;
+        else
+            type = isInt;
+    }
     else
         return;
 
@@ -7451,7 +7453,7 @@ void Tokenizer::simplifyEnum()
             // check for name
             if (tok->next()->isName()) {
                 enumType = tok->next();
-                tok = tok->next();
+                tok = enumType;
             }
 
             // check for C++0x typed enumeration
@@ -7464,7 +7466,7 @@ void Tokenizer::simplifyEnum()
                 }
 
                 typeTokenStart = tok->next();
-                tok = tok->next();
+                tok = typeTokenStart;
                 typeTokenEnd = typeTokenStart;
 
                 while (typeTokenEnd->next() && (typeTokenEnd->next()->str() == "::" ||
@@ -7507,16 +7509,15 @@ void Tokenizer::simplifyEnum()
             // previous value or 0 if it is the first one.
             std::map<std::string,EnumValue> enumValues;
             for (; tok1 && tok1 != end; tok1 = tok1->next()) {
-                Token * enumName = 0;
-                Token * enumValue = 0;
-                Token * enumValueStart = 0;
-                Token * enumValueEnd = 0;
-
                 if (tok1->str() == "(") {
                     tok1 = tok1->link();
                     continue;
                 }
 
+                Token * enumName = 0;
+                Token * enumValue = 0;
+                Token * enumValueStart = 0;
+                Token * enumValueEnd = 0;
                 if (Token::Match(tok1->previous(), ",|{ %type% ,|}")) {
                     // no value specified
                     enumName = tok1;
@@ -7607,6 +7608,8 @@ void Tokenizer::simplifyEnum()
 
             // Substitute enum values
             {
+                if (!tok1)
+                    return;
                 if (_settings->terminated())
                     return;
 
@@ -7623,8 +7626,6 @@ void Tokenizer::simplifyEnum()
                 bool simplify = false;
                 EnumValue *ev = nullptr;
 
-                if (!tok1)
-                    return;
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
                         --level;
@@ -7771,8 +7772,10 @@ void Tokenizer::simplifyEnum()
                                     ++indentlevel;
                                 else if (enumtok->str() == ")")
                                     --indentlevel;
-                                if (indentlevel == 0)
-                                    hasOp |= enumtok->isOp();
+                                if ((indentlevel == 0) && enumtok->isOp()) {
+                                    hasOp = true;
+                                    break;
+                                }
                             }
                             if (!hasOp)
                                 tok2 = copyTokens(tok2, ev->start, ev->end);
@@ -8038,8 +8041,8 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
                 if (par == parameter) {
                     bool knowntype = false;
                     while (tok && tok->isName()) {
-                        knowntype |= tok->isStandardType();
-                        knowntype |= (tok->str() == "struct");
+                        knowntype = knowntype || tok->isStandardType();
+                        knowntype = knowntype || (tok->str() == "struct");
                         tok = tok->next();
                     }
                     if (!tok || !knowntype)
