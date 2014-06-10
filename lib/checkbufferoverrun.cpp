@@ -625,11 +625,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         if ((arg == 2 || arg == 3) && tok2) {
             if (Token::Match(tok2, "%num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(tok2->str());
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
+                if (sz < 0) {
                     bufferOverrunError(callstack, arrayInfo.varname());
+                } else {
+                    MathLib::bigint elements = 1;
+                    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+                        elements *= arrayInfo.num(i);
+                    if (sz > int(elements * arrayInfo.element_size())) {
+                        bufferOverrunError(callstack, arrayInfo.varname());
+                    }
                 }
             }
 
@@ -639,11 +643,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         } else if (arg == 1001) { // special code. This parameter multiplied with the next must not exceed total_size
             if (Token::Match(tok2, "%num% , %num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(MathLib::multiply(tok2->str(), tok2->strAt(2)));
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
+                if (sz < 0) {
                     bufferOverrunError(&tok, arrayInfo.varname());
+                } else {
+                    MathLib::bigint elements = 1;
+                    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+                        elements *= arrayInfo.num(i);
+                    if (sz > int(elements * arrayInfo.element_size())) {
+                        bufferOverrunError(&tok, arrayInfo.varname());
+                    }
                 }
             }
         }
@@ -804,8 +812,6 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     }
 
     const Token *tok2 = tok->tokAt(2);
-    const MathLib::bigint size = arrayInfo.num(0);
-
     std::string counter_name;
     unsigned int counter_varid = 0;
     std::string counter_init_value;
@@ -816,6 +822,7 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     if (tok2 == 0 || counter_varid == 0)
         return;
 
+    const MathLib::bigint size = arrayInfo.num(0);
     bool maxMinFlipped = false;
     std::string min_counter_value = counter_init_value;
     std::string max_counter_value;
@@ -826,18 +833,13 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
         if (!for_bailout(startForScope, counter_varid)) {
             // Get index variable and stopsize.
             bool condition_out_of_bounds = bool(size > 0);
-            if (MathLib::toLongNumber(counter_init_value) < size)
+            if (condition_out_of_bounds && (MathLib::toLongNumber(counter_init_value) < size))
                 condition_out_of_bounds = false;
 
             parse_for_body(startForScope, arrayInfo, counter_name, condition_out_of_bounds, counter_varid, counter_init_value, counter_init_value);
         }
         return;
     }
-
-    // Get index variable and stopsize.
-    bool condition_out_of_bounds = bool(size > 0);
-    if (MathLib::toLongNumber(max_counter_value) < size)
-        condition_out_of_bounds = false;
 
     // Goto the end of the condition
     while (tok2 && tok2->str() != ";") {
@@ -849,11 +851,17 @@ void CheckBufferOverrun::checkScopeForBody(const Token *tok, const ArrayInfo &ar
     }
     if (!tok2 || tok2->str() != ";")
         return;
+
+    // Get index variable and stopsize.
+    bool condition_out_of_bounds = bool(size > 0);
+    if (condition_out_of_bounds && MathLib::toLongNumber(max_counter_value) < size)
+        condition_out_of_bounds = false;
+
     const bool hasFor3 = tok2->next()->str() != ")";
     if (hasFor3 && !for3(tok2->next(), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
         return;
 
-    if (Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) < size)
+    if (condition_out_of_bounds && Token::Match(tok2->next(), "%var% =") && MathLib::toLongNumber(max_counter_value) < size)
         condition_out_of_bounds = false;
 
     // Goto the end parentheses of the for-statement: "for (x; y; z)" ..

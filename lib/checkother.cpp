@@ -3324,12 +3324,14 @@ void CheckOther::oppositeInnerCondition()
             if (cond->varId()) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
-                nonlocal |= (var && (!var->isLocal() || var->isStatic()) && !var->isArgument());
-                // TODO: if var is pointer check what it points at
-                nonlocal |= (var && (var->isPointer() || var->isReference()));
+                if (var) {
+                    nonlocal = nonlocal || (!var->isLocal() || var->isStatic()) && !var->isArgument();
+                    // TODO: if var is pointer check what it points at
+                    nonlocal = nonlocal || (var->isPointer() || var->isReference());
+                }
             } else if (cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
-                nonlocal |= (cond->astParent() && cond->astParent()->isConstOp());
+                nonlocal = nonlocal || (cond->astParent() && cond->astParent()->isConstOp());
             }
         }
 

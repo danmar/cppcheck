@@ -185,17 +185,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             bool range = false;
                             for (; *p; p++) {
                                 if (std::isdigit(*p))
-                                    error |= (*(p+1) == '-');
+                                    error = error || (*(p+1) == '-');
                                 else if (*p == ':')
                                     error |= range;
                                 else if (*p == '-')
-                                    error |= (!std::isdigit(*(p+1)));
+                                    error = error || (!std::isdigit(*(p+1)));
                                 else if (*p == ',')
                                     range = false;
                                 else
                                     error = true;
 
-                                range |= (*p == ':');
+                                range = range || (*p == ':');
                             }
                             if (error)
                                 return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
