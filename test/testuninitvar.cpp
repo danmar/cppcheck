@@ -1603,7 +1603,7 @@ private:
                        "    int y;\n"
                        "    return x ? 1 : y;\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: y\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: y\n", errout.str());
 
         // Ticket #3106 - False positive
         {

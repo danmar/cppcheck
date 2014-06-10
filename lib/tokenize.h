@@ -386,11 +386,6 @@ public:
     /** Simplify "if else" */
     void elseif();
 
-    /**
-     * Simplify the operator "?:"
-     */
-    void simplifyConditionOperator();
-
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.

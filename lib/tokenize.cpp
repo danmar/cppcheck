@@ -3436,9 +3436,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // syntax is corrected.
     TemplateSimplifier::cleanupAfterSimplify(list.front());
 
-    // Simplify the operator "?:"
-    simplifyConditionOperator();
-
     // Collapse operator name tokens into single token
     // operator = => operator=
     simplifyOperatorName();
@@ -3669,8 +3666,6 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyConstTernaryOp();
         modified |= simplifyCalculations();
     }
-
-    simplifyConditionOperator();
 
     // simplify redundant for
     removeRedundantFor();
@@ -4464,105 +4459,6 @@ void Tokenizer::simplifyCompoundAssignment()
                         tokend.pop();
                     }
                 }
-            }
-        }
-    }
-}
-
-void Tokenizer::simplifyConditionOperator()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(" || tok->str() == "[" ||
-            (tok->str() == "{" && tok->previous() && tok->previous()->str() == "="))
-            tok = tok->link();
-
-        if (Token::Match(tok, "[{};] *| %var% = %any% ? %any% : %any% ;") ||
-            Token::Match(tok, "[{};] return %any% ? %any% : %any% ;")) {
-
-            // backup varids so they can be set properly
-            std::map<std::string, unsigned int> varid;
-            for (const Token *tok2 = tok->next(); tok2->str() != ";"; tok2 = tok2->next()) {
-                if (tok2->varId())
-                    varid[tok2->str()] = tok2->varId();
-            }
-
-            std::string var(tok->next()->str());
-            bool isPointer = false;
-            bool isReturn = false;
-            if (tok->next()->str() == "*") {
-                tok = tok->next();
-                var = tok->next()->str();
-                isPointer = true;
-            } else if (tok->next()->str() == "return") {
-                isReturn = true;
-            }
-
-            Token *tok2 = tok->tokAt(3 - (isReturn ? 1 : 0));
-            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
-                continue;
-            const std::string condition(tok2->str());
-            tok2 = tok2->tokAt(2);
-            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
-                continue;
-            const std::string value1(tok2->str());
-            tok2 = tok2->tokAt(2);
-            if (!tok2->isName() && !tok2->isNumber() && tok2->str()[0] != '\"')
-                continue;
-            const std::string value2(tok2->str());
-
-            if (isPointer) {
-                tok = tok->previous();
-                tok->deleteNext(9);
-            } else if (isReturn)
-                tok->deleteNext(6);
-            else
-                tok->deleteNext(8);
-
-            Token *starttok = nullptr;
-
-            std::string str;
-            if (isReturn)
-                str = "if ( condition ) { return value1 ; } return value2 ;";
-            else
-                str = "if ( condition ) { * var = value1 ; } else { * var = value2 ; }";
-
-            std::string::size_type pos1 = 0;
-            while (pos1 != std::string::npos) {
-                if (str[pos1] == '*') {
-                    pos1 += 2;
-                    if (isPointer) {
-                        tok->insertToken("*");
-                        tok = tok->next();
-                    }
-                }
-                std::string::size_type pos2 = str.find(" ", pos1);
-                if (pos2 == std::string::npos) {
-                    tok->insertToken(str.substr(pos1));
-                    pos1 = pos2;
-                } else {
-                    tok->insertToken(str.substr(pos1, pos2 - pos1));
-                    pos1 = pos2 + 1;
-                }
-                tok = tok->next();
-
-                // set links.
-                if (tok->str() == "(" || tok->str() == "{")
-                    starttok = tok;
-                else if (starttok && (tok->str() == ")" || tok->str() == "}")) {
-                    Token::createMutualLinks(starttok, tok);
-                    starttok = 0;
-                } else if (tok->str() == "condition")
-                    tok->str(condition);
-                else if (tok->str() == "var")
-                    tok->str(var);
-                else if (tok->str() == "value1")
-                    tok->str(value1);
-                else if (tok->str() == "value2")
-                    tok->str(value2);
-
-                // set varid.
-                if (varid.find(tok->str()) != varid.end())
-                    tok->varId(varid[tok->str()]);
             }
         }
     }

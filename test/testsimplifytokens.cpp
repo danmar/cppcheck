@@ -3002,11 +3002,6 @@ private:
 
     void simplifyConditionOperator() {
         {
-            const char code[] = "; x = a ? b : c;";
-            ASSERT_EQUALS("; if ( a ) { x = b ; } else { x = c ; }", tok(code));
-        }
-
-        {
             const char code[] = "(0?(false?1:2):3)";
             ASSERT_EQUALS("( 3 )", tok(code));
         }
@@ -3081,50 +3076,8 @@ private:
             ASSERT_EQUALS("; a = 1 ; b = 2 ;", tok(code));
         }
 
-        {
-            const char code[] = "int f(int b, int d)\n"
-                                "{\n"
-                                "  d = b ? b : 10;\n"
-                                "  return d;\n"
-                                "}\n";
-            ASSERT_EQUALS("int f ( int b , int d ) { if ( b ) { d = b ; } else { d = 10 ; } return d ; }", tok(code));
-        }
-
-        {
-            const char code[] = "int f(int b, int *d)\n"
-                                "{\n"
-                                "  *d = b ? b : 10;\n"
-                                "  return *d;\n"
-                                "}\n";
-            ASSERT_EQUALS("int f ( int b , int * d ) { if ( b ) { * d = b ; } else { * d = 10 ; } return * d ; }", tok(code));
-        }
-
-        {
-            const char code[] = "int f(int b, int *d)\n"
-                                "{\n"
-                                "  if(b) {b++;}"
-                                "  *d = b ? b : 10;\n"
-                                "  return *d;\n"
-                                "}\n";
-            ASSERT_EQUALS("int f ( int b , int * d ) { if ( b ) { b ++ ; } if ( b ) { * d = b ; } else { * d = 10 ; } return * d ; }", tok(code));
-        }
-
-        {
-            // Ticket #2885
-            const char code[] = "; const char *cx16 = has_cmpxchg16b ? \" -mcx16\" : \" -mno-cx16\";";
-            const char expected[] = "; const char * cx16 ; if ( has_cmpxchg16b ) { cx16 = \" -mcx16\" ; } else { cx16 = \" -mno-cx16\" ; }";
-            ASSERT_EQUALS(expected, tok(code));
-        }
         // Ticket #3572 (segmentation fault)
         ASSERT_EQUALS("0 ; x = { ? y : z ; }", tok("0; x = { ? y : z; }"));
-
-        {
-            // #4019 - varid
-            const char code[] = "; char *p; *p = a ? 1 : 0;";
-            const char expected[] = "\n\n##file 0\n"
-                                    "1: ; char * p@1 ; if ( a ) { * p@1 = 1 ; } else { * p@1 = 0 ; }\n";
-            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
-        }
 
         {
             // #3922 - (true)
@@ -3134,11 +3087,6 @@ private:
             ASSERT_EQUALS("; x = * b ;", tok("; x = (false)?*a:*b;"));
             ASSERT_EQUALS("void f ( ) { return 1 ; }", tok("void f() { char *p=0; return (p==0)?1:2; }"));
         }
-
-        // 4225 - varid gets lost
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: int a@1 ; int b@2 ; int c@3 ; int d@4 ; if ( b@2 ) { a@1 = c@3 ; } else { a@1 = d@4 ; }\n",
-                      tokenizeDebugListing("int a, b, c, d; a = b ? (int *)c : d;", true));
     }
 
     void calculations() {
