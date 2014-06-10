@@ -66,6 +66,7 @@ private:
         TEST_CASE(tokenize29);  // #5506 (segmentation fault upon invalid code)
         TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
+        TEST_CASE(tokenize32);  // Elvis operator (http://en.wikipedia.org/wiki/Elvis_operator) tokenizing
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -887,6 +888,12 @@ private:
                       tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
                                            "    void SetFunction(Other(*m_f)());\n"
                                            "};"));
+    }
+
+    void tokenize32() { // Elvis operator support
+        const char expected[] = "int a ; if ( x ) { a = x ; } else { a = 1 ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify("int a = x ? x : 1 ;", true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify("int a = x ? : 1 ;", true));
     }
 
     void wrong_syntax1() {
