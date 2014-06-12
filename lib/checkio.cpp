@@ -652,7 +652,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         // Perform type checks
                         ArgumentInfo argInfo(argListTok, _settings);
 
-                        if (argInfo.typeToken) {
+                        if (argInfo.typeToken && !argInfo.isLibraryType(_settings)) {
                             if (scan) {
                                 std::string specifier;
                                 bool done = false;
@@ -1616,6 +1616,11 @@ bool CheckIO::ArgumentInfo::isKnownType() const
         return (typeToken->isStandardType() || functionInfo->retType);
 
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");
+}
+
+bool CheckIO::ArgumentInfo::isLibraryType(const Settings *settings) const
+{
+    return typeToken && typeToken->isStandardType() && settings->library.podtype(typeToken->str());
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,

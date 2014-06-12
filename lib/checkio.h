@@ -78,6 +78,7 @@ private:
         bool isKnownType() const;
         bool isStdVectorOrString();
         bool isStdContainer(const Token *tok);
+        bool isLibraryType(const Settings *settings) const;
 
         const Variable *variableInfo;
         const Token *typeToken;
