@@ -319,7 +319,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const name = node->Attribute("name");
             if (!name)
                 return Error(MISSING_ATTRIBUTE, "name");
-            PodType podType = {0};
+            PodType podType = {0,0};
             const char * const size = node->Attribute("sizeof");
             if (size)
                 podType.size = atoi(size);
