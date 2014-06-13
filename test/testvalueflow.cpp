@@ -158,6 +158,15 @@ private:
         ASSERT_EQUALS(2U, values.size());
         ASSERT_EQUALS(4, values.front().intvalue);
         ASSERT_EQUALS(16, values.back().intvalue);
+
+        // function call => calculation
+        code  = "void f(int x) {\n"
+                "    a = x + 8;\n"
+                "}\n"
+                "void callf() {\n"
+                "    f(7);\n"
+                "}";
+        ASSERT_EQUALS(15, valueOfTok(code, "+").intvalue);
     }
 
     void valueFlowBeforeCondition() {

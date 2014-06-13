@@ -1059,8 +1059,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         const unsigned int varid2 = arg->nameToken()->varId();
         for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
             if (Token::Match(tok2, "%varid% !!=", varid2)) {
-                std::list<ValueFlow::Value> &values = const_cast<Token*>(tok2)->values;
-                values.insert(values.begin(), argvalues.begin(), argvalues.end());
+                for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
+                    setTokenValue(const_cast<Token*>(tok2), *val);
             } else if (tok2->str() == "{") {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str());
