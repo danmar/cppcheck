@@ -269,6 +269,7 @@ private:
         TEST_CASE(varid52); // Set varid for nested templates
         TEST_CASE(varid53); // #4172 - Template instantiation: T<&functionName> list[4];
         TEST_CASE(varid54); // hang
+        TEST_CASE(varid55); // #5868: Function::addArgument with varid 0 for argument named the same as a typedef
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -4052,6 +4053,24 @@ private:
     void varid54() { // hang
         // Original source code: libgc
         tokenizeDebugListing("STATIC ptr_t GC_approx_sp(void) { word sp; sp = (word)&sp; return((ptr_t)sp); }",true);
+    }
+
+    void varid55() { // Ticket #5868
+        const char code[] =     "typedef struct foo {} foo; "
+                                "void bar1(struct foo foo) {} "
+                                "void baz1(foo foo) {} "
+                                "void bar2(struct foo& foo) {} "
+                                "void baz2(foo& foo) {} "
+                                "void bar3(struct foo* foo) {} "
+                                "void baz3(foo* foo) {}";
+        const char expected[] = "\n\n##file 0\n1: struct foo { } ; "
+                                "void bar1 ( struct foo foo@1 ) { } "
+                                "void baz1 ( struct foo foo@2 ) { } "
+                                "void bar2 ( struct foo & foo@3 ) { } "
+                                "void baz2 ( struct foo & foo@4 ) { } "
+                                "void bar3 ( struct foo * foo@5 ) { } "
+                                "void baz3 ( struct foo * foo@6 ) { }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_cpp_keywords_in_c_code() {
