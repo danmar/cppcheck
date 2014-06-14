@@ -113,8 +113,7 @@ class MatchCompiler:
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
             return (
-                '(tok->isName() && tok->varId()==0U && (tok->str() != ' +
-                self._insertMatchStr('delete') + '/* delete */ || !Token::isCPP()))'
+                '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
             )
         elif tok == '%var%':
             return 'tok->isName()'
