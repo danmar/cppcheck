@@ -43,6 +43,8 @@ private:
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
 
+        TEST_CASE(virtualDestructorInconclusive); // ticket # 5807
+
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
 
@@ -1737,11 +1739,12 @@ private:
     }
 
     // Check that base classes have virtual destructors
-    void checkVirtualDestructor(const char code[]) {
+    void checkVirtualDestructor(const char code[], bool inconclusive = false) {
         // Clear the error log
         errout.str("");
 
         Settings settings;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1989,6 +1992,30 @@ private:
                                "\n"
                                "AA<double> *p = new B; delete p;");
         ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA<double>' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
+    }
+
+    void virtualDestructorInconclusive() {
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    ~Base(){}\n"
+                               "    virtual void foo(){}\n"
+                               "};\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Class 'Base' which has virtual members does not have a virtual destructor.\n", errout.str());
+
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    ~Base(){}\n"
+                               "    virtual void foo(){}\n"
+                               "};\n"
+                               "class Derived : public Base {\n"
+                               "public:\n"
+                               "    ~Derived() { bar(); }\n"
+                               "};\n"
+                               "void foo() {\n"
+                               "    Base * base = new Derived();\n"
+                               "    delete base;\n"
+                               "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void checkNoConstructor(const char code[], const char* level="style") {
