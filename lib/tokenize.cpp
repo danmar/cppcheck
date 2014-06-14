@@ -1114,6 +1114,8 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->next();
                                 }
                             }
+                        } else if (tok2->tokAt(-2) && Token::Match(tok2->tokAt(-2), "%type% *|&")) {
+                            // Ticket #5868: Don't substitute variable names
                         } else if (tok2->previous()->str() != ".") {
                             simplifyType = true;
                         }
