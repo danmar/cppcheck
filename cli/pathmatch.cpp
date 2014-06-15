@@ -18,7 +18,7 @@
 
 #include "pathmatch.h"
 #include <algorithm>
-#include <ctype.h>      // Borland: tolower
+#include <ctype.h>
 
 PathMatch::PathMatch(const std::vector<std::string> &masks, bool caseSensitive)
     : _masks(masks), _caseSensitive(caseSensitive)

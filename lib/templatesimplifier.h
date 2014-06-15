@@ -130,7 +130,7 @@ public:
      */
     static bool simplifyTemplateInstantiations(
         TokenList& tokenlist,
-        ErrorLogger& errorlogger,
+        ErrorLogger* errorlogger,
         const Settings *_settings,
         const Token *tok,
         std::list<Token *> &templateInstantiations,
@@ -145,7 +145,7 @@ public:
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
-        ErrorLogger& errorlogger,
+        ErrorLogger* errorlogger,
         const Settings *_settings,
         bool &_codeWithTemplates);
 

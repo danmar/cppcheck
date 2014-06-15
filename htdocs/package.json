@@ -17,29 +17,26 @@
     "lint": "node run-tests"
   },
   "dependencies": {
-    "clean-css": "~2.1.0",
+    "clean-css": "~2.1.8",
     "csslint": "~0.10.0",
-    "jshint": "~2.4.3",
-    "shelljs": "~0.2.6",
-    "uglify-js": "~2.4.12"
+    "jshint": "~2.5.1",
+    "shelljs": "~0.3.0",
+    "uglify-js": "~2.4.13"
   },
   "jshintConfig": {
-    "bitwise": true,
-    "boss": true,
-    "browser": false,
     "camelcase": true,
     "curly": true,
     "eqeqeq": true,
+    "forin": true,
     "indent": 4,
     "latedef": true,
-    "multistr": true,
     "noarg": true,
     "node": true,
     "noempty": true,
     "quotmark": "double",
     "shelljs": true,
     "strict": true,
-    "trailing": true,
+    "undef": true,
     "unused": true
   },
   "engines": {

@@ -70,7 +70,7 @@ public:
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;
@@ -105,12 +105,14 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
     return test(settings, filedata, line, line);
 }
 
+#ifdef GDB_HELPERS
 static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
 {
     std::cout << filedata.size();
     for (int i = i1; i < i2; ++i)
         std::cout << i << ":" << filedata[i] << std::endl;
 }
+#endif
 
 static std::vector<std::string> readfile(const std::string &filename)
 {
@@ -581,7 +583,7 @@ int main(int argc, char *argv[])
     bool def = false;
     bool maxconfigs = false;
 
-    for (int i = 1, includePathIndex = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             print = true;
         else if (strcmp(argv[i], "--hang") == 0)

@@ -24,11 +24,13 @@
 
 #include "config.h"
 #include "check.h"
-#include "settings.h"
 
-class Token;
 class Function;
 class Variable;
+
+/** Is expressions same? */
+bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
+
 
 /// @addtogroup Checks
 /// @{
@@ -60,8 +62,6 @@ public:
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkSelfAssignment();
-        checkOther.checkDuplicateIf();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
         checkOther.checkUnreachableCode();
@@ -191,9 +191,6 @@ public:
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
 
-    /** @brief %Check for assigning a variable to itself*/
-    void checkSelfAssignment();
-
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
 
@@ -263,7 +260,7 @@ public:
     void checkCastIntToCharAndBack();
 
     /** @brief %Check for using of comparison functions evaluating always to true or false. */
-    void checkComparisonFunctionIsAlwaysTrueOrFalse(void);
+    void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
 private:
     bool isUnsigned(const Variable *var) const;
@@ -273,7 +270,7 @@ private:
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
-    void oppositeInnerConditionError(const Token *tok);
+    void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
@@ -290,8 +287,8 @@ private:
     void charBitOpError(const Token *tok);
     void variableScopeError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
-    void zerodivError(const Token *tok);
-    void zerodivcondError(const Token *tokcond, const Token *tokdiv);
+    void zerodivError(const Token *tok, bool inconclusive);
+    void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
@@ -317,6 +314,7 @@ private:
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
+    void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -340,8 +338,8 @@ private:
         c.invalidFunctionArgError(0, "func_name", 1, "1-4");
         c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.udivError(0, false);
-        c.zerodivError(0);
-        c.zerodivcondError(0,0);
+        c.zerodivError(0, false);
+        c.zerodivcondError(0,0,false);
         c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
         c.doubleFreeError(0, "varname");
@@ -357,7 +355,7 @@ private:
         // style/warning
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName",false);
         c.checkCastIntToCharAndBackError(0,"func_name");
-        c.oppositeInnerConditionError(0);
+        c.oppositeInnerConditionError(0, 0);
         c.cstyleCastError(0);
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
@@ -372,7 +370,7 @@ private:
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
         c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(0, "If x > 10 the condition x > 11 is always true.");
+        c.redundantConditionError(0, "If x > 11 the condition x > 10 is always true.");
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
@@ -381,8 +379,8 @@ private:
         c.clarifyStatementError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(0, "foo");
+        c.suspiciousStringCompareError_char(0, "foo");
         c.incorrectStringBooleanError(0, "\"Hello World\"");
-        c.duplicateIfError(0, 0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
         c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
@@ -458,6 +456,7 @@ private:
                "* suspicious condition (runtime comparison of string literals)\n"
                "* suspicious condition (string literals as boolean)\n"
                "* suspicious comparison of a string literal with a char* variable\n"
+               "* suspicious comparison of '\\0' with a char* variable\n"
                "* duplicate break statement\n"
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"

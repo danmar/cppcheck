@@ -300,6 +300,9 @@ private:
         TEST_CASE(validateCfg);
 
         TEST_CASE(if_sizeof);
+
+        TEST_CASE(double_include); // #5717
+        TEST_CASE(invalid_ifs)// #5909
     }
 
 
@@ -2622,7 +2625,7 @@ private:
 
             // expand macros..
             errout.str("");
-            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+            OurPreprocessor::expandMacros(filedata, this);
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
@@ -3559,11 +3562,18 @@ private:
             errout.str("");
             settings.checkConfiguration = true;
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found.\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
 
             pragmaOnce.clear();
             errout.str("");
             settings.nomsg.addSuppression("missingIncludeSystem");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
+            ASSERT_EQUALS("", errout.str());
+
+            pragmaOnce.clear();
+            errout.str("");
+            settings = Settings();
+            settings.nomsg.addSuppression("missingInclude");
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
             ASSERT_EQUALS("", errout.str());
         }
@@ -4020,6 +4030,39 @@ private:
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
         ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
+    }
+
+    void double_include() {
+        const char code[] = "int x";
+
+        Preprocessor preprocessor(nullptr, this);
+        std::list<std::string> includePaths;
+        includePaths.push_back(".");
+        includePaths.push_back(".");
+        std::map<std::string,std::string> defs;
+        std::set<std::string> pragmaOnce;
+        preprocessor.handleIncludes(code, "123.h", includePaths, defs, pragmaOnce, std::list<std::string>());
+    }
+
+    void invalid_ifs()  {
+        const char filedata[] = "#ifdef\n"
+                                "#endif\n"
+                                "#ifdef !\n"
+                                "#endif\n"
+                                "#if defined\n"
+                                "#endif\n"
+                                "#define f(x) x\n"
+                                "#if f(2\n"
+                                "#endif\n"
+                                "int x;\n";
+
+        // Preprocess => don't crash..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
     }
 };
 

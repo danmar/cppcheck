@@ -24,7 +24,6 @@
 #include "config.h"
 #include "check.h"
 
-class Token;
 class Scope;
 class Function;
 
@@ -94,7 +93,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void checkMemset();
-    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation);
+    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
@@ -139,10 +138,11 @@ private:
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
+    void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
     void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
     void operatorEqReturnError(const Token *tok, const std::string &className);
-    void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
+    void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
     void operatorEqToSelfError(const Token *tok);
@@ -166,7 +166,7 @@ private:
         c.mallocOnClassWarning(0, "malloc", 0);
         c.mallocOnClassError(0, "malloc", 0, "std::string");
         c.operatorEqReturnError(0, "class");
-        c.virtualDestructorError(0, "Base", "Derived");
+        c.virtualDestructorError(0, "Base", "Derived", false);
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
         c.operatorEqToSelfError(0);
@@ -202,17 +202,17 @@ private:
     }
 
     // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>* analyzedFunctions=nullptr);
 
     // operatorEqToSelf helper functions
-    bool hasAllocation(const Function *func, const Scope* scope);
+    bool hasAllocation(const Function *func, const Scope* scope) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
-    bool isMemberVar(const Scope *scope, const Token *tok);
-    bool isMemberFunc(const Scope *scope, const Token *tok);
-    bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
+    bool isMemberVar(const Scope *scope, const Token *tok) const;
+    bool isMemberFunc(const Scope *scope, const Token *tok) const;
+    bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
+    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */

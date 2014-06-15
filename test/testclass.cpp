@@ -43,6 +43,8 @@ private:
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
 
+        TEST_CASE(virtualDestructorInconclusive); // ticket # 5807
+
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
 
@@ -67,6 +69,7 @@ private:
         TEST_CASE(operatorEqRetRefThis4); // ticket #1451
         TEST_CASE(operatorEqRetRefThis5); // ticket #1550
         TEST_CASE(operatorEqRetRefThis6); // ticket #2479
+        TEST_CASE(operatorEqRetRefThis7); // ticket #5782 endless recursion
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -80,6 +83,7 @@ private:
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
+        TEST_CASE(memsetOnInvalid);  // Ticket #5425: Crash upon invalid
         TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -144,6 +148,9 @@ private:
         TEST_CASE(const57); // tickets #2669 and #2477
         TEST_CASE(const58); // ticket #2698
         TEST_CASE(const59); // ticket #4646
+        TEST_CASE(const60); // ticket #3322
+        TEST_CASE(const61); // ticket #5606
+        TEST_CASE(const62); // ticket #5701
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -179,6 +186,7 @@ private:
         TEST_CASE(pureVirtualFunctionCallPrevented);
 
         TEST_CASE(duplInheritedMembers);
+        TEST_CASE(invalidInitializerList);
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -886,6 +894,25 @@ private:
             "UString& UString::operator=( const UString& s ) {\n"
             "    return assign( s );\n"
             "}");
+    }
+
+    void operatorEqRetRefThis7() { // ticket #5782 Endless recursion in CheckClass::checkReturnPtrThis()
+        checkOpertorEqRetRefThis(
+            "class basic_fbstring {\n"
+            "  basic_fbstring& operator=(int il) {\n"
+            "    return assign();\n"
+            "  }\n"
+            "  basic_fbstring& assign() {\n"
+            "    return replace();\n"
+            "  }\n"
+            "  basic_fbstring& replaceImplDiscr() {\n"
+            "    return replace();\n"
+            "  }\n"
+            "  basic_fbstring& replace() {\n"
+            "    return replaceImplDiscr();\n"
+            "  }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self
@@ -1712,11 +1739,12 @@ private:
     }
 
     // Check that base classes have virtual destructors
-    void checkVirtualDestructor(const char code[]) {
+    void checkVirtualDestructor(const char code[], bool inconclusive = false) {
         // Clear the error log
         errout.str("");
 
         Settings settings;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1966,12 +1994,36 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA<double>' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
     }
 
-    void checkNoConstructor(const char code[]) {
+    void virtualDestructorInconclusive() {
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    ~Base(){}\n"
+                               "    virtual void foo(){}\n"
+                               "};\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Class 'Base' which has virtual members does not have a virtual destructor.\n", errout.str());
+
+        checkVirtualDestructor("class Base {\n"
+                               "public:\n"
+                               "    ~Base(){}\n"
+                               "    virtual void foo(){}\n"
+                               "};\n"
+                               "class Derived : public Base {\n"
+                               "public:\n"
+                               "    ~Derived() { bar(); }\n"
+                               "};\n"
+                               "void foo() {\n"
+                               "    Base * base = new Derived();\n"
+                               "    delete base;\n"
+                               "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+    }
+
+    void checkNoConstructor(const char code[], const char* level="style") {
         // Clear the error log
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled(level);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2283,6 +2335,40 @@ private:
                       "  memset(b,0,4);\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #4461 Warn about memset/memcpy on class with references as members
+        checkNoMemset("class A {\n"
+                      "  std::string &s;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "  A a;\n"
+                      "  memset(&a, 0, sizeof(a)); \n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a reference.\n", errout.str());
+        checkNoMemset("class A {\n"
+                      "  const B&b;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "  A a;\n"
+                      "  memset(&a, 0, sizeof(a)); \n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Using 'memset' on class that contains a reference.\n", errout.str());
+    }
+
+    void memsetOnInvalid() { // Ticket #5425
+        checkNoMemset("union ASFStreamHeader {\n"
+                      "  struct AVMPACKED {\n"
+                      "    union  {\n"
+                      "      struct AVMPACKED {\n"
+                      "        int width;\n"
+                      "      } vid;\n"
+                      "    };\n"
+                      "  } hdr;\n"
+                      "};"
+                      "void parseHeader() {\n"
+                      "  ASFStreamHeader strhdr;\n"
+                      "  memset(&strhdr, 0, sizeof(strhdr));\n"
+                      "}");
     }
 
     void memsetOnStruct() {
@@ -2472,6 +2558,15 @@ private:
                       "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+
+        checkNoMemset("class A {\n"
+                      "    std::array<int, 10> ints;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str()); // std::array is POD (#5481)
     }
 
     void mallocOnClass() {
@@ -2768,8 +2863,8 @@ private:
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
-                   "const std::string & Fred::foo() { return \"\"; }", 0, false, false);
-        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", "", errout.str());
+                   "const std::string & Fred::foo() { return \"\"; }");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static.\n", errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
@@ -4062,8 +4157,7 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }");
-        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
     }
 
     void const36() { // ticket #2003
@@ -4719,6 +4813,80 @@ private:
                    "protected:\n"
                    "    int   re;\n"
                    "    int   im;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const60() { // ticket #3322
+        checkConst("class MyString {\n"
+                   "public:\n"
+                   "    MyString() : m_ptr(0){}\n"
+                   "    MyString& operator+=( const MyString& rhs ) {\n"
+                   "            delete m_ptr;\n"
+                   "            m_ptr = new char[42];\n"
+                   "    }\n"
+                   "    MyString append( const MyString& str )\n"
+                   "    {       return operator+=( str ); } \n"
+                   "    char *m_ptr;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+        checkConst("class MyString {\n"
+                   "public:\n"
+                   "    MyString() : m_ptr(0){}\n"
+                   "    MyString& operator+=( const MyString& rhs );\n"
+                   "    MyString append( const MyString& str )\n"
+                   "    {       return operator+=( str ); } \n"
+                   "    char *m_ptr;\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const61() { // ticket #5606 - don't crash
+        checkConst("class MixerParticipant : public MixerParticipant {\n"
+                   "    int GetAudioFrame();\n"
+                   "};\n"
+                   "int MixerParticipant::GetAudioFrame() {\n"
+                   "    return 0;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::GetAudioFrame' can be static.\n", errout.str());
+
+        checkConst("class MixerParticipant : public MixerParticipant {\n"
+                   "    bool InitializeFileReader() {\n"
+                   "       printf(\"music\");\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::InitializeFileReader' can be static.\n", errout.str());
+
+        // Based on an example from SVN source code causing an endless recursion within CheckClass::isConstMemberFunc()
+        // A more complete example including a template declaration like
+        //     template<typename K> class Hash{/* ... */};
+        // didn't .
+        checkConst("template<>\n"
+                   "class Hash<void> {\n"
+                   "protected:\n"
+                   "  typedef Key::key_type key_type;\n"
+                   "  void set(const Key& key);\n"
+                   "};\n"
+                   "template<typename K, int KeySize>\n"
+                   "class Hash : private Hash<void> {\n"
+                   "  typedef Hash<void> inherited;\n"
+                   "  void set(const Key& key) {\n"
+                   "      inherited::set(inherited::Key(key));\n"
+                   "  }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const62() {
+        checkConst("class A {\n"
+                   "    private:\n"
+                   "         std::unordered_map<unsigned int,unsigned int> _hash;\n"
+                   "    public:\n"
+                   "         A() : _hash() {}\n"
+                   "         unsigned int fetch(unsigned int key)\n" // cannot be 'const'
+                   "         {\n"
+                   "             return _hash[key];\n"
+                   "         }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5627,6 +5795,17 @@ private:
                                      "    Fred() { s = \"foo\"; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n" // #5640
+                                     "    std::string s;\n"
+                                     "    Fred() {\n"
+                                     "        char str[2];\n"
+                                     "        str[0] = c;\n"
+                                     "        str[1] = 0;\n"
+                                     "        s = str;\n"
+                                     "    }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
@@ -5751,6 +5930,14 @@ private:
                                      "{if (b) pure();}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
 
+        // ticket # 5831
+        checkPureVirtualFunctionCall("class abc {\n"
+                                     "public:\n"
+                                     "  virtual ~abc() throw() {}\n"
+                                     "  virtual void def(void* g) throw () = 0;\n"
+                                     "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void pureVirtualFunctionCallOtherClass() {
@@ -5843,6 +6030,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void invalidInitializerList() {
+        ASSERT_THROW(checkNoConstructor("struct R1 {\n"
+                                        "  int a;\n"
+                                        "  R1 () : a { }\n"
+                                        "};\n", "warning"), InternalError);
+    }
 };
 
 REGISTER_TEST(TestClass)

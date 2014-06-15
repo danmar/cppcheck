@@ -430,7 +430,7 @@ private:
      * @param filename filename (no path)
      * @return True if successful
      */
-    bool LoadLibrary(Library *library, QString filename);
+    Library::Error LoadLibrary(Library *library, QString filename);
 
     /**
     * @brief Update project MRU items in File-menu.

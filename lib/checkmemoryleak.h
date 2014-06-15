@@ -38,7 +38,6 @@
 #include <list>
 #include <string>
 
-class Token;
 class Scope;
 class Function;
 class Variable;

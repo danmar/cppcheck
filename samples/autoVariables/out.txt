@@ -1,0 +1,1 @@
+[samples\autoVariables\bad.c:4]: (error) Address of local auto-variable assigned to a function parameter.

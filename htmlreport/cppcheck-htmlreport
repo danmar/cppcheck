@@ -21,10 +21,17 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    background-color: black;
     font: 13px Arial, Verdana, Sans-Serif;
     margin: 0;
-    padding: 0;
+    width: auto;
+}
+
+h1 {
+	margin: 10px;
+}
+
+#footer > p {
+	margin: 4px;
 }
 
 .error {
@@ -42,18 +49,6 @@ body {
     padding: 1px;
 }
 
-#page {
-    background-color: white;
-    border: 2px solid #aaa;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    margin: 30px;
-    overflow: auto;
-    padding: 5px 20px;
-    width: auto;
-}
-
 #header {
     border-bottom: thin solid #aaa;
 }
@@ -62,24 +57,38 @@ body {
     float: left;
     margin-top: 5px;
     text-align: left;
-    width: 100px;
-    height: auto;
+    width: 150px;
+    height: 75%;
+    position: fixed;
+    overflow: auto;
+    z-index: 1;
 }
 
 #menu > a {
     display: block;
     margin-left: 10px;
+    font: 12px;
+    z-index: 1;
+}
+
+.highlighttable {
+    background-color:white;
+    z-index: 10;
+    position: relative;
+    margin: -10 px;
 }
 
 #content {
+    background-color: white;
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    border-left: thin solid #aaa;
     float: left;
     margin: 5px;
+    margin-left: 10px;
     padding: 0 10px 10px 10px;
     width: 80%;
+    padding-left: 150px;
 }
 
 .linenos {
@@ -110,15 +119,18 @@ HTML_HEAD = """
     <link rel="stylesheet" href="style.css">
     <style>
 %s
-    </style>
+   </style>
   </head>
   <body>
-    <div id="page">
       <div id="header">
-        <h1>Cppcheck report - %s</h1>
+        <h1>Cppcheck report - %s: %s </h1>
       </div>
-      <div id="menu">
-        <a href="index.html">Defect list</a>
+      <div id="menu" dir="rtl">
+       <a href="index.html">Defect list</a>
+       <br>
+"""
+
+HTML_HEAD_END = """
       </div>
       <div id="content">
 """
@@ -127,15 +139,13 @@ HTML_FOOTER = """
       </div>
       <div id="footer">
         <p>
-          Cppcheck - a tool for static C/C++ code analysis
-        </p>
-        <ul>
-          <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
-          <li>Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></li>
-          <li>IRC: #cppcheck at irc.freenode.net</li>
-        </ul>
+         Cppcheck %s - a tool for static C/C++ code analysis</br>
+         </br>
+         Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></br>
+         Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></br>
+         IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
+        <p>
       </div>
-    </div>
   </body>
 </html>
 """
@@ -167,6 +177,7 @@ class CppCheckHandler(XmlContentHandler):
         XmlContentHandler.__init__(self)
         self.errors = []
         self.version = '1'
+        self.versionCppcheck = '';
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -190,6 +201,8 @@ class CppCheckHandler(XmlContentHandler):
         })
 
     def handleVersion2(self, name, attributes):
+        if name == 'cppcheck':
+            self.versionCppcheck = attributes['version']
         if name == 'error':
             self.errors.append({
                 'file': '',
@@ -270,7 +283,7 @@ if __name__ == '__main__':
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print('Processing errors')
-    for filename, data in files.items():
+    for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
         errors = data['errors']
 
@@ -301,8 +314,13 @@ if __name__ == '__main__':
             output_file.write(HTML_HEAD %
                               (options.title,
                                htmlFormatter.get_style_defs('.highlight'),
-                               options.title))
+                               options.title,
+                               filename))
 
+            for error in errors:
+                output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+
+            output_file.write(HTML_HEAD_END)
             lexer = guess_lexer_for_filename(source_filename, '')
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
@@ -320,13 +338,14 @@ if __name__ == '__main__':
     print('Creating index.html')
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, '', options.title))
-        output_file.write('<table>')
+        output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
+        output_file.write(HTML_HEAD_END)
+        output_file.write('       <table>\n')
         output_file.write(
-            '<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
-        for filename, data in files.items():
+            '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
+        for filename, data in sorted(files.items()):
             output_file.write(
-                "<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
             for error in data['errors']:
                 if error['severity'] == 'error':
@@ -336,16 +355,16 @@ if __name__ == '__main__':
 
                 if error['id'] == 'missingInclude':
                     output_file.write(
-                        '<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+                        '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
                         (error['id'], error['severity'], error['msg']))
                 else:
                     output_file.write(
-                        "<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                        "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
                         (data['htmlfile'], error['line'], error['line'],
                          error['id'], error['severity'], error_class,
                          error['msg']))
-        output_file.write('</table>')
-        output_file.write(HTML_FOOTER)
+        output_file.write('\n       </table>')
+        output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),

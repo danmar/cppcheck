@@ -49,6 +49,15 @@ public:
     }
 
 private:
+    void createSymbolDatabase(const char code[]) {
+        errout.str("");
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.getSymbolDatabase();
+    }
+
     const Scope si;
     const Token* vartok;
     const Token* typetok;
@@ -74,7 +83,7 @@ private:
         return 0;
     }
 
-    static const Function *findFunctionByName(const std::string& str, const Scope* startScope) {
+    static const Function *findFunctionByName(const char str[], const Scope* startScope) {
         const Scope* currScope = startScope;
         while (currScope && currScope->isExecutable()) {
             if (currScope->functionOf)
@@ -135,10 +144,15 @@ private:
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasMissingInlineClassFunctionReturningFunctionPointer);
         TEST_CASE(hasClassFunctionReturningFunctionPointer);
+        TEST_CASE(complexFunctionArrayPtr);
+        TEST_CASE(pointerToMemberFunction);
         TEST_CASE(hasSubClassConstructor);
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
+        TEST_CASE(memberFunctionOfUnknownClassMacro1);
+        TEST_CASE(memberFunctionOfUnknownClassMacro2);
+        TEST_CASE(memberFunctionOfUnknownClassMacro3);
 
         TEST_CASE(classWithFriend);
 
@@ -206,12 +220,33 @@ private:
         TEST_CASE(symboldatabase40); // ticket #5153
         TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
         TEST_CASE(symboldatabase42); // only put variables in variable list
+        TEST_CASE(symboldatabase43); // #4738
 
         TEST_CASE(isImplicitlyVirtual);
 
         TEST_CASE(garbage);
 
+        TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
+
         TEST_CASE(findFunction1);
+        TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
+
+        TEST_CASE(noexceptFunction1);
+        TEST_CASE(noexceptFunction2);
+        TEST_CASE(noexceptFunction3);
+        TEST_CASE(noexceptFunction4);
+
+        TEST_CASE(throwFunction1);
+        TEST_CASE(throwFunction2);
+
+        TEST_CASE(nothrowAttributeFunction);
+        TEST_CASE(nothrowDeclspecFunction);
+
+        TEST_CASE(varTypesIntegral); // known integral
+        TEST_CASE(varTypesFloating); // known floating
+        TEST_CASE(varTypesOther);    // (un)known
+
+        TEST_CASE(functionPrototype); // ticket #5867
     }
 
     void array() const {
@@ -615,9 +650,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -635,9 +670,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -655,9 +690,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        const Token *tok = Token::findmatch(tokenizer.tokens(), ". x");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". x");
         tok = tok ? tok->next() : nullptr;
-        ASSERT(tok && tok->variable() && Token::Match(tok->variable()->typeStartToken(), "int x ;"));
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
@@ -701,7 +736,9 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
@@ -709,10 +746,10 @@ private:
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && function->hasBody && function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
-            ASSERT(function && function->retDef == tokenizer.tokens()->tokAt(3));
+            ASSERT(function && function->retDef == functionToken->previous());
 
             ASSERT(db && db->findScopeByName("Fred") && db->findScopeByName("Fred")->definedType->getFunction("func") == function);
         }
@@ -725,14 +762,16 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(4));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(4));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && !function->hasBody);
         }
     }
@@ -744,7 +783,9 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(12));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens()->linkAt(2), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
             ASSERT(scope && scope->functionOf && scope->functionOf == db->findScopeByName("Fred"));
@@ -752,7 +793,7 @@ private:
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(12));
+            ASSERT(function && function->token == functionToken);
             ASSERT(function && function->hasBody && !function->isInline);
             ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
         }
@@ -765,15 +806,17 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(3));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.front());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(3));
-            ASSERT(function && function->hasBody && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody);
         }
     }
 
@@ -784,15 +827,17 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
-            ASSERT(function && function->hasBody && function->isInline && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody && function->isInline);
         }
     }
 
@@ -803,15 +848,17 @@ private:
         ASSERT(db && db->scopeList.size() == 2);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(6));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope == nullptr);
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(6));
-            ASSERT(function && !function->hasBody && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && !function->hasBody);
         }
     }
 
@@ -822,15 +869,61 @@ private:
         ASSERT(db && db->scopeList.size() == 3);
 
         if (db) {
-            const Scope *scope = findFunctionScopeByToken(db, tokenizer.tokens()->tokAt(23));
+            const Token * const functionToken = Token::findsimplematch(tokenizer.tokens()->linkAt(2), "func");
+
+            const Scope *scope = findFunctionScopeByToken(db, functionToken);
 
             ASSERT(scope && scope->className == "func");
 
             const Function *function = findFunctionByName("func", &db->scopeList.back());
 
             ASSERT(function && function->token->str() == "func");
-            ASSERT(function && function->token == tokenizer.tokens()->tokAt(23));
-            ASSERT(function && function->hasBody && !function->isInline && function->retFuncPtr);
+            ASSERT(function && function->token == functionToken);
+            ASSERT(function && function->hasBody && !function->isInline);
+        }
+    }
+
+    void complexFunctionArrayPtr() {
+        GET_SYMBOL_DB("int(*p1)[10]; \n"                            // pointer to array 10 of int
+                      "void(*p2)(char); \n"                         // pointer to function (char) returning void
+                      "int(*(*p3)(char))[10];\n"                    // pointer to function (char) returning pointer to array 10 of int
+                      "float(*(*p4)(char))(long); \n"               // pointer to function (char) returning pointer to function (long) returning float
+                      "short(*(*(p5) (char))(long))(double); \n"    // pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
+                      "int(*a1[10])(void); \n"                      // array 10 of pointer to function (void) returning int
+                      "float(*(*a2[10])(char))(long);\n"            // array 10 of pointer to func (char) returning pointer to func (long) returning float
+                      "short(*(*(*a3[10])(char))(long))(double);\n" // array 10 of pointer to function (char) returning pointer to function (long) returning pointer to function (double) returning short
+                      "::boost::rational(&r_)[9];\n"                // reference to array of ::boost::rational
+                      "::boost::rational<T>(&r_)[9];");             // reference to array of ::boost::rational<T> (template!)
+
+        ASSERT(db != nullptr);
+
+        if (db) {
+            ASSERT_EQUALS(10, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(3) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(6) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(7) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(8) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(9) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(10) != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void pointerToMemberFunction() {
+        GET_SYMBOL_DB("bool (A::*pFun)();"); // Pointer to member function of A, returning bool and taking no parameters
+
+        ASSERT(db != nullptr);
+
+        if (db) {
+            ASSERT_EQUALS(1, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            if (db->getVariableFromVarId(1))
+                ASSERT_EQUALS("pFun", db->getVariableFromVarId(1)->name());
+            ASSERT_EQUALS("", errout.str());
         }
     }
 
@@ -921,6 +1014,58 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
 
             ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
+        }
+    }
+
+    void memberFunctionOfUnknownClassMacro1() {
+        GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE; };\n"
+                      "void ScVbaValidation::getFormula1() {\n"
+                      "    sal_uInt16 nFlags = 0;\n"
+                      "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
+                      "}");
+
+        ASSERT(db && errout.str() == "");
+
+        if (db) {
+            const Scope *scope = db->findScopeByName("getFormula1");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn == &db->scopeList.front());
+        }
+    }
+
+    void memberFunctionOfUnknownClassMacro2() {
+        GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE {} };\n"
+                      "void getFormula1() {\n"
+                      "    sal_uInt16 nFlags = 0;\n"
+                      "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
+                      "}");
+
+        ASSERT(db && errout.str() == "");
+
+        if (db) {
+            const Scope *scope = db->findScopeByName("getFormula1");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn == &db->scopeList.front());
+
+            scope = db->findScopeByName("getServiceImplName");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn && scope->nestedIn->className == "ScVbaFormatCondition");
+        }
+    }
+
+    void memberFunctionOfUnknownClassMacro3() {
+        GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() THROW(whatever); };\n"
+                      "void ScVbaValidation::getFormula1() {\n"
+                      "    sal_uInt16 nFlags = 0;\n"
+                      "    if (pDocSh && !getCellRangesForAddress(nFlags)) ;\n"
+                      "}");
+
+        ASSERT(db && errout.str() == "");
+
+        if (db) {
+            const Scope *scope = db->findScopeByName("getFormula1");
+            ASSERT(scope != nullptr);
+            ASSERT(scope && scope->nestedIn == &db->scopeList.front());
         }
     }
 
@@ -1215,15 +1360,15 @@ private:
     }
 
     void tryCatch1() {
-        const std::string str("void foo() {\n"
-                              "    try { }\n"
-                              "    catch (const Error1 & x) { }\n"
-                              "    catch (const X::Error2 & x) { }\n"
-                              "    catch (Error3 x) { }\n"
-                              "    catch (X::Error4 x) { }\n"
-                              "}");
-        GET_SYMBOL_DB(str.c_str())
-        check(str.c_str(), false);
+        const char str[] = "void foo() {\n"
+                           "    try { }\n"
+                           "    catch (const Error1 & x) { }\n"
+                           "    catch (const X::Error2 & x) { }\n"
+                           "    catch (Error3 x) { }\n"
+                           "    catch (X::Error4 x) { }\n"
+                           "}";
+        GET_SYMBOL_DB(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 5); // index 0 + 4 variables
         ASSERT(db && db->scopeList.size() == 7); // global + function + try + 4 catch
@@ -1401,16 +1546,12 @@ private:
 
     void symboldatabase14() {
         // ticket #2589 - segmentation fault
-        check("struct B : A\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct B : A\n"), InternalError);
     }
 
     void symboldatabase15() {
         // ticket #2591 - segmentation fault
-        check("struct A :\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct A :\n"), InternalError);
     }
 
     void symboldatabase16() {
@@ -1443,9 +1584,7 @@ private:
 
     void symboldatabase20() {
         // ticket #3013 - segmentation fault
-        check("struct x : virtual y\n");
-
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("struct x : virtual y\n"), InternalError);
     }
 
     void symboldatabase21() {
@@ -1522,23 +1661,23 @@ private:
 
     // #ticket #3561 (throw C++)
     void symboldatabase25() {
-        const std::string str("int main() {\n"
-                              "    foo bar;\n"
-                              "    throw bar;\n"
-                              "}");
-        GET_SYMBOL_DB(str.c_str());
-        check(str.c_str(), false);
+        const char str[] = "int main() {\n"
+                           "    foo bar;\n"
+                           "    throw bar;\n"
+                           "}";
+        GET_SYMBOL_DB(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
     }
 
     // #ticket #3561 (throw C)
     void symboldatabase26() {
-        const std::string str("int main() {\n"
-                              "    throw bar;\n"
-                              "}");
-        GET_SYMBOL_DB_C(str.c_str());
-        check(str.c_str(), false);
+        const char str[] = "int main() {\n"
+                           "    throw bar;\n"
+                           "}";
+        GET_SYMBOL_DB_C(str);
+        check(str, false);
         ASSERT_EQUALS("", errout.str());
         ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
     }
@@ -1727,6 +1866,13 @@ private:
         ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
+    void symboldatabase43() { // ticket #4738
+        check("void f() {\n"
+              "    new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void isImplicitlyVirtual() {
         {
             GET_SYMBOL_DB("class Base {\n"
@@ -1817,13 +1963,62 @@ private:
                           "   }\n"
                           "};");
             ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
+            ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
         }
 
+        // #5590
+        {
+            GET_SYMBOL_DB("class InfiniteB : InfiniteA {\n"
+                          "    class D {\n"
+                          "    };\n"
+                          "};\n"
+                          "namespace N {\n"
+                          "    class InfiniteA : InfiniteB {\n"
+                          "    };\n"
+                          "}\n"
+                          "class InfiniteA : InfiniteB {\n"
+                          "    void foo();\n"
+                          "};\n"
+                          "void InfiniteA::foo() {\n"
+                          "    C a;\n"
+                          "}");
+            //ASSERT(db && db->findScopeByName("InfiniteA") && !db->findScopeByName("InfiniteA")->functionList.front().isImplicitlyVirtual());
+            TODO_ASSERT_EQUALS(1, 0, db->findScopeByName("InfiniteA")->functionList.size());
+        }
     }
 
     void garbage() {
-        GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
-        (void)db;
+        {
+            GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
+            (void)db;
+        }
+        {
+            GET_SYMBOL_DB("{ }; void namespace A::f; { g() { int } }");
+            (void)db;
+        }
+        {
+            ASSERT_THROW(createSymbolDatabase("class Foo {}; class Bar : public Foo"), InternalError);
+        }
+        {
+            ASSERT_THROW(createSymbolDatabase("YY_DECL { switch (yy_act) {\n"
+                                              "    case 65: YY_BREAK\n"
+                                              "    case YY_STATE_EOF(block):\n"
+                                              "        yyterminate(); \n"
+                                              "} }"), InternalError); // #5663
+        }
+    }
+
+    void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
+        GET_SYMBOL_DB("TEST(a,b) {\n"
+                      "  std::vector<int> messages;\n"
+                      "  foo(messages[2].size());\n"
+                      "}");
+        const Variable * const var = db ? db->getVariableFromVarId(1U) : nullptr;
+        ASSERT(db &&
+               db->findScopeByName("TEST") &&
+               var &&
+               var->typeStartToken() &&
+               var->typeStartToken()->str() == "std");
     }
 
     void findFunction1() {
@@ -1849,13 +2044,376 @@ private:
                             expected << "Function call on line " << tok->linenr() << " calls function on line " << linenrs[index] << std::endl;
                             std::stringstream actual;
                             actual << "Function call on line " << tok->linenr() << " calls function on line " << function->tokenDef->linenr() << std::endl;
-                            ASSERT_EQUALS(expected.str().c_str(), actual.str().c_str());
+                            ASSERT_EQUALS(expected.str(), actual.str());
                         }
                         index++;
                     }
                 }
             }
         }
+    }
+
+    void findFunction2() {
+        // The function does not match the function call.
+        GET_SYMBOL_DB("void func(const int x, const Fred &fred);\n"
+                      "void otherfunc() {\n"
+                      "    float t;\n"
+                      "    func(x, &t);\n"
+                      "}");
+        const Token *callfunc = Token::findsimplematch(tokenizer.tokens(), "func ( x , & t ) ;");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+        ASSERT_EQUALS(true,  callfunc != nullptr); // not null
+        ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
+    }
+
+#define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+                ASSERT_EQUALS(true, x != nullptr);                                  \
+                if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction1() {
+        GET_SYMBOL_DB("void func1() noexcept;\n"
+                      "void func2() noexcept { }\n"
+                      "void func3() noexcept(true);\n"
+                      "void func4() noexcept(true) { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(func1);
+            FUNC(func2);
+            FUNC(func3);
+            FUNC(func4);
+        }
+    }
+
+    void noexceptFunction2() {
+        GET_SYMBOL_DB("template <class T> void self_assign(T& t) noexcept(noexcept(t = t)) {t = t; }\n");
+
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC(self_assign);
+        }
+    }
+
+#define CLASS_FUNC(x, y) const Function *x = findFunctionByName(#x, y); \
+                         ASSERT_EQUALS(true, x != nullptr);             \
+                         if (x) ASSERT_EQUALS(true, x->isNoExcept);
+
+    void noexceptFunction3() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void func1() noexcept;\n"
+                      "    void func2() noexcept { }\n"
+                      "    void func3() noexcept(true);\n"
+                      "    void func4() noexcept(true) { }\n"
+                      "    void func5() const noexcept;\n"
+                      "    void func6() const noexcept { }\n"
+                      "    void func7() const noexcept(true);\n"
+                      "    void func8() const noexcept(true) { }\n"
+                      "    void func9() noexcept = 0;\n"
+                      "    void func10() noexcept = 0;\n"
+                      "    void func11() const noexcept(true) = 0;\n"
+                      "    void func12() const noexcept(true) = 0;\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *fred = db->findScopeByName("Fred");
+            ASSERT_EQUALS(true, fred != nullptr);
+            if (fred) {
+                CLASS_FUNC(func1, fred);
+                CLASS_FUNC(func2, fred);
+                CLASS_FUNC(func3, fred);
+                CLASS_FUNC(func4, fred);
+                CLASS_FUNC(func5, fred);
+                CLASS_FUNC(func6, fred);
+                CLASS_FUNC(func7, fred);
+                CLASS_FUNC(func8, fred);
+                CLASS_FUNC(func9, fred);
+                CLASS_FUNC(func10, fred);
+                CLASS_FUNC(func11, fred);
+                CLASS_FUNC(func12, fred);
+            }
+        }
+    }
+
+    void noexceptFunction4() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "   A(A&& a) {\n"
+                      "      throw std::runtime_error(\"err\");\n"
+                      "   }\n"
+                      "};\n"
+                      "class B {\n"
+                      "   A a;\n"
+                      "   B(B&& b) noexcept\n"
+                      "   :a(std::move(b.a)) { }\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *b = db->findScopeByName("B");
+            ASSERT_EQUALS(true, b != nullptr);
+            if (b) {
+                CLASS_FUNC(B, b);
+            }
+        }
+    }
+
+#define FUNC_THROW(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+                      ASSERT_EQUALS(true, x != nullptr);                                  \
+                      if (x) ASSERT_EQUALS(true, x->isThrow);
+
+    void throwFunction1() {
+        GET_SYMBOL_DB("void func1() throw();\n"
+                      "void func2() throw() { }\n"
+                      "void func3() throw(int);\n"
+                      "void func4() throw(int) { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            FUNC_THROW(func1);
+            FUNC_THROW(func2);
+            FUNC_THROW(func3);
+            FUNC_THROW(func4);
+        }
+    }
+
+#define CLASS_FUNC_THROW(x, y) const Function *x = findFunctionByName(#x, y); \
+                               ASSERT_EQUALS(true, x != nullptr);             \
+                               if (x) ASSERT_EQUALS(true, x->isThrow);
+    void throwFunction2() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void func1() throw();\n"
+                      "    void func2() throw() { }\n"
+                      "    void func3() throw(int);\n"
+                      "    void func4() throw(int) { }\n"
+                      "    void func5() const throw();\n"
+                      "    void func6() const throw() { }\n"
+                      "    void func7() const throw(int);\n"
+                      "    void func8() const throw(int) { }\n"
+                      "    void func9() throw() = 0;\n"
+                      "    void func10() throw(int) = 0;\n"
+                      "    void func11() const throw() = 0;\n"
+                      "    void func12() const throw(int) = 0;\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Scope *fred = db->findScopeByName("Fred");
+            ASSERT_EQUALS(true, fred != nullptr);
+            if (fred) {
+                CLASS_FUNC_THROW(func1, fred);
+                CLASS_FUNC_THROW(func2, fred);
+                CLASS_FUNC_THROW(func3, fred);
+                CLASS_FUNC_THROW(func4, fred);
+                CLASS_FUNC_THROW(func5, fred);
+                CLASS_FUNC_THROW(func6, fred);
+                CLASS_FUNC_THROW(func7, fred);
+                CLASS_FUNC_THROW(func8, fred);
+                CLASS_FUNC_THROW(func9, fred);
+                CLASS_FUNC_THROW(func10, fred);
+                CLASS_FUNC_THROW(func11, fred);
+                CLASS_FUNC_THROW(func12, fred);
+            }
+        }
+    }
+
+    void nothrowAttributeFunction() {
+        GET_SYMBOL_DB("void func() __attribute__((nothrow));\n"
+                      "void func() { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isAttributeNothrow());
+        }
+    }
+
+    void nothrowDeclspecFunction() {
+        GET_SYMBOL_DB("void __declspec(nothrow) func() { }\n");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        if (db) {
+            const Function *func = findFunctionByName("func", &db->scopeList.front());
+            ASSERT_EQUALS(true, func != nullptr);
+            if (func)
+                ASSERT_EQUALS(true, func->isDeclspecNothrow());
+        }
+    }
+
+    void varTypesIntegral() {
+        GET_SYMBOL_DB("void f() { bool b; char c; unsigned char uc; short s; unsigned short us; int i; unsigned u; unsigned int ui; long l; unsigned long ul; long long ll; }");
+        const Variable *b = db->getVariableFromVarId(1);
+        ASSERT(b != nullptr);
+        if (b) {
+            ASSERT_EQUALS("b", b->nameToken()->str());
+            ASSERT_EQUALS(true, b->isIntegralType());
+            ASSERT_EQUALS(false, b->isFloatingType());
+        }
+        const Variable *c = db->getVariableFromVarId(2);
+        ASSERT(c != nullptr);
+        if (c) {
+            ASSERT_EQUALS("c", c->nameToken()->str());
+            ASSERT_EQUALS(true, c->isIntegralType());
+            ASSERT_EQUALS(false, c->isFloatingType());
+        }
+        const Variable *uc = db->getVariableFromVarId(3);
+        ASSERT(uc != nullptr);
+        if (uc) {
+            ASSERT_EQUALS("uc", uc->nameToken()->str());
+            ASSERT_EQUALS(true, uc->isIntegralType());
+            ASSERT_EQUALS(false, uc->isFloatingType());
+        }
+        const Variable *s = db->getVariableFromVarId(4);
+        ASSERT(s != nullptr);
+        if (s) {
+            ASSERT_EQUALS("s", s->nameToken()->str());
+            ASSERT_EQUALS(true, s->isIntegralType());
+            ASSERT_EQUALS(false, s->isFloatingType());
+        }
+        const Variable *us = db->getVariableFromVarId(5);
+        ASSERT(us != nullptr);
+        if (us) {
+            ASSERT_EQUALS("us", us->nameToken()->str());
+            ASSERT_EQUALS(true, us->isIntegralType());
+            ASSERT_EQUALS(false, us->isFloatingType());
+        }
+        const Variable *i = db->getVariableFromVarId(6);
+        ASSERT(i != nullptr);
+        if (i) {
+            ASSERT_EQUALS("i", i->nameToken()->str());
+            ASSERT_EQUALS(true, i->isIntegralType());
+            ASSERT_EQUALS(false, i->isFloatingType());
+        }
+        const Variable *u = db->getVariableFromVarId(7);
+        ASSERT(u != nullptr);
+        if (u) {
+            ASSERT_EQUALS("u", u->nameToken()->str());
+            ASSERT_EQUALS(true, u->isIntegralType());
+            ASSERT_EQUALS(false, u->isFloatingType());
+        }
+        const Variable *ui = db->getVariableFromVarId(8);
+        ASSERT(ui != nullptr);
+        if (ui) {
+            ASSERT_EQUALS("ui", ui->nameToken()->str());
+            ASSERT_EQUALS(true, ui->isIntegralType());
+            ASSERT_EQUALS(false, ui->isFloatingType());
+        }
+        const Variable *l = db->getVariableFromVarId(9);
+        ASSERT(l != nullptr);
+        if (l) {
+            ASSERT_EQUALS("l", l->nameToken()->str());
+            ASSERT_EQUALS(true, l->isIntegralType());
+            ASSERT_EQUALS(false, l->isFloatingType());
+        }
+        const Variable *ul = db->getVariableFromVarId(10);
+        ASSERT(ul != nullptr);
+        if (ul) {
+            ASSERT_EQUALS("ul", ul->nameToken()->str());
+            ASSERT_EQUALS(true, ul->isIntegralType());
+            ASSERT_EQUALS(false, ul->isFloatingType());
+        }
+        const Variable *ll = db->getVariableFromVarId(11);
+        ASSERT(ll != nullptr);
+        if (ll) {
+            ASSERT_EQUALS("ll", ll->nameToken()->str());
+            ASSERT_EQUALS(true, ll->isIntegralType());
+            ASSERT_EQUALS(false, ll->isFloatingType());
+        }
+    }
+
+    void varTypesFloating() {
+        {
+            GET_SYMBOL_DB("void f() { float f; double d; long double ld; }");
+            const Variable *f = db->getVariableFromVarId(1);
+            ASSERT(f != nullptr);
+            if (f) {
+                ASSERT_EQUALS("f", f->nameToken()->str());
+                ASSERT_EQUALS(false, f->isIntegralType());
+                ASSERT_EQUALS(true, f->isFloatingType());
+            }
+            const Variable *d = db->getVariableFromVarId(2);
+            ASSERT(d != nullptr);
+            if (d) {
+                ASSERT_EQUALS("d", d->nameToken()->str());
+                ASSERT_EQUALS(false, d->isIntegralType());
+                ASSERT_EQUALS(true, d->isFloatingType());
+            }
+            const Variable *ld = db->getVariableFromVarId(3);
+            ASSERT(ld != nullptr);
+            if (ld) {
+                ASSERT_EQUALS("ld", ld->nameToken()->str());
+                ASSERT_EQUALS(false, ld->isIntegralType());
+                ASSERT_EQUALS(true, ld->isFloatingType());
+            }
+        }
+        {
+            GET_SYMBOL_DB("void f() { float * f; static const float * scf; }");
+            const Variable *f = db->getVariableFromVarId(1);
+            ASSERT(f != nullptr);
+            if (f) {
+                ASSERT_EQUALS("f", f->nameToken()->str());
+                ASSERT_EQUALS(false, f->isIntegralType());
+                ASSERT_EQUALS(false, f->isFloatingType());
+            }
+            const Variable *scf = db->getVariableFromVarId(2);
+            ASSERT(scf != nullptr);
+            if (scf) {
+                ASSERT_EQUALS("scf", scf->nameToken()->str());
+                ASSERT_EQUALS(false, scf->isIntegralType());
+                ASSERT_EQUALS(false, scf->isFloatingType());
+            }
+        }
+        {
+            GET_SYMBOL_DB("void f() { float fa[42]; }");
+            const Variable *fa = db->getVariableFromVarId(1);
+            ASSERT(fa != nullptr);
+            if (fa) {
+                ASSERT_EQUALS("fa", fa->nameToken()->str());
+                ASSERT_EQUALS(false, fa->isIntegralType());
+                ASSERT_EQUALS(false, fa->isFloatingType());
+            }
+        }
+    }
+
+    void varTypesOther() {
+        GET_SYMBOL_DB("void f() { class A {} a; void *b;  }");
+        const Variable *a = db->getVariableFromVarId(1);
+        ASSERT(a != nullptr);
+        if (a) {
+            ASSERT_EQUALS("a", a->nameToken()->str());
+            ASSERT_EQUALS(false, a->isIntegralType());
+            ASSERT_EQUALS(false, a->isFloatingType());
+        }
+        const Variable *b = db->getVariableFromVarId(2);
+        ASSERT(b != nullptr);
+        if (b) {
+            ASSERT_EQUALS("b", b->nameToken()->str());
+            ASSERT_EQUALS(false, b->isIntegralType());
+            ASSERT_EQUALS(false, b->isFloatingType());
+        }
+    }
+
+    void functionPrototype() {
+        check("int foo(int x) {\n"
+              "    extern int func1();\n"
+              "    extern int func2(int);\n"
+              "    int func3();\n"
+              "    int func4(int);\n"
+              "    return func4(x);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

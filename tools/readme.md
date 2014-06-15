@@ -2,7 +2,7 @@
 
 ### * tools/matchcompiler.py
 
-The matchcompiler.py is a build script that performs a few code transformations to *.cpp* files under the *lib* directory. These transformations are related to the use of `Token::Match()` function and are intented to improve code performance. The transformed files are saved on the *build* directory. This tool is silently used when building the code with `SRCDIR=build`, that is:
+The matchcompiler.py is a build script that performs a few code transformations to *.cpp* files under the *lib* directory. These transformations are related to the use of `Token::Match()` function and are intended to improve code performance. The transformed files are saved on the *build* directory. This tool is silently used when building the code with `SRCDIR=build`, that is:
 ```shell
 $ cd path/to/cppcheck
 $ make SRCDIR=build
@@ -47,7 +47,7 @@ void f2() {
     Token::Match(tok, abc);
 }
 ```
-From this we can see that the usage of `Token::Match()` in `f1()` has been optimized, whereas the one in `f2()` couldn't be optimized (the string wasn't inline on the `Token::Match()` call). **The developer doesn't need to use this tool during development but should be aware of these optimizations**. *Building with this optimization, cppcheck can get a boost of 2x of speed-up.* 
+From this we can see that the usage of `Token::Match()` in `f1()` has been optimized, whereas the one in `f2()` couldn't be optimized (the string wasn't inline on the `Token::Match()` call). **The developer doesn't need to use this tool during development but should be aware of these optimizations**. *Building with this optimization, cppcheck can get a boost of 2x of speed-up.*
 
 ### * tools/dmake.cpp
 

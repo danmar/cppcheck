@@ -24,14 +24,12 @@
 
 #include "config.h"
 #include "check.h"
-#include "tokenize.h"
-#include "errorlogger.h"
 
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{
 
-class CPPCHECKLIB CheckUnusedFunctions: public Check {
+class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
     CheckUnusedFunctions() : Check(myName()) {
@@ -48,6 +46,8 @@ public:
     void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
     void check(ErrorLogger * const errorLogger);
+
+    static CheckUnusedFunctions instance;
 
 private:
 

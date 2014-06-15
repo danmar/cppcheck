@@ -45,6 +45,7 @@ private:
         TEST_CASE(iterator11);
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
+        TEST_CASE(iterator14); // #5598 invalid code causing a crash
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -71,6 +72,7 @@ private:
         TEST_CASE(eraseAssignByFunctionCall);
         TEST_CASE(eraseErase);
         TEST_CASE(eraseByValue);
+        TEST_CASE(eraseOnVector);
 
         TEST_CASE(pushback1);
         TEST_CASE(pushback2);
@@ -84,11 +86,8 @@ private:
         TEST_CASE(pushback10);
         TEST_CASE(pushback11);
         TEST_CASE(pushback12);
-
         TEST_CASE(insert1);
         TEST_CASE(insert2);
-
-        TEST_CASE(invalidcode);
 
         TEST_CASE(stlBoundaries1);
         TEST_CASE(stlBoundaries2);
@@ -128,6 +127,7 @@ private:
         TEST_CASE(dereferenceInvalidIterator);
         TEST_CASE(dereference_auto);
 
+        TEST_CASE(readingEmptyStlContainer);
     }
 
     void check(const char code[], const bool inconclusive=false) {
@@ -439,6 +439,11 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator14() {
+        check(" { { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     // Dereferencing invalid pointer
     void dereference() {
         check("void f()\n"
@@ -501,6 +506,13 @@ private:
               "    std::cout << (*iter) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+
+        check("void f() {\n"
+              "    auto x = *myList.begin();\n"
+              "    myList.erase(x);\n"
+              "    auto b = x.first;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void STLSize() {
@@ -972,8 +984,55 @@ private:
               "    foo.erase(*it);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #5669
+        check("void f() {\n"
+              "    HashSet_Ref::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_SetLoadedFactories.erase(*aIt);\n"
+              "    m_SetLoadedFactories.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::list<int>& m_ImplementationMap) {\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(*aIt);\n"
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
+
+        check("void f(const std::list<int>& m_ImplementationMap) {\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
+              "    std::list<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    m_ImplementationMap.erase(*bIt);\n"
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
+
+    void eraseOnVector() {
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    m_ImplementationMap.erase(*aIt);\n" // All iterators become invalidated when erasing from std::vector
+              "    m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
+
+        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
+              "    std::vector<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    m_ImplementationMap.erase(*bIt);\n" // All iterators become invalidated when erasing from std::vector
+              "    aIt = m_ImplementationMap.erase(aIt);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+    }
 
     void pushback1() {
         check("void f(const std::vector<int> &foo)\n"
@@ -1262,20 +1321,6 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidcode() {
-        errout.str("");
-        const std::string src = "void f()\n"
-                                "{\n"
-                                "    for (\n"
-                                "}\n";
-
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(src);
-        ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
     }
 
 
@@ -2215,7 +2260,7 @@ private:
         check("void f()\n"
               "{\n"
               "    int x=1;\n"
-              "    string s1, s2;\n"
+              "    std::string s1, s2;\n"
               "    s1 = s1.substr();\n"
               "    s2 = s1.substr(x);\n"
               "    s1 = s2.substr(0, x);\n"
@@ -2227,6 +2272,18 @@ private:
                       "[test.cpp:8]: (performance) Ineffective call of function \'substr\' because it returns a copy of "
                       "the object. Use operator= instead.\n"
                       "[test.cpp:9]: (performance) Ineffective call of function \'substr\' because it returns an empty string.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int x=1;\n"
+              "    string s1, s2;\n"
+              "    s1 = s1.substr();\n"
+              "    s2 = s1.substr(x);\n"
+              "    s1 = s2.substr(0, x);\n"
+              "    s1 = s2.substr(0,std::string::npos);\n"
+              "    s1 = s2.substr(x+5-n, 0);\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
         check("int main()\n"
               "{\n"
@@ -2298,6 +2355,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
 
+        check("void foo(std::string::iterator& i) {\n"
+              "    if(foo) { bar(); }\n"
+              "    else if (std::isalpha(*i) && i != str.end()) {\n"
+              "        std::cout << *i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
         // Test suggested correction doesn't report an error
         check("void foo(std::string::iterator& i) {\n"
               "    if (i != str.end() && std::isalpha(*i)) {\n"
@@ -2314,6 +2379,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
+
+        check("void foo(std::string::iterator& i) {\n"
+              "    do {\n"
+              "        std::cout << *i;\n"
+              "        i ++;\n"
+              "    } while (std::isalpha(*i) && i != str.end());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Possible dereference of an invalid iterator: i\n", errout.str());
 
         // Test "while" with "||" case
         check("void foo(std::string::iterator& i) {\n"
@@ -2393,6 +2466,96 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void readingEmptyStlContainer() {
+        check("void f() {\n"
+              "    std::map<int, std::string> CMap;\n"
+              "    std::string strValue = CMap[1]; \n"
+              "    std::cout << strValue << CMap.size() << std::endl;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int,std::string> CMap;\n"
+              "    std::string strValue = CMap[1];"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int,std::string> CMap;\n"
+              "    CMap[1] = \"123\";\n"
+              "    std::string strValue = CMap[1];"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<std::string> f() {\n"
+              "    try {\n"
+              "        std::vector<std::string> Vector;\n"
+              "        std::vector<std::string> v2 = Vector;\n"
+              "        std::string strValue = v2[1]; \n" // Do not complain here - this is a consecutive fault of the line above.
+              "    }\n"
+              "    return Vector;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("f() {\n"
+              "    try {\n"
+              "        std::vector<std::string> Vector;\n"
+              "        Vector.push_back(\"123\");\n"
+              "        std::vector<std::string> v2 = Vector;\n"
+              "        std::string strValue = v2[0]; \n"
+              "    }\n"
+              "    return Vector;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::map<std::string,std::string> mymap;\n"
+              "    mymap[\"Bakery\"] = \"Barbara\";\n"
+              "    std:string bakery_name = mymap[\"Bakery\"];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.insert(1);\n"
+              "    int i = v[0];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    initialize(v);\n"
+              "    int i = v[0];\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("char f() {\n"
+              "    std::string s(foo);\n"
+              "    return s[0];\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v = foo();\n"
+              "    if(bar) v.clear();\n"
+              "    int i = v.find(foobar);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    v.clear();\n"
+              "    int i = v.find(foobar);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        check("void f() {\n"
+              "    std::map<int, std::string> CMap;\n"
+              "    std::string strValue = CMap[1];\n"
+              "    std::string strValue2 = CMap[1];\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
     }
 };
 

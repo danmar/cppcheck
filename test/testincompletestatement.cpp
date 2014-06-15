@@ -59,6 +59,7 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test5);
+        TEST_CASE(test6);
         TEST_CASE(test_numeric);
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
@@ -68,6 +69,8 @@ private:
         TEST_CASE(returnstruct);
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
+        TEST_CASE(cpp11init);           // #5493 : int i{1};
+        TEST_CASE(block);               // ({ do_something(); 0; })
     }
 
     void test1() {
@@ -119,6 +122,15 @@ private:
               "}");
 
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
+    }
+
+    void test6() {
+        // dont crash
+        check("void f() {\n"
+              "  1 == (two + three);\n"
+              "  2 != (two + three);\n"
+              "  (one + two) != (two + three);\n"
+              "}");
     }
 
     void test_numeric() {
@@ -217,6 +229,26 @@ private:
         check("void f() {\n"
               "    int x = 1;\n"
               "    x++, x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init() {
+        check("void f() {\n"
+              "    int x{1};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void block() {
+        check("void f() {\n"
+              "    ({ do_something(); 0; });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "out:\n"
+              "    ({ do_something(); 0; });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

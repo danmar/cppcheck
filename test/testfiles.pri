@@ -36,6 +36,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testpostfixoperator.cpp \
            $${BASEPATH}/testpreprocessor.cpp \
            $${BASEPATH}/testrunner.cpp \
+           $${BASEPATH}/testsamples.cpp \
            $${BASEPATH}/testsimplifytokens.cpp \
            $${BASEPATH}/testsizeof.cpp \
            $${BASEPATH}/teststl.cpp \

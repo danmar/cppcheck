@@ -752,7 +752,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.clear();
             break;
         }
-        if (Token::Match(tok, "goto")) { // https://sourceforge.net/apps/trac/cppcheck/ticket/4447
+        if (Token::simpleMatch(tok, "goto")) { // https://sourceforge.net/apps/trac/cppcheck/ticket/4447
             variables.clear();
             break;
         }
@@ -790,7 +790,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 for (const Token *body = end->linkAt(-1); body != end; body = body->next()) {
                     if (body->varId() == 0U)
                         continue;
-                    if (!Token::Match(body->next(),"="))
+                    if (!Token::simpleMatch(body->next(),"="))
                         readvar.insert(body->varId());
                     else if (readvar.find(body->varId()) != readvar.end())
                         variables.erase(body->varId());

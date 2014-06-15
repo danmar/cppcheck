@@ -72,6 +72,7 @@ private:
 
         TEST_CASE(multiFile);
         TEST_CASE(unknownBaseTemplate); // ticket #2580
+        TEST_CASE(hierarchie_loop); // ticket 5590
     }
 
 
@@ -578,6 +579,19 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:8]: (style) Unused private function: 'Fred::startListening'\n", errout.str());
+
+        // #5059
+        check("class Fred {\n"
+              "    void* operator new(size_t obj_size, size_t buf_size) {}\n"
+              "};");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Unused private function: 'Fred::operatornew'\n", "", errout.str()); // No message for operators - we currently cannot check their usage
+
+        check("class Fred {\n"
+              "    void* operator new(size_t obj_size, size_t buf_size) {}\n"
+              "public:\n"
+              "    void* foo() { return new(size) Fred(); }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testDoesNotIdentifyMethodAsFirstFunctionArgument() {
@@ -690,6 +704,25 @@ private:
               "void Bla::F() const { }");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void hierarchie_loop() {
+        check("class InfiniteB : InfiniteA {\n"
+              "    class D {\n"
+              "    };\n"
+              "};\n"
+              "namespace N {\n"
+              "    class InfiniteA : InfiniteB {\n"
+              "    };\n"
+              "}\n"
+              "class InfiniteA : InfiniteB {\n"
+              "    void foo();\n"
+              "};\n"
+              "void InfiniteA::foo() {\n"
+              "    C a;\n"
+              "}");
+
+        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'InfiniteA::foo'\n", errout.str());
     }
 
 };

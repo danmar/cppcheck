@@ -57,6 +57,7 @@ private:
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
         TEST_CASE(doublefree3); // #4914
+        TEST_CASE(doublefree4); // #5451 - FP when exit is called
 
         // exit
         TEST_CASE(exit1);
@@ -73,6 +74,7 @@ private:
         TEST_CASE(ifelse4);
         TEST_CASE(ifelse5);
         TEST_CASE(ifelse6); // #3370
+        TEST_CASE(ifelse7); // #5576 - if (fd < 0)
 
         // switch
         TEST_CASE(switch1);
@@ -347,6 +349,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree4() {  // #5451 - exit
+        check("void f(char *p) {\n"
+              "  if (x) {\n"
+              "    free(p);\n"
+              "    exit(1);\n"
+              "  }\n"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -467,6 +480,16 @@ private:
               "        a = 0;\n"
               "}");
         ASSERT_EQUALS("[test.c:6]: (error) Memory leak: a\n", errout.str());
+    }
+
+    void ifelse7() { // #5576
+        check("void f() {\n"
+              "    int x = malloc(20);\n"
+              "    if (x < 0)\n"  // assume negative value indicates its unallocated
+              "        return;\n"
+              "    free(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch1() {

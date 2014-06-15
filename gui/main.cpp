@@ -54,8 +54,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
 
-    TranslationHandler* th = new TranslationHandler(&app);
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
+
+    // Set data dir..
+    foreach(const QString arg, app.arguments()) {
+        if (arg.startsWith("--data-dir=")) {
+            settings->setValue("DATADIR", arg.mid(11));
+            return 0;
+        }
+    }
+
+    TranslationHandler* th = new TranslationHandler(&app);
     th->SetLanguage(settings->value(SETTINGS_LANGUAGE, th->SuggestLanguage()).toString());
 
     if (!CheckArgs(app.arguments()))
@@ -93,11 +102,12 @@ void ShowUsage()
                               "Syntax:\n"
                               "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
                               "Options:\n"
-                              "    -h, --help     Print this help\n"
-                              "    -p <file>      Open given project file and start checking it\n"
-                              "    -l <file>      Open given results xml file\n"
-                              "    -d <directory> Specify the directory that was checked to generate the results xml specified with -l\n"
-                              "    -v, --version  Show program version");
+                              "    -h, --help              Print this help\n"
+                              "    -p <file>               Open given project file and start checking it\n"
+                              "    -l <file>               Open given results xml file\n"
+                              "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
+                              "    -v, --version           Show program version\n"
+                              "    --data-dir=<directory>  Specify directory where GUI datafiles are located (translations, cfg)");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),

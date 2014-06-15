@@ -131,7 +131,6 @@ private:
         TEST_CASE(localvarStruct1);
         TEST_CASE(localvarStruct2);
         TEST_CASE(localvarStruct3);
-        TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
         TEST_CASE(localvarStructArray);
@@ -2865,13 +2864,6 @@ private:
                            "[test.cpp:4]: (style) Unused variable: z\n", "", errout.str());
     }
 
-    void localvarStruct4() {
-        /* This must not SIGSEGV: */
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    struct { \n");
-    }
-
     void localvarStruct5() {
         functionVariableUsage("int foo() {\n"
                               "    A a;\n"
@@ -3571,7 +3563,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("std::string foo() {\n"
-                              "    std::string s;\n" // Class instances are initialized. Assignement is not necessary
+                              "    std::string s;\n" // Class instances are initialized. Assignment is not necessary
                               "    return s;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
@@ -3701,30 +3693,30 @@ private:
     void localvarUnusedGoto() {
         // #4447
         functionVariableUsage("bool f(const int &i) {\n"
-                              "	int X = i;\n"
+                              " int X = i;\n"
                               "label:\n"
-                              "	if ( X == 0 ) {\n"
+                              " if ( X == 0 ) {\n"
                               "    X -= 101;\n"
                               "    return true;\n"
-                              "	}\n"
-                              "	if ( X < 1001 )  {\n"
+                              " }\n"
+                              " if ( X < 1001 )  {\n"
                               "    X += 1;\n"
                               "    goto label;\n"
-                              "	}\n"
-                              "	return false;\n"
+                              " }\n"
+                              " return false;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // #4558
         functionVariableUsage("int f() {\n"
-                              "	int i,j=0;\n"
-                              "	start:\n"
-                              "	i=j;\n"
-                              "	i++;\n"
-                              "	j=i;\n"
-                              "	if (i<3)\n"
-                              "	    goto start;\n"
-                              "	return i;\n"
+                              " int i,j=0;\n"
+                              " start:\n"
+                              " i=j;\n"
+                              " i++;\n"
+                              " j=i;\n"
+                              " if (i<3)\n"
+                              "     goto start;\n"
+                              " return i;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

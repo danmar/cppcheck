@@ -40,9 +40,6 @@ win32 {
    }
 }
 
-# Generate the translations before we embed them
-system("lrelease gui.pro")
-
 RESOURCES = gui.qrc
 FORMS = about.ui \
         application.ui \
@@ -149,6 +146,6 @@ win32 {
     LIBS += -lshlwapi
 }
 
-unix {
+contains(QMAKE_CC, gcc) {
     QMAKE_CXXFLAGS += -std=c++0x
 }

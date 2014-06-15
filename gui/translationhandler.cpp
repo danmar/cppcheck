@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <QLocale>
 #include <QMessageBox>
+#include <QSettings>
+#include <QFileInfo>
 #include "translationhandler.h"
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
@@ -97,11 +99,22 @@ bool TranslationHandler::SetLanguage(const QString &code)
         mTranslator = new QTranslator(this);
 
     //Load the new language
-    QString translationFile = "lang/" + mTranslations[index].mFilename;
+    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
 
-    if (!QFile::exists(translationFile + ".qm")) {
-        translationFile = ":/" + mTranslations[index].mFilename;
-    }
+    QSettings settings;
+    QString datadir = settings.value("DATADIR").toString();
+    if (datadir.isEmpty())
+        datadir = appPath;
+
+    QString translationFile;
+    if (QFile::exists(datadir + "/lang/" + mTranslations[index].mFilename + ".qm"))
+        translationFile = datadir + "/lang/" + mTranslations[index].mFilename + ".qm";
+
+    else if (QFile::exists(datadir + "/" + mTranslations[index].mFilename + ".qm"))
+        translationFile = datadir + "/" + mTranslations[index].mFilename + ".qm";
+
+    else
+        translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
 
     if (!mTranslator->load(translationFile) && !failure) {
         translationFile += ".qm";

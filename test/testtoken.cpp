@@ -116,7 +116,9 @@ private:
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        try {
+            tokenizer.tokenize(istr, "test.cpp");
+        } catch (...) {}
         return Token::Match(tokenizer.tokens(), pattern.c_str(), varid);
     }
 
@@ -300,10 +302,10 @@ private:
 
     void matchAny() const {
         givenACodeSampleToTokenize varBitOrVar("abc|def", true);
-        ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% | %var%"));
+        ASSERT_EQUALS(true, Token::Match(varBitOrVar.tokens(), "%var% %or% %var%"));
 
         givenACodeSampleToTokenize varLogOrVar("abc||def", true);
-        ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% || %var%"));
+        ASSERT_EQUALS(true, Token::Match(varLogOrVar.tokens(), "%var% %oror% %var%"));
     }
 
     void matchSingleChar() const {
@@ -343,8 +345,11 @@ private:
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %var%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
 
-        givenACodeSampleToTokenize noType("delete", true);
-        ASSERT_EQUALS(false, Token::Match(noType.tokens(), "%type%"));
+        givenACodeSampleToTokenize noType1_cpp("delete", true, true);
+        ASSERT_EQUALS(false, Token::Match(noType1_cpp.tokens(), "%type%"));
+
+        givenACodeSampleToTokenize noType1_c("delete", true, false);
+        ASSERT_EQUALS(true, Token::Match(noType1_c.tokens(), "%type%"));
 
         givenACodeSampleToTokenize noType2("void delete", true);
         ASSERT_EQUALS(false, Token::Match(noType2.tokens(), "!!foo %type%"));

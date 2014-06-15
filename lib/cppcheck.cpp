@@ -19,6 +19,7 @@
 
 #include "preprocessor.h" // Preprocessor
 #include "tokenize.h" // Tokenizer
+#include "checkunusedfunctions.h"
 
 #include "check.h"
 #include "path.h"
@@ -138,7 +139,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         return exitcode;
 
     if (_settings._errorsOnly == false) {
-        std::string fixedpath = Path::simplifyPath(filename.c_str());
+        std::string fixedpath = Path::simplifyPath(filename);
         fixedpath = Path::toNativeSeparators(fixedpath);
         _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
     }
@@ -158,6 +159,10 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
             preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
         }
+
+        // Unhandled chars found during preprocessing => abort checking this file
+        if (preprocessor.foundUnhandledChars())
+            return 0;
 
         if (_settings.checkConfiguration) {
             return 0;
@@ -209,7 +214,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
             // If only errors are printed, print filename after the check
             if (_settings._errorsOnly == false && it != configurations.begin()) {
-                std::string fixedpath = Path::simplifyPath(filename.c_str());
+                std::string fixedpath = Path::simplifyPath(filename);
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
             }
@@ -282,7 +287,7 @@ void CppCheck::checkFunctionUsage()
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut("Checking usage of global functions..");
 
-        _checkUnusedFunctions.check(this);
+        CheckUnusedFunctions::instance.check(this);
 
         _settings._verbose = verbose_orig;
     }
@@ -359,7 +364,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
                 return;
 
@@ -368,21 +373,21 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
 
         if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
-            _checkUnusedFunctions.parseTokens(_tokenizer, FileName, &_settings);
+            CheckUnusedFunctions::instance.parseTokens(_tokenizer, FileName, &_settings);
 
         executeRules("normal", _tokenizer);
 
         if (!_simplify)
             return;
 
-        Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
+        Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList2();
         timer3.Stop();
         if (!result)
             return;
 
         // call all "runSimplifiedChecks" in all registered Check classes
-        for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
                 return;
 
@@ -399,22 +404,22 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
     } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc2;
-        loc2.setfile(Path::toNativeSeparators(FileName));
-        locationList.push_back(loc2);
         ErrorLogger::ErrorMessage::FileLocation loc;
         if (e.token) {
             loc.line = e.token->linenr();
             const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
             loc.setfile(fixedpath);
         } else {
-            loc.setfile(_tokenizer.getSourceFilePath());
+            ErrorLogger::ErrorMessage::FileLocation loc2;
+            loc2.setfile(Path::toNativeSeparators(FileName));
+            locationList.push_back(loc2);
+            loc.setfile(_tokenizer.list.getSourceFilePath());
         }
         locationList.push_back(loc);
         const ErrorLogger::ErrorMessage errmsg(locationList,
                                                Severity::error,
                                                e.errorMessage,
-                                               "cppcheckError",
+                                               e.id,
                                                false);
 
         _errorLogger.reportErr(errmsg);
@@ -476,7 +481,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
             // determine location..
             ErrorLogger::ErrorMessage::FileLocation loc;
-            loc.setfile(tokenizer.getSourceFilePath());
+            loc.setfile(tokenizer.list.getSourceFilePath());
             loc.line = 0;
 
             std::size_t len = 0;
@@ -638,7 +643,7 @@ void CppCheck::getErrorMessages()
     tooManyConfigsError("",0U);
 
     // call all "getErrorMessages" in all registered Check classes
-    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->getErrorMessages(this, &_settings);
 
     Tokenizer::getErrorMessages(this, &_settings);

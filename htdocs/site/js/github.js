@@ -1,15 +1,21 @@
 /*! Inspired by: http://aboutcode.net/2010/11/11/list-github-projects-using-javascript.html */
 
-/* jshint jquery:true */
-
-"use strict";
+/* jshint browser:true, jquery:true */
 
 // htmlEntities taken from http://css-tricks.com/snippets/javascript/htmlentities-for-javascript/
 function htmlEntities(str) {
-    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    "use strict";
+    var ret = String(str)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+
+    return ret;
 }
 
 jQuery.fn.listCommits = function(username, repository, branch) {
+    "use strict";
     this.html("<span>Querying GitHub for recent commits&hellip;</span>");
 
     var target = this;

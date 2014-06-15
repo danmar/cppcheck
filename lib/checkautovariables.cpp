@@ -22,9 +22,7 @@
 
 #include "checkautovariables.h"
 #include "symboldatabase.h"
-#include "checkuninitvar.h"
 
-#include <list>
 #include <string>
 
 //---------------------------------------------------------------------------
@@ -78,7 +76,7 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 {
     const Variable *var = tok->variable();
 
-    return (var && var->isLocal() && !var->isStatic() && var->isArray());
+    return (var && var->isLocal() && !var->isStatic() && var->isArray() && !var->isPointer());
 }
 
 // Verification that we really take the address of a local variable
@@ -107,7 +105,7 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     if (!start) // Ticket #5024
         return false;
 
-    for (const Token *tok = start; tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != scope->classEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
         if (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eDo || tok->scope()->type == Scope::eWhile) // In case of loops, better checking would be necessary
@@ -196,9 +194,13 @@ void CheckAutoVariables::autoVariables()
                     errorReturnAddressOfFunctionParameter(tok, tok->strAt(2));
             }
             // Invalid pointer deallocation
-            else if (Token::Match(tok, "free ( %var% ) ;") || Token::Match(tok, "delete [| ]| (| %var% !![")) {
+            else if (Token::Match(tok, "free ( %var% ) ;") || (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVarArray(tok))
+                    errorInvalidDeallocation(tok);
+            } else if (Token::Match(tok, "free ( & %var% ) ;") || (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
+                tok = Token::findmatch(tok->next(), "%var%");
+                if (isAutoVar(tok))
                     errorInvalidDeallocation(tok);
             }
         }
@@ -292,6 +294,9 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 
     const Function *function = tok->function();
     if (function) {
+        // Ticket #5478: Only functions or operator equal might return a temporary
+        if (function->type != Function::eOperatorEqual && function->type != Function::eFunction)
+            return false;
         retref = function->tokenDef->strAt(-1) == "&";
         if (!retref) {
             const Token *start = function->retDef;
@@ -322,6 +327,34 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
 
 //---------------------------------------------------------------------------
 
+static bool astHasAutoResult(const Token *tok)
+{
+    if (tok->astOperand1() && !astHasAutoResult(tok->astOperand1()))
+        return false;
+    if (tok->astOperand2() && !astHasAutoResult(tok->astOperand2()))
+        return false;
+
+    if (tok->isOp())
+        return true;
+
+    if (tok->isLiteral())
+        return true;
+
+    if (tok->isName()) {
+        // TODO: check function calls, struct members, arrays, etc also
+        if (!tok->variable())
+            return false;
+        if (tok->variable()->isStlType() && !Token::Match(tok->astParent(), "<<|>>"))
+            return true;
+        if (tok->variable()->isClass() || tok->variable()->isPointer() || tok->variable()->isReference()) // TODO: Properly handle pointers/references to classes in symbol database
+            return false;
+
+        return true;
+    }
+
+    return false;
+}
+
 void CheckAutoVariables::returnReference()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -337,6 +370,9 @@ void CheckAutoVariables::returnReference()
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
             for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+                if (tok2->str() != "return")
+                    continue;
+
                 // return..
                 if (Token::Match(tok2, "return %var% ;")) {
                     // is the returned variable a local variable?
@@ -366,6 +402,11 @@ void CheckAutoVariables::returnReference()
                         // report error..
                         errorReturnTempReference(tok2);
                     }
+                }
+
+                // Return reference to a literal or the result of a calculation
+                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) && astHasAutoResult(tok2->astOperand1())) {
+                    errorReturnTempReference(tok2);
                 }
             }
         }

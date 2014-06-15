@@ -24,10 +24,7 @@
 
 #include "config.h"
 #include "check.h"
-#include "settings.h"
 
-class Token;
-class SymbolDatabase;
 
 /// @addtogroup Checks
 /// @{

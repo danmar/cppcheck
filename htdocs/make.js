@@ -1,6 +1,6 @@
 /**!
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2013 XhmikosR and Cppcheck team.
+ * Copyright (C) 2014 XhmikosR and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,13 +36,12 @@
         // pack.css
         var inCss = cat(["site/css/normalize.css",
                          "site/css/all.css",
-                         "site/css/demo.css"
-        ]);
+                         "site/css/demo.css"]);
 
         var minifier = new CleanCSS({
-                keepSpecialComments: 0,
-                compatibility: "ie8"
-            });
+            keepSpecialComments: 0,
+            compatibility: "ie8"
+        });
 
         fs.writeFileSync("site/css/pack.css", minifier.minify(inCss), "utf8");
 
@@ -66,6 +65,18 @@
 
         echo();
         echo("### Finished site/js/pack.js.");
+
+        minifiedJs = UglifyJS.minify(cat("site/js/sorttable.js"), {
+            compress: true,
+            fromString: true, // this is needed to pass JS source code instead of filenames
+            mangle: true,
+            warnings: false
+        });
+
+        fs.writeFileSync("site/js/sorttable.min.js", minifiedJs.code, "utf8");
+
+        echo();
+        echo("### Finished site/js/sorttable.min.js.");
     };
 
 

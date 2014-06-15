@@ -21,10 +21,14 @@
 #include "checkunusedfunctions.h"
 #include "tokenize.h"
 #include "token.h"
+#include "symboldatabase.h"
 #include <cctype>
 //---------------------------------------------------------------------------
 
 
+
+// Register this check class
+CheckUnusedFunctions CheckUnusedFunctions::instance;
 
 
 //---------------------------------------------------------------------------
@@ -33,78 +37,54 @@
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
+    const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
+
     // Function declarations..
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-        if (tok->fileIndex() != 0)
+    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
+        const Scope* scope = symbolDatabase->functionScopes[i];
+        const Function* func = scope->function;
+        if (!func || !func->token || scope->classStart->fileIndex() != 0)
             continue;
 
-        // token contains a ':' => skip to next ; or {
-        if (tok->str().find(":") != std::string::npos) {
-            while (tok && tok->str().find_first_of(";{"))
-                tok = tok->next();
-            if (tok)
-                continue;
-            break;
+        // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
+        if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction)
+            continue;
+
+        // Don't care about templates
+        if (func->retDef->str() == "template")
+            continue;
+
+        FunctionUsage &usage = _functions[func->name()];
+
+        if (!usage.lineNumber)
+            usage.lineNumber = func->token->linenr();
+
+        // No filename set yet..
+        if (usage.filename.empty()) {
+            usage.filename = tokenizer.list.getSourceFilePath();
         }
-
-        // If this is a template function, skip it
-        if (tok->previous() && tok->previous()->str() == ">")
-            continue;
-
-        const Token *funcname = nullptr;
-
-        if (Token::Match(tok, "%type% %var% ("))
-            funcname = tok->next();
-        else if (Token::Match(tok, "%type% *|& %var% ("))
-            funcname = tok->tokAt(2);
-        else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2).c_str()))
-            funcname = tok->tokAt(2);
-
-        // Don't assume throw as a function name: void foo() throw () {}
-        if (Token::Match(tok->previous(), ")|const") || funcname == 0)
-            continue;
-
-        // Don't warn about functions that are marked by __attribute__((constructor))
-        if (tok->isAttributeConstructor() || funcname->isAttributeConstructor())
-            continue;
-
-        tok = funcname->linkAt(1);
-
-        // Check that ") {" is found..
-        if (! Token::Match(tok, ") const| {") &&
-            ! Token::Match(tok, ") const| throw ( ) {"))
-            funcname = 0;
-
-        if (funcname) {
-            FunctionUsage &func = _functions[ funcname->str()];
-
-            if (!func.lineNumber)
-                func.lineNumber = funcname->linenr();
-
-            // No filename set yet..
-            if (func.filename.empty()) {
-                func.filename = tokenizer.getSourceFilePath();
-            }
-            // Multiple files => filename = "+"
-            else if (func.filename != tokenizer.getSourceFilePath()) {
-                //func.filename = "+";
-                func.usedOtherFile |= func.usedSameFile;
-            }
+        // Multiple files => filename = "+"
+        else if (usage.filename != tokenizer.list.getSourceFilePath()) {
+            //func.filename = "+";
+            usage.usedOtherFile |= usage.usedSameFile;
         }
     }
 
     // Function usage..
-    const Token *scopeEnd = nullptr;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
             const Token * markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
-            int scope = 1;
+            int scope = 0;
+            bool start = true;
             // find all function calls in library code (starts with '(', not if or while etc)
-            while (scope) {
+            while (scope || start) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
+                    if (start) {
+                        start = false;
+                    }
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
@@ -112,7 +92,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                         _functions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
                         FunctionUsage &func = _functions[markupVarToken->str()];
-                        func.filename = tokenizer.getSourceFilePath();
+                        func.filename = tokenizer.list.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
                         else
@@ -130,14 +110,14 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             while (qPropToken && qPropToken->str() != ")") {
                 if (settings->library.isexportedprefix(tok->str(), qPropToken->str())) {
                     const Token* qNextPropToken = qPropToken->next();
-                    const std::string value = qNextPropToken->str();
+                    const std::string& value = qNextPropToken->str();
                     if (_functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
                 }
                 if (settings->library.isexportedsuffix(tok->str(), qPropToken->str())) {
                     const Token* qNextPropToken = qPropToken->previous();
-                    const std::string value = qNextPropToken->str();
+                    const std::string& value = qNextPropToken->str();
                     if (value != ")" && _functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
@@ -153,7 +133,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (qPropToken->next()) {
                 qPropToken = qPropToken->next();
                 while (qPropToken && qPropToken->str() != ")") {
-                    const std::string value = qPropToken->str();
+                    const std::string& value = qPropToken->str();
                     if (!value.empty()) {
                         _functions[value].usedOtherFile = true;
                         break;
@@ -163,51 +143,51 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.isreflection(FileName, tok->str())) {
-            const int index = settings->library.reflectionArgument(FileName, tok->str());
+        if (settings->library.isreflection(tok->str())) {
+            const int index = settings->library.reflectionArgument(tok->str());
             if (index >= 0) {
-                const Token * funcToken = tok->tokAt(index);
-                if (funcToken) {
-                    std::string value = funcToken->str();
+                const Token * funcToken = tok->next();
+                int p = 0;
+                std::string value;
+                while (funcToken) {
+                    if (funcToken->str()==",") {
+                        if (++p==index)
+                            break;
+                        value = "";
+                    } else
+                        value += funcToken->str();
+                    funcToken = funcToken->next();
+                }
+                if (p==index) {
                     value = value.substr(1, value.length() - 2);
                     _functions[value].usedOtherFile = true;
                 }
             }
         }
 
-        if (scopeEnd == nullptr) {
-            if (!Token::Match(tok, ")|= const| {"))
-                continue;
-            scopeEnd = tok;
-            while (scopeEnd->str() != "{")
-                scopeEnd = scopeEnd->next();
-            scopeEnd = scopeEnd->link();
-        } else if (tok == scopeEnd) {
-            scopeEnd = nullptr;
-            continue;
-        }
-
-
         const Token *funcname = nullptr;
 
-        if (Token::Match(tok->next(), "%var% (")) {
+        if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% (")) {
             funcname = tok->next();
         }
 
-        else if (Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
+        else if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
             funcname = tok->next();
         }
 
-        else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
+        else if (Token::Match(tok, "[;{}.,()[=+-/|!?:] &| %var% [(),;:}]")) {
             funcname = tok->next();
+            if (tok->str() == "&")
+                funcname = funcname->next();
+        }
 
-        else if (Token::Match(tok, "[=(,] &| %var% :: %var%")) {
+        else if (Token::Match(tok, "[;{}.,()[=+-/|!?:] &| %var% :: %var%")) {
             funcname = tok->next();
             if (funcname->str() == "&")
                 funcname = funcname->next();
             while (Token::Match(funcname,"%var% :: %var%"))
                 funcname = funcname->tokAt(2);
-            if (!Token::Match(funcname, "%var% [,);]"))
+            if (!Token::Match(funcname, "%var% [(),;:}]"))
                 continue;
         }
 

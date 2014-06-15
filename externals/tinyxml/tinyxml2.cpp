@@ -422,16 +422,19 @@ void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
     TIXML_SNPRINTF( buffer, bufferSize, "%d", v ? 1 : 0 );
 }
 
-
+/*
+	ToStr() of a number is a very tricky topic.
+	https://github.com/leethomason/tinyxml2/issues/106
+*/
 void XMLUtil::ToStr( float v, char* buffer, int bufferSize )
 {
-    TIXML_SNPRINTF( buffer, bufferSize, "%f", v );
+    TIXML_SNPRINTF( buffer, bufferSize, "%.8g", v );
 }
 
 
 void XMLUtil::ToStr( double v, char* buffer, int bufferSize )
 {
-    TIXML_SNPRINTF( buffer, bufferSize, "%f", v );
+    TIXML_SNPRINTF( buffer, bufferSize, "%.17g", v );
 }
 
 
@@ -497,12 +500,7 @@ char* XMLDocument::Identify( char* p, XMLNode** node )
     }
 
     // What is this thing?
-    // - Elements start with a letter or underscore, but xml is reserved.
-    // - Comments: <!--
-    // - Declaration: <?
-    // - Everything else is unknown to tinyxml.
-    //
-
+	// These strings define the matching patters:
     static const char* xmlHeader		= { "<?" };
     static const char* commentHeader	= { "<!--" };
     static const char* dtdHeader		= { "<!" };
@@ -1262,6 +1260,57 @@ const char* XMLElement::GetText() const
 }
 
 
+void	XMLElement::SetText( const char* inText )
+{
+	if ( FirstChild() && FirstChild()->ToText() )
+		FirstChild()->SetValue( inText );
+	else {
+		XMLText*	theText = GetDocument()->NewText( inText );
+		InsertFirstChild( theText );
+	}
+}
+
+
+void XMLElement::SetText( int v ) 
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
+void XMLElement::SetText( unsigned v ) 
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
+void XMLElement::SetText( bool v ) 
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
+void XMLElement::SetText( float v ) 
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
+void XMLElement::SetText( double v ) 
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
 XMLError XMLElement::QueryIntText( int* ival ) const
 {
     if ( FirstChild() && FirstChild()->ToText() ) {
@@ -1639,6 +1688,13 @@ XMLError XMLDocument::LoadFile( FILE* fp )
 {
     Clear();
 
+    fseek( fp, 0, SEEK_SET );
+    fgetc( fp );
+    if ( ferror( fp ) != 0 ) {
+        SetError( XML_ERROR_FILE_READ_ERROR, 0, 0 );
+        return _errorID;
+    }
+
     fseek( fp, 0, SEEK_END );
     size_t size = ftell( fp );
     fseek( fp, 0, SEEK_SET );
@@ -1702,7 +1758,7 @@ XMLError XMLDocument::Parse( const char* p, size_t len )
 	const char* start = p;
     Clear();
 
-    if ( !p || !*p ) {
+    if ( len == 0 || !p || !*p ) {
         SetError( XML_ERROR_EMPTY_DOCUMENT, 0, 0 );
         return _errorID;
     }
@@ -1799,27 +1855,19 @@ void XMLPrinter::Print( const char* format, ... )
         vfprintf( _fp, format, va );
     }
     else {
-        // This seems brutally complex. Haven't figured out a better
-        // way on windows.
-#ifdef _MSC_VER
-        int len = -1;
-        int expand = 1000;
-        while ( len < 0 ) {
-            len = vsnprintf_s( _accumulator.Mem(), _accumulator.Capacity(), _TRUNCATE, format, va );
-            if ( len < 0 ) {
-                expand *= 3/2;
-                _accumulator.PushArr( expand );
-            }
-        }
-        char* p = _buffer.PushArr( len ) - 1;
-        memcpy( p, _accumulator.Mem(), len+1 );
+#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+        int len = _vscprintf( format, va );
 #else
         int len = vsnprintf( 0, 0, format, va );
+#endif
         // Close out and re-start the va-args
         va_end( va );
         va_start( va, format );
-        char* p = _buffer.PushArr( len ) - 1;
-        vsnprintf( p, len+1, format, va );
+        char* p = _buffer.PushArr( len ) - 1;	// back up over the null terminator.
+#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+		vsnprintf_s( p, len+1, _TRUNCATE, format, va );
+#else
+		vsnprintf( p, len+1, format, va );
 #endif
     }
     va_end( va );
@@ -1884,17 +1932,17 @@ void XMLPrinter::PushHeader( bool writeBOM, bool writeDec )
 }
 
 
-void XMLPrinter::OpenElement( const char* name )
+void XMLPrinter::OpenElement( const char* name, bool compactMode )
 {
     if ( _elementJustOpened ) {
         SealElement();
     }
     _stack.Push( name );
 
-    if ( _textDepth < 0 && !_firstElement && !_compactMode ) {
+    if ( _textDepth < 0 && !_firstElement && !compactMode ) {
         Print( "\n" );
     }
-    if ( !_compactMode ) {
+    if ( !compactMode ) {
         PrintSpace( _depth );
     }
 
@@ -1946,7 +1994,7 @@ void XMLPrinter::PushAttribute( const char* name, double v )
 }
 
 
-void XMLPrinter::CloseElement()
+void XMLPrinter::CloseElement( bool compactMode )
 {
     --_depth;
     const char* name = _stack.Pop();
@@ -1955,7 +2003,7 @@ void XMLPrinter::CloseElement()
         Print( "/>" );
     }
     else {
-        if ( _textDepth < 0 && !_compactMode) {
+        if ( _textDepth < 0 && !compactMode) {
             Print( "\n" );
             PrintSpace( _depth );
         }
@@ -1965,7 +2013,7 @@ void XMLPrinter::CloseElement()
     if ( _textDepth == _depth ) {
         _textDepth = -1;
     }
-    if ( _depth == 0 && !_compactMode) {
+    if ( _depth == 0 && !compactMode) {
         Print( "\n" );
     }
     _elementJustOpened = false;
@@ -2090,7 +2138,9 @@ bool XMLPrinter::VisitEnter( const XMLDocument& doc )
 
 bool XMLPrinter::VisitEnter( const XMLElement& element, const XMLAttribute* attribute )
 {
-    OpenElement( element.Name() );
+	const XMLElement*	parentElem = element.Parent()->ToElement();
+	bool		compactMode = parentElem ? CompactMode(*parentElem) : _compactMode;
+    OpenElement( element.Name(), compactMode );
     while ( attribute ) {
         PushAttribute( attribute->Name(), attribute->Value() );
         attribute = attribute->Next();
@@ -2099,9 +2149,9 @@ bool XMLPrinter::VisitEnter( const XMLElement& element, const XMLAttribute* attr
 }
 
 
-bool XMLPrinter::VisitExit( const XMLElement& )
+bool XMLPrinter::VisitExit( const XMLElement& element )
 {
-    CloseElement();
+    CloseElement( CompactMode(element) );
     return true;
 }
 

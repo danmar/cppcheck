@@ -49,6 +49,8 @@ private:
         TEST_CASE(operator1);   // #3195
         TEST_CASE(returnRef);
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
+        TEST_CASE(initializer_list);
+        TEST_CASE(member_function_ternary);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -181,7 +183,7 @@ private:
               "    template<typename T> void foo( T t ) const;\n"
               "};\n"
               "template<typename T> void X::foo( T t ) const { }\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'bar' is never used.\n", errout.str());
     }
 
     void throwIsNotAFunction() {
@@ -237,6 +239,74 @@ private:
 
     void attribute() { // #3471 - FP __attribute__((constructor))
         check("void __attribute__((constructor)) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((constructor(1000))) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((destructor)) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __attribute__((destructor(1000))) f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // alternate syntax
+        check("__attribute__((constructor)) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((constructor(1000))) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((destructor)) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("__attribute__((destructor(1000))) void f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // alternate syntax
+        check("void f() __attribute__((constructor));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((constructor(1000)));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((destructor));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() __attribute__((destructor(1000)));\n"
+              "void f() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        // Don't crash on wrong syntax
+        check("int x __attribute__((constructor));\n"
+              "int x __attribute__((destructor));");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initializer_list() {
+        check("int foo() { return 0; }\n"
+              "struct A {\n"
+              "    A() : m_i(foo())\n"
+              "    {}\n"
+              "int m_i;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void member_function_ternary() {
+        check("struct Foo {\n"
+              "    void F1() {}\n"
+              "    void F2() {}\n"
+              "};\n"
+              "int main(int argc, char *argv[]) {\n"
+              "    Foo foo;\n"
+              "    void (Foo::*ptr)();\n"
+              "    ptr = (argc > 1 && !strcmp(argv[1], \"F2\")) ? &Foo::F2 : &Foo::F1;\n"
+              "    (foo.*ptr)();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

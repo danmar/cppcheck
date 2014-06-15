@@ -135,15 +135,17 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
                    << writestr(actual, true)
                    << '.'
                    << std::endl;
+            if (!msg.empty())
+                errmsg << msg << std::endl;
         } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                    << "Expected:" << std::endl
                    << writestr(expected) << std::endl
                    << "Actual:" << std::endl
-                   << writestr(actual) << std::endl << "_____" << std::endl;
-        }
-        if (!msg.empty()) {
-            errmsg << msg << std::endl;
+                   << writestr(actual) << std::endl;
+            if (!msg.empty())
+                errmsg << "Hint:" << std::endl << msg << std::endl;
+            errmsg << "_____" << std::endl;
         }
     }
 }

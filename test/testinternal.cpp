@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
 
 #include "tokenize.h"
 #include "checkinternal.h"
@@ -103,6 +103,12 @@ private:
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findsimplematch(tok, \"foobar\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::findsimplematch(tok, \"%\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -340,4 +346,4 @@ private:
 
 REGISTER_TEST(TestInternal)
 
-#endif // #ifndef NDEBUG
+#endif // #ifdef CHECK_INTERNAL

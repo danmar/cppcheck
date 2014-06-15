@@ -59,9 +59,9 @@ errors in the code (i.e. have zero false positives).
 
 <h2 id="download">Download</h2>
 <p>
-    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.63/cppcheck-1.63.1-x86-Setup.msi">
+    <a class="downloadnow" href="http://sourceforge.net/projects/cppcheck/files/cppcheck/1.65/cppcheck-1.65-x86-Setup.msi">
         <span class="downButtonText">Download Now!</span>
-        <span class="downButtonVersion">Version 1.63.1 for Windows</span>
+        <span class="downButtonVersion">Version 1.65 for Windows</span>
     </a>
 </p>
 <p>You can download the standalone Cppcheck from our <a href="http://sourceforge.net/projects/cppcheck/">project page</a> or add it
@@ -75,7 +75,7 @@ as a plugin for your favorite IDE:</p>
   <li><strong>Jenkins</strong> - <a href="http://wiki.jenkins-ci.org/display/JENKINS/Cppcheck+Plugin">Cppcheck Plugin</a></li>
   <li><strong>Mercurial (Linux)</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Mercurialhook">pre-commit hook</a> - Check for new errors on commit (requires interactive terminal)</li>
   <li><strong>Tortoise SVN</strong> - <a href="http://sourceforge.net/apps/mediawiki/cppcheck/index.php?title=Tortoisesvn">Adding a pre-commit hook script</a></li>
-  <li><strong>Visual Studio</strong> - <a href="https://github.com/VioletGiraffe/cppcheck-vs-addin/releases">Visual Studio plugin</a></li>
+  <li><strong>Visual Studio</strong> - <a href="https://github.com/VioletGiraffe/cppcheck-vs-addin/releases/latest">Visual Studio plugin</a></li>
 </ul>
 
 <p>Using a battery of tools is better than using 1 tool. Therefore we recommend that you also use other tools.</p>
@@ -120,7 +120,7 @@ PVS-Studio is commercial, however there is a free trial.</p>
   <li>Use <a href="http://sourceforge.net/apps/trac/cppcheck/">Trac</a> to report
   bugs and feature requests</li>
   <li>Ask questions in the <a href="http://sourceforge.net/apps/phpbb/cppcheck/">discussion forum</a>
-  or at the IRC channel <a href="irc://irc.freenode.net/">#cppcheck</a></li>
+  or at the IRC channel <a href="irc://irc.freenode.net/#cppcheck">#cppcheck</a></li>
   <li>For more details look at the <a href="http://sourceforge.net/apps/mediawiki/cppcheck/">wiki</a></li>
 </ul>
 

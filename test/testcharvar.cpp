@@ -39,6 +39,7 @@ private:
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
         TEST_CASE(bitop3);
+        TEST_CASE(bitop4); // (long)&c
         TEST_CASE(return1);
         TEST_CASE(assignChar);
         TEST_CASE(and03);
@@ -158,6 +159,15 @@ private:
               "    i &= c;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+    }
+
+    void bitop4() {
+        check("long f(char c) {\n"
+              "  long a;\n"
+              "  a = (long)&c;\n"
+              "  return a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1() {

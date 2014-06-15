@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
 
 #include "checkinternal.h"
 #include "symboldatabase.h"
@@ -142,8 +142,14 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
         }
 
         // Check for real errors
-        if (pattern.find_first_of("%") != std::string::npos || pattern.find("!!") != std::string::npos)
-            complexPatternError(tok, pattern, funcname);
+        if (pattern.length() > 1) {
+            for (size_t i = 0; i < pattern.length() - 1; i++) {
+                if (pattern[i] == '%' && pattern[i + 1] != ' ')
+                    complexPatternError(tok, pattern, funcname);
+                else if (pattern[i] == '!' && pattern[i + 1] == '!')
+                    complexPatternError(tok, pattern, funcname);
+            }
+        }
     }
 }
 
@@ -315,4 +321,4 @@ void CheckInternal::redundantNextPreviousError(const Token* tok, const std::stri
                 "Call to 'Token::" + func1 + "()' followed by 'Token::" + func2 + "()' can be simplified.");
 }
 
-#endif // #ifndef NDEBUG
+#endif // #ifdef CHECK_INTERNAL

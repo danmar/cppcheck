@@ -19,6 +19,7 @@
 #include "token.h"
 #include "errorlogger.h"
 #include "check.h"
+#include "settings.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -28,6 +29,8 @@
 #include <sstream>
 #include <map>
 #include <stack>
+#include <algorithm>
+
 
 Token::Token(Token **t) :
     tokensBack(t),
@@ -42,14 +45,7 @@ Token::Token(Token **t) :
     _linenr(0),
     _progressValue(0),
     _type(eNone),
-    _isUnsigned(false),
-    _isSigned(false),
-    _isPointerCompare(false),
-    _isLong(false),
-    _isStandardType(false),
-    _isExpandedMacro(false),
-    _isAttributeConstructor(false),
-    _isAttributeUnused(false),
+    _flags(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr)
@@ -66,28 +62,19 @@ void Token::update_property_info()
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
             _type = eBoolean;
-        else if (_str[0] == '_' || std::isalpha(_str[0])) { // Name
+        else if (_str[0] == '_' || std::isalpha((unsigned char)_str[0])) { // Name
             if (_varId)
                 _type = eVariable;
-            else if (_type != eVariable && _type != eFunction && _type != eType)
+            else if (_type != eVariable && _type != eFunction && _type != eType && _type != eKeyword)
                 _type = eName;
-        } else if (std::isdigit(_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1])))
+        } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _type = eNumber;
         else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
             _type = eString;
         else if (_str.length() > 1 && _str[0] == '\'' && _str[_str.length()-1] == '\'')
             _type = eChar;
-        else if (_str == "="   ||
-                 _str == "+="  ||
-                 _str == "-="  ||
-                 _str == "*="  ||
-                 _str == "/="  ||
-                 _str == "%="  ||
-                 _str == "&="  ||
-                 _str == "^="  ||
-                 _str == "|="  ||
-                 _str == "<<=" ||
-                 _str == ">>=")
+        else if (_str == "="   || _str == "<<=" || _str == ">>=" ||
+                 (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|",_str[0])))
             _type = eAssignmentOp;
         else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
             _type = eExtendedOp;
@@ -122,18 +109,15 @@ void Token::update_property_info()
 
 void Token::update_property_isStandardType()
 {
-    _isStandardType = false;
+    isStandardType(false);
 
     if (_str.size() < 3)
         return;
 
-    static const char * const stdtype[] = {"int", "char", "bool", "long", "short", "float", "double", "wchar_t", "size_t", "void", 0};
-    for (int i = 0; stdtype[i]; i++) {
-        if (_str == stdtype[i]) {
-            _isStandardType = true;
-            _type = eType;
-            break;
-        }
+    static const char * const stdtype[] = { "bool", "char", "char16_t", "char32_t", "double", "float", "int", "long", "short", "size_t", "void", "wchar_t"};
+    if (std::binary_search(stdtype, stdtype + sizeof(stdtype) / sizeof(stdtype[0]), _str)) {
+        isStandardType(true);
+        _type = eType;
     }
 }
 
@@ -147,14 +131,6 @@ bool Token::isUpperCaseName() const
             return false;
     }
     return true;
-}
-
-void Token::str(const std::string &s)
-{
-    _str = s;
-    _varId = 0;
-
-    update_property_info();
 }
 
 void Token::concatStr(std::string const& b)
@@ -190,14 +166,7 @@ void Token::deleteThis()
     if (_next) { // Copy next to this and delete next
         _str = _next->_str;
         _type = _next->_type;
-        _isUnsigned = _next->_isUnsigned;
-        _isSigned = _next->_isSigned;
-        _isPointerCompare = _next->_isPointerCompare;
-        _isLong = _next->_isLong;
-        _isStandardType = _next->_isStandardType;
-        _isExpandedMacro = _next->_isExpandedMacro;
-        _isAttributeConstructor = _next->_isAttributeConstructor;
-        _isAttributeUnused = _next->_isAttributeUnused;
+        _flags = _next->_flags;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
@@ -214,14 +183,7 @@ void Token::deleteThis()
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
         _str = _previous->_str;
         _type = _previous->_type;
-        _isUnsigned = _previous->_isUnsigned;
-        _isSigned = _previous->_isSigned;
-        _isPointerCompare = _previous->_isPointerCompare;
-        _isLong = _previous->_isLong;
-        _isStandardType = _previous->_isStandardType;
-        _isExpandedMacro = _previous->_isExpandedMacro;
-        _isAttributeConstructor = _previous->_isAttributeConstructor;
-        _isAttributeUnused = _previous->_isAttributeUnused;
+        _flags = _previous->_flags;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
         _linenr = _previous->_linenr;
@@ -458,6 +420,8 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
 
 bool Token::simpleMatch(const Token *tok, const char pattern[])
 {
+    if (!tok)
+        return false; // shortcut
     const char *current, *next;
 
     current = pattern;
@@ -531,14 +495,14 @@ int Token::firstWordLen(const char *str)
         if (*(p) != '|')                        \
             return false;                       \
         ++(p);                                  \
-        ismulticomp = (*(p) && *(p) != ' ');    \
+        (ismulticomp) = (*(p) && *(p) != ' ');  \
         continue;                               \
     }                                           \
     if (*(p) == '|') {                          \
         while (*(p) && *(p) != ' ')             \
             ++(p);                              \
     }                                           \
-    ismulticomp = false;                        \
+    (ismulticomp) = false;                      \
 }
 
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
@@ -600,7 +564,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 // Type (%type%)
             {
                 p += 5;
-                multicompare(p,tok->isName() && tok->varId() == 0 && tok->str() != "delete",ismulticomp);
+                multicompare(p, tok->isName() && tok->varId() == 0 && !tok->isKeyword(), ismulticomp);
             }
             break;
             case 'a':
@@ -1130,19 +1094,27 @@ std::string Token::stringifyList(bool varid) const
 
 void Token::astOperand1(Token *tok)
 {
+    if (_astOperand1)
+        _astOperand1->_astParent = nullptr;
     // goto parent operator
-    while (tok->_astParent)
-        tok = tok->_astParent;
-    tok->_astParent = this;
+    if (tok) {
+        while (tok->_astParent)
+            tok = tok->_astParent;
+        tok->_astParent = this;
+    }
     _astOperand1 = tok;
 }
 
 void Token::astOperand2(Token *tok)
 {
+    if (_astOperand2)
+        _astOperand2->_astParent = nullptr;
     // goto parent operator
-    while (tok->_astParent)
-        tok = tok->_astParent;
-    tok->_astParent = this;
+    if (tok) {
+        while (tok->_astParent)
+            tok = tok->_astParent;
+        tok->_astParent = this;
+    }
     _astOperand2 = tok;
 }
 
@@ -1201,7 +1173,7 @@ std::string Token::expressionString() const
 
 }
 
-void Token::printAst() const
+void Token::printAst(bool verbose) const
 {
     bool title = false;
 
@@ -1211,7 +1183,10 @@ void Token::printAst() const
             if (!title)
                 std::cout << "\n\n##AST" << std::endl;
             title = true;
-            std::cout << tok->astTop()->astString(" ") << std::endl;
+            if (verbose)
+                std::cout << tok->astTop()->astStringVerbose(0,0) << std::endl;
+            else
+                std::cout << tok->astTop()->astString(" ") << std::endl;
             print = false;
             if (tok->str() == "(")
                 tok = tok->link();
@@ -1221,9 +1196,36 @@ void Token::printAst() const
     }
 }
 
+static std::string indent(const unsigned int indent1, const unsigned int indent2)
+{
+    std::string ret(indent1,' ');
+    for (unsigned int i = indent1; i < indent2; i += 2)
+        ret += "| ";
+    return ret;
+}
+
+std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+{
+    std::string ret = _str + "\n";
+    if (_astOperand1) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2 && !_astOperand2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + (_astOperand2 ? "|-" : "`-") + _astOperand1->astStringVerbose(i1,i2);
+    }
+    if (_astOperand2) {
+        unsigned int i1 = indent1, i2 = indent2 + 2;
+        if (indent1==indent2)
+            i1 += 2;
+        ret += indent(indent1,indent2) + "`-" + _astOperand2->astStringVerbose(i1,i2);
+    }
+    return ret;
+}
+
+
 void Token::printValueFlow() const
 {
-    int line = -1;
+    unsigned int line = 0;
     std::cout << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (tok->values.empty())
@@ -1239,4 +1241,56 @@ void Token::printValueFlow() const
         }
         std::cout << "}" << std::endl;
     }
+}
+
+const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
+{
+    const ValueFlow::Value *ret = nullptr;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->intvalue <= val) {
+            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+                ret = &(*it);
+            if (!ret->inconclusive && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->inconclusive && !settings->inconclusive)
+            return nullptr;
+        if (ret->condition && !settings->isEnabled("warning"))
+            return nullptr;
+    }
+    return ret;
+}
+
+const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
+{
+    const ValueFlow::Value *ret = nullptr;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->intvalue >= val) {
+            if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
+                ret = &(*it);
+            if (!ret->inconclusive && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->inconclusive && !settings->inconclusive)
+            return nullptr;
+        if (ret->condition && !settings->isEnabled("warning"))
+            return nullptr;
+    }
+    return ret;
+}
+
+void Token::assignProgressValues(Token *tok)
+{
+    unsigned int total_count = 0;
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        ++total_count;
+    unsigned int count = 0;
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        tok2->_progressValue = count++ * 100 / total_count;
 }

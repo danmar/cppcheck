@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.64 dev</title>
+    <title>Cppcheck 1.66 dev</title>
 
     <date>2013-12-23</date>
   </bookinfo>
@@ -714,6 +714,22 @@ Checking test.c...
     appreciate if you upload it to us.</para>
 
     <section>
+      <title>Using your own custom .cfg file</title>
+
+      <para>You can create and use your own .cfg files for your
+      projects.</para>
+
+      <para>The command line cppcheck will try to load custom .cfg files from
+      the working path - execute cppcheck from the path where the .cfg files
+      are.</para>
+
+      <para>The cppcheck GUI will try to load custom .cfg files from the
+      project file path. The custom .cfg files should be shown in the
+      <literal>Edit Project File</literal> dialog that you open from the
+      <literal>File</literal> menu.</para>
+    </section>
+
+    <section>
       <title>Memory/resource leaks</title>
 
       <para>Here is an example program:</para>
@@ -970,6 +986,14 @@ Checking noreturn.c...
       be null. And it must point at initialized data. Using
       <literal>&lt;not-null&gt;</literal> and
       <literal>&lt;not-uninit&gt;</literal> is correct.</para>
+    </section>
+
+    <section>
+      <title>Specifications for all arguments</title>
+
+      <para>Specifying <literal>-1</literal> as the argument number is going
+      to apply a check to all arguments of that function. The specifications
+      for individual arguments override this setting.</para>
     </section>
   </chapter>
 

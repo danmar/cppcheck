@@ -28,7 +28,6 @@
 #include "errorlogger.h"
 
 #include <list>
-#include <iostream>
 #include <set>
 
 /// @addtogroup Core
@@ -49,9 +48,8 @@ public:
     }
 
     virtual ~Check() {
-#if !defined(DJGPP) && !defined(__sun)
-        instances().remove(this);
-#endif
+        if (!_tokenizer)
+            instances().remove(this);
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
@@ -103,9 +101,7 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg) {
-        std::cout << errmsg.toXML(true, 1) << std::endl;
-    }
+    static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
     bool inconclusiveFlag() const {
         return _settings && _settings->inconclusive;
@@ -117,13 +113,15 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, bool inconclusive = false) {
+    template<typename T, typename U>
+    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false) {
         std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, inconclusive);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string& msg, bool inconclusive = false) {
+    template<typename T, typename U>
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false) {
         ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);
@@ -138,22 +136,6 @@ private:
     void operator=(const Check &);
     Check(const Check &);
 };
-
-namespace std {
-    /** compare the names of Check classes, used when sorting the Check descendants */
-    template <> struct less<Check *> {
-        bool operator()(const Check *p1, const Check *p2) const {
-            return (p1->name() < p2->name());
-        }
-    };
-}
-
-inline Check::Check(const std::string &aname)
-    : _tokenizer(0), _settings(0), _errorLogger(0), _name(aname)
-{
-    instances().push_back(this);
-    instances().sort(std::less<Check *>());
-}
 
 /// @}
 //---------------------------------------------------------------------------

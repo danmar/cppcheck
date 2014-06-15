@@ -48,14 +48,15 @@ public:
         m_timerResults = tr;
     }
 
-    /** Returns the source file path. e.g. "file.cpp" */
-    const std::string& getSourceFilePath() const;
-
     /** Is the code C. Used for bailouts */
-    bool isC() const;
+    bool isC() const {
+        return list.isC();
+    }
 
     /** Is the code CPP. Used for bailouts */
-    bool isCPP() const;
+    bool isCPP() const {
+        return list.isCPP();
+    }
 
     /**
      * Check if inner scope ends with a call to a noreturn function
@@ -84,12 +85,13 @@ public:
      *
      * @param FileName The filename
      * @param configuration E.g. "A" for code where "#ifdef A" is true
+     * @param noSymbolDB_AST Disable creation of SymbolDatabase and AST
      * @return false if source code contains syntax errors
      */
     bool tokenize(std::istream &code,
                   const char FileName[],
-                  const std::string &configuration = "");
-
+                  const std::string &configuration = "",
+                  bool noSymbolDB_AST = false);
     /**
      * tokenize condition and run simple simplifications on it
      * @param code code
@@ -103,10 +105,13 @@ public:
     /**
     * Basic simplification of tokenlist
     *
+    * @param FileName The filename to run; used to do
+    * markup checks.
+    *
     * @return false if there is an error that requires aborting
     * the checking of this file.
     */
-    bool simplifyTokenList1();
+    bool simplifyTokenList1(const char FileName[]);
 
     /**
     * Most aggressive simplification of tokenlist
@@ -184,10 +189,8 @@ public:
     void arraySize();
 
     /** Simplify labels and 'case|default' syntaxes.
-      * @return true if found nothing or the syntax is correct.
-      *         false if syntax is found to be wrong.
       */
-    bool simplifyLabelsCaseDefault();
+    void simplifyLabelsCaseDefault();
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
@@ -286,13 +289,13 @@ public:
     void simplifyIfSameInnerCondition();
 
     /**
-     * Simplify the "not" and "and" keywords to "!" and "&&"
-     * accordingly.
+     * Simplify the 'C Alternative Tokens'
      * Examples:
-     * - "if (not p)" => "if (!p)"
-     * - "if (p and q)" => "if (p && q)"
+     * "if(s and t)" => "if(s && t)"
+     * "while((r bitand s) and not t)" => while((r & s) && !t)"
+     * "a and_eq b;" => "a &= b;"
      */
-    bool simplifyLogicalOperators();
+    bool simplifyCAlternativeTokens();
 
     /**
      * Simplify comma into a semicolon when possible:
@@ -383,11 +386,6 @@ public:
     /** Simplify "if else" */
     void elseif();
 
-    /**
-     * Simplify the operator "?:"
-     */
-    void simplifyConditionOperator();
-
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.
@@ -447,9 +445,8 @@ public:
     /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
-     * @return false only if there's a syntax error
      */
-    bool simplifyFunctionParameters();
+    void simplifyFunctionParameters();
 
     /**
      * Simplify templates
@@ -490,11 +487,11 @@ public:
 
     void simplifyDefaultAndDeleteInsideClass();
 
-    bool hasComplicatedSyntaxErrorsInTemplates();
+    void findComplicatedSyntaxErrorsInTemplates();
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
-     * @return returns true if simplifcations performed and false otherwise.
+     * @return true if simplifcations performed and false otherwise.
      */
     bool simplifyMathFunctions();
 
@@ -561,11 +558,8 @@ public:
 
     /**
      * Setup links for tokens so that one can call Token::link().
-     *
-     * @return false if there was a mismatch with tokens, this
-     * should mean that source code was not valid.
      */
-    bool createLinks();
+    void createLinks();
 
     /**
      * Setup links between < and >.
@@ -584,9 +578,8 @@ public:
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList.
-     * @return always true.
      */
-    bool validate() const;
+    void validate() const;
 
     /**
      * Remove __declspec()
@@ -716,6 +709,8 @@ public:
     void createSymbolDatabase();
     void deleteSymbolDatabase();
 
+    void printDebugOutput() const;
+
     Token *deleteInvalidTypedef(Token *typeDef);
 
     /**
@@ -735,7 +730,7 @@ public:
     /**
      * Output list of unknown types.
      */
-    void printUnknownTypes();
+    void printUnknownTypes() const;
 
 
     /**
@@ -778,6 +773,14 @@ public:
     */
     static bool isTwoNumber(const std::string &s);
 
+    /**
+    * Helper function to check for start of function execution scope.
+    * Do not use this in checks.  Use the symbol database.
+    * @param tok --> pointer to end parentheses of parameter list
+    * @return pointer to start brace of function scope or nullptr if not start.
+    */
+    static const Token * startOfExecutableScope(const Token * tok);
+
 private:
     /** Disable copy constructor, no implementation */
     Tokenizer(const Tokenizer &);
@@ -785,11 +788,19 @@ private:
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
 
+    static Token * startOfFunction(Token * tok);
+    static Token * startOfExecutableScope(Token * tok) {
+        return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
+    }
+
+    /** Set pod types */
+    void setPodTypes();
+
     /** settings */
     const Settings * _settings;
 
     /** errorlogger */
-    ErrorLogger * const _errorLogger;
+    ErrorLogger* const _errorLogger;
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase *_symbolDatabase;

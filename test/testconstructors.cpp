@@ -66,6 +66,7 @@ private:
         TEST_CASE(simple10); // ticket #4388
         TEST_CASE(simple11); // ticket #4536
         TEST_CASE(simple12); // ticket #4620
+        TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
 
         TEST_CASE(initvar_with_this);       // BUG 2190300
         TEST_CASE(initvar_if);              // BUG 2190290
@@ -161,6 +162,7 @@ private:
         TEST_CASE(uninitVarOperatorEqual); // ticket #2415
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
+        TEST_CASE(constructors_crash1);  // ticket #5641
     }
 
 
@@ -390,6 +392,14 @@ private:
               "    void Init(int i, int j = 0);\n"
               "};\n"
               "void Fred::Init(int i, int j) { x = i; y = j; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple13() { // #5498
+        check("class Fred {\n"
+              "    int x=1;\n"
+              "    int *y=0;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -829,6 +839,40 @@ private:
               "    int number;\n"
               "public:\n"
               "    A(int n) : A() { }\n"
+              "    A() { number = 42; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { }\n"
+              "    A() : A{42} {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) { number = n; }\n"
+              "    A() : A{42} {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A{} { }\n"
+              "    A() {}\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::number' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Member variable 'A::number' is not initialized in the constructor.\n", errout.str());
+
+        check("class A {\n"
+              "    int number;\n"
+              "public:\n"
+              "    A(int n) : A{} { }\n"
               "    A() { number = 42; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
@@ -2856,6 +2900,16 @@ private:
               "    const int a;\n"
               "    B& operator=(const B& r) { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Ticket #5641 "Regression. Crash for 'C() _STLP_NOTHROW {}'"
+    void constructors_crash1() {
+        check("class C {\n"
+              "public:\n"
+              "  C() _STLP_NOTHROW {}\n"
+              "  C(const C&) _STLP_NOTHROW {}\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

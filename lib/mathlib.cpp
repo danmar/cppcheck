@@ -21,14 +21,65 @@
 #include "mathlib.h"
 #include "errorlogger.h"
 
-#include <string>
-#include <sstream>
-#include <cstdlib>
 #include <cmath>
 #include <cctype>
 #include <limits>
 
-MathLib::bigint MathLib::toLongNumber(const std::string &str)
+MathLib::biguint MathLib::toULongNumber(const std::string & str)
+{
+    // hexadecimal numbers:
+    if (isHex(str)) {
+        if (str[0] == '-') {
+            biguint ret = 0;
+            std::istringstream istr(str);
+            istr >> std::hex >> ret;
+            return ret;
+        } else {
+            unsigned long long ret = 0;
+            std::istringstream istr(str);
+            istr >> std::hex >> ret;
+            return (biguint)ret;
+        }
+    }
+
+    // octal numbers:
+    if (isOct(str)) {
+        biguint ret = 0;
+        std::istringstream istr(str);
+        istr >> std::oct >> ret;
+        return ret;
+    }
+
+    // binary numbers:
+    if (isBin(str)) {
+        biguint ret = 0;
+        for (std::string::size_type i = str[0] == '0'?2:3; i < str.length(); i++) {
+            ret <<= 1;
+            if (str[i] == '1')
+                ret |= 1;
+        }
+        /* if (str[0] == '-')
+                ret = -ret; */
+        return ret;
+    }
+
+    if (isFloat(str)) {
+        // Things are going to be less precise now: the value can't b represented in the biguint type.
+        // Use min/max values as an approximation. See #5843
+        const double doubleval = std::atof(str.c_str());
+        if (doubleval > (double)std::numeric_limits<biguint>::max())
+            return std::numeric_limits<biguint>::max();
+        else
+            return static_cast<biguint>(doubleval);
+    }
+
+    biguint ret = 0;
+    std::istringstream istr(str);
+    istr >> ret;
+    return ret;
+}
+
+MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isHex(str)) {
@@ -66,14 +117,24 @@ MathLib::bigint MathLib::toLongNumber(const std::string &str)
         return ret;
     }
 
-    if (str.find_first_of("eE") != std::string::npos)
-        return static_cast<bigint>(std::atof(str.c_str()));
+    if (isFloat(str)) {
+        // Things are going to be less precise now: the value can't be represented in the bigint type.
+        // Use min/max values as an approximation. See #5843
+        const double doubleval = std::atof(str.c_str());
+        if (doubleval > (double)std::numeric_limits<bigint>::max())
+            return std::numeric_limits<bigint>::max();
+        else if (doubleval < (double)std::numeric_limits<bigint>::min())
+            return std::numeric_limits<bigint>::min();
+        else
+            return static_cast<bigint>(doubleval);
+    }
 
     bigint ret = 0;
     std::istringstream istr(str);
     istr >> ret;
     return ret;
 }
+
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
@@ -103,12 +164,90 @@ template<> std::string MathLib::toString(double value)
 
 bool MathLib::isFloat(const std::string &s)
 {
-    // every number that contains a . is a float
-    if (s.find("." , 0) != std::string::npos)
-        return true;
-    // scientific notation
-    return (s.find("E-", 0) != std::string::npos
-            || s.find("e-", 0) != std::string::npos);
+    if (s.empty())
+        return false;
+    enum State {
+        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it=='+' || *it=='-')
+                state=BASE_PLUSMINUS;
+            else if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else
+                return false;
+            break;
+        case BASE_PLUSMINUS:
+            if (*it=='.')
+                state=LEADING_DECIMAL;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS1;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
+            break;
+        case LEADING_DECIMAL:
+            if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            else if (*it=='e' || *it=='E')
+                state=E;
+            else
+                return false;
+            break;
+        case BASE_DIGITS1:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='.')
+                state=TRAILING_DECIMAL;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case TRAILING_DECIMAL:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (std::isdigit(*it))
+                state=BASE_DIGITS2;
+            else
+                return false;
+            break;
+        case BASE_DIGITS2:
+            if (*it=='e' || *it=='E')
+                state=E;
+            else if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case E:
+            if (*it=='+' || *it=='-')
+                state=MANTISSA_PLUSMINUS;
+            else if (std::isdigit(*it))
+                state=MANTISSA_DIGITS;
+            else
+                return false;
+            break;
+        case MANTISSA_PLUSMINUS:
+            if (!std::isdigit(*it))
+                return false;
+            else
+                state=MANTISSA_DIGITS;
+            break;
+        case MANTISSA_DIGITS:
+            if (*it=='f' || *it=='F')
+                state=F;
+            else if (!std::isdigit(*it))
+                return false;
+            break;
+        case F:
+            return false;
+        }
+    }
+    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==F);
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -126,115 +265,239 @@ bool MathLib::isPositive(const std::string &s)
     return !MathLib::isNegative(s);
 }
 
-bool MathLib::isOct(const std::string& str)
+/*! \brief Does the string represent an octal number?
+ * In case leading or trailing white space is provided, the function
+ * returns false.
+ * Additional information can be found here:
+ * http://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html
+ *
+ * \param[in] s The string to check. In case the string is empty, the function returns false.
+ * \return Return true in case a octal number is provided and false otherwise.
+ **/
+bool MathLib::isOct(const std::string& s)
 {
-    const bool sign = str[0]=='-' || str[0]=='+';
-    return (str[sign?1:0] == '0' && (str.size() == 1 || isOctalDigit(str[sign?2:1])) && !isFloat(str));
+    enum Status {
+        START, PLUSMINUS, OCTAL_PREFIX, DIGITS
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (*it == '0')
+                state = OCTAL_PREFIX;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (*it == '0')
+                state = OCTAL_PREFIX;
+            else
+                return false;
+            break;
+        case OCTAL_PREFIX:
+            if (isOctalDigit(*it))
+                state = DIGITS;
+            else
+                return false;
+            break;
+        case DIGITS:
+            if (isOctalDigit(*it))
+                state = DIGITS;
+            else
+                return isValidSuffix(it,s.end());
+            break;
+        }
+    }
+    return state == DIGITS;
 }
 
-bool MathLib::isHex(const std::string& str)
+bool MathLib::isHex(const std::string& s)
 {
-    const bool sign = str[0]=='-' || str[0]=='+';
-    return (str.compare(sign?1:0, 2, "0x") == 0 || str.compare(sign?1:0, 2, "0X") == 0);
+    enum Status {
+        START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case HEX_PREFIX:
+            if (*it == 'x' || *it == 'X')
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case DIGIT:
+            if (isxdigit(*it))
+                state = DIGITS;
+            else
+                return false;
+            break;
+        case DIGITS:
+            if (isxdigit(*it))
+                state = DIGITS;
+            else
+                return isValidSuffix(it,s.end());
+            break;
+        }
+    }
+    return state == DIGITS;
 }
 
-bool MathLib::isBin(const std::string& str)
+bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_iterator end)
 {
-    const bool sign = str[0]=='-' || str[0]=='+';
-    return ((str.compare(sign?1:0, 2, "0b") == 0 || str.compare(sign?1:0, 2, "0B") == 0) && str.find_first_not_of("10bB", 1) == std::string::npos);
+    enum Status {
+        START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU
+    } state = START;
+    for (; it != end; ++it) {
+        switch (state) {
+        case START:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_U;
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_L;
+            else
+                return false;
+            break;
+        case SUFFIX_U:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_UL; // UL
+            else
+                return false;
+            break;
+        case SUFFIX_UL:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_ULL; // ULL
+            else
+                return false;
+            break;
+        case SUFFIX_L:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LU; // LU
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_LL; // LL
+            else
+                return false;
+            break;
+        case SUFFIX_LU:
+            return false;
+        case SUFFIX_LL:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LLU; // LLU
+            else
+                return false;
+            break;
+        default:
+            return false;
+        }
+    }
+    return (state == SUFFIX_U)  || (state == SUFFIX_L)
+           || (state == SUFFIX_UL) || (state == SUFFIX_LU)   || (state == SUFFIX_LL)
+           || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
+}
+
+/*! \brief Does the string represent a binary number?
+ * In case leading or trailing white space is provided, the function
+ * returns false.
+ * Additional information can be found here:
+ * http://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html
+ *
+ * \param[in] s The string to check. In case the string is empty, the function returns false.
+ * \return Return true in case a binary number is provided and false otherwise.
+ **/
+bool MathLib::isBin(const std::string& s)
+{
+    enum Status {
+        START, PLUSMINUS, GNU_BIN_PREFIX, DIGIT, DIGITS
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (*it == '0')
+                state = GNU_BIN_PREFIX;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (*it == '0')
+                state = GNU_BIN_PREFIX;
+            else
+                return false;
+            break;
+        case GNU_BIN_PREFIX:
+            if (*it == 'b' || *it == 'B')
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case DIGIT:
+            if (*it == '0' || *it == '1')
+                state = DIGITS;
+            else
+                return false;
+            break;
+        case DIGITS:
+            if (*it == '0' || *it == '1')
+                state = DIGITS;
+            else
+                return isValidSuffix(it,s.end());
+            break;
+        }
+    }
+    return state == DIGITS;
+}
+
+bool MathLib::isDec(const std::string & s)
+{
+    enum Status {
+        START, PLUSMINUS, DIGIT, SUFFIX
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (isdigit(*it))
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (isdigit(*it))
+                state = DIGIT;
+            else
+                return false;
+            break;
+        case DIGIT:
+            if (isdigit(*it))
+                state = DIGIT;
+            else
+                return isValidSuffix(it,s.end());
+            break;
+        case SUFFIX:
+            break;
+        }
+    }
+    return state == DIGIT;
 }
 
 bool MathLib::isInt(const std::string & s)
 {
-    // perform prechecks:
-    // ------------------
-    // first check, if a point is found, it is an floating point value
-    if (s.find(".", 0) != std::string::npos) return false;
-    // check for scientific notation e.g. NumberE-Number this is obvious an floating point value
-    else if (s.find("E-", 0) != std::string::npos || s.find("e-", 0) != std::string::npos) return false;
-
-
-    // prechecking has nothing found,...
-    // gather information
-    enum Representation {
-        eScientific = 0, // NumberE+Number or NumberENumber
-        eOctal,          // starts with 0
-        eHex,            // starts with 0x
-        eDefault         // Numbers with a (possible) trailing u or U or l or L for unsigned or long datatypes
-    };
-    // create an instance
-    Representation Mode = eDefault;
-
-
-    // remember position
-    unsigned long n = 0;
-    // eat up whitespace
-    while (std::isspace(s[n])) ++n;
-
-    // determine type
-    if (s.find("E", 0) != std::string::npos) {
-        Mode = eScientific;
-    } else if (isHex(s)) {
-        Mode = eHex;
-    } else if (isOct(s)) {
-        Mode = eOctal;
-    }
-
-    // check sign
-    if (s[n] == '-' || s[n] == '+') ++n;
-
-    // check scientific notation
-    if (Mode == eScientific) {
-        // check digits
-        while (std::isdigit(s[n])) ++n;
-
-        // check scientific notation
-        if (std::tolower(s[n]) == 'e') {
-            ++n;
-            // check positive exponent
-            if (s[n] == '+') ++n;
-            // floating pointer number e.g. 124E-2
-            if (s[n] == '-') return false;
-            // check digits of the exponent
-            while (std::isdigit(s[n])) ++n;
-        }
-    }
-    // check hex notation
-    else if (Mode == eHex) {
-        ++n; // 0
-        ++n; // x
-        while (std::isxdigit(s[n]))
-            ++n;
-
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
-    }
-    // check octal notation
-    else if (Mode == eOctal) {
-        ++n; // 0
-        while (isOctalDigit(s[n]))
-            ++n;
-
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
-    } else if (Mode == eDefault) {
-        // starts with digit
-        bool bStartsWithDigit=false;
-        while (std::isdigit(s[n])) {
-            bStartsWithDigit=true;
-            ++n;
-        };
-
-        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n; // unsigned or long (long)
-
-        if (!bStartsWithDigit)
-            return false;
-    }
-    // eat up whitespace
-    while (std::isspace(s[n]))
-        ++n;
-
-    // if everything goes good, we are at the end of the string and no digits/character
-    // is here --> return true, but if something was found e.g. 12E+12AA return false
-    return (n >= s.length());
+    return isDec(s) || isHex(s) || isOct(s);
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)
@@ -276,6 +539,16 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     return toString(d1 - d2);
 }
 
+std::string MathLib::incdec(const std::string & var, const std::string & op)
+{
+    if (op == "++")
+        return MathLib::add(var, "1");
+    else if (op == "--")
+        return MathLib::subtract(var, "1");
+
+    throw InternalError(0, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
+}
+
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
@@ -286,12 +559,12 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
         return toString(toLongNumber(first) / b);
-    } else if (second == "0.0") {
-        if (first=="0.0" || first=="+0.0")
+    } else if (isNullValue(second)) {
+        if (isNullValue(first))
             return "nan.0";
-        if (first=="-0.0")
-            return "-nan.0";
-        return (first[0] == '-') ? "-inf.0" : "inf.0";
+        const int sign_first = (isPositive(first)) ? 1 : -1;
+        const int sign_second = (isPositive(second)) ? 1 : -1;
+        return (sign_first*sign_second == 1) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 }
@@ -401,17 +674,30 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
     return toDoubleNumber(first) <= toDoubleNumber(second);
 }
 
+/*! \brief Does the string represent the numerical value of 0?
+ * In case leading or trailing white space is provided, the function
+ * returns false.
+ * Requirement for this function:
+ * - This code is allowed to be slow because of simplicity of the code.
+ *
+ * \param[in] str The string to check. In case the string is empty, the function returns false.
+ * \return Return true in case the string represents a numerical null value.
+ **/
 bool MathLib::isNullValue(const std::string &str)
 {
-    return (str == "-0"        || str == "0"      || str == "+0"
-            || str == "-0.0"   || str == "0.0"    || str == "+0.0"
-            || str == "-0."    || str == "+0."
-            || str == "-0E-00" || str == "-0E+00" || str == "+0E+00" || str == "+0E-00"
-            || str == "-0e-00" || str == "-0e+00" || str == "+0e+00" || str == "+0e-00"
-            || str == "-0E-0");
+    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
+        return false; // Has to be a number
+
+    for (size_t i = 0; i < str.size(); i++) {
+        if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
+            return false;
+        if (str[i] == 'E' || str[i] == 'e')
+            return true;
+    }
+    return true;
 }
 
 bool MathLib::isOctalDigit(char c)
 {
-    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7');
+    return (c >= '0' && c <= '7');
 }

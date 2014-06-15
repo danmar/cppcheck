@@ -74,10 +74,7 @@ void Check64BitPortability::pointerassignment()
                         type = INT;
                     else if (type == PTR && Token::Match(tok2, "- %var%") && isaddr(tok2->next()->variable()))
                         type = PTRDIFF;
-                    else if (Token::Match(tok2, "(")) {
-                        type = NO;
-                        break;
-                    } else if (tok2->str() == "(") {
+                    else if (tok2->str() == "(") {
                         // TODO: handle parentheses
                         type = NO;
                         break;

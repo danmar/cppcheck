@@ -139,6 +139,8 @@ void CheckSizeof::checkSizeofForPointerSize()
             } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
                 variable = tok->tokAt(2);
                 variable2 = variable->nextArgument();
+                if (!variable2)
+                    continue;
                 tokVar = variable2->nextArgument();
 
             } else {
@@ -247,6 +249,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
     if (!_settings->isEnabled("warning") || !_settings->inconclusive)
         return;
 
+    // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token* const end = tok->linkAt(1);
@@ -254,7 +257,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
             if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
                 if (end->strAt(1) == "/")
                     divideSizeofError(tok);
-            } else if (Token::simpleMatch(end, ") * sizeof"))
+            } else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
                 multiplySizeofError(tok);
         }
     }
@@ -296,26 +299,28 @@ void CheckSizeof::sizeofVoid()
                 const Token* tok2 = tok->tokAt(index);
                 if (index == 0) {
                     bool isMember = false;
-                    while (Token::Match(tok2->previous(), ".")) {
+                    while (Token::simpleMatch(tok2->previous(), ".")) {
                         isMember = true;
-                        if (Token::Match(tok2->tokAt(-2), ")"))
-                            tok2 = tok2->tokAt(-2)->link();
-                        else if (Token::Match(tok2->tokAt(-2), "]"))
-                            tok2 = tok2->tokAt(-2)->link()->previous();
+                        if (Token::simpleMatch(tok2->tokAt(-2), ")"))
+                            tok2 = tok2->linkAt(-2);
+                        else if (Token::simpleMatch(tok2->tokAt(-2), "]"))
+                            tok2 = tok2->linkAt(-2)->previous();
                         else
                             tok2 = tok2->tokAt(-2);
                     }
                     if (isMember) {
                         // Get 'struct.member' complete name (without spaces)
-                        varname = tok2->stringifyList(tok->tokAt(index)->next());
-                        varname.erase(remove_if(varname.begin(), varname.end(),
-                                                static_cast<int (*)(int)>(std::isspace)), varname.end());
+                        varname = tok2->stringifyList(tok->next());
+                        varname.erase(std::remove_if(varname.begin(), varname.end(),
+                                                     static_cast<int (*)(int)>(std::isspace)), varname.end());
                     }
                 }
                 // Check for cast on operations with '+|-'
                 if (Token::Match(tok, "%var% +|-")) {
                     // Check for cast expression
-                    if (Token::Match(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
+                    if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
+                        continue;
+                    if (tok2->strAt(-1) == "&") // Check for reference operator
                         continue;
                 }
                 arithOperationsOnVoidPointerError(tok, varname,

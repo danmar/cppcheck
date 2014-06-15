@@ -1,0 +1,1 @@
+[samples\outOfBounds\bad.c:5]: (error) snprintf size is out of bounds: Supplied size 10 is larger than actual size 5.

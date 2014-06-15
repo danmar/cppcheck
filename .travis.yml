@@ -1,25 +1,40 @@
 language: cpp
+
 compiler:
-  - gcc
   - clang
+  - gcc
+
 env:
   global:
 #   unfortunately we need this to stay within 50min timelimit given by travis.
 #   this also turns off the debug/warning cxxflags
-    - CXXFLAGS=-O2
+    - CXXFLAGS="-O2 -Wunreachable-code"
   matrix:
+#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_KERNEL is the var that controls if we download and check the kernel in that travis job
     - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
     - SRCDIR=build VERIFY=1
-    - MAKEFLAGS="HAVE_RULES=yes"
-    -
-# do notify immediately about it when a sub-job of a  build fails.
+    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
+    - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+
 matrix:
+# do notify immediately about it when a job of a build fails.
   fast_finish: true
+# exclude kernel checking with clang binary, not needed
+  exclude:
+    - compiler: clang
+      env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+# kernel check can time out during travis rush hour, so make failure of it less grave...
+  allow_failures:
+    - env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3
+ - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb
+
 script:
+# download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
+  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal" /tmp/kernel.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
@@ -29,7 +44,10 @@ script:
   - make -j4
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style --suppressions-list=.travis_suppressions .
+# use same hack as for kernel to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
+  - touch /tmp/cppcheck.cppcheck
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
@@ -63,9 +81,9 @@ script:
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
-  - ./dmake
 #   now, if dmake modified the makefile, return false!
   - git diff --exit-code
+
 notifications:
   irc:
     channels:
@@ -74,4 +92,3 @@ notifications:
       - "[%{commit} : %{author}] %{message}"
       - "%{build_url}"
     skip_join: true
-

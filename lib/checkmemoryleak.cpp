@@ -162,7 +162,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return File;
 
         if (settings1->standards.posix) {
-            if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp (")) {
+            if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
                 unsigned int num = countParameters(tok2);
@@ -174,15 +174,20 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                     return No;
                 return Fd;
             }
+
+            if (Token::simpleMatch(tok2, "popen ("))
+                return Pipe;
         }
 
-        if (Token::simpleMatch(tok2, "popen ("))
-            return Pipe;
-
         // Does tok2 point on "g_malloc", "g_strdup", ..
-        const int alloctype = settings1->library.alloc(tok2->str());
-        if (alloctype > 0)
+        const int alloctype = settings1->library.alloc(tok2);
+        if (alloctype > 0) {
+            if (alloctype == settings1->library.dealloc("free"))
+                return Malloc;
+            if (alloctype == settings1->library.dealloc("fclose"))
+                return File;
             return Library::ismemory(alloctype) ? OtherMem : OtherRes;
+        }
     }
 
     while (Token::Match(tok2,"%type%|%var% ::|. %type%"))
@@ -266,7 +271,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
     // Does tok2 point on "g_free", etc ..
     if (Token::Match(tok, "%type% ( %varid% )", varid)) {
-        const int dealloctype = settings1->library.dealloc(tok->str());
+        const int dealloctype = settings1->library.dealloc(tok);
         if (dealloctype > 0)
             return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
     }
@@ -304,7 +309,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         return Pipe;
 
     if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
-        int type = settings1->library.dealloc(tok->str());
+        int type = settings1->library.dealloc(tok);
         if (type > 0)
             return Library::ismemory(type) ? OtherMem : OtherRes;
     }
@@ -420,14 +425,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     if (varid == 0)
         return No;
 
-    if (this != nullptr) {
-        // If variable is not local then alloctype shall be "No"
-        // Todo: there can be false negatives about mismatching allocation/deallocation.
-        //       => Generate "alloc ; use ;" if variable is not local?
-        const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
-        if (!var || !var->isLocal() || var->isStatic())
-            return No;
-    }
+    // If variable is not local then alloctype shall be "No"
+    // Todo: there can be false negatives about mismatching allocation/deallocation.
+    //       => Generate "alloc ; use ;" if variable is not local?
+    const Variable *var = tokenizer->getSymbolDatabase()->getVariableFromVarId(varid);
+    if (!var || !var->isLocal() || var->isStatic())
+        return No;
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
@@ -579,7 +582,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             tok->str() == "realloc" ||
             tok->str() == "return" ||
             tok->str() == "switch" ||
-            tok->str() == "while") {
+            tok->str() == "while" ||
+            tok->str() == "sizeof") {
             return 0;
         }
 
@@ -608,7 +612,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (noreturn.find(tok->str()) != noreturn.end() && tok->strAt(-1) != "=")
         return "exit";
 
-    if (varid > 0 && (getAllocationType(tok, varid) != No || getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
+    if (varid > 0 && (getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
         return 0;
 
     if (callstack.size() > 2)
@@ -2756,9 +2760,9 @@ void CheckMemoryLeakNoVar::check()
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-        if (Token::Match(tok, "{|}|; %var% (")) {
+        if (Token::Match(tok, "{|}|; %var% (") && tok->strAt(-1) != "=") {
             tok = tok->next();
-            const int allocationId = _settings->library.alloc(tok->str());
+            const int allocationId = _settings->library.alloc(tok);
             if (allocationId > 0)
                 returnValueNotUsedError(tok, tok->str());
         }

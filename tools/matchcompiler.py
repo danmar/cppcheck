@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2013 Daniel Marjamaeki and Cppcheck team.
+# Copyright (C) 2007-2014 Daniel Marjamaeki and Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,8 +113,7 @@ class MatchCompiler:
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
             return (
-                '(tok->isName() && tok->varId()==0U && tok->str() != ' +
-                self._insertMatchStr('delete') + '/* delete */)'
+                '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
             )
         elif tok == '%var%':
             return 'tok->isName()'

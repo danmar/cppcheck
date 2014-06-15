@@ -76,7 +76,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </author>
     </authorgroup>
     <copyright>
-      <year>2009 - 2013</year>
+      <year>2009 - 2014</year>
       <holder>&dhusername;</holder>
     </copyright>
     <legalnotice>
@@ -116,10 +116,14 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
+      <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg>
+      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg> 
+      <arg choice="opt"><option>--include=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inconclusive</option></arg>
       <arg choice="opt"><option>--inline-suppr</option></arg>
       <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
+      <arg choice="opt"><option>-l&lt;load&gt;</option></arg>
       <arg choice="opt"><option>--language=&lt;language&gt;</option></arg>
       <arg choice="opt"><option>--library=&lt;cfg&gt;</option></arg>
       <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
@@ -129,7 +133,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--report-progress</option></arg>
       <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
       <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
@@ -311,6 +314,26 @@ First given path is searched for contained header files first. If paths are rela
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>--config-exclude=&lt;dir&gt;</option></term>
+        <listitem>
+          <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers 
+(but not sources) matching the prefix will not be considered for evaluation of configuration alternatives.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--config-exclude-file=&lt;file&gt;</option></term>
+        <listitem>
+          <para>A file that contains a list of config-excludes.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--include=&lt;file&gt;</option></term>
+        <listitem>
+          <para>Force inclusion of a file before the checked file. Can be used for example when checking the Linux kernel, 
+where autoconf.h needs to be included for every file compiled. Works the same way as the GCC -include option.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-i &lt;dir&gt;</option></term>
         <listitem>
           <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter.
@@ -335,6 +358,13 @@ There are false positives with this option. Each result must be carefully invest
         <term><option>-j &lt;jobs&gt;</option></term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-l &lt;load&gt;</option></term>
+        <listitem>
+          <para>Specifies that no new threads should be started if there are other threads running and the load average is at least
+&lt;load&gt; (ignored on non UNIX-like systems)</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -422,20 +452,13 @@ There are false positives with this option. Each result must be carefully invest
       <varlistentry>
         <term><option>--rule=&lt;rule&gt;</option></term>
         <listitem>
-          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero.</para>
+          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>--rule-file=&lt;file&gt;</option></term>
         <listitem>
-          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-s</option></term>
-        <term><option>--style</option></term>
-        <listitem>
-          <para>Deprecated, use --enable=style</para>
+          <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

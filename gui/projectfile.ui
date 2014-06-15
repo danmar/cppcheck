@@ -70,6 +70,16 @@
         </layout>
        </item>
        <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_5">

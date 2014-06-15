@@ -17,14 +17,11 @@
  */
 
 
-// The preprocessor that Cppcheck uses is a bit special. Instead of generating
-// the code for a known configuration, it generates the code for each configuration.
-
-
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "testsuite.h"
 #include "path.h"
+#include "check.h"
 
 #include <algorithm>
 #include <list>

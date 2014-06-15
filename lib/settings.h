@@ -63,6 +63,9 @@ public:
     /** @brief Is --debug-fp given? */
     bool debugFalsePositive;
 
+    /** @brief Is --exception-handling given */
+    bool exceptionHandling;
+
     /** @brief Inconclusive checks */
     bool inconclusive;
 
@@ -112,6 +115,9 @@ public:
         time. Default is 1. (-j N) */
     unsigned int _jobs;
 
+    /** @brief Load average value */
+    unsigned int _loadAverage;
+
     /** @brief If errors are found, this value is returned from main().
         Default value is 0. */
     int _exitCode;
@@ -143,7 +149,10 @@ public:
      * @param str id for the extra check, e.g. "style"
      * @return true if the check is enabled.
      */
-    bool isEnabled(const std::string &str) const;
+    template<typename T>
+    bool isEnabled(T&& str) const {
+        return bool(_enabled.find(str) != _enabled.end());
+    }
 
     /**
      * @brief Enable extra checks by id. See isEnabled()
@@ -174,6 +183,10 @@ public:
 
     /** @brief forced includes given by the user */
     std::list<std::string> userIncludes;
+
+    /** @brief include paths excluded from checking the configuration */
+    std::set<std::string> configExcludePaths;
+
 
     /** @brief --report-progress */
     bool reportProgress;
@@ -251,6 +264,20 @@ public:
                platformType == Win32W ||
                platformType == Win64;
     }
+
+    /**
+     * @brief return true if a file is to be excluded from configuration checking
+     * @return true for the file to be excluded.
+     */
+    bool configurationExcluded(const std::string &file) const {
+        for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
+            if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 };
 
 /// @}

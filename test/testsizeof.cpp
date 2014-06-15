@@ -40,6 +40,7 @@ private:
         TEST_CASE(sizeofForNumericParameter);
         TEST_CASE(suspiciousSizeofCalculation);
         TEST_CASE(sizeofVoid);
+        TEST_CASE(customStrncat);
     }
 
     void check(const char code[]) {
@@ -293,6 +294,9 @@ private:
 
         check("return sizeof(foo)*bar;");
         ASSERT_EQUALS("", errout.str());
+
+        check("return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeof() {
@@ -527,6 +531,13 @@ private:
                       "[test.cpp:5]: (portability) 'p2' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
 
         check("void f() {\n"
+              "  void* p = malloc(10);\n"
+              "  int* p2 = &p + 4;\n"
+              "  int* p3 = &p - 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
               "  void** p1 = malloc(10);\n"
               "  p1--;\n"
               "}");
@@ -623,6 +634,14 @@ private:
               "  (foo[0]).data++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+    }
+
+    void customStrncat() {
+        // Ensure we don't crash on custom-defined strncat, ticket #5875
+        check("char strncat ();\n"
+              "int main () {\n"
+              "  return strncat ();\n"
+              "}\n");
     }
 
 };
