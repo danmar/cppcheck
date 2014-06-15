@@ -32,13 +32,10 @@
 #include <algorithm>
 #include <climits>
 
-#if defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
 #include <execinfo.h>
 #include <cxxabi.h>
-#endif
-
-#ifdef USE_UNIX_SIGNAL_HANDLING
 #include <signal.h>
 #include <cstdio>
 #endif
