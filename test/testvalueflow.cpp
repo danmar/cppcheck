@@ -633,7 +633,7 @@ private:
                "        return;\n"
                "    }\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 32));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 32));
 
         code = "void f() {\n"
                "    int x = 32;\n"
