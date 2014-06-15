@@ -55,6 +55,8 @@ private:
 
         TEST_CASE(valueFlowAfterAssign);
 
+        TEST_CASE(valueFlowAfterCondition);
+
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
     }
@@ -470,7 +472,9 @@ private:
                 "out:"
                 "    if (x==123){}\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: variable x stopping on goto label\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (debug) ValueFlow bailout: variable x stopping on goto label\n"
+                      "[test.cpp:2]: (debug) ValueFlow bailout: variable x. noreturn conditional scope.\n"
+                      , errout.str());
 
         // #5721 - FP
         bailout("static void f(int rc) {\n"
@@ -714,6 +718,38 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 2)); // x is not 2 at line 8
+    }
+
+    void valueFlowAfterCondition() {
+        const char *code;
+
+        // if
+        code = "void f(int x) {\n"
+               "    if (x == 123) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x != 123) {\n"
+               "        a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        // else
+        code = "void f(int x) {\n"
+               "    if (x == 123) {}\n"
+               "    else a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x != 123) {}\n"
+               "    else a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
     }
 
     void valueFlowBitAnd() {

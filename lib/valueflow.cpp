@@ -534,6 +534,188 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
     }
 }
 
+static void valueFlowForward(Token * const               startToken,
+                             const Token * const         endToken,
+                             const Variable * const      var,
+                             const unsigned int          varid,
+                             std::list<ValueFlow::Value> values,
+                             const bool                  constValue,
+                             TokenList * const           tokenlist,
+                             ErrorLogger * const         errorLogger,
+                             const Settings * const      settings)
+{
+    int indentlevel = 0;
+    unsigned int number_of_if = 0;
+    int varusagelevel = -1;
+    bool returnStatement = false;  // current statement is a return, stop analysis at the ";"
+
+    for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
+        if (indentlevel >= 0 && tok2->str() == "{")
+            ++indentlevel;
+        else if (indentlevel >= 0 && tok2->str() == "}")
+            --indentlevel;
+
+        if (Token::Match(tok2, "sizeof|typeof|typeid ("))
+            tok2 = tok2->linkAt(1);
+
+        // conditional block of code that assigns variable..
+        else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+            // Should scope be skipped because variable value is checked?
+            bool skip = false;
+            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                if (conditionIsFalse(tok2->next()->astOperand2(), varid, *it)) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip) {
+                // goto '{'
+                tok2 = tok2->linkAt(1)->next();
+                // goto '}'
+                tok2 = tok2->link();
+                continue;
+            }
+
+            Token * const start = tok2->linkAt(1)->next();
+            Token * const end   = start->link();
+            bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
+                            isVariableChanged(start,end,varid) :
+                            (nullptr != Token::findmatch(start, "%varid%", end, varid));
+            if (varusage) {
+                varusagelevel = indentlevel;
+
+                // TODO: don't check noreturn scopes
+                if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                    break;
+                }
+
+                if (var->isStatic()) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " bailout when conditional code that contains var is seen");
+                    break;
+                }
+
+                // Remove conditional values
+                std::list<ValueFlow::Value>::iterator it;
+                for (it = values.begin(); it != values.end();) {
+                    if (it->condition || it->conditional)
+                        values.erase(it++);
+                    else
+                        ++it;
+                }
+            }
+
+            // noreturn scopes..
+            if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
+                (Token::findmatch(start, "return|continue|break", end) ||
+                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                break;
+            }
+
+            if (isVariableChanged(start, end, varid)) {
+                if (number_of_if == 0 &&
+                    Token::simpleMatch(tok2, "if (") &&
+                    !(Token::simpleMatch(end, "} else {") &&
+                      (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||
+                       Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                    ++number_of_if;
+                    tok2 = end;
+                } else {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                    break;
+                }
+            }
+        }
+
+        else if (tok2->str() == "}" && indentlevel == varusagelevel) {
+            ++number_of_if;
+
+            // Set "conditional" flag for all values
+            std::list<ValueFlow::Value>::iterator it;
+            for (it = values.begin(); it != values.end(); ++it)
+                it->conditional = true;
+
+            if (Token::simpleMatch(tok2,"} else {"))
+                tok2 = tok2->linkAt(2);
+        }
+
+        else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
+            if (settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+            break;
+        }
+
+        else if (indentlevel <= 0 && tok2->str() == "return")
+            returnStatement = true;
+
+        else if (returnStatement && tok2->str() == ";")
+            break;
+
+        if (tok2->varId() == varid) {
+            // bailout: assignment
+            if (Token::Match(tok2->previous(), "!!* %var% %op%") && tok2->next()->isAssignmentOp()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
+                break;
+            }
+
+            // bailout increment/decrement for now..
+            if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok2, "%var% ++|--")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
+                break;
+            }
+
+            // bailout: possible assignment using >>
+            if (Token::Match(tok2->previous(), ">> %var% >>|;")) {
+                const Token *parent = tok2->previous();
+                while (Token::simpleMatch(parent,">>"))
+                    parent = parent->astParent();
+                if (!parent) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
+                    break;
+                }
+            }
+
+            // skip if variable is conditionally used in ?: expression
+            if (const Token *parent = skipValueInConditionalExpression(tok2)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist,
+                            errorLogger,
+                            tok2,
+                            "no simplification of " + tok2->str() + " within " + (Token::Match(parent,"[?:]") ? "?:" : parent->str()) + " expression");
+                continue;
+            }
+
+            {
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = values.begin(); it != values.end(); ++it)
+                    setTokenValue(tok2, *it);
+            }
+
+            // assigned by subfunction?
+            bool inconclusive = false;
+            if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
+                break;
+            }
+            if (inconclusive) {
+                std::list<ValueFlow::Value>::iterator it;
+                for (it = values.begin(); it != values.end(); ++it)
+                    it->inconclusive = true;
+            }
+        }
+    }
+
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -564,174 +746,47 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         std::list<ValueFlow::Value> values = tok->astOperand2()->values;
 
         const bool constValue = tok->astOperand2()->isNumber();
-        int indentlevel = 0;
-        unsigned int number_of_if = 0;
-        int varusagelevel = -1;
-        bool returnStatement = false;  // current statement is a return, stop analysis at the ";"
+        valueFlowForward(tok, endToken, var, varid, values, constValue, tokenlist, errorLogger, settings);
+    }
+}
 
-        for (Token *tok2 = tok; tok2 && tok2 != endToken; tok2 = tok2->next()) {
-            if (indentlevel >= 0 && tok2->str() == "{")
-                ++indentlevel;
-            else if (indentlevel >= 0 && tok2->str() == "}")
-                --indentlevel;
+static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // Comparison
+        if (!tok->isComparisonOp() || !Token::Match(tok,"==|!=|>=|<="))
+            continue;
 
-            if (Token::Match(tok2, "sizeof|typeof|typeid ("))
-                tok2 = tok2->linkAt(1);
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
 
-            // conditional block of code that assigns variable..
-            else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
-                // Should scope be skipped because variable value is checked?
-                bool skip = false;
-                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                    if (conditionIsFalse(tok2->next()->astOperand2(), varid, *it)) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) {
-                    // goto '{'
-                    tok2 = tok2->linkAt(1)->next();
-                    // goto '}'
-                    tok2 = tok2->link();
-                    continue;
-                }
+        const Token *vartok, *numtok;
+        if (tok->astOperand1()->isName()) {
+            vartok = tok->astOperand1();
+            numtok = tok->astOperand2();
+        } else {
+            vartok = tok->astOperand2();
+            numtok = tok->astOperand1();
+        }
+        if (!vartok->isName() || !numtok->isNumber())
+            continue;
+        const unsigned int varid = vartok->varId();
+        if (varid == 0U)
+            continue;
+        const Variable *var = vartok->variable();
+        if (!var || !(var->isLocal() || var->isArgument()))
+            continue;
+        std::list<ValueFlow::Value> values = numtok->values;
 
-                Token * const start = tok2->linkAt(1)->next();
-                Token * const end   = start->link();
-                bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
-                                isVariableChanged(start,end,varid) :
-                                (nullptr != Token::findmatch(start, "%varid%", end, varid));
-                if (varusage) {
-                    varusagelevel = indentlevel;
-
-                    // TODO: don't check noreturn scopes
-                    if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
-                        break;
-                    }
-
-                    if (var->isStatic()) {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " bailout when conditional code that contains var is seen");
-                        break;
-                    }
-
-                    // Remove conditional values
-                    std::list<ValueFlow::Value>::iterator it;
-                    for (it = values.begin(); it != values.end();) {
-                        if (it->condition || it->conditional)
-                            values.erase(it++);
-                        else
-                            ++it;
-                    }
-                }
-
-                // noreturn scopes..
-                if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
-                    (Token::findmatch(start, "return|continue|break", end) ||
-                     (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
-                    break;
-                }
-
-                if (isVariableChanged(start, end, varid)) {
-                    if (number_of_if == 0 &&
-                        Token::simpleMatch(tok2, "if (") &&
-                        !(Token::simpleMatch(end, "} else {") &&
-                          (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||
-                           Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
-                        ++number_of_if;
-                        tok2 = end;
-                    } else {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
-                        break;
-                    }
-                }
-            }
-
-            else if (tok2->str() == "}" && indentlevel == varusagelevel) {
-                ++number_of_if;
-
-                // Set "conditional" flag for all values
-                std::list<ValueFlow::Value>::iterator it;
-                for (it = values.begin(); it != values.end(); ++it)
-                    it->conditional = true;
-
-                if (Token::simpleMatch(tok2,"} else {"))
-                    tok2 = tok2->linkAt(2);
-            }
-
-            else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
-                break;
-            }
-
-            else if (indentlevel <= 0 && tok2->str() == "return")
-                returnStatement = true;
-
-            else if (returnStatement && tok2->str() == ";")
-                break;
-
-            if (tok2->varId() == varid) {
-                // bailout: assignment
-                if (Token::Match(tok2->previous(), "!!* %var% %op%") && tok2->next()->isAssignmentOp()) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
-                    break;
-                }
-
-                // bailout increment/decrement for now..
-                if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok2, "%var% ++|--")) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
-                    break;
-                }
-
-                // bailout: possible assignment using >>
-                if (Token::Match(tok2->previous(), ">> %var% >>|;")) {
-                    const Token *parent = tok2->previous();
-                    while (Token::simpleMatch(parent,">>"))
-                        parent = parent->astParent();
-                    if (!parent) {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
-                        break;
-                    }
-                }
-
-                // skip if variable is conditionally used in ?: expression
-                if (const Token *parent = skipValueInConditionalExpression(tok2)) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                tok2,
-                                "no simplification of " + tok2->str() + " within " + (Token::Match(parent,"[?:]") ? "?:" : parent->str()) + " expression");
-                    continue;
-                }
-
-                {
-                    std::list<ValueFlow::Value>::const_iterator it;
-                    for (it = values.begin(); it != values.end(); ++it)
-                        setTokenValue(tok2, *it);
-                }
-
-                // assigned by subfunction?
-                bool inconclusive = false;
-                if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
-                    break;
-                }
-                if (inconclusive) {
-                    std::list<ValueFlow::Value>::iterator it;
-                    for (it = values.begin(); it != values.end(); ++it)
-                        it->inconclusive = true;
-                }
-            }
+        const Token *top = tok->astTop();
+        if (top && Token::simpleMatch(top->previous(), "if (")) {
+            Token *startToken = nullptr;
+            if (Token::Match(tok, "==|>=|<=") && Token::simpleMatch(top->link(), ") {"))
+                startToken = top->link()->next();
+            else if (tok->str() == "!=" && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                startToken = top->link()->linkAt(1)->tokAt(2);
+            if (startToken)
+                valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -1080,5 +1135,6 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, errorLogger, settings);
+    valueFlowAfterCondition(tokenlist, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
 }
