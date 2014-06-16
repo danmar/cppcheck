@@ -66,6 +66,7 @@ private:
         TEST_CASE(tokenize29);  // #5506 (segmentation fault upon invalid code)
         TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
+        TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -889,6 +890,13 @@ private:
                       tokenizeAndStringify("struct TTestClass { TTestClass() { }\n"
                                            "    void SetFunction(Other(*m_f)());\n"
                                            "};"));
+    }
+
+    // #5884 - Avoid left shift of negative integer value.
+    void tokenize32() {
+        // Do not simplify negative integer left shifts.
+        const char * code = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void wrong_syntax1() {

@@ -845,12 +845,22 @@ static std::string ShiftInt(const char cop, const Token* left, const Token* righ
     if (cop == '&' || cop == '|' || cop == '^')
         return MathLib::calculate(left->str(), right->str(), cop);
 
-    const MathLib::bigint leftInt=MathLib::toLongNumber(left->str());
-    const MathLib::bigint rightInt=MathLib::toLongNumber(right->str());
+    const MathLib::bigint leftInt = MathLib::toLongNumber(left->str());
+    const MathLib::bigint rightInt = MathLib::toLongNumber(right->str());
+    const bool rightIntIsPositive = rightInt >= 0;
+    const bool leftIntIsPositive = leftInt >= 0;
+    const bool leftOperationIsNotLeftShift = left->previous()->str() != "<<";
+    const bool operandIsLeftShift = right->previous()->str() == "<<";
+
     if (cop == '<') {
-        if (left->previous()->str() != "<<" && rightInt > 0) // Ensure that its not a shift operator as used for streams
+        // Ensure that its not a shift operator as used for streams
+        if (leftOperationIsNotLeftShift && operandIsLeftShift && rightIntIsPositive) {
+            if (!leftIntIsPositive) { // In case the left integer is negative, e.g. -1000 << 16. Do not simplify.
+                return left->str() + " << " + right->str();
+            }
             return MathLib::toString(leftInt << rightInt);
-    } else if (rightInt > 0) {
+        }
+    } else if (rightIntIsPositive) {
         return MathLib::toString(leftInt >> rightInt);
     }
     return "";
