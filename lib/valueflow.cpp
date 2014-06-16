@@ -753,35 +753,61 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        // Comparison
-        if (!tok->isComparisonOp() || !Token::Match(tok,"==|!=|>=|<="))
-            continue;
-
-        if (!tok->astOperand1() || !tok->astOperand2())
-            continue;
-
         const Token *vartok, *numtok;
-        if (tok->astOperand1()->isName()) {
+
+        // Comparison
+        if (Token::Match(tok,"==|!=|>=|<=")) {
+            if (!tok->astOperand1() || !tok->astOperand2())
+                continue;
+            if (tok->astOperand1()->isName()) {
+                vartok = tok->astOperand1();
+                numtok = tok->astOperand2();
+            } else {
+                vartok = tok->astOperand2();
+                numtok = tok->astOperand1();
+            }
+            if (!vartok->isName() || !numtok->isNumber())
+                continue;
+        } else if (tok->str() == "!") {
             vartok = tok->astOperand1();
-            numtok = tok->astOperand2();
+            numtok = nullptr;
+            if (!vartok || !vartok->isName())
+                continue;
         } else {
-            vartok = tok->astOperand2();
-            numtok = tok->astOperand1();
-        }
-        if (!vartok->isName() || !numtok->isNumber())
             continue;
+        }
         const unsigned int varid = vartok->varId();
         if (varid == 0U)
             continue;
         const Variable *var = vartok->variable();
         if (!var || !(var->isLocal() || var->isArgument()))
             continue;
-        std::list<ValueFlow::Value> values = numtok->values;
+        std::list<ValueFlow::Value> values;
+        values.push_back(ValueFlow::Value(tok, numtok ? MathLib::toLongNumber(numtok->str()) : 0LL));
 
         const Token *top = tok->astTop();
         if (top && Token::simpleMatch(top->previous(), "if (")) {
+            // does condition reassign variable?
+            std::stack<const Token *> tokens;
+            tokens.push(top);
+            while (!tokens.empty()) {
+                const Token *tok2 = tokens.top();
+                tokens.pop();
+                if (!tok2)
+                    continue;
+                tokens.push(tok2->astOperand1());
+                tokens.push(tok2->astOperand2());
+                if (tok2->str() == "=" && Token::Match(tok2->astOperand1(), "%varid%", varid))
+                    break;
+            }
+            if (!tokens.empty()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "assignment in condition");
+                continue;
+            }
+
             Token *startToken = nullptr;
-            if (Token::Match(tok, "==|>=|<=") && Token::simpleMatch(top->link(), ") {"))
+            if (Token::Match(tok, "==|>=|<=|!") && Token::simpleMatch(top->link(), ") {"))
                 startToken = top->link()->next();
             else if (tok->str() == "!=" && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
                 startToken = top->link()->linkAt(1)->tokAt(2);

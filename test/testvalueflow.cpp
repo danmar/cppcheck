@@ -488,7 +488,8 @@ private:
                 "    if (abc) {}\n"
                 "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of abc\n"
-                      "[test.cpp:8]: (debug) ValueFlow bailout: variable abc stopping on goto label\n",
+                      "[test.cpp:8]: (debug) ValueFlow bailout: variable abc stopping on goto label\n"
+                      "[test.cpp:3]: (debug) ValueFlow bailout: variable abc. noreturn conditional scope.\n",
                       errout.str());
     }
 
@@ -750,6 +751,14 @@ private:
                "    else a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        // !
+        code = "void f(int x) {\n"
+               "    if (!x) { a = x; }\n"
+               "    else a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
+
     }
 
     void valueFlowBitAnd() {
