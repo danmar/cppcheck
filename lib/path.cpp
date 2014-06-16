@@ -19,12 +19,12 @@
 #if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
 #undef __STRICT_ANSI__
 #endif
+#include "path.h"
 #include <algorithm>
 #include <vector>
 #include <sstream>
 #include <cstring>
 #include <cctype>
-#include "path.h"
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
