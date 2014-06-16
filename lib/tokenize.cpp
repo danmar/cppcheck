@@ -7316,8 +7316,9 @@ void Tokenizer::simplifyEnum()
             tok = tok->previous();
         }
 
-        if (Token::Match(tok, "class|struct|namespace") && tok->next() &&
-            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
+        if (tok && tok->next() &&
+            (!tok->previous() || (tok->previous()->str() != "enum")) &&
+            Token::Match(tok, "class|struct|namespace")) {
             className = tok->next()->str();
             classLevel = 0;
         } else if (tok->str() == "}") {
@@ -7347,8 +7348,8 @@ void Tokenizer::simplifyEnum()
 
             // check for name
             if (tok->next()->isName()) {
-                enumType = tok->next();
                 tok = tok->next();
+                enumType = tok;
             }
 
             // check for C++0x typed enumeration
@@ -7360,8 +7361,8 @@ void Tokenizer::simplifyEnum()
                     return; // can't recover
                 }
 
-                typeTokenStart = tok->next();
                 tok = tok->next();
+                typeTokenStart = tok;
                 typeTokenEnd = typeTokenStart;
 
                 while (typeTokenEnd->next() && (typeTokenEnd->next()->str() == "::" ||
@@ -7504,6 +7505,9 @@ void Tokenizer::simplifyEnum()
 
             // Substitute enum values
             {
+                if (!tok1)
+                    return;
+
                 if (_settings->terminated())
                     return;
 
@@ -7520,8 +7524,6 @@ void Tokenizer::simplifyEnum()
                 bool simplify = false;
                 EnumValue *ev = nullptr;
 
-                if (!tok1)
-                    return;
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
                         --level;

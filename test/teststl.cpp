@@ -1323,10 +1323,10 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-	template<size_t n, typename T>
-	size_t getArraylength( const T(&)[n]) {
-		return n;
-	}
+    template<size_t n, typename T>
+    size_t getArraylength(const T(&)[n]) {
+        return n;
+    }
 
     void stlBoundaries1() {
         const std::string stlCont[] = {
@@ -1351,8 +1351,8 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
 
-		// #5926 no FP Dangerous iterator comparison using operator< on 'std::deque'.
-		check("void f() {\n"
+        // #5926 no FP Dangerous iterator comparison using operator< on 'std::deque'.
+        check("void f() {\n"
               "    std::deque<int>::iterator it;\n"
               "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
               "}");
