@@ -183,7 +183,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Settings::PlatformType defaultPlat = Settings::Win32A;
+    const Settings::PlatformType defaultPlat = Settings::Win32W;
 #else
     const Settings::PlatformType defaultPlat = Settings::Unspecified;
 #endif
