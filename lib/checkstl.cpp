@@ -707,7 +707,7 @@ void CheckStl::stlBoundaries()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // Declaring iterator..
-            if (tok->str() == "<" && Token::Match(tok->previous(), "bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset")) {
+            if (tok->str() == "<" && Token::Match(tok->previous(), "bitset|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset")) {
                 const std::string& container_name(tok->strAt(-1));
                 if (tok->link())
                     tok = tok->link();

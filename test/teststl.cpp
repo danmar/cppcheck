@@ -1323,16 +1323,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+	template<size_t n, typename T>
+	size_t getArraylength( const T(&)[n]) {
+		return n;
+	}
 
     void stlBoundaries1() {
-        const int STL_CONTAINER_LIST = 9;
-        const std::string stlCont[STL_CONTAINER_LIST] = {
-            "deque", "list", "set", "multiset", "map",
+        const std::string stlCont[] = {
+            "list", "set", "multiset", "map",
             "multimap", "hash_map", "hash_multimap", "hash_set"
         };
 
-        for (int i = 0; i < STL_CONTAINER_LIST; ++i) {
+        for (size_t i = 0; i < getArraylength(stlCont); ++i) {
             check("void f()\n"
                   "{\n"
                   "    std::" + stlCont[i] + "<int>::iterator it;\n"
@@ -1348,6 +1350,13 @@ private:
               "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+
+		// #5926 no FP Dangerous iterator comparison using operator< on 'std::deque'.
+		check("void f() {\n"
+              "    std::deque<int>::iterator it;\n"
+              "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void stlBoundaries2() {
