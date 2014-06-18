@@ -114,7 +114,7 @@ void CheckLeakAutoVar::check()
         VarInfo varInfo;
 
         // Local variables that are known to be non-zero.
-        static const std::set<unsigned int> notzero;
+        const std::set<unsigned int> notzero;
 
         checkScope(scope->classStart, &varInfo, notzero);
 
