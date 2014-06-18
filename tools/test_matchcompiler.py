@@ -43,7 +43,7 @@ class MatchCompilerTest(unittest.TestCase):
         input = 'if (Token::Match(tok->next()->next(), "foobar %type% %num%")) {'
         output = self.mc._replaceTokenMatch(input)
         self.assertEqual(output, 'if (match2(tok->next()->next())) {')
-        self.assertEqual(2, len(self.mc._matchStrs))
+        self.assertEqual(1, len(self.mc._matchStrs))
 
         input = 'if (Token::Match(tok, "foo\"special\"bar %num%")) {'
         output = self.mc._replaceTokenMatch(input)
@@ -81,7 +81,7 @@ class MatchCompilerTest(unittest.TestCase):
         input = 'if (Token::Match(tok, "foobar2 %varid%", 123) || Token::Match(tok, "%type% %varid%", 123)) {'
         output = self.mc._replaceTokenMatch(input)
         self.assertEqual(output, 'if (match3(tok, 123) || match4(tok, 123)) {')
-        self.assertEqual(3, len(self.mc._matchStrs))
+        self.assertEqual(2, len(self.mc._matchStrs))
 
     def test_replaceTokenSimpleMatch(self):
         input = 'if (Token::simpleMatch(tok, "foobar")) {'
@@ -143,7 +143,7 @@ class MatchCompilerTest(unittest.TestCase):
         output = self.mc._replaceTokenFindMatch(input)
         self.assertEqual(
             output, 'if (findmatch3(tok->next()->next(), tok->link())) {')
-        self.assertEqual(2, len(self.mc._matchStrs))
+        self.assertEqual(1, len(self.mc._matchStrs))
         self.assertEqual(1, self.mc._matchStrs['foobar'])
 
         # findmatch with end token and varid
@@ -151,7 +151,7 @@ class MatchCompilerTest(unittest.TestCase):
         output = self.mc._replaceTokenFindMatch(input)
         self.assertEqual(
             output, 'if (findmatch4(tok->next()->next(), tok->link(), 123)) {')
-        self.assertEqual(2, len(self.mc._matchStrs))
+        self.assertEqual(1, len(self.mc._matchStrs))
         self.assertEqual(1, self.mc._matchStrs['foobar'])
 
 if __name__ == '__main__':
