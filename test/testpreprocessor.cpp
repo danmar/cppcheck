@@ -97,14 +97,12 @@ private:
         TEST_CASE(test9);  // Don't crash for invalid code
         TEST_CASE(test10); // Ticket #5139
 
-        // #error => don't extract any code
-        TEST_CASE(error1);
 
-        // #error with extended chars
-        TEST_CASE(error2);
-
+        TEST_CASE(error1); // #error => don't extract any code
+        TEST_CASE(error2); // #error with extended chars
         TEST_CASE(error3);
         TEST_CASE(error4);  // #2919 - wrong filename is reported
+        TEST_CASE(error5);
 
         TEST_CASE(if0_exclude);
         TEST_CASE(if0_whitespace);
@@ -890,6 +888,17 @@ private:
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout.str());
         }
+    }
+
+    void error5() {
+        errout.str("");
+        Settings settings;
+        settings.userDefines = "FOO";
+        settings._force = true; // No message if --force is given
+        Preprocessor preprocessor(&settings, this);
+        const std::string code("#error hello world!\n");
+        preprocessor.getcode(code, "X", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if0_exclude() {
@@ -3512,7 +3521,6 @@ private:
             const std::string code("#ifndef X\n#error abc\n#endif");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
             ASSERT_EQUALS("\n#error abc\n\n", actual);
-            ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
         }
     }
 

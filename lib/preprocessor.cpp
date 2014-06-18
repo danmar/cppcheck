@@ -492,9 +492,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         if (_settings && _settings->terminated())
             return "";
 
-        if ((str.compare(i, 7, "#error ") == 0 && (!_settings || _settings->userDefines.empty())) ||
-            str.compare(i, 9, "#warning ") == 0) {
-
+        if (str.compare(i, 7, "#error ") == 0 || str.compare(i, 9, "#warning ") == 0) {
             if (str.compare(i, 6, "#error") == 0)
                 code << "#error";
 
@@ -1931,10 +1929,8 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
         // #error => return ""
         if (match && line.compare(0, 6, "#error") == 0) {
-            if (_settings && !_settings->userDefines.empty()) {
-                Settings settings2(*_settings);
-                Preprocessor preprocessor(&settings2, _errorLogger);
-                preprocessor.error(filenames.top(), lineno, line);
+            if (_settings && !_settings->userDefines.empty() && !_settings->_force) {
+                error(filenames.top(), lineno, line);
             }
             return "";
         }
@@ -2211,10 +2207,6 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
             else if (!suppressCurrentCodePath && line.compare(0,7,"#undef ") == 0) {
                 defs.erase(line.substr(7));
-            }
-
-            else if (!suppressCurrentCodePath && line.compare(0,7,"#error ") == 0) {
-                error(filePath, linenr, line.substr(7));
             }
 
             else if (!suppressCurrentCodePath && line.compare(0,9,"#include ")==0) {
