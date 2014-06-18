@@ -659,6 +659,15 @@ static bool valueFlowForward(Token * const               startToken,
         if (tok2->varId() == varid) {
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %var% %op%") && tok2->next()->isAssignmentOp()) {
+                // simplify rhs
+                for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next()) {
+                    if (tok3->varId() == varid) {
+                        std::list<ValueFlow::Value>::const_iterator it;
+                        for (it = values.begin(); it != values.end(); ++it)
+                            setTokenValue(tok2, *it);
+                    } else if (Token::Match(tok3, "++|--|?|:|;"))
+                        break;
+                }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
                 return false;
