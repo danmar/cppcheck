@@ -780,14 +780,23 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
             }
             if (!vartok->isName() || !numtok->isNumber())
                 continue;
+
         } else if (tok->str() == "!") {
             vartok = tok->astOperand1();
             numtok = nullptr;
             if (!vartok || !vartok->isName())
                 continue;
+
+        } else if (tok->isName() &&
+                   (Token::Match(tok->astParent(), "%oror%|&&") ||
+                    Token::Match(tok->tokAt(-2), "if|while ( %var% )"))) {
+            vartok = tok;
+            numtok = nullptr;
+
         } else {
             continue;
         }
+
         const unsigned int varid = vartok->varId();
         if (varid == 0U)
             continue;
@@ -821,11 +830,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
             Token *startToken = nullptr;
             if (Token::Match(tok, "==|>=|<=|!") && Token::simpleMatch(top->link(), ") {"))
                 startToken = top->link()->next();
-            else if (tok->str() == "!=" && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+            else if (Token::Match(tok, "%var%|!=") && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
                 startToken = top->link()->linkAt(1)->tokAt(2);
             bool ok = true;
             if (startToken)
-                ok &= valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
+                ok = valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
 
             // After conditional code..
             if (ok && !scopeEnd.empty() && Token::simpleMatch(top->link(), ") {")) {

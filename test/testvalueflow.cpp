@@ -761,6 +761,16 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        // if (var)
+        code = "void f(int x) {\n"
+               "    if (x) { a = x; }\n"  // <- x is not 0
+               "    else { b = x; }\n"    // <- x is 0
+               "    c = x;\n"             // <- x might be 0
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+        ASSERT_EQUALS(true,  testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 0));
+
         // After while
         code = "void f(int x) {\n"
                "    while (x != 3) {}\n"
