@@ -534,7 +534,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
     }
 }
 
-static void valueFlowForward(Token * const               startToken,
+static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
                              const unsigned int          varid,
@@ -588,13 +588,13 @@ static void valueFlowForward(Token * const               startToken,
                 if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
-                    break;
+                    return false;
                 }
 
                 if (var->isStatic()) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " bailout when conditional code that contains var is seen");
-                    break;
+                    return false;
                 }
 
                 // Remove conditional values
@@ -609,11 +609,11 @@ static void valueFlowForward(Token * const               startToken,
 
             // noreturn scopes..
             if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
-                (Token::findmatch(start, "return|continue|break", end) ||
-                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                (Token::findmatch(start, "return|continue|break|throw", end) ||
+                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
-                break;
+                return false;
             }
 
             if (isVariableChanged(start, end, varid)) {
@@ -621,13 +621,13 @@ static void valueFlowForward(Token * const               startToken,
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
                       (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||
-                       Token::findmatch(end, "return|continue|break", end->linkAt(2))))) {
+                       Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
                     ++number_of_if;
                     tok2 = end;
                 } else {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
-                    break;
+                    return false;
                 }
             }
         }
@@ -647,28 +647,28 @@ static void valueFlowForward(Token * const               startToken,
         else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
-            break;
+            return false;
         }
 
-        else if (indentlevel <= 0 && tok2->str() == "return")
+        else if (indentlevel <= 0 && Token::Match(tok2, "return|throw"))
             returnStatement = true;
 
         else if (returnStatement && tok2->str() == ";")
-            break;
+            return false;
 
         if (tok2->varId() == varid) {
             // bailout: assignment
             if (Token::Match(tok2->previous(), "!!* %var% %op%") && tok2->next()->isAssignmentOp()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
-                break;
+                return false;
             }
 
             // bailout increment/decrement for now..
             if (Token::Match(tok2->previous(), "++|-- %var%") || Token::Match(tok2, "%var% ++|--")) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
-                break;
+                return false;
             }
 
             // bailout: possible assignment using >>
@@ -679,7 +679,7 @@ static void valueFlowForward(Token * const               startToken,
                 if (!parent) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
-                    break;
+                    return false;
                 }
             }
 
@@ -704,7 +704,7 @@ static void valueFlowForward(Token * const               startToken,
             if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "possible assignment of " + tok2->str() + " by subfunction");
-                break;
+                return false;
             }
             if (inconclusive) {
                 std::list<ValueFlow::Value>::iterator it;
@@ -713,7 +713,7 @@ static void valueFlowForward(Token * const               startToken,
             }
         }
     }
-
+    return true;
 }
 
 static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
@@ -752,11 +752,23 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 
 static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
+    std::stack<const Token *> scopeEnd;
+
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         const Token *vartok, *numtok;
 
+        if (tok->str() == "{") {
+            scopeEnd.push(tok->link());
+            continue;
+        }
+
+        else if (tok->str() == "}" && !scopeEnd.empty()) {
+            scopeEnd.pop();
+            continue;
+        }
+
         // Comparison
-        if (Token::Match(tok,"==|!=|>=|<=")) {
+        else if (Token::Match(tok,"==|!=|>=|<=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 continue;
             if (tok->astOperand1()->isName()) {
@@ -786,7 +798,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
         values.push_back(ValueFlow::Value(tok, numtok ? MathLib::toLongNumber(numtok->str()) : 0LL));
 
         const Token *top = tok->astTop();
-        if (top && Token::simpleMatch(top->previous(), "if (")) {
+        if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
             // does condition reassign variable?
             std::stack<const Token *> tokens;
             tokens.push(top);
@@ -811,8 +823,28 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                 startToken = top->link()->next();
             else if (tok->str() == "!=" && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
                 startToken = top->link()->linkAt(1)->tokAt(2);
+            bool ok = true;
             if (startToken)
-                valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
+                ok &= valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
+
+            // After conditional code..
+            if (ok && !scopeEnd.empty() && Token::simpleMatch(top->link(), ") {")) {
+                Token *after = top->link()->linkAt(1);
+                if (Token::simpleMatch(after->tokAt(-2), ") ; }")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, after, "possible noreturn scope");
+                    continue;
+                }
+                if (Token::simpleMatch(after, "} else {")) {
+                    after = after->linkAt(2);
+                    if (Token::simpleMatch(after->tokAt(-2), ") ; }")) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, after, "possible noreturn scope");
+                        continue;
+                    }
+                }
+                valueFlowForward(after->next(), scopeEnd.top(), var, varid, values, true, tokenlist, errorLogger, settings);
+            }
         }
     }
 }

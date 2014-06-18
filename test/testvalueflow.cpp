@@ -444,7 +444,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on break\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on break\n"
+                      "[test.cpp:4]: (debug) ValueFlow bailout: variable x. noreturn conditional scope.\n", errout.str());
 
         bailout("void f(int x, int y) {\n"
                 "    switch (y) {\n"
@@ -452,7 +453,8 @@ private:
                 "    case 2: if (x==5) {} break;\n"
                 "    };\n"
                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n"
+                      "[test.cpp:4]: (debug) ValueFlow bailout: variable x. noreturn conditional scope.\n", errout.str());
     }
 
     void valueFlowBeforeConditionMacro() {
@@ -759,6 +761,12 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        // After while
+        code = "void f(int x) {\n"
+               "    while (x != 3) {}\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
     }
 
     void valueFlowBitAnd() {
