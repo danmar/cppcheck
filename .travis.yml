@@ -8,13 +8,12 @@ env:
   global:
 #   unfortunately we need this to stay within 50min timelimit given by travis.
 #   this also turns off the debug/warning cxxflags
-    - CXXFLAGS="-O2 -Wunreachable-code"
+    - CXXFLAGS="-O3 -march=native -mtune=native -Wunreachable-code"
   matrix:
-#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_KERNEL is the var that controls if we download and check the kernel in that travis job
-    - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
-    - SRCDIR=build VERIFY=1
+#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
-    - CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+    - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
+    - SRCDIR=build CHECK_KERNEL=yes
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -22,10 +21,10 @@ matrix:
 # exclude kernel checking with clang binary, not needed
   exclude:
     - compiler: clang
-      env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+      env: SRCDIR=build CHECK_KERNEL=yes
 # kernel check can time out during travis rush hour, so make failure of it less grave...
   allow_failures:
-    - env: CXXFLAGS="-O3 -march=native -mtune=native" SRCDIR=build CHECK_KERNEL=yes
+    - env: SRCDIR=build CHECK_KERNEL=yes
 
 before_install:
 # install needed deps
@@ -34,7 +33,7 @@ before_install:
 
 script:
 # download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
-  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal" /tmp/kernel.cppcheck; exit; fi
+  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 --exception-handling -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal" /tmp/kernel.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
@@ -46,7 +45,7 @@ script:
   - cd ../
 # use same hack as for kernel to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
   - cd ./gui
 # clean rebuild
