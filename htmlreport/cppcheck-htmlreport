@@ -296,7 +296,7 @@ if __name__ == '__main__':
 
         source_filename = os.path.join(source_dir, filename)
         try:
-            with io.open(source_filename, 'r') as input_file:
+            with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
             sys.stderr.write("ERROR: Source file '%s' not found.\n" %
