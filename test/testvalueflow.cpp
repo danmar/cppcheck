@@ -777,6 +777,19 @@ private:
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+
+        // In condition, after && and ||
+        code = "void f(int x) {\n"
+               "  a = (x != 3 ||\n"
+               "       x);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+
+        code = "void f(int x) {\n"
+               "  a = (x == 4 &&\n"
+               "       x);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
     }
 
     void valueFlowBitAnd() {

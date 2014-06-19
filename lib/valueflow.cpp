@@ -815,6 +815,37 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
         std::list<ValueFlow::Value> values;
         values.push_back(ValueFlow::Value(tok, numtok ? MathLib::toLongNumber(numtok->str()) : 0LL));
 
+        if (Token::Match(tok->astParent(), "%oror%|&&")) {
+            Token *parent = const_cast<Token*>(tok->astParent());
+            const std::string &op(parent->str());
+
+            if (parent->astOperand1() == tok &&
+                ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
+                 (op == "||" && Token::Match(tok, "%var%|!=")))) {
+                bool assign = false;
+                for (; !assign && parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
+                    std::stack<Token *> tokens;
+                    tokens.push(const_cast<Token*>(parent->astOperand2()));
+                    while (!tokens.empty()) {
+                        Token *rhstok = tokens.top();
+                        tokens.pop();
+                        if (!rhstok)
+                            continue;
+                        tokens.push(const_cast<Token*>(rhstok->astOperand1()));
+                        tokens.push(const_cast<Token*>(rhstok->astOperand2()));
+                        if (rhstok->varId() == varid)
+                            setTokenValue(rhstok, values.front());
+                        if (Token::Match(rhstok, "++|--|=") && Token::Match(rhstok->astOperand1(),"%varid%",varid)) {
+                            assign = true;
+                            break;
+                        }
+                    }
+                    while (parent->astParent() && parent == parent->astParent()->astOperand2())
+                        parent = const_cast<Token*>(parent->astParent());
+                }
+            }
+        }
+
         const Token *top = tok->astTop();
         if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
             // does condition reassign variable?

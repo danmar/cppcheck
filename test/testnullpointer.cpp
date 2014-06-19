@@ -1059,7 +1059,7 @@ private:
                   "        p = q;\n"
                   "    if (p || *p) { }\n"
                   "}");
-            TODO_ASSERT_EQUALS("error", "", errout.str());
+            ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
         }
     }
 
