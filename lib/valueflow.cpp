@@ -818,19 +818,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
         const Token *top = tok->astTop();
         if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
             // does condition reassign variable?
-            std::stack<const Token *> tokens;
-            tokens.push(top);
-            while (!tokens.empty()) {
-                const Token *tok2 = tokens.top();
-                tokens.pop();
-                if (!tok2)
-                    continue;
-                tokens.push(tok2->astOperand1());
-                tokens.push(tok2->astOperand2());
-                if (tok2->str() == "=" && Token::Match(tok2->astOperand1(), "%varid%", varid))
-                    break;
-            }
-            if (!tokens.empty()) {
+            if (isVariableChanged(top,top->link(),varid)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "assignment in condition");
                 continue;
