@@ -71,4 +71,4 @@ htmlreport/MANIFEST
 # kdevelop 4.x
 *.kdev4
 
-htdocs/node_modules
+warn-about-64-bit-msbuild.txt
