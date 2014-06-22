@@ -134,6 +134,8 @@ public:
         return (it != _noreturn.end() && !it->second);
     }
 
+    bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
+
     class ArgumentChecks {
     public:
         ArgumentChecks() :

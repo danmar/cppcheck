@@ -7834,50 +7834,17 @@ void Tokenizer::simplifyStd()
 
 bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
+    std::string unknownFunc;
+    bool ret = _settings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
     if (unknown)
-        *unknown = false;
-
-    if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
-        const Token *tok = endScopeToken->linkAt(-2)->previous();
-
-        if (!tok)
-            return true;
-
-        // function pointer call..
-        if (Token::Match(tok->tokAt(-4), "[;{}] ( * %var% )"))
-            return true;
-
-        if (!tok->isName())
-            return false;
-
-        if (tok->str() == "exit")
-            return true;
-
-        while (tok && (Token::Match(tok, "::|.") || tok->isName()))
-            tok = tok->previous();
-
-        if (Token::Match(tok, "[;{}] %var% (")) {
-            if (_settings->library.isnoreturn(tok->next()->str()))
-                return true;
-            if (_settings->library.isnotnoreturn(tok->next()->str()))
-                return false;
-
-            if (_settings->checkLibrary && _settings->isEnabled("information")) {
-                reportError(tok->next(),
-                            Severity::information,
-                            "checkLibraryNoReturn",
-                            "--check-library: Function " + tok->next()->str() + "() should have <noreturn> configuration");
-            }
-        }
-
-        if (Token::Match(tok, "[;{}]")) {
-            if (unknown)
-                *unknown = true;
-            return true;
-        }
+        *unknown = !unknownFunc.empty();
+    if (!unknownFunc.empty() && _settings->checkLibrary && _settings->isEnabled("information")) {
+        reportError(endScopeToken->previous(),
+                    Severity::information,
+                    "checkLibraryNoReturn",
+                    "--check-library: Function " + unknownFunc + "() should have <noreturn> configuration");
     }
-
-    return false;
+    return ret;
 }
 
 //---------------------------------------------------------------------------

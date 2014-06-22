@@ -376,3 +376,35 @@ const Library::ArgumentChecks * Library::getarg(const std::string &functionName,
         return &it3->second;
     return nullptr;
 }
+
+bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
+{
+    if (unknownFunc)
+        unknownFunc->clear();
+
+    if (!Token::simpleMatch(end->tokAt(-2), ") ; }"))
+        return false;
+
+    const Token *funcname = end->linkAt(-2)->previous();
+    const Token *start = funcname;
+    if (funcname && Token::Match(funcname->tokAt(-3),"( * %var% )")) {
+        funcname = funcname->previous();
+        start = funcname->tokAt(-3);
+    } else if (funcname->isName()) {
+        while (Token::Match(start, "%var%|.|::"))
+            start = start->previous();
+    } else {
+        return false;
+    }
+    if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%var% )| (")) {
+        if (funcname->str() == "exit")
+            return true;
+        if (!isnotnoreturn(funcname->str())) {
+            if (unknownFunc && !isnoreturn(funcname->str()))
+                *unknownFunc = funcname->str();
+            return true;
+        }
+    }
+    return false;
+}
+

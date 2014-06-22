@@ -867,23 +867,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
             // After conditional code..
             if (ok && !scopeEnd.empty() && Token::simpleMatch(top->link(), ") {")) {
                 Token *after = top->link()->linkAt(1);
-                if (Token::simpleMatch(after->tokAt(-2), ") ; }")) {
-                    const Token *funcname = after->linkAt(-2)->previous();
-                    const Token *start = funcname;
-                    if (funcname && Token::Match(funcname->tokAt(-3),"( * %var% )")) {
-                        funcname = funcname->previous();
-                        start = funcname->tokAt(-3);
-                    } else {
-                        while (Token::Match(start, "%var%|.|::"))
-                            start = start->previous();
-                    }
-                    if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%var% )| (")) {
-                        if (!settings->library.isnotnoreturn(funcname->str())) {
-                            if (settings->debugwarnings)
-                                bailout(tokenlist, errorLogger, after, "possible noreturn scope");
-                            continue;
-                        }
-                    }
+                std::string unknownFunction;
+                if (settings->library.isScopeNoReturn(after,&unknownFunction)) {
+                    if (settings->debugwarnings && !unknownFunction.empty())
+                        bailout(tokenlist, errorLogger, after, "possible noreturn scope");
+                    continue;
                 }
                 if (Token::simpleMatch(after, "} else {")) {
                     after = after->linkAt(2);
