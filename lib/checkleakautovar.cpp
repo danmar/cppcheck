@@ -220,7 +220,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // not a local variable nor argument?
             const Variable *var = tok->variable();
-            if (var && !var->isArgument() && !var->isLocal()) {
+            if (var && !var->isArgument() && (!var->isLocal() || var->isStatic())) {
                 continue;
             }
 

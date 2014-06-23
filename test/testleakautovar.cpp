@@ -95,6 +95,7 @@ private:
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);  // #3954 - reference pointer
+        TEST_CASE(test4);  // #5923 - static pointer
 
         // Execution reaches a 'throw'
         TEST_CASE(throw1);
@@ -596,6 +597,15 @@ private:
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test4() { // 5923 - static pointer
+        check("void f() {\n"
+              "    static char *p;\n"
+              "    if (!p) p = malloc(10);\n"
+              "    if (x) { free(p); p = 0; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
