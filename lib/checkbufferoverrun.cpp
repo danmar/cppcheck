@@ -572,7 +572,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok, const ArrayInfo &array
 }
 
 
-void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo, std::list<const Token *> callstack)
+void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
     // total_size : which parameter in function call takes the total size?
     std::map<std::string, unsigned int> total_size;
@@ -1279,96 +1279,95 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
         // Check function call..
         if (Token::Match(tok, "%var% (")) {
-            const std::list<const Token *> callstack;
-            checkFunctionCall(tok, arrayInfo, callstack);
-        }
+            checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
-        if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
-            const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
-            if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num) {
-                if (_settings->inconclusive)
-                    bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
+            if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
+                const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
+                if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num) {
+                    if (_settings->inconclusive)
+                        bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
+                }
             }
-        }
 
-        if ((Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )"))) {
-            const Token* param3 = tok->linkAt(1)->previous();
+            if ((Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )"))) {
+                const Token* param3 = tok->linkAt(1)->previous();
 
-            // check for strncpy which is not terminated
-            if (tok->str() == "strncpy") {
-                // strncpy takes entire variable length as input size
-                unsigned int num = (unsigned int)MathLib::toLongNumber(param3->str());
+                // check for strncpy which is not terminated
+                if (tok->str() == "strncpy") {
+                    // strncpy takes entire variable length as input size
+                    unsigned int num = (unsigned int)MathLib::toLongNumber(param3->str());
 
-                // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                if (isWarningEnabled && num >= total_size && _settings->inconclusive) {
-                    const Token *tok2 = tok->next()->link()->next();
-                    for (; tok2; tok2 = tok2->next()) {
-                        if (tok2->varId() == tok->tokAt(2)->varId()) {
-                            if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId())) {
-                                terminateStrncpyError(tok, tok->strAt(2));
+                    // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
+                    if (isWarningEnabled && num >= total_size && _settings->inconclusive) {
+                        const Token *tok2 = tok->next()->link()->next();
+                        for (; tok2; tok2 = tok2->next()) {
+                            if (tok2->varId() == tok->tokAt(2)->varId()) {
+                                if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId())) {
+                                    terminateStrncpyError(tok, tok->strAt(2));
+                                }
+
+                                break;
                             }
-
-                            break;
                         }
                     }
                 }
-            }
 
-            // Dangerous usage of strncat..
-            else if (tok->str() == "strncat") {
-                const MathLib::bigint n = MathLib::toLongNumber(param3->str());
-                if (n >= total_size)
-                    strncatUsageError(tok);
-            }
-
-            // Dangerous usage of strncpy + strncat..
-            if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
-                const MathLib::bigint n = MathLib::toLongNumber(param3->str()) + MathLib::toLongNumber(param3->linkAt(4)->strAt(-1));
-                if (n > total_size)
-                    strncatUsageError(param3->tokAt(3));
-            }
-        }
-
-        // Writing data into array..
-        if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
-            const std::size_t len = Token::getStrLength(tok->tokAt(4));
-            if (total_size > 0 && len >= (unsigned int)total_size) {
-                bufferOverrunError(tok, arrayInfo.varname());
-                continue;
-            }
-        }
-
-        // Detect few strcat() calls
-        if (total_size > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", declarationId)) {
-            std::size_t charactersAppend = 0;
-            const Token *tok2 = tok;
-
-            while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
-                charactersAppend += Token::getStrLength(tok2->tokAt(4));
-                if (charactersAppend >= (unsigned int)total_size) {
-                    bufferOverrunError(tok2, arrayInfo.varname());
-                    break;
+                // Dangerous usage of strncat..
+                else if (tok->str() == "strncat") {
+                    const MathLib::bigint n = MathLib::toLongNumber(param3->str());
+                    if (n >= total_size)
+                        strncatUsageError(tok);
                 }
-                tok2 = tok2->tokAt(7);
+
+                // Dangerous usage of strncpy + strncat..
+                if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
+                    const MathLib::bigint n = MathLib::toLongNumber(param3->str()) + MathLib::toLongNumber(param3->linkAt(4)->strAt(-1));
+                    if (n > total_size)
+                        strncatUsageError(param3->tokAt(3));
+                }
             }
+
+            // Writing data into array..
+            if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
+                const std::size_t len = Token::getStrLength(tok->tokAt(4));
+                if (total_size > 0 && len >= (unsigned int)total_size) {
+                    bufferOverrunError(tok, arrayInfo.varname());
+                    continue;
+                }
+            }
+
+            // Detect few strcat() calls
+            if (total_size > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", declarationId)) {
+                std::size_t charactersAppend = 0;
+                const Token *tok2 = tok;
+
+                while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
+                    charactersAppend += Token::getStrLength(tok2->tokAt(4));
+                    if (charactersAppend >= (unsigned int)total_size) {
+                        bufferOverrunError(tok2, arrayInfo.varname());
+                        break;
+                    }
+                    tok2 = tok2->tokAt(7);
+                }
+            }
+
+
+            if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", declarationId)) {
+                checkSprintfCall(tok, total_size);
+            }
+
+            // snprintf..
+            if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", declarationId)) {
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
+                if (n > total_size)
+                    outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
+            }
+
+            // readlink() / readlinkat() buffer usage
+            if (_settings->standards.posix && Token::Match(tok, "readlink|readlinkat ("))
+                checkReadlinkBufferUsage(tok, scope_begin, declarationId, total_size);
+
         }
-
-
-        if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", declarationId)) {
-            checkSprintfCall(tok, total_size);
-        }
-
-        // snprintf..
-        if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", declarationId)) {
-            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
-            if (n > total_size)
-                outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
-        }
-
-        // readlink() / readlinkat() buffer usage
-        if (_settings->standards.posix && Token::Match(tok, "readlink|readlinkat ("))
-            checkReadlinkBufferUsage(tok, scope_begin, declarationId, total_size);
-
         // undefined behaviour: result of pointer arithmetic is out of bounds
         if (isPortabilityEnabled && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
