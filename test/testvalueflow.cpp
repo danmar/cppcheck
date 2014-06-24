@@ -892,6 +892,14 @@ private:
         code = "void f1(int x) { a=(abc)x; }\n"
                "void f2(int y) { f1(123); }\n";
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 123));
+
+        code = "void f1(int x) {\n"
+               "  x ?\n"
+               "  1024 / x :\n"
+               "  0; }\n"
+               "void f2() { f1(0); }";
+        ASSERT_EQUALS(true,  testValueOfX(code, 2U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 };
 
