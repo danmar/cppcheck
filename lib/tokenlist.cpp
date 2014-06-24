@@ -60,20 +60,6 @@ const std::string& TokenList::getSourceFilePath() const
     return getFiles()[0];
 }
 
-bool TokenList::isC() const
-{
-    if (!_settings)
-        return Path::isC(getSourceFilePath());
-    return _settings->enforcedLang == Settings::C || (_settings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
-}
-
-bool TokenList::isCPP() const
-{
-    if (!_settings)
-        return Path::isCPP(getSourceFilePath());
-    return _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
-}
-
 //---------------------------------------------------------------------------
 
 // Deallocate lists..
@@ -94,6 +80,17 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
 
     // The "_files" vector remembers what files have been tokenized..
     _files.push_back(Path::simplifyPath(fileName));
+
+    // Update _isC and _isCPP properties
+    if (_files.size() == 1) { // Update only useful if first file added to _files
+        if (!_settings) {
+            _isC = Path::isC(getSourceFilePath());
+            _isCPP = Path::isCPP(getSourceFilePath());
+        } else {
+            _isC = _settings->enforcedLang == Settings::C || (_settings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
+            _isCPP = _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+        }
+    }
     return static_cast<unsigned int>(_files.size() - 1);
 }
 
@@ -210,7 +207,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
 
 bool TokenList::createTokens(std::istream &code, const std::string& file0)
 {
-    _files.push_back(file0);
+    appendFileIfNew(file0);
 
     // line number in parsed code
     unsigned int lineno = 1;

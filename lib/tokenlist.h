@@ -44,10 +44,14 @@ public:
     const std::string& getSourceFilePath() const;
 
     /** Is the code C. Used for bailouts */
-    bool isC() const;
+    bool isC() const {
+        return _isC;
+    }
 
     /** Is the code CPP. Used for bailouts */
-    bool isCPP() const;
+    bool isCPP() const {
+        return _isCPP;
+    }
 
     /**
      * Delete all tokens in given token list
@@ -136,6 +140,9 @@ private: /// private
 
     /** settings */
     const Settings* _settings;
+
+    /** File is known to be C/C++ code */
+    bool _isC, _isCPP;
 };
 
 /// @}
