@@ -41,177 +41,6 @@ namespace {
  */
 void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library, unsigned char value)
 {
-    // standard functions that dereference first parameter..
-    static std::set<std::string> functionNames1_all;     // used no matter what 'value' is
-    static std::set<std::string> functionNames1_nullptr; // used only when 'value' is 0
-    static std::set<std::string> functionNames1_uninit;  // used only when 'value' is non-zero
-    if (functionNames1_all.empty()) {
-        // cstdlib
-        functionNames1_all.insert("atoi");
-        functionNames1_all.insert("atof");
-        functionNames1_all.insert("atol");
-        functionNames1_all.insert("qsort");
-        functionNames1_all.insert("strtof");
-        functionNames1_all.insert("strtod");
-        functionNames1_all.insert("strtol");
-        functionNames1_all.insert("strtoul");
-        functionNames1_all.insert("strtold");
-        functionNames1_all.insert("strtoll");
-        functionNames1_all.insert("strtoull");
-        functionNames1_all.insert("wcstof");
-        functionNames1_all.insert("wcstod");
-        functionNames1_all.insert("wcstol");
-        functionNames1_all.insert("wcstoul");
-        functionNames1_all.insert("wcstold");
-        functionNames1_all.insert("wcstoll");
-        functionNames1_all.insert("wcstoull");
-        // cstring
-        functionNames1_all.insert("strcat");
-        functionNames1_all.insert("strncat");
-        functionNames1_all.insert("strcoll");
-        functionNames1_all.insert("strchr");
-        functionNames1_all.insert("strrchr");
-        functionNames1_all.insert("strcmp");
-        functionNames1_all.insert("strncmp");
-        functionNames1_all.insert("strcspn");
-        functionNames1_all.insert("strdup");
-        functionNames1_all.insert("strndup");
-        functionNames1_all.insert("strpbrk");
-        functionNames1_all.insert("strlen");
-        functionNames1_all.insert("strspn");
-        functionNames1_all.insert("strstr");
-        functionNames1_all.insert("wcscat");
-        functionNames1_all.insert("wcsncat");
-        functionNames1_all.insert("wcscoll");
-        functionNames1_all.insert("wcschr");
-        functionNames1_all.insert("wcsrchr");
-        functionNames1_all.insert("wcscmp");
-        functionNames1_all.insert("wcsncmp");
-        functionNames1_all.insert("wcscspn");
-        functionNames1_all.insert("wcsdup");
-        functionNames1_all.insert("wcsndup");
-        functionNames1_all.insert("wcspbrk");
-        functionNames1_all.insert("wcslen");
-        functionNames1_all.insert("wcsspn");
-        functionNames1_all.insert("wcsstr");
-        // cstdio
-        functionNames1_all.insert("fclose");
-        functionNames1_all.insert("feof");
-        functionNames1_all.insert("fwrite");
-        functionNames1_all.insert("fseek");
-        functionNames1_all.insert("ftell");
-        functionNames1_all.insert("fputs");
-        functionNames1_all.insert("fputws");
-        functionNames1_all.insert("ferror");
-        functionNames1_all.insert("fgetc");
-        functionNames1_all.insert("fgetwc");
-        functionNames1_all.insert("fgetpos");
-        functionNames1_all.insert("fsetpos");
-        functionNames1_all.insert("fscanf");
-        functionNames1_all.insert("fprintf");
-        functionNames1_all.insert("fwscanf");
-        functionNames1_all.insert("fwprintf");
-        functionNames1_all.insert("fopen");
-        functionNames1_all.insert("rewind");
-        functionNames1_all.insert("printf");
-        functionNames1_all.insert("wprintf");
-        functionNames1_all.insert("scanf");
-        functionNames1_all.insert("wscanf");
-        functionNames1_all.insert("fscanf");
-        functionNames1_all.insert("sscanf");
-        functionNames1_all.insert("fwscanf");
-        functionNames1_all.insert("swscanf");
-        functionNames1_all.insert("setbuf");
-        functionNames1_all.insert("setvbuf");
-        functionNames1_all.insert("rename");
-        functionNames1_all.insert("remove");
-        functionNames1_all.insert("puts");
-        functionNames1_all.insert("getc");
-        functionNames1_all.insert("clearerr");
-        // ctime
-        functionNames1_all.insert("asctime");
-        functionNames1_all.insert("ctime");
-        functionNames1_all.insert("mktime");
-
-        functionNames1_nullptr.insert("strcpy");
-        functionNames1_nullptr.insert("sprintf");
-        functionNames1_nullptr.insert("vsprintf");
-        functionNames1_nullptr.insert("vprintf");
-        functionNames1_nullptr.insert("fprintf");
-        functionNames1_nullptr.insert("vfprintf");
-        functionNames1_nullptr.insert("wcscpy");
-        functionNames1_nullptr.insert("swprintf");
-        functionNames1_nullptr.insert("vswprintf");
-        functionNames1_nullptr.insert("vwprintf");
-        functionNames1_nullptr.insert("fwprintf");
-        functionNames1_nullptr.insert("vfwprintf");
-        functionNames1_nullptr.insert("fread");
-        functionNames1_nullptr.insert("gets");
-        functionNames1_nullptr.insert("gmtime");
-        functionNames1_nullptr.insert("localtime");
-        functionNames1_nullptr.insert("strftime");
-
-        functionNames1_uninit.insert("itoa"); // value to convert
-        functionNames1_uninit.insert("perror");
-        functionNames1_uninit.insert("fflush");
-        functionNames1_uninit.insert("freopen");
-    }
-
-    // standard functions that dereference second parameter..
-    static std::set<std::string> functionNames2_all;     // used no matter what 'value' is
-    static std::set<std::string> functionNames2_nullptr; // used only if 'value' is 0
-    if (functionNames2_all.empty()) {
-        functionNames2_all.insert("mbstowcs");
-        functionNames2_all.insert("wcstombs");
-        functionNames2_all.insert("strcat");
-        functionNames2_all.insert("strncat");
-        functionNames2_all.insert("strcmp");
-        functionNames2_all.insert("strncmp");
-        functionNames2_all.insert("strcoll");
-        functionNames2_all.insert("strcpy");
-        functionNames2_all.insert("strcspn");
-        functionNames2_all.insert("strncpy");
-        functionNames2_all.insert("strpbrk");
-        functionNames2_all.insert("strspn");
-        functionNames2_all.insert("strstr");
-        functionNames2_all.insert("strxfrm");
-        functionNames2_all.insert("wcscat");
-        functionNames2_all.insert("wcsncat");
-        functionNames2_all.insert("wcscmp");
-        functionNames2_all.insert("wcsncmp");
-        functionNames2_all.insert("wcscoll");
-        functionNames2_all.insert("wcscpy");
-        functionNames2_all.insert("wcscspn");
-        functionNames2_all.insert("wcsncpy");
-        functionNames2_all.insert("wcspbrk");
-        functionNames2_all.insert("wcsspn");
-        functionNames2_all.insert("wcsstr");
-        functionNames2_all.insert("wcsxfrm");
-        functionNames2_all.insert("sprintf");
-        functionNames2_all.insert("fprintf");
-        functionNames2_all.insert("fscanf");
-        functionNames2_all.insert("sscanf");
-        functionNames2_all.insert("swprintf");
-        functionNames2_all.insert("fwprintf");
-        functionNames2_all.insert("fwscanf");
-        functionNames2_all.insert("swscanf");
-        functionNames2_all.insert("fputs");
-        functionNames2_all.insert("fputc");
-        functionNames2_all.insert("ungetc");
-        functionNames2_all.insert("fputws");
-        functionNames2_all.insert("fputwc");
-        functionNames2_all.insert("ungetwc");
-        functionNames2_all.insert("rename");
-        functionNames2_all.insert("putc");
-        functionNames2_all.insert("putwc");
-        functionNames2_all.insert("freopen");
-
-        functionNames2_nullptr.insert("itoa"); // destination buffer
-        functionNames2_nullptr.insert("frexp");
-        functionNames2_nullptr.insert("modf");
-        functionNames2_nullptr.insert("fgetpos");
-    }
-
     if (Token::Match(&tok, "%var% ( )") || !tok.tokAt(2))
         return;
 
@@ -221,13 +50,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     // 1st parameter..
     if ((Token::Match(firstParam, "%var% ,|)") && firstParam->varId() > 0) ||
         (value == 0 && Token::Match(firstParam, "0|NULL ,|)"))) {
-        if (functionNames1_all.find(tok.str()) != functionNames1_all.end())
-            var.push_back(firstParam);
-        else if (value == 0 && functionNames1_nullptr.find(tok.str()) != functionNames1_nullptr.end())
-            var.push_back(firstParam);
-        else if (value != 0 && functionNames1_uninit.find(tok.str()) != functionNames1_uninit.end())
-            var.push_back(firstParam);
-        else if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
+        if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
         else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),1))
             var.push_back(firstParam);
@@ -237,11 +60,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 
     // 2nd parameter..
     if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0 && Token::Match(secondParam->next(),"[,)]"))) {
-        if (functionNames2_all.find(tok.str()) != functionNames2_all.end())
-            var.push_back(secondParam);
-        else if (value == 0 && functionNames2_nullptr.find(tok.str()) != functionNames2_nullptr.end())
-            var.push_back(secondParam);
-        else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),2))
+        if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),2))
             var.push_back(secondParam);
         else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(),2))
             var.push_back(secondParam);
