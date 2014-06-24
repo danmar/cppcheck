@@ -40,7 +40,9 @@ static const unsigned int AST_MAX_DEPTH = 50U;
 TokenList::TokenList(const Settings* settings) :
     _front(0),
     _back(0),
-    _settings(settings)
+    _settings(settings),
+    _isC(false),
+    _isCPP(false)
 {
 }
 
