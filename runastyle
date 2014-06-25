@@ -36,4 +36,4 @@ astyle $style $options --recursive "samples/*.cpp"
 # sed -i "s/\t/ /g" test/test*.cpp
 
 # strip useless whitespaces from config files
-sed -i "s/\ $//" cfg/*
+# sed -i "s/\ $//" cfg/*
