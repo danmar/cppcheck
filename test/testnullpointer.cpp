@@ -43,7 +43,6 @@ private:
         TEST_CASE(nullpointerExecutionPaths);
         TEST_CASE(nullpointerExecutionPathsLoop);
         TEST_CASE(nullpointer7);
-        TEST_CASE(nullpointer8);
         TEST_CASE(nullpointer9);
         TEST_CASE(nullpointer10);
         TEST_CASE(nullpointer11); // ticket #2812
@@ -1112,15 +1111,6 @@ private:
               "  int y = x.GetValue();\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void nullpointer8() {
-        check("void foo()\n"
-              "{\n"
-              "  char const * x = 0;\n"
-              "  strdup(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 
     void nullpointer9() { //#ticket 1778
@@ -2530,9 +2520,6 @@ private:
         check("void f(char * p){ putchar (*p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
-        check("void f(char * p){ strdup (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
         check("void f(char * p){ strlen (p);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
 
@@ -2651,6 +2638,13 @@ private:
 
         check("void f(char *p){ mkdir (p, *0);}");
         ASSERT_EQUALS("[test.cpp:1]: (error) Null pointer dereference\n",errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "  char const * x = 0;\n"
+              "  strdup(x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 };
 
