@@ -2394,13 +2394,15 @@ void Scope::getVariableList()
                 continue;
             } else
                 break;
-        } else if (Token::Match(tok, "struct|union {") && Token::Match(tok->next()->link(), "} %var% ;|[")) {
-            tok = tok->next()->link()->tokAt(2);
-            continue;
-        } else if (Token::Match(tok, "struct|union {") && Token::simpleMatch(tok->next()->link(), "} ;")) {
-            level++;
-            tok = tok->next();
-            continue;
+        } else if (Token::Match(tok, "struct|union {")) {
+            if (Token::Match(tok->next()->link(), "} %var% ;|[")) {
+                tok = tok->next()->link()->tokAt(2);
+                continue;
+            } else if (Token::simpleMatch(tok->next()->link(), "} ;")) {
+                level++;
+                tok = tok->next();
+                continue;
+            }
         }
 
         // Borland C++: Skip all variables in the __published section.

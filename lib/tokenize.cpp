@@ -5441,8 +5441,11 @@ void Tokenizer::simplifyPlatformTypes()
         _settings->platformType == Settings::Win32W ||
         _settings->platformType == Settings::Win64) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (!tok->isName())
+            if (tok->type() != Token::eType && tok->type() != Token::eName)
                 continue;
+            if (!tok->isUpperCaseName()) // All WinAPI types are uppercase. Reduce number of Token::Match calls by this condition.
+                continue;
+
             if (Token::Match(tok, "BOOL|INT|INT32|HFILE|LONG32")) {
                 tok->originalName(tok->str());
                 tok->str("int");
