@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Simple script to generate times.log that contains timing information for the last 20 revisions
+# Simple script to generate times.log that contains timing information for the last <n> revisions
 # Typically these commands shall be used to get times.txt:
 mkdir -p src
 cp lib/* src/   # fill src/ with some source code
