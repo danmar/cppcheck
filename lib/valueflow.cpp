@@ -787,9 +787,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                 vartok = tok->astOperand2();
                 numtok = tok->astOperand1();
             }
-            if (!vartok->isName() || !numtok->isNumber())
+            if (!vartok->isName() || !numtok->isNumber() || !MathLib::isInt(numtok->str()))
                 continue;
-
         } else if (tok->str() == "!") {
             vartok = tok->astOperand1();
             numtok = nullptr;

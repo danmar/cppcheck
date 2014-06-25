@@ -790,6 +790,13 @@ private:
                "       x);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+
+        // TODO: float
+        code = "void f(float x) {\n"
+               "  if (x == 0.5) {}\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowBitAnd() {
