@@ -34,7 +34,9 @@
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
+#if !defined(__sun__)
 #include <execinfo.h>
+#endif
 #include <cxxabi.h>
 #include <signal.h>
 #include <cstdio>
@@ -237,7 +239,7 @@ static const char *signal_name(int signo)
  */
 static void print_stacktrace(FILE* f, bool demangling)
 {
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__sun__)
     void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
     char **symbolstrings = backtrace_symbols(array, depth);
@@ -460,7 +462,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     __try {
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
-        // reporting to stdout may not be helpful within a GUI application..
+        // reporting to stdout may not be helpful within a I application..
         fprintf(f, "Please report this to the cppcheck developers!\n");
         return -1;
     }
