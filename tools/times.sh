@@ -21,7 +21,7 @@ for i in `seq 1 50`; do
     make SRCDIR=build CXXFLAGS=-O2 -j4 || make clean ; make SRCDIR=build CXXFLAGS=-O2 -j4
     echo "Run number $i"
     for j in `seq 1 4`; do
-        ./cppcheck -q --showtime=summary --enable=all --inconclusive src 2> /dev/null | tee -a times.log
+        ./cppcheck --quiet --showtime=summary --enable=all --inconclusive src 2> /dev/null | tee -a times.log
     done
     grep "Overall" times.log | tail -4 | sed s/s// | awk -v "i=$i" -v "git_head=$git_head"  '{ sum+=$3} END {print "Run " i",  "git_head  "  Average: " sum/4}' | tee -a times.log
     git reset --hard HEAD^1 | tee -a times.log
