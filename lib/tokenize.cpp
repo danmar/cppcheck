@@ -5441,6 +5441,8 @@ void Tokenizer::simplifyPlatformTypes()
         _settings->platformType == Settings::Win32W ||
         _settings->platformType == Settings::Win64) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (!tok->isName())
+                continue;
             if (Token::Match(tok, "BOOL|INT|INT32|HFILE|LONG32")) {
                 tok->originalName(tok->str());
                 tok->str("int");
@@ -8217,8 +8219,7 @@ bool Tokenizer::simplifyMathFunctions()
 {
     bool simplifcationMade = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        const Token * tokNext = tok->next();
-        if (tokNext && tokNext->str() == "(") { // precondition for function
+        if (tok->isName() && tok->strAt(1) == "(") { // precondition for function
             if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
                 if (tok->previous() &&
                     Token::simpleMatch(tok->tokAt(-2), "std ::")) {
