@@ -2,8 +2,8 @@
 #
 # Simple script to generate times.log that contains timing information for the last <n> revisions
 # Typically these commands shall be used to get times.txt:
-mkdir -p src
-cp lib/* src/   # fill src/ with some source code
+mkdir -p src  || exit 1
+cp lib/* src/ || exit 2  # fill src/ with some source code
 #NOTE: also try with some files other then from cppcheck!
 
 
