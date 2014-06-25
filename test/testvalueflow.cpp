@@ -778,6 +778,17 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
 
+        // conditional code after if/else/while
+        code = "void f(int x) {\n"
+               "  if (x == 2) {}\n"
+               "  if (x > 0)\n"
+               "    a = x;\n"
+               "  else\n"
+               "    b = x;\n"
+               "}";
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 2));
+
         // In condition, after && and ||
         code = "void f(int x) {\n"
                "  a = (x != 3 ||\n"

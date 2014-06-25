@@ -129,6 +129,29 @@ static bool conditionIsFalse(const Token *condition, unsigned int varid, const V
 }
 
 /**
+ * Is condition always true when variable has given value?
+ * \param condition   top ast token in condition
+ * \param varid       variable id for variable
+ * \param value       value of variable
+ */
+static bool conditionIsTrue(const Token *condition, unsigned int varid, const ValueFlow::Value &value)
+{
+    if (!condition)
+        return false;
+    if (condition->str() == "||") {
+        bool result1 = conditionIsTrue(condition->astOperand1(), varid, value);
+        bool result2 = result1 ? true : conditionIsTrue(condition->astOperand2(), varid, value);
+        return result2;
+    }
+    std::map<unsigned int, MathLib::bigint> programMemory;
+    programMemory[varid] = value.intvalue;
+    MathLib::bigint result = 0;
+    bool error = false;
+    execute(condition, &programMemory, &result, &error);
+    return !error && result == 1;
+}
+
+/**
  * Should value be skipped because it's hidden inside && || or ?: expression.
  * Example: ((x!=NULL) && (*x == 123))
  * If 'valuetok' points at the x in '(*x == 123)'. Then the '&&' will be returned.
@@ -557,6 +580,24 @@ static bool valueFlowForward(Token * const               startToken,
 
         if (Token::Match(tok2, "sizeof|typeof|typeid ("))
             tok2 = tok2->linkAt(1);
+
+        else if (Token::simpleMatch(tok2, "else {")) {
+            // Should scope be skipped because variable value is checked?
+            bool skipelse = false;
+            const Token *condition = tok2->linkAt(-1);
+            condition = condition ? condition->linkAt(-1) : nullptr;
+            condition = condition ? condition->astOperand2() : nullptr;
+            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                if (conditionIsTrue(condition, varid, *it)) {
+                    skipelse = true;
+                    break;
+                }
+            }
+            if (skipelse) {
+                tok2 = tok2->linkAt(1);
+                continue;
+            }
+        }
 
         // conditional block of code that assigns variable..
         else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
