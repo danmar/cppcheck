@@ -20,6 +20,9 @@
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include <iostream>
+#ifdef __SVR4  // Solaris
+#include <sys/loadavg.h>
+#endif
 #ifdef THREADING_MODEL_FORK
 #include <algorithm>
 #include <sys/select.h>
