@@ -319,9 +319,9 @@ private:
     }
 
     void matchNothingOrAnyNotElse() const {
-        givenACodeSampleToTokenize emptyString("", true);
-        ASSERT_EQUALS(true, Token::Match(emptyString.tokens(), "!!else"));
-        ASSERT_EQUALS(false, Token::Match(emptyString.tokens(), "!!else something"));
+        givenACodeSampleToTokenize empty_String("", true);
+        ASSERT_EQUALS(true, Token::Match(empty_String.tokens(), "!!else"));
+        ASSERT_EQUALS(false, Token::Match(empty_String.tokens(), "!!else something"));
 
         givenACodeSampleToTokenize ifSemicolon("if ;", true);
         ASSERT_EQUALS(true, Token::Match(ifSemicolon.tokens(), "if ; !!else"));

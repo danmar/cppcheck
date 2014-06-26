@@ -417,9 +417,6 @@ private:
         return (eraseToken == c->eraseToken);
     }
 
-    /** @brief no implementation => compiler error if used by accident */
-    void operator=(const EraseCheckLoop &);
-
     /** @brief parse tokens */
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
         // bail out if there are assignments. We don't check the assignments properly.

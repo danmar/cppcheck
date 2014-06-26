@@ -65,9 +65,6 @@ private:
         return new UninitVar(*this);
     }
 
-    /** no implementation => compiler error if used */
-    void operator=(const UninitVar &);
-
     /** internal constructor for creating extra checks */
     UninitVar(Check *c, const Variable* v, const SymbolDatabase* db, const Library *lib, bool isc)
         : ExecutionPath(c, v->declarationId()), symbolDatabase(db), library(lib), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
