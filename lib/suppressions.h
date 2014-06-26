@@ -99,7 +99,7 @@ public:
      * @param line number, e.g. "123"
      * @return error message. empty upon success
      */
-    std::string addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
+    std::string addSuppression(const std::string &errorId, const std::string &file = emptyString, unsigned int line = 0);
 
     /**
      * @brief Returns true if this message should not be shown to the user.

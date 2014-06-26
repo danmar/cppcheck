@@ -90,7 +90,7 @@ public:
      */
     bool tokenize(std::istream &code,
                   const char FileName[],
-                  const std::string &configuration = "",
+                  const std::string &configuration = emptyString,
                   bool noSymbolDB_AST = false);
     /**
      * tokenize condition and run simple simplifications on it

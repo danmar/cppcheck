@@ -104,8 +104,7 @@ public:
     }
 
     const std::string& name() const {
-        static const std::string empty;
-        return classDef->next()->isName() ? classDef->strAt(1) : empty;
+        return classDef->next()->isName() ? classDef->strAt(1) : emptyString;
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
@@ -215,13 +214,11 @@ public:
      * @return name string
      */
     const std::string &name() const {
-        static const std::string noname;
-
         // name may not exist for function arguments
         if (_name)
             return _name->str();
 
-        return noname;
+        return emptyString;
     }
 
     /**

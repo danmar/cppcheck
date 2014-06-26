@@ -184,9 +184,9 @@ public:
 
     bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
 
-    std::string validarg(const std::string &functionName, int argnr) const {
+    const std::string& validarg(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
-        return arg ? arg->valid : std::string("");
+        return arg ? arg->valid : emptyString;
     }
 
     bool markupFile(const std::string &path) const {
@@ -227,24 +227,24 @@ public:
         return offset;
     }
 
-    std::string blockstart(const std::string &file) const {
+    const std::string& blockstart(const std::string &file) const {
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
         if (map_it != _executableblocks.end()) {
             return map_it->second.start();
         }
-        return std::string();
+        return emptyString;
     }
 
-    std::string blockend(const std::string &file) const {
+    const std::string& blockend(const std::string &file) const {
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
         if (map_it != _executableblocks.end()) {
             return map_it->second.end();
         }
-        return std::string();
+        return emptyString;
     }
 
     bool iskeyword(const std::string &file, const std::string &keyword) const {

@@ -1069,7 +1069,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
             const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
             if (total_size > 0 && len >= (unsigned int)total_size) {
-                bufferOverrunError(tok, declarationId > 0 ? std::string() : varnames);
+                bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
                 continue;
             }
         } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||

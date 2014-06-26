@@ -73,7 +73,7 @@ public:
      * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0 = "");
+    bool createTokens(std::istream &code, const std::string& file0 = emptyString);
 
     /** Deallocate list */
     void deallocateTokens();

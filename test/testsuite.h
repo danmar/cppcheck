@@ -52,9 +52,12 @@ protected:
     void assert_(const char *filename, unsigned int linenr, bool condition) const;
     void todoAssert(const char *filename, unsigned int linenr, bool condition) const;
 
-    void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "") const;
-    void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg="") const;
-    void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg="") const;
+    void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
+    void assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
+    void assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
+    void assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
+    void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
+    void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg = emptyString) const;
 
     void todoAssertEquals(const char *filename, unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;

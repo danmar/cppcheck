@@ -1040,7 +1040,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
         processedFile = ostr.str();
     }
 
-    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : std::string(""), _settings, filename));
+    std::map<std::string, std::string> defs(getcfgmap(_settings ? _settings->userDefines : emptyString, _settings, filename));
 
     if (_settings && _settings->_maxConfigs == 1U) {
         std::set<std::string> pragmaOnce;

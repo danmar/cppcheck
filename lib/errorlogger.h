@@ -217,8 +217,8 @@ public:
          * @param outputFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
         * @return formatted string
-               */
-        std::string toString(bool verbose, const std::string &outputFormat = "") const;
+         */
+        std::string toString(bool verbose, const std::string &outputFormat = emptyString) const;
 
         std::string serialize() const;
         bool deserialize(const std::string &data);

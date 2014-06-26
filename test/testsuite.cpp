@@ -149,6 +149,18 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
         }
     }
 }
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+{
+    assertEquals(filename, linenr, std::string(expected), actual, msg);
+}
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
+}
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, expected, std::string(actual), msg);
+}
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
 {

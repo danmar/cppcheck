@@ -266,10 +266,8 @@ const Token *Token::linkAt(int index) const
 
 const std::string &Token::strAt(int index) const
 {
-    static const std::string empty_str;
-
     const Token *tok = this->tokAt(index);
-    return tok ? tok->_str : empty_str;
+    return tok ? tok->_str : emptyString;
 }
 
 static int multiComparePercent(const Token *tok, const char ** haystack_p,

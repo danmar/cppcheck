@@ -115,7 +115,7 @@ private:
     }
 
     // Check the suppression
-    void checkSuppression(const char code[], const std::string &suppression = "") {
+    void checkSuppression(const char code[], const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
 
@@ -133,7 +133,7 @@ private:
         reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
     }
 
-    void checkSuppressionThreads(const char code[], const std::string &suppression = "") {
+    void checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
         output.str("");
 
@@ -157,7 +157,7 @@ private:
     }
 
     // Check the suppression for multiple files
-    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = "") {
+    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
 

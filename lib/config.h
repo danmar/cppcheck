@@ -19,4 +19,7 @@
 #  include <crtdbg.h>
 #endif
 
+#include <string>
+static const std::string emptyString;
+
 #endif // configH
