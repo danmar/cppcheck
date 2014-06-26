@@ -1251,6 +1251,12 @@ private:
             ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().hasDefault());
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            GET_SYMBOL_DB("void g(int* const) { }"); // 'const' is not the name of the variable - #5882
+            const Scope* g = db->findScopeByName("g");
+            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void functionArgs2() {

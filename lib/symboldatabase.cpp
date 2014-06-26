@@ -2121,7 +2121,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             // check for argument with no name or missing varid
             if (!endTok) {
-                if (tok->previous()->isName()) {
+                if (tok->previous()->isName() && tok->strAt(-1) != "const") {
                     if (tok->previous() != typeTok) {
                         nameTok = tok->previous();
                         endTok = nameTok->previous();
