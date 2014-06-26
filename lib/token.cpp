@@ -39,7 +39,6 @@ Token::Token(Token **t) :
     _link(0),
     _scope(0),
     _function(0), // Initialize whole union
-    _str(""),
     _varId(0),
     _fileIndex(0),
     _linenr(0),
@@ -48,13 +47,14 @@ Token::Token(Token **t) :
     _flags(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
-    _astParent(nullptr)
+    _astParent(nullptr),
+    _originalName(nullptr)
 {
 }
 
 Token::~Token()
 {
-
+    delete _originalName;
 }
 
 void Token::update_property_info()
@@ -174,7 +174,10 @@ void Token::deleteThis()
         _scope = _next->_scope;
         _function = _next->_function;
         _variable = _next->_variable;
-        _originalName = _next->_originalName;
+        if (_next->_originalName) {
+            _originalName = _next->_originalName;
+            _next->_originalName = nullptr;
+        }
         values = _next->values;
         if (_link)
             _link->link(this);
@@ -191,7 +194,10 @@ void Token::deleteThis()
         _scope = _previous->_scope;
         _function = _previous->_function;
         _variable = _previous->_variable;
-        _originalName = _previous->_originalName;
+        if (_previous->_originalName) {
+            _originalName = _previous->_originalName;
+            _previous->_originalName = nullptr;
+        }
         values = _previous->values;
         if (_link)
             _link->link(this);
@@ -931,7 +937,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     else
         newToken = new Token(tokensBack);
     newToken->str(tokenStr);
-    newToken->_originalName = originalNameStr;
+    if (!originalNameStr.empty())
+        newToken->originalName(originalNameStr);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
     newToken->_progressValue = _progressValue;

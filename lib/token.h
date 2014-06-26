@@ -620,7 +620,7 @@ public:
      * @return the original name.
      */
     const std::string & originalName() const {
-        return _originalName;
+        return _originalName ? *_originalName : emptyString;
     }
 
     /**
@@ -628,7 +628,10 @@ public:
      */
     template<typename T>
     void originalName(T&& name) {
-        _originalName = name;
+        if (!_originalName)
+            _originalName = new std::string(name);
+        else
+            *_originalName = name;
     }
 
     /** Values of token */
@@ -687,6 +690,7 @@ private:
      */
     static int firstWordLen(const char *str);
 
+    std::string _str;
 
     Token *_next;
     Token *_previous;
@@ -699,7 +703,6 @@ private:
         const Variable *_variable;
     };
 
-    std::string _str;
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;
@@ -761,7 +764,7 @@ private:
     Token *_astParent;
 
     // original name like size_t
-    std::string _originalName;
+    std::string* _originalName;
 
 public:
     void astOperand1(Token *tok);

@@ -165,7 +165,8 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
         _front = new Token(&_back);
         _back = _front;
         _back->str(tok->str());
-        _back->originalName(tok->originalName());
+        if (!tok->originalName().empty())
+            _back->originalName(tok->originalName());
     }
 
     _back->linenr(lineno);
