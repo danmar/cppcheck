@@ -377,7 +377,7 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *needle, const char *haystack);
+    static int multiCompare(const Token *needle, const char *haystack, unsigned int varid);
 
     unsigned int linenr() const {
         return _linenr;

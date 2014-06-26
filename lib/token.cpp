@@ -279,69 +279,150 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char ** haystack_p, bool emptyStringFound)
+static int multiComparePercent(const Token *tok, const char*& haystack, bool emptyStringFound, unsigned int varid)
 {
-    const char *haystack = *haystack_p;
-
-    if (haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
-        if (haystack[1] == 'o' && // "%op%"
-            haystack[2] == 'p' &&
-            haystack[3] == '%') {
-            if (tok->isOp())
-                return 1;
-            *haystack_p = haystack = haystack + 4;
-        } else if (haystack[1] == 'c' && // "%cop%"
-                   haystack[2] == 'o' &&
-                   haystack[3] == 'p' &&
-                   haystack[4] == '%') {
-            if (tok->isConstOp())
-                return 1;
-            *haystack_p = haystack = haystack + 5;
-        } else if (haystack[1] == 'o' && // "%or%"
-                   haystack[2] == 'r' &&
-                   haystack[3] == '%') {
-            if (tok->type() == Token::eBitOp && tok->str() == "|")
-                return 1;
-            *haystack_p = haystack = haystack + 4;
-        } else if (haystack[1] == 'o' && // "%oror%"
-                   haystack[2] == 'r' &&
-                   haystack[3] == 'o' &&
-                   haystack[4] == 'r' &&
-                   haystack[5] == '%') {
-            if (tok->type() == Token::eLogicalOp && tok->str() == "||")
-                return 1;
-            *haystack_p = haystack = haystack + 6;
-        } else if (haystack[1] == 'v' && // "%var%"
-                   haystack[2] == 'a' &&
-                   haystack[3] == 'r' &&
-                   haystack[4] == '%') {
+    ++haystack;
+    // Compare only the first character of the string for optimization reasons
+    switch (haystack[0]) {
+    case '\0':
+    case ' ':
+    case '|':
+        //simple '%' character
+        haystack += 1;
+        if (tok->isArithmeticalOp() && tok->str() == "%")
+            return 1;
+        break;
+    case 'v':
+        // TODO: %var% should match only for
+        // variables that have varId != 0, but that needs a lot of
+        // work, before that change can be made.
+        // Any symbolname..
+        if (haystack[3] == '%') { // %var%
+            haystack += 4;
             if (tok->isName())
                 return 1;
-            *haystack_p = haystack = haystack + 5;
+        } else { // %varid%
+            if (varid == 0) {
+                throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
+            }
+
+            haystack += 6;
+
+            if (tok->varId() == varid)
+                return 1;
+        }
+        break;
+    case 't':
+        // Type (%type%)
+    {
+        haystack += 5;
+        if (tok->isName() && tok->varId() == 0 && !tok->isKeyword())
+            return 1;
+    }
+    break;
+    case 'a':
+        // Accept any token (%any%)
+    {
+        haystack += 4;
+        return 1;
+    }
+    break;
+    case 'n':
+        // Number (%num%)
+    {
+        haystack += 4;
+        if (tok->isNumber())
+            return 1;
+    }
+    break;
+    case 'c': {
+        haystack += 1;
+        // Character (%char%)
+        if (haystack[0] == 'h') {
+            haystack += 4;
+            if (tok->type() == Token::eChar)
+                return 1;
+        }
+        // Const operator (%cop%)
+        else if (haystack[1] == 'p') {
+            haystack += 3;
+            if (tok->isConstOp())
+                return 1;
+        }
+        // Comparison operator (%comp%)
+        else {
+            haystack += 4;
+            if (tok->isComparisonOp())
+                return 1;
+        }
+    }
+    break;
+    case 's':
+        // String (%str%)
+    {
+        haystack += 4;
+        if (tok->type() == Token::eString)
+            return 1;
+    }
+    break;
+    case 'b':
+        // Bool (%bool%)
+    {
+        haystack += 5;
+        if (tok->isBoolean())
+            return 1;
+    }
+    break;
+    case 'o': {
+        ++haystack;
+        if (haystack[1] == '%') {
+            // Op (%op%)
+            if (haystack[0] == 'p') {
+                haystack += 2;
+                if (tok->isOp())
+                    return 1;
+            }
+            // Or (%or%)
+            else {
+                haystack += 2;
+                if (tok->type() == Token::eBitOp && tok->str() == "|")
+                    return 1;
+            }
         }
 
-        if (*haystack == '|')
-            *haystack_p = haystack = haystack + 1;
-        else if (*haystack == ' ' || *haystack == '\0')
-            return emptyStringFound ? 0 : -1;
-        else
-            return -1;
+        // Oror (%oror%)
+        else {
+            haystack += 4;
+            if (tok->type() == Token::eLogicalOp && tok->str() == "||")
+                return 1;
+        }
     }
+    break;
+    default:
+        //unknown %cmd%, abort
+        std::abort();
+    }
+
+    if (*haystack == '|')
+        haystack += 1;
+    else if (*haystack == ' ' || *haystack == '\0')
+        return emptyStringFound ? 0 : -1;
+    else
+        return -1;
 
     return 0xFFFF;
 }
 
-int Token::multiCompare(const Token *tok, const char *haystack)
+int Token::multiCompare(const Token *tok, const char *haystack, unsigned int varid)
 {
     bool emptyStringFound = false;
     const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
     for (;;) {
-        if (*needlePointer == *haystack) {
-            if (*needlePointer == '\0')
-                return 1;
-            ++needlePointer;
-            ++haystack;
+        if (needlePointer == needle && haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
+            int ret = multiComparePercent(tok, haystack, emptyStringFound, varid);
+            if (ret < 2)
+                return ret;
         } else if (*haystack == '|') {
             if (*needlePointer == 0) {
                 // If needle is at the end, we have a match.
@@ -354,14 +435,15 @@ int Token::multiCompare(const Token *tok, const char *haystack)
 
             needlePointer = needle;
             ++haystack;
+        } else if (*needlePointer == *haystack) {
+            if (*needlePointer == '\0')
+                return 1;
+            ++needlePointer;
+            ++haystack;
         } else if (*haystack == ' ' || *haystack == '\0') {
             if (needlePointer == needle)
                 return 0;
             break;
-        } else if (haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
-            int ret = multiComparePercent(tok, &haystack, emptyStringFound);
-            if (ret < 2)
-                return ret;
         }
         // If haystack and needle don't share the same character,
         // find next '|' character.
@@ -461,26 +543,9 @@ int Token::firstWordLen(const char *str)
     return len;
 }
 
-#define multicompare(p,cond,ismulticomp)        \
-{                                               \
-    if (!(cond)) {                              \
-        if (*(p) != '|')                        \
-            return false;                       \
-        ++(p);                                  \
-        (ismulticomp) = (*(p) && *(p) != ' ');  \
-        continue;                               \
-    }                                           \
-    if (*(p) == '|') {                          \
-        while (*(p) && *(p) != ' ')             \
-            ++(p);                              \
-    }                                           \
-    (ismulticomp) = false;                      \
-}
-
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
-    bool ismulticomp = false;
     while (*p) {
         // Skip spaces in pattern..
         while (*p == ' ')
@@ -500,131 +565,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 return false;
         }
 
-        // Compare the first character of the string for optimization reasons
-        // before doing more detailed checks.
-        if (p[0] == '%') {
-            ++p;
-            switch (p[0]) {
-            case '\0':
-            case ' ':
-            case '|':
-                //simple '%' character
-            {
-                multicompare(p, tok->str() == "%", ismulticomp);
-            }
-            break;
-            case 'v':
-                // TODO: %var% should match only for
-                // variables that have varId != 0, but that needs a lot of
-                // work, before that change can be made.
-                // Any symbolname..
-                if (p[3] == '%') { // %var%
-                    p += 4;
-                    multicompare(p,tok->isName(),ismulticomp);
-                } else { // %varid%
-                    if (varid == 0) {
-                        throw InternalError(tok, "Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
-                    }
-
-                    if (tok->varId() != varid)
-                        return false;
-
-                    p += 6;
-                }
-                break;
-            case 't':
-                // Type (%type%)
-            {
-                p += 5;
-                multicompare(p, tok->isName() && tok->varId() == 0 && !tok->isKeyword(), ismulticomp);
-            }
-            break;
-            case 'a':
-                // Accept any token (%any%)
-            {
-                p += 4;
-                if (p[0] == '|') {
-                    while (*p && *p != ' ')
-                        ++p;
-                }
-                ismulticomp = false;
-            }
-            break;
-            case 'n':
-                // Number (%num%)
-            {
-                p += 4;
-                multicompare(p,tok->isNumber(),ismulticomp);
-            }
-            break;
-            case 'c': {
-                p += 1;
-                // Character (%char%)
-                if (p[0] == 'h') {
-                    p += 4;
-                    multicompare(p,tok->type() == eChar,ismulticomp);
-                }
-                // Const operator (%cop%)
-                else if (p[1] == 'p') {
-                    p += 3;
-                    multicompare(p,tok->isConstOp(),ismulticomp);
-                }
-                // Comparison operator (%comp%)
-                else {
-                    p += 4;
-                    multicompare(p,tok->isComparisonOp(),ismulticomp);
-                }
-            }
-            break;
-            case 's':
-                // String (%str%)
-            {
-                p += 4;
-                multicompare(p,tok->type() == eString,ismulticomp);
-            }
-            break;
-            case 'b':
-                // Bool (%bool%)
-            {
-                p += 5;
-                multicompare(p,tok->isBoolean(),ismulticomp);
-            }
-            break;
-            case 'o': {
-                ++p;
-                if (p[1] == '%') {
-                    // Op (%op%)
-                    if (p[0] == 'p') {
-                        p += 2;
-                        multicompare(p,tok->isOp(),ismulticomp);
-                    }
-                    // Or (%or%)
-                    else {
-                        p += 2;
-                        multicompare(p,tok->str() == "|",ismulticomp)
-                    }
-                }
-
-                // Oror (%oror%)
-                else {
-                    p += 4;
-                    multicompare(p,tok->str() == "||",ismulticomp);
-                }
-            }
-            break;
-            default:
-                //unknown %cmd%, abort
-                std::abort();
-            }
-        }
-
-        else if (ismulticomp) {
-            ismulticomp = false;
-            continue;
-        }
-
         // [.. => search for a one-character token..
-        else if (p[0] == '[' && chrInFirstWord(p, ']')) {
+        if (p[0] == '[' && chrInFirstWord(p, ']')) {
             if (tok->str().length() != 1)
                 return false;
 
@@ -655,20 +597,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 ++p;
         }
 
-        // Parse multi options, such as void|int|char (accept token which is one of these 3)
-        else if (chrInFirstWord(p, '|') && (p[0] != '|' || firstWordLen(p) > 2)) {
-            int res = multiCompare(tok, p);
-            if (res == 0) {
-                // Empty alternative matches, use the same token on next round
-                while (*p && *p != ' ')
-                    ++p;
-                continue;
-            } else if (res == -1) {
-                // No match
-                return false;
-            }
-        }
-
         // Parse "not" options. Token can be anything except the given one
         else if (p[0] == '!' && p[1] == '!' && p[2] != '\0') {
             p += 2;
@@ -678,8 +606,18 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 ++p;
         }
 
-        else if (!firstWordEquals(p, tok->_str.c_str())) {
-            return false;
+        // Parse multi options, such as void|int|char (accept token which is one of these 3)
+        else {
+            int res = multiCompare(tok, p, varid);
+            if (res == 0) {
+                // Empty alternative matches, use the same token on next round
+                while (*p && *p != ' ')
+                    ++p;
+                continue;
+            } else if (res == -1) {
+                // No match
+                return false;
+            }
         }
 
         while (*p && *p != ' ')
