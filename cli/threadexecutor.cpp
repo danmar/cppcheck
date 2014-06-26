@@ -140,7 +140,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
 bool ThreadExecutor::checkLoadAverage(size_t nchilds)
 {
-#ifdef __CYGWIN__  // getloadavg() is unsupported on Cygwin.
+#if defined(__CYGWIN__) || defined(__sun__) // getloadavg() is unsupported on Cygwin and Solaris.
     return true;
 #else
     if (!nchilds || !_settings._loadAverage) {
