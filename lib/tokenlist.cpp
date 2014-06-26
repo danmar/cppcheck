@@ -490,16 +490,18 @@ static void compileTerm(Token *&tok, AST_state& state)
     if (tok->isLiteral()) {
         state.op.push(tok);
         tok = tok->next();
-    } else if (tok->str() == "return") {
-        compileUnaryOp(tok, state, compileExpression);
-        state.op.pop();
-    } else if (tok->isName() && (!state.cpp || !Token::Match(tok, "new|delete")) && tok->str() != "case") {
-        while (tok->next() && tok->next()->isName())
+    } else if (tok->isName() && tok->str() != "case") {
+        if (tok->str() == "return") {
+            compileUnaryOp(tok, state, compileExpression);
+            state.op.pop();
+        } else if (!state.cpp || !Token::Match(tok, "new|delete %var%|*|&|::|(|[")) {
+            while (tok->next() && tok->next()->isName())
+                tok = tok->next();
+            state.op.push(tok);
+            if (tok->next() && tok->linkAt(1) && Token::Match(tok, "%var% <"))
+                tok = tok->linkAt(1);
             tok = tok->next();
-        state.op.push(tok);
-        if (tok->next() && tok->linkAt(1) && Token::Match(tok, "%var% <"))
-            tok = tok->linkAt(1);
-        tok = tok->next();
+        }
     } else if (tok->str() == "{") {
         state.op.push(tok);
         tok = tok->link()->next();
@@ -615,7 +617,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             tok = tok->link()->next();
             compilePrecedence3(tok, state);
             compileUnaryOp(tok2, state, nullptr);
-        } else if (state.cpp && tok->str() == "new") {
+        } else if (state.cpp && Token::Match(tok, "new %var%|::|(")) {
             Token* tok2 = tok;
             tok = tok->next();
             state.op.push(tok);
@@ -625,7 +627,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 tok = tok->next();
             }
             compileUnaryOp(tok2, state, nullptr);
-        } else if (state.cpp && tok->str() == "delete") {
+        } else if (state.cpp && Token::Match(tok, "delete %var%|*|&|::|(|[")) {
             Token* tok2 = tok;
             tok = tok->next();
             if (tok->str() == "[")
