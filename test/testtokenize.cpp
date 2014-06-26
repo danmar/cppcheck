@@ -10649,6 +10649,7 @@ private:
         // how is "--" handled here:
         ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + --c : 1"));
         ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + c-- : 1"));
+        ASSERT_EQUALS("ai[i= i--", testAst("a[i]=i; --i;"));
     }
 
     void astfunction() const { // function calls
