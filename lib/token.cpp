@@ -73,8 +73,8 @@ void Token::update_property_info()
             _type = eString;
         else if (_str.length() > 1 && _str[0] == '\'' && _str[_str.length()-1] == '\'')
             _type = eChar;
-        else if (_str == "="   || _str == "<<=" || _str == ">>=" ||
-                 (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|",_str[0])))
+        else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
+                 (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))
             _type = eAssignmentOp;
         else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
             _type = eExtendedOp;
@@ -82,19 +82,22 @@ void Token::update_property_info()
             _type = eArithmeticalOp;
         else if (_str.size() == 1 && _str.find_first_of("&|^~") != std::string::npos)
             _type = eBitOp;
-        else if (_str == "&&" ||
-                 _str == "||" ||
-                 _str == "!")
+        else if (_str.size() <= 2 &&
+                 (_str == "&&" ||
+                  _str == "||" ||
+                  _str == "!"))
             _type = eLogicalOp;
-        else if ((_str == "==" ||
+        else if (_str.size() <= 2 && !_link &&
+                 (_str == "==" ||
                   _str == "!=" ||
                   _str == "<"  ||
                   _str == "<=" ||
                   _str == ">"  ||
-                  _str == ">=") && !_link)
+                  _str == ">="))
             _type = eComparisonOp;
-        else if (_str == "++" ||
-                 _str == "--")
+        else if (_str.size() == 2 &&
+                 (_str == "++" ||
+                  _str == "--"))
             _type = eIncDecOp;
         else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (_link && _str.find_first_of("<>") != std::string::npos)))
             _type = eBracket;
@@ -276,9 +279,7 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->_str : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char ** haystack_p,
-                               const char * needle,
-                               bool emptyStringFound)
+static int multiComparePercent(const Token *tok, const char ** haystack_p, bool emptyStringFound)
 {
     const char *haystack = *haystack_p;
 
@@ -299,7 +300,7 @@ static int multiComparePercent(const Token *tok, const char ** haystack_p,
         } else if (haystack[1] == 'o' && // "%or%"
                    haystack[2] == 'r' &&
                    haystack[3] == '%') {
-            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
+            if (tok->type() == Token::eBitOp && tok->str() == "|")
                 return 1;
             *haystack_p = haystack = haystack + 4;
         } else if (haystack[1] == 'o' && // "%oror%"
@@ -307,7 +308,7 @@ static int multiComparePercent(const Token *tok, const char ** haystack_p,
                    haystack[3] == 'o' &&
                    haystack[4] == 'r' &&
                    haystack[5] == '%') {
-            if (needle[0] == '|' && needle[1] == '|')
+            if (tok->type() == Token::eLogicalOp && tok->str() == "||")
                 return 1;
             *haystack_p = haystack = haystack + 6;
         } else if (haystack[1] == 'v' && // "%var%"
@@ -330,39 +331,10 @@ static int multiComparePercent(const Token *tok, const char ** haystack_p,
     return 0xFFFF;
 }
 
-int Token::multiCompare(const Token *tok, const char *haystack, const char *needle)
+int Token::multiCompare(const Token *tok, const char *haystack)
 {
-    if (haystack[0] == '%' && haystack[1] == 'o') {
-        if (haystack[2] == 'p' && // "%op%|"
-            haystack[3] == '%' &&
-            haystack[4] == '|') {
-            haystack = haystack + 5;
-            if (tok->isOp())
-                return 1;
-        } else if (haystack[2] == 'r' && // "%or%|"
-                   haystack[3] == '%' &&
-                   haystack[4] == '|') {
-            haystack = haystack + 5;
-            if (*needle == '|' && needle[1] != '|' && needle[1] != '=')
-                return 1;
-        } else if (haystack[2] == 'r' && // "%oror%|"
-                   haystack[3] == 'o' &&
-                   haystack[4] == 'r' &&
-                   haystack[5] == '%' &&
-                   haystack[6] == '|') {
-            haystack = haystack + 7;
-            if (needle[0] == '|' && needle[1] == '|')
-                return 1;
-        }
-    } else if (haystack[0] == '%' && haystack[1] == 'c' && haystack[2] == 'o' && // "%cop%|"
-               haystack[3] == 'p' && haystack[4] == '%' &&
-               haystack[5] == '|') {
-        haystack = haystack + 6;
-        if (tok->isConstOp())
-            return 1;
-    }
-
     bool emptyStringFound = false;
+    const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
     for (;;) {
         if (*needlePointer == *haystack) {
@@ -382,14 +354,14 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
 
             needlePointer = needle;
             ++haystack;
-
-            int ret = multiComparePercent(tok, &haystack, needle, emptyStringFound);
-            if (ret < 2)
-                return ret;
         } else if (*haystack == ' ' || *haystack == '\0') {
             if (needlePointer == needle)
                 return 0;
             break;
+        } else if (haystack[0] == '%' && haystack[1] != '|' && haystack[1] != '\0' && haystack[1] != ' ') {
+            int ret = multiComparePercent(tok, &haystack, emptyStringFound);
+            if (ret < 2)
+                return ret;
         }
         // If haystack and needle don't share the same character,
         // find next '|' character.
@@ -405,10 +377,6 @@ int Token::multiCompare(const Token *tok, const char *haystack, const char *need
             }
 
             ++haystack;
-
-            int ret = multiComparePercent(tok, &haystack, needle, emptyStringFound);
-            if (ret < 2)
-                return ret;
         }
     }
 
@@ -689,7 +657,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else if (chrInFirstWord(p, '|') && (p[0] != '|' || firstWordLen(p) > 2)) {
-            int res = multiCompare(tok, p, tok->_str.c_str());
+            int res = multiCompare(tok, p);
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
                 while (*p && *p != ' ')
