@@ -1256,29 +1256,35 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
     const bool isWarningEnabled = _settings->isEnabled("warning");
 
     for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
-        // Skip array declarations
-        if (Token::Match(tok, "[;{}] %type% *| %var% [") && tok->strAt(1) != "return") {
-            tok = tok->tokAt(3);
+        if (tok->varId() == declarationId) {
+            if (tok->strAt(1) == "[") {
+                valueFlowCheckArrayIndex(tok->next(), arrayInfo);
+            }
+
+            // undefined behaviour: result of pointer arithmetic is out of bounds
+            else if (isPortabilityEnabled && Token::Match(tok->previous(), "= %varid% + %num% ;", declarationId)) {
+                const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
+                if (index < 0 || index > arrayInfo.num(0)) {
+                    pointerOutOfBoundsError(tok, "array");
+                }
+            }
+        }
+
+        else if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
             continue;
-        }
 
-        else if (Token::Match(tok, "%varid% [", declarationId)) {
-            valueFlowCheckArrayIndex(tok->next(), arrayInfo);
-        }
+        else if (Token::Match(tok, "%var% (")) {
+            // Loop..
+            if (Token::simpleMatch(tok, "for (")) {
+                bool bailout = false;
+                arrayIndexInForLoop(tok, arrayInfo);
+                checkScopeForBody(tok, arrayInfo, bailout);
+                if (bailout)
+                    break;
+                continue;
+            }
 
-        // Loop..
-        else if (Token::simpleMatch(tok, "for (")) {
-            bool bailout = false;
-            arrayIndexInForLoop(tok, arrayInfo);
-            checkScopeForBody(tok, arrayInfo, bailout);
-            if (bailout)
-                break;
-            continue;
-        }
-
-
-        // Check function call..
-        if (Token::Match(tok, "%var% (")) {
+            // Check function call..
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
             if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
@@ -1367,13 +1373,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             if (_settings->standards.posix && Token::Match(tok, "readlink|readlinkat ("))
                 checkReadlinkBufferUsage(tok, scope_begin, declarationId, total_size);
 
-        }
-        // undefined behaviour: result of pointer arithmetic is out of bounds
-        if (isPortabilityEnabled && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
-            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-            if (index < 0 || index > arrayInfo.num(0)) {
-                pointerOutOfBoundsError(tok->next(), "array");
-            }
         }
     }
 }
