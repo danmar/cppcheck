@@ -67,6 +67,7 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
+        checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.writeOutsideBufferSize();
     }
@@ -610,7 +611,7 @@ private:
               "    for ( unsigned int i = 0; i < 64; ++i )\n"
               "        f.str[i] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Buffer is accessed out of bounds: f.str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'f.str[10]' accessed at index 63, which is out of bounds.\n", errout.str());
 
         check("struct AB { char a[NUM]; char b[NUM]; }\n"
               "void f(struct AB *ab) {\n"
@@ -1391,7 +1392,8 @@ private:
               "   y = var[ 0 ].arr[ 3 ];\n" // <-- array access out of bounds
               "   return y;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var.arr[3]' accessed at index 3, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'var.arr[3]' accessed at index 3, which is out of bounds.\n"
+                      "[test.cpp:10]: (error) Array 'var[0].arr[3]' accessed at index 3, which is out of bounds.\n", errout.str());
 
         check("int f( )\n"
               "{\n"
@@ -1435,7 +1437,8 @@ private:
               "var[0].var[ 2 ] = 2;\n"
               "var[0].var[ 4 ] = 4;\n" // <-- array access out of bounds
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'var.var[3]' accessed at index 4, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'var.var[3]' accessed at index 4, which is out of bounds.\n"
+                      "[test.cpp:9]: (error) Array 'var[0].var[3]' accessed at index 4, which is out of bounds.\n", errout.str());
 
         check("void f( ) {\n"
               "struct S{\n"
@@ -3933,7 +3936,7 @@ private:
               "    A::X x;\n"
               "    x.buf[10] = 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.buf[10]' index 10 out of bounds.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.buf[10]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
     void getErrorMessages() {

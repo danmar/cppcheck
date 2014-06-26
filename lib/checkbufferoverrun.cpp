@@ -1056,11 +1056,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         // Loop..
         if (Token::simpleMatch(tok, "for (")) {
-            const ArrayInfo arrayInfo1(declarationId, varnames, (unsigned int)size, (unsigned int)total_size);
-            bool bailout = false;
-            checkScopeForBody(tok, arrayInfo1, bailout);
-            if (bailout)
-                break;
+            /*
+                const ArrayInfo arrayInfo1(declarationId, varnames, (unsigned int)size, (unsigned int)total_size);
+                bool bailout = false;
+                checkScopeForBody(tok, arrayInfo1, bailout);
+                if (bailout)
+                    break;
+            */
             continue;
         }
 
@@ -1757,6 +1759,39 @@ void CheckBufferOverrun::bufferOverrun()
 }
 //---------------------------------------------------------------------------
 
+void CheckBufferOverrun::bufferOverrun2()
+{
+    // singlepass checking using ast, symboldatabase and valueflow
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%var% [")) {
+            const Variable *var = tok->variable();
+            if (!var || var->nameToken() == tok || !var->isArray())
+                continue;
+
+            // TODO: last array in struct..
+            if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
+                continue;
+
+            // TODO: what to do about negative index..
+            const Token *index = tok->next()->astOperand2();
+            if (index && index->getValueLE(-1LL,_settings))
+                continue;
+
+            ArrayInfo arrayInfo(var,_tokenizer);
+
+            // Set full varname..
+            if (tok->astParent() && tok->astParent()->str() == ".") {
+                const Token *parent = tok->astParent();
+                while (parent && parent->astParent() && parent->astParent()->str() == ".")
+                    parent = parent->astParent();
+                arrayInfo.varname(parent->expressionString());
+            }
+
+            valueFlowCheckArrayIndex(tok->next(), arrayInfo);
+        }
+    }
+}
+//---------------------------------------------------------------------------
 
 MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
 {

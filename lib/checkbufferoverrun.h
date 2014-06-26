@@ -58,12 +58,16 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
+        checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.writeOutsideBufferSize();
     }
 
     /** @brief %Check for buffer overruns */
     void bufferOverrun();
+
+    /** @brief %Check for buffer overruns #2 (single pass, use ast and valueflow) */
+    void bufferOverrun2();
 
     /** @brief Using array index before bounds check */
     void arrayIndexThenCheck();
