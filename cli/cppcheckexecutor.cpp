@@ -32,16 +32,12 @@
 #include <algorithm>
 #include <climits>
 
-#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__)
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__) && !defined(__SVR4)
 #define USE_UNIX_SIGNAL_HANDLING
+#include <execinfo.h>
 #include <cxxabi.h>
 #include <signal.h>
 #include <cstdio>
-#endif
-
-#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(USE_UNIX_SIGNAL_HANDLING) && !defined(__SVR4)
-#define USE_UNIX_BACKTRACE_SUPPORT
-#include <execinfo.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -241,7 +237,7 @@ static const char *signal_name(int signo)
  */
 static void print_stacktrace(FILE* f, bool demangling)
 {
-#if defined(USE_UNIX_BACKTRACE_SUPPORT)
+#if defined(USE_UNIX_SIGNAL_SUPPORT)
     void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
     char **symbolstrings = backtrace_symbols(array, depth);
