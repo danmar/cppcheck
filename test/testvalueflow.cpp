@@ -918,6 +918,13 @@ private:
                "void f2() { f1(0); }";
         ASSERT_EQUALS(true,  testValueOfX(code, 2U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        // #5861 - fp with float
+        code = "void f1(float x) {\n"
+               "  return 1.0 / x;\n"
+               "}\n"
+               "void f2() { f1(0.5); }";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 };
 

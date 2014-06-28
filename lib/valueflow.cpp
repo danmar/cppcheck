@@ -1203,7 +1203,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // passing value(s) to function
         if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
-        else if (Token::Match(tok, "[(,] %num% [,)]")) {
+        else if (Token::Match(tok, "[(,] %num% [,)]") && MathLib::isInt(tok->strAt(1))) {
             argvalues.clear();
             argvalues.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
         } else {
