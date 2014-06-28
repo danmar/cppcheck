@@ -428,21 +428,115 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
  */
 static int filterException(int code, PEXCEPTION_POINTERS ex)
 {
-    // TODO we should try to extract more information here
-    //   - address, read/write
     FILE *f = stdout;
+	fputs("Internal error: ", f);
     switch (ex->ExceptionRecord->ExceptionCode) {
     case EXCEPTION_ACCESS_VIOLATION:
-        fprintf(f, "Internal error (EXCEPTION_ACCESS_VIOLATION)\n");
-        break;
+        fputs("Access violation", f);
+		switch (ex->ExceptionRecord->ExceptionInformation[0])
+		{
+		case 0:
+			fprintf(f, " reading from 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		case 1:
+			fprintf(f, " writing at 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		case 8:
+			fprintf(f, " data execution prevention at 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		default:
+			break;
+		}
+		break;
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+        fputs("Out of array bounds", f);
+		break;
+    case EXCEPTION_BREAKPOINT:
+        fputs("Breakpoint", f);
+		break;
+    case EXCEPTION_DATATYPE_MISALIGNMENT:
+        fputs("Misaligned data", f);
+		break;
+    case EXCEPTION_FLT_DENORMAL_OPERAND:
+        fputs("Denormalized floating-point value", f);
+		break;
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+        fputs("Floating-point divide-by-zero", f);
+		break;
+    case EXCEPTION_FLT_INEXACT_RESULT:
+        fputs("Inexact floating-point value", f);
+		break;
+    case EXCEPTION_FLT_INVALID_OPERATION:
+        fputs("Invalid floating-point operation", f);
+		break;
+    case EXCEPTION_FLT_OVERFLOW:
+        fputs("Floating-point overflow", f);
+		break;
+    case EXCEPTION_FLT_STACK_CHECK:
+        fputs("Floating-point stack overflow", f);
+		break;
+    case EXCEPTION_FLT_UNDERFLOW:
+        fputs("Floating-point underflow", f);
+		break;
+    case EXCEPTION_GUARD_PAGE:
+        fputs("Page-guard access", f);
+		break;
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+        fputs("Illegal instruction", f);
+		break;
     case EXCEPTION_IN_PAGE_ERROR:
-        fprintf(f, "Internal error (EXCEPTION_IN_PAGE_ERROR)\n");
-        break;
+        fputs("Invalid page access", f);
+		switch (ex->ExceptionRecord->ExceptionInformation[0])
+		{
+		case 0:
+			fprintf(f, " reading from 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		case 1:
+			fprintf(f, " writing at 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		case 8:
+			fprintf(f, " data execution prevention at 0x%x",
+				ex->ExceptionRecord->ExceptionInformation[1]);
+			break;
+		default:
+			break;
+		}
+		break;
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+        fputs("Integer divide-by-zero", f);
+		break;
+    case EXCEPTION_INT_OVERFLOW:
+        fputs("Integer overflow", f);
+		break;
+    case EXCEPTION_INVALID_DISPOSITION:
+        fputs("Invalid exception dispatcher", f);
+		break;
+    case EXCEPTION_INVALID_HANDLE:
+        fputs("Invalid handle", f);
+		break;
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+        fputs("Non-continuable exception", f);
+		break;
+    case EXCEPTION_PRIV_INSTRUCTION:
+        fputs("Invalid instruction", f);
+		break;
+    case EXCEPTION_SINGLE_STEP:
+        fputs("Single instruction step", f);
+		break;
+    case EXCEPTION_STACK_OVERFLOW:
+        fputs("Stack overflow", f);
+		break;
     default:
-        fprintf(f, "Internal error (%d)\n",
+        fprintf(f, "Unknown exception (%d)\n",
                 code);
         break;
     }
+	fputs("\n", f);
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
@@ -461,10 +555,10 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application..
-        fprintf(f, "Please report this to the cppcheck developers!\n");
+        fputs("Please report this to the cppcheck developers!\n", f);
         return -1;
     }
-#elif defined(USE_UNIX_SIGNAL_HANDLING)
+#elif defined(USE_UNIX_SIGNAL_HANDLING) 
     struct sigaction act;
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO;
