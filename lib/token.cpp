@@ -1166,8 +1166,13 @@ std::string Token::expressionString() const
     while (start->astOperand1() && start->astOperand2())
         start = start->astOperand1();
     const Token *end = top;
-    while (end->astOperand1() && end->astOperand2())
+    while (end->astOperand1() && end->astOperand2()) {
+        if (Token::Match(end,"(|[")) {
+            end = end->link();
+            break;
+        }
         end = end->astOperand2();
+    }
     std::string ret;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         ret += tok->str();

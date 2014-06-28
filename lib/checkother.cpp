@@ -2764,11 +2764,9 @@ void CheckOther::checkDuplicateExpression()
                     continue;
                 if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
                     if (isWithoutSideEffects(_tokenizer, tok->astOperand1())) {
-                        if (assignment) {
-                            // Need a hack to cope with our ternary operator simplification:
-                            if (!Token::Match(tok->tokAt(-2), "{ %var% = %var% ; } else { %varid% = !!%varid%", tok->previous()->varId()))
-                                selfAssignmentError(tok, tok->strAt(-1));
-                        } else
+                        if (assignment)
+                            selfAssignmentError(tok, tok->astOperand1()->expressionString());
+                        else
                             duplicateExpressionError(tok, tok, tok->str());
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative

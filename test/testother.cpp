@@ -3424,7 +3424,7 @@ private:
               "void foo(A* a1, A* a2) {\n"
               "    a1->b = a1->b;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1->b' to itself.\n", "[test.cpp:3]: (warning) Redundant assignment of 'b' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1.b' to itself.\n", errout.str());
 
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
@@ -3494,7 +3494,7 @@ private:
               "void Foo::func() {\n"
               "    this->var = var;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'var' to itself.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'this.var' to itself.\n", errout.str());
 
         check("class Foo {\n"
               "    int var;\n"
