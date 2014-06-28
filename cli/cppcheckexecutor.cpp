@@ -25,19 +25,24 @@
 #include "pathmatch.h"
 #include "preprocessor.h"
 #include "threadexecutor.h"
-#include <iostream>
-#include <sstream>
+
+#include <climits>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>
-#include <climits>
+#include <iostream>
+#include <sstream>
 
-#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__) && !defined(__SVR4)
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <execinfo.h>
-#include <cxxabi.h>
 #include <signal.h>
 #include <cstdio>
+#endif
+
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(USE_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__SVR4)
+#define USE_UNIX_BACKTRACE_SUPPORT
+#include <cxxabi.h>
+#include <execinfo.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -237,7 +242,7 @@ static const char *signal_name(int signo)
  */
 static void print_stacktrace(FILE* f, bool demangling)
 {
-#if defined(USE_UNIX_SIGNAL_SUPPORT)
+#if defined(USE_UNIX_BACKTRACE_SUPPORT)
     void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
     char **symbolstrings = backtrace_symbols(array, depth);
@@ -429,114 +434,112 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
 static int filterException(int code, PEXCEPTION_POINTERS ex)
 {
     FILE *f = stdout;
-	fputs("Internal error: ", f);
+    fputs("Internal error: ", f);
     switch (ex->ExceptionRecord->ExceptionCode) {
     case EXCEPTION_ACCESS_VIOLATION:
         fputs("Access violation", f);
-		switch (ex->ExceptionRecord->ExceptionInformation[0])
-		{
-		case 0:
-			fprintf(f, " reading from 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		case 1:
-			fprintf(f, " writing at 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		case 8:
-			fprintf(f, " data execution prevention at 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		default:
-			break;
-		}
-		break;
+        switch (ex->ExceptionRecord->ExceptionInformation[0]) {
+        case 0:
+            fprintf(f, " reading from 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        case 1:
+            fprintf(f, " writing at 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        case 8:
+            fprintf(f, " data execution prevention at 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        default:
+            break;
+        }
+        break;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
         fputs("Out of array bounds", f);
-		break;
+        break;
     case EXCEPTION_BREAKPOINT:
         fputs("Breakpoint", f);
-		break;
+        break;
     case EXCEPTION_DATATYPE_MISALIGNMENT:
         fputs("Misaligned data", f);
-		break;
+        break;
     case EXCEPTION_FLT_DENORMAL_OPERAND:
         fputs("Denormalized floating-point value", f);
-		break;
+        break;
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         fputs("Floating-point divide-by-zero", f);
-		break;
+        break;
     case EXCEPTION_FLT_INEXACT_RESULT:
         fputs("Inexact floating-point value", f);
-		break;
+        break;
     case EXCEPTION_FLT_INVALID_OPERATION:
         fputs("Invalid floating-point operation", f);
-		break;
+        break;
     case EXCEPTION_FLT_OVERFLOW:
         fputs("Floating-point overflow", f);
-		break;
+        break;
     case EXCEPTION_FLT_STACK_CHECK:
         fputs("Floating-point stack overflow", f);
-		break;
+        break;
     case EXCEPTION_FLT_UNDERFLOW:
         fputs("Floating-point underflow", f);
-		break;
+        break;
     case EXCEPTION_GUARD_PAGE:
         fputs("Page-guard access", f);
-		break;
+        break;
     case EXCEPTION_ILLEGAL_INSTRUCTION:
         fputs("Illegal instruction", f);
-		break;
+        break;
     case EXCEPTION_IN_PAGE_ERROR:
         fputs("Invalid page access", f);
-		switch (ex->ExceptionRecord->ExceptionInformation[0])
-		{
-		case 0:
-			fprintf(f, " reading from 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		case 1:
-			fprintf(f, " writing at 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		case 8:
-			fprintf(f, " data execution prevention at 0x%x",
-				ex->ExceptionRecord->ExceptionInformation[1]);
-			break;
-		default:
-			break;
-		}
-		break;
+        switch (ex->ExceptionRecord->ExceptionInformation[0]) {
+        case 0:
+            fprintf(f, " reading from 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        case 1:
+            fprintf(f, " writing at 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        case 8:
+            fprintf(f, " data execution prevention at 0x%x",
+                    ex->ExceptionRecord->ExceptionInformation[1]);
+            break;
+        default:
+            break;
+        }
+        break;
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
         fputs("Integer divide-by-zero", f);
-		break;
+        break;
     case EXCEPTION_INT_OVERFLOW:
         fputs("Integer overflow", f);
-		break;
+        break;
     case EXCEPTION_INVALID_DISPOSITION:
         fputs("Invalid exception dispatcher", f);
-		break;
+        break;
     case EXCEPTION_INVALID_HANDLE:
         fputs("Invalid handle", f);
-		break;
+        break;
     case EXCEPTION_NONCONTINUABLE_EXCEPTION:
         fputs("Non-continuable exception", f);
-		break;
+        break;
     case EXCEPTION_PRIV_INSTRUCTION:
         fputs("Invalid instruction", f);
-		break;
+        break;
     case EXCEPTION_SINGLE_STEP:
         fputs("Single instruction step", f);
-		break;
+        break;
     case EXCEPTION_STACK_OVERFLOW:
         fputs("Stack overflow", f);
-		break;
+        break;
     default:
         fprintf(f, "Unknown exception (%d)\n",
                 code);
         break;
     }
-	fputs("\n", f);
+    fputs("\n", f);
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
@@ -558,7 +561,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
         fputs("Please report this to the cppcheck developers!\n", f);
         return -1;
     }
-#elif defined(USE_UNIX_SIGNAL_HANDLING) 
+#elif defined(USE_UNIX_SIGNAL_HANDLING)
     struct sigaction act;
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO;
