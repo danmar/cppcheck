@@ -454,11 +454,11 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
             AddInclPathsToList(16 + argv[i], &_settings->_includePaths);
-        } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
+        } else if (std::strncmp(argv[i], "--exclude=",10) ==0) {
             std::string path = argv[i] + 17;
             path = Path::fromNativeSeparators(path);
             _settings->configExcludePaths.insert(path);
-        } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
+        } else if (std::strncmp(argv[i], "--excludes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
             AddPathsToSet(23 + argv[i], &_settings->configExcludePaths);
         }
@@ -902,13 +902,13 @@ void CmdLineParser::PrintHelp()
               "                         First given path is searched for contained header\n"
               "                         files first. If paths are relative to source files,\n"
               "                         this is not needed.\n"
-              "    --config-exclude=<dir>\n"
+              "    --exclude=<dir>\n"
               "                         Path (prefix) to be excluded from configuration checking.\n"
               "                         Preprocessor configurations defined in headers (but not sources)\n"
               "                         matching the prefix will not be considered for evaluation\n"
               "                         of configuration alternatives\n"
-              "    --config-excludes-file=<file>\n"
-              "                         A file that contains a list of config-excludes\n"
+              "    --excludes-file=<file>\n"
+              "                         A file that contains a list of excludes\n"
               "    --include=<file>\n"
               "                         Force inclusion of a file before the checked file. Can\n"
               "                         be used for example when checking the Linux kernel,\n"
