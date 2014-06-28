@@ -377,6 +377,7 @@ private:
         TEST_CASE(removeParentheses19);      // ((typeof(x) *)0)
         TEST_CASE(removeParentheses20);      // Ticket #5479: a<b<int>>(2);
         TEST_CASE(removeParentheses21);      // Don't "simplify" casts
+        TEST_CASE(removeParentheses22);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5749,6 +5750,20 @@ private:
 
     void removeParentheses21() {
         ASSERT_EQUALS("a = ( int ) - b ;", tokenizeAndStringify("a = ((int)-b);", false));
+    }
+
+    void removeParentheses22() {
+        static char code[] = "struct S { "
+                             "char *(a); "
+                             "char &(b); "
+                             "const static char *(c); "
+                             "} ;";
+        static char  exp[] = "struct S { "
+                             "char * a ; "
+                             "char & b ; "
+                             "const static char * c ; "
+                             "} ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void tokenize_double() {

@@ -7026,6 +7026,20 @@ bool Tokenizer::simplifyRedundantParentheses()
             tok->deleteThis();
             ret = true;
         }
+
+        if (Token::Match(tok->previous(), "*|& ( %var% )")) {
+            // We may have a variable declaration looking like "type_name *(var_name)"
+            Token *tok2 = tok->tokAt(-2);
+            while (tok2 && Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
+                tok2 = tok2->previous();
+            }
+            if (tok2 && !Token::Match(tok2, "[;,{]")) {
+                // Not a variable declaration
+            } else {
+                tok->deleteThis();
+                tok->deleteNext();
+            }
+        }
     }
     return ret;
 }
