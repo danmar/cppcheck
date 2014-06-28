@@ -116,8 +116,8 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg>
-      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg> 
+      <arg choice="opt"><option>--exclude=&lt;dir&gt;</option></arg>
+      <arg choice="opt"><option>--excludes-file=&lt;file&gt;</option></arg> 
       <arg choice="opt"><option>--include=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inconclusive</option></arg>
@@ -314,16 +314,16 @@ First given path is searched for contained header files first. If paths are rela
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--config-exclude=&lt;dir&gt;</option></term>
+        <term><option>--exclude=&lt;dir&gt;</option></term>
         <listitem>
           <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers 
 (but not sources) matching the prefix will not be considered for evaluation of configuration alternatives.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--config-exclude-file=&lt;file&gt;</option></term>
+        <term><option>--exclude-file=&lt;file&gt;</option></term>
         <listitem>
-          <para>A file that contains a list of config-excludes.</para>
+          <para>A file that contains a list of excludes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
