@@ -72,7 +72,9 @@ Library::Error Library::load(const char exename[], const char path[])
         }
     }
 
-    return (error == tinyxml2::XML_NO_ERROR) ? load(doc) : Error(BAD_XML);
+    return (error == tinyxml2::XML_NO_ERROR) ?
+           load(doc) :
+           Error(error == tinyxml2::XML_ERROR_FILE_NOT_FOUND ? FILE_NOT_FOUND : BAD_XML);
 }
 
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
