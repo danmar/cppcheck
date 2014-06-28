@@ -248,6 +248,7 @@ public:
         c.argumentSizeError(0, "function", "array");
         c.writeOutsideBufferSizeError(0,2,3,"write");
         c.negativeMemoryAllocationSizeError(0);
+        c.reportError(nullptr, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'x[10]' accessed at index 20, which is out of bounds. Otherwise condition 'y==20' is redundant.");
     }
 private:
 
