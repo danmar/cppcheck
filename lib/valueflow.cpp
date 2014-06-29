@@ -245,6 +245,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         tok->values.push_back(value);
         it = tok->values.end();
         --it;
+        if (it->varId == 0)
+            it->varId = tok->varId();
     }
 
     Token *parent = const_cast<Token*>(tok->astParent());

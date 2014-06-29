@@ -169,6 +169,22 @@ private:
                 "    f(7);\n"
                 "}";
         ASSERT_EQUALS(15, valueOfTok(code, "+").intvalue);
+
+        code  = "void f(int x, int y) {\n"
+                "    a = x + y;\n"
+                "}\n"
+                "void callf() {\n"
+                "    f(1,1);\n"
+                "    f(10,10);\n"
+                "}";
+        values = tokenValues(code, "+");
+        ASSERT_EQUALS(true, values.empty());
+        if (!values.empty()) {
+            /* todo.. */
+            ASSERT_EQUALS(2U, values.size());
+            ASSERT_EQUALS(2, values.front().intvalue);
+            ASSERT_EQUALS(22, values.back().intvalue);
+        }
     }
 
     void valueFlowBeforeCondition() {
