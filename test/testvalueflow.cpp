@@ -59,6 +59,7 @@ private:
 
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
+        TEST_CASE(valueFlowFunctionReturn);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -941,6 +942,26 @@ private:
                "}\n"
                "void f2() { f1(0.5); }";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+    }
+
+    void valueFlowFunctionReturn() {
+        const char *code;
+
+        code = "void f1(int x) {\n"
+               "  return x+1;\n"
+               "}\n"
+               "void f2() {\n"
+               "    x = 10 - f1(2);\n"
+               "}";
+        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+
+        code = "void add(int x, int y) {\n"
+               "  return x+y;\n"
+               "}\n"
+               "void f2() {\n"
+               "    x = 1 * add(10+1,4);\n"
+               "}";
+        ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
     }
 };
 

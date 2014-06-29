@@ -1263,12 +1263,77 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
     }
 }
 
+static bool constval(const Token * tok)
+{
+    return tok && tok->values.size() == 1U && tok->values.front().varId == 0U;
+}
+
+static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand1()->function())
+            continue;
+
+        // Arguments..
+        std::vector<MathLib::bigint> parvalues;
+        {
+            const Token *partok = tok->astOperand2();
+            while (partok && partok->str() == "," && constval(partok->astOperand2()))
+                partok = partok->astOperand1();
+            if (!constval(partok))
+                continue;
+            parvalues.push_back(partok->values.front().intvalue);
+            partok = partok->astParent();
+            while (partok && partok->str() == ",") {
+                parvalues.push_back(partok->astOperand2()->values.front().intvalue);
+                partok = partok->astParent();
+            }
+            if (partok != tok)
+                continue;
+        }
+
+        // Get scope and args of function
+        const Function * const function = tok->astOperand1()->function();
+        const Scope * const functionScope = function ? function->functionScope : nullptr;
+        if (!functionScope || !Token::simpleMatch(functionScope->classStart, "{ return")) {
+            if (functionScope && settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
+            continue;
+        }
+
+        std::map<unsigned int, MathLib::bigint> programMemory;
+        for (unsigned int i = 0; i < parvalues.size(); ++i) {
+            const Variable * const arg = function->getArgumentVar(i);
+            if (!arg || !Token::Match(arg->typeStartToken(), "%type% %var% ,|)")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "function return; unhandled argument type");
+                programMemory.clear();
+                break;
+            }
+            programMemory[arg->declarationId()] = parvalues[i];
+        }
+        if (programMemory.empty())
+            continue;
+
+        // Determine return value of subfunction..
+        MathLib::bigint result = 0;
+        bool error = false;
+        execute(functionScope->classStart->next()->astOperand1(),
+                &programMemory,
+                &result,
+                &error);
+        if (!error)
+            setTokenValue(tok, ValueFlow::Value(result));
+    }
+}
+
 void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->values.clear();
 
     valueFlowNumber(tokenlist);
+    valueFlowFunctionReturn(tokenlist, errorLogger, settings);
     valueFlowBitAnd(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, errorLogger, settings);
