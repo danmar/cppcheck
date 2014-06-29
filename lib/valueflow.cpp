@@ -509,7 +509,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             }
 
             if (tok2->str() == "}") {
-                if (Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
+                const Token *vartok = Token::findmatch(tok2->link(), "%varid%", tok2, varid);
+                while (Token::Match(vartok, "%var% = %num% ;") && !vartok->tokAt(2)->getValue(num))
+                    vartok = Token::findmatch(vartok->next(), "%varid%", tok2, varid);
+                if (vartok) {
                     if (settings->debugwarnings) {
                         std::string errmsg = "variable ";
                         if (var)

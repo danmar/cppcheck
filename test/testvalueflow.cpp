@@ -430,6 +430,13 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on }\n", errout.str());
+
+        code = "void f(int x) {\n"
+               "  a = x;\n"
+               "  if (abc) { x = 1; }\n"  // <- condition must be false if x is 7 in next line
+               "  if (x == 7) { }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 7));
     }
 
     void valueFlowBeforeConditionGlobalVariables() {
