@@ -520,7 +520,8 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
             pSymGetModuleBase64,
             NULL
         );
-
+        if( !result ) // official end...
+            break;
         result = pSymGetSymFromAddr64( hProcess, ( ULONG64 )stack.AddrPC.Offset, &displacement, pSymbol );
 		TCHAR undname[maxnamelength]={0};
 		pUnDecorateSymbolName( (const TCHAR*)pSymbol->Name, (PTSTR)undname, GetArrayLength(undname), UNDNAME_COMPLETE );
@@ -533,8 +534,6 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
             frame, (ULONG64)stack.AddrPC.Offset);
 		fputs((const char *)undname, f);
 		fputs("\n", f);
-        if( !result ) // official end...
-            break;
 		if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
 			break;
     }
