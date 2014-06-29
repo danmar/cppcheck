@@ -48,7 +48,9 @@
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
 #include <Windows.h>
+#include <DbgHelp.h>
 #include <excpt.h>
+#include <TCHAR.H>
 #endif
 
 CppCheckExecutor::CppCheckExecutor()
@@ -188,6 +190,17 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     }
 }
 
+/**
+ *  Simple helper function:
+ * \return size of array
+ * */
+template<typename T, int size>
+size_t GetArrayLength(const T(&)[size])
+{
+    return size;
+}
+
+
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 /* (declare this list here, so it may be used in signal handlers in addition to main())
  * A list of signals available in ISO C
@@ -208,16 +221,6 @@ static const Signaltype listofsignals[] = {
     DECLARE_SIGNAL(SIGSEGV),
     // don't care: SIGTERM
 };
-
-/**
- *  Simple helper function:
- * \return size of array
- * */
-template<typename T, int size>
-size_t GetArrayLength(const T(&)[size])
-{
-    return size;
-}
 
 /*
  * Simple mapping
@@ -428,6 +431,115 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
 #endif
 
 #ifdef USE_WINDOWS_SEH
+
+static const ULONG maxnamelength = 512;
+struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
+	TCHAR NameExt[maxnamelength];
+};
+typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
+static fpStackWalk64 pStackWalk64;
+typedef DWORD64 (WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
+static fpSymGetModuleBase64 pSymGetModuleBase64;
+typedef BOOL (WINAPI *fpSymGetSymFromAddr64)(HANDLE, DWORD64, PDWORD64, PIMAGEHLP_SYMBOL64);
+static fpSymGetSymFromAddr64 pSymGetSymFromAddr64;
+typedef BOOL (WINAPI *fpSymGetLineFromAddr64)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64);
+static fpSymGetLineFromAddr64 pSymGetLineFromAddr64; 
+typedef DWORD (WINAPI *fpUnDecorateSymbolName)(  const TCHAR*, PTSTR, DWORD, DWORD) ;
+static fpUnDecorateSymbolName pUnDecorateSymbolName; 
+typedef PVOID (WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
+static fpSymFunctionTableAccess64 pSymFunctionTableAccess64;
+typedef BOOL (WINAPI *fpSymInitialize)(HANDLE, PCSTR, BOOL);
+static fpSymInitialize pSymInitialize;
+
+// avoid explicit dependency on Dbghelp.dll
+static bool loadDbgHelp()
+{
+	HMODULE hLib = ::LoadLibraryW(L"Dbghelp.dll");
+	if (!hLib)
+		return true;
+	pStackWalk64 = (fpStackWalk64) ::GetProcAddress(hLib, "StackWalk64");
+	pSymGetModuleBase64 = (fpSymGetModuleBase64) ::GetProcAddress(hLib, "SymGetModuleBase64");
+	pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) ::GetProcAddress(hLib, "SymGetSymFromAddr64");
+	pSymGetLineFromAddr64 = (fpSymGetLineFromAddr64)::GetProcAddress(hLib, "SymGetLineFromAddr64");
+	pSymFunctionTableAccess64 = (fpSymFunctionTableAccess64)::GetProcAddress(hLib, "SymFunctionTableAccess64");
+	pSymInitialize = (fpSymInitialize) ::GetProcAddress(hLib, "SymInitialize");
+	pUnDecorateSymbolName = (fpUnDecorateSymbolName)::GetProcAddress(hLib, "UnDecorateSymbolName");
+	return true;
+}
+
+
+static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
+{
+	if (!loadDbgHelp())
+		return;
+    const HANDLE hProcess   = GetCurrentProcess();
+    const HANDLE hThread    = GetCurrentThread();
+	BOOL result = pSymInitialize(
+		hProcess,
+		0,
+		TRUE
+	);
+	CONTEXT             context = *(ex->ContextRecord);
+	STACKFRAME64        stack={0};
+#ifdef _M_IX86
+    stack.AddrPC.Offset    = context.Eip;
+    stack.AddrPC.Mode      = AddrModeFlat;
+    stack.AddrStack.Offset = context.Esp;
+    stack.AddrStack.Mode   = AddrModeFlat;
+    stack.AddrFrame.Offset = context.Ebp;
+    stack.AddrFrame.Mode   = AddrModeFlat;
+#else
+	stack.AddrPC.Offset    = context.Rip;
+    stack.AddrPC.Mode      = AddrModeFlat;
+    stack.AddrStack.Offset = context.Rsp;
+    stack.AddrStack.Mode   = AddrModeFlat;
+    stack.AddrFrame.Offset = context.Rsp;
+    stack.AddrFrame.Mode   = AddrModeFlat;
+#endif
+	IMAGEHLP_SYMBOL64_EXT symbol;
+	IMAGEHLP_SYMBOL64* pSymbol = &symbol;
+    pSymbol->SizeOfStruct  = sizeof( IMAGEHLP_SYMBOL64 );
+    pSymbol->MaxNameLength = maxnamelength;
+	DWORD64 displacement   = 0;
+	int beyond_main=-1; // emergency exit, see below
+    for( ULONG frame = 0; ; frame++ )
+    {
+        result = pStackWalk64
+        (
+#ifdef _M_IX86
+            IMAGE_FILE_MACHINE_I386,
+#else
+			IMAGE_FILE_MACHINE_AMD64,
+#endif
+            hProcess,
+            hThread,
+            &stack,
+            &context,
+            NULL,
+            pSymFunctionTableAccess64,
+            pSymGetModuleBase64,
+            NULL
+        );
+
+        result = pSymGetSymFromAddr64( hProcess, ( ULONG64 )stack.AddrPC.Offset, &displacement, pSymbol );
+		TCHAR undname[maxnamelength]={0};
+		pUnDecorateSymbolName( (const TCHAR*)pSymbol->Name, (PTSTR)undname, GetArrayLength(undname), UNDNAME_COMPLETE );
+		if (beyond_main>=0)
+			++beyond_main;
+		if (_tcscmp(undname, _T("main"))==0)
+			beyond_main=0;
+        fprintf( f,
+            "%lu. 0x%08LX in ",
+            frame, (ULONG64)stack.AddrPC.Offset);
+		fputs((const char *)undname, f);
+		fputs("\n", f);
+        if( !result ) // official end...
+            break;
+		if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
+			break;
+    }
+}
+
 /*
  * Any evaluation of the information about the exception needs to be done here!
  */
@@ -540,6 +652,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
         break;
     }
     fputs("\n", f);
+	PrintCallstack(f, ex);
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
