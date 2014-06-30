@@ -691,6 +691,13 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
+            if (tok2->str() == "break") {
+                const Scope *scope = tok2->scope();
+                if (scope && scope->type == Scope::eSwitch) {
+                    tok2 = const_cast<Token *>(scope->classEnd);
+                    continue;
+                }
+            }
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
             return false;
