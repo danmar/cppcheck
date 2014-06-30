@@ -1095,6 +1095,22 @@ static bool valueFlowForLoop2(const Token *tok,
     if (error)
         return false;
     execute(secondExpression, &programMemory, &result, &error);
+    if (error) {
+        // If a variable is reassigned in second expression, return false
+        std::stack<const Token *> tokens;
+        tokens.push(secondExpression);
+        while (!tokens.empty()) {
+            const Token *t = tokens.top();
+            tokens.pop();
+            if (!t)
+                continue;
+            if (t->str() == "=" && programMemory.find(t->astOperand1()->varId()) != programMemory.end())
+                // TODO: investigate what variable is assigned.
+                return false;
+            tokens.push(t->astOperand1());
+            tokens.push(t->astOperand2());
+        }
+    }
 
     std::map<unsigned int, MathLib::bigint> startMemory(programMemory);
     std::map<unsigned int, MathLib::bigint> endMemory;

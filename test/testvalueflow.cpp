@@ -898,6 +898,20 @@ private:
                "        x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n" // #5939
+               "    int x;\n"
+               "    for (int x = 0; (x = do_something()) != 0;)\n"
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    int x;\n"
+               "    for (int x = 0; x < 10 && y = do_something();)\n"
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSubFunction() {
