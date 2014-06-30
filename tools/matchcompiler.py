@@ -106,9 +106,9 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->str()==' + self._insertMatchStr('|') + ')/* | */'
+            return '(tok->type() == Token::eBitOp && tok->str()==' + self._insertMatchStr('|') + ')/* | */'
         elif tok == '%oror%':
-            return '(tok->str()==' + self._insertMatchStr('||') + ')/* || */'
+            return '(tok->type() == Token::eLogicalOp && tok->str()==' + self._insertMatchStr('||') + ')/* || */'
         elif tok == '%str%':
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
