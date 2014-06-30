@@ -434,7 +434,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
 
 static const ULONG maxnamelength = 512;
 struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
-    TCHAR NameExt[maxnamelength];
+    TCHAR NameExt[maxnamelength]; // actually no need to worry about character encoding here
 };
 typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
 static fpStackWalk64 pStackWalk64;
@@ -497,9 +497,8 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
     stack.AddrFrame.Mode   = AddrModeFlat;
 #endif
     IMAGEHLP_SYMBOL64_EXT symbol;
-    IMAGEHLP_SYMBOL64* pSymbol = &symbol;
-    pSymbol->SizeOfStruct  = sizeof(IMAGEHLP_SYMBOL64);
-    pSymbol->MaxNameLength = maxnamelength;
+    symbol.SizeOfStruct  = sizeof(IMAGEHLP_SYMBOL64);
+    symbol.MaxNameLength = maxnamelength;
     DWORD64 displacement   = 0;
     int beyond_main=-1; // emergency exit, see below
     for (ULONG frame = 0; ; frame++) {
@@ -521,9 +520,9 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
                  );
         if (!result)  // official end...
             break;
-        result = pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, pSymbol);
+        result = pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
         TCHAR undname[maxnamelength]= {0};
-        pUnDecorateSymbolName((const TCHAR*)pSymbol->Name, (PTSTR)undname, GetArrayLength(undname), UNDNAME_COMPLETE);
+        pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)GetArrayLength(undname), UNDNAME_COMPLETE);
         if (beyond_main>=0)
             ++beyond_main;
         if (_tcscmp(undname, _T("main"))==0)
