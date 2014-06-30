@@ -324,7 +324,7 @@ class MatchCompiler:
 #        ret += '            std::cout << "tok: " << tok->str();\n'
 #        ret += '        if (tok->next())\n'
 #        ret += '            std::cout << "tok next: " << tok->next()->str();\n'
-        ret += '        throw InternalError(tok, "Internal error. compiled match returned different result than parsed match");\n'
+        ret += '        throw InternalError(tok, "Internal error. compiled match returned different result than parsed match: " + std::string("' + pattern + '"));\n'
         ret += '    }\n'
         ret += '    return res_compiled_match;\n'
         ret += '}\n'
