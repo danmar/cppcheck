@@ -147,5 +147,5 @@ win32 {
 }
 
 contains(QMAKE_CC, gcc) {
-    QMAKE_CXXFLAGS += -std=c++0x
+    QMAKE_CXXFLAGS += -std=c++0x -include ../lib/cxx11emu.h
 }
