@@ -759,7 +759,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
 
         // bailout when for_each is used
-        if (Token::Match(tok,"%var% (") && Token::simpleMatch(tok->linkAt(1),") {")) {
+        if (Token::Match(tok, "%var% (") && Token::simpleMatch(tok->linkAt(1), ") {") && !Token::Match(tok, "if|for|while|switch")) {
             // does the name contain "for_each" or "foreach"?
             std::string nameTok;
             nameTok.resize(tok->str().size());
@@ -783,7 +783,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // C++11 std::for_each
         // No warning should be written if a variable is first read and
         // then written in the body.
-        if (Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
+        else if (Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
             const Token *end = tok->linkAt(1);
             if (end->previous()->str() == "}") {
                 std::set<unsigned int> readvar;
@@ -798,7 +798,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        if (Token::Match(tok->previous(), "[;{}]")) {
+        else if (Token::Match(tok->previous(), "[;{}]")) {
             for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->varId()) {
                     const Variable *var = tok2->variable();
@@ -992,12 +992,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         else if (Token::Match(tok, "& %var%")) {
-            if (tok->previous()->isName() || tok->previous()->isNumber()) { // bitop
+            if (tok->astOperand2()) { // bitop
                 variables.read(tok->next()->varId(), tok);
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, ">>|>>= %var%")) {
-            if (_tokenizer->isC() || tok->previous()->isStandardType())
+            if (_tokenizer->isC() || (tok->previous()->variable() && tok->previous()->variable()->typeEndToken()->isStandardType()))
                 variables.read(tok->next()->varId(), tok);
             else
                 variables.use(tok->next()->varId(), tok); // use = read + write
@@ -1018,21 +1018,17 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // function
         else if (Token::Match(tok, "%var% (")) {
             variables.read(tok->varId(), tok);
-            if (Token::Match(tok->tokAt(2), "%var% =")) {
-                variables.read(tok->tokAt(2)->varId(), tok);
-            }
         }
 
         else if (Token::Match(tok, "[{,] %var% [,}]")) {
             variables.read(tok->next()->varId(), tok);
         }
 
-        else if (Token::Match(tok, "%var% .")) {
+        else if (tok->varId() && Token::Match(tok, "%var% .")) {
             variables.use(tok->varId(), tok);   // use = read + write
         }
 
-        else if (tok->isExtendedOp() && tok->next() &&
-                 tok->next()->varId() && !Token::Match(tok->next(), "true|false|new") && tok->strAt(2) != "=") {
+        else if (tok->isExtendedOp() && tok->next() && tok->next()->varId() && tok->strAt(2) != "=") {
             variables.readAll(tok->next()->varId(), tok);
         }
 
@@ -1044,18 +1040,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.readAll(tok->varId(), tok);
         }
 
-        else if (Token::Match(tok, "++|-- %var%")) {
-            if (!Token::Match(tok->previous(), "[;{}:]"))
-                variables.use(tok->next()->varId(), tok);
+        // ++|--
+        else if (tok->next() && tok->next()->type() == Token::eIncDecOp && tok->next()->astOperand1() && tok->next()->astOperand1()->varId()) {
+            if (tok->next()->astParent())
+                variables.use(tok->next()->astOperand1()->varId(), tok);
             else
-                variables.modified(tok->next()->varId(), tok);
-        }
-
-        else if (Token::Match(tok, "%var% ++|--")) {
-            if (!Token::Match(tok->previous(), "[;{}:]"))
-                variables.use(tok->varId(), tok);
-            else
-                variables.modified(tok->varId(), tok);
+                variables.modified(tok->next()->astOperand1()->varId(), tok);
         }
 
         else if (tok->isAssignmentOp()) {

@@ -1681,7 +1681,7 @@ private:
                               "    int x;\n"
                               "    if (c >> x) {}\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.c:2]: (style) Variable 'x' is not assigned a value.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is not assigned a value.\n", errout.str());
     }
 
     void localvar33() { // ticket #2345
