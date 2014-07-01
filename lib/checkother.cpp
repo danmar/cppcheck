@@ -143,7 +143,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
     if (noncommuative_equals)
         return true;
 
-    bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "+|*|%or%|%oror%|&|&&|^|==|!=");
+    bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commuative_equals = commutative &&
                              isSameExpression(tok1->astOperand2(), tok2->astOperand1(), constFunctions);
     commuative_equals = commuative_equals &&
