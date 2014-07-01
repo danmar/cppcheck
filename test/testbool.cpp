@@ -61,6 +61,8 @@ private:
 
         // Converting pointer addition result to bool
         TEST_CASE(pointerArithBool1);
+
+        TEST_CASE(checkArithmeticOnBoolean);
     }
 
     void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
@@ -929,6 +931,20 @@ private:
               "    if (p && p+1){}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+    }
+
+    void checkArithmeticOnBoolean() {
+        check("int f(bool a, bool b) {return a+b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Boolean used in arithmetic operation.\n", errout.str());
+
+        check("int f(bool a, bool b) {return a-b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Boolean used in arithmetic operation.\n", errout.str());
+
+        check("int f(bool a, bool b) {return a*b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Boolean used in arithmetic operation.\n", errout.str());
+
+        check("int f(bool a, bool b) {return a/b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Boolean used in arithmetic operation.\n", errout.str());
     }
 };
 

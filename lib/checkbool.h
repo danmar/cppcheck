@@ -66,6 +66,7 @@ public:
         checkBool.checkIncrementBoolean();
         checkBool.checkAssignBoolToPointer();
         checkBool.checkBitwiseOnBoolean();
+        checkBool.checkArithmeticOnBoolean();
     }
 
     /** @brief %Check for comparison of function returning bool*/
@@ -89,6 +90,9 @@ public:
     /** @brief %Check for using bool in bitwise expression */
     void checkBitwiseOnBoolean();
 
+    /** @brief %Check for using Boolean in arithmetic expression */
+    void checkArithmeticOnBoolean();
+
     /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
     void checkComparisonOfBoolExpressionWithInt();
 
@@ -109,6 +113,7 @@ private:
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void pointerArithBoolError(const Token *tok);
+    void checkArithmeticOnBooleanError(const Token * const tok, const std::string &varname1, const std::string &arithmeticOperation, const std::string &varname2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBool c(0, settings, errorLogger);
@@ -122,6 +127,7 @@ private:
         c.bitwiseOnBooleanError(0, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(0, true);
         c.pointerArithBoolError(0);
+        c.checkArithmeticOnBooleanError(0, "varname1", "arithmetic_operation", "varname2");
     }
 
     static std::string myName() {
@@ -137,7 +143,8 @@ private:
                "* comparison of a function returning boolean value using relational operator\n"
                "* comparison of a boolean value with boolean value using relational operator\n"
                "* using bool in bitwise expression\n"
-               "* pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
+               "* pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n"
+               "* using bool in arithmetic expression\n";
     }
 };
 /// @}
