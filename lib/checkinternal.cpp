@@ -77,6 +77,8 @@ void CheckInternal::checkTokenMatchPatterns()
                 }
             }
         }
+        if (pattern.find("||") != std::string::npos || pattern.find(" | ") != std::string::npos || pattern[0] == '|' || (pattern[pattern.length() - 1] == '|' && pattern[pattern.length() - 2] == ' '))
+            orInComplexPattern(tok, pattern, funcname);
 
         // Check for signs of complex patterns
         if (pattern.find_first_of("[|%") != std::string::npos)
@@ -319,6 +321,12 @@ void CheckInternal::redundantNextPreviousError(const Token* tok, const std::stri
 {
     reportError(tok, Severity::style, "redundantNextPrevious",
                 "Call to 'Token::" + func1 + "()' followed by 'Token::" + func2 + "()' can be simplified.");
+}
+
+void CheckInternal::orInComplexPattern(const Token* tok, const std::string& pattern, const std::string &funcname)
+{
+    reportError(tok, Severity::error, "orInComplexPattern",
+                "Token::" + funcname + "() pattern \"" + pattern + "\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".");
 }
 
 #endif // #ifdef CHECK_INTERNAL

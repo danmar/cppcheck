@@ -41,6 +41,7 @@ private:
         TEST_CASE(redundantNextPrevious)
         TEST_CASE(internalError)
         TEST_CASE(invalidMultiCompare);
+        TEST_CASE(orInComplexPattern);
     }
 
     void check(const char code[]) {
@@ -339,6 +340,38 @@ private:
         check("void f() {\n" // The %var%|%num% works..
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%var%|%num%\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void orInComplexPattern() {
+        check("void f() {\n"
+              "    Token::Match(tok, \"||\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"||\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+
+        check("void f() {\n"
+              "    Token::Match(tok, \"|\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"|\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+
+        check("void f() {\n"
+              "    Token::Match(tok, \"[|+-]\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    Token::Match(tok, \"foo | bar\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"foo | bar\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+
+        check("void f() {\n"
+              "    Token::Match(tok, \"foo |\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"foo |\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+
+        check("void f() {\n"
+              "    Token::Match(tok, \"bar foo|\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
