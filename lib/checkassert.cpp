@@ -81,7 +81,7 @@ void CheckAssert::assertWithSideEffects()
 
                     bool noReturnInScope = true;
                     for (std::vector<const Token*>::iterator rt = returnTokens.begin(); rt != returnTokens.end(); ++rt) {
-                        if (!inSameScope(*rt, tok2)) {
+                        if (inSameScope(*rt, tok2)) {
                             noReturnInScope = false;
                             break;
                         }
