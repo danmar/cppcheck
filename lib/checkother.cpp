@@ -456,7 +456,7 @@ void CheckOther::checkSuspiciousSemicolon()
 
     // Look for "if(); {}", "for(); {}" or "while(); {}"
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type == Scope::eIf || i->type == Scope::eElse || i->type == Scope::eElseIf || i->type == Scope::eWhile || i->type == Scope::eFor) {
+        if (i->type == Scope::eIf || i->type == Scope::eElse || i->type == Scope::eWhile || i->type == Scope::eFor) {
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
             if (Token::simpleMatch(i->classStart, "{ ; } {") &&
@@ -2467,7 +2467,7 @@ void CheckOther::checkDuplicateBranch()
     std::list<Scope>::const_iterator scope;
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
+        if (scope->type != Scope::eIf)
             continue;
 
         // check all the code in the function for if (..) else
@@ -3310,7 +3310,7 @@ void CheckOther::oppositeInnerCondition()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eIf && scope->type != Scope::eElseIf)
+        if (scope->type != Scope::eIf)
             continue;
 
         if (!Token::simpleMatch(scope->classDef->linkAt(1), ") {"))

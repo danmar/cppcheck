@@ -30,6 +30,7 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <iostream>
 
 #ifdef GDB_HELPERS
 

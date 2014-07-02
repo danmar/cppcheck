@@ -32,6 +32,7 @@
 #include <cassert>
 #include <cctype>
 #include <stack>
+#include <iostream>
 
 //---------------------------------------------------------------------------
 
@@ -2233,6 +2234,12 @@ void Tokenizer::simplifyTemplates()
 {
     if (isC())
         return;
+
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str()[0] == '=' && tok->str().length() > 2) {
+            std::cout << "BAD TOKEN" << std::endl;
+        }
+    }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // #2648 - simple fix for sizeof used as template parameter

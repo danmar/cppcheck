@@ -651,7 +651,7 @@ public:
         const Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eElseIf, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -685,7 +685,7 @@ public:
     }
 
     bool isLocal() const {
-        return (type == eIf || type == eElse || type == eElseIf ||
+        return (type == eIf || type == eElse ||
                 type == eFor || type == eWhile || type == eDo ||
                 type == eSwitch || type == eUnconditional ||
                 type == eTry || type == eCatch);

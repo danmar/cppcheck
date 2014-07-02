@@ -308,12 +308,10 @@ void CheckStl::stlOutOfBounds()
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         const Token* tok = i->classDef;
         // only interested in conditions
-        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf && i->type != Scope::eElseIf) || !tok)
+        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf) || !tok)
             continue;
 
-        if (i->type == Scope::eElseIf)
-            tok = tok->tokAt(2);
-        else if (i->type == Scope::eFor)
+        if (i->type == Scope::eFor)
             tok = Token::findsimplematch(tok->tokAt(2), ";");
         else
             tok = tok->next();
@@ -773,7 +771,7 @@ void CheckStl::if_find()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if ((i->type != Scope::eIf && i->type != Scope::eElseIf && i->type != Scope::eWhile) || !i->classDef)
+        if ((i->type != Scope::eIf && i->type != Scope::eWhile) || !i->classDef)
             continue;
 
         const Token* tok = i->classDef->next();
@@ -973,13 +971,10 @@ void CheckStl::redundantCondition()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eIf && i->type != Scope::eElseIf)
+        if (i->type != Scope::eIf)
             continue;
 
         const Token* tok = i->classDef->tokAt(2);
-        if (i->type == Scope::eElseIf)
-            tok = tok->next();
-
         if (!Token::Match(tok, "%var% . find ( %any% ) != %var% . end|rend|cend|crend ( ) ) { %var% . remove|erase ( %any% ) ;"))
             continue;
 
@@ -1467,13 +1462,11 @@ void CheckStl::checkDereferenceInvalidIterator()
     // be an iterator that is dereferenced before being checked for validity.
     const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
     for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
-        if (i->type == Scope::eIf || i->type == Scope::eElseIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor) {
+        if (i->type == Scope::eIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor) {
 
             const Token* const tok = i->classDef;
             const Token* startOfCondition = tok->next();
-            if (i->type == Scope::eElseIf)
-                startOfCondition = startOfCondition->next();
-            else if (i->type == Scope::eDo)
+            if (i->type == Scope::eDo)
                 startOfCondition = startOfCondition->link()->tokAt(2);
             const Token* endOfCondition = startOfCondition->link();
             if (!endOfCondition)

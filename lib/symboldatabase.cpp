@@ -748,9 +748,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope = &scopeList.back();
                 } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                     const Token *tok1 = tok->next()->link()->next();
-                    if (tok->str() == "if" && tok->strAt(-1) == "else")
-                        scopeList.push_back(Scope(this, tok->previous(), scope, Scope::eElseIf, tok1));
-                    else if (tok->str() == "if")
+                    if (tok->str() == "if")
                         scopeList.push_back(Scope(this, tok, scope, Scope::eIf, tok1));
                     else if (tok->str() == "for") {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eFor, tok1));
@@ -1784,7 +1782,6 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
           type == Scope::eFunction ? "Function" :
           type == Scope::eIf ? "If" :
           type == Scope::eElse ? "Else" :
-          type == Scope::eElseIf ? "ElseIf" :
           type == Scope::eFor ? "For" :
           type == Scope::eWhile ? "While" :
           type == Scope::eDo ? "Do" :
