@@ -259,6 +259,14 @@ public:
     void simplifyCompoundAssignment();
 
     /**
+     * Simplify the location of "static" and "const" qualifiers in
+     * a variable declaration or definition.
+     * Example: "int static const a;" => "static const a;"
+     * Example: "long long const static b;" => "static const long long b;"
+     */
+    void simplifyStaticConst();
+
+    /**
      * Simplify assignments in "if" and "while" conditions
      * Example: "if(a=b);" => "a=b;if(a);"
      * Example: "while(a=b) { f(a); }" => "a = b; while(a){ f(a); a = b; }"

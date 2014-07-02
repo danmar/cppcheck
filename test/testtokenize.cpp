@@ -581,6 +581,7 @@ private:
         TEST_CASE(simplifyMathFunctions_fma);
 
         TEST_CASE(simplifyMathExpressions); //ticket #1620
+        TEST_CASE(simplifyStaticConst);
 
         TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
 
@@ -10464,6 +10465,61 @@ private:
         ASSERT_EQUALS(code6, tokenizeAndStringify(code6));
     }
 
+    void simplifyStaticConst() {
+        const char code1[]     = "class foo { public: bool const static c ; }";
+        const char expected1[] = "class foo { public: static const bool c ; }";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1, true));
+
+        const char code2[] =
+            "int long long f()\n"
+            "{\n"
+            "static const long long signed int i1;\n"
+            "static const long long int signed i2;\n"
+            "static const signed long long int i3;\n"
+            "static const signed int long long i4;\n"
+            "static const int signed long long i5;\n"
+            "static const int long long signed i6;\n"
+            "long long static const signed int i7;\n"
+            "long long static const int signed i8;\n"
+            "signed static const long long int i9;\n"
+            "signed static const int long long i10;\n"
+            "int static const signed long long i11;\n"
+            "int static const long long signed i12;\n"
+            "long long signed int static const i13;\n"
+            "long long int signed static const i14;\n"
+            "signed long long int static const i15;\n"
+            "signed int long long static const i16;\n"
+            "int signed long long static const i17;\n"
+            "int long long signed static const i18;\n"
+            "return i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8 + i9 + i10 + i11 + i12\n"
+            "+ i13 + i14 + i15 + i16 + i17 + i18;\n"
+            "}";
+        const char expected2[] =
+            "long long f ( )\n"
+            "{\n"
+            "static const signed long long i1 ;\n"
+            "static const signed long long i2 ;\n"
+            "static const signed long long i3 ;\n"
+            "static const signed long long i4 ;\n"
+            "static const signed long long i5 ;\n"
+            "static const signed long long i6 ;\n"
+            "static const long long signed int i7 ;\n"
+            "static const long long signed int i8 ;\n"
+            "static const signed int long long i9 ;\n"
+            "static const signed int long long i10 ;\n"
+            "static const int signed long long i11 ;\n"
+            "static const int signed long long i12 ;\n"
+            "static const signed long long i13 ;\n"
+            "static const signed long long i14 ;\n"
+            "static const signed long long i15 ;\n"
+            "static const signed long long i16 ;\n"
+            "static const signed long long i17 ;\n"
+            "static const signed long long i18 ;\n"
+            "return i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8 + i9 + i10 + i11 + i12\n"
+            "+ i13 + i14 + i15 + i16 + i17 + i18 ;\n"
+            "}";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
+    }
 
     static std::string testAst(const char code[],bool verbose=false) {
         // tokenize given code..

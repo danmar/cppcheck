@@ -3698,6 +3698,8 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyEmptyNamespaces();
 
+    simplifyStaticConst();
+
     while (simplifyMathFunctions()) {};
 
     validate();
@@ -5709,6 +5711,47 @@ void Tokenizer::simplifyStdType()
                 if (tok->strAt(1) == "int")
                     tok->deleteNext();
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyStaticConst()
+{
+    // This function will simplify the token list so that the qualifiers "static"
+    // and "const" appear in the reverse order to what is in the array below.
+    const char* qualifiers[] = {"const", "static"};
+
+    // Move 'const' before all other qualifiers and types and then
+    // move 'static' before all other qualifiers and types.
+    for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
+        const char* qualifier = qualifiers[i];
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+            // Keep searching for an instance of "static" or "const"
+            if (!tok->next() || tok->next()->str() != qualifier)
+                continue;
+
+            // Look backwards to find the beginning of the declaration
+            Token* leftTok = tok;
+            for (; leftTok; leftTok = leftTok->previous()) {
+                if (!Token::Match(leftTok, "%type%|static|const|extern") ||
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:")))
+                    break;
+            }
+
+            // The token preceding the declaration should indicate the start of a statement
+            if (!leftTok ||
+                leftTok == tok ||
+                !Token::Match(leftTok, ";|{|}|private:|protected:|public:")) {
+                continue;
+            }
+
+            // Move the qualifier to the left-most position in the declaration
+            tok->deleteNext();
+            if (leftTok->next())
+                leftTok->next()->insertToken(qualifier, true);
+            else
+                leftTok->insertToken(qualifier);
         }
     }
 }
