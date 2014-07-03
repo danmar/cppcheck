@@ -81,7 +81,10 @@ void CheckAssert::assertWithSideEffects()
 
                     bool noReturnInScope = true;
                     for (std::vector<const Token*>::iterator rt = returnTokens.begin(); rt != returnTokens.end(); ++rt) {
-                        noReturnInScope &= !inSameScope(*rt, tok2);
+                        if (inSameScope(*rt, tok2)) {
+                            noReturnInScope = false;
+                            break;
+                        }
                     }
                     if (noReturnInScope) continue;
                     bool isAssigned = checkVariableAssignment(tok2, false);
