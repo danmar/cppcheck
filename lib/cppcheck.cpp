@@ -213,7 +213,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             cfg = *it;
 
             // If only errors are printed, print filename after the check
-            if (_settings._errorsOnly == false && it != configurations.begin()) {
+            if (_settings._errorsOnly == false && it != configurations.begin() && _settings.reportProgress == true) {
                 std::string fixedpath = Path::simplifyPath(filename);
                 fixedpath = Path::toNativeSeparators(fixedpath);
                 _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
