@@ -317,11 +317,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         if ((arg == 2 || arg == 3) && tok2) {
             if (Token::Match(tok2, "%num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(tok2->str());
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
+                if (sz < 0) {
                     bufferOverrunError(callstack, arrayInfo.varname());
+                } else {
+                    MathLib::bigint elements = 1;
+                    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+                        elements *= arrayInfo.num(i);
+                    if (sz > int(elements * arrayInfo.element_size())) {
+                        bufferOverrunError(callstack, arrayInfo.varname());
+                    }
                 }
             }
 
@@ -331,11 +335,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
         } else if (arg == 1001) { // special code. This parameter multiplied with the next must not exceed total_size
             if (Token::Match(tok2, "%num% , %num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(MathLib::multiply(tok2->str(), tok2->strAt(2)));
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
+                if (sz < 0) {
                     bufferOverrunError(&tok, arrayInfo.varname());
+                } else {
+                    MathLib::bigint elements = 1;
+                    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+                        elements *= arrayInfo.num(i);
+                    if (sz > int(elements * arrayInfo.element_size())) {
+                        bufferOverrunError(&tok, arrayInfo.varname());
+                    }
                 }
             }
         }
