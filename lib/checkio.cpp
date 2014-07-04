@@ -1552,19 +1552,22 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
     };
 
     if (tok && tok->variable()) {
-        if (tok->variable()->isStlType(stl_container)) {
-            typeToken = tok->variable()->typeStartToken()->tokAt(4);
+        const Variable* variable = tok->variable();
+        if (variable->isStlType(stl_container)) {
+            typeToken = variable->typeStartToken()->tokAt(4);
             return true;
-        } else if (tok->variable()->isStlType(stl_string)) {
-            typeToken = tok->variable()->typeStartToken();
+        } else if (variable->isStlType(stl_string)) {
+            typeToken = variable->typeStartToken();
             return true;
-        } else if (tok->variable()->type() && !tok->variable()->type()->derivedFrom.empty()) {
-            for (std::size_t i = 0, e = tok->variable()->type()->derivedFrom.size(); i != e; ++i) {
-                if (Token::Match(tok->variable()->type()->derivedFrom[i].nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
-                    typeToken = tok->variable()->type()->derivedFrom[i].nameTok->tokAt(4);
+        } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
+            const std::vector<Type::BaseInfo>& derivedFrom = variable->type()->derivedFrom;
+            for (std::size_t i = 0, e = derivedFrom.size(); i != e; ++i) {
+                const Token* nameTok = derivedFrom[i].nameTok;
+                if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
+                    typeToken = nameTok->tokAt(4);
                     return true;
-                } else if (Token::Match(tok->variable()->type()->derivedFrom[i].nameTok, "std :: string|wstring")) {
-                    typeToken = tok->variable()->type()->derivedFrom[i].nameTok;
+                } else if (Token::Match(nameTok, "std :: string|wstring")) {
+                    typeToken = nameTok;
                     return true;
                 }
             }
