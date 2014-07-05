@@ -460,8 +460,14 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
         LeaveCriticalSection(&threadExecutor->_fileSync);
     };
-
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning( disable : 4702 )
+#endif
     return result;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 }
 
 void ThreadExecutor::reportOut(const std::string &outmsg)

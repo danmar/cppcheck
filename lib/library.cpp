@@ -214,13 +214,13 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
                             ArgumentChecks::MinSize::Type type;
                             if (strcmp(typeattr,"strlen")==0)
-                                type = ArgumentChecks::MinSize::Type::STRLEN;
+                                type = ArgumentChecks::MinSize::STRLEN;
                             else if (strcmp(typeattr,"argvalue")==0)
-                                type = ArgumentChecks::MinSize::Type::ARGVALUE;
+                                type = ArgumentChecks::MinSize::ARGVALUE;
                             else if (strcmp(typeattr,"sizeof")==0)
-                                type = ArgumentChecks::MinSize::Type::SIZEOF;
+                                type = ArgumentChecks::MinSize::SIZEOF;
                             else if (strcmp(typeattr,"mul")==0)
-                                type = ArgumentChecks::MinSize::Type::MUL;
+                                type = ArgumentChecks::MinSize::MUL;
                             else
                                 return Error(BAD_ATTRIBUTE_VALUE, typeattr);
 
@@ -231,7 +231,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
                             minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
-                            if (type == ArgumentChecks::MinSize::Type::MUL) {
+                            if (type == ArgumentChecks::MinSize::MUL) {
                                 const char *arg2attr  = argnode->Attribute("arg2");
                                 if (!arg2attr)
                                     return Error(MISSING_ATTRIBUTE, "arg2");

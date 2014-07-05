@@ -287,7 +287,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
             if (!argtok)
                 break;
             switch (minsize->type) {
-            case Library::ArgumentChecks::MinSize::Type::ARGVALUE:
+            case Library::ArgumentChecks::MinSize::ARGVALUE:
                 if (Token::Match(argtok, "%num% ,|)")) {
                     const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
                     if (sz > arraySize)
@@ -295,7 +295,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                 } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)"))
                     sizeArgumentAsCharError(argtok);
                 break;
-            case Library::ArgumentChecks::MinSize::Type::MUL:
+            case Library::ArgumentChecks::MinSize::MUL:
                 // TODO: handle arbitrary arg2
                 if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
                     const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
@@ -303,15 +303,15 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                         error = true;
                 }
                 break;
-            case Library::ArgumentChecks::MinSize::Type::STRLEN:
+            case Library::ArgumentChecks::MinSize::STRLEN:
                 if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
                     error = true;
                 break;
-            case Library::ArgumentChecks::MinSize::Type::SIZEOF:
+            case Library::ArgumentChecks::MinSize::SIZEOF:
                 if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
                     error = true;
                 break;
-            case Library::ArgumentChecks::MinSize::Type::NONE:
+            case Library::ArgumentChecks::MinSize::NONE:
                 break;
             };
         }
