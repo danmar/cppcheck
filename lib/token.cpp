@@ -129,7 +129,7 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    for (unsigned int i = 0; i < _str.length(); ++i) {
+    for (size_t i = 0; i < _str.length(); ++i) {
         if (std::islower(_str[i]))
             return false;
     }
@@ -326,7 +326,6 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
         haystack += 4;
         return 1;
     }
-    break;
     case 'n':
         // Number (%num%)
     {
@@ -476,10 +475,8 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
 {
     if (!tok)
         return false; // shortcut
-    const char *current, *next;
-
-    current = pattern;
-    next = std::strchr(pattern, ' ');
+    const char *current  = pattern;
+    const char *next = std::strchr(pattern, ' ');
     if (!next)
         next = pattern + std::strlen(pattern);
 
@@ -792,12 +789,10 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const Toke
 
 void Token::insertToken(const std::string &tokenStr, bool prepend)
 {
-    Token *newToken;
-
     //TODO: Find a solution for the first token on the list
     if (prepend && !this->previous())
         return;
-
+    Token *newToken;
     if (_str.empty())
         newToken = this;
     else
@@ -832,12 +827,11 @@ void Token::insertToken(const std::string &tokenStr, bool prepend)
 
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
 {
-    Token *newToken;
-
     //TODO: Find a solution for the first token on the list
     if (prepend && !this->previous())
         return;
 
+    Token *newToken;
     if (_str.empty())
         newToken = this;
     else
