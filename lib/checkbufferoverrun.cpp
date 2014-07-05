@@ -264,87 +264,65 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
+void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
-    // total_size : which parameter in function call takes the total size?
-    std::map<std::string, unsigned int> total_size;
+    const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(ftok.str(),par);
 
-    if (!(Token::simpleMatch(tok.previous(), ".") || Token::Match(tok.tokAt(-2), "!!std ::"))) {
-
-        total_size["fgets"] = 2; // The second argument for fgets can't exceed the total size of the array
-        total_size["memcmp"] = 3;
-        total_size["memcpy"] = 3;
-        total_size["memmove"] = 3;
-        total_size["memchr"] = 3;
-
-        if (par == 1) {
-            // reading from array
-            // if it is zero terminated properly there won't be buffer overruns
-            total_size["strncat"] = 3;
-            total_size["strncpy"] = 3;
-            total_size["memset"] = 3;
-            total_size["fread"] = 1001;     // parameter 2 * parameter 3
-            total_size["fwrite"] = 1001;    // parameter 2 * parameter 3
-        }
-
-        else if (par == 2) {
-            if (_settings->standards.posix) {
-                total_size["read"] = 3;
-                total_size["pread"] = 3;
-                total_size["write"] = 3;
-                total_size["recv"] = 3;
-                total_size["recvfrom"] = 3;
-                total_size["send"] = 3;
-                total_size["sendto"] = 3;
-            }
-        }
-    }
-
-    std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
-    if (it != total_size.end()) {
+    if (minsizes && !minsizes->empty() && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
         if (arrayInfo.element_size() == 0)
             return;
 
-        // arg : the index of the "wanted" argument in the function call.
-        const unsigned int arg = it->second;
+        MathLib::bigint arraySize = arrayInfo.element_size();
+        for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+            arraySize *= arrayInfo.num(i);
 
-        // Parse function call. When a ',' is seen, arg is decremented.
-        // if arg becomes 1 then the current function parameter is the wanted parameter.
-        // if arg becomes 1001 then multiply current and next argument.
-        const Token *tok2 = tok.tokAt(2)->nextArgument();
-        if (arg == 3)
-            tok2 = tok2->nextArgument();
-        if ((arg == 2 || arg == 3) && tok2) {
-            if (Token::Match(tok2, "%num% ,|)")) {
-                const MathLib::bigint sz = MathLib::toLongNumber(tok2->str());
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
-                    bufferOverrunError(callstack, arrayInfo.varname());
+        bool error = true;
+        for (std::list<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes->begin(); minsize != minsizes->end(); ++minsize) {
+            if (!error)
+                break;
+            error = false;
+            const Token *argtok = ftok.tokAt(2);
+            for (int argnum = 1; argtok && argnum < minsize->arg; argnum++)
+                argtok = argtok->nextArgument();
+            if (!argtok)
+                break;
+            switch (minsize->type) {
+            case Library::ArgumentChecks::MinSize::Type::ARGVALUE:
+                if (Token::Match(argtok, "%num% ,|)")) {
+                    const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
+                    if (sz > arraySize)
+                        error = true;
+                } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)"))
+                    sizeArgumentAsCharError(argtok);
+                break;
+            case Library::ArgumentChecks::MinSize::Type::MUL:
+                // TODO: handle arbitrary arg2
+                if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
+                    const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
+                    if (sz > arraySize)
+                        error = true;
                 }
-            }
-
-            else if (Token::Match(tok2->next(), ",|)") && tok2->type() == Token::eChar) {
-                sizeArgumentAsCharError(tok2);
-            }
-        } else if (arg == 1001) { // special code. This parameter multiplied with the next must not exceed total_size
-            if (Token::Match(tok2, "%num% , %num% ,|)")) {
-                const MathLib::bigint sz = MathLib::toLongNumber(MathLib::multiply(tok2->str(), tok2->strAt(2)));
-                MathLib::bigint elements = 1;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
-                    elements *= arrayInfo.num(i);
-                if (sz < 0 || sz > int(elements * arrayInfo.element_size())) {
-                    bufferOverrunError(&tok, arrayInfo.varname());
-                }
-            }
+                break;
+            case Library::ArgumentChecks::MinSize::Type::STRLEN:
+                if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+                    error = true;
+                break;
+            case Library::ArgumentChecks::MinSize::Type::SIZEOF:
+                if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+                    error = true;
+                break;
+            case Library::ArgumentChecks::MinSize::Type::NONE:
+                break;
+            };
         }
+        if (error)
+            bufferOverrunError(callstack, arrayInfo.varname());
     }
 
     // Calling a user function?
     // only 1-dimensional arrays can be checked currently
     else if (arrayInfo.num().size() == 1) {
-        const Function* const func = tok.function();
+        const Function* const func = ftok.function();
 
         if (func && func->hasBody) {
             // Get corresponding parameter..
@@ -361,38 +339,38 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 return;
 
             // Check the parameter usage in the function scope..
-            for (const Token* ftok = func->functionScope->classStart; ftok != func->functionScope->classEnd; ftok = ftok->next()) {
-                if (Token::Match(ftok, "if|for|switch|while (")) {
+            for (const Token* ftok2 = func->functionScope->classStart; ftok2 != func->functionScope->classEnd; ftok2 = ftok2->next()) {
+                if (Token::Match(ftok2, "if|for|switch|while (")) {
                     // bailout if there is buffer usage..
-                    if (bailoutIfSwitch(ftok, parameter->declarationId())) {
+                    if (bailoutIfSwitch(ftok2, parameter->declarationId())) {
                         break;
                     }
 
                     // no bailout is needed. skip the if-block
                     else {
                         // goto end of if block..
-                        ftok = ftok->next()->link()->next()->link();
-                        if (Token::simpleMatch(ftok, "} else {"))
-                            ftok = ftok->linkAt(2);
-                        if (!ftok)
+                        ftok2 = ftok2->linkAt(1)->linkAt(1);
+                        if (Token::simpleMatch(ftok2, "} else {"))
+                            ftok2 = ftok2->linkAt(2);
+                        if (!ftok2)
                             break;
                         continue;
                     }
                 }
 
-                if (ftok->str() == "}")
+                if (ftok2->str() == "}")
                     break;
 
-                if (ftok->varId() == parameter->declarationId()) {
-                    if (Token::Match(ftok->previous(), "-- %var%") ||
-                        Token::Match(ftok, "%var% --"))
+                if (ftok2->varId() == parameter->declarationId()) {
+                    if (Token::Match(ftok2->previous(), "-- %var%") ||
+                        Token::Match(ftok2, "%var% --"))
                         break;
 
-                    if (Token::Match(ftok->previous(), ";|{|}|%op% %var% [ %num% ]")) {
-                        const MathLib::bigint index = MathLib::toLongNumber(ftok->strAt(2));
+                    if (Token::Match(ftok2->previous(), ";|{|}|%op% %var% [ %num% ]")) {
+                        const MathLib::bigint index = MathLib::toLongNumber(ftok2->strAt(2));
                         if (index >= 0 && arrayInfo.num(0) > 0 && index >= arrayInfo.num(0)) {
                             std::list<const Token *> callstack2(callstack);
-                            callstack2.push_back(ftok);
+                            callstack2.push_back(ftok2);
 
                             std::vector<MathLib::bigint> indexes;
                             indexes.push_back(index);
@@ -403,10 +381,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                 }
 
                 // Calling function..
-                if (Token::Match(ftok, "%var% (")) {
+                if (Token::Match(ftok2, "%var% (")) {
                     ArrayInfo ai(arrayInfo);
                     ai.declarationId(parameter->declarationId());
-                    checkFunctionCall(ftok, ai, callstack);
+                    checkFunctionCall(ftok2, ai, callstack);
                 }
             }
         }
@@ -414,7 +392,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
 
     // Check 'float x[10]' arguments in declaration
     if (_settings->isEnabled("warning")) {
-        const Function* const func = tok.function();
+        const Function* const func = ftok.function();
 
         // If argument is '%type% a[num]' then check bounds against num
         if (func) {
@@ -439,7 +417,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &tok, unsigned int p
                     arraysize *= arrayInfo.num(i);
 
                 if (Token::Match(tok2, "[,)]") && arraysize > 0 && argsize > arraysize)
-                    argumentSizeError(&tok, tok.str(), arrayInfo.varname());
+                    argumentSizeError(&ftok, ftok.str(), arrayInfo.varname());
             }
         }
     }

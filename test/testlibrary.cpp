@@ -34,6 +34,7 @@ private:
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(function_arg_valid);
+        TEST_CASE(function_arg_minsize);
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
@@ -156,6 +157,41 @@ private:
         ASSERT_EQUALS(true,  library.isargvalid("foo", 5, -10));
         ASSERT_EQUALS(true,  library.isargvalid("foo", 5, 1));
         ASSERT_EQUALS(false, library.isargvalid("foo", 5, 2));
+    }
+
+    void function_arg_minsize() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"><minsize type=\"strlen\" arg=\"2\"/></arg>\n"
+                               "    <arg nr=\"2\"><minsize type=\"argvalue\" arg=\"3\"/></arg>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+
+        // arg1: type=strlen arg2
+        const std::list<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes("foo",1);
+        ASSERT_EQUALS(true, minsizes != nullptr);
+        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        if (minsizes && minsizes->size() == 1U) {
+            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::Type::STRLEN, m.type);
+            ASSERT_EQUALS(2, m.arg);
+        }
+
+        // arg2: type=argvalue arg3
+        minsizes = library.argminsizes("foo", 2);
+        ASSERT_EQUALS(true, minsizes != nullptr);
+        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        if (minsizes && minsizes->size() == 1U) {
+            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::Type::ARGVALUE, m.type);
+            ASSERT_EQUALS(3, m.arg);
+        }
     }
 
     void memory() const {

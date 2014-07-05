@@ -169,6 +169,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     bool formatstr = false;
                     bool strz = false;
                     std::string valid;
+                    std::list<ArgumentChecks::MinSize> minsizes;
                     for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                         if (strcmp(argnode->Name(), "not-bool") == 0)
                             notbool = true;
@@ -206,6 +207,40 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             valid = argnode->GetText();
                         }
 
+                        else if (strcmp(argnode->Name(), "minsize") == 0) {
+                            const char *typeattr = argnode->Attribute("type");
+                            if (!typeattr)
+                                return Error(MISSING_ATTRIBUTE, "type");
+
+                            ArgumentChecks::MinSize::Type type;
+                            if (strcmp(typeattr,"strlen")==0)
+                                type = ArgumentChecks::MinSize::Type::STRLEN;
+                            else if (strcmp(typeattr,"argvalue")==0)
+                                type = ArgumentChecks::MinSize::Type::ARGVALUE;
+                            else if (strcmp(typeattr,"sizeof")==0)
+                                type = ArgumentChecks::MinSize::Type::SIZEOF;
+                            else if (strcmp(typeattr,"mul")==0)
+                                type = ArgumentChecks::MinSize::Type::MUL;
+                            else
+                                return Error(BAD_ATTRIBUTE_VALUE, typeattr);
+
+                            const char *argattr  = argnode->Attribute("arg");
+                            if (!argattr)
+                                return Error(MISSING_ATTRIBUTE, "arg");
+                            if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                                return Error(BAD_ATTRIBUTE_VALUE, argattr);
+
+                            minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
+                            if (type == ArgumentChecks::MinSize::Type::MUL) {
+                                const char *arg2attr  = argnode->Attribute("arg2");
+                                if (!arg2attr)
+                                    return Error(MISSING_ATTRIBUTE, "arg2");
+                                if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                                    return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
+                                minsizes.back().arg2 = arg2attr[0] - '0';
+                            }
+                        }
+
                         else
                             return Error(BAD_ATTRIBUTE, argnode->Name());
                     }
@@ -214,7 +249,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     argumentChecks[name][nr].notuninit = notuninit;
                     argumentChecks[name][nr].formatstr = formatstr;
                     argumentChecks[name][nr].strz      = strz;
-                    argumentChecks[name][nr].valid     = valid;
+                    argumentChecks[name][nr].valid.swap(valid);
+                    argumentChecks[name][nr].minsizes.swap(minsizes);
                 } else if (strcmp(functionnode->Name(), "ignorefunction") == 0) {
                     _ignorefunction.insert(name);
                 } else if (strcmp(functionnode->Name(), "formatstr") == 0) {

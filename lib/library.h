@@ -152,6 +152,16 @@ public:
         bool         formatstr;
         bool         strz;
         std::string  valid;
+
+        class MinSize {
+        public:
+            enum Type {NONE,STRLEN,ARGVALUE,SIZEOF,MUL};
+            MinSize(Type t, int a) : type(t), arg(a), arg2(0) {}
+            Type type;
+            int arg;
+            int arg2;
+        };
+        std::list<MinSize> minsizes;
     };
 
     // function name, argument nr => argument data
@@ -187,6 +197,24 @@ public:
     const std::string& validarg(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg ? arg->valid : emptyString;
+    }
+
+    bool hasminsize(const std::string &functionName) const {
+        std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
+        it1 = argumentChecks.find(functionName);
+        if (it1 == argumentChecks.end())
+            return false;
+        std::map<int,ArgumentChecks>::const_iterator it2;
+        for (it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+            if (!it2->second.minsizes.empty())
+                return true;
+        }
+        return false;
+    }
+
+    const std::list<ArgumentChecks::MinSize> *argminsizes(const std::string &functionName, int argnr) const {
+        const ArgumentChecks *arg = getarg(functionName, argnr);
+        return arg ? &arg->minsizes : nullptr;
     }
 
     bool markupFile(const std::string &path) const {
