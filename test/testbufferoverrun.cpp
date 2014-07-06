@@ -193,7 +193,7 @@ private:
         TEST_CASE(array_index_valueflow);
 
         TEST_CASE(buffer_overrun_1_standard_functions);
-		TEST_CASE(buffer_overrun_1_posix_functions);
+        TEST_CASE(buffer_overrun_1_posix_functions);
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
         TEST_CASE(buffer_overrun_4);
@@ -2123,66 +2123,66 @@ private:
 
     void buffer_overrun_1_posix_functions() {
         checkposix("void f(int fd)\n"
-              "{\n"
-              "    char str[3];\n"
-              "    read(fd, str, 3);\n"
-              "}");
+                   "{\n"
+                   "    char str[3];\n"
+                   "    read(fd, str, 3);\n"
+                   "}");
         ASSERT_EQUALS("", errout.str());
 
         checkposix("void f(int fd)\n"
-              "{\n"
-              "    char str[3];\n"
-              "    read(fd, str, 4);\n"
-              "}");
+                   "{\n"
+                   "    char str[3];\n"
+                   "    read(fd, str, 4);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         checkposix("void f(int fd)\n"
-              "{\n"
-              "    char str[3];\n"
-              "    write(fd, str, 3);\n"
-              "}");
+                   "{\n"
+                   "    char str[3];\n"
+                   "    write(fd, str, 3);\n"
+                   "}");
         ASSERT_EQUALS("", errout.str());
 
         checkposix("void f(int fd)\n"
-              "{\n"
-              "    char str[3];\n"
-              "    write(fd, str, 4);\n"
-              "}");
+                   "{\n"
+                   "    char str[3];\n"
+                   "    write(fd, str, 4);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         checkposix("void f()\n"
-              "{\n"
-              "    long bb[2];\n"
-              "    write(stdin, bb, sizeof(bb));\n"
-              "}");
+                   "{\n"
+                   "    long bb[2];\n"
+                   "    write(stdin, bb, sizeof(bb));\n"
+                   "}");
         ASSERT_EQUALS("", errout.str());
 
         checkposix("void f()\n"
-              "{\n"
-              "char str[3];\n"
-              "recv(s, str, 4, 0);\n"
-              "}");
+                   "{\n"
+                   "char str[3];\n"
+                   "recv(s, str, 4, 0);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         checkposix("void f()\n"
-              "{\n"
-              "char str[3];\n"
-              "recvfrom(s, str, 4, 0, 0x0, 0x0);\n"
-              "}");
+                   "{\n"
+                   "char str[3];\n"
+                   "recvfrom(s, str, 4, 0, 0x0, 0x0);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         checkposix("void f()\n"
-              "{\n"
-              "char str[3];\n"
-              "send(s, str, 4, 0);\n"
-              "}");
+                   "{\n"
+                   "char str[3];\n"
+                   "send(s, str, 4, 0);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         checkposix("void f()\n"
-              "{\n"
-              "char str[3];\n"
-              "sendto(s, str, 4, 0, 0x0, 0x0);\n"
-              "}");
+                   "{\n"
+                   "char str[3];\n"
+                   "sendto(s, str, 4, 0, 0x0, 0x0);\n"
+                   "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
     }
 
