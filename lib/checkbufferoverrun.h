@@ -103,11 +103,11 @@ public:
     /** Check for buffer overruns due to allocating strlen(src) bytes instead of (strlen(src)+1) bytes before copying a string */
     void checkBufferAllocatedWithStrlen();
 
+    /** Check string argument buffer overruns */
+    void checkStringArgument();
+
     /** Check for buffer overruns due to copying command-line args to fixed-sized buffers without bounds checking */
     void checkInsecureCmdLineArgs();
-
-    /** Check for negative index */
-    void negativeIndex();
 
     /** Information about N-dimensional array */
     class CPPCHECKLIB ArrayInfo {

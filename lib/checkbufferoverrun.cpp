@@ -264,11 +264,62 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
+static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const std::size_t arraySize, const Token **charSizeToken)
+{
+    if (charSizeToken)
+        *charSizeToken = nullptr;
+
+    if (minsizes.empty())
+        return false;
+
+    // All conditions must be true
+    bool error = true;
+    for (std::list<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes.begin(); minsize != minsizes.end(); ++minsize) {
+        if (!error)
+            return false;
+        error = false;
+        const Token *argtok = ftok->tokAt(2);
+        for (int argnum = 1; argtok && argnum < minsize->arg; argnum++)
+            argtok = argtok->nextArgument();
+        if (!argtok)
+            return false;
+        switch (minsize->type) {
+        case Library::ArgumentChecks::MinSize::ARGVALUE:
+            if (Token::Match(argtok, "%num% ,|)")) {
+                const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
+                if (sz > arraySize)
+                    error = true;
+            } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
+                *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
+            break;
+        case Library::ArgumentChecks::MinSize::MUL:
+            // TODO: handle arbitrary arg2
+            if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
+                const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
+                if (sz > arraySize)
+                    error = true;
+            }
+            break;
+        case Library::ArgumentChecks::MinSize::STRLEN:
+            if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+                error = true;
+            break;
+        case Library::ArgumentChecks::MinSize::SIZEOF:
+            if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+                error = true;
+            break;
+        case Library::ArgumentChecks::MinSize::NONE:
+            return false;
+        };
+    }
+    return error;
+}
+
 void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int par, const ArrayInfo &arrayInfo, const std::list<const Token *>& callstack)
 {
     const std::list<Library::ArgumentChecks::MinSize> * const minsizes = _settings->library.argminsizes(ftok.str(),par);
 
-    if (minsizes && !minsizes->empty() && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
+    if (minsizes && (!(Token::simpleMatch(ftok.previous(), ".") || Token::Match(ftok.tokAt(-2), "!!std ::")))) {
         if (arrayInfo.element_size() == 0)
             return;
 
@@ -276,47 +327,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
         for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
             arraySize *= arrayInfo.num(i);
 
-        bool error = true;
-        for (std::list<Library::ArgumentChecks::MinSize>::const_iterator minsize = minsizes->begin(); minsize != minsizes->end(); ++minsize) {
-            if (!error)
-                break;
-            error = false;
-            const Token *argtok = ftok.tokAt(2);
-            for (int argnum = 1; argtok && argnum < minsize->arg; argnum++)
-                argtok = argtok->nextArgument();
-            if (!argtok)
-                break;
-            switch (minsize->type) {
-            case Library::ArgumentChecks::MinSize::ARGVALUE:
-                if (Token::Match(argtok, "%num% ,|)")) {
-                    const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
-                    if (sz > arraySize)
-                        error = true;
-                } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)"))
-                    sizeArgumentAsCharError(argtok);
-                break;
-            case Library::ArgumentChecks::MinSize::MUL:
-                // TODO: handle arbitrary arg2
-                if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
-                    const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
-                    if (sz > arraySize)
-                        error = true;
-                }
-                break;
-            case Library::ArgumentChecks::MinSize::STRLEN:
-                if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
-                    error = true;
-                break;
-            case Library::ArgumentChecks::MinSize::SIZEOF:
-                if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
-                    error = true;
-                break;
-            case Library::ArgumentChecks::MinSize::NONE:
-                break;
-            };
-        }
-        if (error)
+        const Token *charSizeToken = nullptr;
+        if (checkMinSizes(*minsizes, &ftok, arraySize, &charSizeToken))
             bufferOverrunError(callstack, arrayInfo.varname());
+        if (charSizeToken)
+            sizeArgumentAsCharError(charSizeToken);
     }
 
     // Calling a user function?
@@ -1277,6 +1292,7 @@ void CheckBufferOverrun::bufferOverrun()
     checkGlobalAndLocalVariable();
     checkStructVariable();
     checkBufferAllocatedWithStrlen();
+    checkStringArgument();
     checkInsecureCmdLineArgs();
 }
 //---------------------------------------------------------------------------
@@ -1500,6 +1516,33 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
             }
             if (!tok)
                 return;
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+// memcpy(temp, "hello world", 50);
+//---------------------------------------------------------------------------
+void CheckBufferOverrun::checkStringArgument()
+{
+    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
+        const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
+        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var% (") || !_settings->library.hasminsize(tok->str()))
+                continue;
+
+            unsigned int argnr = 1;
+            for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument(), argnr++) {
+                if (!Token::Match(argtok, "%str% ,|)"))
+                    continue;
+                const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok->str(), argnr);
+                if (!minsizes)
+                    continue;
+                if (checkMinSizes(*minsizes, tok, Token::getStrLength(argtok), nullptr))
+                    bufferOverrunError(argtok, argtok->str());
+            }
         }
     }
 }

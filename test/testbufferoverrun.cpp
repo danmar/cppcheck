@@ -2240,6 +2240,12 @@ private:
                  "    std::memset(str, 0, 100);\n"
                  "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        // #5257 - check strings
+        checkstd("void f() {\n"
+                 "  memcpy(temp, \"hello world\", 20);\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds: \"helloworld\"\n", errout.str());
     }
 
 
