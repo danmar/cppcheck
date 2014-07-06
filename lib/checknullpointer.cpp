@@ -214,7 +214,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (Token::Match(parent, "+|==|!=") || (parent->str() == "=" && !firstOperand)) {
         if (parent->astOperand1() == tok && parent->astOperand2())
             ovar = parent->astOperand2()->variable();
-        else if (parent->astOperand2() == tok)
+        else if (parent->astOperand1() && parent->astOperand2() == tok)
             ovar = parent->astOperand1()->variable();
     }
     if (ovar && !ovar->isPointer() && !ovar->isArray() && Token::Match(ovar->typeStartToken(), "std :: string|wstring !!::"))
