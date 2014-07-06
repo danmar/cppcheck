@@ -67,7 +67,7 @@ private:
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
         TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
-		TEST_CASE(uninitvar7); // ticket #5971
+        TEST_CASE(uninitvar7); // ticket #5971
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2636,17 +2636,17 @@ private:
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
     }
 
-	void uninitvar7() {
+    void uninitvar7() {
         const char code[] = "void eDBauth_user()  {\n"
-        "   char *blid_cert;\n"
-        "   if(  ) {\n"
-        "        blid_cert   = ;\n"
-        "   } \n"
-		"}\n";
+                            "   char *blid_cert;\n"
+                            "   if(  ) {\n"
+                            "        blid_cert   = ;\n"
+                            "   } \n"
+                            "}\n";
 
         // Assume dfs is a non POD type if file is C++
         checkUninitVar2(code, "test.cpp");
-	}
+    }
 
     // Handling of function calls
     void uninitvar2_func() {

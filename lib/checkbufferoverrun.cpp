@@ -1274,7 +1274,7 @@ void CheckBufferOverrun::checkStructVariable()
                         ArrayInfo temp = arrayInfo;
                         temp.declarationId(0); // do variable lookup by variable and member names rather than varid
                         std::string varnames; // use class and member name for messages
-						for (std::size_t k = 0; k < varname.size(); ++k)
+                        for (std::size_t k = 0; k < varname.size(); ++k)
                             varnames += (k == 0 ? "" : ".") + varname[k];
 
                         temp.varname(varnames);
@@ -1661,7 +1661,7 @@ CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigi
 {
     MathLib::bigint uvalue = std::max(MathLib::bigint(0), value);
     MathLib::bigint n = 1;
-	for (std::size_t i = 0; i < _num.size(); ++i)
+    for (std::size_t i = 0; i < _num.size(); ++i)
         n *= _num[i];
     if (uvalue > n)
         n = uvalue;
