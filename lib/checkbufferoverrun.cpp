@@ -44,13 +44,13 @@ namespace {
 static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferOverrun::ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     oss << "Array '" << arrayInfo.varname();
-    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+    for (size_t i = 0; i < arrayInfo.num().size(); ++i)
         oss << "[" << arrayInfo.num(i) << "]";
     if (index.size() == 1)
         oss << "' accessed at index " << index[0] << ", which is";
     else {
         oss << "' index " << arrayInfo.varname();
-        for (unsigned int i = 0; i < index.size(); ++i)
+        for (size_t i = 0; i < index.size(); ++i)
             oss << "[" << index[i] << "]";
     }
     oss << " out of bounds.";
@@ -67,19 +67,19 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     std::ostringstream errmsg;
 
     errmsg << "Array '" << arrayInfo.varname();
-    for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+    for (size_t i = 0; i < arrayInfo.num().size(); ++i)
         errmsg << "[" << arrayInfo.num(i) << "]";
     if (index.size() == 1)
         errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
     else {
         errmsg << "' index " << arrayInfo.varname();
-        for (unsigned int i = 0; i < index.size(); ++i)
+        for (size_t i = 0; i < index.size(); ++i)
             errmsg << "[" << index[i].intvalue << "]";
         errmsg << " out of bounds.";
     }
 
     const Token *condition = nullptr;
-    for (unsigned int i = 0; i < index.size(); ++i) {
+    for (size_t i = 0; i < index.size(); ++i) {
         if (condition == nullptr)
             condition = index[i].condition;
     }
@@ -324,11 +324,11 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
             return;
 
         MathLib::bigint arraySize = arrayInfo.element_size();
-        for (unsigned int i = 0; i < arrayInfo.num().size(); ++i)
+        for (size_t i = 0; i < arrayInfo.num().size(); ++i)
             arraySize *= arrayInfo.num(i);
 
         const Token *charSizeToken = nullptr;
-        if (checkMinSizes(*minsizes, &ftok, arraySize, &charSizeToken))
+        if (checkMinSizes(*minsizes, &ftok, (size_t)arraySize, &charSizeToken))
             bufferOverrunError(callstack, arrayInfo.varname());
         if (charSizeToken)
             sizeArgumentAsCharError(charSizeToken);
@@ -428,7 +428,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                 MathLib::bigint arraysize = arrayInfo.element_size();
                 if (arraysize == 100) // unknown size
                     arraysize = 0;
-                for (unsigned int i = 0; i < arrayInfo.num().size(); i++)
+                for (size_t i = 0; i < arrayInfo.num().size(); i++)
                     arraysize *= arrayInfo.num(i);
 
                 if (Token::Match(tok2, "[,)]") && arraysize > 0 && argsize > arraysize)

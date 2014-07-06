@@ -179,7 +179,7 @@ private:
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
-            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::Type::STRLEN, m.type);
+            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::STRLEN, m.type);
             ASSERT_EQUALS(2, m.arg);
         }
 
@@ -189,7 +189,7 @@ private:
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
-            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::Type::ARGVALUE, m.type);
+            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::ARGVALUE, m.type);
             ASSERT_EQUALS(3, m.arg);
         }
     }
