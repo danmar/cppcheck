@@ -794,6 +794,12 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 0));
 
+        code = "void f(int x, int y) {\n"
+               "    if (!(x&&y)) { return; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         // if (var)
         code = "void f(int x) {\n"
                "    if (x) { a = x; }\n"  // <- x is not 0

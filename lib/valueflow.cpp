@@ -895,11 +895,32 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                 continue;
             }
 
+            // start token of conditional code
             Token *startToken = nullptr;
-            if (Token::Match(tok, "==|>=|<=|!") && Token::simpleMatch(top->link(), ") {"))
-                startToken = top->link()->next();
-            else if (Token::Match(tok, "%var%|!=") && Token::simpleMatch(top->link()->linkAt(1), "} else {"))
-                startToken = top->link()->linkAt(1)->tokAt(2);
+            
+            // based on the comparison, should we check the if or while?
+            int codeblock = 0;
+            if (Token::Match(tok, "==|>=|<=|!"))
+                codeblock = 1;
+            else if (Token::Match(tok, "%var%|!="))
+                codeblock = 2;
+
+            // determine startToken based on codeblock
+            if (codeblock > 0) {
+                // if astParent is "!" we need to invert codeblock
+                const Token *parent = tok->astParent();
+                while (parent && parent->str() == "&&")
+                    parent = parent->astParent();
+                if (parent && parent->str() == "!")
+                    codeblock = (codeblock == 1) ? 2 : 1;
+
+                // convert codeblock to a startToken
+                if (codeblock == 1 && Token::simpleMatch(top->link(), ") {"))
+                    startToken = top->link()->next();
+                else if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                    startToken = top->link()->linkAt(1)->tokAt(2);
+            }
+
             bool ok = true;
             if (startToken)
                 ok = valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
