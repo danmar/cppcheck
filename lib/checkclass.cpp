@@ -135,10 +135,12 @@ void CheckClass::constructors()
             unsigned int count = 0;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
                 // check for C++11 initializer
-                if (var->hasDefault())
+                if (var->hasDefault()) {
                     usage[count].init = true;
+                    continue;
+                }
 
-                if (usage[count].assign || usage[count].init || var->isStatic())
+                if (usage[count].assign || var->isStatic())
                     continue;
 
                 if (var->isConst() && func->isOperator) // We can't set const members in assignment operator
@@ -994,7 +996,7 @@ void CheckClass::checkMemset()
                         for (const Token *typetok2 = var->typeStartToken(); typetok2 && typetok2 != var->typeEndToken(); typetok2 = typetok2->next()) {
                             if (typetok2->str() == "::")
                                 bailout = true;
-                            if (typetok2->str() == "{") {
+                            else if (typetok2->str() == "{") {
                                 bailout = false;
                                 break;
                             }
