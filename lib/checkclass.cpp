@@ -140,7 +140,7 @@ void CheckClass::constructors()
                     continue;
                 }
 
-                if (usage[count].assign || var->isStatic())
+                if (usage[count].assign || usage[count].init || var->isStatic())
                     continue;
 
                 if (var->isConst() && func->isOperator) // We can't set const members in assignment operator
