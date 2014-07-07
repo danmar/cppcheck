@@ -363,7 +363,7 @@ void CheckIO::invalidScanf()
 
             // scan the string backwards, so we do not need to keep states
             const std::string &formatstr(formatToken->str());
-            for (unsigned int i = 1; i < formatstr.length(); i++) {
+            for (std::size_t i = 1; i < formatstr.length(); i++) {
                 if (formatstr[i] == '%')
                     format = !format;
 

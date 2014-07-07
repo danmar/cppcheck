@@ -451,19 +451,20 @@ static fpSymFunctionTableAccess64 pSymFunctionTableAccess64;
 typedef BOOL (WINAPI *fpSymInitialize)(HANDLE, PCSTR, BOOL);
 static fpSymInitialize pSymInitialize;
 
+static HMODULE hLibDbgHelp;
 // avoid explicit dependency on Dbghelp.dll
 static bool loadDbgHelp()
 {
-    HMODULE hLib = ::LoadLibraryW(L"Dbghelp.dll");
-    if (!hLib)
+    hLibDbgHelp = ::LoadLibraryW(L"Dbghelp.dll");
+    if (!hLibDbgHelp)
         return true;
-    pStackWalk64 = (fpStackWalk64) ::GetProcAddress(hLib, "StackWalk64");
-    pSymGetModuleBase64 = (fpSymGetModuleBase64) ::GetProcAddress(hLib, "SymGetModuleBase64");
-    pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) ::GetProcAddress(hLib, "SymGetSymFromAddr64");
-    pSymGetLineFromAddr64 = (fpSymGetLineFromAddr64)::GetProcAddress(hLib, "SymGetLineFromAddr64");
-    pSymFunctionTableAccess64 = (fpSymFunctionTableAccess64)::GetProcAddress(hLib, "SymFunctionTableAccess64");
-    pSymInitialize = (fpSymInitialize) ::GetProcAddress(hLib, "SymInitialize");
-    pUnDecorateSymbolName = (fpUnDecorateSymbolName)::GetProcAddress(hLib, "UnDecorateSymbolName");
+    pStackWalk64 = (fpStackWalk64) ::GetProcAddress(hLibDbgHelp, "StackWalk64");
+    pSymGetModuleBase64 = (fpSymGetModuleBase64) ::GetProcAddress(hLibDbgHelp, "SymGetModuleBase64");
+    pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) ::GetProcAddress(hLibDbgHelp, "SymGetSymFromAddr64");
+    pSymGetLineFromAddr64 = (fpSymGetLineFromAddr64)::GetProcAddress(hLibDbgHelp, "SymGetLineFromAddr64");
+    pSymFunctionTableAccess64 = (fpSymFunctionTableAccess64)::GetProcAddress(hLibDbgHelp, "SymFunctionTableAccess64");
+    pSymInitialize = (fpSymInitialize) ::GetProcAddress(hLibDbgHelp, "SymInitialize");
+    pUnDecorateSymbolName = (fpUnDecorateSymbolName)::GetProcAddress(hLibDbgHelp, "UnDecorateSymbolName");
     return true;
 }
 
@@ -520,7 +521,7 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
                  );
         if (!result)  // official end...
             break;
-        result = pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
+        pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
         TCHAR undname[maxnamelength]= {0};
         pUnDecorateSymbolName((const TCHAR*)symbol.Name, (PTSTR)undname, (DWORD)GetArrayLength(undname), UNDNAME_COMPLETE);
         if (beyond_main>=0)
@@ -535,6 +536,9 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
         if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
             break;
     }
+
+	FreeLibrary(hLibDbgHelp);
+	hLibDbgHelp=0;
 }
 
 /*

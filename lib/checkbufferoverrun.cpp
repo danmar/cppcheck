@@ -491,7 +491,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     const unsigned int declarationId = arrayInfo.declarationId();
 
     std::string varnames;
-    for (unsigned int i = 0; i < varname.size(); ++i)
+    for (std::size_t i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
     const unsigned char varcount = static_cast<unsigned char>(varname.empty() ? 0U : (varname.size() - 1) * 2U);
@@ -553,8 +553,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 MathLib::bigint totalIndex = 0;
 
                 // calculate the totalElements and totalIndex..
-                for (unsigned int i = 0; i < indexes.size(); ++i) {
-                    std::size_t ri = indexes.size() - 1 - i;
+                for (std::size_t i = 0; i < indexes.size(); ++i) {
+                    const std::size_t ri = indexes.size() - 1 - i;
                     totalIndex += indexes[ri] * totalElements;
                     totalElements *= arrayInfo.num(ri);
                 }
@@ -582,7 +582,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 // Is any array index out of bounds?
                 else {
                     // check each index for overflow
-                    for (unsigned int i = 0; i < indexes.size(); ++i) {
+                    for (std::size_t i = 0; i < indexes.size(); ++i) {
                         if (indexes[i] >= arrayInfo.num(i)) {
                             if (indexes.size() == 1U) {
                                 arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
@@ -752,8 +752,8 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
             MathLib::bigint totalIndex = 0;
 
             // calculate the totalElements and totalIndex..
-            for (unsigned int i = 0; i < indexes.size(); ++i) {
-                std::size_t ri = indexes.size() - 1 - i;
+            for (std::size_t i = 0; i < indexes.size(); ++i) {
+                const std::size_t ri = indexes.size() - 1 - i;
                 totalIndex += indexes[ri].intvalue * totalElements;
                 totalElements *= arrayInfo.num(ri);
             }
@@ -775,7 +775,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
             // Is any array index out of bounds?
             else {
                 // check each index for overflow
-                for (unsigned int i = 0; i < indexes.size(); ++i) {
+                for (std::size_t i = 0; i < indexes.size(); ++i) {
                     if (indexes[i].intvalue >= arrayInfo.num(i)) {
                         // The access is still within the memory range for the array
                         // so it may be intentional.
@@ -1399,7 +1399,7 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
 
             if (digits_string.find('.') != std::string::npos) {
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
-                unsigned int maxLen = std::max(static_cast<unsigned int>(std::abs(std::atoi(endStr.c_str()))), 1U);
+                const unsigned int maxLen = std::max(static_cast<unsigned int>(std::abs(std::atoi(endStr.c_str()))), 1U);
 
                 if (input_string[i] == 's') {
                     // For strings, the length after the dot "%.2s" will limit

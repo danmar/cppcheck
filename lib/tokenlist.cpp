@@ -75,7 +75,7 @@ void TokenList::deallocateTokens()
 unsigned int TokenList::appendFileIfNew(const std::string &fileName)
 {
     // Has this file been tokenized already?
-    for (unsigned int i = 0; i < _files.size(); ++i)
+    for (std::size_t i = 0; i < _files.size(); ++i)
         if (Path::sameFileName(_files[i], fileName))
             return i;
 
@@ -391,7 +391,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         _back->isExpandedMacro(expandedMacro);
     Token::assignProgressValues(_front);
 
-    for (unsigned int i = 1; i < _files.size(); i++)
+    for (std::size_t i = 1; i < _files.size(); i++)
         _files[i] = Path::getRelativePath(_files[i], _settings->_basePaths);
 
     return true;

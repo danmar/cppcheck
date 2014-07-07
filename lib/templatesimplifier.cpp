@@ -51,7 +51,7 @@ static void printlist(const std::list<Token *> &list)
 
 static void printvector(const std::vector<const Token *> &v)
 {
-    for (unsigned int i = 0; i < v.size(); i++) {
+    for (std::size_t i = 0; i < v.size(); i++) {
         const Token *token = v[i];
         std::cout << "    " << i << ":";
         while (token && !Token::Match(token, "[{};]")) {

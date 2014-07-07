@@ -1422,7 +1422,7 @@ void CheckClass::virtualDestructor()
         const Token *derivedClass = derived->next();
 
         // Iterate through each base class...
-        for (unsigned int j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
+        for (std::size_t j = 0; j < scope->definedType->derivedFrom.size(); ++j) {
             // Check if base class is public and exists in database
             if (scope->definedType->derivedFrom[j].access != Private && scope->definedType->derivedFrom[j].type) {
                 const Type *derivedFrom = scope->definedType->derivedFrom[j].type;
@@ -1680,7 +1680,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty() && !scope->definedType->hasCircularDependencies()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
@@ -1746,7 +1746,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
@@ -1786,7 +1786,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
-        for (unsigned int i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
+        for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 

@@ -871,7 +871,7 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
 {
     std::string tmp;
     char prev = 0;
-    for (unsigned int i = 0; i < str.size(); i++) {
+    for (std::size_t i = 0; i < str.size(); i++) {
         if (str[i] == ' ' &&
             ((i > 0 && prev == '\n') ||
              (i + 1 < str.size() && str[i+1] == '\n')
@@ -2569,7 +2569,7 @@ private:
 
         std::vector<std::string> params2(params1);
 
-        for (unsigned int ipar = 0; ipar < params1.size(); ++ipar) {
+        for (std::size_t ipar = 0; ipar < params1.size(); ++ipar) {
             const std::string s(innerMacroName + "(");
             std::string param(params1[ipar]);
             if (param.compare(0,s.length(),s)==0 && param[param.length()-1]==')') {
@@ -2695,7 +2695,7 @@ public:
             // Replace "__VA_ARGS__" with parameters
             if (!_nopar) {
                 std::string s;
-                for (unsigned int i = 0; i < params2.size(); ++i) {
+                for (std::size_t i = 0; i < params2.size(); ++i) {
                     if (i > 0)
                         s += ",";
                     s += params2[i];
@@ -2740,13 +2740,13 @@ public:
                         if (stringify) {
                             str = str.erase(0, 1);
                         }
-                        for (unsigned int i = 0; i < _params.size(); ++i) {
+                        for (std::size_t i = 0; i < _params.size(); ++i) {
                             if (str == _params[i]) {
                                 if (_variadic &&
                                     (i == _params.size() - 1 ||
                                      (givenparams.size() + 2 == _params.size() && i + 1 == _params.size() - 1))) {
                                     str = "";
-                                    for (unsigned int j = (unsigned int)_params.size() - 1; j < givenparams.size(); ++j) {
+                                    for (std::size_t j = _params.size() - 1; j < givenparams.size(); ++j) {
                                         if (optcomma || j > _params.size() - 1)
                                             str += ",";
                                         optcomma = false;
