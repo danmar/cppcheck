@@ -814,23 +814,11 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 
 static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
-    std::stack<const Token *> scopeEnd;
-
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         const Token *vartok, *numtok;
 
-        if (tok->str() == "{") {
-            scopeEnd.push(tok->link());
-            continue;
-        }
-
-        else if (tok->str() == "}" && !scopeEnd.empty()) {
-            scopeEnd.pop();
-            continue;
-        }
-
         // Comparison
-        else if (Token::Match(tok,"==|!=|>=|<=")) {
+        if (Token::Match(tok,"==|!=|>=|<=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 continue;
             if (tok->astOperand1()->isName()) {
@@ -917,7 +905,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                 ok = valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
 
             // After conditional code..
-            if (ok && !scopeEnd.empty() && Token::simpleMatch(top->link(), ") {")) {
+            if (ok && Token::simpleMatch(top->link(), ") {")) {
                 Token *after = top->link()->linkAt(1);
                 std::string unknownFunction;
                 if (settings->library.isScopeNoReturn(after,&unknownFunction)) {
@@ -933,7 +921,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                         continue;
                     }
                 }
-                valueFlowForward(after->next(), scopeEnd.top(), var, varid, values, true, tokenlist, errorLogger, settings);
+                valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, true, tokenlist, errorLogger, settings);
             }
         }
     }
