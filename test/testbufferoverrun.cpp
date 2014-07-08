@@ -2246,6 +2246,11 @@ private:
                  "  memcpy(temp, \"hello world\", 20);\n"
                  "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
+
+        checkstd("void f() {\n"
+                 "  memcpy(temp, \"abc\", 4);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
