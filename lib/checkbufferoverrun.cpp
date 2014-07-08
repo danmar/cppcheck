@@ -1541,7 +1541,7 @@ void CheckBufferOverrun::checkStringArgument()
                 if (!minsizes)
                     continue;
                 if (checkMinSizes(*minsizes, tok, Token::getStrLength(argtok), nullptr))
-                    bufferOverrunError(argtok, argtok->str());
+                    bufferOverrunError(argtok);
             }
         }
     }
