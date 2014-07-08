@@ -6738,10 +6738,14 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         // Variable is used in function call..
         if (Token::Match(tok3, ("%var% ( " + structname + " %varid% ,").c_str(), varid)) {
             static const char * const functionName[] = {
-                "memcmp","memcpy","memmove","memset",
-                "strcmp","strcpy","strncmp","strncpy","strdup"
+                // always simplify
+                "strcmp", "strdup",
+                // don't simplify buffer value
+                "memcmp","memcpy","memmove","memset","strcpy","strncmp","strncpy"
             };
             for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i) {
+                if (valueVarId == 0U && i >= 2)
+                    break;
                 if (tok3->str() == functionName[i]) {
                     Token *par1 = tok3->tokAt(2);
                     if (!structname.empty()) {
@@ -6758,10 +6762,14 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         // Variable is used as 2nd parameter in function call..
         if (Token::Match(tok3, ("%var% ( %any% , " + structname + " %varid% ,|)").c_str(), varid)) {
             static const char * const functionName[] = {
-                "memcmp","memcpy","memmove",
+                // always simplify
                 "strcmp","strcpy","strncmp","strncpy"
+                // don't simplify buffer value
+                "memcmp","memcpy","memmove"
             };
             for (unsigned int i = 0; i < (sizeof(functionName) / sizeof(*functionName)); ++i) {
+                if (valueVarId == 0U && i >= 4)
+                    break;
                 if (tok3->str() == functionName[i]) {
                     Token *par = tok3->tokAt(4);
                     if (!structname.empty()) {
