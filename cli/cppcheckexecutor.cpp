@@ -537,8 +537,8 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
             break;
     }
 
-	FreeLibrary(hLibDbgHelp);
-	hLibDbgHelp=0;
+    FreeLibrary(hLibDbgHelp);
+    hLibDbgHelp=0;
 }
 
 /*

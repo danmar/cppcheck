@@ -897,7 +897,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
 
             // start token of conditional code
             Token *startToken = nullptr;
-            
+
             // based on the comparison, should we check the if or while?
             int codeblock = 0;
             if (Token::Match(tok, "==|>=|<=|!"))
