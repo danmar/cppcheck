@@ -77,7 +77,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
     // Has this file been tokenized already?
     for (std::size_t i = 0; i < _files.size(); ++i)
         if (Path::sameFileName(_files[i], fileName))
-            return i;
+            return (unsigned int)i;
 
     // The "_files" vector remembers what files have been tokenized..
     _files.push_back(Path::simplifyPath(fileName));

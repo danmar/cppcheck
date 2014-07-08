@@ -287,7 +287,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
         case Library::ArgumentChecks::MinSize::ARGVALUE:
             if (Token::Match(argtok, "%num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
-                if (sz > arraySize)
+                if ((std::size_t)sz > arraySize)
                     error = true;
             } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
                 *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
@@ -296,7 +296,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
             // TODO: handle arbitrary arg2
             if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
-                if (sz > arraySize)
+                if ((std::size_t)sz > arraySize)
                     error = true;
             }
             break;
