@@ -122,7 +122,7 @@ def removeLargeFiles(path):
                 os.remove(g)
 
             # remove non-source files
-            elif g[-2:] != '.C' and g[-2:] != '.c' and g[-4:] != '.cc' and g[-4:] != '.cpp' and g[-4:] != '.cxx' and g[-2:] != '.h':
+            elif g[-2:] != '.C' and g[-2:] != '.c' and g[-4:] != '.cc' and g[-4:] != '.cpp' and g[-4:] != '.cxx' and g[-2:] != '.h' and g[-2:] != '.H' and g[-4:] != '.c++' and g[-4:] != '.hpp' and g[-4:] != '.tpp' and g[-4:] != '.t++':
                 os.remove(g)
 
 def downloadpackage(filepath, outpath):
