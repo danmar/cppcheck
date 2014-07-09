@@ -84,6 +84,7 @@ private:
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
         TEST_CASE(memsetOnInvalid);  // Ticket #5425: Crash upon invalid
+        TEST_CASE(memsetOnStdPodType);  // #5901 - std::uint8_t
         TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -2123,12 +2124,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkNoMemset(const char code[]) {
+    void checkNoMemset(const char code[], bool load_std_cfg = false) {
         // Clear the error log
         errout.str("");
 
         Settings settings;
         settings.addEnabled("warning");
+        if (load_std_cfg) {
+            LOAD_LIB_2(settings.library, "std.cfg");
+        }
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2565,8 +2569,22 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
-                      "}");
+                      "}", true);
         ASSERT_EQUALS("", errout.str()); // std::array is POD (#5481)
+    }
+
+    void memsetOnStdPodType() { // Ticket #5901
+        checkNoMemset("struct st {\n"
+                      "  std::uint8_t a;\n"
+                      "  std::uint8_t b;\n"
+                      "  std::uint8_t c;\n"
+                      "};\n"
+                      "\n"
+                      "void f() {\n"
+                      "  st s;\n"
+                      "  std::memset(&s, 0, sizeof(st));\n"
+                      "}", "std.cfg");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mallocOnClass() {
