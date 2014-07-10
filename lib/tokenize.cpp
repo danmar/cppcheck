@@ -5273,13 +5273,13 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         //pattern: "%type% *| ... *| const| %var% ,|="
         if (Token::Match(tok2, "%type%") ||
             (tok2 && tok2->previous() && tok2->previous()->str() == ">")) {
-            bool ispointer = false;
             Token *varName = tok2;
             if (!tok2->previous() || tok2->previous()->str() != ">")
                 varName = varName->next();
             else
                 --typelen;
             //skip all the pointer part
+            bool ispointer = false;
             while (varName && varName->str() == "*") {
                 ispointer = true;
                 varName = varName->next();
@@ -6337,12 +6337,12 @@ bool Tokenizer::simplifyKnownVariables()
                 }
 
                 // struct name..
+                if (Token::Match(tok2, "%varid% = &| %varid%", tok2->varId()))
+                    continue;
+
                 const std::string structname = Token::Match(tok2->tokAt(-3), "[;{}] %var% .") ?
                                                std::string(tok2->strAt(-2) + " .") :
                                                std::string("");
-
-                if (Token::Match(tok2, "%varid% = &| %varid%", tok2->varId()))
-                    continue;
 
                 const Token * const valueToken = tok2->tokAt(2);
 
@@ -6396,13 +6396,14 @@ bool Tokenizer::simplifyKnownVariables()
 
             else if (Token::Match(tok2, "strcpy|sprintf ( %var% , %str% ) ;")) {
                 const unsigned int varid(tok2->tokAt(2)->varId());
-                std::string::size_type n = std::string::npos;
                 if (varid == 0)
                     continue;
+
                 const std::string structname;
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
+                    std::string::size_type n = std::string::npos;
                     while ((n = value.find("%%",n+1)) != std::string::npos) {
                         value.replace(n,2,"%");
                     }

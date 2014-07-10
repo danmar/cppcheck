@@ -579,13 +579,13 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
             std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
-            bool operandInside = oldOpSize < state.op.size();
             tok = tok2;
             if ((tok->previous() && tok->previous()->isName() && (tok->strAt(-1) != "return" && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
                 || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
                 || (tok->strAt(-1) == "}" && opPrevTopSquare)) {
+                const bool operandInside = oldOpSize < state.op.size();
                 if (operandInside)
                     compileBinOp(tok, state, nullptr);
                 else

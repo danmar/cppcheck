@@ -2344,9 +2344,7 @@ AccessControl Scope::defaultAccess() const
 // Get variable list..
 void Scope::getVariableList()
 {
-    AccessControl varaccess = defaultAccess();
     const Token *start;
-    unsigned int level = 1;
 
     if (classStart)
         start = classStart->next();
@@ -2359,6 +2357,8 @@ void Scope::getVariableList()
     else
         return;
 
+    AccessControl varaccess = defaultAccess();
+    unsigned int level = 1;
     for (const Token *tok = start; tok; tok = tok->next()) {
         // end of scope?
         if (tok->str() == "}") {

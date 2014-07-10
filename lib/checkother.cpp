@@ -2759,11 +2759,11 @@ void CheckOther::checkDuplicateExpression()
 
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>")) {
-                bool assignment = tok->str() == "=";
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
                 if (isSameExpression(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
                     if (isWithoutSideEffects(_tokenizer, tok->astOperand1())) {
+                        const bool assignment = tok->str() == "=";
                         if (assignment)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
                         else
@@ -2949,13 +2949,13 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
-                const std::string& functionName = tok->str(); // store function name
-                const std::string& varNameLeft = tok->strAt(2); // get the left variable name
                 const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
                 const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
                 // compare varids: if they are not zero but equal
                 // --> the comparison function is calles with the same variables
                 if (varidLeft != 0 && varidLeft == varidRight) {
+                    const std::string& functionName = tok->str(); // store function name
+                    const std::string& varNameLeft = tok->strAt(2); // get the left variable name
                     if (functionName == "isgreater" || functionName == "isless" || functionName == "islessgreater") {
                         // e.g.: isgreater(x,x) --> (x)>(x) --> false
                         checkComparisonFunctionIsAlwaysTrueOrFalseError(tok,functionName,varNameLeft,false);
