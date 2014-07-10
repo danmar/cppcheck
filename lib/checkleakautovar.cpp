@@ -389,14 +389,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const int dealloc)
 {
-    std::map<unsigned int, int> &alloctype = varInfo->alloctype;
-    std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
-
     // Ignore function call?
     const bool ignore = bool(_settings->library.leakignore.find(tok->str()) != _settings->library.leakignore.end());
-
     if (ignore)
         return;
+
+    std::map<unsigned int, int> &alloctype = varInfo->alloctype;
+    std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
 
     for (const Token *arg = tok->tokAt(2); arg; arg = arg->nextArgument()) {
         if ((Token::Match(arg, "%var% [-,)]") && arg->varId() > 0) ||
