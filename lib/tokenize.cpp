@@ -10378,14 +10378,14 @@ void Tokenizer::simplifyMathExpressions()
                 Token * const tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( cos|cosf|cosl ("))
                     continue;
-                std::string leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )"))
                     continue;
                 Token * const tok4 = tok3->link();
-                std::string rightExponent = tok4->strAt(2);
+                const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
                 if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
@@ -10396,14 +10396,14 @@ void Tokenizer::simplifyMathExpressions()
                 Token * const tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( sin|sinf|sinl ("))
                     continue;
-                std::string leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )"))
                     continue;
                 Token * const tok4 = tok3->link();
-                std::string rightExponent = tok4->strAt(2);
+                const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
                 if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
@@ -10414,14 +10414,14 @@ void Tokenizer::simplifyMathExpressions()
                 Token * const tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( cosh|coshf|coshl ("))
                     continue;
-                std::string leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )"))
                     continue;
                 Token * const tok4 = tok3->link();
-                std::string rightExponent = tok4->strAt(2);
+                const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
                 if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
@@ -10432,14 +10432,14 @@ void Tokenizer::simplifyMathExpressions()
                 Token * const tok2 = tok->linkAt(3);
                 if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( sinh|sinhf|sinhl ("))
                     continue;
-                std::string leftExponent = tok2->strAt(2);
+                const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
                 if (!Token::Match(tok3->link(), ") , %num% )"))
                     continue;
                 Token * const tok4 = tok3->link();
-                std::string rightExponent = tok4->strAt(2);
+                const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
                 if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
