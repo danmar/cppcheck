@@ -113,7 +113,7 @@ public:
 
     /**
      * @return String of the token in given index, related to this token.
-     * If that token does not exist, an emptry string is being returned.
+     * If that token does not exist, an empty string is being returned.
      */
     const std::string &strAt(int index) const;
 
