@@ -523,8 +523,8 @@ void CheckMemoryLeakInFunction::parse_noreturn()
     }
 
     // only check functions
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
+    const std::size_t functionsCount = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functionsCount; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
         // parse this function to check if it contains an "exit" call..

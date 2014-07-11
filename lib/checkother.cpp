@@ -2549,10 +2549,10 @@ void CheckOther::checkInvalidFree()
                  Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
                  Token::Match(tok, "delete %any% +|- %any%")) {
 
-            const int varIdx = tok->strAt(1) == "(" ? 2 :
+            const int varIndex = tok->strAt(1) == "(" ? 2 :
                                tok->strAt(3) == "(" ? 4 : 1;
-            const unsigned int var1 = tok->tokAt(varIdx)->varId();
-            const unsigned int var2 = tok->tokAt(varIdx + 2)->varId();
+            const unsigned int var1 = tok->tokAt(varIndex)->varId();
+            const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
             const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
             const std::map<unsigned int, bool>::iterator alloc2 = allocatedVariables.find(var2);
             if (alloc1 != allocatedVariables.end()) {
@@ -2594,18 +2594,18 @@ void CheckOther::checkDoubleFree()
         // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
         // and report an error if the same variable is passed twice.
         if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
-            unsigned int var = tok->tokAt(2)->varId();
-            if (var) {
+            const unsigned int varId = tok->tokAt(2)->varId();
+            if (varId) {
                 if (Token::Match(tok, "free|g_free")) {
-                    if (freedVariables.find(var) != freedVariables.end())
+                    if (freedVariables.find(varId) != freedVariables.end())
                         doubleFreeError(tok, tok->strAt(2));
                     else
-                        freedVariables.insert(var);
+                        freedVariables.insert(varId);
                 } else if (tok->str() == "closedir") {
-                    if (closeDirVariables.find(var) != closeDirVariables.end())
+                    if (closeDirVariables.find(varId) != closeDirVariables.end())
                         doubleCloseDirError(tok, tok->strAt(2));
                     else
-                        closeDirVariables.insert(var);
+                        closeDirVariables.insert(varId);
                 }
             }
         }
@@ -2613,13 +2613,13 @@ void CheckOther::checkDoubleFree()
         // Keep track of any variables operated on by "delete" or "delete[]"
         // and report an error if the same variable is delete'd twice.
         else if (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")) {
-            int varIdx = (tok->strAt(1) == "[") ? 3 : 1;
-            unsigned int var = tok->tokAt(varIdx)->varId();
-            if (var) {
-                if (freedVariables.find(var) != freedVariables.end())
-                    doubleFreeError(tok, tok->strAt(varIdx));
+            const int varIndex = (tok->strAt(1) == "[") ? 3 : 1;
+            const unsigned int varId = tok->tokAt(varIndex)->varId();
+            if (varId) {
+                if (freedVariables.find(varId) != freedVariables.end())
+                    doubleFreeError(tok, tok->strAt(varIndex));
                 else
-                    freedVariables.insert(var);
+                    freedVariables.insert(varId);
             }
         }
 
@@ -2653,10 +2653,10 @@ void CheckOther::checkDoubleFree()
             // If it is a function call, then clear those variables in its argument list
             else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
                 for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                    if (tok2->varId()) {
-                        unsigned int var = tok2->varId();
-                        freedVariables.erase(var);
-                        closeDirVariables.erase(var);
+                    const unsigned int varId = tok2->varId();
+                    if (varId) {
+                        freedVariables.erase(varId);
+                        closeDirVariables.erase(varId);
                     }
                 }
             }
@@ -2664,10 +2664,10 @@ void CheckOther::checkDoubleFree()
 
         // If a pointer is assigned a new value, remove it from the set of previously freed variables
         else if (Token::Match(tok, "%var% =")) {
-            unsigned int var = tok->varId();
-            if (var) {
-                freedVariables.erase(var);
-                closeDirVariables.erase(var);
+            const unsigned int varId = tok->varId();
+            if (varId) {
+                freedVariables.erase(varId);
+                closeDirVariables.erase(varId);
             }
         }
 
