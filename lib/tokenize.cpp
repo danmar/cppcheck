@@ -3840,7 +3840,7 @@ void Tokenizer::dump(std::ostream &out) const
             out << " astParent=\"" << tok->astParent() << '\"';
         if (tok->astOperand1())
             out << " astOperand1=\"" << tok->astOperand1() << '\"';
-        if (tok->astOperand1())
+        if (tok->astOperand2())
             out << " astOperand2=\"" << tok->astOperand2() << '\"';
         out << "/>" << std::endl;
     }
