@@ -6843,7 +6843,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (Token::Match(tok3, ("%var% ( %any% , " + structname + " %varid% ,|)").c_str(), varid)) {
             static const char * const functionName[] = {
                 // always simplify
-                "strcmp","strcpy","strncmp","strncpy"
+                "strcmp","strcpy","strncmp","strncpy",
                 // don't simplify buffer value
                 "memcmp","memcpy","memmove"
             };
