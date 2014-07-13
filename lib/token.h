@@ -811,7 +811,7 @@ public:
 
     std::string expressionString() const;
 
-    void printAst(bool verbose) const;
+    void printAst(bool verbose, bool xml) const;
 
     void printValueFlow() const;
 };

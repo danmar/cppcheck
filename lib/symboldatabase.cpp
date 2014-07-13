@@ -2074,6 +2074,20 @@ void SymbolDatabase::printOut(const char *title) const
     }
 }
 
+void SymbolDatabase::printXml() const
+{
+    // Scopes..
+    for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+        std::cout << "<scope";
+        std::cout << " id=\"" << &*scope << "\"";
+        std::cout << " type=\"" << scope->type << "\"";
+        if (!scope->className.empty())
+            std::cout << " className=\"" << scope->className << "\"";
+        std::cout << " nestedIn=\"" << scope->nestedIn << "\"";
+        std::cout << "/>" << std::endl;
+    }
+}
+
 //---------------------------------------------------------------------------
 
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)

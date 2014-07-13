@@ -1083,17 +1083,42 @@ std::string Token::expressionString() const
 
 }
 
-void Token::printAst(bool verbose) const
+static std::string astStringXml(const Token *tok, std::size_t indent)
+{
+    const std::string strindent(indent, ' ');
+
+    if (!tok->astOperand1() && !tok->astOperand2()) {
+        std::ostringstream ret;
+        ret << strindent << "<token text=\"" << tok->str() << "\"";
+        if (tok->varId() > 0U)
+            ret << " varId=\"" << MathLib::toString(tok->varId()) << "\"";
+        ret << "/>";
+        return ret.str();
+    }
+
+    std::string ret = strindent + "<token text=\"" + tok->str() + "\">\n";
+    if (tok->astOperand1())
+        ret += astStringXml(tok->astOperand1(),indent+2U) + '\n';
+    if (tok->astOperand2())
+        ret += astStringXml(tok->astOperand2(),indent+2U) + '\n';
+    return ret + strindent + "</token>";
+}
+
+void Token::printAst(bool verbose, bool xml) const
 {
     bool title = false;
 
     bool print = true;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (print && tok->_astOperand1) {
-            if (!title)
+            if (!title && !xml)
                 std::cout << "\n\n##AST" << std::endl;
             title = true;
-            if (verbose)
+            if (xml) {
+                std::cout << "<ast scope=\"" << tok->scope() << "\">" << std::endl;
+                std::cout << astStringXml(tok->astTop(), 2U) << std::endl;
+                std::cout << "</ast>" << std::endl;
+            } else if (verbose)
                 std::cout << tok->astTop()->astStringVerbose(0,0) << std::endl;
             else
                 std::cout << tok->astTop()->astString(" ") << std::endl;

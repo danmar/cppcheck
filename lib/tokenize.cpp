@@ -3738,10 +3738,20 @@ void Tokenizer::printDebugOutput() const
     if (_settings->debug) {
         list.front()->printOut(0, list.getFiles());
 
-        if (_settings->_verbose && _symbolDatabase)
-            _symbolDatabase->printOut("Symbol database");
+        if (_settings->_xml)
+            std::cout << "<dump>" << std::endl;
 
-        list.front()->printAst(_settings->_verbose);
+        if (_symbolDatabase) {
+            if (_settings->_xml)
+                _symbolDatabase->printXml();
+            else if (_settings->_verbose)
+                _symbolDatabase->printOut("Symbol database");
+        }
+
+        list.front()->printAst(_settings->_verbose, _settings->_xml);
+
+        if (_settings->_xml)
+            std::cout << "</dump>" << std::endl;
 
         list.front()->printValueFlow();
     }
