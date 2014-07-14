@@ -2074,6 +2074,32 @@ void SymbolDatabase::printOut(const char *title) const
     }
 }
 
+static std::string toxml(const std::string &str)
+{
+    std::ostringstream xml;
+    for (std::size_t i = 0U; i < str.length(); i++) {
+        char c = str[i];
+        switch (c) {
+        case '<':
+            xml << "&lt;";
+            break;
+        case '>':
+            xml << "&gt;";
+            break;
+        case '&':
+            xml << "&amp;";
+            break;
+        case '\"':
+            xml << "&quot;";
+            break;
+        default:
+            xml << c;
+            break;
+        }
+    }
+    return xml.str();
+}
+
 void SymbolDatabase::printXml(std::ostream &out) const
 {
     // Scopes..
@@ -2083,7 +2109,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " id=\"" << &*scope << "\"";
         out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
-            out << " className=\"" << scope->className << "\"";
+            out << " className=\"" << toxml(scope->className) << "\"";
         if (scope->nestedIn)
             out << " nestedIn=\"" << scope->nestedIn << "\"";
         if (scope->functionList.empty() && scope->varlist.empty()) {
@@ -2107,14 +2133,14 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 }
                 out << "      </functionList>" << std::endl;
             }
+            if (!scope->varlist.empty()) {
+                out << "      <varlist>" << std::endl;
+                for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+                    out << "        <var id=\""   << &*var << "\"/>" << std::endl;
+                out << "      </varlist>" << std::endl;
+            }
+            out << "    </scope>" << std::endl;
         }
-        if (!scope->varlist.empty()) {
-            out << "      <varlist>" << std::endl;
-            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
-                out << "        <var id=\""   << &*var << "\"/>" << std::endl;
-            out << "      </varlist>" << std::endl;
-        }
-        out << "    </scope>" << std::endl;
     }
     out << "  </scopes>" << std::endl;
 
