@@ -40,7 +40,7 @@ void CheckAssert::assertWithSideEffects()
     const Token *endTok = tok ? tok->next()->link() : nullptr;
 
     while (tok && endTok) {
-        for (const Token* tmp = tok->tokAt(1); tmp != endTok; tmp = tmp->next()) {
+        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             checkVariableAssignment(tmp, true);
 
             if (tmp->isName() && tmp->type() == Token::eFunction) {
