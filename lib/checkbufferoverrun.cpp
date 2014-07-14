@@ -1243,11 +1243,11 @@ void CheckBufferOverrun::checkStructVariable()
                         }
 
                         // Goto end of statement.
-                        const Token *CheckTok = nullptr;
+                        const Token *checkTok = nullptr;
                         while (tok3 && tok3 != func_scope->classEnd) {
                             // End of statement.
                             if (tok3->str() == ";") {
-                                CheckTok = tok3;
+                                checkTok = tok3;
                                 break;
                             }
 
@@ -1257,7 +1257,7 @@ void CheckBufferOverrun::checkStructVariable()
 
                             // Function implementation..
                             if (Token::simpleMatch(tok3, ") {")) {
-                                CheckTok = tok3->tokAt(2);
+                                checkTok = tok3->tokAt(2);
                                 break;
                             }
 
@@ -1267,7 +1267,7 @@ void CheckBufferOverrun::checkStructVariable()
                         if (!tok3)
                             break;
 
-                        if (!CheckTok)
+                        if (!checkTok)
                             continue;
 
                         // Check variable usage..
@@ -1278,7 +1278,7 @@ void CheckBufferOverrun::checkStructVariable()
                             varnames += (k == 0 ? "" : ".") + varname[k];
 
                         temp.varname(varnames);
-                        checkScope(CheckTok, varname, temp);
+                        checkScope(checkTok, varname, temp);
                     }
                 }
             }
