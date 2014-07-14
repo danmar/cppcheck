@@ -104,7 +104,10 @@ public:
     }
 
     const std::string& name() const {
-        return classDef->next()->isName() ? classDef->strAt(1) : emptyString;
+        const Token* next = classDef->next();
+        if (next->isName())
+            return next->str();
+        return emptyString;
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
