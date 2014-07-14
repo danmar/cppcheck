@@ -2115,7 +2115,6 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 out << " nameToken=\""      << var->nameToken() << '\"';
                 out << " typeStartToken=\"" << var->typeStartToken() << '\"';
                 out << " typeEndToken=\""   << var->typeEndToken() << '\"';
-                out << " typeEndToken=\""   << var->typeEndToken() << '\"';
                 out << " isArgument=\""     << (var->isArgument() ? "true" : "false") << '\"';
                 out << " isArray=\""        << (var->isArray() ? "true" : "false") << '\"';
                 out << " isClass=\""        << (var->isClass() ? "true" : "false") << '\"';
