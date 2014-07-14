@@ -2550,7 +2550,7 @@ void CheckOther::checkInvalidFree()
                  Token::Match(tok, "delete %any% +|- %any%")) {
 
             const int varIndex = tok->strAt(1) == "(" ? 2 :
-                               tok->strAt(3) == "(" ? 4 : 1;
+                                 tok->strAt(3) == "(" ? 4 : 1;
             const unsigned int var1 = tok->tokAt(varIndex)->varId();
             const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
             const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
