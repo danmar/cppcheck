@@ -3785,6 +3785,7 @@ void Tokenizer::printDebugOutput() const
 static std::string toxml(const std::string &str)
 {
     std::ostringstream xml;
+    const bool isstring(str[0] == '\"');
     for (std::size_t i = 0U; i < str.length(); i++) {
         char c = str[i];
         switch (c) {
@@ -3800,8 +3801,14 @@ static std::string toxml(const std::string &str)
         case '\"':
             xml << "&quot;";
             break;
+        case '\0':
+            xml << "\\0";
+            break;
         default:
-            xml << c;
+            if (!isstring || (c >= ' ' && c <= 'z'))
+                xml << c;
+            else
+                xml << 'x';
             break;
         }
     }
