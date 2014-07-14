@@ -2122,6 +2122,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
     out << "  <variables>" << std::endl;
     for (unsigned int i = 1U; i < _variableList.size(); i++) {
         const Variable *var = _variableList[i];
+        if (!var)
+            continue;
         out << "    <var id=\""   << var << '\"';
         out << " nameToken=\""      << var->nameToken() << '\"';
         out << " typeStartToken=\"" << var->typeStartToken() << '\"';
