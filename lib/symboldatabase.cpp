@@ -2100,7 +2100,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         out << ">" << std::endl;
                         for (unsigned int argnr = 0; argnr < function->argCount(); ++argnr) {
                             const Variable *arg = function->getArgumentVar(argnr);
-                            out << "          <arg nr=\"" << argnr << "\" variable=\"" << arg << "\"/>" << std::endl;
+                            out << "          <arg nr=\"" << argnr+1 << "\" variable=\"" << arg << "\"/>" << std::endl;
                         }
                         out << "        </function>" << std::endl;
                     }
@@ -2110,25 +2110,32 @@ void SymbolDatabase::printXml(std::ostream &out) const
         }
         if (!scope->varlist.empty()) {
             out << "      <varlist>" << std::endl;
-            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                out << "      <var id=\""   << &*var << '\"';
-                out << " nameToken=\""      << var->nameToken() << '\"';
-                out << " typeStartToken=\"" << var->typeStartToken() << '\"';
-                out << " typeEndToken=\""   << var->typeEndToken() << '\"';
-                out << " isArgument=\""     << (var->isArgument() ? "true" : "false") << '\"';
-                out << " isArray=\""        << (var->isArray() ? "true" : "false") << '\"';
-                out << " isClass=\""        << (var->isClass() ? "true" : "false") << '\"';
-                out << " isLocal=\""        << (var->isLocal() ? "true" : "false") << '\"';
-                out << " isPointer=\""      << (var->isPointer() ? "true" : "false") << '\"';
-                out << " isReference=\""    << (var->isReference() ? "true" : "false") << '\"';
-                out << " isStatic=\""       << (var->isStatic() ? "true" : "false") << '\"';
-                out << "/>" << std::endl;
-            }
+            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var)
+                out << "        <var id=\""   << &*var << "\"/>" << std::endl;
             out << "      </varlist>" << std::endl;
         }
         out << "    </scope>" << std::endl;
     }
     out << "  </scopes>" << std::endl;
+
+    // Variables..
+    out << "  <variables>" << std::endl;
+    for (unsigned int i = 1U; i < _variableList.size(); i++) {
+        const Variable *var = _variableList[i];
+        out << "    <var id=\""   << var << '\"';
+        out << " nameToken=\""      << var->nameToken() << '\"';
+        out << " typeStartToken=\"" << var->typeStartToken() << '\"';
+        out << " typeEndToken=\""   << var->typeEndToken() << '\"';
+        out << " isArgument=\""     << (var->isArgument() ? "true" : "false") << '\"';
+        out << " isArray=\""        << (var->isArray() ? "true" : "false") << '\"';
+        out << " isClass=\""        << (var->isClass() ? "true" : "false") << '\"';
+        out << " isLocal=\""        << (var->isLocal() ? "true" : "false") << '\"';
+        out << " isPointer=\""      << (var->isPointer() ? "true" : "false") << '\"';
+        out << " isReference=\""    << (var->isReference() ? "true" : "false") << '\"';
+        out << " isStatic=\""       << (var->isStatic() ? "true" : "false") << '\"';
+        out << "/>" << std::endl;
+    }
+    out << "  </variables>" << std::endl;
 }
 
 //---------------------------------------------------------------------------
