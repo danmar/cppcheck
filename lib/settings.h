@@ -63,6 +63,9 @@ public:
     /** @brief Is --debug-fp given? */
     bool debugFalsePositive;
 
+    /** @brief Is --dump given? */
+    bool dump;
+
     /** @brief Is --exception-handling given */
     bool exceptionHandling;
 

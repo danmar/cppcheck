@@ -839,7 +839,7 @@ public:
 
     void printOut(const char * title = NULL) const;
     void printVariable(const Variable *var, const char *indent) const;
-    void printXml() const;
+    void printXml(std::ostream &out) const;
 
     bool isCPP() const;
 

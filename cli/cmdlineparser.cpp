@@ -134,6 +134,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strcmp(argv[i], "--debug-fp") == 0)
             _settings->debugFalsePositive = true;
 
+        // dump cppcheck data
+        else if (std::strcmp(argv[i], "--dump") == 0)
+            _settings->dump = true;
+
         // (Experimental) exception handling inside cppcheck client
         else if (std::strcmp(argv[i], "--exception-handling") == 0)
             _settings->exceptionHandling = true;
@@ -843,6 +847,9 @@ void CmdLineParser::PrintHelp()
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
+              "    --dump               Dump xml data for each translation unit. The dump\n"
+              "                         files have the extension .dump and contain ast,\n"
+              "                         tokenlist, symboldatabase, valueflow.\n"
               "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
               "                         --force is used, Cppcheck will only check the given\n"
               "                         configuration when -D is used.\n"

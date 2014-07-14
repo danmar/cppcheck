@@ -719,6 +719,8 @@ public:
 
     void printDebugOutput() const;
 
+    void dump(std::ostream &out) const;
+
     Token *deleteInvalidTypedef(Token *typeDef);
 
     /**

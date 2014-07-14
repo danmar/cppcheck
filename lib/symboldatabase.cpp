@@ -2074,18 +2074,62 @@ void SymbolDatabase::printOut(const char *title) const
     }
 }
 
-void SymbolDatabase::printXml() const
+void SymbolDatabase::printXml(std::ostream &out) const
 {
     // Scopes..
+    out << "  <scopes>" << std::endl;
     for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
-        std::cout << "<scope";
-        std::cout << " id=\"" << &*scope << "\"";
-        std::cout << " type=\"" << scope->type << "\"";
+        out << "    <scope";
+        out << " id=\"" << &*scope << "\"";
+        out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
-            std::cout << " className=\"" << scope->className << "\"";
-        std::cout << " nestedIn=\"" << scope->nestedIn << "\"";
-        std::cout << "/>" << std::endl;
+            out << " className=\"" << scope->className << "\"";
+        if (scope->nestedIn)
+            out << " nestedIn=\"" << scope->nestedIn << "\"";
+        if (scope->functionList.empty() && scope->varlist.empty()) {
+            out << "/>" << std::endl;
+        } else {
+            out << '>' << std::endl;
+            if (!scope->functionList.empty()) {
+                out << "      <functionList>" << std::endl;
+                for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
+                    out << "        <function id=\"" << &*function << '\"';
+                    if (function->argCount() == 0U)
+                        out << "/>" << std::endl;
+                    else {
+                        out << ">" << std::endl;
+                        for (unsigned int argnr = 0; argnr < function->argCount(); ++argnr) {
+                            const Variable *arg = function->getArgumentVar(argnr);
+                            out << "          <arg nr=\"" << argnr << "\" variable=\"" << arg << "\"/>" << std::endl;
+                        }
+                        out << "        </function>" << std::endl;
+                    }
+                }
+                out << "      </functionList>" << std::endl;
+            }
+        }
+        if (!scope->varlist.empty()) {
+            out << "      <varlist>" << std::endl;
+            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+                out << "      <var id=\""   << &*var << '\"';
+                out << " nameToken=\""      << var->nameToken() << '\"';
+                out << " typeStartToken=\"" << var->typeStartToken() << '\"';
+                out << " typeEndToken=\""   << var->typeEndToken() << '\"';
+                out << " typeEndToken=\""   << var->typeEndToken() << '\"';
+                out << " isArgument=\""     << (var->isArgument() ? "true" : "false") << '\"';
+                out << " isArray=\""        << (var->isArray() ? "true" : "false") << '\"';
+                out << " isClass=\""        << (var->isClass() ? "true" : "false") << '\"';
+                out << " isLocal=\""        << (var->isLocal() ? "true" : "false") << '\"';
+                out << " isPointer=\""      << (var->isPointer() ? "true" : "false") << '\"';
+                out << " isReference=\""    << (var->isReference() ? "true" : "false") << '\"';
+                out << " isStatic=\""       << (var->isStatic() ? "true" : "false") << '\"';
+                out << "/>" << std::endl;
+            }
+            out << "      </varlist>" << std::endl;
+        }
+        out << "    </scope>" << std::endl;
     }
+    out << "  </scopes>" << std::endl;
 }
 
 //---------------------------------------------------------------------------

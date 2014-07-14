@@ -363,6 +363,19 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
         }
 
+        // dump
+        if (_settings.dump) {
+            std::string dumpfile = std::string(FileName) + ".dump";
+            std::ofstream fdump(dumpfile.c_str());
+            if (fdump.is_open()) {
+                fdump << "<?xml version=\"1.0\"?>" << std::endl;
+                fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
+                _tokenizer.dump(fdump);
+                fdump << "</dump>" << std::endl;
+            }
+            return;
+        }
+
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())

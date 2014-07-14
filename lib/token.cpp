@@ -1083,28 +1083,35 @@ std::string Token::expressionString() const
 
 }
 
-static std::string astStringXml(const Token *tok, std::size_t indent)
+static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out)
 {
     const std::string strindent(indent, ' ');
 
+    out << strindent << "<token str=\"" << tok->str() << '\"';
+    if (tok->varId() > 0U)
+        out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+    if (tok->variable())
+        out << " variable=\"" << tok->variable() << '\"';
+    if (tok->function())
+        out << " function=\"" << tok->function() << '\"';
+    if (!tok->values.empty())
+        out << " values=\"" << &tok->values << '\"';
+
     if (!tok->astOperand1() && !tok->astOperand2()) {
-        std::ostringstream ret;
-        ret << strindent << "<token text=\"" << tok->str() << "\"";
-        if (tok->varId() > 0U)
-            ret << " varId=\"" << MathLib::toString(tok->varId()) << "\"";
-        ret << "/>";
-        return ret.str();
+        out << "/>" << std::endl;
     }
 
-    std::string ret = strindent + "<token text=\"" + tok->str() + "\">\n";
-    if (tok->astOperand1())
-        ret += astStringXml(tok->astOperand1(),indent+2U) + '\n';
-    if (tok->astOperand2())
-        ret += astStringXml(tok->astOperand2(),indent+2U) + '\n';
-    return ret + strindent + "</token>";
+    else {
+        out << '>' << std::endl;
+        if (tok->astOperand1())
+            astStringXml(tok->astOperand1(), indent+2U, out);
+        if (tok->astOperand2())
+            astStringXml(tok->astOperand2(), indent+2U, out);
+        out << strindent << "</token>" << std::endl;
+    }
 }
 
-void Token::printAst(bool verbose, bool xml) const
+void Token::printAst(bool verbose, bool xml, std::ostream &out) const
 {
     bool title = false;
 
@@ -1112,16 +1119,16 @@ void Token::printAst(bool verbose, bool xml) const
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (print && tok->_astOperand1) {
             if (!title && !xml)
-                std::cout << "\n\n##AST" << std::endl;
+                out << "\n\n##AST" << std::endl;
             title = true;
             if (xml) {
-                std::cout << "<ast scope=\"" << tok->scope() << "\">" << std::endl;
-                std::cout << astStringXml(tok->astTop(), 2U) << std::endl;
-                std::cout << "</ast>" << std::endl;
+                out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr() << "\">" << std::endl;
+                astStringXml(tok->astTop(), 2U, out);
+                out << "</ast>" << std::endl;
             } else if (verbose)
-                std::cout << tok->astTop()->astStringVerbose(0,0) << std::endl;
+                out << tok->astTop()->astStringVerbose(0,0) << std::endl;
             else
-                std::cout << tok->astTop()->astString(" ") << std::endl;
+                out << tok->astTop()->astString(" ") << std::endl;
             print = false;
             if (tok->str() == "(")
                 tok = tok->link();
@@ -1158,24 +1165,43 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 }
 
 
-void Token::printValueFlow() const
+void Token::printValueFlow(bool xml, std::ostream &out) const
 {
     unsigned int line = 0;
-    std::cout << "\n\n##Value flow" << std::endl;
+    if (xml)
+        out << "  <valueflow>" << std::endl;
+    else
+        out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (tok->values.empty())
             continue;
-        if (line != tok->linenr())
-            std::cout << "Line " << tok->linenr() << std::endl;
+        if (xml)
+            out << "    <values id=\"" << &tok->values << "\">" << std::endl;
+        else if (line != tok->linenr())
+            out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
-        std::cout << "  " << tok->str() << ":{";
+        if (!xml)
+            out << "  " << tok->str() << ":{";
         for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
-            if (it != tok->values.begin())
-                std::cout << ",";
-            std::cout << it->intvalue;
+            if (xml) {
+                out << "      <value intvalue=\"" << it->intvalue << "\"";
+                if (it->condition) {
+                    out << " condition-line=\"" << it->condition->linenr() << '\"';
+                }
+                out << "/>" << std::endl;
+            }
+
+            else {
+                out << (it == tok->values.begin() ? "" : ",") << it->intvalue << std::endl;
+            }
         }
-        std::cout << "}" << std::endl;
+        if (xml)
+            out << "    </values>" << std::endl;
+        else
+            out << "}" << std::endl;
     }
+    if (xml)
+        out << "  </valueflow>" << std::endl;
 }
 
 const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const

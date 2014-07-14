@@ -3739,21 +3739,21 @@ void Tokenizer::printDebugOutput() const
         list.front()->printOut(0, list.getFiles());
 
         if (_settings->_xml)
-            std::cout << "<dump>" << std::endl;
+            std::cout << "<debug>" << std::endl;
 
         if (_symbolDatabase) {
             if (_settings->_xml)
-                _symbolDatabase->printXml();
+                _symbolDatabase->printXml(std::cout);
             else if (_settings->_verbose)
                 _symbolDatabase->printOut("Symbol database");
         }
 
-        list.front()->printAst(_settings->_verbose, _settings->_xml);
+        list.front()->printAst(_settings->_verbose, _settings->_xml, std::cout);
+
+        list.front()->printValueFlow(_settings->_xml, std::cout);
 
         if (_settings->_xml)
-            std::cout << "</dump>" << std::endl;
-
-        list.front()->printValueFlow();
+            std::cout << "</debug>" << std::endl;
     }
 
     if (_settings->debugwarnings) {
@@ -3781,6 +3781,68 @@ void Tokenizer::printDebugOutput() const
         }
     }
 }
+
+static std::string toxml(const std::string &str)
+{
+    std::ostringstream xml;
+    for (std::size_t i = 0U; i < str.length(); i++) {
+        char c = str[i];
+        switch (c) {
+        case '<':
+            xml << "&lt;";
+            break;
+        case '>':
+            xml << "&gt;";
+            break;
+        case '&':
+            xml << "&amp;";
+            break;
+        case '\"':
+            xml << "&quot;";
+            break;
+        default:
+            xml << c;
+            break;
+        }
+    }
+    return xml.str();
+}
+
+void Tokenizer::dump(std::ostream &out) const
+{
+    // Create a xml data dump.
+    // The idea is not that this will be readable for humans. It's a
+    // data dump that 3rd party tools could load and get useful info from.
+
+    // tokens..
+    out << "  <tokenlist>" << std::endl;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        out << "    <token id=\"" << tok << "\" file=\"" << toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\"";
+        out << " str=\"" << toxml(tok->str()) << "\"";
+        if (tok->link())
+            out << " link=\"" << tok->link() << '\"';
+        if (tok->varId() > 0U)
+            out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+        if (tok->variable())
+            out << " variable=\"" << tok->variable() << '\"';
+        if (tok->function())
+            out << " function=\"" << tok->function() << '\"';
+        if (!tok->values.empty())
+            out << " values=\"" << &tok->values << '\"';
+        if (tok->astParent())
+            out << " astParent=\"" << tok->astParent() << '\"';
+        if (tok->astOperand1())
+            out << " astOperand1=\"" << tok->astOperand1() << '\"';
+        if (tok->astOperand1())
+            out << " astOperand2=\"" << tok->astOperand2() << '\"';
+        out << "/>" << std::endl;
+    }
+    out << "  </tokenlist>" << std::endl;
+
+    _symbolDatabase->printXml(out);
+    list.front()->printValueFlow(true, out);
+}
+
 void Tokenizer::removeMacrosInGlobalScope()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
