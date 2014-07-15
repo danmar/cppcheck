@@ -708,7 +708,7 @@ void TemplateSimplifier::expandTemplate(
     std::vector<const Token *> &typesUsedInTemplateInstantiation,
     std::list<Token *> &templateInstantiations)
 {
-    for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3->next()) {
+    for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
         if (tok3->str() == "{" || tok3->str() == "(" || tok3->str() == "[")
             tok3 = tok3->link();
 
@@ -720,7 +720,7 @@ void TemplateSimplifier::expandTemplate(
         // member function implemented outside class definition
         else if (TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
-            while (tok3->str() != "::")
+            while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();
         }
 
