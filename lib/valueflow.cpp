@@ -23,24 +23,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
-
-//#include <iostream>
 #include <stack>
-
 
 static void execute(const Token *expr,
                     std::map<unsigned int, MathLib::bigint> * const programMemory,
                     MathLib::bigint *result,
                     bool *error);
-
-//static void printvalues(const Token *tok)
-//{
-//    if (tok->values.empty())
-//        std::cout << "empty";
-//    for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it)
-//        std::cout << " " << (it->intvalue);
-//    std::cout << std::endl;
-//}
 
 static void bailout(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what)
 {
@@ -794,13 +782,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         const Variable *var = tok->astOperand1()->variable();
         if (!var || !var->isLocal())
             continue;
-        const Token * endToken = 0;
-        for (const Token *tok2 = var->typeStartToken(); tok2; tok2 = tok2->previous()) {
-            if (tok2->str() == "{") {
-                endToken = tok2->link();
-                break;
-            }
-        }
+
+        const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
 
         // Rhs values..
         if (!tok->astOperand2() || tok->astOperand2()->values.empty())
@@ -808,7 +791,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         std::list<ValueFlow::Value> values = tok->astOperand2()->values;
 
         const bool constValue = tok->astOperand2()->isNumber();
-        valueFlowForward(tok, endToken, var, varid, values, constValue, tokenlist, errorLogger, settings);
+        valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
     }
 }
 
