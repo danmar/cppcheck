@@ -3824,8 +3824,9 @@ void Tokenizer::dump(std::ostream &out) const
     // tokens..
     out << "  <tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\"";
-        out << " str=\"" << toxml(tok->str()) << "\"";
+        out << "    <token id=\"" << tok << "\" file=\"" << toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
+        out << " str=\"" << toxml(tok->str()) << '\"';
+        out << " scope=\"" << tok->scope() << '\"';
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0U)

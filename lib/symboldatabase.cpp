@@ -2110,6 +2110,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
             out << " className=\"" << toxml(scope->className) << "\"";
+        if (scope->classStart)
+            out << " classStart=\"" << scope->classStart << '\"';
+        if (scope->classEnd)
+            out << " classEnd=\"" << scope->classEnd << '\"';
         if (scope->nestedIn)
             out << " nestedIn=\"" << scope->nestedIn << "\"";
         if (scope->functionList.empty() && scope->varlist.empty()) {
