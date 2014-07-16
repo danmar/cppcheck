@@ -79,6 +79,9 @@ script:
   - xmllint --noout cfg/*
 # check matchcompiler
   - ./tools/test_matchcompiler.py
+# check --dump
+  - ./cppcheck test/testpreprocessor.cpp --dump
+  - xmllint --noout test/testpreprocessor.cpp.dump
 # check if Makefile needs to be regenerated
   - git clean -dfx
   - make dmake
