@@ -618,6 +618,9 @@ static bool valueFlowForward(Token * const               startToken,
             if (varusage) {
                 varusagelevel = indentlevel;
 
+                if (indentlevel < 0 && tok2->str() == "switch")
+                    return false;
+
                 // TODO: don't check noreturn scopes
                 if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
                     if (settings->debugwarnings)
@@ -683,6 +686,7 @@ static bool valueFlowForward(Token * const               startToken,
                 const Scope *scope = tok2->scope();
                 if (scope && scope->type == Scope::eSwitch) {
                     tok2 = const_cast<Token *>(scope->classEnd);
+                    --indentlevel;
                     continue;
                 }
             }

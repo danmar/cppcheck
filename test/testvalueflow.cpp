@@ -754,6 +754,18 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 12));
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 34));
+
+        code = "void f() {\n" // #5981
+               "  int x;\n"
+               "  switch (ab) {\n"
+               "    case A: x = 12; break;\n"
+               "    case B: x = 34; break;\n"
+               "  }\n"
+               "  switch (ab) {\n"
+               "    case A: v = x; break;\n" // <- x is not 34
+               "  }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 34));
     }
 
     void valueFlowAfterCondition() {
