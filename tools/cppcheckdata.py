@@ -65,6 +65,7 @@ class Scope:
     classEndId   = None
     classEnd     = None
     className    = None
+    type         = None
 
     def __init__(self,element):
         self.Id           = element.get('id')
@@ -75,6 +76,7 @@ class Scope:
         self.classEnd     = None
         self.nestedInId   = element.get('nestedId')
         self.nestedIn     = None
+        self.type         = element.get('type')
 
     def setId(self, IdMap):
         self.classStart = IdMap[self.classStartId]
