@@ -943,8 +943,11 @@ static void execute(const Token *expr,
     if (!expr)
         *error = true;
 
-    else if (expr->isNumber())
+    else if (expr->isNumber()) {
         *result = MathLib::toLongNumber(expr->str());
+        if (MathLib::isFloat(expr->str()))
+            *error = true;
+    }
 
     else if (expr->varId() > 0) {
         const std::map<unsigned int, MathLib::bigint>::const_iterator var = programMemory->find(expr->varId());

@@ -939,6 +939,13 @@ private:
                "        x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "void foo(double recoveredX) {\n"
+               "  for (double x = 1e-18; x < 1e40; x *= 1.9) {\n"
+               "    double relativeError = (x - recoveredX) / x;\n"
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowSubFunction() {
