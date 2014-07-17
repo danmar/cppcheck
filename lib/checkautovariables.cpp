@@ -108,7 +108,8 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     for (const Token *tok = start; tok && tok != scope->classEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
-        if (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eDo || tok->scope()->type == Scope::eWhile) // In case of loops, better checking would be necessary
+        const Scope::ScopeType scopeType = tok->scope()->type;
+        if (scopeType == Scope::eFor || scopeType == Scope::eDo || scopeType == Scope::eWhile) // In case of loops, better checking would be necessary
             return true;
         if (Token::simpleMatch(tok, "asm ("))
             return true;
