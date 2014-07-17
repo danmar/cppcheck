@@ -175,6 +175,7 @@ class CppcheckData:
                     token.previous = prev
                     if prev:
                         prev.next = token
+                    prev = token
             if element.tag == 'scopes':
                 for scope in element:
                     self.scopes.append(Scope(scope))
