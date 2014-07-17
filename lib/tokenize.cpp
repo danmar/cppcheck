@@ -7411,11 +7411,15 @@ public:
         start(nullptr),
         end(nullptr) {
     }
-    EnumValue(const EnumValue &ev) :
-        name(ev.name),
-        value(ev.value),
-        start(ev.start),
-        end(ev.end) {
+    EnumValue(const EnumValue &ev) {
+        *this = ev;
+    }
+    EnumValue& operator=(const EnumValue& ev) {
+        name=ev.name;
+        value=ev.value;
+        start=ev.start;
+        end=ev.end;
+        return *this;
     }
     EnumValue(Token *name_, Token *value_, Token *start_, Token *end_) :
         name(name_),

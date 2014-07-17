@@ -2583,7 +2583,7 @@ private:
                       "void f() {\n"
                       "  st s;\n"
                       "  std::memset(&s, 0, sizeof(st));\n"
-                      "}", "std.cfg");
+                      "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
