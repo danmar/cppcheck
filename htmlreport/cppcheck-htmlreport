@@ -45,6 +45,16 @@ h1 {
     margin-left: 4px;
 }
 
+.inconclusive {
+    background-color: #B6B6B4;
+}
+
+.inconclusive2 {
+    background-color: #B6B6B4;
+    border: 1px dotted black;
+    display: inline-block;
+    margin-left: 4px;
+}
 .highlight .hll {
     padding: 1px;
 }
@@ -151,7 +161,7 @@ HTML_FOOTER = """
 """
 
 HTML_ERROR = "<span class='error2'>&lt;--- %s</span>\n"
-
+HTML_INCONCLUSIVE = "<span class='inconclusive2'>&lt;--- %s</span>\n"
 
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
@@ -164,7 +174,12 @@ class AnnotateCodeFormatter(HtmlFormatter):
             if i == 1:
                 for error in self.errors:
                     if error['line'] == line_no:
-                        t = t.replace('\n', HTML_ERROR % error['msg'])
+                        try:
+                            if error['inconclusive'] == 'true':
+                                t = t.replace('\n', HTML_INCONCLUSIVE % error['msg'])
+                        except KeyError:
+                            t = t.replace('\n', HTML_ERROR % error['msg'])
+
                 line_no = line_no + 1
             yield i, t
 
@@ -204,13 +219,23 @@ class CppCheckHandler(XmlContentHandler):
         if name == 'cppcheck':
             self.versionCppcheck = attributes['version']
         if name == 'error':
-            self.errors.append({
-                'file': '',
-                'line': 0,
-                'id': attributes['id'],
-                'severity': attributes['severity'],
-                'msg': attributes['msg']
-            })
+            try:
+                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg'],
+                    'inconclusive': attributes['inconclusive']
+                })
+            except KeyError:
+                                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg']
+                })
         elif name == 'location':
             assert self.errors
             self.errors[-1]['file'] = attributes['file']
@@ -348,11 +373,16 @@ if __name__ == '__main__':
                 "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
             for error in data['errors']:
+                error_class = ''
+                try:
+                    if error['inconclusive'] == 'true':
+                        error_class = 'class="inconclusive"'
+                        error['severity'] += ", inconcl."
+                except KeyError:
+                    pass
+
                 if error['severity'] == 'error':
                     error_class = 'class="error"'
-                else:
-                    error_class = ''
-
                 if error['id'] == 'missingInclude':
                     output_file.write(
                         '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
