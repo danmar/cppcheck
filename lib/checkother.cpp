@@ -1978,7 +1978,7 @@ void CheckOther::checkConstantFunctionParameter()
         //       namespace and add them to the pattern. There are
         //       streams for example (however it seems strange with
         //       const stream parameter).
-        if (Token::Match(tok, "std :: string|wstring")) {
+        if (Token::Match(tok, "std :: string|wstring !!::")) {
             passedByValueError(tok, var->name());
         } else if (Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::")) {
             passedByValueError(tok, var->name());

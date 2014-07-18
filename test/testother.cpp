@@ -1577,6 +1577,9 @@ private:
         testPassedByValue("void f(const std::string str) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by reference.\n", errout.str());
 
+        testPassedByValue("void f(const std::string::size_type x) {}");
+        ASSERT_EQUALS("", errout.str());
+
         testPassedByValue("class Foo;\nvoid f(const Foo foo) {}");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by reference.\n", errout.str());
 
