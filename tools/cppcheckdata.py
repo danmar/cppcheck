@@ -54,14 +54,24 @@ class Token:
         self.linenr        = element.get('linenr')
 
     def setId(self, IdMap):
-        self.scope = IdMap[self.scopeId]
-        self.link = IdMap[self.linkId]
-        self.variable = IdMap[self.variableId]
-        self.function = IdMap[self.functionId]
-        self.values = IdMap[self.valuesId]
-        self.astParent = IdMap[self.astParentId]
+        self.scope       = IdMap[self.scopeId]
+        self.link        = IdMap[self.linkId]
+        self.variable    = IdMap[self.variableId]
+        self.function    = IdMap[self.functionId]
+        self.values      = IdMap[self.valuesId]
+        self.astParent   = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
         self.astOperand2 = IdMap[self.astOperand2Id]
+
+    # Get value if it exists
+    # Returns None if it doesn't exist
+    def getValue(self,v):
+        if not self.values:
+            return None
+        for value in self.values:
+            if value.intvalue == v:
+                return value
+        return None
 
 class Scope:
     Id           = None
