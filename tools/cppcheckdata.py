@@ -24,6 +24,8 @@ class Token:
     astOperand1   = None
     astOperand2Id = None
     astOperand2   = None
+    file          = None
+    linenr        = None
 
     def __init__(self, element):
         self.Id            = element.get('id')
@@ -47,6 +49,8 @@ class Token:
         self.astOperand1   = None
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2   = None
+        self.file          = element.get('file')
+        self.linenr        = element.get('linenr')
 
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
@@ -112,7 +116,7 @@ class Variable:
     isPointer        = None
     isReference      = None
     isStatic         = None
-    
+
     def __init__(self, element):
         self.Id               = element.get('id')
         self.nameTokenId      = element.get('nameToken')
@@ -139,8 +143,10 @@ class ValueFlow:
         intvalue = None
         condition = None
         def __init__(self, element):
-            intvalue = element.get('intvalue')
-            condition = element.get('condition-line')
+            self.intvalue = int(element.get('intvalue'))
+            self.condition = element.get('condition-line')
+            if self.condition:
+                self.condition = int(self.condition)
 
     Id     = None
     values = None
@@ -155,7 +161,7 @@ class CppcheckData:
     scopes    = []
     functions = []
     variables = []
-    values    = []
+    valueflow = []
 
     def __init__(self, filename):
         self.tokenlist = []
@@ -202,7 +208,7 @@ class CppcheckData:
         for variable in self.variables:
             IdMap[variable.Id] = variable
         for values in self.valueflow:
-            IdMap[values.Id] = values
+            IdMap[values.Id] = values.values
 
         for token in self.tokenlist:
             token.setId(IdMap)
