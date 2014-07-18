@@ -595,113 +595,6 @@ Checking test.c...
   </chapter>
 
   <chapter>
-    <title>Rules</title>
-
-    <para>You can define custom rules using regular expressions.</para>
-
-    <para>These rules can not perform sophisticated analysis of the code. But
-    they give you an easy way to check for various simple patterns in the
-    code.</para>
-
-    <para>To get started writing rules, see the related articles here:</para>
-
-    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
-
-    <para>The file format for rules is:</para>
-
-    <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;rule&gt;
-  &lt;tokenlist&gt;LIST&lt;/tokenlist&gt;
-  &lt;pattern&gt;PATTERN&lt;/pattern&gt;
-  &lt;message&gt;
-    &lt;id&gt;ID&lt;/id&gt;
-    &lt;severity&gt;SEVERITY&lt;/severity&gt;
-    &lt;summary&gt;SUMMARY&lt;/summary&gt;
-  &lt;/message&gt;
-&lt;/rule&gt;</programlisting>
-
-    <section>
-      <title>&lt;tokenlist&gt;</title>
-
-      <para>The <literal>&lt;tokenlist&gt;</literal> element is optional. With
-      this element you can control what tokens are checked. The
-      <literal>LIST</literal> can be either <literal>define</literal>,
-      <literal>raw</literal>, <literal>normal</literal> or
-      <literal>simple</literal>.</para>
-
-      <variablelist>
-        <varlistentry>
-          <term>define</term>
-
-          <listitem>
-            <para>used to check #define preprocessor statements.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>raw</term>
-
-          <listitem>
-            <para>used to check the preprocessor output.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>normal</term>
-
-          <listitem>
-            <para>used to check the <literal>normal</literal> token list.
-            There are some simplifications.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>simple</term>
-
-          <listitem>
-            <para>used to check the simple token list. All simplifications are
-            used. Most Cppcheck checks use the simple token list.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <para>If there is no &lt;tokenlist&gt; element then
-      <literal>simple</literal> is used automatically.</para>
-    </section>
-
-    <section>
-      <title>&lt;pattern&gt;</title>
-
-      <para>The <literal>PATTERN</literal> is the
-      <literal>PCRE</literal>-compatible regular expression that will be
-      executed.</para>
-    </section>
-
-    <section>
-      <title>&lt;id&gt;</title>
-
-      <para>The ID specify the user-defined message id.</para>
-    </section>
-
-    <section>
-      <title>&lt;severity&gt;</title>
-
-      <para>The <literal>SEVERITY</literal> must be one of the
-      <literal>Cppcheck</literal> severities: <literal>information</literal>,
-      <literal>performance</literal>, <literal>portability</literal>,
-      <literal>style</literal>, <literal>warning</literal>, or
-      <literal>error</literal>.</para>
-    </section>
-
-    <section>
-      <title>&lt;summary&gt;</title>
-
-      <para>Optional. The summary for the message. If no summary is given, the
-      matching tokens is written.</para>
-    </section>
-  </chapter>
-
-  <chapter>
     <title>Library configuration</title>
 
     <para>When external libraries are used, such as windows/posix/gtk/qt/etc,
@@ -994,6 +887,164 @@ Checking noreturn.c...
       <para>Specifying <literal>-1</literal> as the argument number is going
       to apply a check to all arguments of that function. The specifications
       for individual arguments override this setting.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Rules</title>
+
+    <para>You can define custom rules using regular expressions.</para>
+
+    <para>These rules can not perform sophisticated analysis of the code. But
+    they give you an easy way to check for various simple patterns in the
+    code.</para>
+
+    <para>To get started writing rules, see the related articles here:</para>
+
+    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
+
+    <para>The file format for rules is:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;rule&gt;
+  &lt;tokenlist&gt;LIST&lt;/tokenlist&gt;
+  &lt;pattern&gt;PATTERN&lt;/pattern&gt;
+  &lt;message&gt;
+    &lt;id&gt;ID&lt;/id&gt;
+    &lt;severity&gt;SEVERITY&lt;/severity&gt;
+    &lt;summary&gt;SUMMARY&lt;/summary&gt;
+  &lt;/message&gt;
+&lt;/rule&gt;</programlisting>
+
+    <section>
+      <title>&lt;tokenlist&gt;</title>
+
+      <para>The <literal>&lt;tokenlist&gt;</literal> element is optional. With
+      this element you can control what tokens are checked. The
+      <literal>LIST</literal> can be either <literal>define</literal>,
+      <literal>raw</literal>, <literal>normal</literal> or
+      <literal>simple</literal>.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>define</term>
+
+          <listitem>
+            <para>used to check #define preprocessor statements.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>raw</term>
+
+          <listitem>
+            <para>used to check the preprocessor output.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>normal</term>
+
+          <listitem>
+            <para>used to check the <literal>normal</literal> token list.
+            There are some simplifications.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>simple</term>
+
+          <listitem>
+            <para>used to check the simple token list. All simplifications are
+            used. Most Cppcheck checks use the simple token list.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>If there is no &lt;tokenlist&gt; element then
+      <literal>simple</literal> is used automatically.</para>
+    </section>
+
+    <section>
+      <title>&lt;pattern&gt;</title>
+
+      <para>The <literal>PATTERN</literal> is the
+      <literal>PCRE</literal>-compatible regular expression that will be
+      executed.</para>
+    </section>
+
+    <section>
+      <title>&lt;id&gt;</title>
+
+      <para>The ID specify the user-defined message id.</para>
+    </section>
+
+    <section>
+      <title>&lt;severity&gt;</title>
+
+      <para>The <literal>SEVERITY</literal> must be one of the
+      <literal>Cppcheck</literal> severities: <literal>information</literal>,
+      <literal>performance</literal>, <literal>portability</literal>,
+      <literal>style</literal>, <literal>warning</literal>, or
+      <literal>error</literal>.</para>
+    </section>
+
+    <section>
+      <title>&lt;summary&gt;</title>
+
+      <para>Optional. The summary for the message. If no summary is given, the
+      matching tokens is written.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Cppcheck extensions with Python</title>
+
+    <para>Using dump files it is possible to write Cppcheck extensions with
+    for instance Python.</para>
+
+    <para>The <literal>cppcheckdata.py</literal> module
+    (<uri>http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py</uri>)
+    allows you to load such dump file. It contains
+    <literal>Token</literal>/<literal>Variable</literal>/<literal>ValueFlow.Value</literal>/<literal>Scope</literal>
+    classes that are similar to the <literal>C++</literal> classes in
+    <literal>Cppcheck</literal>-core. The doxygen information for the
+    <literal>C++</literal> classes should be somewhat useful for Python
+    developers also.</para>
+
+    <section>
+      <title>Simple checker: Division by zero</title>
+
+      <para>Here is a simple checker:</para>
+
+      <programlisting>import cppcheckdata
+
+data = cppcheckdata.parsedump('1.c.dump')
+
+for token in data.tokenlist:
+    if token.str == '/' or token.str == '%':
+        # Get denominator (2nd operand)
+        den = token.astOperand2
+
+        # Can denominator be zero?
+        if den.getValue(0):
+            print '[' + token.file + ':' + str(token.linenr) + '] Division by zero'</programlisting>
+
+      <para>Example usage:</para>
+
+      <para><programlisting>cppcheck --dump 1.c
+python divzero.py</programlisting></para>
+    </section>
+
+    <section>
+      <title>Licensing</title>
+
+      <para>The dump file is just a xml file, so it is an open interface
+      without restrictions. You can use it in any way you need.</para>
+
+      <para>The <literal>cppcheckdata.py</literal> is also free to use. No
+      matter if your project is open source or closed source. Use it for any
+      purpose.</para>
     </section>
   </chapter>
 
