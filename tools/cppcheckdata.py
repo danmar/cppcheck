@@ -1,4 +1,5 @@
-# Module that loads a cppcheck dump
+# Python module that loads a cppcheck dump
+# License: No restrictions, use this as you need.
 
 from lxml import etree
 
