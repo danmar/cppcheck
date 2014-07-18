@@ -1590,13 +1590,16 @@ void CheckClass::checkConst()
                 } else if (Token::Match(previous->previous(), "*|& >")) {
                     const Token *temp = previous;
 
+                    bool foundConst = false;
                     while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {
                         temp = temp->previous();
-                        if (temp->str() == "const")
+                        if (temp->str() == "const") {
+                            foundConst = true;
                             break;
+                        }
                     }
 
-                    if (temp->str() != "const")
+                    if (!foundConst)
                         continue;
                 } else if (func->isOperator && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
                     const std::string& opName = func->tokenDef->str();
