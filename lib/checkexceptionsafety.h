@@ -82,8 +82,12 @@ public:
 
 private:
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok) {
-        reportError(tok, Severity::error, "exceptThrowInDestructor", "Exception thrown in destructor.");
+    void destructorsError(const Token * const tok, const std::string &className) {
+        reportError(tok, Severity::warning, "exceptThrowInDestructor",
+                    "Class " + className + " is not safe, destructor throws exception\n"
+                    "The class " + className + " is not safe because its destructor "
+                    "throws an exception. If " + className + " is used and an exception "
+                    "is thrown that is caught in an outer scope the program will terminate.");
     }
 
     void deallocThrowError(const Token * const tok, const std::string &varname) {
@@ -140,7 +144,7 @@ private:
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckExceptionSafety c(0, settings, errorLogger);
-        c.destructorsError(0);
+        c.destructorsError(0, "Class");
         c.deallocThrowError(0, "p");
         c.rethrowCopyError(0, "varname");
         c.catchExceptionByValueError(0);

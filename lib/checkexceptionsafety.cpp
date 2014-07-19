@@ -32,6 +32,9 @@ namespace {
 
 void CheckExceptionSafety::destructors()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Perform check..
@@ -57,7 +60,7 @@ void CheckExceptionSafety::destructors()
 
                     // throw found within a destructor
                     if (tok->str() == "throw") {
-                        destructorsError(tok);
+                        destructorsError(tok, scope->className);
                         break;
                     }
                 }

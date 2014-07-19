@@ -75,7 +75,7 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -83,12 +83,12 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Exception thrown in destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
 
         check("x::~x() {\n"
               "    throw e;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", "", errout.str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
