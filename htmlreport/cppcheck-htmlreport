@@ -229,7 +229,7 @@ class CppCheckHandler(XmlContentHandler):
                     'inconclusive': attributes['inconclusive']
                 })
             except KeyError:
-                                self.errors.append({
+                self.errors.append({
                     'file': '',
                     'line': 0,
                     'id': attributes['id'],
