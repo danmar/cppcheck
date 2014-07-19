@@ -4886,20 +4886,13 @@ void Tokenizer::simplifyCasts()
             }
         }
 
-        while (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <")) {
+        if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <")) {
             Token *tok2 = tok->linkAt(2);
 
-            if (Token::simpleMatch(tok2, "> (")) {
-                Token *closeBracket = tok2->next()->link();
-                if (closeBracket) {
-                    Token::eraseTokens(tok, tok2->tokAt(2));
-                    closeBracket->deleteThis();
-                } else {
-                    break;
-                }
-            } else {
+            if (Token::simpleMatch(tok2, "> ("))
+                Token::eraseTokens(tok, tok2->next());
+            else
                 break;
-            }
         }
     }
 }

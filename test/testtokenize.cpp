@@ -108,6 +108,7 @@ private:
         TEST_CASE(removeCast12);
         TEST_CASE(removeCast13);
         TEST_CASE(removeCast14);
+        TEST_CASE(removeCast15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
 
         TEST_CASE(simplifyFloatCasts); // float casting a integer
 
@@ -1175,7 +1176,7 @@ private:
 
         tokenizer.simplifyCasts();
 
-        ASSERT_EQUALS("t = & p ;", tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("t = ( & p ) ;", tokenizer.tokens()->stringifyList(0, false));
     }
 
     void removeCast3() {
@@ -1255,6 +1256,11 @@ private:
         ASSERT_EQUALS("( ! ( & s ) . a )", tokenizeAndStringify("(! ( (struct S const *) &s)->a)", true));
         // #5244
         ASSERT_EQUALS("bar ( & ptr ) ;", tokenizeAndStringify("bar((const X**)&ptr);",true));
+    }
+
+    void removeCast15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
+                      tokenizeAndStringify("a + static_cast<int>(b ? 60 : 0);",true));
     }
 
     void simplifyFloatCasts() { // float casting integers
