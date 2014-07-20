@@ -2116,9 +2116,11 @@ void SymbolDatabase::printXml(std::ostream &out) const
             out << " classEnd=\"" << scope->classEnd << '\"';
         if (scope->nestedIn)
             out << " nestedIn=\"" << scope->nestedIn << "\"";
-        if (scope->functionList.empty() && scope->varlist.empty()) {
+        if (scope->function)
+            out << " function=\"" << scope->function << "\"";
+        if (scope->functionList.empty() && scope->varlist.empty())
             out << "/>" << std::endl;
-        } else {
+        else {
             out << '>' << std::endl;
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
