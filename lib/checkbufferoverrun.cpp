@@ -758,8 +758,8 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
                 totalElements *= arrayInfo.num(ri);
             }
 
-            // totalElements == 0 => Unknown size
-            if (totalElements == 0)
+            // totalElements <= 0 => Unknown size
+            if (totalElements <= 0)
                 continue;
 
             // taking address of 1 past end?
