@@ -308,6 +308,7 @@ if __name__ == '__main__':
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print('Processing errors')
+    decode_errors = []
     for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
         errors = data['errors']
@@ -326,6 +327,11 @@ if __name__ == '__main__':
         except IOError:
             sys.stderr.write("ERROR: Source file '%s' not found.\n" %
                              source_filename)
+            continue
+        except UnicodeDecodeError:
+            sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
+                             source_filename)
+            decode_errors.append(source_filename[2:]) # "[2:]" gets rid of "./" at beginning
             continue
 
         htmlFormatter = AnnotateCodeFormatter(linenos=True,
@@ -369,32 +375,41 @@ if __name__ == '__main__':
         output_file.write(
             '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
-            output_file.write(
+            if filename in decode_errors: # don't print a link but a note
+                output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
+            else:
+                output_file.write(
                 "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
-            for error in data['errors']:
-                error_class = ''
-                try:
-                    if error['inconclusive'] == 'true':
-                        error_class = 'class="inconclusive"'
-                        error['severity'] += ", inconcl."
-                except KeyError:
-                    pass
+                for error in data['errors']:
+                    error_class = ''
+                    try:
+                        if error['inconclusive'] == 'true':
+                            error_class = 'class="inconclusive"'
+                            error['severity'] += ", inconcl."
+                    except KeyError:
+                        pass
 
-                if error['severity'] == 'error':
-                    error_class = 'class="error"'
-                if error['id'] == 'missingInclude':
-                    output_file.write(
-                        '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
-                        (error['id'], error['severity'], error['msg']))
-                else:
-                    output_file.write(
-                        "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
-                        (data['htmlfile'], error['line'], error['line'],
-                         error['id'], error['severity'], error_class,
-                         error['msg']))
+                    if error['severity'] == 'error':
+                        error_class = 'class="error"'
+                    if error['id'] == 'missingInclude':
+                        output_file.write(
+                            '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+                            (error['id'], error['severity'], error['msg']))
+                    else:
+                        output_file.write(
+                            "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                            (data['htmlfile'], error['line'], error['line'],
+                             error['id'], error['severity'], error_class,
+                             error['msg']))
+
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
+
+        if (decode_errors):
+            sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
+            sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),
