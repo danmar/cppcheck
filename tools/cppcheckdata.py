@@ -232,3 +232,30 @@ class CppcheckData:
 
 def parsedump(filename):
     return CppcheckData(filename)
+
+# Check if type of ast node is float/double
+def astIsFloat(token):
+    if not token:
+        return False
+    if token.str == '.':
+        return astIsFloat(token.astOperand2)
+    if '+-*/%'.find(token.str) == 0:
+        if True == astIsFloat(token.astOperand1):
+            return True
+        return astIsFloat(token.astOperand2)
+    if not token.variable:
+        # float literal?
+        if token.str[0].isdigit():
+            for c in token.str:
+                if c=='f' or c=='.' or c=='E':
+                    return True
+        return False
+    typeToken = token.variable.typeStartToken
+    endToken = token.variable.typeEndToken
+    while typeToken != endToken:
+        if typeToken.str == 'float' or typeToken.str == 'double':
+            return True
+        typeToken = typeToken.next
+    if typeToken.str == 'float' or typeToken.str == 'double':
+        return True
+    return False
