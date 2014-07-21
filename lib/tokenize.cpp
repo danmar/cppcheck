@@ -10290,7 +10290,7 @@ void Tokenizer::removeUnnecessaryQualification()
                     /** @todo this should be made more generic to handle more levels */
                     if (Token::Match(tok->tokAt(-2), "%type% ::")) {
                         if (classInfo.size() >= 2) {
-                            if (classInfo.at(classInfo.size() - 2).className != tok->strAt(-2))
+                            if (classInfo[classInfo.size() - 2].className != tok->strAt(-2))
                                 continue;
                             else
                                 qualification = tok->strAt(-2) + "::" + qualification;
