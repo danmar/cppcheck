@@ -262,6 +262,13 @@ if __name__ == '__main__':
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
+
+    try:
+        sys.argv[1]
+    except IndexError: # no arguments give, print --help
+        parser.print_help()
+        quit()
+
     if not options.report_dir:
         parser.error('No report directory set.')
 
@@ -415,3 +422,5 @@ if __name__ == '__main__':
     with io.open(os.path.join(options.report_dir, 'style.css'),
                  'w') as css_file:
         css_file.write(STYLE_FILE)
+
+    print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
