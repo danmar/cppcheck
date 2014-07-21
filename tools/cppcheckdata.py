@@ -4,29 +4,41 @@
 from lxml import etree
 
 class Token:
-    Id            = None
-    str           = None
-    next          = None
-    previous      = None
-    scopeId       = None
-    scope         = None
-    linkId        = None
-    link          = None
-    varId         = None
-    variableId    = None
-    variable      = None
-    functionId    = None
-    function      = None
-    valuesId      = None
-    values        = None
-    astParentId   = None
-    astParent     = None
-    astOperand1Id = None
-    astOperand1   = None
-    astOperand2Id = None
-    astOperand2   = None
-    file          = None
-    linenr        = None
+    Id               = None
+    str              = None
+    next             = None
+    previous         = None
+    scopeId          = None
+    scope            = None
+    isName           = None
+    isNumber         = None
+    isInt            = None
+    isFloat          = None
+    isString         = None
+    strlen           = None
+    isChar           = None
+    isOp             = None
+    isArithmeticalOp = None
+    isAssignmentOp   = None
+    isComparisonOp   = None
+    isLogicalOp      = None
+    linkId           = None
+    link             = None
+    varId            = None
+    variableId       = None
+    variable         = None
+    functionId       = None
+    function         = None
+    valuesId         = None
+    values           = None
+    astParentId      = None
+    astParent        = None
+    astOperand1Id    = None
+    astOperand1      = None
+    astOperand2Id    = None
+    astOperand2      = None
+    file             = None
+    linenr           = None
 
     def __init__(self, element):
         self.Id            = element.get('id')
@@ -35,6 +47,30 @@ class Token:
         self.previous      = None
         self.scopeId       = element.get('scope')
         self.scope         = None
+        type               = element.get('type')
+        if type == 'name':
+            self.isName = True
+        elif type == 'number':
+            self.isNumber = True
+            if element.get('isInt'):
+                self.isInt = True
+            elif element.get('isFloat'):
+                self.isFloat = True
+        elif type == 'string':
+            self.isString = True
+            self.strlen = int(element.get('strlen'))
+        elif type == 'char':
+            self.isChar = True
+        elif type == 'op':
+            self.isOp = True
+            if element.get('isArithmeticalOp'):
+                self.isArithmeticalOp = True
+            elif element.get('isAssignmentOp'):
+                self.isAssignmentOp = True
+            elif element.get('isComparisonOp'):
+                self.isComparisonOp = True
+            elif element.get('isLogicalOp'):
+                self.isLogicalOp = True
         self.linkId        = element.get('link')
         self.link          = None
         self.varId         = element.get('varId')

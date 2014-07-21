@@ -3827,6 +3827,31 @@ void Tokenizer::dump(std::ostream &out) const
         out << "    <token id=\"" << tok << "\" file=\"" << toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
         out << " str=\"" << toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
+        if (tok->isName())
+            out << " type=\"name\"";
+        else if (tok->isNumber()) {
+            out << " type=\"number\"";
+            if (MathLib::isInt(tok->str()))
+                out << " isInt=\"True\"";
+            if (MathLib::isFloat(tok->str()))
+                out << " isFloat=\"True\"";
+        } else if (tok->type() == Token::eString)
+            out << " type=\"string\" strlen=\"" << Token::getStrLength(tok) << '\"';
+        else if (tok->type() == Token::eChar)
+            out << " type=\"char\"";
+        else if (tok->isBoolean())
+            out << " type=\"boolean\"";
+        else if (tok->isOp()) {
+            out << " type=\"op\"";
+            if (tok->isArithmeticalOp())
+                out << " isArithmeticalOp=\"True\"";
+            else if (tok->isAssignmentOp())
+                out << " isAssignmentOp=\"True\"";
+            else if (tok->isComparisonOp())
+                out << " isComparisonOp=\"True\"";
+            else if (tok->type() == Token::eLogicalOp)
+                out << " isLogicalOp=\"True\"";
+        }
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0U)
