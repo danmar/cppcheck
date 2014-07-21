@@ -146,7 +146,7 @@ def scanarchive(filepath, jobs):
 
 #
 # List of skipped packages - which trigger known yet unresolved problems with cppcheck.
-# The issues on trac (http://trac.cppcheck.net) are given for reference 
+# The issues on trac (http://trac.cppcheck.net) are given for reference
 # boost #3654 (?)
 # flite #5975
 # insight#5184

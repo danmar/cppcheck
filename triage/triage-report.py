@@ -29,20 +29,20 @@ out['fp'] = ''
 out['tp'] = ''
 
 numberOfFalsePositives = 0
-numberOfTruePositives  = 0
+numberOfTruePositives = 0
 numberOfFalseNegatives = 0
 
 for result in results.split('\n'):
     result = result.strip()
 
-    res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', result)
+    res = re.match('\\[(' + project + '.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', result)
     if res is None:
         continue
 
     filename = res.group(1)
-    linenr   = res.group(2)
-    message  = res.group(3)
-    css      = 'untriaged'
+    linenr = res.group(2)
+    message = res.group(3)
+    css = 'untriaged'
     classification = 'Untriaged'
     if result in truepositives:
         css = 'tp'
@@ -54,16 +54,16 @@ for result in results.split('\n'):
         numberOfFalsePositives += 1
     href = None
 
-    html =  '  <tr>'
-    html += '<td class='+css+'>'+filename+'</td>'
-    html += '<td class='+css+'>'+linenr+'</td>'
-    html += '<td class='+css+'>'+message+'</td>'
+    html = '  <tr>'
+    html += '<td class=' + css + '>' + filename + '</td>'
+    html += '<td class=' + css + '>' + linenr + '</td>'
+    html += '<td class=' + css + '>' + message + '</td>'
     if project == 'linux-3.11':
         href = 'http://github.com/torvalds/linux/blob/v3.11' + filename[filename.find('/'):] + '#L' + linenr
     if href:
-        html += '<td class='+css+'><a href="' + href + '">' + classification + '</a></td>'
+        html += '<td class=' + css + '><a href="' + href + '">' + classification + '</a></td>'
     else:
-        html += '<td class='+css+'>' + classification + '</td>'
+        html += '<td class=' + css + '>' + classification + '</td>'
     html += '</tr>\n'
 
     out[css] += html
@@ -74,7 +74,7 @@ for line in f.readlines():
     if line.find('] -> [') > 0 or line.find('(error)') < 0:
         continue
 
-    res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
+    res = re.match('\\[(' + project + '.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
     if res is None:
         continue
 
@@ -83,17 +83,17 @@ for line in f.readlines():
 
     numberOfFalseNegatives += 1
 
-    filename       = res.group(1)
-    linenr         = res.group(2)
-    message        = res.group(3)
+    filename = res.group(1)
+    linenr = res.group(2)
+    message = res.group(3)
     classification = 'False Negative'
-    css            = 'fn'
+    css = 'fn'
 
-    html =  '  <tr>'
-    html += '<td class='+css+'>'+filename+'</td>'
-    html += '<td class='+css+'>'+linenr+'</td>'
-    html += '<td class='+css+'>'+message+'</td>'
-    html += '<td class='+css+'>'+classification+'</td>'
+    html = '  <tr>'
+    html += '<td class=' + css + '>' + filename + '</td>'
+    html += '<td class=' + css + '>' + linenr + '</td>'
+    html += '<td class=' + css + '>' + message + '</td>'
+    html += '<td class=' + css + '>' + classification + '</td>'
     html += '</tr>\n'
 
     out[css] += html

@@ -275,15 +275,17 @@ class AnnotateCodeFormatter(HtmlFormatter):
                     if error['line'] == line_no:
                         try:
                             if error['inconclusive'] == 'true':
-                                if error.get('verbose') and (error['verbose'] != error['msg']):  # only print verbose msg if it really differs from actual message
+                                # only print verbose msg if it really differs
+                                # from actual message
+                                if error.get('verbose') and (error['verbose'] != error['msg']):
                                     index = t.rfind('\n')
-                                    t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index+1:]
+                                    t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
                                 else:
                                     t = t.replace('\n', HTML_INCONCLUSIVE % error['msg'])
                         except KeyError:
                             if error.get('verbose') and (error['verbose'] != error['msg']):
                                 index = t.rfind('\n')
-                                t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index+1:]
+                                t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
                             else:
                                 t = t.replace('\n', HTML_ERROR % error['msg'])
 
@@ -521,7 +523,7 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        for occurrences in reversed(range(cnt_min, cnt_max+1)):
+        for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(Counter(stats).items()) if v == occurrences]:
                 stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
@@ -584,14 +586,13 @@ if __name__ == '__main__':
                  'w') as css_file:
         css_file.write(STYLE_FILE)
 
-
     print("Creating stats.html (statistics)\n")
-    stats_countlist={}
+    stats_countlist = {}
 
     for filename, data in sorted(files.items()):
         if (filename == ''):
             continue
-        stats_tmplist=[]
+        stats_tmplist = []
         for error in sorted(data['errors'], key=lambda k: k['line']):
             stats_tmplist.append(error['severity'])
 
@@ -607,37 +608,39 @@ if __name__ == '__main__':
 
         for sev in SEVERITIES:
             _sum = 0
-            stats_templist={}
+            stats_templist = {}
 
-            try:        # if the we have an style warning but we are checking for portability, we have to skip it to prevent KeyError
+            # if the we have an style warning but we are checking for
+            # portability, we have to skip it to prevent KeyError
+            try:
                 for filename in stats_countlist:
-                    try: # also bail out if we have a file with no sev-results
+                    try:  # also bail out if we have a file with no sev-results
                         _sum += stats_countlist[filename][sev]
-                        stats_templist[filename] = (int)(stats_countlist[filename][sev]) # file : amount,
+                        stats_templist[filename] = (int)(stats_countlist[filename][sev])  # file : amount,
                     except KeyError:
                         continue
-                if (_sum == 0): # don't print "0 style" etc, if no style warnings were found
+                # don't print "0 style" etc, if no style warnings were found
+                if (_sum == 0):
                     break
             except KeyError:
                 continue
             stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
 
-
             # sort, so that the file with the most severities per type is first
-            stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1,0), reverse=True)
+            stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1, 0), reverse=True)
             it = 0
             LENGTH = 0
 
-            for i in stats_list_sorted: # printing loop
-                # for aesthetics: if it's the first iteration of the loop, get the max length of the number string
+            for i in stats_list_sorted:  # printing loop
+                # for aesthetics: if it's the first iteration of the loop, get
+                # the max length of the number string
                 if (it == 0):
-                    LENGTH = len(str(i[1])) # <- length of longest number, now get the difference and try to  make other numbers align to it
+                    LENGTH = len(str(i[1]))  # <- length of longest number, now get the difference and try to  make other numbers align to it
 
-                stats_file.write("&#160;"*3 + str(i[1]) + "&#160;"*(1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
+                stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
                 it += 1
-                if (it == 10): # print only the top 10
+                if (it == 10):  # print only the top 10
                     break
             stats_file.write("</p>\n")
 
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
-
