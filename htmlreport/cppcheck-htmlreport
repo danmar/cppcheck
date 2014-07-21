@@ -348,7 +348,7 @@ if __name__ == '__main__':
                                options.title,
                                filename))
 
-            for error in errors:
+            for error in sorted(errors, key=lambda k: k['line']):
                 output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
 
             output_file.write(HTML_HEAD_END)
@@ -382,7 +382,7 @@ if __name__ == '__main__':
                 output_file.write(
                 "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
                 (data['htmlfile'], filename))
-                for error in data['errors']:
+                for error in sorted(data['errors'], key=lambda k: k['line']):
                     error_class = ''
                     try:
                         if error['inconclusive'] == 'true':
