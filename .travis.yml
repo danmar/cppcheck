@@ -30,7 +30,7 @@ before_install:
 
 script:
 # download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
-  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/clang/archive/0ddd258c374240c22a53e3e71200048ec3a64284.zip" & make -j 4 & wait; unzip 0ddd258c374240c22a53e3e71200048ec3a64284.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-0ddd258c374240c22a53e3e71200048ec3a64284 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -iINPUTS -j 2 |& tee /tmp/clang.cppcheck; cd ../ ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/clang/archive/0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0.zip" & make -j 4 & wait; unzip 0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -iINPUTS -j 2 |& tee /tmp/clang.cppcheck; cd ../ ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
