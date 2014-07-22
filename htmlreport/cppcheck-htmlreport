@@ -359,7 +359,14 @@ if __name__ == '__main__':
                 output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
 
             output_file.write(HTML_HEAD_END)
-            lexer = guess_lexer_for_filename(source_filename, '')
+            try:
+                lexer = guess_lexer_for_filename(source_filename, '')
+            except:
+                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
+                output_file.write("\n <tr><td colspan='4'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                output_file.write("\n <tr><td colspan='4'> Sorry about this.</td></tr>")
+                continue
+
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
 
