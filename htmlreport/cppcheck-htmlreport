@@ -6,6 +6,7 @@ import io
 import sys
 import optparse
 import os
+from collections import Counter
 
 from pygments import highlight
 from pygments.lexers import guess_lexer_for_filename
@@ -74,6 +75,18 @@ h1 {
     z-index: 1;
 }
 
+#menu_index {
+    float: left;
+    margin-top: 5px;
+    padding-left: 5px;
+    text-align: left;
+    width: 200px;
+    height: 75%;
+    position: fixed;
+    overflow: auto;
+    z-index: 1;
+}
+
 #menu > a {
     display: block;
     margin-left: 10px;
@@ -99,6 +112,19 @@ h1 {
     padding: 0 10px 10px 10px;
     width: 80%;
     padding-left: 150px;
+}
+
+#content_index {
+    background-color: white;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    float: left;
+    margin: 5px;
+    margin-left: 10px;
+    padding: 0 10px 10px 10px;
+    width: 80%;
+    padding-left: 200px;
 }
 
 .linenos {
@@ -381,10 +407,22 @@ if __name__ == '__main__':
     # Generate a master index.html file that will contain a list of
     # all the errors created.
     print('Creating index.html')
+
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
-        output_file.write(HTML_HEAD_END)
+
+        stats = []
+        for filename, data in sorted(files.items()):
+            for error in data['errors']:
+                stats.append(error['id']) # get the stats
+
+        stat_html = []
+        for _id, _number in Counter(stats).most_common():
+            stat_html.append("        " + str(_number) + " " + str(_id) + "<br/>\n")
+
+        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1)   % (options.title, '', options.title, ''))
+        output_file.write('       <p>\n' + ''.join(stat_html) + '       </p>')
+        output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
         output_file.write(
             '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
@@ -421,9 +459,9 @@ if __name__ == '__main__':
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
-        if (decode_errors):
-            sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
-            sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
+    if (decode_errors):
+        sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
+        sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),
