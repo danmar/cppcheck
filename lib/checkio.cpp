@@ -338,7 +338,9 @@ void CheckIO::seekOnAppendedFileError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckIO::invalidScanf()
 {
-    if (!_settings->isEnabled("warning") && !_settings->isEnabled("portability"))
+    const bool warning = _settings->isEnabled("warning");
+    const bool portability = _settings->isEnabled("portability");
+    if (!warning && !portability)
         return;
 
     const bool windows = _settings->isWindowsPlatform();
@@ -375,9 +377,9 @@ void CheckIO::invalidScanf()
                 }
 
                 else if (std::isalpha((unsigned char)formatstr[i]) || formatstr[i] == '[') {
-                    if ((formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')) && _settings->isEnabled("warning"))  // #3490 - field width limits are only necessary for string input
+                    if (warning && (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')))  // #3490 - field width limits are only necessary for string input
                         invalidScanfError(tok, false);
-                    else if (formatstr[i] != 'n' && formatstr[i] != 'c' && !windows && _settings->isEnabled("portability"))
+                    else if (portability && formatstr[i] != 'n' && formatstr[i] != 'c' && !windows)
                         invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
                     format = false;
                 }
@@ -1322,10 +1324,12 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 argListTok2 = argListTok2->nextArgument(); // Find next argument
             }
 
-            // Check that all parameter positions reference an actual parameter
-            for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
-                if (((*it == 0) || (*it > numFormat)) && _settings->isEnabled("warning"))
-                    wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
+            if (warning) {
+                // Check that all parameter positions reference an actual parameter
+                for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
+                    if ((*it == 0) || (*it > numFormat))
+                        wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
+                }
             }
 
             // Mismatching number of parameters => warning

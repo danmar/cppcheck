@@ -798,7 +798,7 @@ void CheckOther::checkRedundantAssignment()
                             memAssignments[param1->varId()] = tok;
                         else {
                             const std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
-                            if (scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok) && warning)
+                            if (warning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
                             else if (performance)
                                 redundantCopyError(it->second, tok, param1->str());
