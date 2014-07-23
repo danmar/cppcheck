@@ -75,8 +75,8 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 void CheckClass::constructors()
 {
-    bool style = _settings->isEnabled("style");
-    bool warnings = _settings->isEnabled("warning");
+    const bool style = _settings->isEnabled("style");
+    const bool warnings = _settings->isEnabled("warning");
     if (!style && !warnings)
         return;
 
@@ -419,9 +419,10 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
         // Check if base class exists in database
         if (derivedFrom && derivedFrom->classScope) {
+            const std::list<Function>& functionList = derivedFrom->classScope->functionList;
             std::list<Function>::const_iterator func;
 
-            for (func = derivedFrom->classScope->functionList.begin(); func != derivedFrom->classScope->functionList.end(); ++func) {
+            for (func = functionList.begin(); func != functionList.end(); ++func) {
                 if (func->tokenDef->str() == tok->str())
                     return true;
             }
@@ -880,30 +881,31 @@ void CheckClass::privateFunctions()
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
             continue;
 
-        std::list<const Function*> FuncList;
+        std::list<const Function*> privateFunctions;
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // Get private functions..
             if (func->type == Function::eFunction && func->access == Private && !func->isOperator) // TODO: There are smarter ways to check private operator usage
-                FuncList.push_back(&*func);
+                privateFunctions.push_back(&*func);
         }
 
         // Bailout for overridden virtual functions of base classes
         if (!scope->definedType->derivedFrom.empty()) {
             // Check virtual functions
-            for (std::list<const Function*>::iterator it = FuncList.begin(); it != FuncList.end();) {
+            for (std::list<const Function*>::iterator it = privateFunctions.begin(); it != privateFunctions.end();) {
                 if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
-                    FuncList.erase(it++);
+                    privateFunctions.erase(it++);
                 else
                     ++it;
             }
         }
 
-        while (!FuncList.empty()) {
-            const std::string& funcName = FuncList.front()->tokenDef->str();
+        while (!privateFunctions.empty()) {
+            const std::string& funcName = privateFunctions.front()->tokenDef->str();
             // Check that all private functions are used
             bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
-            for (std::list<Type::FriendInfo>::const_iterator it = scope->definedType->friendList.begin(); !used && it != scope->definedType->friendList.end(); ++it) {
+            const std::list<Type::FriendInfo>& friendList = scope->definedType->friendList;
+            for (std::list<Type::FriendInfo>::const_iterator it = friendList.begin(); !used && it != friendList.end(); ++it) {
                 if (it->type)
                     used = checkFunctionUsage(funcName, it->type->classScope);
                 else
@@ -911,9 +913,9 @@ void CheckClass::privateFunctions()
             }
 
             if (!used)
-                unusedPrivateFunctionError(FuncList.front()->tokenDef, scope->className, funcName);
+                unusedPrivateFunctionError(privateFunctions.front()->tokenDef, scope->className, funcName);
 
-            FuncList.pop_front();
+            privateFunctions.pop_front();
         }
     }
 }
@@ -945,8 +947,7 @@ void CheckClass::checkMemset()
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove ( %any%")) {
                 const Token* arg1 = tok->tokAt(2);
-                const Token* arg3 = arg1;
-                arg3 = arg3->nextArgument();
+                const Token* arg3 = arg1->nextArgument();
                 if (arg3)
                     arg3 = arg3->nextArgument();
                 if (!arg3)
@@ -1043,8 +1044,9 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
-        if (type->definedType->derivedFrom[i].type && type->definedType->derivedFrom[i].type->classScope)
-            checkMemsetType(start, tok, type->definedType->derivedFrom[i].type->classScope, allocation, parsedTypes);
+        const Type* derivedFrom = type->definedType->derivedFrom[i].type;
+        if (derivedFrom && derivedFrom->classScope)
+            checkMemsetType(start, tok, derivedFrom->classScope, allocation, parsedTypes);
     }
 
     // Warn if type is a class that contains any virtual functions

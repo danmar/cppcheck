@@ -1015,8 +1015,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         // check each array variable
         if (_variableList[i] && _variableList[i]->isArray()) {
             // check each array dimension
-            for (std::size_t j = 0; j < _variableList[i]->dimensions().size(); j++) {
-                Dimension &dimension = const_cast<Dimension &>(_variableList[i]->dimensions()[j]);
+            const std::vector<Dimension>& dimensions = _variableList[i]->dimensions();
+            for (std::size_t j = 0; j < dimensions.size(); j++) {
+                Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
                 // check for a single token dimension that is a variable
                 if (dimension.num == 0) {
                     dimension.known = false;
@@ -1361,12 +1362,14 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
         if (i->tokenDef->str() == tok->str() && Function::argsMatch(scope, i->argDef->next(), argStart->next(), "", 0)) {
             function = &*i;
             // copy attributes from function prototype to function
-            const_cast<Token *>(tok)->isAttributeConstructor(i->tokenDef->isAttributeConstructor());
-            const_cast<Token *>(tok)->isAttributeDestructor(i->tokenDef->isAttributeDestructor());
-            const_cast<Token *>(tok)->isAttributePure(i->tokenDef->isAttributePure());
-            const_cast<Token *>(tok)->isAttributeConst(i->tokenDef->isAttributeConst());
-            const_cast<Token *>(tok)->isAttributeNothrow(i->tokenDef->isAttributeNothrow());
-            const_cast<Token *>(tok)->isDeclspecNothrow(i->tokenDef->isDeclspecNothrow());
+            Token* to = const_cast<Token *>(tok);
+            const Token* from = i->tokenDef;
+            to->isAttributeConstructor(from->isAttributeConstructor());
+            to->isAttributeDestructor(from->isAttributeDestructor());
+            to->isAttributePure(from->isAttributePure());
+            to->isAttributeConst(from->isAttributeConst());
+            to->isAttributeNothrow(from->isAttributeNothrow());
+            to->isDeclspecNothrow(from->isDeclspecNothrow());
             break;
         }
     }
@@ -2293,9 +2296,10 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
+        const ::Type* derivedFromType = baseType->derivedFrom[i].type;
         // check if base class exists in database
-        if (baseType->derivedFrom[i].type && baseType->derivedFrom[i].type->classScope) {
-            const Scope *parent = baseType->derivedFrom[i].type->classScope;
+        if (derivedFromType && derivedFromType->classScope) {
+            const Scope *parent = derivedFromType->classScope;
 
             std::list<Function>::const_iterator func;
 
@@ -2324,10 +2328,10 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
                 }
             }
 
-            if (!baseType->derivedFrom[i].type->derivedFrom.empty() && !baseType->derivedFrom[i].type->hasCircularDependencies()) {
+            if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
                 // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
                 // #5590 with a loop within the class hierarchie.
-                if (isImplicitlyVirtual_rec(baseType->derivedFrom[i].type, safe))  {
+                if (isImplicitlyVirtual_rec(derivedFromType, safe))  {
                     return true;
                 }
             }
