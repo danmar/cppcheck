@@ -201,8 +201,9 @@ private:
                "* Duplicated inherited data members\n";
     }
 
-    // operatorEqRetRefThis helper function
-    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>* analyzedFunctions=nullptr);
+    // operatorEqRetRefThis helper functions
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions);
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;

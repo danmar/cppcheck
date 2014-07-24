@@ -1190,7 +1190,13 @@ void CheckClass::operatorEqRetRefThis()
     }
 }
 
-void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>* analyzedFunctions)
+void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last)
+{
+    std::set<const Function*> analyzedFunctions;
+    checkReturnPtrThis(scope, func, tok, last, analyzedFunctions);
+}
+
+void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions)
 {
     bool foundReturn = false;
 
@@ -1219,11 +1225,8 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                             if (!it->isConst) {
                                 /** @todo make sure argument types match */
                                 // avoid endless recursions
-                                if (!analyzedFunctions || analyzedFunctions->find(&*it)==analyzedFunctions->end()) {
-                                    std::set<const Function*> local_analyzedFunctions;
-                                    if (!analyzedFunctions)
-                                        analyzedFunctions=&local_analyzedFunctions;
-                                    analyzedFunctions->insert(&*it);
+                                if (analyzedFunctions.find(&*it) == analyzedFunctions.end()) {
+                                    analyzedFunctions.insert(&*it);
                                     checkReturnPtrThis(scope, &*it, it->arg->link()->next(), it->arg->link()->next()->link(),
                                                        analyzedFunctions);
                                 }
