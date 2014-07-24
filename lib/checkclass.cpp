@@ -905,11 +905,16 @@ void CheckClass::privateFunctions()
             bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
             // Check in friend classes
             const std::list<Type::FriendInfo>& friendList = scope->definedType->friendList;
-            for (std::list<Type::FriendInfo>::const_iterator it = friendList.begin(); !used && it != friendList.end(); ++it) {
-                if (it->type)
-                    used = checkFunctionUsage(funcName, it->type->classScope);
-                else
+            for (std::list<Type::FriendInfo>::const_iterator it = friendList.begin(); it != friendList.end(); ++it) {
+                if (it->type) {
+                    if (checkFunctionUsage(funcName, it->type->classScope)) {
+                        used = true;
+                        break;
+                    }
+                } else {
                     used = true; // Assume, it is used if we do not see friend class
+                    break;
+                }
             }
 
             if (!used)
