@@ -417,8 +417,21 @@ if __name__ == '__main__':
                 stats.append(error['id']) # get the stats
 
         stat_html = []
-        for _id, _number in Counter(stats).most_common():
-            stat_html.append("        " + str(_number) + " " + str(_id) + "<br/>\n")
+        # the following lines sort the stat primary by value (occurrences),
+        # but if two IDs occur equally often, then we sort them alphabetically by warning ID
+        try:
+            cnt_max = Counter(stats).most_common()[0][1]
+        except IndexError:
+            cnt_max = 0
+
+        try:
+            cnt_min = Counter(stats).most_common()[-1][1]
+        except IndexError:
+            cnt_min = 0
+
+        for occurrences in reversed(range(cnt_min, cnt_max+1)):
+            for _id in[ k for k,v in sorted(Counter(stats).items()) if v == occurrences ]:
+                stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1)   % (options.title, '', options.title, ''))
         output_file.write('       <p>\n' + ''.join(stat_html) + '       </p>')
