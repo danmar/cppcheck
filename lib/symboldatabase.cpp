@@ -1428,13 +1428,8 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok,
 
 void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const Token *argStart)
 {
-    int count = 0;
-    std::string path;
-    unsigned int path_length = 0;
-    const Token *tok1;
-
     const bool destructor((*tok)->previous()->str() == "~");
-
+    const Token *tok1;
     // skip class/struct name
     if (destructor)
         tok1 = (*tok)->tokAt(-3);
@@ -1444,6 +1439,10 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
     // syntax error?
     if (!tok1)
         return;
+
+    int count = 0;
+    std::string path;
+    unsigned int path_length = 0;
 
     // back up to head of path
     while (tok1 && tok1->previous() && tok1->previous()->str() == "::" &&
