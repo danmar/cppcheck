@@ -279,7 +279,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 
 
 /** read preprocessor statements */
-std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned int bom) const
+std::string Preprocessor::readpreprocessor(std::istream &istr, const unsigned int bom)
 {
     enum { NEWLINE, SPACE, PREPROCESSOR, BACKSLASH, OTHER } state = NEWLINE;
     std::ostringstream code;

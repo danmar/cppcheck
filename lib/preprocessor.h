@@ -95,7 +95,7 @@ public:
     std::string read(std::istream &istr, const std::string &filename);
 
     /** read preprocessor statements into a string. */
-    std::string readpreprocessor(std::istream &istr, const unsigned int bom) const;
+    static std::string readpreprocessor(std::istream &istr, const unsigned int bom);
 
     /** should __cplusplus be defined? */
     static bool cplusplus(const Settings *settings, const std::string &filename);
