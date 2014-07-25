@@ -1560,7 +1560,7 @@ void CheckStl::readingEmptyStlContainer()
             const Variable* var = tok->variable();
             if (var) {
                 bool insert = false;
-                if (tok->variable()->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
+                if (var->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
                     insert = !Token::Match(tok->tokAt(1), "[(=]"); // Only if not initialized
                 } else if (Token::Match(tok, "%var% . clear ( ) ;")) {
                     insert = true;
@@ -1575,7 +1575,7 @@ void CheckStl::readingEmptyStlContainer()
                 }
             }
 
-            bool map = empty_map.find(tok->varId()) != empty_map.end();
+            const bool map = empty_map.find(tok->varId()) != empty_map.end();
             if (!map && empty_nonmap.find(tok->varId()) == empty_nonmap.end())
                 continue;
 
