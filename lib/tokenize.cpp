@@ -7453,7 +7453,7 @@ public:
                 if (other.value != nullptr)
                     tok->str(other.value->str());
                 else {
-                    bool islast = (tok == end);
+                    const bool islast = (tok == end);
                     Token *last = Tokenizer::copyTokens(tok, other.start, other.end);
                     if (last == tok->next())  // tok->deleteThis() invalidates a pointer that points at the next token
                         last = tok;
@@ -8177,7 +8177,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                     --indentlevel;
                 if (indentlevel < indentcheck) {
                     const Token *end2 = tok->next();
-                    tok = tok->next()->link()->previous();  //return to initial '{'
+                    tok = end2->link()->previous();  //return to initial '{'
                     if (indentswitch && Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->tokAt(-2), "[{};] switch ("))
                         tok = tok->link()->tokAt(-2);       //remove also 'switch ( ... )'
                     Token::eraseTokens(tok, end2->next());
@@ -8282,7 +8282,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
         } else {        //no need to keep the other strings, remove them.
             if (tok->strAt(1) == "while") {
                 if (tok->str() == "}" && tok->link()->strAt(-1) == "do")
-                    tok->link()->tokAt(-1)->deleteThis();
+                    tok->link()->previous()->deleteThis();
             }
             tok->deleteNext();
         }
@@ -8945,7 +8945,7 @@ void Tokenizer::simplifyWhile0()
             Token *tok2 = tok->previous()->link();
             tok2 = tok2->previous();
             if (tok2 && tok2->str() == "do") {
-                bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != nullptr;
+                const bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != nullptr;
                 // delete "do ({)"
                 tok2->deleteThis();
                 if (!flowmatch)
@@ -9468,7 +9468,7 @@ void Tokenizer::simplifyAsm()
         tok = tok->tokAt(2);
         if (tok->next() && tok->next()->str() == ";" &&
             tok->next()->linenr() != tok->linenr()) {
-            unsigned int endposition = tok->next()->linenr();
+            const unsigned int endposition = tok->next()->linenr();
             tok = tok->tokAt(-3);
             for (int i = 0; i < 4; ++i) {
                 tok = tok->next();
@@ -9507,10 +9507,10 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(tok, ";|{|}|public:|protected:|private: const| %type% : %any% ;") &&
                    tok->next()->str() != "default") {
-            const bool offset = (tok->next()->str() == "const");
+            const int offset = (tok->next()->str() == "const") ? 1 : 0;
 
-            if (!Token::Match(tok->tokAt(3 + (offset ? 1 : 0)), "[{};()]")) {
-                tok->deleteNext(4 + (offset ? 1 : 0));
+            if (!Token::Match(tok->tokAt(3 + offset), "[{};()]")) {
+                tok->deleteNext(4 + offset);
                 goback = true;
             }
         }
@@ -10404,8 +10404,8 @@ void Tokenizer::printUnknownTypes() const
 
             // single token type?
             if (var->typeStartToken() == var->typeEndToken()) {
-                name = var->typeStartToken()->str();
                 nameTok = var->typeStartToken();
+                name = nameTok->str();
             }
 
             // complicated type
@@ -10485,14 +10485,14 @@ void Tokenizer::simplifyMathExpressions()
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
-                if (!Token::Match(tok3->link(), ") , %num% )"))
-                    continue;
                 Token * const tok4 = tok3->link();
+                if (!Token::Match(tok4, ") , %num% )"))
+                    continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
-                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                    Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("1");
                 }
             } else if (Token::Match(tok->tokAt(2), "cos|cosf|cosl (")) {
@@ -10503,14 +10503,14 @@ void Tokenizer::simplifyMathExpressions()
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
-                if (!Token::Match(tok3->link(), ") , %num% )"))
-                    continue;
                 Token * const tok4 = tok3->link();
+                if (!Token::Match(tok4, ") , %num% )"))
+                    continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
-                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                    Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("1");
                 }
             } else if (Token::Match(tok->tokAt(2), "sinh|sinhf|sinhl (")) {
@@ -10521,14 +10521,14 @@ void Tokenizer::simplifyMathExpressions()
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
-                if (!Token::Match(tok3->link(), ") , %num% )"))
-                    continue;
                 Token * const tok4 = tok3->link();
+                if (!Token::Match(tok4, ") , %num% )"))
+                    continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
-                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                    Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("-1");
                 }
             } else if (Token::Match(tok->tokAt(2), "cosh|coshf|coshl (")) {
@@ -10539,14 +10539,14 @@ void Tokenizer::simplifyMathExpressions()
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
                 Token * const tok3 = tok2->tokAt(8);
-                if (!Token::Match(tok3->link(), ") , %num% )"))
-                    continue;
                 Token * const tok4 = tok3->link();
+                if (!Token::Match(tok4, ") , %num% )"))
+                    continue;
                 const std::string& rightExponent = tok4->strAt(2);
                 if (!isTwoNumber(rightExponent))
                     continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok3->link()->next())) {
-                    Token::eraseTokens(tok, tok3->link()->tokAt(4));
+                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
+                    Token::eraseTokens(tok, tok4->tokAt(4));
                     tok->str("-1");
                 }
             }
