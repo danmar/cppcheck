@@ -34,7 +34,7 @@ namespace {
 
 static bool astIsFloat(const Token *tok, bool unknown)
 {
-    if (tok->astOperand1() && astIsFloat(tok->astOperand1(),unknown))
+    if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(),unknown))
         return true;
     if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
         return true;

@@ -4329,6 +4329,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n" // FP
+              "    float x = 2.3f;\n"
+              "    memset(a, (x?64:0), 40);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    short ss[] = {1, 2};\n"
               "    memset(ss, 256, 4);\n"
