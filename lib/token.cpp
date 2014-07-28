@@ -1059,6 +1059,22 @@ bool Token::isCalculation() const
     return true;
 }
 
+static bool isUnaryPreOp(const Token *op)
+{
+    if (!op->astOperand1() || op->astOperand2())
+        return false;
+    if (!Token::Match(op, "++|--"))
+        return true;
+    const Token *tok = op->astOperand1();
+    for (int distance = 1; distance < 10; distance++) {
+        if (tok == op->tokAt(-distance))
+            return false;
+        if (tok == op->tokAt(distance))
+            return true;
+    }
+    return false; // <- guess
+}
+
 std::string Token::expressionString() const
 {
     const Token * const top = this;
@@ -1066,12 +1082,12 @@ std::string Token::expressionString() const
     while (start->astOperand1() && start->astOperand2())
         start = start->astOperand1();
     const Token *end = top;
-    while (end->astOperand1() && end->astOperand2()) {
+    while (end->astOperand1() && (end->astOperand2() || isUnaryPreOp(end))) {
         if (Token::Match(end,"(|[")) {
             end = end->link();
             break;
         }
-        end = end->astOperand2();
+        end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
     }
     std::string ret;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {

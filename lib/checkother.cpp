@@ -2886,32 +2886,50 @@ void CheckOther::checkSuspiciousStringCompare()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->next()->type() != Token::eComparisonOp)
+            if (tok->type() != Token::eComparisonOp)
                 continue;
 
-            const Token* varTok = tok;
-            const Token* litTok = tok->tokAt(2);
-
-            if (!_tokenizer->isC() && (varTok->strAt(-1) == "+" || litTok->strAt(1) == "+"))
-                continue;
-            // rough filter for index access (#5734). Might cause false negatives in multidimensional structures
-            if (Token::simpleMatch(varTok->tokAt(1), "[") || Token::simpleMatch(litTok->tokAt(1), "["))
-                continue;
-
+            const Token* varTok = tok->astOperand1();
+            const Token* litTok = tok->astOperand2();
             if (varTok->type() == Token::eString || varTok->type() == Token::eNumber)
                 std::swap(varTok, litTok);
-            const Variable *var = varTok->variable();
-            if (!var)
+            else if (litTok->type() != Token::eString && litTok->type() != Token::eNumber)
                 continue;
 
+            // Pointer addition?
+            if (varTok->str() == "+" && _tokenizer->isC()) {
+                const Token *tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
+                for (int nr = 0; nr < 2; nr++) {
+                    const Token *t = tokens[nr];
+                    while (t && t->str() == ".")
+                        t = t->astOperand2();
+                    if (t && t->variable() && t->variable()->isPointer())
+                        varTok = t;
+                }
+            }
+
+            if (varTok->str() == "*") {
+                if (!_tokenizer->isC() || varTok->astOperand2() != nullptr || litTok->type() != Token::eString)
+                    continue;
+                varTok = varTok->astOperand1();
+            }
+
+            while (varTok && varTok->str() == ".")
+                varTok = varTok->astOperand2();
+            if (!varTok || !varTok->isName())
+                continue;
+
+            const Variable *var = varTok->variable();
+
+            while (Token::Match(varTok->astParent(), "[.*]"))
+                varTok = varTok->astParent();
+            const std::string varname = varTok->expressionString();
 
             if (litTok->type() == Token::eString) {
-                if (_tokenizer->isC() ||
-                    (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]")))
-                    suspiciousStringCompareError(tok, var->name());
-            } else if (litTok->type() == Token::eNumber && litTok->originalName() == "'\\0'") {
-                if (var->isPointer() && varTok->strAt(-1) != "*" && !Token::Match(varTok->next(), "[.([]"))
-                    suspiciousStringCompareError_char(tok, var->name());
+                if (_tokenizer->isC() || (var && var->isPointer()))
+                    suspiciousStringCompareError(tok, varname);
+            } else if (litTok->originalName() == "'\\0'" && var && var->isPointer()) {
+                suspiciousStringCompareError_char(tok, varname);
             }
         }
     }

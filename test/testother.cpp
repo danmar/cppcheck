@@ -5239,7 +5239,7 @@ private:
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c.foo'. Did you intend to use strcmp() instead?\n", errout.str());
 
         check("bool foo(const std::string& c) {\n"
               "    return \"x\" == c;\n"
@@ -5255,7 +5255,7 @@ private:
         check("bool foo() {\n"
               "MyString *str=Getter();\n"
               "return *str==\"bug\"; }\n", "test.c");
-        ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable 'str'. Did you intend to use strcmp() instead?\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout.str());
 
         // Ticket #4257
         check("bool foo() {\n"
@@ -5334,6 +5334,18 @@ private:
               "    if(c == '\\0') bar();\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", "", errout.str());
+
+        check("void f() {\n"
+              "  struct { struct { char *str; } x; } a;\n"
+              "  return a.x.str == '\\0';"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Char literal compared with pointer 'a.x.str'. Did you intend to dereference it?\n", errout.str());
+
+        check("void f() {\n"
+              "  struct { struct { char *str; } x; } a;\n"
+              "  return *a.x.str == '\\0';"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void check_signOfUnsignedVariable(const char code[], bool inconclusive=false) {
