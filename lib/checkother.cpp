@@ -2891,6 +2891,8 @@ void CheckOther::checkSuspiciousStringCompare()
 
             const Token* varTok = tok->astOperand1();
             const Token* litTok = tok->astOperand2();
+            if (!varTok || !litTok)  // <- failed to create AST for comparison
+                continue;
             if (varTok->type() == Token::eString || varTok->type() == Token::eNumber)
                 std::swap(varTok, litTok);
             else if (litTok->type() != Token::eString && litTok->type() != Token::eNumber)
