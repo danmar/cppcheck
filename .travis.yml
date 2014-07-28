@@ -12,28 +12,25 @@ env:
   matrix:
 #    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
-    - MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
-    - SRCDIR=build CHECK_KERNEL=yes
+    - SRCDIR=build CHECK_CLANG=yes VERIFY=1
+    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
 
 matrix:
 # do notify immediately about it when a job of a build fails.
   fast_finish: true
-# exclude kernel checking with clang binary, not needed
+# exclude clang checking with clang binary, not needed
   exclude:
     - compiler: clang
-      env: SRCDIR=build CHECK_KERNEL=yes
-# kernel check can time out during travis rush hour, so make failure of it less grave...
-  allow_failures:
-    - env: SRCDIR=build CHECK_KERNEL=yes
+      env: SRCDIR=build CHECK_CLANG=yes VERIFY=1
 
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb
+ - sudo apt-get install -qq python-pygments libqt4-core libqt4-gui libqt4-dev qt4-dev-tools qt4-qmake libxml2-utils libpcre3 gdb unzip
 
 script:
-# download 3.14-rc6 kernel, compile cppcheck, run cppcheck on the kernel to look for crashes in cppcheck. if this is done, terminate build to prevent it from timing out
-  - if [[ "$CHECK_KERNEL" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.xz; mkdir kernel; tar -xJf linux-3.14.tar.xz -C kernel & make -j 4 & wait; touch /tmp/kernel.cppcheck; ./cppcheck kernel --max-configs=1 --exception-handling -j 2 |& tee /tmp/kernel.cppcheck; ! grep "process crashed with signal" /tmp/kernel.cppcheck; exit; fi
+# download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "gcc" ]]; then wget "https://github.com/llvm-mirror/clang/archive/0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0.zip" & make -j 4 & wait; unzip 0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-0d9772d6c4fd0f69f7bdbb692768f07f9af2a3d0 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling -iINPUTS -itest/CXX/temp/temp.decls/temp.mem/p5.cpp -itest/CodeGenCXX/mangle-alias-template.cpp -itest/Lexer/unicode.c -j 2 |& tee /tmp/clang.cppcheck; cd ../ ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
 # compile cppcheck, default build
   - make -j4
   - make test -j4
@@ -43,7 +40,7 @@ script:
   - make -j4
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
-# use same hack as for kernel to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
+# use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
