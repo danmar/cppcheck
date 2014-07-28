@@ -1013,7 +1013,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 while (!done) {
                                     switch (*i) {
                                     case 's':
-                                        if (argInfo.variableInfo && argListTok->type() != Token::eString &&
+                                        if (argListTok->type() != Token::eString &&
                                             argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
                                             if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
                                                 if (!(!argInfo.isArrayOrPointer() && argInfo.element))
@@ -1023,7 +1023,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         done = true;
                                         break;
                                     case 'n':
-                                        if ((argInfo.variableInfo && argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->type() == Token::eString)
+                                        if ((argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->type() == Token::eString)
                                             invalidPrintfArgTypeError_n(tok, numFormat, &argInfo);
                                         done = true;
                                         break;
@@ -1362,7 +1362,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
             if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
                 typeToken = tok->tokAt(2);
-                if (typeToken->str() == "const")
+                while (typeToken->str() == "const" || typeToken->str() == "extern")
                     typeToken = typeToken->next();
                 return;
             }
@@ -1384,7 +1384,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                             const Function * function = varTok->link()->previous()->function();
                             if (function && function->retDef) {
                                 typeToken = function->retDef;
-                                if (typeToken->str() == "const")
+                                while (typeToken->str() == "const" || typeToken->str() == "extern")
                                     typeToken = typeToken->next();
                                 functionInfo = function;
                                 element = true;
@@ -1396,7 +1396,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                         const Function * function = tok1->linkAt(-1)->previous()->function();
                         if (function && function->retDef) {
                             typeToken = function->retDef;
-                            if (typeToken->str() == "const")
+                            while (typeToken->str() == "const" || typeToken->str() == "extern")
                                 typeToken = typeToken->next();
                             functionInfo = function;
                             element = false;
@@ -1620,7 +1620,7 @@ bool CheckIO::ArgumentInfo::isKnownType() const
     if (variableInfo)
         return (typeToken->isStandardType() || typeToken->next()->isStandardType() || isComplexType());
     else if (functionInfo)
-        return (typeToken->isStandardType() || functionInfo->retType);
+        return (typeToken->isStandardType() || functionInfo->retType || Token::Match(typeToken, "std :: string|wstring"));
 
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");
 }

@@ -3079,6 +3079,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #6009
+        check("extern std::string StringByReturnValue();\n"
+              "extern int         IntByReturnValue();\n"
+              "void MyFunction() {\n"
+              "    printf( \"%s - %s\", StringByReturnValue(), IntByReturnValue() );\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
+                      "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
