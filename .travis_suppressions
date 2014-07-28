@@ -1,5 +1,6 @@
 unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
+uselessAssignmentPtrArg:build/checkstl.cpp
 *:gui/test*
 *:test/test.cxx
 
