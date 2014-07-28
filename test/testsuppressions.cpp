@@ -141,7 +141,7 @@ private:
         files["test.cpp"] = 1;
 
         Settings settings;
-        settings._jobs = 1;
+        settings._jobsCount = 1;
         settings._inlineSuppressions = true;
         settings.addEnabled("information");
         if (!suppression.empty()) {

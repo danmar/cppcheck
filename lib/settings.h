@@ -116,7 +116,7 @@ public:
 
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */
-    unsigned int _jobs;
+    unsigned int _jobsCount;
 
     /** @brief Load average value */
     unsigned int _loadAverage;

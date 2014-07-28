@@ -280,7 +280,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 void CppCheck::checkFunctionUsage()
 {
     // This generates false positives - especially for libraries
-    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1) {
+    if (_settings.isEnabled("unusedFunction") && _settings._jobsCount == 1) {
         const bool verbose_orig = _settings._verbose;
         _settings._verbose = false;
 
@@ -385,7 +385,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             (*it)->runChecks(&_tokenizer, &_settings, this);
         }
 
-        if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
+        if (_settings.isEnabled("unusedFunction") && _settings._jobsCount == 1)
             CheckUnusedFunctions::instance.parseTokens(_tokenizer, FileName, &_settings);
 
         executeRules("normal", _tokenizer);

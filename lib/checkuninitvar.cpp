@@ -1041,7 +1041,7 @@ void CheckUninitVar::executionPaths()
     // check if variable is accessed uninitialized..
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)
-        if (_settings->_jobs == 1)
+        if (_settings->_jobsCount == 1)
             UninitVar::analyseFunctions(_tokenizer->tokens(), UninitVar::uvarFunctions);
 
         UninitVar c(this, _tokenizer->getSymbolDatabase(), &_settings->library, _tokenizer->isC());
