@@ -619,15 +619,15 @@ private:
     void jobs() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-j", "3", "file.cpp"};
-        settings._jobs = 0;
+        settings._jobsCount = 0;
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS(3, settings._jobs);
+        ASSERT_EQUALS(3, settings._jobsCount);
     }
 
     void jobsMissingCount() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-j", "file.cpp"};
-        settings._jobs = 0;
+        settings._jobsCount = 0;
         // Fails since -j is missing thread count
         ASSERT_EQUALS(false, defParser.ParseFromArgs(3, argv));
     }
@@ -635,7 +635,7 @@ private:
     void jobsInvalid() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-j", "e", "file.cpp"};
-        settings._jobs = 0;
+        settings._jobsCount = 0;
         // Fails since invalid count given for -j
         ASSERT_EQUALS(false, defParser.ParseFromArgs(4, argv));
     }
