@@ -603,12 +603,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 numberString = argv[i]+2;
 
             std::istringstream iss(numberString);
-            if (!(iss >> _settings->_jobs)) {
+            if (!(iss >> _settings->_jobsCount)) {
                 PrintMessage("cppcheck: argument to '-j' is not a number.");
                 return false;
             }
 
-            if (_settings->_jobs > 10000) {
+            if (_settings->_jobsCount > 10000) {
                 // This limit is here just to catch typos. If someone has
                 // need for more jobs, this value should be increased.
                 PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
@@ -800,7 +800,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     if (_settings->_force)
         _settings->_maxConfigs = ~0U;
 
-    if (_settings->isEnabled("unusedFunction") && _settings->_jobs > 1) {
+    if (_settings->isEnabled("unusedFunction") && _settings->_jobsCount > 1) {
         PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 

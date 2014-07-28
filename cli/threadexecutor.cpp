@@ -179,7 +179,7 @@ unsigned int ThreadExecutor::check()
     for (;;) {
         // Start a new child
         size_t nchilds = rpipes.size();
-        if (i != _files.end() && nchilds < _settings._jobs && checkLoadAverage(nchilds)) {
+        if (i != _files.end() && nchilds < _settings._jobsCount && checkLoadAverage(nchilds)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -348,7 +348,7 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 
 unsigned int ThreadExecutor::check()
 {
-    HANDLE *threadHandles = new HANDLE[_settings._jobs];
+    HANDLE *threadHandles = new HANDLE[_settings._jobsCount];
 
     _itNextFile = _files.begin();
 
@@ -364,7 +364,7 @@ unsigned int ThreadExecutor::check()
     InitializeCriticalSection(&_errorSync);
     InitializeCriticalSection(&_reportSync);
 
-    for (unsigned int i = 0; i < _settings._jobs; ++i) {
+    for (unsigned int i = 0; i < _settings._jobsCount; ++i) {
         threadHandles[i] = (HANDLE)_beginthreadex(NULL, 0, threadProc, this, 0, NULL);
         if (!threadHandles[i]) {
             std::cerr << "#### .\nThreadExecutor::check error, errno :" << errno << std::endl;
@@ -372,7 +372,7 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    DWORD waitResult = WaitForMultipleObjects(_settings._jobs, threadHandles, TRUE, INFINITE);
+    DWORD waitResult = WaitForMultipleObjects(_settings._jobsCount, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
             std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
@@ -384,7 +384,7 @@ unsigned int ThreadExecutor::check()
     }
 
     unsigned int result = 0;
-    for (unsigned int i = 0; i < _settings._jobs; ++i) {
+    for (unsigned int i = 0; i < _settings._jobsCount; ++i) {
         DWORD exitCode;
 
         if (!GetExitCodeThread(threadHandles[i], &exitCode)) {
