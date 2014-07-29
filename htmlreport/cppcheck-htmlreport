@@ -28,11 +28,11 @@ body {
 }
 
 h1 {
-	margin: 10px;
+    margin: 10px;
 }
 
 #footer > p {
-	margin: 4px;
+    margin: 4px;
 }
 
 .error {
@@ -189,6 +189,7 @@ HTML_FOOTER = """
 HTML_ERROR = "<span class='error2'>&lt;--- %s</span>\n"
 HTML_INCONCLUSIVE = "<span class='inconclusive2'>&lt;--- %s</span>\n"
 
+
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
 
@@ -218,7 +219,7 @@ class CppCheckHandler(XmlContentHandler):
         XmlContentHandler.__init__(self)
         self.errors = []
         self.version = '1'
-        self.versionCppcheck = '';
+        self.versionCppcheck = ''
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -291,7 +292,7 @@ if __name__ == '__main__':
 
     try:
         sys.argv[1]
-    except IndexError: # no arguments give, print --help
+    except IndexError:  # no arguments give, print --help
         parser.print_help()
         quit()
 
@@ -364,7 +365,7 @@ if __name__ == '__main__':
         except UnicodeDecodeError:
             sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
                              source_filename)
-            decode_errors.append(source_filename[2:]) # "[2:]" gets rid of "./" at beginning
+            decode_errors.append(source_filename[2:])  # "[2:]" gets rid of "./" at beginning
             continue
 
         htmlFormatter = AnnotateCodeFormatter(linenos=True,
@@ -414,7 +415,7 @@ if __name__ == '__main__':
         stats = []
         for filename, data in sorted(files.items()):
             for error in data['errors']:
-                stats.append(error['id']) # get the stats
+                stats.append(error['id'])  # get the stats
 
         stat_html = []
         # the following lines sort the stat primary by value (occurrences),
@@ -430,17 +431,17 @@ if __name__ == '__main__':
             cnt_min = 0
 
         for occurrences in reversed(range(cnt_min, cnt_max+1)):
-            for _id in[ k for k,v in sorted(Counter(stats).items()) if v == occurrences ]:
+            for _id in [k for k, v in sorted(Counter(stats).items()) if v == occurrences]:
                 stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
-        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1)   % (options.title, '', options.title, ''))
+        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1) % (options.title, '', options.title, ''))
         output_file.write('       <p>\n' + ''.join(stat_html) + '       </p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
         output_file.write(
             '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
-            if filename in decode_errors: # don't print a link but a note
+            if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
                 output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
