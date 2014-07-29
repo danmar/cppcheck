@@ -412,10 +412,12 @@ if __name__ == '__main__':
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
 
+        stats_count = 0
         stats = []
         for filename, data in sorted(files.items()):
             for error in data['errors']:
                 stats.append(error['id'])  # get the stats
+                stats_count += 1
 
         stat_html = []
         # the following lines sort the stat primary by value (occurrences),
@@ -435,7 +437,7 @@ if __name__ == '__main__':
                 stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1) % (options.title, '', options.title, ''))
-        output_file.write('       <p>\n' + ''.join(stat_html) + '       </p>')
+        output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '       </p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
         output_file.write(
