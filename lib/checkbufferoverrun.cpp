@@ -237,14 +237,15 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
  */
 static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 {
-    // Used later to check if the body belongs to a "if"
-    const bool is_if = tok->str() == "if";
-
     const Token* end = tok->linkAt(1)->linkAt(1);
     if (Token::simpleMatch(end, "} else {")) // scan the else-block
         end = end->linkAt(2);
     if (Token::simpleMatch(end, "{")) // Ticket #5203: Invalid code, bailout
         return true;
+
+    // Used later to check if the body belongs to a "if"
+    const bool is_if = tok->str() == "if";
+
     for (; tok && tok != end; tok = tok->next()) {
         // If scanning a "if" block then bailout for "break"
         if (is_if && (tok->str() == "break" || tok->str() == "continue"))
@@ -567,13 +568,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 while (tok3 && Token::Match(tok3->previous(), "%var% ."))
                     tok3 = tok3->tokAt(-2);
 
-                // just taking the address?
-                const bool addr(tok3 && (tok3->str() == "&" ||
-                                         Token::simpleMatch(tok3->previous(), "& (")));
-
                 // taking address of 1 past end?
-                if (addr && totalIndex == totalElements)
-                    continue;
+                if (totalIndex == totalElements) {
+                    const bool addr = (tok3 && (tok3->str() == "&" ||
+                        Token::simpleMatch(tok3->previous(), "& (")));
+                    if (addr)
+                        continue;
+                }
 
                 // Is totalIndex in bounds?
                 if (totalIndex > totalElements || totalIndex < 0) {
@@ -826,10 +827,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             // Check function call..
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
-            if (Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
-                const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
-                if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size && (unsigned int)total_size == num) {
-                    if (_settings->inconclusive)
+            if (_settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
+                if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
+                    const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
+                    if ((unsigned int)total_size == num)
                         bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
                 }
             }
