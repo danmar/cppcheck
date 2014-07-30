@@ -379,7 +379,7 @@ private:
         check("void f(WIDGET *widget) {\n"
               "  if (dynamic_cast<BUTTON*>(widget)){}\n"
               "  else if (dynamic_cast<LABEL*>(widget)){}\n"
-              "}");
+              "}",false);
         ASSERT_EQUALS("", errout.str());
     }
 
