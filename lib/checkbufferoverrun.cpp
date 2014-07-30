@@ -1540,7 +1540,13 @@ void CheckBufferOverrun::checkStringArgument()
                 const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok->str(), argnr);
                 if (!minsizes)
                     continue;
-                if (checkMinSizes(*minsizes, tok, Token::getStrLength(argtok)+1U, nullptr))
+                unsigned int sizeofstring = 1;
+                for (unsigned int i = 0U; i < argtok->str().size(); i++) {
+                    if (argtok->str()[i] == '\\')
+                        ++i;
+                    ++sizeofstring;
+                }
+                if (checkMinSizes(*minsizes, tok, sizeofstring, nullptr))
                     bufferOverrunError(argtok);
             }
         }

@@ -3272,6 +3272,12 @@ private:
                  "memcpy (&str2,str1,15);\n" // <-- strlen(str1) + 1 = 15
                  "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n", errout.str());
+
+        checkstd("void f() { \n"
+                 "  char str[5];\n"
+                 "  memcpy (str, \"\\0\\0\\0\\0\\0\", 5);\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varid1() {
