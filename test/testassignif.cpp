@@ -41,34 +41,31 @@ private:
         TEST_CASE(invalidMissingSemicolon); // crash as of #5867
     }
 
-    void check(const char code[]) {
+    void check(const char code[], bool validate=true) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
 
+        CheckAssignIf checkAssignIf;
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        checkAssignIf.runChecks(&tokenizer, &settings, this);
         const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        checkAssignIf.runSimplifiedChecks(&tokenizer, &settings, this);
 
         // Ensure that the test case is not bad.
-        if (str1 != str2) {
+        if (validate && str1 != str2) {
             warn(("Unsimplified code in test case. It looks like this test "
                   "should either be cleaned up or moved to TestTokenizer or "
                   "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
         }
-
-
-        // Check char variable usage..
-        CheckAssignIf checkAssignIf(&tokenizer, &settings, this);
-        checkAssignIf.assignIf();
-        checkAssignIf.comparison();
-        checkAssignIf.multiCondition();
     }
 
     void assignAndCompare() {
@@ -376,6 +373,12 @@ private:
               "            return -1;\n"
               "        }\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(WIDGET *widget) {\n"
+              "  if (dynamic_cast<BUTTON*>(widget)){}\n"
+              "  else if (dynamic_cast<LABEL*>(widget)){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

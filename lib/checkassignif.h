@@ -44,12 +44,16 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        CheckAssignIf checkAssignIf(tokenizer, settings, errorLogger);
+        checkAssignIf.multiCondition();
+    }
+
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAssignIf checkAssignIf(tokenizer, settings, errorLogger);
         checkAssignIf.assignIf();
         checkAssignIf.comparison();
-        checkAssignIf.multiCondition();
     }
 
     /** mismatching assignment / comparison */
