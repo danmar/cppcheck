@@ -114,7 +114,8 @@ static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
 }
 #endif
 
-static char getEndChar(const std::string &line) {
+static char getEndChar(const std::string &line)
+{
     std::size_t pos = line.find_last_not_of(" \t");
     return (pos == std::string::npos) ? '\0' : line[pos];
 }
@@ -179,7 +180,7 @@ static std::vector<std::string> readfile(const std::string &filename)
 
         filedata.push_back(line);
     }
-    
+
     // put declarations in a single line..
     for (unsigned int linenr = 0U; linenr+1U < filedata.size(); ++linenr) {
         // Does this look like start of a function declaration?
@@ -192,7 +193,7 @@ static std::vector<std::string> readfile(const std::string &filename)
 
         // Where does function declaration end?
         unsigned int linenr2 = linenr + 1U;
-        while (linenr2 < filedata.size() && 
+        while (linenr2 < filedata.size() &&
                getEndChar(filedata[linenr2]) == ','                    &&
                filedata[linenr2].find("(") == std::string::npos        &&
                filedata[linenr2].find(")") == std::string::npos)
@@ -212,7 +213,7 @@ static std::vector<std::string> readfile(const std::string &filename)
             filedata[linenr] = code;
         }
     }
-    
+
     return filedata;
 }
 
