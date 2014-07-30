@@ -1043,6 +1043,11 @@ static void execute(const Token *expr,
             execute(expr->astOperand2(), programMemory, result, error);
     }
 
+    else if (expr->str() == "!") {
+        execute(expr->astOperand1(), programMemory, result, error);
+        *result = !(*result);
+    }
+
     else
         *error = true;
 }
