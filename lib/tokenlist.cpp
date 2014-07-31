@@ -402,8 +402,9 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 struct AST_state {
     std::stack<Token*> op;
     unsigned int depth;
+    unsigned int inArrayAssignment;
     bool cpp;
-    AST_state(bool cpp_) : depth(0), cpp(cpp_) {}
+    AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_) {}
 };
 
 static bool iscast(const Token *tok)
@@ -487,6 +488,9 @@ static void compileTerm(Token *&tok, AST_state& state)
         return;
     if (Token::Match(tok, "L %str%|%char%"))
         tok = tok->next();
+    if (state.inArrayAssignment && tok->str() == "." && (tok->strAt(-1) == "," || tok->strAt(-1) == "{")) // Jump over . in C style struct initialization
+        tok = tok->next();
+
     if (tok->isLiteral()) {
         state.op.push(tok);
         tok = tok->next();
@@ -503,8 +507,18 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
         }
     } else if (tok->str() == "{") {
-        state.op.push(tok);
-        tok = tok->link()->next();
+        if (!state.inArrayAssignment && tok->strAt(-1) != "=") {
+            state.op.push(tok);
+            tok = tok->link()->next();
+        } else {
+            if (tok->link() != tok->next()) {
+                state.inArrayAssignment++;
+                compileUnaryOp(tok, state, compileExpression);
+                state.inArrayAssignment--;
+            } else {
+                state.op.push(tok);
+            }
+        }
     }
 }
 
@@ -560,6 +574,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 Token* squareBracket = tok;
                 Token* roundBracket = squareBracket->link()->next();
                 Token* curlyBracket = Token::findsimplematch(roundBracket->link()->next(), "{");
+                if (!curlyBracket)
+                    break;
                 tok = curlyBracket->next();
                 compileExpression(tok, state);
                 state.op.push(roundBracket);

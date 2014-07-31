@@ -10708,6 +10708,11 @@ private:
 
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
+
+        // struct initialization
+        ASSERT_EQUALS("name_bytes[bits~unusedBits>>unusedBits<<{=", testAst("const uint8_t name_bytes[] = { (~bits >> unusedBits) << unusedBits };"));
+        ASSERT_EQUALS("abuf0{={=", testAst("a = { .buf = { 0 } };"));
+        ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
     }
 
     void astbrackets() const { // []
@@ -10813,6 +10818,8 @@ private:
         testAst("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
                 "int #define for (i = avx_test i < c[i]; i++)\n"
                 "b[i + 3] = a[i] * {}"); // Don't hang (#5787)
+
+        testAst("START_SECTION([EXTRA](bool isValid(const String &filename)))"); // Don't crash (#5991)
     }
 
     bool isStartOfExecutableScope(int offset, const char code[]) {
