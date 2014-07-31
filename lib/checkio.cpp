@@ -426,7 +426,11 @@ void CheckIO::invalidScanfError(const Token *tok, bool portability)
                     "    return 0;\n"
                     "}\n"
                     "\n"
-                    "To make it crash, type in more than 5 characters.");
+                    "To make it crash, type in more than 5 characters."
+                    "The correct usage here is `scanf(\"%4s\", c);`, as the maximum field width does not include the terminating null byte\n"
+                    "Source: http://linux.die.net/man/3/scanf\n"
+                    "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c\n"
+                    );
 }
 
 //---------------------------------------------------------------------------
