@@ -181,7 +181,7 @@ static std::vector<std::string> readfile(const std::string &filename)
         filedata.push_back(line);
     }
 
-    // put declarations in a single line..
+    // put function declarations in a single line..
     for (unsigned int linenr = 0U; linenr+1U < filedata.size(); ++linenr) {
         // Does this look like start of a function declaration?
         if (filedata[linenr].empty()                        ||
@@ -208,6 +208,28 @@ static std::vector<std::string> readfile(const std::string &filename)
             std::string code;
             for (unsigned int i = linenr; i <= linenr2; i++) {
                 code = code + filedata[i];
+                filedata[i].clear();
+            }
+            filedata[linenr] = code;
+        }
+    }
+
+    // put #define statements in a single line..
+    for (unsigned int linenr = 0U; linenr+1U < filedata.size(); ++linenr) {
+        // is this a multiline #define statement?
+        if (filedata[linenr].compare(0,8,"#define ")!=0 || getEndChar(filedata[linenr])!='\\')
+            continue;
+
+        // where does statement end?
+        unsigned int linenr2 = linenr + 1U;
+        while (linenr2 < filedata.size() && getEndChar(filedata[linenr2]) == '\\')
+            ++linenr2;
+
+        // simplify
+        if (linenr2 < filedata.size()) {
+            std::string code;
+            for (unsigned int i = linenr; i <= linenr2; i++) {
+                code = code + filedata[i].substr(0,filedata[i].size() - 1U);
                 filedata[i].clear();
             }
             filedata[linenr] = code;
