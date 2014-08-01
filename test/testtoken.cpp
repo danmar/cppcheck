@@ -48,6 +48,7 @@ private:
         TEST_CASE(multiCompare4);
         TEST_CASE(multiCompare5);
         TEST_CASE(getStrLength);
+        TEST_CASE(getStrSize);
         TEST_CASE(strValue);
 
         TEST_CASE(deleteLast);
@@ -264,6 +265,19 @@ private:
 
         tok.str("\"a\\0\"");
         ASSERT_EQUALS(1, (int)Token::getStrLength(&tok));
+    }
+
+    void getStrSize() const {
+        Token tok(0);
+
+        tok.str("\"abc\"");
+        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
+
+        tok.str("\"\\0abc\"");
+        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok));
+
+        tok.str("\"\\\\\"");
+        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok));
     }
 
     void strValue() const {

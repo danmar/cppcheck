@@ -651,6 +651,19 @@ std::size_t Token::getStrLength(const Token *tok)
     return len;
 }
 
+std::size_t Token::getStrSize(const Token *tok)
+{
+    assert(tok != nullptr && tok->type() == eString);
+    const std::string &str = tok->str();
+    unsigned int sizeofstring = 1U;
+    for (unsigned int i = 1U; i < str.size() - 1U; i++) {
+        if (str[i] == '\\')
+            ++i;
+        ++sizeofstring;
+    }
+    return sizeofstring;
+}
+
 std::string Token::getCharAt(const Token *tok, std::size_t index)
 {
     assert(tok != nullptr);
