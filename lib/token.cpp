@@ -1208,7 +1208,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             }
 
             else {
-                out << (it == tok->values.begin() ? "" : ",") << it->intvalue << std::endl;
+                out << (it == tok->values.begin() ? "" : ",") << it->intvalue;
             }
         }
         if (xml)
