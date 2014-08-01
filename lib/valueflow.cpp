@@ -835,8 +835,6 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
 
 static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
-    std::map<unsigned int, MathLib::bigint> mem;
-
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         const Token *vartok, *numtok;
 
