@@ -9321,7 +9321,7 @@ void Tokenizer::simplifyKeyword()
             continue;
 
         // Don't remove struct members
-        if (Token::Match(tok->previous(), "."))
+        if (Token::simpleMatch(tok->previous(), "."))
             continue;
 
         // Simplify..
