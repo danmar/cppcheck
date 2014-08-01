@@ -847,6 +847,15 @@ private:
         ASSERT_EQUALS(true,  testValueOfX(code, 4U, 2));
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 2));
 
+        // condition with 2nd variable
+        code = "void f(int x) {\n"
+               "  int y = 0;\n"
+               "  if (x == 7) { y = 1; }\n"
+               "  if (!y)\n"
+               "    a = x;\n" // <- x can not be 7 here
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 7));
+
         // In condition, after && and ||
         code = "void f(int x) {\n"
                "  a = (x != 3 ||\n"
