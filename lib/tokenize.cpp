@@ -9311,6 +9311,11 @@ void Tokenizer::simplifyKeyword()
     keywords.insert("__restrict");
     keywords.insert("__restrict__");
 
+    // FIXME: There is a risk that "keywords" are removed by mistake. This
+    // code should be fixed so it doesn't remove variables etc. Nonstandard
+    // keywords should be defined with a library instead. For instance the
+    // linux kernel code at least uses "_inline" as struct member name at some
+    // places.
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (keywords.find(tok->str()) == keywords.end())
             continue;
