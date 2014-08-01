@@ -1208,6 +1208,23 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             setTokenValue(tok2, value1);
         }
 
+        if (Token::Match(tok2, "%oror%|&&")) {
+            const std::map<unsigned int, MathLib::bigint> programMemory(getProgramMemory(tok2->astTop(), varid, value));
+            if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), programMemory)) ||
+                (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), programMemory))) {
+                // Skip second expression..
+                const Token *parent = tok2;
+                while (parent && parent->str() == tok2->str())
+                    parent = parent->astParent();
+                if (parent && parent->str() == "(")
+                    tok2 = parent->link();
+            }
+
+        }
+        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, value))) ||
+            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, value))))
+            break;
+
         else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
             if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), varid)) {
                 if (settings->debugwarnings)

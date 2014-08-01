@@ -962,6 +962,26 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        // &&
+        code = "void foo() {\n"
+               "  for (int x = 0; x < 10; x++) {\n"
+               "    if (x > 1\n"
+               "        && x) {}" // <- x is not 0
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+
+        // ||
+        code = "void foo() {\n"
+               "  for (int x = 0; x < 10; x++) {\n"
+               "    if (x == 0\n"
+               "        || x) {}" // <- x is not 0
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
     }
 
     void valueFlowSubFunction() {
