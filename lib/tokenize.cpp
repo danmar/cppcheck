@@ -9301,10 +9301,26 @@ void Tokenizer::simplifyAttribute()
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
+    std::set<std::string> keywords;
+    keywords.insert("volatile");
+    keywords.insert("inline");
+    keywords.insert("_inline");
+    keywords.insert("__inline");
+    keywords.insert("__forceinline");
+    keywords.insert("register");
+    keywords.insert("__restrict");
+    keywords.insert("__restrict__");
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "volatile|inline|_inline|__inline|__forceinline|register|__restrict|__restrict__")) {
-            tok->deleteThis();
-        }
+        if (keywords.find(tok->str()) == keywords.end())
+            continue;
+
+        // Don't remove struct members
+        if (Token::Match(tok->previous(), "."))
+            continue;
+
+        // Simplify..
+        tok->deleteThis();
     }
 
     if (_settings->standards.c >= Standards::C99) {

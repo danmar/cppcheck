@@ -7621,6 +7621,10 @@ private:
         ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", "test.c"));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", "test.c"));
         ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", "test.c"));
+
+        // don't remove struct members:
+        ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;", true));
+
     }
 
     void simplifyCallingConvention() {
