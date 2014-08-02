@@ -173,11 +173,11 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="395"/>
         <location filename="mainwindow.cpp" line="458"/>
         <location filename="mainwindow.cpp" line="480"/>
-        <location filename="mainwindow.cpp" line="725"/>
-        <location filename="mainwindow.cpp" line="830"/>
-        <location filename="mainwindow.cpp" line="950"/>
-        <location filename="mainwindow.cpp" line="1118"/>
-        <location filename="mainwindow.cpp" line="1199"/>
+        <location filename="mainwindow.cpp" line="759"/>
+        <location filename="mainwindow.cpp" line="864"/>
+        <location filename="mainwindow.cpp" line="984"/>
+        <location filename="mainwindow.cpp" line="1152"/>
+        <location filename="mainwindow.cpp" line="1233"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -364,7 +364,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="main.ui" line="540"/>
-        <location filename="mainwindow.cpp" line="566"/>
+        <location filename="mainwindow.cpp" line="599"/>
         <source>Information</source>
         <translation>Информационные сообщения</translation>
     </message>
@@ -612,33 +612,69 @@ Do you want to proceed checking without using any of these project files?</sourc
 Вы хотите продолжить проверку, не используя ни одного из этих файлов проекта?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="614"/>
+        <location filename="mainwindow.cpp" line="579"/>
+        <source>File not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="582"/>
+        <source>Bad XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="585"/>
+        <source>Unexpected element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="588"/>
+        <source>Missing attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="591"/>
+        <source>Bad attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="594"/>
+        <source>Bad attribute value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="599"/>
+        <source>Failed to load the selected library &apos;%1&apos;.
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="648"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="872"/>
+        <location filename="mainwindow.cpp" line="906"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="879"/>
+        <location filename="mainwindow.cpp" line="913"/>
         <source>Authors</source>
         <translation>Авторы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="887"/>
+        <location filename="mainwindow.cpp" line="921"/>
         <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
         <translation>XML файлы версии 2 (*.xml);;XML файлы версии 1 (*.xml);;Текстовые файлы  (*.txt);;CSV файлы (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="889"/>
+        <location filename="mainwindow.cpp" line="923"/>
         <source>Save the report file</source>
         <translation>Сохранить файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="741"/>
+        <location filename="mainwindow.cpp" line="775"/>
         <source>XML files (*.xml)</source>
         <translation>XML-файлы (*.xml)</translation>
     </message>
@@ -662,17 +698,12 @@ This is probably because the settings were changed between the Cppcheck versions
         <translation>Выберите файлы для проверки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>Failed to load the selected library %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="614"/>
+        <location filename="mainwindow.cpp" line="648"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="726"/>
+        <location filename="mainwindow.cpp" line="760"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -681,12 +712,12 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 Открытые нового XML файла приведет к очистке текущих результатов. Продолжить?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="743"/>
+        <location filename="mainwindow.cpp" line="777"/>
         <source>Open the report file</source>
         <translation>Открыть файл с отчетом</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="826"/>
+        <location filename="mainwindow.cpp" line="860"/>
         <source>Checking is running.
 
 Do you want to stop the checking and exit Cppcheck?.</source>
@@ -695,27 +726,27 @@ Do you want to stop the checking and exit Cppcheck?.</source>
 Вы хотите завершить проверку и выйти?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="896"/>
+        <location filename="mainwindow.cpp" line="930"/>
         <source>XML files version 1 (*.xml)</source>
         <translation>XML файлы версии 1 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="900"/>
+        <location filename="mainwindow.cpp" line="934"/>
         <source>XML files version 2 (*.xml)</source>
         <translation>XML файлы версии 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="904"/>
+        <location filename="mainwindow.cpp" line="938"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="908"/>
+        <location filename="mainwindow.cpp" line="942"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV файлы(*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="952"/>
+        <location filename="mainwindow.cpp" line="986"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
@@ -732,34 +763,34 @@ The user interface language has been reset to English. Open the Preferences-dial
 The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="997"/>
-        <location filename="mainwindow.cpp" line="1080"/>
+        <location filename="mainwindow.cpp" line="1031"/>
+        <location filename="mainwindow.cpp" line="1114"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Файлы проекта (*.cppcheck);;Все файлы(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="999"/>
+        <location filename="mainwindow.cpp" line="1033"/>
         <source>Select Project File</source>
         <translation>Выберите файл проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1027"/>
-        <location filename="mainwindow.cpp" line="1094"/>
+        <location filename="mainwindow.cpp" line="1061"/>
+        <location filename="mainwindow.cpp" line="1128"/>
         <source>Project:</source>
         <translation>Проект:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1082"/>
+        <location filename="mainwindow.cpp" line="1116"/>
         <source>Select Project Filename</source>
         <translation>Выберите имя файла для проекта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1119"/>
+        <location filename="mainwindow.cpp" line="1153"/>
         <source>No project file loaded</source>
         <translation>Файл с проектом не загружен</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1194"/>
+        <location filename="mainwindow.cpp" line="1228"/>
         <source>The project file
 
 %1
@@ -961,70 +992,75 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="79"/>
-        <location filename="projectfile.ui" line="228"/>
+        <location filename="projectfile.ui" line="75"/>
+        <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfile.ui" line="89"/>
+        <location filename="projectfile.ui" line="238"/>
         <source>Paths:</source>
         <translation>Пути:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="106"/>
-        <location filename="projectfile.ui" line="169"/>
-        <location filename="projectfile.ui" line="242"/>
+        <location filename="projectfile.ui" line="116"/>
+        <location filename="projectfile.ui" line="179"/>
+        <location filename="projectfile.ui" line="252"/>
         <source>Add...</source>
         <translation>Добавить...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="113"/>
-        <location filename="projectfile.ui" line="176"/>
-        <location filename="projectfile.ui" line="249"/>
+        <location filename="projectfile.ui" line="123"/>
+        <location filename="projectfile.ui" line="186"/>
+        <location filename="projectfile.ui" line="259"/>
         <source>Edit</source>
         <translation>Изменить</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="120"/>
-        <location filename="projectfile.ui" line="183"/>
-        <location filename="projectfile.ui" line="256"/>
-        <location filename="projectfile.ui" line="319"/>
+        <location filename="projectfile.ui" line="130"/>
+        <location filename="projectfile.ui" line="193"/>
+        <location filename="projectfile.ui" line="266"/>
+        <location filename="projectfile.ui" line="329"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="145"/>
+        <location filename="projectfile.ui" line="155"/>
         <source>Includes</source>
         <translation>Пути для заголовочных файлов</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="151"/>
+        <location filename="projectfile.ui" line="161"/>
         <source>Include directories:</source>
         <translation>Пути для поиска заголовочных файлов:</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="203"/>
+        <location filename="projectfile.ui" line="213"/>
         <source>Up</source>
         <translation>Вверх</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="210"/>
+        <location filename="projectfile.ui" line="220"/>
         <source>Down</source>
         <translation>Вниз</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="222"/>
+        <location filename="projectfile.ui" line="232"/>
         <source>Exclude</source>
         <translation>Исключенные пути</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="281"/>
+        <location filename="projectfile.ui" line="291"/>
         <source>Suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="287"/>
+        <location filename="projectfile.ui" line="297"/>
         <source>Suppression list:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="312"/>
+        <location filename="projectfile.ui" line="322"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1042,27 +1078,27 @@ Options:
         <translation>Файл проекта: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="283"/>
+        <location filename="projectfiledialog.cpp" line="290"/>
         <source>Select include directory</source>
         <translation>Выберите директорию для поиска заголовочных файлов</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="306"/>
+        <location filename="projectfiledialog.cpp" line="313"/>
         <source>Select a directory to check</source>
         <translation>Выберите директорию для проверки</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="346"/>
+        <location filename="projectfiledialog.cpp" line="353"/>
         <source>Select directory to ignore</source>
         <translation>Выберите директорию, которую надо проигнорировать</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="405"/>
+        <location filename="projectfiledialog.cpp" line="412"/>
         <source>Add Suppression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="406"/>
+        <location filename="projectfiledialog.cpp" line="413"/>
         <source>Select error id suppress:</source>
         <translation type="unfinished"></translation>
     </message>

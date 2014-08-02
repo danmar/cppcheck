@@ -672,10 +672,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <translation type="unfinished">C++03</translation>
     </message>
     <message>
-        <source>Failed to load the selected library %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -696,6 +692,35 @@ Options:
     </message>
     <message>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bad XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected element</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Missing attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bad attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bad attribute value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load the selected library &apos;%1&apos;.
+%2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -809,6 +834,10 @@ Options:
     </message>
     <message>
         <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
