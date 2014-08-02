@@ -8,7 +8,7 @@
 
     <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
       Comments='$(var.ProductDescription)' Manufacturer='$(var.ProductManufacturer)'
-      InstallerVersion='450' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine'/>
+      InstallerVersion='405' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine'/>
 
     <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' CompressionLevel='high' DiskPrompt='CD-ROM 1' />
     <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
