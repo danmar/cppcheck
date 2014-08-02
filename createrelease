@@ -60,7 +60,7 @@
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net
-# ./build.sh 1.43
+# ./build-cppcheck.sh 1.43
 #
 # run daca with new release
 
