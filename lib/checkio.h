@@ -133,6 +133,7 @@ private:
         c.useClosedFileError(0);
         c.seekOnAppendedFileError(0);
         c.invalidScanfError(0, false);
+        c.invalidScanfError(0, true);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
         c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);

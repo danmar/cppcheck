@@ -392,7 +392,7 @@ void CheckIO::invalidScanfError(const Token *tok, bool portability)
 {
     if (portability)
         reportError(tok, Severity::portability,
-                    "invalidscanf", "scanf without field width limits can crash with huge input data on some versions of libc.\n"
+                    "invalidscanf_libc", "scanf without field width limits can crash with huge input data on some versions of libc.\n"
                     "scanf without field width limits can crash with huge input data on libc versions older than 2.13-25. Add a field "
                     "width specifier to fix this problem:\n"
                     "    %i => %3i\n"
