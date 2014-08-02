@@ -1320,7 +1320,7 @@ void CheckBufferOverrun::bufferOverrun2()
             // Set full varname..
             if (tok->astParent() && tok->astParent()->str() == ".") {
                 const Token *parent = tok->astParent();
-                while (parent && parent->astParent() && parent->astParent()->str() == ".")
+                while (parent->astParent() && parent->astParent()->str() == ".")
                     parent = parent->astParent();
                 arrayInfo.varname(parent->expressionString());
             }
