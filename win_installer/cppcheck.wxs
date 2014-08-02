@@ -69,6 +69,7 @@
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
+              <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
             </Component>
           </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
