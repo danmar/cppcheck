@@ -20,6 +20,7 @@
 #include "options.h"
 
 #include <iostream>
+#include <cstdio>
 #include <list>
 
 std::ostringstream errout;
@@ -73,15 +74,19 @@ TestFixture::TestFixture(const std::string &_name)
 }
 
 
-bool TestFixture::runTest(const char testname[])
+bool TestFixture::prepareTest(const char testname[])
 {
+    // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
+        // Tests will be executed - prepare them
         ++countTests;
         if (quiet_tests) {
-            std::cout << '.';
+            std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
+        _lib = Library();
+        currentTest = classname + "::" + testname;
         return true;
     }
     return false;
@@ -232,7 +237,11 @@ void TestFixture::run(const std::string &str)
     if (quiet_tests) {
         std::cout << '\n' << classname << ':';
     }
-    run();
+    if (quiet_tests) {
+        REDIRECT;
+        run();
+    } else
+        run();
 }
 
 void TestFixture::warn(const char msg[])

@@ -47,7 +47,7 @@ protected:
 
     virtual void run() = 0;
 
-    bool runTest(const char testname[]);
+    bool prepareTest(const char testname[]);
 
     void assert_(const char *filename, unsigned int linenr, bool condition) const;
     void todoAssert(const char *filename, unsigned int linenr, bool condition) const;
@@ -65,6 +65,7 @@ protected:
                           long long current, long long actual) const;
     void assertThrowFail(const char *filename, unsigned int linenr) const;
     void complainMissingLib(const char* libname) const;
+
     void processOptions(const options& args);
 public:
     virtual void reportOut(const std::string &outmsg);
@@ -78,12 +79,12 @@ public:
     static std::size_t runTests(const options& args);
 };
 
-#define TEST_CASE( NAME )  if ( runTest(#NAME) ) { _lib = Library(); currentTest = classname + "::" + #NAME; if (quiet_tests) { REDIRECT; NAME(); } else { NAME ();} }
+#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { NAME(); }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED , ACTUAL )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_MSG( EXPECTED , ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
-#define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
+#define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_EQUALS( WANTED , CURRENT , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
