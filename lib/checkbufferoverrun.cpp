@@ -156,8 +156,10 @@ void CheckBufferOverrun::strncatUsageError(const Token *tok)
 
     reportError(tok, Severity::warning, "strncatUsage",
                 "Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n"
-                "strncat appends at max its 3rd parameter's amount of characters. The safe way to use "
-                "strncat is to calculate remaining space in the buffer and use it as 3rd parameter.");
+                "At most, strncat appends the 3rd parameter's amount of characters and adds a terminating null byte.\n"
+                "The safe way to use strncat is to subtract one from the remaining space in the buffer and use it as 3rd parameter."
+                "Source: http://www.cplusplus.com/reference/cstring/strncat/\n"
+                "Source: http://www.opensource.apple.com/source/Libc/Libc-167/gen.subproj/i386.subproj/strncat.c");
 }
 
 void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size)
