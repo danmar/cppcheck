@@ -862,6 +862,11 @@ private:
                               "    } while(code < 20);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(int j = 0) {\n" // #5985 - default function parameters should not affect checking results
+                              "    int i = 0;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar2() {

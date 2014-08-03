@@ -724,7 +724,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     }
 
     // Check variable usage
-    for (const Token *tok = scope->classDef->next(); tok && tok != scope->classEnd; tok = tok->next()) {
+    const Token *tok;
+    if (scope->type == Scope::eFunction)
+        tok = scope->classStart->next();
+    else
+        tok = scope->classDef->next();
+    for (; tok && tok != scope->classEnd; tok = tok->next()) {
         if (tok->str() == "for" || tok->str() == "while" || tok->str() == "do") {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classDef == tok) { // Find associated scope
@@ -736,7 +741,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (!tok)
                 break;
         }
-        if (tok->str() == "{") {
+        if (tok->str() == "{" && tok != scope->classStart) {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classStart == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables, false); // Scan child scope
