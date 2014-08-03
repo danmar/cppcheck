@@ -254,13 +254,24 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     // if value already exists, don't add it again
     std::list<ValueFlow::Value>::iterator it;
     for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-        if (it->intvalue == value.intvalue) {
-            if (it->inconclusive && !value.inconclusive) {
-                *it = value;
-                break;
-            }
-            return;
+        // different intvalue => continue
+        if (it->intvalue != value.intvalue)
+            continue;
+
+        // different tokvalue => continue
+        if ((it->tokvalue == nullptr) != (value.tokvalue == nullptr))
+            continue;
+        if ((value.tokvalue != nullptr) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
+            continue;
+
+        // same value, but old value is inconclusive so replace it
+        if (it->inconclusive && !value.inconclusive) {
+            *it = value;
+            break;
         }
+
+        // Same value already exists, don't  add new value
+        return;
     }
 
     if (it == tok->values.end()) {
@@ -327,6 +338,38 @@ static void valueFlowNumber(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->isNumber() && MathLib::isInt(tok->str()))
             setTokenValue(tok, ValueFlow::Value(MathLib::toLongNumber(tok->str())));
+    }
+}
+
+static void valueFlowString(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->type() == Token::eString) {
+            ValueFlow::Value strvalue;
+            strvalue.tokvalue = tok;
+            setTokenValue(tok, strvalue);
+        }
+    }
+}
+
+static void valueFlowPointerAlias(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // not address of
+        if (tok->str() != "&" || tok->astOperand2())
+            continue;
+
+        // parent should be a '='
+        if (!Token::simpleMatch(tok->astParent(), "="))
+            continue;
+
+        // child should be some buffer or variable
+        if (!Token::Match(tok->astOperand1(), "%var%|.|["))
+            continue;
+
+        ValueFlow::Value value;
+        value.tokvalue = tok;
+        setTokenValue(tok, value);
     }
 }
 
@@ -1414,6 +1457,8 @@ void ValueFlow::setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const 
         tok->values.clear();
 
     valueFlowNumber(tokenlist);
+    valueFlowString(tokenlist);
+    valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger, settings);
     valueFlowBitAnd(tokenlist);
     valueFlowForLoop(tokenlist, errorLogger, settings);

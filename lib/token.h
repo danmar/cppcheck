@@ -648,7 +648,7 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
-            if (it->intvalue == val)
+            if (it->intvalue == val && !it->tokvalue)
                 return &(*it);
         }
         return NULL;
@@ -658,6 +658,8 @@ public:
         const ValueFlow::Value *ret = nullptr;
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
+            if (it->tokvalue)
+                continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
                 ((it->condition != NULL) == condition))
                 ret = &(*it);
@@ -667,6 +669,22 @@ public:
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
+
+    const Token *getValueTokenMaxStrLength() const {
+        const Token *ret = nullptr;
+        std::size_t maxlength = 0U;
+        std::list<ValueFlow::Value>::const_iterator it;
+        for (it = values.begin(); it != values.end(); ++it) {
+            if (it->tokvalue && it->tokvalue->type() == Token::eString) {
+                std::size_t length = Token::getStrLength(it->tokvalue);
+                if (!ret || length > maxlength) {
+                    maxlength = length;
+                    ret = it->tokvalue;
+                }
+            }
+        }
+        return ret;
+    }
 
 private:
 

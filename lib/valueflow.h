@@ -29,11 +29,14 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        Value(long long val = 0) : intvalue(val), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false) {}
-        Value(const Token *c, long long val) : intvalue(val), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false) {}
+        Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false) {}
+        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false) {}
 
         /** int value */
         long long intvalue;
+
+        /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
+        const Token *tokvalue;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;

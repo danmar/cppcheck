@@ -35,6 +35,8 @@ private:
 
     void run() {
         TEST_CASE(valueFlowNumber);
+        TEST_CASE(valueFlowString);
+        TEST_CASE(valueFlowPointerAlias);
 
         TEST_CASE(valueFlowBitAnd);
 
@@ -81,7 +83,7 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values.begin(); it != tok->values.end(); ++it) {
-                    if (it->intvalue == value)
+                    if (it->intvalue == value && !it->tokvalue)
                         return true;
                 }
             }
@@ -90,6 +92,34 @@ private:
         return false;
     }
 
+
+    bool testValueOfX(const char code[], unsigned int linenr, const char value[]) {
+        Settings settings;
+
+        // strcpy cfg
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "</def>";
+        settings.library.loadxmldata(cfg, sizeof(cfg));
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                    if (Token::simpleMatch(it->tokvalue, value))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     void bailout(const char code[]) {
         Settings settings;
@@ -114,7 +144,7 @@ private:
 
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
-        return values.size() == 1U ? values.front() : ValueFlow::Value();
+        return values.size() == 1U && !values.front().tokvalue ? values.front() : ValueFlow::Value();
     }
 
     void valueFlowNumber() {
@@ -124,6 +154,29 @@ private:
                 "    x = 123;\n"
                 "}";
         ASSERT_EQUALS(123, valueOfTok(code, "123").intvalue);
+    }
+
+    void valueFlowString() {
+        const char *code;
+
+        code  = "const char * f() {\n"
+                "    static const char *x;\n"
+                "    if (a) x = \"123\";\n"
+                "    return x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\""));
+    }
+
+    void valueFlowPointerAlias() {
+        const char *code;
+
+        code  = "const char * f() {\n"
+                "    static const char *x;\n"
+                "    static char ret[10];\n"
+                "    if (a) x = &ret[0];\n"
+                "    return x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]"));
     }
 
     void valueFlowCalculations() {
@@ -602,6 +655,7 @@ private:
                "    a = 2 + x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 2));
 
         code = "void f() {\n"
                "    int x = 123;\n"

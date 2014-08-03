@@ -303,10 +303,12 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
                     error = true;
             }
             break;
-        case Library::ArgumentChecks::MinSize::STRLEN:
-            if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+        case Library::ArgumentChecks::MinSize::STRLEN: {
+            const Token *strtoken = argtok->getValueTokenMaxStrLength();
+            if (strtoken && Token::getStrLength(strtoken) >= arraySize)
                 error = true;
-            break;
+        }
+        break;
         case Library::ArgumentChecks::MinSize::SIZEOF:
             if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
                 error = true;
@@ -573,7 +575,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 // taking address of 1 past end?
                 if (totalIndex == totalElements) {
                     const bool addr = (tok3 && (tok3->str() == "&" ||
-                        Token::simpleMatch(tok3->previous(), "& (")));
+                                                Token::simpleMatch(tok3->previous(), "& (")));
                     if (addr)
                         continue;
                 }

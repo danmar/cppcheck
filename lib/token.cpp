@@ -1213,15 +1213,23 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             out << "  " << tok->str() << ":{";
         for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
             if (xml) {
-                out << "      <value intvalue=\"" << it->intvalue << "\"";
-                if (it->condition) {
+                out << "      <value ";
+                if (it->tokvalue)
+                    out << "tokvalue=\"" << it->tokvalue << '\"';
+                else
+                    out << "intvalue=\"" << it->intvalue << '\"';
+                if (it->condition)
                     out << " condition-line=\"" << it->condition->linenr() << '\"';
-                }
                 out << "/>" << std::endl;
             }
 
             else {
-                out << (it == tok->values.begin() ? "" : ",") << it->intvalue;
+                if (it != tok->values.begin())
+                    out << ",";
+                if (it->tokvalue)
+                    out << it->tokvalue->str();
+                else
+                    out << it->intvalue;
             }
         }
         if (xml)
@@ -1238,7 +1246,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->intvalue <= val) {
+        if (it->intvalue <= val && !it->tokvalue) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
             if (!ret->inconclusive && !ret->condition)
@@ -1259,7 +1267,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->intvalue >= val) {
+        if (it->intvalue >= val && !it->tokvalue) {
             if (!ret || ret->inconclusive || (ret->condition && !it->inconclusive))
                 ret = &(*it);
             if (!ret->inconclusive && !ret->condition)
