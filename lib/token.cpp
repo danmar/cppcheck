@@ -1283,6 +1283,40 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
     return ret;
 }
 
+const Token *Token::getValueTokenMinStrSize() const
+{
+    const Token *ret = nullptr;
+    std::size_t minsize = ~0U;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->tokvalue && it->tokvalue->type() == Token::eString) {
+            std::size_t size = getStrSize(it->tokvalue);
+            if (!ret || size < minsize) {
+                minsize = size;
+                ret = it->tokvalue;
+            }
+        }
+    }
+    return ret;
+}
+
+const Token *Token::getValueTokenMaxStrLength() const
+{
+    const Token *ret = nullptr;
+    std::size_t maxlength = 0U;
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        if (it->tokvalue && it->tokvalue->type() == Token::eString) {
+            std::size_t length = getStrLength(it->tokvalue);
+            if (!ret || length > maxlength) {
+                maxlength = length;
+                ret = it->tokvalue;
+            }
+        }
+    }
+    return ret;
+}
+
 void Token::assignProgressValues(Token *tok)
 {
     unsigned int total_count = 0;

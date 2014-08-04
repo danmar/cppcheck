@@ -1306,8 +1306,33 @@ void CheckBufferOverrun::bufferOverrun2()
 {
     // singlepass checking using ast, symboldatabase and valueflow
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%var% [")) {
-            const Variable *var = tok->variable();
+        // Array index
+        if (!Token::Match(tok, "%var% ["))
+            continue;
+
+        // TODO: what to do about negative index..
+        const Token *index = tok->next()->astOperand2();
+        if (index && index->getValueLE(-1LL,_settings))
+            continue;
+
+        // Set full varname..
+        std::string varname(tok->str());
+        if (tok->astParent() && tok->astParent()->str() == ".") {
+            const Token *parent = tok->astParent();
+            while (parent->astParent() && parent->astParent()->str() == ".")
+                parent = parent->astParent();
+            varname = parent->expressionString();
+        }
+
+
+        const Token * const strtoken = tok->getValueTokenMinStrSize();
+        if (strtoken) {
+            ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
+            valueFlowCheckArrayIndex(tok->next(), arrayInfo);
+        }
+
+        else {
+            const Variable * const var = tok->variable();
             if (!var || var->nameToken() == tok || !var->isArray())
                 continue;
 
@@ -1315,20 +1340,8 @@ void CheckBufferOverrun::bufferOverrun2()
             if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
                 continue;
 
-            // TODO: what to do about negative index..
-            const Token *index = tok->next()->astOperand2();
-            if (index && index->getValueLE(-1LL,_settings))
-                continue;
-
             ArrayInfo arrayInfo(var,_tokenizer);
-
-            // Set full varname..
-            if (tok->astParent() && tok->astParent()->str() == ".") {
-                const Token *parent = tok->astParent();
-                while (parent->astParent() && parent->astParent()->str() == ".")
-                    parent = parent->astParent();
-                arrayInfo.varname(parent->expressionString());
-            }
+            arrayInfo.varname(varname);
 
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
         }
@@ -1540,12 +1553,15 @@ void CheckBufferOverrun::checkStringArgument()
 
             unsigned int argnr = 1;
             for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument(), argnr++) {
-                if (!Token::Match(argtok, "%str% ,|)"))
+                if (!Token::Match(argtok, "%var%|%str% ,|)"))
+                    continue;
+                const Token *strtoken = argtok->getValueTokenMinStrSize();
+                if (!strtoken)
                     continue;
                 const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok->str(), argnr);
                 if (!minsizes)
                     continue;
-                if (checkMinSizes(*minsizes, tok, Token::getStrSize(argtok), nullptr))
+                if (checkMinSizes(*minsizes, tok, Token::getStrSize(strtoken), nullptr))
                     bufferOverrunError(argtok);
             }
         }

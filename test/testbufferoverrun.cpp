@@ -224,6 +224,8 @@ private:
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
 
+        TEST_CASE(valueflow_string); // using ValueFlow string values in checking
+
         // It is undefined behaviour to point out of bounds of an array
         // the address beyond the last element is in bounds
         // char a[10];
@@ -2891,6 +2893,30 @@ private:
               "    strcpy(data, src);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void valueflow_string() { // using ValueFlow string values in checking
+        checkstd("void f() {\n"
+                 "  char buf[3];\n"
+                 "  const char *x = s;\n"
+                 "  if (cond) x = \"abcde\";\n"
+                 "  strcpy(buf,x);\n" // <- buffer overflow when x is "abcde"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
+
+        checkstd("void f() {\n"
+                 "  const char *x = s;\n"
+                 "  if (cond) x = \"abcde\";\n"
+                 "  memcpy(buf,x,20);\n" // <- buffer overflow when x is "abcde"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
+
+        check("char f() {\n"
+              "  const char *x = s;\n"
+              "  if (cond) x = \"abcde\";\n"
+              "  return x[20];\n" // <- array index out of bounds when x is "abcde"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[6]' accessed at index 20, which is out of bounds.\n", errout.str());
     }
 
     void pointer_out_of_bounds_1() {
