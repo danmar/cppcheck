@@ -1096,6 +1096,16 @@ private:
                "}\n"
                "void f2() { f1(0.5); }";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+
+        code = "void dostuff(int x) {\n"
+               "  return x/x;\n"
+               "}\n"
+               "\n"
+               "void test(int x) {\n"
+               "  if(x==1) {}\n"
+               "  dostuff(x+1);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
     }
 
     void valueFlowFunctionReturn() {

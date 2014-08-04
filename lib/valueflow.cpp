@@ -1327,11 +1327,9 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             continue;
 
         // passing value(s) to function
-        if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
+        if (Token::Match(tok, "[(,] %var%|%num%|%str% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
-        else if (Token::Match(tok, "[(,] %num%|%str% [,)]") && !tok->next()->values.empty()) {
-            argvalues = tok->next()->values;
-        } else {
+        else {
             // bool operator => values 1/0 are passed to function..
             const Token *op = tok->next();
             while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
@@ -1340,6 +1338,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 argvalues.clear();
                 argvalues.push_back(ValueFlow::Value(0));
                 argvalues.push_back(ValueFlow::Value(1));
+            } else if (Token::Match(op, "%cop%") && !op->values.empty()) {
+                argvalues = op->values;
             } else {
                 // possible values are unknown..
                 continue;
