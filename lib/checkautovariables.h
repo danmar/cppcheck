@@ -87,6 +87,7 @@ private:
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
+    void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -98,6 +99,7 @@ private:
         c.errorReturnTempReference(0);
         c.errorInvalidDeallocation(0);
         c.errorReturnAddressOfFunctionParameter(0, "parameter");
+        c.errorUselessAssignmentArg(0);
         c.errorUselessAssignmentPtrArg(0);
     }
 
@@ -112,7 +114,8 @@ private:
                "* assigning address of an variable to an effective parameter of a function\n"
                "* returning reference to local/temporary variable\n"
                "* returning address of function parameter\n"
-               "* useless assignment of pointer parameter\n";
+               "* suspicious assignment of pointer argument\n"
+               "* useless assignment of function argument\n";
     }
 };
 /// @}
