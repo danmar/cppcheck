@@ -676,7 +676,7 @@ public:
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
             if (it->tokvalue && it->tokvalue->type() == Token::eString) {
-                std::size_t length = Token::getStrLength(it->tokvalue);
+                std::size_t length = getStrLength(it->tokvalue);
                 if (!ret || length > maxlength) {
                     maxlength = length;
                     ret = it->tokvalue;
