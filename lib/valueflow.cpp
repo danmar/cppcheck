@@ -1329,9 +1329,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // passing value(s) to function
         if (Token::Match(tok, "[(,] %var% [,)]") && !tok->next()->values.empty())
             argvalues = tok->next()->values;
-        else if (Token::Match(tok, "[(,] %num% [,)]") && MathLib::isInt(tok->strAt(1))) {
-            argvalues.clear();
-            argvalues.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
+        else if (Token::Match(tok, "[(,] %num%|%str% [,)]") && !tok->next()->values.empty()) {
+            argvalues = tok->next()->values;
         } else {
             // bool operator => values 1/0 are passed to function..
             const Token *op = tok->next();
@@ -1364,7 +1363,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Get function argument, and check if parameter is passed by value
         const Function * const function = ftok->astOperand1()->function();
         const Variable * const arg = function ? function->getArgumentVar(argnr) : nullptr;
-        if (!Token::Match(arg ? arg->typeStartToken() : nullptr, "%type% %var% ,|)"))
+        if (!Token::Match(arg ? arg->typeStartToken() : nullptr, "%type% %var% ,|)") &&
+            !Token::Match(arg ? arg->typeStartToken() : nullptr, "const| struct| %type% * %var% ,|)"))
             continue;
 
         // Function scope..

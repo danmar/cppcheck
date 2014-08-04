@@ -159,12 +159,21 @@ private:
     void valueFlowString() {
         const char *code;
 
+        // valueFlowAfterAssign
         code  = "const char * f() {\n"
                 "    static const char *x;\n"
                 "    if (a) x = \"123\";\n"
                 "    return x;\n"
                 "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\""));
+
+        // valueFlowSubFunction
+        code  = "void dostuff(const char *x) {\n"
+                "  f(x);\n"
+                "}\n"
+                "\n"
+                "void test() { dostuff(\"abc\"); }";
+        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\""));
     }
 
     void valueFlowPointerAlias() {
