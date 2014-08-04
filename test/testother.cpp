@@ -1455,6 +1455,19 @@ private:
                                  "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #3630
+        checkOldStylePointerCast("class SomeType;\n"
+                                 "class X : public Base {\n"
+                                 "    X() : Base((SomeType*)7) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class SomeType;\n"
+                                 "class X : public Base {\n"
+                                 "    X() : Base((SomeType*)var) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
+
         // #5560
         checkOldStylePointerCast("class C;\n"
                                  "\n"

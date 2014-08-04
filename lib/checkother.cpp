@@ -486,17 +486,18 @@ void CheckOther::warningOldStylePointerCast()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        const Token* tok;
+        if (scope->function && scope->function->isConstructor())
+            tok = scope->classDef;
+        else
+            tok = scope->classStart;
+        for (; tok && tok != scope->classEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const| %type% * ) (| %var%") &&
-                !Token::Match(tok, "( const| %type% * ) (| new"))
+            if (!Token::Match(tok, "( const| %type% * ) (| %var%|%num%|%bool%|%char%|%str%"))
                 continue;
 
             if (tok->strAt(1) == "const")
                 tok = tok->next();
-
-            if (tok->strAt(4) == "const")
-                continue;
 
             // Is "type" a class?
             if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
@@ -2035,11 +2036,11 @@ void CheckOther::checkCharVariable()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "!!. %var% [") && astIsSignedChar(tok->tokAt(2)->astOperand2())) {
-                const Variable* arrayvar = tok->next()->variable();
+            if (Token::Match(tok, "%var% [") && astIsSignedChar(tok->next()->astOperand2())) {
+                const Variable* arrayvar = tok->variable();
                 const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
                 if (arraysize > 0x80)
-                    charArrayIndexError(tok->next());
+                    charArrayIndexError(tok);
             }
 
             else if (Token::Match(tok, "[&|^]")) {
@@ -2177,6 +2178,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 
 void CheckOther::strPlusChar()
 {
+    //_tokenizer->tokens()->printAst(true);
+    //_tokenizer->tokens()->printOut();
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
