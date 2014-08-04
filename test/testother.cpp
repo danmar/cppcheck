@@ -1468,6 +1468,12 @@ private:
                                  "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
 
+        checkOldStylePointerCast("class SomeType;\n"
+                                 "class X : public Base {\n"
+                                 "    X() : Base((SomeType*)0) {}\n"
+                                 "};");
+        ASSERT_EQUALS("", errout.str());
+
         // #5560
         checkOldStylePointerCast("class C;\n"
                                  "\n"

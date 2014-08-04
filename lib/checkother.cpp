@@ -499,6 +499,9 @@ void CheckOther::warningOldStylePointerCast()
             if (tok->strAt(1) == "const")
                 tok = tok->next();
 
+            if (tok->strAt(4) == "0") // Casting nullpointers is safe
+                continue;
+
             // Is "type" a class?
             if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
                 cstyleCastError(tok);
