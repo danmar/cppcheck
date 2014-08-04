@@ -498,8 +498,10 @@ void CheckStl::erase()
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         const Token* const tok = i->classDef;
+        if (!tok)
+            continue;
 
-        if (tok && i->type == Scope::eFor) {
+        if (i->type == Scope::eFor) {
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
                     if (Token::Match(tok2, "; %var% !=")) {
