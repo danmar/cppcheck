@@ -50,6 +50,7 @@ public:
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.executionPaths();
         checkUninitVar.check();
+        checkUninitVar.deadPointer();
     }
 
     /** Check for uninitialized variables */
@@ -63,6 +64,10 @@ public:
     static bool isVariableUsage(const Token *vartok, bool ispointer, bool alloc, bool cpp);
     static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
     bool isMemberVariableUsage(const Token *tok, bool isPointer, bool alloc, const std::string &membervar) const;
+
+    /** ValueFlow-based checking for dead pointer usage */
+    void deadPointer();
+    void deadPointerError(const Token *pointer, const Token *alias);
 
     /**
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
@@ -94,6 +99,7 @@ private:
         c.uninitdataError(0, "varname");
         c.uninitvarError(0, "varname");
         c.uninitStructMemberError(0, "a.b");
+        c.deadPointerError(0,0);
     }
 
     static std::string myName() {
@@ -102,7 +108,8 @@ private:
 
     std::string classInfo() const {
         return "Uninitialized variables\n"
-               "* using uninitialized variables and data\n";
+               "* using uninitialized variables and data\n"
+               "* using dead pointer\n";
     }
 };
 /// @}

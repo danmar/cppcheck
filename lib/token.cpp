@@ -20,6 +20,7 @@
 #include "errorlogger.h"
 #include "check.h"
 #include "settings.h"
+#include "symboldatabase.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -1315,6 +1316,29 @@ const Token *Token::getValueTokenMaxStrLength() const
         }
     }
     return ret;
+}
+
+const Token *Token::getValueTokenDeadPointer() const
+{
+    std::list<ValueFlow::Value>::const_iterator it;
+    for (it = values.begin(); it != values.end(); ++it) {
+        // Is this a pointer alias?
+        if (!it->tokvalue || it->tokvalue->str() != "&")
+            continue;
+        // Get variable
+        const Token *vartok = it->tokvalue->astOperand1();
+        if (!vartok || !vartok->isName() || !vartok->variable())
+            continue;
+        const Variable * const var = vartok->variable();
+        if (var->isStatic())
+            continue;
+        const Scope *s = this->scope();
+        while ((s != nullptr) && (s != var->scope()))
+            s = s->nestedIn;
+        if (!s)
+            return it->tokvalue;
+    }
+    return nullptr;
 }
 
 void Token::assignProgressValues(Token *tok)

@@ -673,6 +673,8 @@ public:
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize() const;
 
+    const Token *getValueTokenDeadPointer() const;
+
 private:
 
     void next(Token *nextToken) {

@@ -73,6 +73,9 @@ private:
 
         // Test that std.cfg is configured correctly
         TEST_CASE(stdcfg);
+
+        // dead pointer
+        TEST_CASE(deadPointer);
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -3699,6 +3702,44 @@ private:
         checkUninitVar("void f( char *c) {\n"
                        "  putchar (*c);\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkDeadPointer(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check code..
+        CheckUninitVar check(&tokenizer, &settings, this);
+        check.deadPointer();
+    }
+
+    void deadPointer() {
+        checkDeadPointer("void f() {\n"
+                         "  int *p = p1;\n"
+                         "  if (cond) {\n"
+                         "    int x;\n"
+                         "    p = &x;\n"
+                         "  }\n"
+                         "  *p = 0;\n"
+                         "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'p' is dead if it has been assigned '&x' at line 5.\n", errout.str());
+
+        checkDeadPointer("void a(const int *p) {\n"
+                         "  *p = 0;\n"
+                         "}\n"
+                         "\n"
+                         "void b() {\n"
+                         "  int x;\n"
+                         "  int *p = &x;"
+                         "  a(p);\n"
+                         "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -1930,3 +1930,38 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "uninitStructMember",
                 "Uninitialized struct member: " + membername);
 }
+
+void CheckUninitVar::deadPointer()
+{
+    const bool cpp = _tokenizer->isCPP();
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    std::list<Scope>::const_iterator scope;
+
+    // check every executable scope
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (!scope->isExecutable())
+            continue;
+        // Dead pointers..
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (tok->variable() &&
+                tok->variable()->isPointer() &&
+                isVariableUsage(tok, true, false, cpp)) {
+                const Token *alias = tok->getValueTokenDeadPointer();
+                if (alias) {
+                    deadPointerError(tok,alias);
+                }
+            }
+        }
+    }
+}
+
+void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
+{
+    const std::string strpointer(pointer ? pointer->str() : std::string("pointer"));
+    const std::string stralias(alias ? alias->expressionString() : std::string("&x"));
+
+    reportError(pointer,
+                Severity::error,
+                "deadpointer",
+                "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".");
+}

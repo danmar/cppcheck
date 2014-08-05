@@ -186,6 +186,14 @@ private:
                 "    return x;\n"
                 "}";
         ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]"));
+
+        // dead pointer
+        code  = "void f() {\n"
+                "  int *x;\n"
+                "  if (cond) { int i; x = &i; }\n"
+                "  *x = 0;\n"  // <- x can point at i
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "& i"));
     }
 
     void valueFlowCalculations() {

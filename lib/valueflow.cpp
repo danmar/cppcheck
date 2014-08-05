@@ -364,7 +364,7 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
             continue;
 
         // child should be some buffer or variable
-        if (!Token::Match(tok->astOperand1(), "%var%|.|["))
+        if (!Token::Match(tok->astOperand1(), "%var%|.|[|;"))
             continue;
 
         ValueFlow::Value value;
