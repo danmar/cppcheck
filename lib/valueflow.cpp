@@ -641,6 +641,7 @@ static bool valueFlowForward(Token * const               startToken,
     unsigned int number_of_if = 0;
     int varusagelevel = -1;
     bool returnStatement = false;  // current statement is a return, stop analysis at the ";"
+    bool read = false;  // is variable value read?
 
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (indentlevel >= 0 && tok2->str() == "{")
@@ -692,6 +693,9 @@ static bool valueFlowForward(Token * const               startToken,
             bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
                             isVariableChanged(start,end,varid) :
                             (nullptr != Token::findmatch(start, "%varid%", end, varid));
+            if (!read) {
+                read = bool(nullptr != Token::findmatch(tok2, "%varid% !!=", end, varid));
+            }
             if (varusage) {
                 varusagelevel = indentlevel;
 
@@ -699,7 +703,7 @@ static bool valueFlowForward(Token * const               startToken,
                     return false;
 
                 // TODO: don't check noreturn scopes
-                if (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid)) {
+                if (read && (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid))) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
                     return false;
@@ -731,7 +735,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             if (isVariableChanged(start, end, varid)) {
-                if (number_of_if == 0 &&
+                if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
                       (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||

@@ -678,9 +678,9 @@ private:
                "    int x = 123;\n"
                "    if (condition1) x = 456;\n"
                "    if (condition2) x = 789;\n"
-               "    a = 2 + x;\n"
+               "    a = 2 + x;\n" // <- either assignment "x=123" is redundant or x can be 123 here.
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        ASSERT_EQUALS(true,  testValueOfX(code, 5U, 123));
 
         code = "void f(int a) {\n"
                "    int x = 123;\n"
