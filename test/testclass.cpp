@@ -57,6 +57,7 @@ private:
         TEST_CASE(noConstructor7); // ticket #4391
         TEST_CASE(noConstructor8); // ticket #4404
         TEST_CASE(noConstructor9); // ticket #4419
+        TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -178,8 +179,7 @@ private:
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
-
-        TEST_CASE(forwardDeclaration); // ticket #4290/#3190
+        TEST_CASE(selfInitialization);
 
         TEST_CASE(pureVirtualFunctionCall);
         TEST_CASE(pureVirtualFunctionCallOtherClass);
@@ -2019,12 +2019,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
-    void checkNoConstructor(const char code[], const char* level="style") {
+    void checkNoConstructor(const char code[]) {
         // Clear the error log
         errout.str("");
 
         Settings settings;
-        settings.addEnabled(level);
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2121,6 +2121,22 @@ private:
                            "private:\n"
                            " bool MessageSet;\n"
                            "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
+    // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
+    void forwardDeclaration() {
+        checkNoConstructor("class foo;\n"
+                           "int bar;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoConstructor("class foo;\n"
+                           "class foo;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoConstructor("class foo{};\n"
+                           "class foo;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5826,19 +5842,52 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
-    // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
-    void forwardDeclaration() {
-        checkConst("class foo;\n"
-                   "int bar;\n");
-        ASSERT_EQUALS("", errout.str());
 
-        checkConst("class foo;\n"
-                   "class foo;\n");
-        ASSERT_EQUALS("", errout.str());
+    void checkSelfInitialization(const char code []) {
+        // Clear the error log
+        errout.str("");
 
-        checkConst("class foo{};\n"
-                   "class foo;\n");
+        // Check..
+        Settings settings;
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkSelfInitialization();
+    }
+
+    void selfInitialization() {
+        checkSelfInitialization("class Fred {\n"
+                                "    int i;\n"
+                                "    Fred() : i(i) {\n"
+                                "    }\n"
+                                "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable 'i' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    int i;\n"
+                                "    Fred();\n"
+                                "};\n"
+                                "Fred::Fred() : i(i) {\n"
+                                "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Member variable 'i' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    std::string s;\n"
+                                "    Fred() : s(s) {\n"
+                                "    }\n"
+                                "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable 's' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    std::string s;\n"
+                                "    Fred(const std::string& s) : s(s) {\n"
+                                "    }\n"
+                                "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6052,7 +6101,7 @@ private:
         ASSERT_THROW(checkNoConstructor("struct R1 {\n"
                                         "  int a;\n"
                                         "  R1 () : a { }\n"
-                                        "};\n", "warning"), InternalError);
+                                        "};\n"), InternalError);
     }
 };
 

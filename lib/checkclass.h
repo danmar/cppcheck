@@ -68,6 +68,7 @@ public:
         checkClass.operatorEqToSelf();
         checkClass.initializerListOrder();
         checkClass.initializationListUsage();
+        checkClass.checkSelfInitialization();
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
@@ -116,7 +117,11 @@ public:
     /** @brief Check initializer list order */
     void initializerListOrder();
 
+    /** @brief Suggest using initialization list */
     void initializationListUsage();
+
+    /** @brief Check for initialization of a member with itself */
+    void checkSelfInitialization();
 
     void copyconstructors();
 
@@ -150,6 +155,7 @@ private:
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
+    void selfInitializationError(const Token* tok, const std::string& name);
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
@@ -174,6 +180,7 @@ private:
         c.checkConstError(0, "class", "function", true);
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
+        c.selfInitializationError(0, "var");
         c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
     }
 
@@ -196,6 +203,7 @@ private:
                "* Constness for member functions\n"
                "* Order of initializations\n"
                "* Suggest usage of initialization list\n"
+               "* Initialization of a member with itself\n"
                "* Suspicious subtraction from 'this'\n"
                "* Call of pure virtual function in constructor/destructor\n"
                "* Duplicated inherited data members\n";
