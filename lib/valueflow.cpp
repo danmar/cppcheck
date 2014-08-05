@@ -1353,9 +1353,16 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         const Token * const argumentToken = tok->next();
 
         // is this a function call?
+        int traverseDepth = 0; // Unlimited search takes hours on long comma-separated lists
         const Token *ftok = tok;
-        while (ftok && ftok->str() != "(")
+        while (ftok && ftok->str() != "(") {
             ftok = ftok->astParent();
+            traverseDepth++;
+            if (traverseDepth > 100) {
+                ftok = 0;
+                break;
+            }
+        }
         if (!ftok || !ftok->astOperand1() || !ftok->astOperand2() || !ftok->astOperand1()->function())
             continue;
 
