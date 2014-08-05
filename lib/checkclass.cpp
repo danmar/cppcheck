@@ -2067,7 +2067,7 @@ void CheckClass::checkSelfInitialization()
 
 void CheckClass::selfInitializationError(const Token* tok, const std::string& name)
 {
-    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + name + "' is initialized by itself.\n");
+    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + name + "' is initialized by itself.");
 }
 
 
