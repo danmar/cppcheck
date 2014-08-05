@@ -378,7 +378,7 @@ $(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/cxx11emu.h lib/te
 $(SRCDIR)/timer.o: lib/timer.cpp lib/cxx11emu.h lib/timer.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/timer.o $(SRCDIR)/timer.cpp
 
-$(SRCDIR)/token.o: lib/token.cpp lib/cxx11emu.h lib/token.h lib/config.h lib/valueflow.h lib/mathlib.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h
+$(SRCDIR)/token.o: lib/token.cpp lib/cxx11emu.h lib/token.h lib/config.h lib/valueflow.h lib/mathlib.h lib/errorlogger.h lib/suppressions.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/token.o $(SRCDIR)/token.cpp
 
 $(SRCDIR)/tokenize.o: lib/tokenize.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/check.h lib/symboldatabase.h lib/templatesimplifier.h
