@@ -48,17 +48,6 @@ private:
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
 
-        TEST_CASE(noConstructor1);
-        TEST_CASE(noConstructor2);
-        TEST_CASE(noConstructor3);
-        TEST_CASE(noConstructor4);
-        TEST_CASE(noConstructor5);
-        TEST_CASE(noConstructor6); // ticket #4386
-        TEST_CASE(noConstructor7); // ticket #4391
-        TEST_CASE(noConstructor8); // ticket #4404
-        TEST_CASE(noConstructor9); // ticket #4419
-        TEST_CASE(forwardDeclaration); // ticket #4290/#3190
-
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
         TEST_CASE(operatorEq3); // ticket #3051
@@ -187,7 +176,6 @@ private:
         TEST_CASE(pureVirtualFunctionCallPrevented);
 
         TEST_CASE(duplInheritedMembers);
-        TEST_CASE(invalidInitializerList);
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -2017,127 +2005,6 @@ private:
                                "    delete base;\n"
                                "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
-    }
-
-    void checkNoConstructor(const char code[]) {
-        // Clear the error log
-        errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
-
-        // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.constructors();
-    }
-
-    void noConstructor1() {
-        // There are nonstatic member variables - constructor is needed
-        checkNoConstructor("class Fred\n"
-                           "{\n"
-                           "    int i;\n"
-                           "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor.\n", errout.str());
-    }
-
-    void noConstructor2() {
-        checkNoConstructor("class Fred\n"
-                           "{\n"
-                           "public:\n"
-                           "    static void foobar();\n"
-                           "};\n"
-                           "\n"
-                           "void Fred::foobar()\n"
-                           "{ }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor3() {
-        checkNoConstructor("class Fred\n"
-                           "{\n"
-                           "private:\n"
-                           "    static int foobar;\n"
-                           "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor4() {
-        checkNoConstructor("class Fred\n"
-                           "{\n"
-                           "public:\n"
-                           "    int foobar;\n"
-                           "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor5() {
-        checkNoConstructor("namespace Foo\n"
-                           "{\n"
-                           "    int i;\n"
-                           "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor6() {
-        // ticket #4386
-        checkNoConstructor("class Ccpucycles {\n"
-                           "    friend class foo::bar;\n"
-                           "    Ccpucycles() :\n"
-                           "    m_v(0), m_b(true)\n"
-                           "    {}\n"
-                           "private:\n"
-                           "    cpucyclesT m_v;\n"
-                           "    bool m_b;\n"
-                           "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor7() {
-        // ticket #4391
-        checkNoConstructor("short bar;\n"
-                           "class foo;\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor8() {
-        // ticket #4404
-        checkNoConstructor("class LineSegment;\n"
-                           "class PointArray  { };\n"
-                           "void* tech_ = NULL;\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void noConstructor9() {
-        // ticket #4419
-        checkNoConstructor("class CGreeting : public CGreetingBase<char> {\n"
-                           "public:\n"
-                           " CGreeting() : CGreetingBase<char>(), MessageSet(false) {}\n"
-                           "private:\n"
-                           " bool MessageSet;\n"
-                           "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
-    // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
-    void forwardDeclaration() {
-        checkNoConstructor("class foo;\n"
-                           "int bar;\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkNoConstructor("class foo;\n"
-                           "class foo;\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkNoConstructor("class foo{};\n"
-                           "class foo;\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNoMemset(const char code[], bool load_std_cfg = false) {
@@ -6095,13 +5962,6 @@ private:
                                      "A::A()\n"
                                      "{nonpure(false);}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidInitializerList() {
-        ASSERT_THROW(checkNoConstructor("struct R1 {\n"
-                                        "  int a;\n"
-                                        "  R1 () : a { }\n"
-                                        "};\n"), InternalError);
     }
 };
 
