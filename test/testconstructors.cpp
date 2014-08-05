@@ -1461,6 +1461,15 @@ private:
               "    int mi;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Foo : public Bar\n"
+              "{\n"
+              "public:\n"
+              "    explicit Foo(int i) : Bar{mi=i} { }\n"
+              "private:\n"
+              "    int mi;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVar7() {

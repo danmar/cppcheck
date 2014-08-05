@@ -5563,6 +5563,14 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
+
+        checkInitializerListOrder("class Fred {\n"
+                                  "    int a, b, c;\n"
+                                  "public:\n"
+                                  "    Fred() : c{0}, b{0}, a{0} { }\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
+                      "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
     }
 
     void checkInitializationListUsage(const char code[]) {
@@ -5731,6 +5739,13 @@ private:
         checkSelfInitialization("class Fred {\n"
                                 "    int i;\n"
                                 "    Fred() : i(i) {\n"
+                                "    }\n"
+                                "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable 'i' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    int i;\n"
+                                "    Fred() : i{i} {\n"
                                 "    }\n"
                                 "};");
         ASSERT_EQUALS("[test.cpp:3]: (error) Member variable 'i' is initialized by itself.\n", errout.str());

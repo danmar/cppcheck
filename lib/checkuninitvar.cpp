@@ -1077,7 +1077,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
             if (start && Token::simpleMatch(start->previous(), "catch ("))
                 continue;
         }
-        if (i->nameToken()->strAt(1) == "(")
+        if (i->nameToken()->strAt(1) == "(" || i->nameToken()->strAt(1) == "{")
             continue;
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();

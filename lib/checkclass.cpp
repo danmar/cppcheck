@@ -447,7 +447,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (level == 0 && Token::Match(ftok, "%var% (")) {
+            if (level == 0 && Token::Match(ftok, "%var% {|(")) {
                 if (ftok->str() != func.name()) {
                     initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
@@ -476,42 +476,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                         }
                     }
                 }
-            } else if (level == 0 && Token::Match(ftok, "%var% {") && ftok->str() != "const" && Token::Match(ftok->next()->link()->next(), "%type%|,|{")) {
-                if (ftok->str() != func.name()) {
-                    initVar(ftok->str(), scope, usage);
-                } else { // c++11 delegate constructor
-                    const Function *member = scope->findFunction(ftok);
-                    // member function found
-                    if (member) {
-                        // recursive call
-                        // assume that all variables are initialized
-                        if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
-                            /** @todo false negative: just bail */
-                            assignAllVar(usage);
-                            return;
-                        }
-
-                        // member function has implementation
-                        if (member->hasBody) {
-                            // initialize variable use list using member function
-                            callstack.push_back(member);
-                            initializeVarList(*member, callstack, scope, usage);
-                            callstack.pop_back();
-                        }
-
-                        // there is a called member function, but it has no implementation, so we assume it initializes everything
-                        else {
-                            assignAllVar(usage);
-                        }
-                    }
-                }
-                ftok = ftok->linkAt(1);
+                ftok = ftok->next();
+                level++;
             } else if (level != 0 && Token::Match(ftok, "%var% =")) // assignment in the initializer: var(value = x)
                 assignVar(ftok->str(), scope, usage);
 
             else if (ftok->str() == "(")
                 level++;
-            else if (ftok->str() == ")")
+            else if (ftok->str() == ")" || ftok->str() == "}")
                 level--;
             else if (ftok->str() == "{") {
                 if (level == 0)
@@ -1993,8 +1965,8 @@ void CheckClass::initializerListOrder()
                     tok = tok->next();
 
                     // find all variable initializations in list
-                    while (tok && tok->str() != "{") {
-                        if (Token::Match(tok, "%var% (")) {
+                    while (tok && tok != func->functionScope->classStart) {
+                        if (Token::Match(tok, "%var% (|{")) {
                             const Variable *var = info->getVariable(tok->str());
 
                             if (var)
@@ -2058,7 +2030,7 @@ void CheckClass::checkSelfInitialization()
             continue;
 
         for (; tok != scope->classStart; tok = tok->next()) {
-            if (Token::Match(tok, "[:,] %var% ( %var% )") && tok->next()->varId() && tok->next()->varId() == tok->tokAt(3)->varId()) {
+            if (Token::Match(tok, "[:,] %var% (|{ %var% )|}") && tok->next()->varId() && tok->next()->varId() == tok->tokAt(3)->varId()) {
                 selfInitializationError(tok, tok->strAt(1));
             }
         }

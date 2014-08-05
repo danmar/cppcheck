@@ -615,6 +615,14 @@ private:
                        "    return 1 + iter;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // C++11 style initialization
+        checkUninitVar("int f() {\n"
+                       "    int i = 0;\n"
+                       "    int j{ i };\n"
+                       "    return j;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar3() { // #3844
