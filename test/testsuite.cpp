@@ -82,6 +82,7 @@ bool TestFixture::prepareTest(const char testname[])
         ++countTests;
         if (quiet_tests) {
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
+            std::fflush(stdout);
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
