@@ -698,7 +698,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             for (; defValTok; defValTok = defValTok->next()) {
                 if (defValTok->str() == "[")
                     defValTok = defValTok->link();
-                else if (defValTok->str() == "(" || defValTok->str() == "=") {
+                else if (defValTok->str() == "(" || defValTok->str() == "{" || defValTok->str() == "=") {
                     variables.addVar(&*i, type, true);
                     break;
                 } else if (defValTok->str() == ";" || defValTok->str() == "," || defValTok->str() == ")") {
@@ -718,8 +718,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                             variables.read(tok->varId(), i->nameToken());
                 } else
                     doAssignment(variables, i->nameToken(), false, scope);
-            } else if (Token::Match(defValTok, "( %var% )")) // Variables used to initialize the variable read.
-                variables.readAll(defValTok->next()->varId(), i->nameToken()); // ReadAll?
+            }
         }
     }
 
@@ -741,7 +740,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (!tok)
                 break;
         }
-        if (tok->str() == "{" && tok != scope->classStart) {
+        if (tok->str() == "{" && tok != scope->classStart && !tok->previous()->varId()) {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classStart == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables, false); // Scan child scope

@@ -766,7 +766,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     else if (scope->type == Scope::eCatch)
                         scope->checkVariable(tok->tokAt(2), Throw); // check for variable declaration and add it to new scope if found
                     tok = tok1;
-                } else if (tok->str() == "{") {
+                } else if (tok->str() == "{" && !tok->previous()->varId()) {
                     if (!Token::Match(tok->previous(), "=|,")) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
                         scope->nestedList.push_back(&scopeList.back());
@@ -2605,7 +2605,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         tok = vartok->next();
-        while (tok && tok->str() == "[")
+        while (tok && (tok->str() == "[" || tok->str() == "{"))
             tok = tok->link()->next();
 
         if (vartok->varId() == 0) {
@@ -2689,9 +2689,9 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         if (closeTok) {
             localVarTok = skipPointers(closeTok->next());
 
-            if (Token::Match(localVarTok, ":: %type% %var% ;|=|(")) {
+            if (Token::Match(localVarTok, ":: %type% %var% [;=({]")) {
                 if (localVarTok->strAt(3) != "(" ||
-                    Token::simpleMatch(localVarTok->linkAt(3), ") ;")) {
+                    Token::Match(localVarTok->linkAt(3), "[)}] ;")) {
                     localTypeTok = localVarTok->next();
                     localVarTok = localVarTok->tokAt(2);
                 }
@@ -2710,9 +2710,8 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
     } else if (Token::Match(localVarTok, "%var% )|[") && localVarTok->str() != "operator") {
         vartok = localVarTok;
         typetok = localTypeTok;
-    } else if ((isLocal() || type == Scope::eFunction) &&
-               Token::Match(localVarTok, "%var% (") &&
-               Token::simpleMatch(localVarTok->next()->link(), ") ;") && localVarTok->varId()) {
+    } else if (localVarTok && localVarTok->varId() && Token::Match(localVarTok, "%var% (|{") &&
+               Token::Match(localVarTok->next()->link(), ")|} ;")) {
         vartok = localVarTok;
         typetok = localTypeTok;
     } else if (type == eCatch &&

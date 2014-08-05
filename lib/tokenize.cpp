@@ -2276,6 +2276,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     bool bracket = false;
     while (tok2) {
         if (tok2->isName()) {
+            if (cpp && tok2->str() == "namespace")
+                return false;
             if (tok2->str() == "struct" || tok2->str() == "union" || (cpp && (tok2->str() == "class" || tok2->str() == "typename"))) {
                 hasstruct = true;
                 typeCount = 0;
@@ -2315,7 +2317,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
         if (executableScope && ref) {
-            if (tok2->str() == "(" || tok2->str() == "=")
+            if (tok2->str() == "(" || tok2->str() == "=" || tok2->str() == "{")
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
                 return false;   // not catching by reference => not declaration
@@ -2594,10 +2596,18 @@ void Tokenizer::setVarId()
                     continue;
 
                 const Token *tok3 = tok2->next();
-                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && (notstart.find(tok3->str()) != notstart.end() ||!setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
+                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && (notstart.find(tok3->str()) != notstart.end() || !setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
                     variableId[tok2->previous()->str()] = ++_varId;
                     tok = tok2->previous();
                 }
+            }
+
+            else if (decl && isCPP() && Token::Match(tok2->previous(), "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
+                if (Token::Match(tok2->previous(), "do|try|else"))
+                    continue;
+
+                variableId[tok2->previous()->str()] = ++_varId;
+                tok = tok2->previous();
             }
         }
 

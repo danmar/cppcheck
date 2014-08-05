@@ -106,6 +106,8 @@ private:
 
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
+        TEST_CASE(test_isVariableDeclarationIdentifiesInitialization);
+        TEST_CASE(test_isVariableDeclarationIdentifiesCpp11Initialization);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesStdDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedStdDeclaration);
@@ -221,6 +223,7 @@ private:
         TEST_CASE(symboldatabase41); // ticket #5197 (unknown macro)
         TEST_CASE(symboldatabase42); // only put variables in variable list
         TEST_CASE(symboldatabase43); // #4738
+        TEST_CASE(symboldatabase44);
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -280,6 +283,34 @@ private:
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesInitialization() {
+        reset();
+        givenACodeSampleToTokenize simpleDeclaration("int x (1);");
+        bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v.isArray());
+        ASSERT(false == v.isPointer());
+        ASSERT(false == v.isReference());
+        ASSERT(true == v.isIntegralType());
+    }
+
+    void test_isVariableDeclarationIdentifiesCpp11Initialization() {
+        reset();
+        givenACodeSampleToTokenize simpleDeclaration("int x {1};");
+        bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("x", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0);
+        ASSERT(false == v.isArray());
+        ASSERT(false == v.isPointer());
+        ASSERT(false == v.isReference());
+        ASSERT(true == v.isIntegralType());
     }
 
     void test_isVariableDeclarationIdentifiesScopedDeclaration() {
@@ -1877,6 +1908,20 @@ private:
               "    new int;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase44() {
+        GET_SYMBOL_DB("int i { 1 };\n"
+                      "int j ( i );\n"
+                      "void foo() {\n"
+                      "    int k { 1 };\n"
+                      "    int l ( 1 );\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(4U, db->getVariableListSize() - 1);
+        ASSERT_EQUALS(2U, db->scopeList.size());
+        for (std::size_t i = 1U; i < db->getVariableListSize(); i++)
+            ASSERT(db->getVariableFromVarId(i) != nullptr);
     }
 
     void isImplicitlyVirtual() {

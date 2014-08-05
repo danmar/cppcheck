@@ -317,6 +317,7 @@ private:
         TEST_CASE(varid_sizeofPassed); // #5295
         TEST_CASE(varid_classInFunction); // #5293
         TEST_CASE(varid_pointerToArray); // #2645
+        TEST_CASE(varid_cpp11initialization); // #4344
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -4921,6 +4922,18 @@ private:
                                            "    int f3(int(&a5)[10], int i) { return a5[i]; }\n"
                                            "};\n"
                                            "int f4(int(&a6)[10], int i) { return a6[i]; }"));
+    }
+
+    void varid_cpp11initialization() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int i@1 { 1 } ;\n"
+                      "2: std :: vector < int > vec@2 { 1 , 2 , 3 } ;\n"
+                      "3: namespace n { int z@3 ; } ;\n"
+                      "4: int & j@4 { i@1 } ;\n",
+                      tokenizeDebugListing("int i{1};\n"
+                                           "std::vector<int> vec{1, 2, 3};\n"
+                                           "namespace n { int z; };\n"
+                                           "int& j{i};\n"));
     }
 
     void varidclass1() {

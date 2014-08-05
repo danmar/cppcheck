@@ -96,6 +96,7 @@ private:
         TEST_CASE(localvar44); // ticket #3602
         TEST_CASE(localvar45); // ticket #4020
         TEST_CASE(localvar46); // ticket #4899
+        TEST_CASE(localvar47); // ticket #5491 (C++11 style initialization)
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1871,6 +1872,22 @@ private:
                               "    int a = 123;\n"
                               "    int b = (short)-a;;\n"
                               "    return b;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar47() { // #5491/#5494
+        functionVariableUsage("int func() {\n"
+                              "    int i = 0;\n"
+                              "    int j{i};\n"
+                              "    return j;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int func() {\n"
+                              "    std::mutex m;\n"
+                              "    std::unique_lock<std::mutex> l{ m };\n"
+                              "    return 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
