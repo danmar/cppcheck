@@ -35,10 +35,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
         settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

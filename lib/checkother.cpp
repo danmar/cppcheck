@@ -1976,7 +1976,7 @@ void CheckOther::checkConstantFunctionParameter()
         if (!var || !var->isArgument() || !var->isClass() || !var->isConst() || var->isPointer() || var->isArray() || var->isReference())
             continue;
 
-        if (var->scope()->function->arg->link()->strAt(-1) == ".")
+        if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == ".")
             continue; // references could not be used as va_start parameters (#5824)
 
         const Token* const tok = var->typeStartToken();
