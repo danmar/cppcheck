@@ -184,6 +184,9 @@
     <ClCompile Include="testsamples.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testvaarg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">
