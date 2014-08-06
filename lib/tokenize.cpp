@@ -111,7 +111,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->fileIndex(commonFileIndex);
         tok2->linenr(linenrs);
         tok2->type(tok->type());
-        tok2->flags(tok2->flags());
+        tok2->flags(tok->flags());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up

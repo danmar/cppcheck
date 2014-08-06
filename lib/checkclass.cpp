@@ -2018,7 +2018,6 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 
 void CheckClass::checkSelfInitialization()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
@@ -2037,9 +2036,9 @@ void CheckClass::checkSelfInitialization()
     }
 }
 
-void CheckClass::selfInitializationError(const Token* tok, const std::string& name)
+void CheckClass::selfInitializationError(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + name + "' is initialized by itself.");
+    reportError(tok, Severity::error, "selfInitialization", "Member variable '" + varname + "' is initialized by itself.");
 }
 
 
