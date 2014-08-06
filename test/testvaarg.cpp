@@ -74,6 +74,15 @@ private:
               "    va_end(arg_ptr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int main(int argc, char *argv[]) {\n"
+              "    long(^addthem)(const char *, ...) = ^long(const char *format, ...) {\n"
+              "        va_list argp;\n"
+              "        va_start(argp, format);\n"
+              "        c = va_arg(argp, int);\n"
+              "    };\n"
+              "}"); // Don't crash (#6032)
+        ASSERT_EQUALS("[test.cpp:6]: (error) va_list 'argp' was opened but not closed by va_end().\n", errout.str());
     }
 
     void referenceAs_va_start() {

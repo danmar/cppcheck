@@ -44,7 +44,7 @@ void CheckVaarg::va_start_argument()
                 const Variable* var = param2->variable();
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
-                if (var->index() + 2 < function->argCount() && _settings->isEnabled("warning")) {
+                if (var && var->index() + 2 < function->argCount() && _settings->isEnabled("warning")) {
                     std::list<Variable>::const_reverse_iterator it = function->argumentList.rbegin();
                     ++it;
                     wrongParameterTo_va_start_error(tok, var->name(), it->name());
