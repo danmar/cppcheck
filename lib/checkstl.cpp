@@ -756,10 +756,12 @@ static bool if_findCompare(const Token * const tokBack, bool str)
 
     if (Token::Match(tok,",|==|!="))
         return true;
-    if (str && tok->isComparisonOp())
-        return true;
-    if (tok->isArithmeticalOp()) // result is used in some calculation
-        return true;  // TODO: check if there is a comparison of the result somewhere
+    if (tok) {
+        if (str && tok->isComparisonOp())
+            return true;
+        if (tok->isArithmeticalOp()) // result is used in some calculation
+            return true;  // TODO: check if there is a comparison of the result somewhere
+    }
     return false;
 }
 
