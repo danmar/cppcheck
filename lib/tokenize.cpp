@@ -111,18 +111,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->fileIndex(commonFileIndex);
         tok2->linenr(linenrs);
         tok2->type(tok->type());
-        tok2->isUnsigned(tok->isUnsigned());
-        tok2->isSigned(tok->isSigned());
-        tok2->isPointerCompare(tok->isPointerCompare());
-        tok2->isLong(tok->isLong());
-        tok2->isExpandedMacro(tok->isExpandedMacro());
-        tok2->isAttributeConstructor(tok->isAttributeConstructor());
-        tok2->isAttributeDestructor(tok->isAttributeDestructor());
-        tok2->isAttributeUnused(tok->isAttributeUnused());
-        tok2->isAttributePure(tok->isAttributePure());
-        tok2->isAttributeConst(tok->isAttributeConst());
-        tok2->isAttributeNothrow(tok->isAttributeNothrow());
-        tok2->isDeclspecNothrow(tok->isDeclspecNothrow());
+        tok2->flags(tok2->flags());
         tok2->varId(tok->varId());
 
         // Check for links and fix them up
@@ -9246,6 +9235,18 @@ void Tokenizer::simplifyAttribute()
                 // check if before variable name
                 else if (Token::Match(tok->next()->link()->next(), "%type%"))
                     tok->next()->link()->next()->isAttributeUnused(true);
+            }
+
+            else if (Token::Match(tok->tokAt(2), "( used|__used__ )")) {
+                // check if after variable name
+                if (Token::Match(tok->next()->link()->next(), ";|=")) {
+                    if (Token::Match(tok->previous(), "%type%"))
+                        tok->previous()->isAttributeUsed(true);
+                }
+
+                // check if before variable name
+                else if (Token::Match(tok->next()->link()->next(), "%type%"))
+                    tok->next()->link()->next()->isAttributeUsed(true);
             }
 
             else if (Token::Match(tok->tokAt(2), "( pure|__pure__ )")) {

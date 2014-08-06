@@ -331,6 +331,12 @@ public:
     void isAttributeUnused(bool unused) {
         setFlag(fIsAttributeUnused, unused);
     }
+    bool isAttributeUsed() const {
+        return getFlag(fIsAttributeUsed);
+    }
+    void isAttributeUsed(bool unused) {
+        setFlag(fIsAttributeUsed, unused);
+    }
     bool isAttributePure() const {
         return getFlag(fIsAttributePure);
     }
@@ -743,7 +749,8 @@ private:
         fIsAttributePure        = (1 << 9),  // __attribute__((pure))
         fIsAttributeConst       = (1 << 10), // __attribute__((const))
         fIsAttributeNothrow     = (1 << 11), // __attribute__((nothrow))
-        fIsDeclspecNothrow      = (1 << 12)  // __declspec(nothrow)
+        fIsDeclspecNothrow      = (1 << 12), // __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 13)  // __attribute__((used))
     };
 
     unsigned int _flags;

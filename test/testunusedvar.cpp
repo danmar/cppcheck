@@ -3240,6 +3240,18 @@ private:
                               "    bool __attribute__((unused)) test = true;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool test __attribute__((used));\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool __attribute__((used)) test;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFunction() {

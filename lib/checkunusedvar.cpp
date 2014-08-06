@@ -1093,7 +1093,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Variable* var = symbolDatabase->getVariableFromVarId(it->first);
 
             // variable has been marked as unused so ignore it
-            if (usage._var->nameToken()->isAttributeUnused())
+            if (usage._var->nameToken()->isAttributeUnused() || usage._var->nameToken()->isAttributeUsed())
                 continue;
 
             // skip things that are only partially implemented to prevent false positives
