@@ -104,7 +104,7 @@ private:
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
@@ -112,7 +112,7 @@ private:
               "    if(sth) return;\n"
               "    va_end(arg_ptr);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
     }
 
     void va_list_usedBeforeStarted() {
