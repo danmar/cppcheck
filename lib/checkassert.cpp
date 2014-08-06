@@ -36,66 +36,50 @@ void CheckAssert::assertWithSideEffects()
     if (!_settings->isEnabled("warning"))
         return;
 
-    const Token *tok = findAssertPattern(_tokenizer->tokens());
-    const Token *endTok = tok ? tok->next()->link() : nullptr;
+    for (const Token* tok = _tokenizer->list.front(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "assert ("))
+            continue;
 
-    while (tok && endTok) {
+        const Token *endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
-            checkVariableAssignment(tmp, true);
+            checkVariableAssignment(tmp);
 
-            if (tmp->isName() && tmp->type() == Token::eFunction) {
+            if (tmp->type() == Token::eFunction) {
                 const Function* f = tmp->function();
-                if (f->argCount() == 0 && f->isConst) continue;
 
-                // functions with non-const references
-                else if (f->argCount() != 0) {
-                    for (std::list<Variable>::const_iterator it = f->argumentList.begin(); it != f->argumentList.end(); ++it) {
-                        if (it->isConst() || it->isLocal()) continue;
-                        else if (it->isReference()) {
-                            const Token* next = it->nameToken()->next();
-                            bool isAssigned = checkVariableAssignment(next, false);
-                            if (isAssigned)
-                                sideEffectInAssertError(tmp, f->name());
+                if (f->nestedIn->isClassOrStruct() && !f->isStatic && !f->isConst)
+                    sideEffectInAssertError(tmp, f->name()); // Non-const member function called
+                else {
+                    const Scope* scope = f->functionScope;
+                    if (!scope) continue;
+
+                    for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
+                        if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp)
                             continue;
+
+                        const Variable* var = tok2->previous()->variable();
+                        if (!var || var->isLocal() || (var->isArgument() && !var->isReference() && !var->isPointer()))
+                            continue; // See ticket #4937. Assigning function arguments not passed by reference is ok.
+                        if (var->isArgument() && var->isPointer() && tok2->strAt(-2) != "*")
+                            continue; // Pointers need to be dereferenced, otherwise there is no error
+
+                        bool noReturnInScope = true;
+                        for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {
+                            if (rt->str() != "return") continue; // find all return statements
+                            if (inSameScope(rt, tok2)) {
+                                noReturnInScope = false;
+                                break;
+                            }
                         }
-                    }
-                }
+                        if (noReturnInScope) continue;
 
-                // variables in function scope
-                const Scope* scope = f->functionScope;
-                if (!scope) continue;
-
-                for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
-                    if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp) continue;
-                    const Variable* var = tok2->previous()->variable();
-                    if (!var || var->isLocal()) continue;
-                    if (var->isArgument() &&
-                        (var->isConst() || (!var->isReference() && !var->isPointer())))
-                        // see ticket #4937. Assigning function arguments not passed by reference is ok.
-                        continue;
-                    std::vector<const Token*> returnTokens; // find all return statements
-                    for (const Token *rt = scope->classStart; rt != scope->classEnd; rt = rt->next()) {
-                        if (!Token::Match(rt, "return %any%")) continue;
-                        returnTokens.push_back(rt);
-                    }
-
-                    bool noReturnInScope = true;
-                    for (std::vector<const Token*>::iterator rt = returnTokens.begin(); rt != returnTokens.end(); ++rt) {
-                        if (inSameScope(*rt, tok2)) {
-                            noReturnInScope = false;
-                            break;
-                        }
-                    }
-                    if (noReturnInScope) continue;
-                    bool isAssigned = checkVariableAssignment(tok2, false);
-                    if (isAssigned)
                         sideEffectInAssertError(tmp, f->name());
+                        break;
+                    }
                 }
             }
         }
-
-        tok = findAssertPattern(endTok->next());
-        endTok = tok ? tok->next()->link() : nullptr;
+        tok = endTok;
     }
 }
 //---------------------------------------------------------------------------
@@ -122,28 +106,19 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 }
 
 // checks if side effects happen on the variable prior to tmp
-bool CheckAssert::checkVariableAssignment(const Token* assignTok, bool reportErr /*= true*/)
+void CheckAssert::checkVariableAssignment(const Token* assignTok)
 {
     const Variable* v = assignTok->previous()->variable();
-    if (!v) return false;
+    if (!v) return;
 
     // assignment
     if (assignTok->isAssignmentOp() || assignTok->type() == Token::eIncDecOp) {
 
-        if (v->isConst()) return false;
+        if (v->isConst()) return;
 
-        if (reportErr) // report as variable assignment error
-            assignmentInAssertError(assignTok, v->name());
-
-        return true;
+        assignmentInAssertError(assignTok, v->name());
     }
-    return false;
     // TODO: function calls on v
-}
-
-const Token* CheckAssert::findAssertPattern(const Token* start)
-{
-    return Token::findmatch(start, "assert ( %any%");
 }
 
 bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)

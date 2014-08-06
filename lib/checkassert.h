@@ -49,10 +49,8 @@ public:
     void assertWithSideEffects();
 
 protected:
-    bool checkVariableAssignment(const Token* tmp, bool reportErr = true);
+    void checkVariableAssignment(const Token* tmp);
     static bool inSameScope(const Token* returnTok, const Token* assignTok);
-
-    static const Token* findAssertPattern(const Token *start);
 
 private:
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);

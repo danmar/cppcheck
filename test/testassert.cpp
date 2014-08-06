@@ -25,7 +25,7 @@ extern std::ostringstream errout;
 
 class TestAssert : public TestFixture {
 public:
-    TestAssert() : TestFixture("TestAsserts") {}
+    TestAssert() : TestFixture("TestAssert") {}
 
 private:
     void check(
@@ -53,6 +53,7 @@ private:
     void run() {
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
+        TEST_CASE(memberFunctionCallInAssert);
         TEST_CASE(safeFunctionCallInAssert);
     }
 
@@ -133,7 +134,40 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memberFunctionCallInAssert() {
+        check("struct SquarePack {\n"
+              "   void Foo();\n"
+              "};\n"
+              "void foo(SquarePack s) {\n"
+              "   assert( s.Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "   void Foo() const;\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static void Foo();\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct SquarePack {\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assignmentInAssert() {
