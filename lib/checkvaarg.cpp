@@ -46,7 +46,7 @@ void CheckVaarg::va_start_argument()
                     referenceAs_va_start_error(param2, var->name());
                 if (var->index() + 2 < function->argCount() && _settings->isEnabled("warning")) {
                     std::list<Variable>::const_reverse_iterator it = function->argumentList.rbegin();
-                    it++;
+                    ++it;
                     wrongParameterTo_va_start_error(tok, var->name(), it->name());
                 }
                 tok = tok->linkAt(1);
