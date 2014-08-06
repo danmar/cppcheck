@@ -41,6 +41,8 @@ void CheckVaarg::va_start_argument()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "va_start (")) {
                 const Token* param2 = tok->tokAt(2)->nextArgument();
+                if (!param2)
+                    continue;
                 const Variable* var = param2->variable();
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
@@ -87,12 +89,12 @@ void CheckVaarg::va_list_usage()
 
         const Token* tok = var->nameToken()->next();
         for (; tok != var->scope()->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "va_start ( %varid% ,", var->declarationId())) {
+            if (Token::Match(tok, "va_start ( %varid%", var->declarationId())) {
                 if (open)
                     va_start_subsequentCallsError(tok, var->name());
                 open = true;
                 tok = tok->linkAt(1);
-            } else if (Token::Match(tok, "va_end ( %varid% )", var->declarationId())) {
+            } else if (Token::Match(tok, "va_end ( %varid%", var->declarationId())) {
                 if (!open)
                     va_list_usedBeforeStartedError(tok, var->name());
                 open = false;

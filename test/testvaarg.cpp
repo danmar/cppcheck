@@ -83,6 +83,13 @@ private:
               "    };\n"
               "}"); // Don't crash (#6032)
         ASSERT_EQUALS("[test.cpp:6]: (error) va_list 'argp' was opened but not closed by va_end().\n", errout.str());
+
+        check("void Format(char* szFormat, char* szBuffer, size_t nSize, ...) {\n"
+              "    va_list arg_ptr;\n"
+              "    va_start(arg_ptr);\n"
+              "    va_end(arg_ptr);\n"
+              "}"); // Don't crash if less than expected arguments are given.
+        ASSERT_EQUALS("", errout.str());
     }
 
     void referenceAs_va_start() {
