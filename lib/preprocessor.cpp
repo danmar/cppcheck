@@ -1320,16 +1320,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             if (par != 0) {
                 std::ostringstream lineStream;
                 lineStream << __LINE__;
-
-                ErrorLogger::ErrorMessage errmsg;
-                ErrorLogger::ErrorMessage::FileLocation loc;
-                loc.setfile(filename);
-                loc.line = linenr;
-                errmsg._callStack.push_back(loc);
-                errmsg._severity = Severity::fromString("error");
-                errmsg.setmsg("mismatching number of '(' and ')' in this line: " + def);
-                errmsg._id  = "preprocessor" + lineStream.str();
-                _errorLogger->reportErr(errmsg);
+                std::string errorId = "preprocessor" + lineStream.str();
+                std::string errorText = "mismatching number of '(' and ')' in this line: " + def;
+                writeError(filename, linenr, _errorLogger, errorId, errorText);
                 ret.clear();
                 return ret;
             }
