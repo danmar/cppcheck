@@ -51,4 +51,5 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testunusedfunctions.cpp \
            $${BASEPATH}/testunusedprivfunc.cpp \
            $${BASEPATH}/testunusedvar.cpp \
+           $${BASEPATH}/testvaarg.cpp \
            $${BASEPATH}/testvalueflow.cpp

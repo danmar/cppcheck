@@ -30,6 +30,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkuninitvar.h \
            $${BASEPATH}checkunusedfunctions.h \
            $${BASEPATH}checkunusedvar.h \
+           $${BASEPATH}checkvaarg.h \
            $${BASEPATH}cppcheck.h \
            $${BASEPATH}errorlogger.h \
            $${BASEPATH}executionpath.h \
@@ -72,6 +73,7 @@ SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}checkuninitvar.cpp \
            $${BASEPATH}checkunusedfunctions.cpp \
            $${BASEPATH}checkunusedvar.cpp \
+           $${BASEPATH}checkvaarg.cpp \
            $${BASEPATH}cppcheck.cpp \
            $${BASEPATH}errorlogger.cpp \
            $${BASEPATH}executionpath.cpp \

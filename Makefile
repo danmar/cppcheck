@@ -139,6 +139,7 @@ LIBOBJ =      $(SRCDIR)/check.o \
               $(SRCDIR)/checkuninitvar.o \
               $(SRCDIR)/checkunusedfunctions.o \
               $(SRCDIR)/checkunusedvar.o \
+              $(SRCDIR)/checkvaarg.o \
               $(SRCDIR)/cppcheck.o \
               $(SRCDIR)/errorlogger.o \
               $(SRCDIR)/executionpath.o \
@@ -212,6 +213,7 @@ TESTOBJ =     test/options.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
+              test/testvaarg.o \
               test/testvalueflow.o
 
 ifndef TINYXML
@@ -341,6 +343,9 @@ $(SRCDIR)/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/cxx11emu.h li
 
 $(SRCDIR)/checkunusedvar.o: lib/checkunusedvar.cpp lib/cxx11emu.h lib/checkunusedvar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkunusedvar.o $(SRCDIR)/checkunusedvar.cpp
+
+$(SRCDIR)/checkvaarg.o: lib/checkvaarg.cpp lib/cxx11emu.h lib/checkvaarg.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkvaarg.o $(SRCDIR)/checkvaarg.cpp
 
 $(SRCDIR)/cppcheck.o: lib/cppcheck.cpp lib/cxx11emu.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/preprocessor.h lib/tokenize.h lib/tokenlist.h lib/checkunusedfunctions.h lib/check.h lib/version.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/cppcheck.o $(SRCDIR)/cppcheck.cpp
@@ -554,6 +559,9 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/cxx11emu.h lib/tokeni
 
 test/testunusedvar.o: test/testunusedvar.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testunusedvar.o test/testunusedvar.cpp
+
+test/testvaarg.o: test/testvaarg.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/checkvaarg.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvaarg.o test/testvaarg.cpp
 
 test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvalueflow.o test/testvalueflow.cpp
