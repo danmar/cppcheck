@@ -1632,7 +1632,8 @@ private:
         testPassedByValue("void f(const std::map<std::string,int> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by reference.\n", errout.str());
 
-        testPassedByValue("void f(const std::streamoff pos) {}");
+        // #5824
+        testPassedByValue("void log(const std::string& file, int line, const std::string& function, const std::string str, ...) {}");
         ASSERT_EQUALS("", errout.str());
 
     }
