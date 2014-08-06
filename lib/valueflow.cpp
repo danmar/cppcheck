@@ -1325,67 +1325,64 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
 
 static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
-    std::list<ValueFlow::Value> argvalues;
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "[(,]"))
+        if (!Token::Match(tok, "%var% ("))
             continue;
 
-        // passing value(s) to function
-        if (Token::Match(tok, "[(,] %var%|%num%|%str% [,)]") && !tok->next()->values.empty())
-            argvalues = tok->next()->values;
-        else {
-            // bool operator => values 1/0 are passed to function..
-            const Token *op = tok->next();
-            while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
-                op = op->astParent();
-            if (Token::Match(op, "%comp%|%oror%|&&|!")) {
-                argvalues.clear();
-                argvalues.push_back(ValueFlow::Value(0));
-                argvalues.push_back(ValueFlow::Value(1));
-            } else if (Token::Match(op, "%cop%") && !op->values.empty()) {
-                argvalues = op->values;
-            } else {
-                // possible values are unknown..
-                continue;
-            }
-        }
-
-        const Token * const argumentToken = tok->next();
-
-        // is this a function call?
-        const Token *ftok = tok;
-        while (ftok && ftok->str() != "(")
-            ftok = ftok->astParent();
-        if (!ftok || !ftok->astOperand1() || !ftok->astOperand2() || !ftok->astOperand1()->function())
-            continue;
-
-        // Get argument nr
-        unsigned int argnr = 0;
-        for (const Token *argtok = ftok->next(); argtok && argtok != argumentToken; argtok = argtok->nextArgument())
-            ++ argnr;
-
-        // Get function argument, and check if parameter is passed by value
-        const Function * const function = ftok->astOperand1()->function();
-        const Variable * const arg = function ? function->getArgumentVar(argnr) : nullptr;
-        if (!Token::Match(arg ? arg->typeStartToken() : nullptr, "%type% %var% ,|)") &&
-            !Token::Match(arg ? arg->typeStartToken() : nullptr, "const| struct| %type% * %var% ,|)"))
+        const Function * const currentFunction = tok->function();
+        if (!currentFunction)
             continue;
 
         // Function scope..
-        const Scope * const functionScope = function ? function->functionScope : nullptr;
+        const Scope * const functionScope = currentFunction->functionScope;
         if (!functionScope)
             continue;
 
-        // Set value in function scope..
-        const unsigned int varid2 = arg->nameToken()->varId();
-        for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%varid% !!=", varid2)) {
-                for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
-                    setTokenValue(const_cast<Token*>(tok2), *val);
-            } else if (tok2->str() == "{" || tok2->str() == "?") {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str() + ", at '" + tok2->str() + "'");
+        unsigned int argnr = 0U;
+        for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument()) {
+            // Get function argument
+            const Variable * const arg = currentFunction->getArgumentVar(argnr++);
+            if (!arg)
                 break;
+
+            std::list<ValueFlow::Value> argvalues;
+
+            // passing value(s) to function
+            if (Token::Match(argtok, "%var%|%num%|%str% [,)]") && !argtok->values.empty())
+                argvalues = argtok->values;
+            else {
+                // bool operator => values 1/0 are passed to function..
+                const Token *op = argtok;
+                while (op && op->astParent() && !Token::Match(op->astParent(), "[(,]"))
+                    op = op->astParent();
+                if (Token::Match(op, "%comp%|%oror%|&&|!")) {
+                    argvalues.clear();
+                    argvalues.push_back(ValueFlow::Value(0));
+                    argvalues.push_back(ValueFlow::Value(1));
+                } else if (Token::Match(op, "%cop%") && !op->values.empty()) {
+                    argvalues = op->values;
+                } else {
+                    // possible values are unknown..
+                    continue;
+                }
+            }
+
+            // Is argument passed by value?
+            if (!Token::Match(arg->typeStartToken(), "%type% %var% ,|)") &&
+                !Token::Match(arg->typeStartToken(), "const| struct| %type% * %var% ,|)"))
+                continue;
+
+            // Set value in function scope..
+            const unsigned int varid2 = arg->nameToken()->varId();
+            for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
+                if (Token::Match(tok2, "%varid% !!=", varid2)) {
+                    for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
+                        setTokenValue(const_cast<Token*>(tok2), *val);
+                } else if (tok2->str() == "{" || tok2->str() == "?") {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str() + ", at '" + tok2->str() + "'");
+                    break;
+                }
             }
         }
     }
