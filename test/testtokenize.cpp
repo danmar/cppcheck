@@ -4934,6 +4934,11 @@ private:
                                            "std::vector<int> vec{1, 2, 3};\n"
                                            "namespace n { int z; };\n"
                                            "int& j{i};\n"));
+
+        // #6030
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: struct S3 : public S1 , public S2 { } ;\n",
+                      tokenizeDebugListing("struct S3 : public S1, public S2 { };"));
     }
 
     void varidclass1() {

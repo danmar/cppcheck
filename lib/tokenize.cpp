@@ -2276,7 +2276,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     bool bracket = false;
     while (tok2) {
         if (tok2->isName()) {
-            if (cpp && tok2->str() == "namespace")
+            if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
             if (tok2->str() == "struct" || tok2->str() == "union" || (cpp && (tok2->str() == "class" || tok2->str() == "typename"))) {
                 hasstruct = true;
