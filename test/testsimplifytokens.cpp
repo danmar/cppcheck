@@ -2814,7 +2814,7 @@ private:
     }
 
     void cAlternativeTokens() {
-        ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
+        ASSERT_EQUALS("void f ( ) { err = err | ( ( r & s ) && ! t ) ; }",
                       tok("void f() { err or_eq ((r bitand s) and not t); }", false));
         ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 15 , ~ c , ! d ) ; }",
                       tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", false));

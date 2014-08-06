@@ -3167,6 +3167,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
+    // Simplify the C alternative tokens (and, or, etc.)
+    simplifyCAlternativeTokens();
+
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
@@ -3479,9 +3482,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Link < with >
     createLinks2();
-
-    // Simplify the C alternative tokens (and, or, etc.)
-    simplifyCAlternativeTokens();
 
     // The simplify enum might have inner loops
     if (_settings->terminated())

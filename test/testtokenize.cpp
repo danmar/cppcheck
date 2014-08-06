@@ -8186,6 +8186,12 @@ private:
         ASSERT_EQUALS("void f ( ) { if ( ~ b ) { ; } }", tokenizeAndStringify("void f() { if (compl b); }"));
         ASSERT_EQUALS("void f ( ) { if ( ! b ) { ; } }", tokenizeAndStringify("void f() { if (not b); }"));
         ASSERT_EQUALS("void f ( ) { if ( a != b ) { ; } }", tokenizeAndStringify("void f() { if (a not_eq b); }"));
+
+        ASSERT_EQUALS("\n" // #6029
+                      "\n"
+                      "##file 0\n"
+                      "1: void f ( bool b@1 ) { if ( ! b@1 ) { ; } }\n",
+                      tokenizeDebugListing("void f(bool b) { if (not b); }"));
     }
 
     void simplifyCalculations() {
