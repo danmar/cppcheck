@@ -2647,7 +2647,7 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         preprocessor.read(istr, "test.cpp");
-        ASSERT_EQUALS("[test.cpp:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c8)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) The code contains unhandled characters (character code = 0xc8). Checking continues, but do not expect valid results.\n", errout.str());
     }
 
     void unicodeInComment() {

@@ -160,10 +160,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
         }
 
-        // Unhandled chars found during preprocessing => abort checking this file
-        if (preprocessor.foundUnhandledChars())
-            return 0;
-
         if (_settings.checkConfiguration) {
             return 0;
         }

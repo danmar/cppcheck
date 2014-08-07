@@ -38,7 +38,7 @@ bool Preprocessor::missingSystemIncludeFlag;
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger), _foundUnhandledChars(false)
+Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
 }
@@ -482,11 +482,12 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         unsigned char ch = static_cast<unsigned char>(str[i]);
         if (ch & 0x80) {
             std::ostringstream errmsg;
-            errmsg << "The code contains characters that are unhandled. "
-                   << "Neither unicode nor extended ASCII are supported. "
-                   << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
-            writeError(filename, lineno, _errorLogger, "syntaxError", errmsg.str());
-            _foundUnhandledChars = true;
+            errmsg << "(character code = 0x" << std::hex << (int(ch) & 0xff) << ")";
+            std::string info = errmsg.str();
+            errmsg.str("");
+            errmsg << "The code contains unhandled characters " << info << ". Checking continues, but do not expect valid results.\n"
+                   << "The code contains characters that are unhandled " << info << ". Neither unicode nor extended ASCII are supported. Checking continues, but do not expect valid results.";
+            writeError(filename, lineno, _errorLogger, "unhandledCharacters", errmsg.str());
         }
 
         if (_settings && _settings->terminated())

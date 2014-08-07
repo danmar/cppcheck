@@ -296,9 +296,6 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             continue;
         }
 
-        // Preprocessor should ensure code doesn't contain any extended ascii / utf / etc.
-        assert(CurrentToken.empty() || (CurrentToken[0] & 0x80) == 0);
-
         if (ch == '.' &&
             !CurrentToken.empty() &&
             std::isdigit(CurrentToken[0])) {
