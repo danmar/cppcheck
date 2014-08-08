@@ -1037,7 +1037,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     std::list<Variable>::const_iterator var;
 
     for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
-        if (var->isReference()) {
+        if (var->isReference() && !var->isStatic()) {
             memsetErrorReference(tok, tok->str(), type->classDef->str());
             continue;
         }
@@ -1056,6 +1056,10 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             // check for known type
             else if (typeScope && typeScope != type)
                 checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
+
+            // check for float
+            else if ((var->typeStartToken()->str() == "float" || var->typeStartToken()->str() == "double") && _settings->isEnabled("portability"))
+                memsetErrorFloat(tok, tok->str(), type->classDef->str());
         }
     }
 }
@@ -1093,7 +1097,14 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
 {
-    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on " + type + " that contains a reference.");
+    reportError(tok, Severity::error, "memsetClassReference", "Using '" + memfunc + "' on " + type + " that contains a reference.");
+}
+
+void CheckClass::memsetErrorFloat(const Token *tok, const std::string &memfunc, const std::string &type)
+{
+    reportError(tok, Severity::portability, "memsetClassFloat", "Using '" + memfunc + "' on " + type + " which contains a floating point number.\n"
+                "Using '" + memfunc + "' on " + type + " which contains a floating point number. This is not portable because memset() sets each byte of a block of memory to a specific value and"
+                " the actual representation of a floating-point value is implementation defined.");
 }
 
 

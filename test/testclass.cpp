@@ -73,8 +73,9 @@ private:
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
         TEST_CASE(memsetOnClass);
-        TEST_CASE(memsetOnInvalid);  // Ticket #5425: Crash upon invalid
-        TEST_CASE(memsetOnStdPodType);  // #5901 - std::uint8_t
+        TEST_CASE(memsetOnInvalid);    // Ticket #5425: Crash upon invalid
+        TEST_CASE(memsetOnStdPodType); // Ticket #5901 - std::uint8_t
+        TEST_CASE(memsetOnFloat);      // Ticket #5421
         TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -2007,12 +2008,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
-    void checkNoMemset(const char code[], bool load_std_cfg = false) {
+    void checkNoMemset(const char code[], bool load_std_cfg = false, bool portability = false) {
         // Clear the error log
         errout.str("");
 
         Settings settings;
         settings.addEnabled("warning");
+        if (portability)
+            settings.addEnabled("portability");
         if (load_std_cfg) {
             LOAD_LIB_2(settings.library, "std.cfg");
         }
@@ -2467,6 +2470,44 @@ private:
                       "  st s;\n"
                       "  std::memset(&s, 0, sizeof(st));\n"
                       "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetOnFloat() {
+        checkNoMemset("struct A {\n"
+                      "    float f;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}", false, true);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) Using 'memset' on struct which contains a floating point number.\n", errout.str());
+
+        checkNoMemset("struct A {\n"
+                      "    float f[4];\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}", false, true);
+        ASSERT_EQUALS("[test.cpp:6]: (portability) Using 'memset' on struct which contains a floating point number.\n", errout.str());
+
+        checkNoMemset("struct A {\n"
+                      "    float* f;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}", false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("struct A {\n"
+                      "    float f;\n"
+                      "};\n"
+                      "void f() {\n"
+                      "    A a;\n"
+                      "    memset(&a, 0, sizeof(A));\n"
+                      "}", false, false);
         ASSERT_EQUALS("", errout.str());
     }
 
