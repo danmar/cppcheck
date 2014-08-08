@@ -92,6 +92,7 @@ private:
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
     void sizeofForPointerError(const Token* tok, const std::string &varname);
+    void divideBySizeofError(const Token* tok, const std::string &memfunc);
     void sizeofForNumericParameterError(const Token* tok);
     void sizeofVoidError(const Token *tok);
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
@@ -102,6 +103,7 @@ private:
 
         c.sizeofForArrayParameterError(0);
         c.sizeofForPointerError(0, "varname");
+        c.divideBySizeofError(0, "memset");
         c.sizeofForNumericParameterError(0);
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
@@ -118,7 +120,6 @@ private:
 
     std::string classInfo() const {
         return "sizeof() usage checks\n"
-
                "* sizeof for array given as function argument\n"
                "* sizeof for numeric given as function argument\n"
                "* using sizeof(pointer) instead of the size of pointed data\n"

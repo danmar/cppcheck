@@ -87,7 +87,7 @@ void CheckSizeof::checkSizeofForArrayParameter()
 
 void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
 {
-    reportError(tok, Severity::error,
+    reportError(tok, Severity::warning,
                 "sizeofwithsilentarraypointer", "Using 'sizeof' on array given as function argument "
                 "returns size of a pointer.\n"
                 "Using 'sizeof' for array given as function argument returns the size of a pointer. "
@@ -111,8 +111,9 @@ void CheckSizeof::checkSizeofForPointerSize()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            const Token *tokVar;
-            const Token *variable;
+            const Token* tokSize;
+            const Token* tokFunc;
+            const Token *variable = nullptr;
             const Token *variable2 = nullptr;
 
             // Find any function that may use sizeof on a pointer
@@ -121,31 +122,44 @@ void CheckSizeof::checkSizeofForPointerSize()
             // - tokVar pointing on the argument where sizeof may be used
             if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
                 variable = tok->next();
-                tokVar = tok->tokAt(5);
-
+                tokSize = tok->tokAt(5);
+                tokFunc = tok->tokAt(3);
             } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
                 variable = tok->next();
-                tokVar = tok->tokAt(5)->nextArgument();
-
+                tokSize = tok->tokAt(5)->nextArgument();
+                tokFunc = tok->tokAt(3);
+            } else if (Token::Match(tok, "return malloc|alloca (")) {
+                tokSize = tok->tokAt(3);
+                tokFunc = tok->next();
+            } else if (Token::simpleMatch(tok, "return calloc (")) {
+                tokSize = tok->tokAt(3)->nextArgument();
+                tokFunc = tok->next();
             } else if (Token::simpleMatch(tok, "memset (")) {
                 variable = tok->tokAt(2);
-                tokVar = variable->tokAt(2)->nextArgument();
-
-                // The following tests can be inconclusive in case the variable in sizeof
-                // is constant string by intention
-            } else if (!_settings->inconclusive) {
-                continue;
-
+                tokSize = variable->nextArgument();
+                if (tokSize)
+                    tokSize = tokSize->nextArgument();
+                tokFunc = tok;
             } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
                 variable = tok->tokAt(2);
                 variable2 = variable->nextArgument();
                 if (!variable2)
                     continue;
-                tokVar = variable2->nextArgument();
-
+                tokSize = variable2->nextArgument();
+                tokFunc = tok;
             } else {
                 continue;
             }
+
+            if (tokFunc && tokSize) {
+                for (const Token* tok2 = tokSize; tok2 != tokFunc->linkAt(1); tok2 = tok2->next()) {
+                    if (Token::simpleMatch(tok2, "/ sizeof"))
+                        divideBySizeofError(tok2, tokFunc->str());
+                }
+            }
+
+            if (!variable)
+                continue;
 
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
@@ -170,16 +184,16 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             // Jump to the next sizeof token in the function and in the parameter
             // This is to allow generic operations with sizeof
-            for (; tokVar && tokVar->str() != ")" && tokVar->str() != "," && tokVar->str() != "sizeof"; tokVar = tokVar->next()) {}
+            for (; tokSize && tokSize->str() != ")" && tokSize->str() != "," && tokSize->str() != "sizeof"; tokSize = tokSize->next()) {}
 
             // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
             // looks suspicious
             // Do it for first variable
-            if (variable && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable->varId()) ||
-                             Token::Match(tokVar, "sizeof &| %varid%", variable->varId()))) {
+            if (variable && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable->varId()) ||
+                             Token::Match(tokSize, "sizeof &| %varid%", variable->varId()))) {
                 sizeofForPointerError(variable, variable->str());
-            } else if (variable2 && (Token::Match(tokVar, "sizeof ( &| %varid% )", variable2->varId()) ||
-                                     Token::Match(tokVar, "sizeof &| %varid%", variable2->varId()))) {
+            } else if (variable2 && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable2->varId()) ||
+                                     Token::Match(tokSize, "sizeof &| %varid%", variable2->varId()))) {
                 sizeofForPointerError(variable2, variable2->str());
             }
         }
@@ -192,7 +206,13 @@ void CheckSizeof::sizeofForPointerError(const Token *tok, const std::string &var
                 "Size of pointer '" + varname + "' used instead of size of its data.\n"
                 "Size of pointer '" + varname + "' used instead of size of its data. "
                 "This is likely to lead to a buffer overflow. You probably intend to "
-                "write 'sizeof(*" + varname + ")'.", true);
+                "write 'sizeof(*" + varname + ")'.");
+}
+
+void CheckSizeof::divideBySizeofError(const Token *tok, const std::string &memfunc)
+{
+    reportError(tok, Severity::warning, "sizeofDivisionMemfunc",
+                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?\n");
 }
 
 //-----------------------------------------------------------------------------
