@@ -212,7 +212,7 @@ void CheckSizeof::sizeofForPointerError(const Token *tok, const std::string &var
 void CheckSizeof::divideBySizeofError(const Token *tok, const std::string &memfunc)
 {
     reportError(tok, Severity::warning, "sizeofDivisionMemfunc",
-                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?\n");
+                "Division by result of sizeof(). " + memfunc + "() expects a size in bytes, did you intend to multiply instead?");
 }
 
 //-----------------------------------------------------------------------------
