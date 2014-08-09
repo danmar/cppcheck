@@ -2565,6 +2565,13 @@ private:
               "    std::string strValue2 = CMap[1];\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        // #4306
+        check("void f(std::vector<int> v) {\n"
+              "    v.clear();\n"
+              "    for(int i = 0; i < v.size(); i++) { cout << v[i]; }\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
     }
 };
 
