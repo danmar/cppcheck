@@ -2416,14 +2416,16 @@ private:
             if (f) {
                 ASSERT_EQUALS("f", f->nameToken()->str());
                 ASSERT_EQUALS(false, f->isIntegralType());
-                ASSERT_EQUALS(false, f->isFloatingType());
+                ASSERT_EQUALS(true, f->isFloatingType());
+                ASSERT_EQUALS(true, f->isArrayOrPointer());
             }
             const Variable *scf = db->getVariableFromVarId(2);
             ASSERT(scf != nullptr);
             if (scf) {
                 ASSERT_EQUALS("scf", scf->nameToken()->str());
                 ASSERT_EQUALS(false, scf->isIntegralType());
-                ASSERT_EQUALS(false, scf->isFloatingType());
+                ASSERT_EQUALS(true, scf->isFloatingType());
+                ASSERT_EQUALS(true, scf->isArrayOrPointer());
             }
         }
         {
@@ -2433,7 +2435,8 @@ private:
             if (fa) {
                 ASSERT_EQUALS("fa", fa->nameToken()->str());
                 ASSERT_EQUALS(false, fa->isIntegralType());
-                ASSERT_EQUALS(false, fa->isFloatingType());
+                ASSERT_EQUALS(true, fa->isFloatingType());
+                ASSERT_EQUALS(true, fa->isArrayOrPointer());
             }
         }
     }

@@ -1058,7 +1058,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                 checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
 
             // check for float
-            else if ((var->typeStartToken()->str() == "float" || var->typeStartToken()->str() == "double") && _settings->isEnabled("portability"))
+            else if (var->isFloatingType() && _settings->isEnabled("portability"))
                 memsetErrorFloat(tok, tok->str(), type->classDef->str());
         }
     }

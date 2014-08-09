@@ -136,7 +136,9 @@ class CPPCHECKLIB Variable {
         fIsReference = (1 << 7), /** @brief reference variable */
         fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
-        fIsStlType   = (1 << 10) /** @brief STL type ('std::') */
+        fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
+        fIsIntType   = (1 << 11), /** @brief Integral type */
+        fIsFloatType = (1 << 12)  /** @brief Floating point type */
     };
 
     /**
@@ -473,18 +475,18 @@ public:
 
     /**
     * Determine whether it's a floating number type
-    * @return true if the type is known and it's a floating type (float, double and long double)
+    * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
     */
     bool isFloatingType() const {
-        return (typeStartToken()->str() == "float" || typeStartToken()->str() == "double") && !isArrayOrPointer() ;
+        return getFlag(fIsFloatType);
     }
 
     /**
      * Determine whether it's an integral number type
-     * @return true if the type is known and it's an integral type (bool, char, short, int, long long and their unsigned counter parts)
+     * @return true if the type is known and it's an integral type (bool, char, short, int, long long and their unsigned counter parts) or a pointer/array to it
      */
     bool isIntegralType() const {
-        return typeStartToken()->str() == "bool" || typeStartToken()->str() == "char" || typeStartToken()->str() == "short" || typeStartToken()->str() == "int" || typeStartToken()->str() == "long";
+        return getFlag(fIsIntType);
     }
 
 

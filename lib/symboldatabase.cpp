@@ -1203,6 +1203,13 @@ void Variable::evaluate()
         if (Token::Match(_name, "%var% ; %var% = %any% ;") && _name->strAt(2) == _name->str())
             setFlag(fHasDefault, true);
     }
+
+    if (_start) {
+        if (_start->str() == "bool" || _start->str() == "char" || _start->str() == "short" || _start->str() == "int" || _start->str() == "long")
+            setFlag(fIsIntType, true);
+        else if (_start->str() == "float" || _start->str() == "double")
+            setFlag(fIsFloatType, true);
+    }
 }
 
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)

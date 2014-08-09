@@ -487,7 +487,7 @@ void CheckBool::checkAssignBoolToFloat()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% =")) {
                 const Variable * const var = symbolDatabase->getVariableFromVarId(tok->varId());
-                if (var && var->isFloatingType() && astIsBool(tok->next()->astOperand2()))
+                if (var && var->isFloatingType() && !var->isArrayOrPointer() && astIsBool(tok->next()->astOperand2()))
                     assignBoolToFloatError(tok->next());
             }
         }

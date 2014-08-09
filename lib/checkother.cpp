@@ -47,7 +47,7 @@ static bool astIsFloat(const Token *tok, bool unknown)
         if (!tok->variable())
             return unknown;
 
-        return Token::findmatch(tok->variable()->typeStartToken(), "float|double", tok->variable()->typeEndToken()->next(), 0) != nullptr;
+        return tok->variable()->isFloatingType();
     }
 
     if (tok->isOp())
@@ -1602,7 +1602,7 @@ bool CheckOther::isUnsigned(const Variable* var) const
 }
 bool CheckOther::isSigned(const Variable* var)
 {
-    return (var && !var->typeStartToken()->isUnsigned() && Token::Match(var->typeEndToken(), "int|char|short|long") && !var->isPointer() && !var->isArray());
+    return (var && !var->typeStartToken()->isUnsigned() && var->isIntegralType() && !var->isPointer() && !var->isArray());
 }
 
 void CheckOther::checkUnsignedDivision()
@@ -2077,7 +2077,7 @@ void CheckOther::checkCharVariable()
                     if (!lhs || !lhs->isName())
                         continue;
                     const Variable *var = lhs->variable();
-                    if (var && Token::Match(var->typeStartToken(), "short|int|long"))
+                    if (var && var->isIntegralType() && var->typeStartToken()->str() != "char")
                         charBitOpError(tok); // This is an error..
                 }
             }
