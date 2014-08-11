@@ -940,6 +940,23 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
 
+        // protected usage with &&
+        code = "void f(const Token* x) {\n"
+               "    if (x) {}\n"
+               "    for (; x && \n"
+               "         x->str() != y; x = x->next()) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f(const Token* x) {\n"
+               "    if (x) {}\n"
+               "    if (x && \n"
+               "        x->str() != y) {}\n"
+               "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // TODO: float
         code = "void f(float x) {\n"
                "  if (x == 0.5) {}\n"
