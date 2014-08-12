@@ -289,9 +289,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *markupnode = node->FirstChildElement(); markupnode; markupnode = markupnode->NextSiblingElement()) {
                 if (strcmp(markupnode->Name(), "keywords") == 0) {
                     for (const tinyxml2::XMLElement *librarynode = markupnode->FirstChildElement(); librarynode; librarynode = librarynode->NextSiblingElement()) {
-                        if (strcmp(librarynode->Name(), "keyword") == 0)
-                            _keywords[extension].insert(librarynode->Attribute("name"));
-                        else
+                        if (strcmp(librarynode->Name(), "keyword") == 0) {
+                            const char* nodeName = librarynode->Attribute("name");
+                            if (nodeName == nullptr)
+                                return Error(MISSING_ATTRIBUTE, "name");
+                            _keywords[extension].insert(nodeName);
+                        } else
                             return Error(BAD_ELEMENT, librarynode->Name());
                     }
                 }
