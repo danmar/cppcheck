@@ -727,7 +727,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     unsigned int returnValue = 0;
-    if (settings._jobs == 1) {
+    if (settings._jobsCount == 1) {
         // Single process
 
         std::size_t totalfilesize = 0;

@@ -55,7 +55,7 @@ private:
         }
 
         Settings settings;
-        settings._jobs = jobs;
+        settings._jobsCount = jobs;
         ThreadExecutor executor(filemap, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
             executor.addFileContent(i->first, data);
