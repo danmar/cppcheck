@@ -1267,7 +1267,8 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
                 const Token *parent = tok2;
                 while (parent && parent->str() == tok2->str())
                     parent = parent->astParent();
-                if (parent && parent->str() == "(")
+                // Jump to end of condition
+                if (parent && parent->str() == "(" && parent->astOperand2())
                     tok2 = parent->link();
             }
 

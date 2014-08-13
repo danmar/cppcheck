@@ -1070,6 +1070,13 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+
+        // hang
+        code = "void f() {\n"
+               "  for(int i = 0; i < 20; i++)\n"
+               "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
+               "}";
+        testValueOfX(code,0,0); // <- dont hang
     }
 
     void valueFlowSubFunction() {
