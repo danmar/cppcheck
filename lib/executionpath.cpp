@@ -317,6 +317,8 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
                     if (tok->varId())
                         ExecutionPath::bailOutVar(checks, tok->varId());
                 }
+                if (!tok)
+                    break;
             }
         }
 
