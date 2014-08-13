@@ -1268,8 +1268,12 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
                 while (parent && parent->str() == tok2->str())
                     parent = parent->astParent();
                 // Jump to end of condition
-                if (parent && parent->str() == "(" && parent->astOperand2())
+                if (parent && parent->str() == "(") {
                     tok2 = parent->link();
+                    // cast
+                    if (Token::simpleMatch(tok2, ") ("))
+                        tok2 = tok2->linkAt(1);
+                }
             }
 
         }
