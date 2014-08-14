@@ -827,8 +827,11 @@ static bool valueFlowForward(Token * const               startToken,
                             "no simplification of " + tok2->str() + " within " + (Token::Match(parent,"[?:]") ? "?:" : parent->str()) + " expression");
                 while (parent && parent->str() != "(")
                     parent = parent->astParent();
-                if (parent)
+                if (parent) {
                     tok2 = const_cast<Token*>(parent->link());
+                    if (Token::simpleMatch(tok2, ") ("))
+                        tok2 = tok2->linkAt(1);
+                }
                 continue;
             }
 
