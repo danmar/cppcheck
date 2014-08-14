@@ -2906,7 +2906,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
                 if (pos2 < code.size() && (std::isalnum((unsigned char)code[pos2]) || code[pos2] == '_'))
                     continue;
                 // macro is used in code, return false
-                if (_settings->isEnabled("information"))
+                if (_settings && _settings->isEnabled("information"))
                     validateCfgError(cfg, macro);
                 return false;
             }
