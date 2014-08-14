@@ -148,10 +148,12 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     VariableUsage *var1 = find(varid1);
     VariableUsage *var2 = find(varid2);
 
+    if (!var1 || !var2)
+        return;
+
     // alias to self
     if (varid1 == varid2) {
-        if (var1)
-            var1->use(_varReadInScope);
+        var1->use(_varReadInScope);
         return;
     }
 
