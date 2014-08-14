@@ -3739,14 +3739,20 @@ private:
                          "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'p' is dead if it has been assigned '&x' at line 5.\n", errout.str());
 
-        checkDeadPointer("void a(const int *p) {\n"
-                         "  *p = 0;\n"
+        // FP: don't warn in subfunction
+        checkDeadPointer("void f(struct KEY *key) {\n"
+                         "  key->x = 0;\n"
                          "}\n"
                          "\n"
-                         "void b() {\n"
-                         "  int x;\n"
-                         "  int *p = &x;"
-                         "  a(p);\n"
+                         "int main() {\n"
+                         "  struct KEY *tmp = 0;\n"
+                         "  struct KEY k;\n"
+                         "\n"
+                         "  if (condition) {\n"
+                         "    tmp = &k;\n"
+                         "  } else {\n"
+                         "  }\n"
+                         "  f(tmp);\n"
                          "}");
         ASSERT_EQUALS("", errout.str());
     }

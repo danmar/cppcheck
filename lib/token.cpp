@@ -1318,8 +1318,17 @@ const Token *Token::getValueTokenMaxStrLength() const
     return ret;
 }
 
+static const Scope *getfunctionscope(const Scope *s)
+{
+    while (s && s->type != Scope::eFunction)
+        s = s->nestedIn;
+    return s;
+}
+
 const Token *Token::getValueTokenDeadPointer() const
 {
+    const Scope * const functionscope = getfunctionscope(this->scope());
+
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
         // Is this a pointer alias?
@@ -1332,6 +1341,10 @@ const Token *Token::getValueTokenDeadPointer() const
         const Variable * const var = vartok->variable();
         if (var->isStatic())
             continue;
+        // variable must be in same function (not in subfunction)
+        if (functionscope != getfunctionscope(var->scope()))
+            continue;
+        // Is variable defined in this scope or upper scope?
         const Scope *s = this->scope();
         while ((s != nullptr) && (s != var->scope()))
             s = s->nestedIn;
