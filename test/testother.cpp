@@ -4983,6 +4983,10 @@ private:
               "float f(struct X x) { return x.f == x.f; }");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct X { int i; };\n"
+              "int f(struct X x) { return x.i == x.i; }");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
         // #5284 - when type is unknown, assume it's float
         check("int f() { return x==x; }");
         ASSERT_EQUALS("", errout.str());
