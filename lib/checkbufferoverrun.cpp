@@ -1375,6 +1375,7 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
             case 'X':
             case 'i':
                 i_d_x_f_found = true;
+                // fall through
             case 'c':
             case 'e':
             case 'E':
