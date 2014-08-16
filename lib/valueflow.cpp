@@ -704,6 +704,17 @@ static bool valueFlowForward(Token * const               startToken,
 
                 // TODO: don't check noreturn scopes
                 if (read && (number_of_if > 0U || Token::findmatch(tok2, "%varid%", start, varid))) {
+                    // Set values in condition
+                    const Token * const condend = tok2->linkAt(1);
+                    for (Token *condtok = tok2; condtok != condend; condtok = condtok->next()) {
+                        if (condtok->varId() == varid) {
+                            std::list<ValueFlow::Value>::const_iterator it;
+                            for (it = values.begin(); it != values.end(); ++it)
+                                setTokenValue(condtok, *it);
+                        }
+                        if (Token::Match(condtok, "%oror%|&&"))
+                            break;
+                    }
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
                     return false;
@@ -896,13 +907,15 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
         if (Token::Match(tok,"==|!=|>=|<=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 continue;
-            if (tok->astOperand1()->isName()) {
-                vartok = tok->astOperand1();
-                numtok = tok->astOperand2();
-            } else {
-                vartok = tok->astOperand2();
+            if (tok->astOperand1()->isNumber()) {
                 numtok = tok->astOperand1();
+                vartok = tok->astOperand2();
+            } else {
+                numtok = tok->astOperand2();
+                vartok = tok->astOperand1();
             }
+            if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
+                vartok = vartok->astOperand1();
             if (!vartok->isName() || !numtok->isNumber() || !MathLib::isInt(numtok->str()))
                 continue;
         } else if (tok->str() == "!") {
@@ -913,7 +926,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
 
         } else if (tok->isName() &&
                    (Token::Match(tok->astParent(), "%oror%|&&") ||
-                    Token::Match(tok->tokAt(-2), "if|while ( %var% )"))) {
+                    Token::Match(tok->tokAt(-2), "if|while ( %var% [)=]"))) {
             vartok = tok;
             numtok = nullptr;
 
@@ -964,7 +977,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
         const Token *top = tok->astTop();
         if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
             // does condition reassign variable?
-            if (isVariableChanged(top,top->link(),varid)) {
+            if (tok != top->astOperand2() &&
+                Token::Match(top->astOperand2(), "%oror%|&&") &&
+                isVariableChanged(top,top->link(),varid)) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "assignment in condition");
                 continue;

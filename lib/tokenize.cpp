@@ -2202,6 +2202,8 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 if (Token::Match(tok->next(),"[:{};]"))
                     break;
             }
+            if (!tok)
+                break;
             if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
                 tok = tok->next();
                 if (tok->next()->str() != ";")

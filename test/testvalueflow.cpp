@@ -907,6 +907,45 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
 
+        code = "void f(int x) {\n"
+               "    while (11 != (x = dostuff())) {}\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 11));
+
+        code = "void f(int x) {\n"
+               "    while (11 != (x = dostuff()) && y) {}\n"
+               "    a = x;\n"
+               "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 11));
+
+        code = "void f(int x) {\n"
+               "    while (x = dostuff()) {}\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(const Token *x) {\n" // #5866
+               "    x = x->next();\n"
+               "    while (x) { x = x->next(); }\n"
+               "    if (x->str()) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "void f(const Token *x) {\n"
+               "  while (0 != (x = x->next)) {}\n"
+               "  x->ab = 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(const Token* x) {\n"
+               "  while (0 != (x = x->next)) {}\n"
+               "  if (x->str) {\n" // <- possible value 0
+               "    x = y;\n" // <- this caused some problem
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
         // conditional code after if/else/while
         code = "void f(int x) {\n"
                "  if (x == 2) {}\n"
