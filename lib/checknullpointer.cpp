@@ -382,11 +382,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 void CheckNullPointer::nullPointer()
 {
     nullPointerLinkedList();
-
-    if (_settings->isEnabled("warning")) {
-        nullPointerByDeRefAndChec();
-        nullPointerDefaultArgument();
-    }
+    nullPointerByDeRefAndChec();
+    nullPointerDefaultArgument();
 }
 
 /** Dereferencing null constant (simplified token list) */
@@ -501,6 +498,9 @@ void CheckNullPointer::removeAssignedVarFromSet(const Token* tok, std::set<unsig
 */
 void CheckNullPointer::nullPointerDefaultArgument()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
