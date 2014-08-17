@@ -1151,6 +1151,11 @@ static void execute(const Token *expr,
         *result = !(*result);
     }
 
+    else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
+        execute(expr->astOperand1(), programMemory, result, error);
+        execute(expr->astOperand2(), programMemory, result, error);
+    }
+
     else
         *error = true;
 }

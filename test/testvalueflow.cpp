@@ -1089,6 +1089,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    int x,y;\n"
+               "    for (x = 0, y = 0; x < 10, y < 10; x++, y++)\n" // usage of ,
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
         code = "void foo(double recoveredX) {\n"
                "  for (double x = 1e-18; x < 1e40; x *= 1.9) {\n"
                "    double relativeError = (x - recoveredX) / x;\n"
