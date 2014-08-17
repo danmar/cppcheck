@@ -134,6 +134,7 @@ private:
         TEST_CASE(incorrectLogicOperator4);
         TEST_CASE(incorrectLogicOperator5); // complex expressions
         TEST_CASE(incorrectLogicOperator6); // char literals
+        TEST_CASE(incorrectLogicOperator7); // opposite expressions: (expr || !expr)
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
 
@@ -4197,6 +4198,13 @@ private:
               "  if (x == '1' && x == '2') {}\n"
               "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
+    void incorrectLogicOperator7() { // opposite expressions
+        check("void f(int i) {\n"
+              "  if (i || !i) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i||!i.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
