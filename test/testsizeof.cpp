@@ -647,6 +647,11 @@ private:
               "  (foo[0]).data++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (portability) '(foo[0]).data' is of type 'void *'. When using void pointers in calculations, the behaviour is undefined.\n", errout.str());
+
+        // #6050 arithmetic on void**
+        check("void* array[10];\n"
+              "void** b = array + 3;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void customStrncat() {
