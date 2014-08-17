@@ -1123,6 +1123,28 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
 
+        // After loop
+        code = "void foo() {\n"
+               "  int x;\n"
+               "  for (x = 0; x < 10; x++) {}\n"
+               "  a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 10));
+
+        code = "void foo() {\n"
+               "  int x;\n"
+               "  for (x = 0; 2 * x < 20; x++) {}\n"
+               "  a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 10));
+
+        code = "void foo() {\n" // related with #887
+               "  int x;\n"
+               "  for (x = 0; x < 20; x++) {}\n"
+               "  a = x++;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 20));
+
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"

@@ -1160,7 +1160,7 @@ static void execute(const Token *expr,
         *error = true;
 }
 
-static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2)
+static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2, MathLib::bigint * const numAfter)
 {
     tok = tok->tokAt(2);
     if (!Token::Match(tok,"%type%| %var% ="))
@@ -1190,6 +1190,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
     if (!num2tok)
         return false;
     *num2 = MathLib::toLongNumber(num2tok->str()) - ((tok->str()=="<=") ? 0 : 1);
+    *numAfter = MathLib::toLongNumber(num2tok->str()) + ((tok->str()=="<=") ? 1 : 0);
     if (!num1tok)
         *num1 = *num2;
     while (tok && tok->str() != ";")
@@ -1201,7 +1202,8 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
 
 static bool valueFlowForLoop2(const Token *tok,
                               std::map<unsigned int, MathLib::bigint> *memory1,
-                              std::map<unsigned int, MathLib::bigint> *memory2)
+                              std::map<unsigned int, MathLib::bigint> *memory2,
+                              std::map<unsigned int, MathLib::bigint> *memoryAfter)
 {
     const Token *firstExpression  = tok->next()->astOperand2()->astOperand1();
     const Token *secondExpression = tok->next()->astOperand2()->astOperand2()->astOperand1();
@@ -1243,8 +1245,10 @@ static bool valueFlowForLoop2(const Token *tok,
     }
 
     memory1->swap(startMemory);
-    if (!error)
+    if (!error) {
         memory2->swap(endMemory);
+        memoryAfter->swap(programMemory);
+    }
 
     return true;
 }
@@ -1326,6 +1330,39 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
     }
 }
 
+static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, const MathLib::bigint num, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    const Token *vartok = nullptr;
+    for (const Token *tok = fortok; tok; tok = tok->next()) {
+        if (tok->varId() == varid) {
+            vartok = tok;
+            break;
+        }
+    }
+    if (!vartok || !vartok->variable())
+        return;
+
+    const Variable *var = vartok->variable();
+    const Token *endToken = nullptr;
+    if (var->isLocal())
+        endToken = var->typeStartToken()->scope()->classEnd;
+    else
+        endToken = fortok->scope()->classEnd;
+
+    std::list<ValueFlow::Value> values;
+    values.push_back(num);
+
+    valueFlowForward(fortok->linkAt(1)->linkAt(1),
+                     endToken,
+                     var,
+                     varid,
+                     values,
+                     false,
+                     tokenlist,
+                     errorLogger,
+                     settings);
+}
+
 static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -1337,19 +1374,22 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         Token * const bodyStart = tok->linkAt(1)->next();
 
         unsigned int varid(0);
-        MathLib::bigint num1(0), num2(0);
+        MathLib::bigint num1(0), num2(0), numAfter(0);
 
-        if (valueFlowForLoop1(tok, &varid, &num1, &num2)) {
+        if (valueFlowForLoop1(tok, &varid, &num1, &num2, &numAfter)) {
             valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
             valueFlowForLoopSimplify(bodyStart, varid, num2, tokenlist, errorLogger, settings);
+            valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
         } else {
-            std::map<unsigned int, MathLib::bigint> mem1, mem2;
-            if (valueFlowForLoop2(tok, &mem1, &mem2)) {
+            std::map<unsigned int, MathLib::bigint> mem1, mem2, memAfter;
+            if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
                 std::map<unsigned int, MathLib::bigint>::const_iterator it;
                 for (it = mem1.begin(); it != mem1.end(); ++it)
                     valueFlowForLoopSimplify(bodyStart, it->first, it->second, tokenlist, errorLogger, settings);
                 for (it = mem2.begin(); it != mem2.end(); ++it)
                     valueFlowForLoopSimplify(bodyStart, it->first, it->second, tokenlist, errorLogger, settings);
+                for (it = memAfter.begin(); it != memAfter.end(); ++it)
+                    valueFlowForLoopSimplifyAfter(tok, it->first, it->second, tokenlist, errorLogger, settings);
             }
         }
     }

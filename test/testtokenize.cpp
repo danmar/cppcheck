@@ -165,9 +165,7 @@ private:
         TEST_CASE(simplifyKnownVariables21);
         TEST_CASE(simplifyKnownVariables22);
         TEST_CASE(simplifyKnownVariables23);
-        TEST_CASE(simplifyKnownVariables24);
         TEST_CASE(simplifyKnownVariables25);
-        TEST_CASE(simplifyKnownVariables26);
         TEST_CASE(simplifyKnownVariables27);
         TEST_CASE(simplifyKnownVariables28);
         TEST_CASE(simplifyKnownVariables29);    // ticket #1811
@@ -2070,51 +2068,6 @@ private:
             simplifyKnownVariables(code));
     }
 
-    void simplifyKnownVariables24() {
-        {
-            // This testcase is related to ticket #1596
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    int c;\n"
-                                "    for (c=0;c<10;++c) { }\n"
-                                "    a[c] = 0;\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void foo ( ) "
-                "{"
-                " int c ;"
-                " for ( c = 0 ; c < 10 ; ++ c ) { }"
-                " a [ 10 ] = 0 ; "
-                "}",
-                simplifyKnownVariables(code));
-        }
-
-        {
-            // #1692 - unknown counter value after for loop
-            const char code[] = "void foo(const char s[])\n"
-                                "{\n"
-                                "    int x[3];\n"
-                                "    int i;\n"
-                                "    for (i = 0; i < 3; ++i) {\n"
-                                "        if (s[i]) break;\n"
-                                "    }"
-                                "    if (i < 3) x[i] = 0;\n"
-                                "}\n";
-            ASSERT_EQUALS(
-                "void foo ( const char s [ ] ) "
-                "{"
-                " int x [ 3 ] ;"
-                " int i ;"
-                " for ( i = 0 ; i < 3 ; ++ i ) {"
-                " if ( s [ i ] ) { break ; }"
-                " }"
-                " if ( i < 3 ) { x [ i ] = 0 ; } "
-                "}",
-                simplifyKnownVariables(code));
-        }
-    }
-
     void simplifyKnownVariables25() {
         {
             // This testcase is related to ticket #1646
@@ -2165,24 +2118,6 @@ private:
                 "}",
                 simplifyKnownVariables(code));
         }
-    }
-
-    void simplifyKnownVariables26() {
-        // This testcase is related to ticket #887
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i;\n"
-                            "    for (i=0;i<10;++i) { }\n"
-                            "    int k = i++;\n"
-                            "}\n";
-        ASSERT_EQUALS(
-            "void foo ( ) "
-            "{"
-            " int i ;"
-            " for ( i = 0 ; i < 10 ; ++ i ) { }"
-            " int k ; k = 10 ; "
-            "}",
-            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables27() {
