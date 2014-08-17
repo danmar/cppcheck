@@ -2799,7 +2799,7 @@ void Tokenizer::createLinks2()
                 token->link(0);
         }
 
-        else if (token->str() == ";")
+        else if (Token::Match(token, "%oror%|&&|;"))
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
         else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId())

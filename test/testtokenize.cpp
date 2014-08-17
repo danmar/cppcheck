@@ -7093,6 +7093,19 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            // if (a < b || c > d) { }
+            const char code[] = "if (a < b || c > d);";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
+        }
     }
 
     void simplifyString() {
