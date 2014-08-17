@@ -200,6 +200,7 @@ private:
         TEST_CASE(simplifyKnownVariables56);    // ticket #5301 - >>
         TEST_CASE(simplifyKnownVariables57);    // ticket #4724
         TEST_CASE(simplifyKnownVariables58);    // ticket #5268
+        TEST_CASE(simplifyKnownVariables59);    // skip for header
         TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
         TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
         TEST_CASE(simplifyKnownVariablesIfEq3); // #4708 - if (a==5) { buf[--a] = 0; }
@@ -3017,6 +3018,21 @@ private:
         ASSERT_EQUALS("int foo ( int ) ; "
                       "void bar ( ) { throw foo ( 1 ) ; } "
                       "int baz ( ) { return 2 ; }", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables59() { // #5062 - for head
+        const char code[] = "void f() {\n"
+                            "  int a[3], i, j;\n"
+                            "  for(i = 0, j = 1; i < 3, j < 12; i++,j++) {\n"
+                            "    a[i] = 0;\n"
+                            "  }\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "int a [ 3 ] ; int i ; int j ;\n"
+                      "for ( i = 0 , j = 1 ; i < 3 , j < 12 ; i ++ , j ++ ) {\n"
+                      "a [ i ] = 0 ;\n"
+                      "}\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void simplifyKnownVariablesIfEq1() {

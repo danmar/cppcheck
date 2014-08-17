@@ -6388,19 +6388,25 @@ bool Tokenizer::simplifyKnownVariables()
         // parse the block of code..
         int indentlevel = 0;
         Token *tok2 = tok;
+        bool forhead = false;
         for (; tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "[;{}] float|double %var% ;")) {
                 floatvars.insert(tok2->tokAt(2)->varId());
             }
 
-            if (tok2->str() == "{")
+            if (tok2->str() == "{") {
+                forhead = false;
                 ++indentlevel;
+            }
 
             else if (tok2->str() == "}") {
                 --indentlevel;
                 if (indentlevel <= 0)
                     break;
             }
+
+            else if (Token::simpleMatch(tok2, "for ("))
+                forhead = true;
 
             else if (tok2->previous()->str() != "*" && !Token::Match(tok2->tokAt(-2), "* --|++") &&
                      (Token::Match(tok2, "%var% = %bool%|%char%|%num%|%str%|%var% ;") ||
@@ -6435,6 +6441,8 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3->tokAt(-2), "for ( %type%"))
                         continue;
                 }
+                if (forhead && Token::Match(tok2->previous(), ", %var% ="))
+                    continue;
 
                 // struct name..
                 if (Token::Match(tok2, "%varid% = &| %varid%", tok2->varId()))
