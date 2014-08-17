@@ -34,7 +34,7 @@ namespace {
 
 static bool astIsFloat(const Token *tok, bool unknown)
 {
-    if (tok->astOperand2() && tok->str() == ".")
+    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
         return astIsFloat(tok->astOperand2(), unknown);
 
     if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(),unknown))
@@ -2095,7 +2095,7 @@ void CheckOther::checkCharVariable()
                     const Token *lhs = eq->astOperand1();
                     if (lhs && lhs->str() == "*" && !lhs->astOperand2())
                         lhs = lhs->astOperand1();
-                    while (lhs && lhs->str() == ".")
+                    while (lhs && (lhs->str() == "." || lhs->str() == "::"))
                         lhs = lhs->astOperand2();
                     if (!lhs || !lhs->isName())
                         continue;
@@ -2935,7 +2935,7 @@ void CheckOther::checkSuspiciousStringCompare()
                 const Token *tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
                 for (int nr = 0; nr < 2; nr++) {
                     const Token *t = tokens[nr];
-                    while (t && t->str() == ".")
+                    while (t && (t->str() == "." || t->str() == "::"))
                         t = t->astOperand2();
                     if (t && t->variable() && t->variable()->isPointer())
                         varTok = t;
@@ -2948,7 +2948,7 @@ void CheckOther::checkSuspiciousStringCompare()
                 varTok = varTok->astOperand1();
             }
 
-            while (varTok && varTok->str() == ".")
+            while (varTok && (varTok->str() == "." || varTok->str() == "::"))
                 varTok = varTok->astOperand2();
             if (!varTok || !varTok->isName())
                 continue;
