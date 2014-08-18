@@ -225,39 +225,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 }
 
 
-// check if function can assign pointer
-bool CheckNullPointer::CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown)
-{
-    if (Token::Match(functiontoken, "if|while|for|switch|sizeof|catch"))
-        return false;
-
-    unsigned int argumentNumber = 0;
-    for (const Token *arg = functiontoken->tokAt(2); arg; arg = arg->nextArgument()) {
-        if (Token::Match(arg, "%varid% [,)]", varid)) {
-            const Function* func = functiontoken->function();
-            if (!func) { // Unknown function
-                unknown = true;
-                return true; // assume that the function might assign the pointer
-            }
-
-            const Variable* var = func->getArgumentVar(argumentNumber);
-            if (!var) { // Unknown variable
-                unknown = true;
-                return true;
-            } else if (var->isReference()) // Assume every pointer passed by reference is assigned
-                return true;
-            else
-                return false;
-        }
-        ++argumentNumber;
-    }
-
-    // pointer is not passed
-    return false;
-}
-
-
-
 void CheckNullPointer::nullPointerLinkedList()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();

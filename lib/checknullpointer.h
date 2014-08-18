@@ -139,12 +139,6 @@ private:
      * @brief Removes any variable that may be assigned from pointerArgs.
      */
     static void removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs);
-
-    /**
-     * @brief Investigate if function call can make pointer null. If
-     * the pointer is passed by value it can't be made a null pointer.
-     */
-    static bool CanFunctionAssignPointer(const Token *functiontoken, unsigned int varid, bool& unknown);
 };
 /// @}
 //---------------------------------------------------------------------------
