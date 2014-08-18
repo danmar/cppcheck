@@ -1393,9 +1393,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                                     typeToken = typeToken->next();
                                 functionInfo = function;
                                 element = true;
-                                return;
-                            } else
-                                return;
+                            }
+                            return;
                         }
                     } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
                         const Function * function = tok1->linkAt(-1)->previous()->function();
@@ -1405,9 +1404,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                                 typeToken = typeToken->next();
                             functionInfo = function;
                             element = false;
-                            return;
-                        } else
-                            return;
+                        }
+                        return;
                     } else
                         varTok = tok1->previous();
                     break;
