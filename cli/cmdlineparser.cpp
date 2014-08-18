@@ -324,7 +324,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_xml = true;
         }
 
-		// Sort results rarest first
+        // Sort results rarest first
         else if (std::strcmp(argv[i], "--rarest-first") == 0)
             _settings->_rarest_first = true;
 

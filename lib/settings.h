@@ -114,7 +114,7 @@ public:
     /** @brief XML version (--xmlver=..) */
     int _xml_version;
 
-	/** @brief Store and then sort error messages by id rarest first (--rarest_first) */
+    /** @brief Store and then sort error messages by id rarest first (--rarest_first) */
     bool _rarest_first;
 
     /** @brief How many processes/threads should do checking at the same
