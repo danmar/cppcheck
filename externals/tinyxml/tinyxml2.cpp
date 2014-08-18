@@ -1668,7 +1668,7 @@ XMLError XMLDocument::LoadFile( const char* filename )
     Clear();
     FILE* fp = 0;
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)
     errno_t err = fopen_s(&fp, filename, "rb" );
     if ( !fp || err) {
 #else
@@ -1689,16 +1689,20 @@ XMLError XMLDocument::LoadFile( FILE* fp )
     Clear();
 
     fseek( fp, 0, SEEK_SET );
-    fgetc( fp );
-    if ( ferror( fp ) != 0 ) {
+    if ( fgetc( fp ) == EOF && ferror( fp ) != 0 ) {
         SetError( XML_ERROR_FILE_READ_ERROR, 0, 0 );
         return _errorID;
     }
 
     fseek( fp, 0, SEEK_END );
-    size_t size = ftell( fp );
+    const long filelength = ftell( fp );
     fseek( fp, 0, SEEK_SET );
+    if ( filelength == -1L ) {
+        SetError( XML_ERROR_FILE_READ_ERROR, 0, 0 );
+        return _errorID;
+    }
 
+    const size_t size = filelength;
     if ( size == 0 ) {
         SetError( XML_ERROR_EMPTY_DOCUMENT, 0, 0 );
         return _errorID;
@@ -1729,7 +1733,7 @@ XMLError XMLDocument::LoadFile( FILE* fp )
 XMLError XMLDocument::SaveFile( const char* filename, bool compact )
 {
     FILE* fp = 0;
-#if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+#if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)
     errno_t err = fopen_s(&fp, filename, "w" );
     if ( !fp || err) {
 #else
@@ -1856,7 +1860,17 @@ void XMLPrinter::Print( const char* format, ... )
     }
     else {
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+		#if defined(WINCE)
+		int len = 512;
+		do {
+		    len = len*2;
+		    char* str = new char[len]();
+			len = _vsnprintf(str, len, format, va);
+			delete[] str;
+		}while (len < 0);
+		#else
         int len = _vscprintf( format, va );
+		#endif
 #else
         int len = vsnprintf( 0, 0, format, va );
 #endif
@@ -1865,7 +1879,11 @@ void XMLPrinter::Print( const char* format, ... )
         va_start( va, format );
         char* p = _buffer.PushArr( len ) - 1;	// back up over the null terminator.
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
+		#if defined(WINCE)
+		_vsnprintf( p, len+1, format, va );
+		#else
 		vsnprintf_s( p, len+1, _TRUNCATE, format, va );
+		#endif
 #else
 		vsnprintf( p, len+1, format, va );
 #endif
