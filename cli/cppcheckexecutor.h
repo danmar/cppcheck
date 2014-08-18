@@ -103,6 +103,12 @@ protected:
      * @param errmsg String printed to error stream
      */
     void reportErr(const std::string &errmsg);
+	/**
+     * Helper function to print out xml headers and other pieces 
+	 * that are not errors. Appends a line change.
+     * @param msg String printed to error stream
+     */
+    void reportNotErr(const std::string &msg);
 
     /**
      * @brief Parse command line args and get settings and file lists

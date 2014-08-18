@@ -723,7 +723,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         time1 = std::time(0);
 
     if (settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version));
+        reportNotErr(ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version));
     }
 
     unsigned int returnValue = 0;
@@ -792,7 +792,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version));
+        reportNotErr(ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version));
     }
 
     _settings = 0;
@@ -810,6 +810,12 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
     _errorList.insert(errmsg);
     std::cerr << errmsg << std::endl;
+}
+
+void CppCheckExecutor::reportNotErr(const std::string &msg)
+{
+    // No concert about error list
+    std::cerr << msg << std::endl;
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)
