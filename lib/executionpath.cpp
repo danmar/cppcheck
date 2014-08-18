@@ -412,13 +412,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
                 // parse next "if"..
                 tok = tok->tokAt(2);
-                if (tok && tok->str() == "if")
-                    continue;
-
                 if (!tok) {
                     ExecutionPath::bailOut(newchecks);
                     return;
                 }
+                if (tok->str() == "if")
+                    continue;
 
                 // there is no "if"..
                 ExecutionPath::checkScope(tok->next(), checks);
