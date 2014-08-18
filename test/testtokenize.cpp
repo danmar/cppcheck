@@ -334,7 +334,9 @@ private:
         TEST_CASE(varidclass14);
         TEST_CASE(varidclass15);  // initializer list
         TEST_CASE(varidclass16);  // #4577
-        TEST_CASE(varid_classnameshaddowsvariablename) // #3990
+        TEST_CASE(varid_classnameshaddowsvariablename); // #3990
+
+        TEST_CASE(varidnamespace1);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -5072,8 +5074,7 @@ private:
                                  "10: A :: buf@1 [ 10 ] = 0 ;\n"
                                  "11: }\n");
 
-        const char current[] =  "\n\n##file 0\n1: class A\n2: {\n3: public:\n4: static char buf@1 [ 20 ] ;\n5: } ;\n6: char A :: buf [ 20 ] ;\n7: int main ( )\n8: {\n9: char buf@2 [ 2 ] ;\n10: A :: buf [ 10 ] = 0 ;\n11: }\n";
-        TODO_ASSERT_EQUALS(wanted, current, actual);
+        ASSERT_EQUALS(wanted, actual);
     }
 
     void varidclass7() {
@@ -5300,6 +5301,25 @@ private:
                                 "5: }\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
 
+    }
+
+    void varidnamespace1() {
+        const char code[] = "namespace A {\n"
+                            "    char buf[20];\n"
+                            "}\n"
+                            "int main() {\n"
+                            "    return foo(A::buf);\n"
+                            "}";
+
+        const char expected[] = "\n\n##file 0\n"
+                                "1: namespace A {\n"
+                                "2: char buf@1 [ 20 ] ;\n"
+                                "3: }\n"
+                                "4: int main ( ) {\n"
+                                "5: return foo ( A :: buf@1 ) ;\n"
+                                "6: }\n";
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
     void file1() {
