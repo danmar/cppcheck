@@ -1371,6 +1371,8 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         MathLib::bigint num1(0), num2(0), numAfter(0);
 
         if (valueFlowForLoop1(tok, &varid, &num1, &num2, &numAfter)) {
+            if (num1 > num2)
+                continue;
             valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
             valueFlowForLoopSimplify(bodyStart, varid, num2, tokenlist, errorLogger, settings);
             valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
