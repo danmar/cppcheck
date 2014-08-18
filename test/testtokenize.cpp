@@ -4639,6 +4639,7 @@ private:
                             "    int method_with_internal(int&);\n"
                             "    int method_with_internal(A* b, X&);\n"
                             "    int method_with_internal(X&, A* b);\n"
+                            "    int method_with_internal(const B &, int);\n"
                             "};";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class Fred {\n"
@@ -4647,7 +4648,8 @@ private:
                       "4: int method_with_internal ( int & ) ;\n"
                       "5: int method_with_internal ( A * b@1 , X & ) ;\n"
                       "6: int method_with_internal ( X & , A * b@2 ) ;\n"
-                      "7: } ;\n", tokenizeDebugListing(code, false, "test.cpp"));
+                      "7: int method_with_internal ( const B & , int ) ;\n"
+                      "8: } ;\n", tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_initList() {

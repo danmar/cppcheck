@@ -2590,7 +2590,7 @@ void Tokenizer::setVarId()
                 if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && !Token::Match(tok2->link()->previous(), "[&*]")) {
                     bool isDecl = true;
                     for (; tok3; tok3 = tok3->nextArgument()) {
-                        if (tok3->strAt(-1) == "&" || tok3->strAt(-1) == "*" || (notstart.find(tok3->str()) == notstart.end() && setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
+                        if (tok3->strAt(-2) == "&" || tok3->strAt(-2) == "*" || (notstart.find(tok3->str()) == notstart.end() && setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
                             isDecl = false;
                             break;
                         }
