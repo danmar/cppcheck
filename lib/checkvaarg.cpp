@@ -104,7 +104,6 @@ void CheckVaarg::va_list_usage()
                 if (tok->linkAt(1)->previous()->varId() == var->declarationId()) { // Source
                     if (!open)
                         va_list_usedBeforeStartedError(tok, var->name());
-                    nopen = false;
                 }
                 if (tok->tokAt(2)->varId() == var->declarationId()) { // Destination
                     if (open)

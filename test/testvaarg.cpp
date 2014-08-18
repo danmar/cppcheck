@@ -167,6 +167,15 @@ private:
               "    va_end(arg_ptr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6066
+        check("void Format(va_list v1) {\n"
+              "    va_list v2;\n"
+              "    va_copy(v2, v1);\n"
+              "    foo(va_arg(v1, float));\n"
+              "    va_end(v2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void va_start_subsequentCalls() {
