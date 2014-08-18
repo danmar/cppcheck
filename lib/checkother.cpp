@@ -1271,6 +1271,8 @@ void CheckOther::checkIncorrectLogicOperator()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // Opposite comparisons
             if (Token::Match(tok, "%oror%|&&") &&
+                tok->astOperand1() &&
+                tok->astOperand2() &&
                 (tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
                 isOppositeCond(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
 
