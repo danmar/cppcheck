@@ -299,6 +299,7 @@ private:
         TEST_CASE(varid_in_class14);
         TEST_CASE(varid_in_class15);    // #5533 - functions
         TEST_CASE(varid_in_class16);
+        TEST_CASE(varid_in_class17);    // #6056 - no varid for member functions
         TEST_CASE(varid_initList);
         TEST_CASE(varid_operator);
         TEST_CASE(varid_throw);
@@ -4623,12 +4624,30 @@ private:
         const char code[] = "class Fred {\n"
                             "    int x;\n"
                             "    void foo(int x) { this->x = x; }\n"
-                            "}\n";
+                            "};\n";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class Fred {\n"
                       "2: int x@1 ;\n"
                       "3: void foo ( int x@2 ) { this . x@1 = x@2 ; }\n"
-                      "4: }\n", tokenizeDebugListing(code, false, "test.cpp"));
+                      "4: } ;\n", tokenizeDebugListing(code, false, "test.cpp"));
+    }
+
+    void varid_in_class17() { // #6056 - Set no varid for member functions
+        const char code[] = "class Fred {\n"
+                            "    int method_with_internal(X&);\n"
+                            "    int method_with_internal(X*);\n"
+                            "    int method_with_internal(int&);\n"
+                            "    int method_with_internal(A* b, X&);\n"
+                            "    int method_with_internal(X&, A* b);\n"
+                            "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Fred {\n"
+                      "2: int method_with_internal ( X & ) ;\n"
+                      "3: int method_with_internal ( X * ) ;\n"
+                      "4: int method_with_internal ( int & ) ;\n"
+                      "5: int method_with_internal ( A * b@1 , X & ) ;\n"
+                      "6: int method_with_internal ( X & , A * b@2 ) ;\n"
+                      "7: } ;\n", tokenizeDebugListing(code, false, "test.cpp"));
     }
 
     void varid_initList() {
