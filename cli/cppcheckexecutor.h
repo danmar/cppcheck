@@ -22,6 +22,8 @@
 #include "errorlogger.h"
 #include <ctime>
 #include <set>
+#include <map>
+#include <vector>
 #include <string>
 
 class CppCheck;
@@ -100,9 +102,10 @@ protected:
 
     /**
      * Helper function to print out errors. Appends a line change.
-     * @param errmsg String printed to error stream
+	 * @param errid String used to store errmsg in _errorIdMsgMap
+     * @param errmsg String printed to error stream or stored in _errorIdMsgMap
      */
-    void reportErr(const std::string &errmsg);
+    void reportErr(const std::string &errmsg, const std::string &errid);
 	/**
      * Helper function to print out xml headers and other pieces 
 	 * that are not errors. Appends a line change.
@@ -155,6 +158,11 @@ private:
      * Used to filter out duplicate error messages.
      */
     std::set<std::string> _errorList;
+
+	/**
+     * Used to store error messages to sort them after with --rarest-first
+     */
+	std::map<std::string, std::vector<std::string> > _errorIdMsgMap;
 
     /**
      * Filename associated with size of file
