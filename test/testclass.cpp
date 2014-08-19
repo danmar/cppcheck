@@ -2204,7 +2204,7 @@ private:
                       "    n1::Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on class that contains a 'std::string'.\n", errout.str());
 
         checkNoMemset("class A {\n"
                       "  virtual ~A() { }\n"

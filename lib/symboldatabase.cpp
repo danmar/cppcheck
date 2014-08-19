@@ -2222,6 +2222,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             const Token *typeTok = startTok->tokAt(startTok->str() == "const" ? 1 : 0);
             if (typeTok->str() == "struct")
                 typeTok = typeTok->next();
+            if (Token::Match(typeTok, "%type% ::"))
+                typeTok = typeTok->tokAt(2);
 
             // check for argument with no name or missing varid
             if (!endTok) {

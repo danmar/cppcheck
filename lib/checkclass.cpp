@@ -175,14 +175,7 @@ void CheckClass::constructors()
                 if (!var->isPointer() &&
                     !(var->type() && var->type()->needInitialization != Type::True) &&
                     (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
-                    bool stdtype = false;
-                    for (const Token *type = var->typeStartToken(); type && type->isName(); type = type->next()) {
-                        if (type->isStandardType()) {
-                            stdtype = true;
-                            break;
-                        }
-                    }
-                    if (!stdtype) {
+                    if (!var->typeStartToken()->isStandardType()) {
                         if (_settings->inconclusive)
                             inconclusive = true;
                         else
@@ -962,20 +955,6 @@ void CheckClass::checkMemset()
 
                         if (derefs == 0)
                             type = var->typeScope();
-
-                        // TODO: The SymbolDatabase mix up variables in nested structs.
-                        //       So we must bailout right now if there are nested structs.
-                        bool bailout = false;
-                        for (const Token *typetok2 = var->typeStartToken(); typetok2 && typetok2 != var->typeEndToken(); typetok2 = typetok2->next()) {
-                            if (typetok2->str() == "::")
-                                bailout = true;
-                            else if (typetok2->str() == "{") {
-                                bailout = false;
-                                break;
-                            }
-                        }
-                        if (bailout)
-                            continue;
                     }
                 }
 

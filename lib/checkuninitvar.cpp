@@ -433,13 +433,7 @@ private:
                 if (var2->isPointer())
                     checks.push_back(new UninitVar(owner, var2, symbolDatabase, library, isC));
                 else if (var2->typeEndToken()->str() != ">") {
-                    bool stdtype = false;  // TODO: change to isC to handle unknown types better
-                    for (const Token* tok2 = var2->typeStartToken(); tok2 != var2->nameToken(); tok2 = tok2->next()) {
-                        if (tok2->isStandardType()) {
-                            stdtype = true;
-                            break;
-                        }
-                    }
+                    bool stdtype = var2->typeStartToken()->isStandardType(); // TODO: change to isC to handle unknown types better
                     if (stdtype && (!var2->isArray() || var2->nameToken()->linkAt(1)->strAt(1) == ";"))
                         checks.push_back(new UninitVar(owner, var2, symbolDatabase, library, isC));
                 }
