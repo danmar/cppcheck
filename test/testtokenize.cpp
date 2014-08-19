@@ -4633,14 +4633,16 @@ private:
     }
 
     void varid_in_class17() { // #6056 - Set no varid for member functions
-        const char code[] = "class Fred {\n"
-                            "    int method_with_internal(X&);\n"
-                            "    int method_with_internal(X*);\n"
-                            "    int method_with_internal(int&);\n"
-                            "    int method_with_internal(A* b, X&);\n"
-                            "    int method_with_internal(X&, A* b);\n"
-                            "    int method_with_internal(const B &, int);\n"
-                            "};";
+        const char code1[] = "class Fred {\n"
+                             "    int method_with_internal(X&);\n"
+                             "    int method_with_internal(X*);\n"
+                             "    int method_with_internal(int&);\n"
+                             "    int method_with_internal(A* b, X&);\n"
+                             "    int method_with_internal(X&, A* b);\n"
+                             "    int method_with_internal(const B &, int);\n"
+                             "    void Set(BAR);\n"
+                             "    FOO Set(BAR);\n"
+                             "};";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class Fred {\n"
                       "2: int method_with_internal ( X & ) ;\n"
@@ -4649,7 +4651,21 @@ private:
                       "5: int method_with_internal ( A * b@1 , X & ) ;\n"
                       "6: int method_with_internal ( X & , A * b@2 ) ;\n"
                       "7: int method_with_internal ( const B & , int ) ;\n"
-                      "8: } ;\n", tokenizeDebugListing(code, false, "test.cpp"));
+                      "8: void Set ( BAR ) ;\n"
+                      "9: FOO Set ( BAR ) ;\n"
+                      "10: } ;\n", tokenizeDebugListing(code1, false, "test.cpp"));
+
+        const char code2[] = "int i;\n"
+                             "SomeType someVar1(i, i);\n"
+                             "SomeType someVar2(j, j);\n"
+                             "SomeType someVar3(j, 1);\n"
+                             "SomeType someVar4(new bar);";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int i@1 ;\n"
+                      "2: SomeType someVar1@2 ( i@1 , i@1 ) ;\n"
+                      "3: SomeType someVar2 ( j , j ) ;\n" // This one could be a function
+                      "4: SomeType someVar3@3 ( j , 1 ) ;\n"
+                      "5: SomeType someVar4@4 ( new bar ) ;\n", tokenizeDebugListing(code2, false, "test.cpp"));
     }
 
     void varid_initList() {
@@ -7297,12 +7313,12 @@ private:
     void functionpointer6() {
         const char code1[] = ";void (*fp(f))(int);";
         const char expected1[] = "\n\n##file 0\n"
-                                 "1: ; void * fp@1 ( f ) ;\n";
+                                 "1: ; void * fp ( f ) ;\n"; // No varId - it could be a function
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
 
         const char code2[] = ";std::string (*fp(f))(int);";
         const char expected2[] = "\n\n##file 0\n"
-                                 "1: ; std :: string * fp@1 ( f ) ;\n";
+                                 "1: ; std :: string * fp ( f ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
     }
 

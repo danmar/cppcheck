@@ -2281,7 +2281,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 if (!tok2 || tok2->str() != "::")
                     break;
             } else {
-                ++typeCount;
+                if (tok2->str() != "void" || Token::Match(tok2, "void const| *|(")) // just "void" cannot be a variable type
+                    ++typeCount;
                 ++singleNameCount;
             }
         } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
@@ -2545,7 +2546,7 @@ void Tokenizer::setVarId()
         }
 
         if (tok == list.front() || Token::Match(tok, "[;{}]") ||
-            (Token::Match(tok,"[(,]") && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {"))) ||
+            (Token::Match(tok, "[(,]") && (!executableScope.top() || Token::simpleMatch(tok->link(), ") {"))) ||
             (tok->isName() && tok->str().at(tok->str().length()-1U) == ':')) {
 
             // No variable declarations in sizeof
@@ -2570,44 +2571,44 @@ void Tokenizer::setVarId()
             if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
-            const bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
+            bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
+            if (decl) {
+                const Token* prev2 = tok2->previous();
+                if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
+                    ;
+                else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
+                    // In C++ , a variable can't be called operator+ or something like that.
+                    if (isCPP() &&
+                        prev2->str().size() >= 9 &&
+                        prev2->str().compare(0, 8, "operator") == 0 &&
+                        prev2->str()[8] != '_' &&
+                        !std::isalnum(prev2->str()[8]))
+                        continue;
 
-            if (decl && Token::Match(tok2->previous(), "%type% [;[=,)]") && tok2->previous()->str() != "const") {
-                variableId[tok2->previous()->str()] = ++_varId;
-                tok = tok2->previous();
-            }
-
-            else if (decl && Token::Match(tok2->previous(), "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
-                // In C++ , a variable can't be called operator+ or something like that.
-                if (isCPP() &&
-                    tok2->previous()->str().size() >= 9 &&
-                    tok2->previous()->str().compare(0, 8, "operator") == 0 &&
-                    tok2->previous()->str()[8] != '_' &&
-                    !std::isalnum(tok2->previous()->str()[8]))
-                    continue;
-
-                const Token *tok3 = tok2->next();
-                if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && !Token::Match(tok2->link()->previous(), "[&*]")) {
-                    bool isDecl = true;
-                    for (; tok3; tok3 = tok3->nextArgument()) {
-                        if (tok3->strAt(-2) == "&" || tok3->strAt(-2) == "*" || (notstart.find(tok3->str()) == notstart.end() && setVarIdParseDeclaration(&tok3, variableId, executableScope.top(), isCPP()))) {
-                            isDecl = false;
-                            break;
+                    const Token *tok3 = tok2->next();
+                    if (!tok3->isStandardType() && tok3->str() != "void" && !Token::Match(tok3, "struct|union|class %type%") && tok3->str() != "." && !Token::Match(tok2->link()->previous(), "[&*]")) {
+                        if (!executableScope.top()) {
+                            // Detecting initializations with () in non-executable scope is hard and often impossible to be done safely. Thus, only treat code as a variable that definitly is one.
+                            decl = false;
+                            for (; tok3; tok3 = tok3->nextArgument()) {
+                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || (tok3->next()->isOp() && !Token::Match(tok3->next(), "*|&")) || notstart.find(tok3->str()) != notstart.end()) {
+                                    decl = true;
+                                    break;
+                                }
+                            }
                         }
-                    }
-                    if (isDecl) {
-                        variableId[tok2->previous()->str()] = ++_varId;
-                        tok = tok2->previous();
-                    }
+                    } else
+                        decl = false;
+                } else if (isCPP() && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
+                    if (Token::Match(prev2, "do|try|else"))
+                        continue;
+                } else
+                    decl = false;
+
+                if (decl) {
+                    variableId[prev2->str()] = ++_varId;
+                    tok = tok2->previous();
                 }
-            }
-
-            else if (decl && isCPP() && Token::Match(tok2->previous(), "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
-                if (Token::Match(tok2->previous(), "do|try|else"))
-                    continue;
-
-                variableId[tok2->previous()->str()] = ++_varId;
-                tok = tok2->previous();
             }
         }
 
