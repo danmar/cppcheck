@@ -2121,6 +2121,10 @@ private:
               "    do_something(&str[0][5]);\n"
               "}", false, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("class X { static const int x[100]; };\n" // #6070
+              "const int X::x[100] = {0};", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_1_posix_functions() {

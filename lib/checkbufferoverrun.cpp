@@ -698,6 +698,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
 {
+    // Declaration in global scope?
+    if (tok->scope()->type == Scope::eGlobal)
+        return;
+/*
+     {
+        const Token *parent = tok->astParent();
+        while (Token::Match(parent, "%var%|::|*|&"))
+            parent = parent->astParent();
+        if (parent && !Token::simpleMatch(parent, "="))
+            return;
+    }
+*/
     // Taking address?
     bool addressOf = false;
     {
