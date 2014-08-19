@@ -705,11 +705,10 @@ void CheckStl::stlBoundaries()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // Declaring iterator..
             if (tok->str() == "<" && Token::Match(tok->previous(), "bitset|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset")) {
-                const std::string& container_name(tok->strAt(-1));
-                if (tok->link())
-                    tok = tok->link();
-                else
+                if (!tok->link())
                     continue;
+                const std::string& container_name(tok->strAt(-1));
+                tok = tok->link();
 
                 if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;")) {
                     const unsigned int iteratorid(tok->tokAt(3)->varId());
