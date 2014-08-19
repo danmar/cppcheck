@@ -341,7 +341,7 @@ void CheckBool::checkAssignBoolToPointer()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
                 const Token *lhs = tok->astOperand1();
-                while (lhs && lhs->str() == ".")
+                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
                     lhs = lhs->astOperand2();
                 if (!lhs || !lhs->variable() || !lhs->variable()->isPointer())
                     continue;

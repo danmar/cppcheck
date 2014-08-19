@@ -239,7 +239,7 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
                 return true;
 
             const Token *parent = tok->astParent();
-            while (parent && parent->str() == ".")
+            while (parent && (parent->str() == "." || parent->str() == "::"))
                 parent = parent->astParent();
             if (parent && parent->type() == Token::eIncDecOp)
                 return true;
