@@ -2590,8 +2590,8 @@ void Tokenizer::setVarId()
                         if (!executableScope.top()) {
                             // Detecting initializations with () in non-executable scope is hard and often impossible to be done safely. Thus, only treat code as a variable that definitly is one.
                             decl = false;
-                            for (; tok3; tok3 = tok3->nextArgument()) {
-                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || (tok3->next()->isOp() && !Token::Match(tok3->next(), "*|&")) || notstart.find(tok3->str()) != notstart.end()) {
+                            for (; tok3; tok3 = tok3->nextArgumentBeforeCreateLinks2()) {
+                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || (tok3->next()->isOp() && !Token::Match(tok3->next(), "*|&|<")) || notstart.find(tok3->str()) != notstart.end()) {
                                     decl = true;
                                     break;
                                 }

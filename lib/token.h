@@ -618,9 +618,17 @@ public:
 
     /**
      * @return the first token of the next argument. Does only work on argument
-     * lists. Returns 0, if there is no next argument
+     * lists. Requires that Tokenizer::createLinks2() has been called before.
+     * Returns 0, if there is no next argument.
      */
     Token* nextArgument() const;
+
+    /**
+     * @return the first token of the next argument. Does only work on argument
+     * lists. Should be used only before Tokenizer::createLinks2() was called.
+     * Returns 0, if there is no next argument.
+     */
+    Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
      * Returns the closing bracket of opening '<'. Should only be used if link()

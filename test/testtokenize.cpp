@@ -4642,6 +4642,8 @@ private:
                              "    int method_with_internal(const B &, int);\n"
                              "    void Set(BAR);\n"
                              "    FOO Set(BAR);\n"
+                             "    int method_with_class(B<B> b);\n"
+                             "    bool function(std::map<int, int, MYless> & m);\n"
                              "};";
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class Fred {\n"
@@ -4653,7 +4655,9 @@ private:
                       "7: int method_with_internal ( const B & , int ) ;\n"
                       "8: void Set ( BAR ) ;\n"
                       "9: FOO Set ( BAR ) ;\n"
-                      "10: } ;\n", tokenizeDebugListing(code1, false, "test.cpp"));
+                      "10: int method_with_class ( B < B > b@3 ) ;\n"
+                      "11: bool function ( std :: map < int , int , MYless > & m@4 ) ;\n"
+                      "12: } ;\n", tokenizeDebugListing(code1, false, "test.cpp"));
 
         const char code2[] = "int i;\n"
                              "SomeType someVar1(i, i);\n"

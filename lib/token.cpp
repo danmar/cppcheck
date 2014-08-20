@@ -719,11 +719,26 @@ Token* Token::nextArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->str() == "(" || tok->str() == "{" || tok->str() == "[")
-            tok = tok->link();
-        else if (tok->str() == "<" && tok->link())
+        else if (tok->link() && (tok->str() == "(" || tok->str() == "{" || tok->str() == "[" || tok->str() == "<"))
             tok = tok->link();
         else if (tok->str() == ")" || tok->str() == ";")
+            return 0;
+    }
+    return 0;
+}
+
+Token* Token::nextArgumentBeforeCreateLinks2() const
+{
+    for (const Token* tok = this; tok; tok = tok->next()) {
+        if (tok->str() == ",")
+            return tok->next();
+        else if (tok->link() && (tok->str() == "(" || tok->str() == "{" || tok->str() == "["))
+            tok = tok->link();
+        else if (tok->str() == "<") {
+            const Token* temp = tok->findClosingBracket();
+            if (temp)
+                tok = temp;
+        } else if (tok->str() == ")" || tok->str() == ";")
             return 0;
     }
     return 0;
