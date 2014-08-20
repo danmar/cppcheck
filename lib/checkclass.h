@@ -144,7 +144,7 @@ private:
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
     void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
-    void memsetErrorFloat(const Token *tok, const std::string &memfunc, const std::string &type);
+    void memsetErrorFloat(const Token *tok, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
     void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
     void operatorEqReturnError(const Token *tok, const std::string &className);
@@ -171,7 +171,7 @@ private:
         c.unusedPrivateFunctionError(0, "classname", "funcname");
         c.memsetError(0, "memfunc", "classname", "class");
         c.memsetErrorReference(0, "memfunc", "class");
-        c.memsetErrorFloat(0, "memfunc", "class");
+        c.memsetErrorFloat(0, "class");
         c.mallocOnClassWarning(0, "malloc", 0);
         c.mallocOnClassError(0, "malloc", 0, "std::string");
         c.operatorEqReturnError(0, "class");
