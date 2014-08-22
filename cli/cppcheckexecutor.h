@@ -102,13 +102,13 @@ protected:
 
     /**
      * Helper function to print out errors. Appends a line change.
-     * @param errid String used to store errmsg in _errorIdMsgMap
+	 * @param errid String used to store errmsg in _errorIdMsgMap
      * @param errmsg String printed to error stream or stored in _errorIdMsgMap
      */
     void reportErr(const std::string &errmsg, const std::string &errid);
-    /**
+	/**
      * Helper function to print out xml headers and other pieces 
-     * that are not errors. Appends a line change.
+	 * that are not errors. Appends a line change.
      * @param msg String printed to error stream
      */
     void reportNotErr(const std::string &msg);
@@ -127,13 +127,13 @@ protected:
 private:
 
     /**
-    * Wrapper around check_internal
-    *   - installs optional platform dependent signal handling
-    *
-    * * @param cppcheck cppcheck instance
+     * Wrapper around check_internal
+     *   - installs optional platform dependent signal handling
+     *
+     * * @param cppcheck cppcheck instance
     * @param argc from main()
     * @param argv from main()
-    **/
+     **/
     int check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[]);
 
     /**
@@ -159,10 +159,10 @@ private:
      */
     std::set<std::string> _errorList;
 
-    /**
+	/**
      * Used to store error messages to sort them after with --rarest-first
      */
-    std::map<std::string, std::vector<std::string> > _errorIdMsgMap;
+	std::map<std::string, std::set<std::string> > _errorIdMsgMap;
 
     /**
      * Filename associated with size of file
