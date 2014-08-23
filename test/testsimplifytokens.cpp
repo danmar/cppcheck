@@ -2740,8 +2740,8 @@ private:
         ASSERT_EQUALS("; m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; }", tokenizer.tokens()->stringifyList(0, false));
         ASSERT(tokenizer.tokens()->tokAt(26) != nullptr);
         if (tokenizer.tokens()->tokAt(26)) {
-            ASSERT(tokenizer.tokens()->tokAt(6)->link() == tokenizer.tokens()->tokAt(8));
-            ASSERT(tokenizer.tokens()->tokAt(24)->link() == tokenizer.tokens()->tokAt(26));
+            ASSERT(tokenizer.tokens()->linkAt(6) == tokenizer.tokens()->tokAt(8));
+            ASSERT(tokenizer.tokens()->linkAt(24) == tokenizer.tokens()->tokAt(26));
         }
     }
 
