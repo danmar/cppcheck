@@ -5327,6 +5327,24 @@ private:
         check("int foo(char c) {\n"
               "return c == \"42\"[0];}", "test.c", false, true, false, false);
         ASSERT_EQUALS("", errout.str());
+
+		// 5639	String literal compared with char buffer in a struct
+		check("struct Example {\n"
+				"   char buffer[200];\n"
+				"};\n"
+				"void foo() {\n"
+				"   struct Example example;\n"
+				"   if (example.buffer == \"test\") ;\n"
+				"}\n", "test.cpp", false, true, false, false);
+        ASSERT_EQUALS("[test.cpp:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout.str());
+		check("struct Example {\n"
+				"   char buffer[200];\n"
+				"};\n"
+				"void foo() {\n"
+				"   struct Example example;\n"
+				"   if (example.buffer == \"test\") ;\n"
+				"}\n", "test.c", false, true, false, false);
+        ASSERT_EQUALS("[test.c:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout.str());
     }
 
     void suspiciousStringCompare_char() {

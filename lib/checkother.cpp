@@ -2960,7 +2960,7 @@ void CheckOther::checkSuspiciousStringCompare()
             const std::string varname = varTok->expressionString();
 
             if (litTok->type() == Token::eString) {
-                if (_tokenizer->isC() || (var && var->isPointer()))
+				if (_tokenizer->isC() || (var && var->isArrayOrPointer()))
                     suspiciousStringCompareError(tok, varname);
             } else if (litTok->originalName() == "'\\0'" && var && var->isPointer()) {
                 suspiciousStringCompareError_char(tok, varname);
