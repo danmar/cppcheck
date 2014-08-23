@@ -49,6 +49,8 @@ private:
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
+
+        TEST_CASE(garbage);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -410,6 +412,10 @@ private:
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbage() {
+        check("{ } A() { delete }"); // #6080
     }
 };
 

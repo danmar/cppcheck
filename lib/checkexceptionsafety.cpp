@@ -93,7 +93,7 @@ void CheckExceptionSafety::deallocThrow()
             tok = tok->next();
             if (Token::simpleMatch(tok, "[ ]"))
                 tok = tok->tokAt(2);
-            if (!tok)
+            if (!tok || tok == scope->classEnd)
                 break;
             if (!Token::Match(tok, "%var% ;"))
                 continue;
