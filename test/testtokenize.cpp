@@ -10700,6 +10700,7 @@ private:
         ASSERT_EQUALS("aintnew=", testAst("a = new int[4];"));
         ASSERT_EQUALS("aFoonew=", testAst("a = new Foo(bar);"));
         ASSERT_EQUALS("aFoonew=", testAst("a = new Foo<bar>();"));
+        ASSERT_EQUALS("Xnew", testAst("new (a,b,c) X(1,2,3);"));
         ASSERT_EQUALS("adelete", testAst("delete a;"));
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));

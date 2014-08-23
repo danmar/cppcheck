@@ -633,6 +633,8 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
         } else if (state.cpp && Token::Match(tok, "new %var%|::|(")) {
             Token* tok2 = tok;
             tok = tok->next();
+            if (tok->str() == "(" && Token::Match(tok->link(), ") %type%"))
+                tok = tok->link()->next();
             state.op.push(tok);
             while (Token::Match(tok, "%var%|*|&|<|[")) {
                 if (tok->link())
