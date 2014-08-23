@@ -5968,18 +5968,20 @@ void Tokenizer::simplifyIfAndWhileAssign()
 
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous()) {
                     tok3->insertToken(tok2->str());
-                    tok3->next()->varId(tok2->varId());
-
                     Token *newTok = tok3->next();
+
+                    newTok->varId(tok2->varId());
                     newTok->fileIndex(tok2->fileIndex());
                     newTok->linenr(tok2->linenr());
 
-                    // link() newly tokens manually
-                    if (Token::Match(newTok, "}|)|]")) {
-                        braces2.push(newTok);
-                    } else if (Token::Match(newTok, "{|(|[")) {
-                        Token::createMutualLinks(newTok, braces2.top());
-                        braces2.pop();
+                    // link() new tokens manually
+                    if (tok2->link()) {
+                        if (Token::Match(newTok, "}|)|]|>")) {
+                            braces2.push(newTok);
+                        } else {
+                            Token::createMutualLinks(newTok, braces2.top());
+                            braces2.pop();
+                        }
                     }
                 }
             }

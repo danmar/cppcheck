@@ -157,6 +157,7 @@ private:
         TEST_CASE(whileAssign1);
         TEST_CASE(whileAssign2);
         TEST_CASE(whileAssign3); // varid
+        TEST_CASE(whileAssign4); // links
         TEST_CASE(doWhileAssign); // varid
         TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
 
@@ -2725,6 +2726,23 @@ private:
                       "2: int a@1 ;\n"
                       "3: a@1 = x ( ) ; while ( a@1 ) { ; a@1 = x ( ) ; }\n"
                       "4: }\n", tokenizeDebugListing(code, true, "test.c"));
+    }
+
+    void whileAssign4() {
+        errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr("; while (!(m = q->push<Message>(x))) {}");
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        ASSERT_EQUALS("; m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; }", tokenizer.tokens()->stringifyList(0, false));
+        ASSERT(tokenizer.tokens()->tokAt(26) != nullptr);
+        if (tokenizer.tokens()->tokAt(26)) {
+            ASSERT(tokenizer.tokens()->tokAt(6)->link() == tokenizer.tokens()->tokAt(8));
+            ASSERT(tokenizer.tokens()->tokAt(24)->link() == tokenizer.tokens()->tokAt(26));
+        }
     }
 
     void doWhileAssign() {
