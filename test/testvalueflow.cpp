@@ -996,18 +996,6 @@ private:
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
-        code = "void f() {\n"  // #6044 - hang
-               "  decal_t *decal = &decals[i++];\n"
-               "  x = (int)((decal) && (decal->color));\n"
-               "}";
-        testValueOfX(code, 0U, 0);
-
-        code = "void f() {\n" // don't hang in valueFlowForward analysis
-               "  int x = 0;\n"
-               "  f2((char*)a[b?c[x]:x]);\n"
-               "}";
-        testValueOfX(code, 0U, 0);
-
         // TODO: float
         code = "void f(float x) {\n"
                "  if (x == 0.5) {}\n"
