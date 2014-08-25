@@ -895,6 +895,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 continue;
             if (tok->next() == endToken)
                 break;
+            if (Token::simpleMatch(tok, "( { ."))
+                break;
             const Token * const endToken2 = tok->linkAt(1);
             for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : NULL)
                 tok = createAstAtToken(tok, cpp);
