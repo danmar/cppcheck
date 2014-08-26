@@ -231,6 +231,24 @@ static bool bailoutSelfAssignment(const Token * const tok)
     return false;
 }
 
+static bool isReturn(const Token *tok)
+{
+    const Token *prev = tok ? tok->previous() : nullptr;
+    if (Token::simpleMatch(prev, "}") && Token::simpleMatch(prev->link()->tokAt(-2),"} else {"))
+        return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
+    if (Token::simpleMatch(prev, ";")) {
+        // noreturn function
+        if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %var% ("))
+            return true;
+        // return statement
+        prev = prev->previous();
+        while (prev && !Token::Match(prev,"[;{}]"))
+            prev = prev->previous();
+        return Token::Match(prev, "[;{}] return");
+    }
+    return false;
+}
+
 static bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
@@ -1014,6 +1032,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                         bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                     continue;
                 }
+
+                bool isreturn = (codeblock == 1 && isReturn(after));
+
                 if (Token::simpleMatch(after, "} else {")) {
                     after = after->linkAt(2);
                     if (Token::simpleMatch(after->tokAt(-2), ") ; }")) {
@@ -1021,8 +1042,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                             bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                         continue;
                     }
+                    isreturn |= (codeblock == 2 && isReturn(after));
                 }
-                valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, true, tokenlist, errorLogger, settings);
+
+                if (!isreturn)
+                    valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, true, tokenlist, errorLogger, settings);
             }
         }
     }
