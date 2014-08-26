@@ -438,7 +438,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
         // bailout: global non-const variables
         if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
             if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "global variable " + var->nameToken()->str());
+                bailout(tokenlist, errorLogger, tok, "global variable " + var->name());
             continue;
         }
 
@@ -454,7 +454,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 if (isVariableChanged(start,end,varid)) {
                     varid = 0U;
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + " used in loop");
+                        bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
                 }
             }
 
@@ -462,7 +462,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
                 varid = 0U;
                 if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "variable " + var->nameToken()->str() + ", condition is defined in macro");
+                    bailout(tokenlist, errorLogger, tok, "variable " + var->name() + ", condition is defined in macro");
             }
         }
         if (varid == 0U)
@@ -563,7 +563,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             // goto label
             if (Token::Match(tok2, "[;{}] %var% :")) {
                 if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2->next(), "variable " + var->nameToken()->str() + " stopping on goto label");
+                    bailout(tokenlist, errorLogger, tok2->next(), "variable " + var->name() + " stopping on goto label");
                 break;
             }
 
@@ -575,7 +575,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     if (settings->debugwarnings) {
                         std::string errmsg = "variable ";
                         if (var)
-                            errmsg += var->nameToken()->str() + " ";
+                            errmsg += var->name() + " ";
                         errmsg += "stopping on }";
                         bailout(tokenlist, errorLogger, tok2, errmsg);
                     }
@@ -593,7 +593,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                     const Token *end   = start->link();
                     if (isVariableChanged(start,end,varid)) {
                         if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
                         break;
                     }
                 }
@@ -613,7 +613,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
                 // reaching a break/continue/return
                 if (parent) {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " stopping on " + parent->str());
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " stopping on " + parent->str());
                     break;
                 }
             }
@@ -710,13 +710,13 @@ static bool valueFlowForward(Token * const               startToken,
                             break;
                     }
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in conditional code");
                     return false;
                 }
 
                 if (var->isStatic()) {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " bailout when conditional code that contains var is seen");
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " bailout when conditional code that contains var is seen");
                     return false;
                 }
 
@@ -735,7 +735,7 @@ static bool valueFlowForward(Token * const               startToken,
                 (Token::findmatch(start, "return|continue|break|throw", end) ||
                  (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
                 if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + ". noreturn conditional scope.");
                 return false;
             }
 
@@ -749,7 +749,7 @@ static bool valueFlowForward(Token * const               startToken,
                     tok2 = end;
                 } else {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + " is assigned in conditional code");
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in conditional code");
                     return false;
                 }
             }
@@ -777,7 +777,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
             }
             if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok2, "variable " + var->nameToken()->str() + ". noreturn conditional scope.");
+                bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + ". noreturn conditional scope.");
             return false;
         }
 
@@ -1437,14 +1437,14 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 continue;
 
             // Set value in function scope..
-            const unsigned int varid2 = arg->nameToken()->varId();
+            const unsigned int varid2 = arg->declarationId();
             for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%varid% !!=", varid2)) {
                     for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
                         setTokenValue(const_cast<Token*>(tok2), *val);
                 } else if (tok2->str() == "{" || tok2->str() == "?") {
                     if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "parameter " + arg->nameToken()->str() + ", at '" + tok2->str() + "'");
+                        bailout(tokenlist, errorLogger, tok2, "parameter " + arg->name() + ", at '" + tok2->str() + "'");
                     break;
                 }
             }

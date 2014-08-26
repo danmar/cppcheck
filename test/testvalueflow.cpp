@@ -62,6 +62,8 @@ private:
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
         TEST_CASE(valueFlowFunctionReturn);
+
+        TEST_CASE(garbage);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -1234,6 +1236,15 @@ private:
                "    x = 1 * add(10+1,4);\n"
                "}";
         ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
+    }
+
+    void garbage() {
+        // #6089
+        const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
+                           "{\n"
+                           "    (foo(s, , 2, , , 5, , 7)) abort()\n"
+                           "}\n";
+        ASSERT_THROW(valueOfTok(code, "*"), InternalError);
     }
 };
 
