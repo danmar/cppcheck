@@ -830,6 +830,19 @@ static bool checkFunctionUsage(const std::string& name, const Scope* scope)
                 return true;
     }
 
+    for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
+        if (i->isStatic()) {
+            const Token* tok = Token::findmatch(scope->classEnd, "%varid% =|(|{", i->declarationId());
+            if (tok)
+                tok = tok->tokAt(2);
+            while (tok && tok->str() != ";") {
+                if (tok->str() == name && (tok->strAt(-1) == "." || tok->strAt(-2) == scope->className))
+                    return true;
+                tok = tok->next();
+            }
+        }
+    }
+
     return false; // Unused in this scope
 }
 
