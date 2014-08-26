@@ -3298,6 +3298,15 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifyDebugNew();
 
+    // Remove __asm..
+    simplifyAsm();
+
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
+
+    // Split up variable declarations.
+    simplifyVarDecl(false);
+
     // typedef..
     if (m_timerResults) {
         Timer t("Tokenizer::tokenize::simplifyTypedef", _settings->_showtime, m_timerResults);
@@ -3335,9 +3344,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // The simplify enum have inner loops
     if (_settings->terminated())
         return false;
-
-    // Remove __asm..
-    simplifyAsm();
 
     // Put ^{} statements in asm()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -3413,18 +3419,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // struct simplification "struct S {} s; => struct S { } ; S s ;
     simplifyStructDecl();
 
-    // struct initialization (must be used before simplifyVarDecl)
+    // struct initialization (must be used after simplifyVarDecl)
     simplifyStructInit();
-
-    // Change initialisation of variable to assignment
-    simplifyInitVar();
 
     // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
-
-    // Split up variable declarations.
-    simplifyVarDecl(false);
 
     // specify array size.. needed when arrays are split
     arraySize();
@@ -7794,8 +7794,8 @@ void Tokenizer::simplifyEnum()
                                         break;
                                 } else if (tok3->isName() && enumValues.find(tok3->str()) != enumValues.end()) {
                                     const Token *prev = tok3->previous();
-                                    if ((prev->isName() && !Token::Match(prev,"return|case|throw")) ||
-                                        Token::Match(prev, "&|* %type% =")) {
+                                    if ((prev->isName() && !Token::Match(prev, "return|case|throw")) ||
+                                        (Token::Match(prev->previous(), "%type% *|&") && (prev->previous()->isStandardType() || prev->strAt(-1) == "const" || Token::Match(prev->tokAt(-2), ";|{|}")))) {
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
                                         if (inScope && _settings->isEnabled("style")) {
@@ -8876,7 +8876,11 @@ std::string Tokenizer::simplifyString(const std::string &source)
 void Tokenizer::simplifyStructInit()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] struct| %type% %var% = { . %type% =")) {
+        if (Token::Match(tok, "[;{}] struct| %type% %var% ; %var% = { . %type% =")) {
+            tok = Token::findsimplematch(tok->tokAt(3), ";");
+            if (tok->strAt(-1) != tok->strAt(1))
+                continue;
+
             // Goto "." and check if the initializations have an expected format
             const Token *tok2 = tok;
             while (tok2->str() != ".")
@@ -8896,7 +8900,7 @@ void Tokenizer::simplifyStructInit()
                 continue;
 
             // Known expression format => Perform simplification
-            Token *vartok = tok->tokAt(3);
+            Token *vartok = tok->next();
             if (vartok->str() == "=")
                 vartok = vartok->previous();
             vartok->next()->str(";");
@@ -8915,6 +8919,7 @@ void Tokenizer::simplifyStructInit()
                 }
                 tok3->previous()->insertToken(";");
             }
+            vartok->deleteNext(2);
         }
     }
 }

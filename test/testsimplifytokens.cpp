@@ -4342,7 +4342,7 @@ private:
             "class X { } ; "
             "int main ( ) "
             "{ "
-            "X ( * * Foo ) ( const X & ) = new X ( * ) ( const X & ) [ 2 ] ; "
+            "X ( * * Foo ) ( const X & ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -4825,7 +4825,7 @@ private:
 
         // The expected result..
         const std::string expected("class A { public: int i ; } ; "
-                                   "const char ( A :: * t1 ) = & A :: i ;");
+                                   "const char ( A :: * t1 ) ; t1 = & A :: i ;");
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -5048,7 +5048,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected2("void f ( ) { char a [ 256 ] = { 0 } ; char b [ 256 ] = { 0 } ; }");
+        const std::string expected2("void f ( ) { char a [ 256 ] ; a = { 0 } ; char b [ 256 ] ; b = { 0 } ; }");
         ASSERT_EQUALS(expected2, tok(code2, false));
 
         // Check for output..
@@ -5062,7 +5062,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected3("void f ( ) { char a [ 256 ] = \"\" ; char b [ 256 ] = \"\" ; }");
+        const std::string expected3("void f ( ) { char a [ 256 ] ; a = \"\" ; char b [ 256 ] ; b = \"\" ; }");
         ASSERT_EQUALS(expected3, tok(code3, false));
 
         // Check for output..
@@ -5076,7 +5076,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected4("void f ( ) { char a [ 256 ] = \"1234\" ; char b [ 256 ] = \"5678\" ; }");
+        const std::string expected4("void f ( ) { char a [ 256 ] ; a = \"1234\" ; char b [ 256 ] ; b = \"5678\" ; }");
         ASSERT_EQUALS(expected4, tok(code4, false));
 
         // Check for output..
@@ -5254,7 +5254,7 @@ private:
                             "typedef state_func_t (*state_t)(void);\n"
                             "state_t current_state = death;\n"
                             "static char get_runlevel(const state_t);\n";
-        const std::string expected = "long ( * ( * current_state ) ( void ) ) ( void ) = death ; "
+        const std::string expected = "long ( * ( * current_state ) ( void ) ) ( void ) ; current_state = death ; "
                                      "static char get_runlevel ( const long ( * ( * ) ( void ) ) ( void ) ) ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
@@ -7286,9 +7286,9 @@ private:
     }
 
     void initstruct() {
-        ASSERT_EQUALS("; struct A a ; a . buf = 3 ;", tok("; struct A a = { .buf = 3 };"));
-        ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a = { .buf = x };"));
-        ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a = { .buf = &key };"));
+        ASSERT_EQUALS("; struct A a ; a . buf = 3 ;", tok("; struct A a ; a = { .buf = 3 };"));
+        ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a ; a = { .buf = x };"));
+        ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a ; a = { .buf = &key };"));
         ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
         TODO_ASSERT_EQUALS("; struct A a ; a . buf = { 0 } ;",
                            "; struct A a ; a = { . buf = { 0 } } ;",

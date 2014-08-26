@@ -906,7 +906,7 @@ private:
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
-    // ##5780 Various crashes on valid template code in Tokenizer::setVarId()
+    // #5780 Various crashes on valid template code in Tokenizer::setVarId()
     void tokenize33() {
         const char * code = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
                             "void z() {\n"
