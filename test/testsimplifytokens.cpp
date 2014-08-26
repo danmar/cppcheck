@@ -303,6 +303,7 @@ private:
         TEST_CASE(simplifyTypedef105); // ticket #3616
         TEST_CASE(simplifyTypedef106); // ticket #3619
         TEST_CASE(simplifyTypedef107); // ticket #3963 - bad code => segmentation fault
+        TEST_CASE(simplifyTypedef108); // ticket #4777
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5707,6 +5708,21 @@ private:
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
         const char code[] = "typedef int x[]; int main() { return x }";
         ASSERT_THROW(tok(code), InternalError);
+    }
+
+    void simplifyTypedef108() { // ticket #4777
+        const char code[] = "typedef long* GEN;\n"
+                            "void sort_factor(GEN *y, long n) {\n"
+                            "    GEN a, b;\n"
+                            "    foo(a, b);\n"
+                            "}\n";
+        const char expected[] = "void sort_factor ( long * * y , long n ) { "
+                                "long * a ; long * b ; "
+                                "foo ( a , b ) ; "
+                                "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedefFunction1() {
