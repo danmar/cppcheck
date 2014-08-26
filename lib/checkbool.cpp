@@ -202,6 +202,17 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 // Comparing functions which are returning value of type bool
 //-------------------------------------------------------------------------------
 
+static bool tokenIsFunctionReturningBool(const Token* tok)
+{
+    if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), "::|.")) {
+        const Function* func = tok->function();
+        if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CheckBool::checkComparisonOfFuncReturningBool()
 {
     if (!_settings->isEnabled("style"))
@@ -212,42 +223,28 @@ void CheckBool::checkComparisonOfFuncReturningBool()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
+    const std::size_t functionsCount = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functionsCount; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            const Token *first_token = tok->previous();
+            const Token *firstToken = tok->previous();
             if (tok->strAt(-1) == ")") {
-                first_token = first_token->link()->previous();
+                firstToken = firstToken->link()->previous();
             }
-            bool first_token_func_of_type_bool = false;
-            if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
-                const Function* func = first_token->function();
-                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                    first_token_func_of_type_bool = true;
-                }
+            const Token *secondToken = tok->next();
+            while (secondToken->str() == "!") {
+                secondToken = secondToken->next();
             }
-
-            Token *second_token = tok->next();
-            while (second_token->str()=="!") {
-                second_token = second_token->next();
-            }
-            bool second_token_func_of_type_bool = false;
-            if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
-                const Function* func = second_token->function();
-                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                    second_token_func_of_type_bool = true;
-                }
-            }
-
-            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
-                comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
-            } else if (first_token_func_of_type_bool == true) {
-                comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
-            } else if (second_token_func_of_type_bool == true) {
-                comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
+            const bool firstIsFunctionReturningBool = tokenIsFunctionReturningBool(firstToken);
+            const bool secondIsFunctionReturningBool = tokenIsFunctionReturningBool(secondToken);
+            if (firstIsFunctionReturningBool && secondIsFunctionReturningBool) {
+                comparisonOfTwoFuncsReturningBoolError(firstToken->next(), firstToken->str(), secondToken->str());
+            } else if (firstIsFunctionReturningBool) {
+                comparisonOfFuncReturningBoolError(firstToken->next(), firstToken->str());
+            } else if (secondIsFunctionReturningBool) {
+                comparisonOfFuncReturningBoolError(secondToken->previous(), secondToken->str());
             }
         }
     }
