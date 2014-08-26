@@ -912,7 +912,7 @@ private:
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
-        //ASSERT_EQUALS(code, tokenizeAndStringify(code));
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
     void wrong_syntax1() {
