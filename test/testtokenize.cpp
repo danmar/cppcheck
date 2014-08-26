@@ -67,6 +67,7 @@ private:
         TEST_CASE(tokenize30);  // #5356 (segmentation fault upon invalid code)
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
+        TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -902,6 +903,15 @@ private:
     void tokenize32() {
         // Do not simplify negative integer left shifts.
         const char * code = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    // ##5780 Various crashes on valid template code in Tokenizer::setVarId()
+    void tokenize33() {
+        const char * code = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
+            "void z() {\n"
+            "    vector<int> VI;\n"
+            "}\n";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 

@@ -2516,7 +2516,7 @@ void Tokenizer::setVarId()
             }
         } else if (tok->str() == "}") {
             // parse anonymous unions as part of the current scope
-            if (!(Token::simpleMatch(tok, "} ;") && Token::simpleMatch(tok->link()->previous(), "union {"))) {
+            if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::simpleMatch(tok->link()->previous(), "union {"))) {
                 // Set variable ids in class declaration..
                 if (!isC() && !executableScope.top() && tok->link()) {
                     setVarIdClassDeclaration(tok->link(),
