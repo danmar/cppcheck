@@ -811,6 +811,15 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0)); // x is not 0 at line 6
 
+        code = "void f(int x1) {\n" // #6086
+               "  int x = x1;\n"
+               "  if (x1 >= 3) {\n"
+               "    return;\n"
+               "  }\n"
+               "  a = x;\n"  // <- x is not 3
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
+
         // break
         code = "void f() {\n"
                "  for (;;) {\n"
@@ -1006,15 +1015,6 @@ private:
                "  a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 5));
-
-        code = "void f(int x1) {\n" // #6086
-               "  int x = x1;\n"
-               "  if (x1 >= 3) {\n"
-               "    return;\n"
-               "  }\n"
-               "  a = x;\n"
-               "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
 
         // TODO: float
         code = "void f(float x) {\n"
