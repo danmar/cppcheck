@@ -153,6 +153,11 @@ static std::map<unsigned int, MathLib::bigint> getProgramMemory(const Token *tok
             if (vartok->varId() != 0U && programMemory.find(vartok->varId()) == programMemory.end())
                 programMemory[vartok->varId()] = MathLib::toLongNumber(numtok->str());
         }
+        if (Token::Match(tok2, "[;{}] %varid% = %var% ;", varid)) {
+            const Token *vartok = tok2->tokAt(3);
+            if (vartok->varId() != 0U)
+                programMemory[vartok->varId()] = value.intvalue;
+        }
         if (tok2->str() == "{") {
             if (indentlevel <= 0)
                 break;
@@ -658,8 +663,24 @@ static bool valueFlowForward(Token * const               startToken,
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (indentlevel >= 0 && tok2->str() == "{")
             ++indentlevel;
-        else if (indentlevel >= 0 && tok2->str() == "}")
+        else if (indentlevel >= 0 && tok2->str() == "}") {
             --indentlevel;
+            if (indentlevel == 0 && isReturn(tok2) && Token::simpleMatch(tok2->link()->previous(), ") {")) {
+                const Token *condition = tok2->link()->linkAt(-1)->astOperand2();
+                bool bailoutflag = false;
+                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+                    if (conditionIsTrue(condition, getProgramMemory(condition->astParent(), varid, *it))) {
+                        bailoutflag = true;
+                        break;
+                    }
+                }
+                if (bailoutflag) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, conditional return is assumed to be executed");
+                    return false;
+                }
+            }
+        }
 
         if (Token::Match(tok2, "sizeof|typeof|typeid ("))
             tok2 = tok2->linkAt(1);

@@ -998,14 +998,23 @@ private:
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
-        // stop at return
-        code = "void f(int x) {\n"
+        // return
+        code = "void f(int x) {\n" // #6024
                "  if (x == 5) {\n"
                "    if (z) return; else return;\n"
                "  }\n"
                "  a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 5));
+
+        code = "void f(int x1) {\n" // #6086
+               "  int x = x1;\n"
+               "  if (x1 >= 3) {\n"
+               "    return;\n"
+               "  }\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
 
         // TODO: float
         code = "void f(float x) {\n"
