@@ -58,7 +58,6 @@ public:
         checkOther.invalidPointerCast();
         checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
-        checkOther.strPlusChar();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
         checkOther.checkSuspiciousCaseInSwitch();
@@ -70,7 +69,6 @@ public:
         checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
-        checkOther.checkSuspiciousStringCompare();
         checkOther.checkVarFuncNullUB();
         checkOther.checkNanInArithmeticExpression();
         checkOther.checkCommaSeparatedReturn();
@@ -97,9 +95,7 @@ public:
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkMemsetInvalid2ndParam();
-        checkOther.checkIncorrectStringCompare();
         checkOther.checkSwitchCaseFallThrough();
-        checkOther.checkAlwaysTrueOrFalseStringCompare();
         checkOther.checkModuloAlwaysTrueFalse();
         checkOther.checkPipeParameterSize();
 
@@ -158,9 +154,6 @@ public:
     /** @brief Incomplete statement. A statement that only contains a constant or variable */
     void checkIncompleteStatement();
 
-    /** @brief str plus char (unusual pointer arithmetic) */
-    void strPlusChar();
-
     /** @brief %Check zero division*/
     void checkZeroDivision();
 
@@ -203,12 +196,6 @@ public:
     /** @brief %Check for invalid 2nd parameter of memset() */
     void checkMemsetInvalid2ndParam();
 
-    /** @brief %Check for using bad usage of strncmp and substr */
-    void checkIncorrectStringCompare();
-
-    /** @brief %Check for comparison of a string literal with a char* variable */
-    void checkSuspiciousStringCompare();
-
     /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
     void checkDuplicateIf();
 
@@ -217,9 +204,6 @@ public:
 
     /** @brief %Check for suspicious code with the same expression on both sides of operator (e.g "if (a && a)") */
     void checkDuplicateExpression();
-
-    /** @brief %Check for suspicious code that compares string literals for equality */
-    void checkAlwaysTrueOrFalseStringCompare();
 
     /** @brief %Check for suspicious usage of modulo (e.g. "if(var % 4 == 4)") */
     void checkModuloAlwaysTrueFalse();
@@ -277,7 +261,6 @@ private:
     void redundantGetAndSetUserIdError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void udivError(const Token *tok, bool inconclusive);
@@ -286,7 +269,6 @@ private:
     void charArrayIndexError(const Token *tok);
     void charBitOpError(const Token *tok);
     void variableScopeError(const Token *tok, const std::string &varname);
-    void strPlusCharError(const Token *tok);
     void zerodivError(const Token *tok, bool inconclusive);
     void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
@@ -306,15 +288,11 @@ private:
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
-    void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
-    void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void suspiciousStringCompareError(const Token* tok, const std::string& var);
-    void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -334,7 +312,6 @@ private:
         CheckOther c(0, settings, errorLogger);
 
         // error
-        c.sprintfOverlappingDataError(0, "varname");
         c.invalidFunctionArgError(0, "func_name", 1, "1-4");
         c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.udivError(0, false);
@@ -362,7 +339,6 @@ private:
         c.charArrayIndexError(0);
         c.charBitOpError(0);
         c.variableScopeError(0, "varname");
-        c.strPlusCharError(0);
         c.redundantAssignmentInSwitchError(0, 0, "var");
         c.redundantCopyInSwitchError(0, 0, "var");
         c.switchCaseFallThrough(0);
@@ -377,14 +353,8 @@ private:
         c.clarifyCalculationError(0, "+");
         c.clarifyConditionError(0, true, false);
         c.clarifyStatementError(0);
-        c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
-        c.suspiciousStringCompareError(0, "foo");
-        c.suspiciousStringCompareError_char(0, "foo");
-        c.incorrectStringBooleanError(0, "\"Hello World\"");
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
-        c.alwaysTrueFalseStringCompareError(0, "str1", "str2");
-        c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
         c.duplicateBreakError(0, false);
         c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
@@ -411,7 +381,6 @@ private:
                "* division with zero\n"
                "* scoped object destroyed immediately after construction\n"
                "* assignment in an assert statement\n"
-               "* incorrect length arguments for 'substr' and 'strncmp'\n"
                "* free() or delete of an invalid memory location\n"
                "* double free() or double closedir()\n"
                "* bitwise operation with negative right operand\n"
@@ -453,9 +422,6 @@ private:
                "* Comparison of values leading always to true or false\n"
                "* Clarify calculation with parentheses\n"
                "* suspicious condition (assignment+comparison)\n"
-               "* suspicious condition (runtime comparison of string literals)\n"
-               "* suspicious condition (string literals as boolean)\n"
-               "* suspicious comparison of a string literal with a char* variable\n"
                "* suspicious comparison of '\\0' with a char* variable\n"
                "* duplicate break statement\n"
                "* unreachable code\n"

@@ -137,6 +137,9 @@
     <ClCompile Include="checkvaarg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -269,6 +272,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkvaarg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

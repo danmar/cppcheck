@@ -45,6 +45,7 @@
     <ClCompile Include="checkboost.cpp" />
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
+    <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkinternal.cpp" />
     <ClCompile Include="checkio.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="checkboost.h" />
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
+    <ClInclude Include="checkstring.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkinternal.h" />
     <ClInclude Include="checkio.h" />
