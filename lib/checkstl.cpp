@@ -550,11 +550,12 @@ void CheckStl::pushback()
             if (Token::Match(tok, "%var% = & %var% [")) {
                 // Variable id for pointer
                 const unsigned int pointerId(tok->varId());
+                if( pointerId == 0 )
+                    continue;
 
                 // Variable id for the container variable
                 const unsigned int containerId(tok->tokAt(3)->varId());
-
-                if (pointerId == 0 || containerId == 0)
+                if (containerId == 0)
                     continue;
 
                 bool invalidPointer = false;
