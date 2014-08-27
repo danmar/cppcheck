@@ -550,7 +550,7 @@ void CheckStl::pushback()
             if (Token::Match(tok, "%var% = & %var% [")) {
                 // Variable id for pointer
                 const unsigned int pointerId(tok->varId());
-                if( pointerId == 0 )
+                if (pointerId == 0)
                     continue;
 
                 // Variable id for the container variable
