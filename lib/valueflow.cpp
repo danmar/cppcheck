@@ -667,6 +667,12 @@ static bool valueFlowForward(Token * const               startToken,
             --indentlevel;
             if (indentlevel == 0 && isReturn(tok2) && Token::simpleMatch(tok2->link()->previous(), ") {")) {
                 const Token *condition = tok2->link()->linkAt(-1)->astOperand2();
+                if (!condition) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, bailing out since it's unknown if conditional return is executed");
+                    return false;
+                }
+
                 bool bailoutflag = false;
                 for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
                     if (conditionIsTrue(condition, getProgramMemory(condition->astParent(), varid, *it))) {
