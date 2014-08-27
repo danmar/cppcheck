@@ -2562,6 +2562,12 @@ private:
 
         check("void f(char * p,char * q){ strtol (p,q,0);if(!p){}}");
         ASSERT_EQUALS(errp,errout.str());
+
+        // #6100 False positive nullPointer - calling mbstowcs(NULL,)
+        check("size_t get (char *value) { return mbstowcs (NULL, value, 0); }");
+        ASSERT_EQUALS("",errout.str());
+        check("size_t get (wchar_t *value) { return wcstombs (NULL, value, 0); }");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void nullpointerFputc() {
