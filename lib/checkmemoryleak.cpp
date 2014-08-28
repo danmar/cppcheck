@@ -1935,8 +1935,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok) const
                     if (Token::Match(_tok, "if return|break use| ;"))
                         _tok = _tok->tokAt(2);
 
-                    incase |= (_tok->str() == "case");
-                    incase &= (_tok->str() != "break" && _tok->str() != "return");
+                    incase = incase || (_tok->str() == "case");
+                    incase = incase && (_tok->str() != "break" && _tok->str() != "return");
                 }
 
                 if (!incase && valid) {
@@ -2121,26 +2121,26 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
     }
 
     // detect cases that "simplifycode" don't handle well..
-    else if (_settings->debugwarnings) {
+    else if (tok && _settings->debugwarnings) {
         Token *first = tok;
         while (first && first->str() == ";")
             first = first->next();
 
         bool noerr = false;
-        noerr |= Token::simpleMatch(first, "alloc ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; dealloc ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; return use ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; use ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; use ; return ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; dealloc ; return ; }");
-        noerr |= Token::simpleMatch(first, "if alloc ; dealloc ; }");
-        noerr |= Token::simpleMatch(first, "if alloc ; return use ; }");
-        noerr |= Token::simpleMatch(first, "if alloc ; use ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; ifv return ; dealloc ; }");
-        noerr |= Token::simpleMatch(first, "alloc ; if return ; dealloc; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; dealloc ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; return use ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; use ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; use ; return ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; dealloc ; return ; }");
+        noerr = noerr || Token::simpleMatch(first, "if alloc ; dealloc ; }");
+        noerr = noerr || Token::simpleMatch(first, "if alloc ; return use ; }");
+        noerr = noerr || Token::simpleMatch(first, "if alloc ; use ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; ifv return ; dealloc ; }");
+        noerr = noerr || Token::simpleMatch(first, "alloc ; if return ; dealloc; }");
 
         // Unhandled case..
-        if (!noerr && tok) {
+        if (!noerr) {
             std::ostringstream errmsg;
             errmsg << "inconclusive leak of " << varname << ": ";
             errmsg << tok->stringifyList(false, false, false, false, false, 0, 0);
