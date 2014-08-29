@@ -5,7 +5,6 @@ INCLUDEPATH += ../externals/tinyxml
 
 SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testassert.cpp \
-           $${BASEPATH}/testassignif.cpp \
            $${BASEPATH}/testautovariables.cpp \
            $${BASEPATH}/testbool.cpp \
            $${BASEPATH}/testboost.cpp \
@@ -13,6 +12,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testcharvar.cpp \
            $${BASEPATH}/testclass.cpp \
            $${BASEPATH}/testcmdlineparser.cpp \
+           $${BASEPATH}/testcondition.cpp \
            $${BASEPATH}/testconstructors.cpp \
            $${BASEPATH}/testcppcheck.cpp \
            $${BASEPATH}/testdivision.cpp \

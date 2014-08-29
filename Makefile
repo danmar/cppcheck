@@ -118,12 +118,12 @@ MAN_SOURCE=man/cppcheck.1.xml
 LIBOBJ =      $(SRCDIR)/check.o \
               $(SRCDIR)/check64bit.o \
               $(SRCDIR)/checkassert.o \
-              $(SRCDIR)/checkassignif.o \
               $(SRCDIR)/checkautovariables.o \
               $(SRCDIR)/checkbool.o \
               $(SRCDIR)/checkboost.o \
               $(SRCDIR)/checkbufferoverrun.o \
               $(SRCDIR)/checkclass.o \
+              $(SRCDIR)/checkcondition.o \
               $(SRCDIR)/checkexceptionsafety.o \
               $(SRCDIR)/checkinternal.o \
               $(SRCDIR)/checkio.o \
@@ -168,7 +168,6 @@ CLIOBJ =      cli/cmdlineparser.o \
 TESTOBJ =     test/options.o \
               test/test64bit.o \
               test/testassert.o \
-              test/testassignif.o \
               test/testautovariables.o \
               test/testbool.o \
               test/testboost.o \
@@ -176,6 +175,7 @@ TESTOBJ =     test/options.o \
               test/testcharvar.o \
               test/testclass.o \
               test/testcmdlineparser.o \
+              test/testcondition.o \
               test/testconstructors.o \
               test/testcppcheck.o \
               test/testdivision.o \
@@ -283,9 +283,6 @@ $(SRCDIR)/check64bit.o: lib/check64bit.cpp lib/cxx11emu.h lib/check64bit.h lib/c
 $(SRCDIR)/checkassert.o: lib/checkassert.cpp lib/cxx11emu.h lib/checkassert.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkassert.o $(SRCDIR)/checkassert.cpp
 
-$(SRCDIR)/checkassignif.o: lib/checkassignif.cpp lib/cxx11emu.h lib/checkassignif.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkassignif.o $(SRCDIR)/checkassignif.cpp
-
 $(SRCDIR)/checkautovariables.o: lib/checkautovariables.cpp lib/cxx11emu.h lib/checkautovariables.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkautovariables.o $(SRCDIR)/checkautovariables.cpp
 
@@ -300,6 +297,9 @@ $(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/cxx11emu.h lib/ch
 
 $(SRCDIR)/checkclass.o: lib/checkclass.cpp lib/cxx11emu.h lib/checkclass.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkclass.o $(SRCDIR)/checkclass.cpp
+
+$(SRCDIR)/checkcondition.o: lib/checkcondition.cpp lib/cxx11emu.h lib/checkcondition.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/checkother.h lib/symboldatabase.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkcondition.o $(SRCDIR)/checkcondition.cpp
 
 $(SRCDIR)/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/cxx11emu.h lib/checkexceptionsafety.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkexceptionsafety.o $(SRCDIR)/checkexceptionsafety.cpp
@@ -427,9 +427,6 @@ test/test64bit.o: test/test64bit.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogg
 test/testassert.o: test/testassert.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassert.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testassert.o test/testassert.cpp
 
-test/testassignif.o: test/testassignif.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkassignif.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
-	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testassignif.o test/testassignif.cpp
-
 test/testautovariables.o: test/testautovariables.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkautovariables.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testautovariables.o test/testautovariables.cpp
 
@@ -450,6 +447,9 @@ test/testclass.o: test/testclass.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogg
 
 test/testcmdlineparser.o: test/testcmdlineparser.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
+
+test/testcondition.o: test/testcondition.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkcondition.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testcondition.o test/testcondition.cpp
 
 test/testconstructors.o: test/testconstructors.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testconstructors.o test/testconstructors.cpp

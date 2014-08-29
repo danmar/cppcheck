@@ -9,12 +9,12 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}check.h \
            $${BASEPATH}check64bit.h \
            $${BASEPATH}checkassert.h \
-           $${BASEPATH}checkassignif.h \
            $${BASEPATH}checkautovariables.h \
            $${BASEPATH}checkbool.h \
            $${BASEPATH}checkboost.h \
            $${BASEPATH}checkbufferoverrun.h \
            $${BASEPATH}checkclass.h \
+           $${BASEPATH}checkcondition.h \
            $${BASEPATH}checkexceptionsafety.h \
            $${BASEPATH}checkinternal.h \
            $${BASEPATH}checkio.h \
@@ -53,12 +53,12 @@ HEADERS += $${BASEPATH}check.h \
 SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkassert.cpp \
-           $${BASEPATH}checkassignif.cpp \
            $${BASEPATH}checkautovariables.cpp \
            $${BASEPATH}checkbool.cpp \
            $${BASEPATH}checkboost.cpp \
            $${BASEPATH}checkbufferoverrun.cpp \
            $${BASEPATH}checkclass.cpp \
+           $${BASEPATH}checkcondition.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \
            $${BASEPATH}checkinternal.cpp \
            $${BASEPATH}checkio.cpp \
