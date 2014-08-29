@@ -31,6 +31,9 @@ class Variable;
 /** Is expressions same? */
 bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
 
+/** Is expression of floating point type? */
+bool astIsFloat(const Token *tok, bool unknown);
+
 
 /// @addtogroup Checks
 /// @{
@@ -66,7 +69,6 @@ public:
         checkOther.checkUnreachableCode();
         checkOther.checkSuspiciousSemicolon();
         checkOther.checkVariableScope();
-        checkOther.clarifyCondition();   // not simplified because ifAssign
         checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
         checkOther.checkIncompleteArrayFill();
         checkOther.checkVarFuncNullUB();
@@ -79,7 +81,6 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
-        checkOther.oppositeInnerCondition();
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
@@ -91,12 +92,10 @@ public:
         checkOther.checkMathFunctions();
 
         checkOther.redundantGetAndSetUserId();
-        checkOther.checkIncorrectLogicOperator();
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkMemsetInvalid2ndParam();
         checkOther.checkSwitchCaseFallThrough();
-        checkOther.checkModuloAlwaysTrueFalse();
         checkOther.checkPipeParameterSize();
 
         checkOther.checkInvalidFree();
@@ -107,14 +106,8 @@ public:
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
 
-    /** To check the dead code in a program, which is inaccessible due to the counter-conditions check in nested-if statements **/
-    void oppositeInnerCondition();
-
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
-
-    /** @brief Suspicious condition (assignment+comparison) */
-    void clarifyCondition();
 
     /** @brief Suspicious statement like '*A++;' */
     void clarifyStatement();
@@ -184,9 +177,6 @@ public:
     /** @brief %Check for switch case fall through without comment */
     void checkSwitchCaseFallThrough();
 
-    /** @brief %Check for testing for mutual exclusion over ||*/
-    void checkIncorrectLogicOperator();
-
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
 
@@ -204,9 +194,6 @@ public:
 
     /** @brief %Check for suspicious code with the same expression on both sides of operator (e.g "if (a && a)") */
     void checkDuplicateExpression();
-
-    /** @brief %Check for suspicious usage of modulo (e.g. "if(var % 4 == 4)") */
-    void checkModuloAlwaysTrueFalse();
 
     /** @brief %Check for code that gets never executed, such as duplicate break statements */
     void checkUnreachableCode();
@@ -254,9 +241,7 @@ private:
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
-    void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
     void clarifyCalculationError(const Token *tok, const std::string &op);
-    void clarifyConditionError(const Token *tok, bool assign, bool boolop);
     void clarifyStatementError(const Token* tok);
     void redundantGetAndSetUserIdError(const Token *tok);
     void cstyleCastError(const Token *tok);
@@ -282,8 +267,6 @@ private:
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
-    void redundantConditionError(const Token *tok, const std::string &text);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void memsetFloatError(const Token *tok, const std::string &var_value);
@@ -301,7 +284,6 @@ private:
     void pointerPositiveError(const Token *tok, bool inconclusive);
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
-    void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
     void negativeBitwiseShiftError(const Token *tok);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
@@ -332,7 +314,6 @@ private:
         // style/warning
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(0,"isless","varName",false);
         c.checkCastIntToCharAndBackError(0,"func_name");
-        c.oppositeInnerConditionError(0, 0);
         c.cstyleCastError(0);
         c.passedByValueError(0, "parametername");
         c.constStatementError(0, "type");
@@ -345,13 +326,10 @@ private:
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
-        c.incorrectLogicOperatorError(0, "foo > 3 && foo < 4", true);
-        c.redundantConditionError(0, "If x > 11 the condition x > 10 is always true.");
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
         c.clarifyCalculationError(0, "+");
-        c.clarifyConditionError(0, true, false);
         c.clarifyStatementError(0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
@@ -362,7 +340,6 @@ private:
         c.pointerLessThanZeroError(0, false);
         c.pointerPositiveError(0, false);
         c.SuspiciousSemicolonError(0);
-        c.moduloAlwaysTrueFalseError(0, "1");
         c.incompleteArrayFillError(0, "buffer", "memset", false);
         c.varFuncNullUBError(0);
         c.nanInArithmeticExpressionError(0);
@@ -400,7 +377,6 @@ private:
                "* memset() with a float as the 2nd parameter\n"
 
                // style
-               "* Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"
@@ -409,7 +385,6 @@ private:
                "* [[IncompleteStatement|Incomplete statement]]\n"
                "* [[charvar|check how signed char variables are used]]\n"
                "* variable scope can be limited\n"
-               "* condition that is always true/false\n"
                "* unusual pointer arithmetic. For example: \"abc\" + 'd'\n"
                "* redundant assignment in a switch statement\n"
                "* redundant pre/post operation in a switch statement\n"
@@ -418,17 +393,14 @@ private:
                "* assignment of a variable to itself\n"
                "* Suspicious case labels in switch()\n"
                "* Suspicious equality comparisons\n"
-               "* mutual exclusion over || always evaluating to true\n"
                "* Comparison of values leading always to true or false\n"
                "* Clarify calculation with parentheses\n"
-               "* suspicious condition (assignment+comparison)\n"
                "* suspicious comparison of '\\0' with a char* variable\n"
                "* duplicate break statement\n"
                "* unreachable code\n"
                "* testing if unsigned variable is negative\n"
                "* testing is unsigned variable is positive\n"
                "* Suspicious use of ; at the end of 'if/for/while' statement.\n"
-               "* Comparisons of modulo results that are always true/false.\n"
                "* Array filled incompletely using memset/memcpy/memmove.\n"
                "* redundant get and set function of user id (--std=posix).\n"
                "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"

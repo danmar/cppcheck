@@ -32,7 +32,6 @@
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassert.cpp" />
-    <ClCompile Include="testassignif.cpp" />
     <ClCompile Include="testautovariables.cpp" />
     <ClCompile Include="testbool.cpp" />
     <ClCompile Include="testboost.cpp" />
@@ -40,6 +39,7 @@
     <ClCompile Include="testcharvar.cpp" />
     <ClCompile Include="testclass.cpp" />
     <ClCompile Include="testcmdlineparser.cpp" />
+    <ClCompile Include="testcondition.cpp" />
     <ClCompile Include="testconstructors.cpp" />
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testdivision.cpp" />

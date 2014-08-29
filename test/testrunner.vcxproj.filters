@@ -25,9 +25,6 @@
     <ClCompile Include="test64bit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testassignif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -188,6 +185,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="teststring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testcondition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

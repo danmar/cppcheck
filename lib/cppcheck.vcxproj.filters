@@ -95,9 +95,6 @@
     <ClCompile Include="checkboost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkassignif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="checkinternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -138,6 +135,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkcondition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -226,9 +226,6 @@
     <ClInclude Include="check64bit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checkassignif.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="checkautovariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -275,6 +272,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkcondition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
