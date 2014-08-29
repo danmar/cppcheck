@@ -80,8 +80,7 @@ private:
         settings.addEnabled("warning");
 
         // Preprocess file..
-        SimpleSuppressor logger(settings, this);
-        Preprocessor preprocessor(&settings, &logger);
+        Preprocessor preprocessor(&settings, this);
         std::list<std::string> configurations;
         std::string filedata;
         std::istringstream fin(precode);
@@ -89,15 +88,13 @@ private:
         const std::string code = preprocessor.getcode(filedata, "", "test.cpp");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, &logger);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check..
-        CheckString checkString(&tokenizer, &settings, &logger);
+        CheckString checkString(&tokenizer, &settings, this);
         checkString.checkAlwaysTrueOrFalseStringCompare();
-
-        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions("test.cpp"));
     }
 
     void alwaysTrueFalseStringCompare() {
