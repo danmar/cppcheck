@@ -1146,7 +1146,7 @@ private:
         check("void f() { a(x<y|z,0); }", true, "test.c");  // filename is c => there are never templates
         ASSERT_EQUALS("[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
 
-        check("class A<B&,C>;", "test.C");
+        check("class A<B&,C>;", true, "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
