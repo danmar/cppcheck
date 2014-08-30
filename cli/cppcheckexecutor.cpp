@@ -529,7 +529,7 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
         if (_tcscmp(undname, _T("main"))==0)
             beyond_main=0;
         fprintf(f,
-                "%lu. 0x%08LX in ",
+                "%lu. 0x%08I64X in ",
                 frame, (ULONG64)stack.AddrPC.Offset);
         fputs((const char *)undname, f);
         fputs("\n", f);
