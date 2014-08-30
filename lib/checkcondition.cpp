@@ -252,8 +252,6 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
 
-extern bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
-
 static bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
 {
     if (!cond1 || !cond2)
