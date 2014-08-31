@@ -176,7 +176,7 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
-                    if (Token::simpleMatch(tok, "fflush ( stdin )"))
+                    if (_settings->isEnabled("portability") && Token::simpleMatch(tok, "fflush ( stdin )"))
                         fflushOnInputStreamError(tok, tok->strAt(2));
                     else {
                         fileTok = tok->tokAt(2);
@@ -297,8 +297,8 @@ void CheckIO::checkFileUsage()
 
 void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error,
-                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' results in undefined behaviour.");
+    reportError(tok, Severity::portability,
+                "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.");
 }
 
 void CheckIO::ioWithoutPositioningError(const Token *tok)
