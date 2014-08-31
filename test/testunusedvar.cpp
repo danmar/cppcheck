@@ -156,6 +156,8 @@ private:
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
         TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
 
+        TEST_CASE(chainedAssignment); // #5466
+
         TEST_CASE(crash1);
         TEST_CASE(crash2);
         TEST_CASE(usingNamespace);     // #4585
@@ -3769,6 +3771,16 @@ private:
                               " if (i<3)\n"
                               "     goto start;\n"
                               " return i;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void chainedAssignment() {
+        // #5466
+        functionVariableUsage("void NotUsed(double* pdD, int n) {\n"
+                              "    double sum = 0.0;\n"
+                              "    for (int i = 0; i<n; ++i)\n"
+                              "        pdD[i] = (sum += pdD[i]);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
