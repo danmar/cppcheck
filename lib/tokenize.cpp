@@ -9223,7 +9223,9 @@ void Tokenizer::simplifyDeclspec()
                 if (tok1) {
                     tok1->isDeclspecNothrow(true);
                 }
-            }
+            } else if (tok->strAt(2) == "property")
+                tok->next()->link()->insertToken("__property");
+
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }
