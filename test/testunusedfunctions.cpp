@@ -51,6 +51,7 @@ private:
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
         TEST_CASE(initializer_list);
         TEST_CASE(member_function_ternary);
+        TEST_CASE(boost);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -310,6 +311,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void boost() {
+        check("static void _xy(const char *b, const char *e)\n"
+              "{}\n"
+              "parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void multipleFiles() {
         CheckUnusedFunctions c;
