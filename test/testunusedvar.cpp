@@ -3686,6 +3686,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void f() {\n"
+                              "    pLocker = std::shared_ptr<jfxLocker>(new jfxLocker(m_lock, true));\n" // Could have side-effects (#4355)
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
                               "    std::mutex m;\n"
                               "    std::unique_lock<std::mutex> lock(m);\n" // #4624
                               "}");
