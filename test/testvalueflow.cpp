@@ -1263,6 +1263,10 @@ private:
                            "    (foo(s, , 2, , , 5, , 7)) abort()\n"
                            "}\n";
         ASSERT_THROW(valueOfTok(code, "*"), InternalError);
+
+        // #6106
+        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
+        valueOfTok(code, "*");
     }
 };
 

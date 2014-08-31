@@ -1413,6 +1413,8 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
             continue;
 
         Token * const bodyStart = tok->linkAt(1)->next();
+        if (!bodyStart->link() || bodyStart->str() != "{")
+            continue;
 
         unsigned int varid(0);
         MathLib::bigint num1(0), num2(0), numAfter(0);
