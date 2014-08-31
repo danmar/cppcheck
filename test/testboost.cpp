@@ -97,6 +97,16 @@ private:
               "        data.insert(i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Break after modification (#4788)
+        check("void f() {\n"
+              "    vector<int> data;\n"
+              "    BOOST_FOREACH(int i, data) {\n"
+              "        data.push_back(123);\n"
+              "        break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

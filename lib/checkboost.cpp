@@ -46,7 +46,9 @@ void CheckBoost::checkBoostForeachModification()
             const Token *end = tok2->link();
             for (; tok2 != end; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%varid% . insert|erase|push_back|push_front|pop_front|pop_back|clear|swap|resize|assign|merge|remove|remove_if|reverse|sort|splice|unique|pop|push", container_id)) {
-                    boostForeachError(tok2);
+                    const Token* nextStatement = Token::findsimplematch(tok2->linkAt(3), ";", end);
+                    if (!Token::Match(nextStatement, "; break|return|throw"))
+                        boostForeachError(tok2);
                     break;
                 }
             }
