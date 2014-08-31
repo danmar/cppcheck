@@ -171,6 +171,7 @@ private:
         TEST_CASE(array_index_44); // #3979
         TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
         TEST_CASE(array_index_46); // #4840 - two-statement for loop
+        TEST_CASE(array_index_47); // #5849
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1594,6 +1595,16 @@ private:
               "    for(unsigned long int i=10; i--;) {\n"
               "        buffer[i] = i;\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_47() {
+        // #5849
+        check("int s[4];\n"
+              "void f() {\n"
+              "    for (int i = 2; i < 0; i++)\n"
+              "        s[i] = 5; \n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
