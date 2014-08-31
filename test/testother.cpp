@@ -1317,6 +1317,15 @@ private:
         testPassedByValue("void log(const std::string& file, int line, const std::string& function, const std::string str, ...) {}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5534
+        testPassedByValue("struct float3 { };\n"
+                          "typedef float3 vec;\n"
+                          "class Plane {\n"
+                          "    vec Refract(vec &vec) const;\n"
+                          "    bool IntersectLinePlane(const vec &planeNormal);\n"
+                          "}; ");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void mathfunctionCall_sqrt() {
