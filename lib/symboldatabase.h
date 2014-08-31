@@ -656,7 +656,7 @@ public:
         const Scope *scope;
     };
 
-    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch };
+    enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);

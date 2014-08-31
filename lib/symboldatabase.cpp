@@ -756,7 +756,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, tok1));
                     else if (tok->str() == "catch") {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
-                    } else if (tok->str() == "switch")
+                    } else // if (tok->str() == "switch")
                         scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, tok1));
 
                     scope->nestedList.push_back(&scopeList.back());
@@ -767,7 +767,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->checkVariable(tok->tokAt(2), Throw); // check for variable declaration and add it to new scope if found
                     tok = tok1;
                 } else if (tok->str() == "{" && !tok->previous()->varId()) {
-                    if (!Token::Match(tok->previous(), "=|,")) {
+                    if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
+                        scopeList.push_back(Scope(this, tok->linkAt(-1)->linkAt(-1), scope, Scope::eLambda, tok));
+                        scope->nestedList.push_back(&scopeList.back());
+                        scope = &scopeList.back();
+                    } else if (!Token::Match(tok->previous(), "=|,")) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
@@ -1798,6 +1802,7 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
           type == Scope::eTry ? "Try" :
           type == Scope::eCatch ? "Catch" :
           type == Scope::eUnconditional ? "Unconditional" :
+          type == Scope::eLambda ? "Lambda" :
           "Unknown");
     return s;
 }

@@ -250,6 +250,8 @@ private:
         TEST_CASE(varTypesOther);    // (un)known
 
         TEST_CASE(functionPrototype); // ticket #5867
+
+        TEST_CASE(lambda); // ticket #5867
     }
 
     void array() const {
@@ -2468,6 +2470,28 @@ private:
               "    return func4(x);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void lambda() {
+        GET_SYMBOL_DB("void func() {\n"
+                      "    float y = 0.0f;\n"
+                      "    auto lambda = [&]()\n"
+                      "    {\n"
+                      "        float x = 1.0f;\n"
+                      "        y += 10.0f - x;\n"
+                      "    }\n"
+                      "    lambda();\n"
+                      "}");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        if (db && db->scopeList.size() == 3) {
+            std::list<Scope>::const_iterator scope = db->scopeList.begin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eLambda, scope->type);
+        }
     }
 };
 
