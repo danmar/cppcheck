@@ -181,13 +181,14 @@ void CheckIO::checkFileUsage()
                            (windows && tok->str() == "_fseeki64")) {
                     if (_settings->isEnabled("portability") && tok->str() == "fflush") {
                         fileTok = tok->tokAt(2);
-
-                        if (fileTok && fileTok->str() == "stdin")
-                            fflushOnInputStreamError(tok, fileTok->str());
-                        else {
-                            Filepointer& f = filepointers[fileTok->varId()];
-                            if (f.mode == READ_MODE)
+                        if (fileTok) {
+                            if (fileTok->str() == "stdin")
                                 fflushOnInputStreamError(tok, fileTok->str());
+                            else {
+                                Filepointer& f = filepointers[fileTok->varId()];
+                                if (f.mode == READ_MODE)
+                                    fflushOnInputStreamError(tok, fileTok->str());
+                            }
                         }
                     }
 
