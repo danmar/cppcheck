@@ -2991,6 +2991,13 @@ private:
               "    per_state_info() : enter(0), exit(0), events(0) {}\n"
               "};", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // Garbage code - don't crash
+        check("namespace pr16989 {\n"
+              "    class C {\n"
+              "        C tpl_mem(T *) { return }\n"
+              "    };\n"
+              "}");
     }
 
 

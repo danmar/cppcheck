@@ -1115,7 +1115,7 @@ void CheckOther::checkUnreachableCode()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             const Token* secondBreak = 0;
             const Token* labelName = 0;
             if (tok->link() && Token::Match(tok, "(|[|<"))
