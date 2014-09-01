@@ -593,7 +593,11 @@ void CheckOther::checkRedundantAssignment()
             if (tok == writtenArgumentsEnd)
                 writtenArgumentsEnd = 0;
 
-            if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
+            if (tok->str() == "?" && tok->astOperand2()) {
+                tok = Token::findsimplematch(tok->astOperand2(), ";");
+                varAssignments.clear();
+                memAssignments.clear();
+            } else if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
                 tok = tok->link();
                 varAssignments.clear();
                 memAssignments.clear();

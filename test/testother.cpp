@@ -5591,6 +5591,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5964
+        check("void func(char *buffer, const char *format, int precision, unsigned value) {\n"
+              "    (precision < 0) ? sprintf(buffer, format, value) : sprintf(buffer, format, precision, value);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // don't crash
         check("struct data {\n"
               "  struct { int i; } fc;\n"
