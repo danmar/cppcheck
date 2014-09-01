@@ -594,7 +594,9 @@ void CheckOther::checkRedundantAssignment()
                 writtenArgumentsEnd = 0;
 
             if (tok->str() == "?" && tok->astOperand2()) {
-                tok = Token::findsimplematch(tok->astOperand2(), ";");
+                tok = Token::findmatch(tok->astOperand2(), ";|}");
+                if (!tok)
+                    break;
                 varAssignments.clear();
                 memAssignments.clear();
             } else if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
