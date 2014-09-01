@@ -8286,11 +8286,11 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
         } else if (isgoto && Token::Match(tok, "[{};] do|while|for|BOOST_FOREACH")) {
             //it's possible that code inside loop is not dead,
             //because of the possible presence of the label pointed by 'goto'
-            std::string labelpattern = "[{};] " + begin->previous()->str() + " : ;";
             Token *start = tok->tokAt(2);
             if (start && start->str() == "(")
                 start = start->link()->next();
             if (start && start->str() == "{") {
+                std::string labelpattern = "[{};] " + begin->previous()->str() + " : ;";
                 bool simplify = true;
                 for (Token *tok2 = start->next(); tok2 != start->link(); tok2 = tok2->next()) {
                     if (Token::Match(tok2, labelpattern.c_str())) {
