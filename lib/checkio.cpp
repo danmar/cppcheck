@@ -1905,26 +1905,24 @@ void CheckIO::invalidLengthModifierError(const Token* tok, unsigned int numForma
 
 void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var)
 {
-    std::ostringstream errmsg;
-    Severity::SeverityType severity = Severity::warning;
-    bool inconclusive = false;
+    MathLib::bigint arrlen = 0;
+    std::string varname;
 
     if (var) {
-        if (var->dimension(0) > width) {
-            if (!_settings->inconclusive)
-                return;
-            inconclusive = true;
-            errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
-                   << " '" << var->name() << "[" << var->dimension(0) << "]'.";
-        } else {
-            errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
-                   << var->name() << "[" << var->dimension(0) << "]', use %" << (var->dimension(0) - 1) << "s to prevent overflowing it.";
-            severity = Severity::error;
-        }
+        arrlen = var->dimension(0);
+        varname = var->name();
+    }
 
-    } else
-        errmsg << "Width " << width << " given in format string (no. " << numFormat << ") doesn't match destination buffer.";
-
-    if (severity == Severity::error || _settings->isEnabled("style"))
-        reportError(tok, severity, "invalidScanfFormatWidth", errmsg.str(), inconclusive);
+    std::ostringstream errmsg;
+    if (arrlen > width) {
+        if (!_settings->inconclusive || !_settings->isEnabled("warning"))
+            return;
+        errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
+               << " '" << varname << "[" << arrlen << "]'.";
+        reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), true);
+    } else {
+        errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
+               << varname << "[" << arrlen << "]', use %" << (arrlen - 1) << "s to prevent overflowing it.";
+        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), false);
+    }
 }
