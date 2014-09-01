@@ -1101,6 +1101,41 @@ private:
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
+                                 "    Base * b = (const Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
                                  "    Base * b = (const Base *) ( new Derived() );\n"
                                  "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());

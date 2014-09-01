@@ -368,17 +368,24 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->classStart;
         for (; tok && tok != scope->classEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const| %type% * ) (| %var%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const| %type% * const| ) (| %var%|%num%|%bool%|%char%|%str%"))
                 continue;
 
+            // skip first "const" in "const Type* const"
             if (tok->strAt(1) == "const")
+                tok = tok->next();
+            const Token* typeTok = tok ? tok->next() : nullptr;
+            if (!typeTok)
+                continue;
+            // skip second "const" in "const Type* const"
+            if (tok->strAt(3) == "const")
                 tok = tok->next();
 
             if (tok->strAt(4) == "0") // Casting nullpointers is safe
                 continue;
 
             // Is "type" a class?
-            if (_tokenizer->getSymbolDatabase()->isClassOrStruct(tok->strAt(1)))
+            if (_tokenizer->getSymbolDatabase()->isClassOrStruct(typeTok->str()))
                 cstyleCastError(tok);
         }
     }
