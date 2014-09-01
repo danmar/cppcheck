@@ -2021,7 +2021,7 @@ void CheckOther::checkDuplicateBranch()
             std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
 
             // check for duplicates
-            if (branch1 == branch2)
+            if (!branch1.empty() && branch1 == branch2)
                 duplicateBranchError(scope->classDef, scope->classEnd->next());
         }
     }

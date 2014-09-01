@@ -3759,6 +3759,16 @@ private:
               "    frac = front/((front-back));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        // No message about empty branches (#5354)
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0)\n"
+              "  {}\n"
+              "  else\n"
+              "  {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateBranch2() {
