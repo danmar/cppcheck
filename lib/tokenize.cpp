@@ -3247,7 +3247,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
-    if (!_settings->library.markupFile(FileName)) {
+    if (!isC() && !_settings->library.markupFile(FileName)) {
         findComplicatedSyntaxErrorsInTemplates();
     }
 
@@ -3461,7 +3461,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // then unsimplified function calls etc remain. These have the
     // "wrong" syntax. So this function will just fix so that the
     // syntax is corrected.
-    TemplateSimplifier::cleanupAfterSimplify(list.front());
+    if (!isC())
+        TemplateSimplifier::cleanupAfterSimplify(list.front());
 
     // Collapse operator name tokens into single token
     // operator = => operator=
@@ -6220,6 +6221,9 @@ bool Tokenizer::simplifyCAlternativeTokens()
 // int i(0), j; => int i; i = 0; int j;
 void Tokenizer::simplifyInitVar()
 {
+    if (isC())
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!tok->isName() || (tok->previous() && !Token::Match(tok->previous(), "[;{}]")))
             continue;

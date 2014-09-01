@@ -371,6 +371,9 @@ static bool astHasAutoResult(const Token *tok)
 
 void CheckAutoVariables::returnReference()
 {
+    if (_tokenizer->isC())
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     const std::size_t functions = symbolDatabase->functionScopes.size();

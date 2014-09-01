@@ -563,7 +563,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             } else
                 compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
-            if (isPrefixUnary(tok, state.cpp) && tok->link()->strAt(1) == "(") { // Lambda
+            if (state.cpp && isPrefixUnary(tok, state.cpp) && tok->link()->strAt(1) == "(") { // Lambda
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [

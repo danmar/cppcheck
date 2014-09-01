@@ -777,31 +777,33 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    // fill in base class info
-    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        // finish filling in base class info
-        for (unsigned int i = 0; i < it->derivedFrom.size(); ++i)
-            it->derivedFrom[i].type = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
-    }
-
-    // fill in friend info
-    for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
-            i->type = findType(i->nameStart, it->enclosingScope);
+    if (!_tokenizer->isC()) {
+        // fill in base class info
+        for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+            // finish filling in base class info
+            for (unsigned int i = 0; i < it->derivedFrom.size(); ++i)
+                it->derivedFrom[i].type = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
         }
-    }
 
-    // fill in using info
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
-            // only find if not already found
-            if (i->scope == nullptr) {
-                // check scope for match
-                scope = findScope(i->start->tokAt(2), &(*it));
-                if (scope) {
-                    // set found scope
-                    i->scope = scope;
-                    break;
+        // fill in friend info
+        for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
+            for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+                i->type = findType(i->nameStart, it->enclosingScope);
+            }
+        }
+
+        // fill in using info
+        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+            for (std::list<Scope::UsingInfo>::iterator i = it->usingList.begin(); i != it->usingList.end(); ++i) {
+                // only find if not already found
+                if (i->scope == nullptr) {
+                    // check scope for match
+                    scope = findScope(i->start->tokAt(2), &(*it));
+                    if (scope) {
+                        // set found scope
+                        i->scope = scope;
+                        break;
+                    }
                 }
             }
         }
@@ -1210,14 +1212,14 @@ void Variable::evaluate()
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     const bool isCPP = scope->check->isCPP();
+    if (!isCPP) // C does not support overloads
+        return true;
 
-    // skip "struct" if it is C++
-    if (isCPP) {
-        if (first->str() == "struct")
-            first = first->next();
-        if (second->str() == "struct")
-            second = second->next();
-    }
+    // skip "struct"
+    if (first->str() == "struct")
+        first = first->next();
+    if (second->str() == "struct")
+        second = second->next();
 
     // skip const on type passed by value
     if (Token::Match(first, "const %type% %var%|,|)"))
@@ -1339,13 +1341,11 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         first = first->next();
         second = second->next();
 
-        // skip "struct" if it is C++
-        if (isCPP) {
-            if (first->str() == "struct")
-                first = first->next();
-            if (second->str() == "struct")
-                second = second->next();
-        }
+        // skip "struct"
+        if (first->str() == "struct")
+            first = first->next();
+        if (second->str() == "struct")
+            second = second->next();
 
         // skip const on type passed by value
         if (Token::Match(first, "const %type% %var%|,|)"))

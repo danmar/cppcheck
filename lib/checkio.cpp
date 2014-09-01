@@ -38,6 +38,9 @@ namespace {
 //---------------------------------------------------------------------------
 void CheckIO::checkCoutCerrMisusage()
 {
+    if (_tokenizer->isC())
+        return;
+
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
