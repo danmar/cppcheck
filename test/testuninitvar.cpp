@@ -3711,6 +3711,18 @@ private:
                        "  putchar (*c);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6116 False positive uninitvar - first argument to wcstombs()
+        checkUninitVar("void f( wchar_t *wstr) {\n"
+                       "  char buf[10];\n"
+                       "  wcstombs (buf, wstr, 3);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar("void f( char *str) {\n"
+                       "  wchar_t wbuf[10];\n"
+                       "  mbstowcs (wbuf, str, 3);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkDeadPointer(const char code[]) {
