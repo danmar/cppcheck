@@ -296,9 +296,6 @@ public:
      */
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
-    /** parse tokens to see what functions are "noreturn" */
-    void parse_noreturn();
-
 private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
@@ -330,12 +327,6 @@ private:
     std::string classInfo() const {
         return "Is there any allocated memory when a function goes out of scope\n";
     }
-
-    /** Function names for functions that are "noreturn" */
-    std::set<std::string> noreturn;
-
-    /** Function names for functions that are not "noreturn" */
-    std::set<std::string> notnoreturn;
 
     const SymbolDatabase *symbolDatabase;
 };

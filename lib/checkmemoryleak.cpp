@@ -506,45 +506,6 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 }
 
 
-void CheckMemoryLeakInFunction::parse_noreturn()
-{
-    if (noreturn.empty()) {
-        noreturn.insert("exit");
-        noreturn.insert("_exit");
-        noreturn.insert("_Exit");
-        noreturn.insert("abort");
-        noreturn.insert("err");
-        noreturn.insert("verr");
-        noreturn.insert("errx");
-        noreturn.insert("verrx");
-        noreturn.insert("ExitProcess");
-        noreturn.insert("ExitThread");
-        noreturn.insert("pthread_exit");
-    }
-
-    // only check functions
-    const std::size_t functionsCount = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functionsCount; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-
-        // parse this function to check if it contains an "exit" call..
-        bool isNoreturn = false;
-        for (const Token *tok2 = scope->classStart->next(); tok2 != scope->classEnd; tok2 = tok2->next()) {
-            if (Token::Match(tok2->previous(), "[;{}] exit (")) {
-                isNoreturn = true;
-                break;
-            }
-        }
-
-        // This function is not a noreturn function
-        if (isNoreturn)
-            noreturn.insert(scope->className);
-        else
-            notnoreturn.insert(scope->className);
-    }
-}
-
-
 bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, bool endpar)
 {
     const std::string end(endpar ? " &&|)" : " [;)&|]");
@@ -609,7 +570,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         return 0;
     }
 
-    if (noreturn.find(tok->str()) != noreturn.end() && tok->strAt(-1) != "=")
+    if (_settings->library.isnoreturn(tok->str()) && tok->strAt(-1) != "=")
         return "exit";
 
     if (varid > 0 && (getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
@@ -650,7 +611,11 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return nullptr;
 
         // Function is not noreturn
-        if (notnoreturn.find(funcname) != notnoreturn.end())
+        if (tok->function()) {
+            std::string temp;
+            if (!_settings->library.isScopeNoReturn(tok->function()->functionScope->classEnd, &temp) && temp.empty())
+                return nullptr;
+        } else if (_settings->library.isnotnoreturn(funcname))
             return nullptr;
 
         return "callfunc";
@@ -1309,7 +1274,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // just add a "::use"
             // The "::use" means that a member function was probably called but it wasn't analysed further
             else if (classmember) {
-                if (noreturn.find(tok->str()) != noreturn.end())
+                if (_settings->library.isnoreturn(tok->str()))
                     addtoken(&rettail, tok, "exit");
 
                 else if (!test_white_list_with_lib(tok->str(), _settings)) {
@@ -2233,9 +2198,6 @@ static bool isInMemberFunc(const Scope* scope)
 
 void CheckMemoryLeakInFunction::check()
 {
-    // fill the "noreturn"
-    parse_noreturn();
-
     // Check locking/unlocking of global resources..
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {

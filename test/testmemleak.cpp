@@ -148,6 +148,7 @@ private:
 
 
     void run() {
+        LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "gtk.cfg");
 
         // Check that getcode works correctly..
@@ -366,7 +367,9 @@ private:
         TEST_CASE(posixcfg);
     }
 
-
+    void loadlib(Library& library) {
+        LOAD_LIB_2(library, "std.cfg");
+    }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
         // Clear the error buffer..
@@ -374,6 +377,7 @@ private:
 
         Settings settings;
         settings.standards.posix = true;
+        loadlib(settings.library);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -386,7 +390,6 @@ private:
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, nullptr);
-        checkMemoryLeak.parse_noreturn();
         std::list<const Token *> callstack;
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
@@ -539,9 +542,9 @@ private:
 
         // exit..
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
-        ASSERT_EQUALS(";;exit;", getcode("char *s; _exit(0);", "s"));
+        ASSERT_EQUALS(";;callfunc;", getcode("char *s; _exit(0);", "s")); // not in std.cfg nor in gtk.cfg
         ASSERT_EQUALS(";;exit;", getcode("char *s; abort();", "s"));
-        ASSERT_EQUALS(";;exit;", getcode("char *s; err(0);", "s"));
+        ASSERT_EQUALS(";;callfunc;", getcode("char *s; err(0);", "s")); // not in std.cfg nor in gtk.cfg
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
 
         // list_for_each
