@@ -2974,6 +2974,15 @@ private:
               "     }));\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // #6008
+        check("static std::function< int ( int, int ) > GetFunctor() {\n"
+              "    return [](int a_, int b_) -> int {\n"
+              "        int sum = a_ + b_;\n"
+              "        return sum;\n"
+              "    };\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
 

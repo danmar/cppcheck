@@ -1120,7 +1120,7 @@ void CheckOther::checkUnreachableCode()
         else if (Token::Match(tok, "[;{}:] return|throw")) {
             tok = tok->next(); // tok should point to return or throw
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
+                if (tok2->str() == "(" || tok2->str() == "{")
                     tok2 = tok2->link();
                 if (tok2->str() == ";") {
                     secondBreak = tok2->next();
