@@ -611,7 +611,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return nullptr;
 
         // Function is not noreturn
-        if (tok->function()) {
+        if (tok->function() && tok->function()->functionScope) {
             std::string temp;
             if (!_settings->library.isScopeNoReturn(tok->function()->functionScope->classEnd, &temp) && temp.empty())
                 return nullptr;
