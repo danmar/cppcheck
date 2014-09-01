@@ -257,7 +257,7 @@ private:
     void zerodivError(const Token *tok, bool inconclusive);
     void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
-    void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
@@ -299,7 +299,6 @@ private:
         c.udivError(0, false);
         c.zerodivError(0, false);
         c.zerodivcondError(0,0,false);
-        c.mathfunctionCallError(0);
         c.misusedScopeObjectError(NULL, "varname");
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
@@ -326,6 +325,7 @@ private:
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
+        c.mathfunctionCallWarning(0);
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
