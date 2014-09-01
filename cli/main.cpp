@@ -86,7 +86,7 @@ void CheckOther::checkZeroDivision()
  *   - Macros are expanded
  * -# Tokenize the file (see Tokenizer)
  * -# Run the runChecks of all check classes.
- * -# Simplify the tokenlist (Tokenizer::simplifyTokenList)
+ * -# Simplify the tokenlist (Tokenizer::simplifyTokenList2)
  * -# Run the runSimplifiedChecks of all check classes
  *
  * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface

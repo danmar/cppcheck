@@ -585,7 +585,7 @@ public:
 
     /**
      * assert that tokens are ok - used during debugging for example
-     * to catch problems in simplifyTokenList.
+     * to catch problems in simplifyTokenList1/2.
      */
     void validate() const;
 
