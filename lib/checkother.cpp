@@ -1110,72 +1110,78 @@ void CheckOther::checkUnreachableCode()
     if (!_settings->isEnabled("style"))
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        const Token* secondBreak = 0;
-        const Token* labelName = 0;
-        if (tok->link() && Token::Match(tok, "(|[|<"))
-            tok = tok->link();
-        else if (Token::Match(tok, "break|continue ;"))
-            secondBreak = tok->tokAt(2);
-        else if (Token::Match(tok, "[;{}:] return|throw")) {
-            tok = tok->next(); // tok should point to return or throw
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(" || tok2->str() == "{")
-                    tok2 = tok2->link();
-                if (tok2->str() == ";") {
-                    secondBreak = tok2->next();
-                    break;
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            const Token* secondBreak = 0;
+            const Token* labelName = 0;
+            if (tok->link() && Token::Match(tok, "(|[|<"))
+                tok = tok->link();
+            else if (Token::Match(tok, "break|continue ;"))
+                secondBreak = tok->tokAt(2);
+            else if (Token::Match(tok, "[;{}:] return|throw")) {
+                tok = tok->next(); // tok should point to return or throw
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(" || tok2->str() == "{")
+                        tok2 = tok2->link();
+                    if (tok2->str() == ";") {
+                        secondBreak = tok2->next();
+                        break;
+                    }
                 }
+            } else if (Token::Match(tok, "goto %any% ;")) {
+                secondBreak = tok->tokAt(3);
+                labelName = tok->next();
+            } else if (Token::Match(tok, "%var% (") && _settings->library.isnoreturn(tok->str()) && tok->strAt(-1) != ".") {
+                if ((!tok->function() || (tok->function()->token != tok && tok->function()->tokenDef != tok)) && tok->linkAt(1)->strAt(1) != "{")
+                    secondBreak = tok->linkAt(1)->tokAt(2);
             }
-        } else if (Token::Match(tok, "goto %any% ;")) {
-            secondBreak = tok->tokAt(3);
-            labelName = tok->next();
-        } else if (Token::Match(tok, "%var% (") && _settings->library.isnoreturn(tok->str()) && tok->strAt(-1) != ".") {
-            if ((!tok->function() || (tok->function()->token != tok && tok->function()->tokenDef != tok)) && tok->linkAt(1)->strAt(1) != "{")
-                secondBreak = tok->linkAt(1)->tokAt(2);
-        }
 
-        // Statements follow directly, no line between them. (#3383)
-        // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
-        bool inconclusive = secondBreak && (secondBreak->linenr()-1 > secondBreak->previous()->linenr());
+            // Statements follow directly, no line between them. (#3383)
+            // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
+            bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
 
-        if (secondBreak && (_settings->inconclusive || !inconclusive)) {
-            if (Token::Match(secondBreak, "continue|goto|throw") ||
-                (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
-                duplicateBreakError(secondBreak, inconclusive);
-                tok = Token::findmatch(secondBreak, "[}:]");
-            } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning
-                if (tok->str() == "break") // If the previous was a break, too: Issue warning
+            if (secondBreak && (_settings->inconclusive || !inconclusive)) {
+                if (Token::Match(secondBreak, "continue|goto|throw") ||
+                    (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
                     duplicateBreakError(secondBreak, inconclusive);
-                else {
-                    if (tok->scope()->type != Scope::eSwitch) // Check, if the enclosing scope is a switch
+                    tok = Token::findmatch(secondBreak, "[}:]");
+                } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning
+                    if (tok->str() == "break") // If the previous was a break, too: Issue warning
                         duplicateBreakError(secondBreak, inconclusive);
-                }
-                tok = Token::findmatch(secondBreak, "[}:]");
-            } else if (!Token::Match(secondBreak, "return|}|case|default") && secondBreak->strAt(1) != ":") { // TODO: No bailout for unconditional scopes
-                // If the goto label is followed by a loop construct in which the label is defined it's quite likely
-                // that the goto jump was intended to skip some code on the first loop iteration.
-                bool labelInFollowingLoop = false;
-                if (labelName && Token::Match(secondBreak, "while|do|for")) {
-                    const Token *scope = Token::findsimplematch(secondBreak, "{");
-                    if (scope) {
-                        for (const Token *tokIter = scope; tokIter != scope->link() && tokIter; tokIter = tokIter->next()) {
-                            if (Token::Match(tokIter, "[;{}] %any% :") && labelName->str() == tokIter->strAt(1)) {
-                                labelInFollowingLoop = true;
-                                break;
+                    else {
+                        if (tok->scope()->type != Scope::eSwitch) // Check, if the enclosing scope is a switch
+                            duplicateBreakError(secondBreak, inconclusive);
+                    }
+                    tok = Token::findmatch(secondBreak, "[}:]");
+                } else if (!Token::Match(secondBreak, "return|}|case|default") && secondBreak->strAt(1) != ":") { // TODO: No bailout for unconditional scopes
+                    // If the goto label is followed by a loop construct in which the label is defined it's quite likely
+                    // that the goto jump was intended to skip some code on the first loop iteration.
+                    bool labelInFollowingLoop = false;
+                    if (labelName && Token::Match(secondBreak, "while|do|for")) {
+                        const Token *scope = Token::findsimplematch(secondBreak, "{");
+                        if (scope) {
+                            for (const Token *tokIter = scope; tokIter != scope->link() && tokIter; tokIter = tokIter->next()) {
+                                if (Token::Match(tokIter, "[;{}] %any% :") && labelName->str() == tokIter->strAt(1)) {
+                                    labelInFollowingLoop = true;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                if (!labelInFollowingLoop)
-                    unreachableCodeError(secondBreak, inconclusive);
-                tok = Token::findmatch(secondBreak, "[}:]");
-            } else
-                tok = secondBreak;
+                    if (!labelInFollowingLoop)
+                        unreachableCodeError(secondBreak, inconclusive);
+                    tok = Token::findmatch(secondBreak, "[}:]");
+                } else
+                    tok = secondBreak;
 
-            if (!tok)
-                break;
-            tok = tok->previous(); // Will be advanced again by for loop
+                if (!tok)
+                    break;
+                tok = tok->previous(); // Will be advanced again by for loop
+            }
         }
     }
 }

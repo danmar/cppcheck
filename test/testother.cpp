@@ -2983,6 +2983,14 @@ private:
               "    };\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // #5789
+        check("struct per_state_info {\n"
+              "    uint64_t enter, exit;\n"
+              "    uint64_t events;\n"
+              "    per_state_info() : enter(0), exit(0), events(0) {}\n"
+              "};", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
