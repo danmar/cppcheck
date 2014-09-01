@@ -265,11 +265,11 @@ bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::stri
     return _suppressions[errorId].isSuppressedLocal(file, line);
 }
 
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file) const
+std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, bool unusedFunctionChecking) const
 {
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
-        if (i->first == "unusedFunction")
+        if (!unusedFunctionChecking && i->first == "unusedFunction")
             continue;  // unusedFunction is not a "local" suppression
 
         std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
@@ -284,26 +284,18 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
     return r;
 }
 
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions() const
+std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions(bool unusedFunctionChecking) const
 {
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
+        if (!unusedFunctionChecking && i->first == "unusedFunction")
+            continue;
+
         // global suppressions..
         for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g) {
             for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l) {
                 if (!l->second) {
                     r.push_back(SuppressionEntry(i->first, g->first, l->first));
-                }
-            }
-        }
-
-        // unusedFunction..
-        if (i->first == "unusedFunction") {
-            for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.begin(); f != i->second._files.end(); ++f) {
-                for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
-                    if (!l->second) {
-                        r.push_back(SuppressionEntry(i->first, f->first, l->first));
-                    }
                 }
             }
         }

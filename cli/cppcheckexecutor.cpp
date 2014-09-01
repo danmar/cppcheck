@@ -770,7 +770,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.isEnabled("information") || settings.checkConfiguration)
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(settings._jobs == 1 && settings.isEnabled("unusedFunction")));
 
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);

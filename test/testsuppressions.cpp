@@ -44,6 +44,7 @@ private:
         TEST_CASE(suppressionsPathSeparator);
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
+        TEST_CASE(globalsuppress_unusedFunction); // #4946
         TEST_CASE(suppressionWithRelativePaths); // #4733
     }
 
@@ -130,7 +131,7 @@ private:
 
         cppCheck.check("test.cpp", code);
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(true));
     }
 
     void checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
@@ -153,7 +154,7 @@ private:
 
         executor.check();
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(false));
     }
 
     // Check the suppression for multiple files
@@ -171,7 +172,7 @@ private:
         for (int i = 0; names[i] != NULL; ++i)
             cppCheck.check(names[i], codes[i]);
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(true));
     }
 
     void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
@@ -323,11 +324,22 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("someid", "test/foo/bar.cpp", 142));
     }
 
-    void inlinesuppress_unusedFunction() const { // #4210 - wrong report of "unmatchedSuppression" for "unusedFunction"
+    void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
         suppressions.addSuppression("unusedFunction", "test.c", 3U);
-        ASSERT_EQUALS(true, suppressions.getUnmatchedLocalSuppressions("test.c").empty());
-        ASSERT_EQUALS(false, suppressions.getUnmatchedGlobalSuppressions().empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
+    }
+
+    void globalsuppress_unusedFunction() const { // #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
+        Suppressions suppressions;
+        suppressions.addSuppressionLine("unusedFunction:*");
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
     }
 
     void suppressionWithRelativePaths()  {

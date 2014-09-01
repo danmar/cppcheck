@@ -242,7 +242,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     }
 
     if (_settings.isEnabled("information") || _settings.checkConfiguration)
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename));
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, _settings._jobs == 1 && _settings.isEnabled("unusedFunction")));
 
     _errorList.clear();
     return exitcode;

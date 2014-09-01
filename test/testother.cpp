@@ -244,7 +244,7 @@ private:
         CheckOther checkOther(&tokenizer, &settings, &logger);
         checkOther.checkSwitchCaseFallThrough();
 
-        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
+        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename, false));
     }
 
 
