@@ -158,12 +158,11 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         return false;
     }
 
-    if (!_files.empty()) {
-        return true;
-    } else {
+    if (_files.empty()) {
         std::cout << "cppcheck: error: no files to check - all paths ignored." << std::endl;
         return false;
     }
+    return true;
 }
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
