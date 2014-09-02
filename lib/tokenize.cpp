@@ -3564,7 +3564,7 @@ bool Tokenizer::simplifyTokenList2()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "const static| %type% %var% = %num% ;") ||
             Token::Match(tok, "const static| %type% %var% ( %num% ) ;")) {
-            unsigned int offset = 0;
+            int offset = 0;
             if (tok->strAt(1) == "static")
                 offset = 1;
             const unsigned int varId(tok->tokAt(2 + offset)->varId());
