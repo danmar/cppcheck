@@ -1175,9 +1175,9 @@ void CheckOther::checkUnreachableCode()
                     // that the goto jump was intended to skip some code on the first loop iteration.
                     bool labelInFollowingLoop = false;
                     if (labelName && Token::Match(secondBreak, "while|do|for")) {
-                        const Token *scope = Token::findsimplematch(secondBreak, "{");
-                        if (scope) {
-                            for (const Token *tokIter = scope; tokIter != scope->link() && tokIter; tokIter = tokIter->next()) {
+                        const Token *scope2 = Token::findsimplematch(secondBreak, "{");
+                        if (scope2) {
+                            for (const Token *tokIter = scope2; tokIter != scope2->link() && tokIter; tokIter = tokIter->next()) {
                                 if (Token::Match(tokIter, "[;{}] %any% :") && labelName->str() == tokIter->strAt(1)) {
                                     labelInFollowingLoop = true;
                                     break;
@@ -1248,7 +1248,7 @@ void CheckOther::checkUnsignedDivision()
                 if (tok->strAt(1)[0] == '-' && isUnsigned(tok->tokAt(3)->variable())) {
                     udivError(tok->next(), false);
                 }
-            } else if (Token::Match(tok->next(), "%var% / %var%") && _settings->inconclusive && warning && !ifTok) {
+            } else if (_settings->inconclusive && warning && !ifTok && Token::Match(tok->next(), "%var% / %var%")) {
                 const Variable* var1 = tok->next()->variable();
                 const Variable* var2 = tok->tokAt(3)->variable();
                 if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
