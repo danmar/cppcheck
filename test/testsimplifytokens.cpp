@@ -7659,6 +7659,8 @@ private:
         // don't remove struct members:
         ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;", true));
 
+        ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", "test.c"));
+        ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;", "test.cpp"));
     }
 
     void simplifyCallingConvention() {

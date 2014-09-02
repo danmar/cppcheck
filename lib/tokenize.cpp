@@ -9374,6 +9374,13 @@ void Tokenizer::simplifyKeyword()
         tok->deleteThis();
     }
 
+    if (isC() || _settings->standards.cpp == Standards::CPP03) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (tok->str() == "auto")
+                tok->deleteThis();
+        }
+    }
+
     if (_settings->standards.c >= Standards::C99) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             while (tok->str() == "restrict") {
