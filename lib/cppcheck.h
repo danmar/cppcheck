@@ -128,6 +128,7 @@ public:
     void analyseFile(std::istream &f, const std::string &filename);
 
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
+    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     void dontSimplify() {
         _simplify = false;
@@ -147,7 +148,7 @@ private:
     unsigned int processFile(const std::string& filename, const std::string& fileContent);
 
     /** @brief Check file */
-    void checkFile(const std::string &code, const char FileName[]);
+    bool checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums);
 
     /**
      * @brief Execute rules, if any

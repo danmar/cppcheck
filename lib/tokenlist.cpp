@@ -396,6 +396,27 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+unsigned long long TokenList::calculateChecksum() const
+{
+    unsigned long long checksum = 0;
+    for (const Token* tok = front(); tok; tok = tok->next()) {
+        unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->type());
+        unsigned int subchecksum2 = 0;
+        for (std::size_t i = 0; i < tok->str().size(); i++)
+            subchecksum2 += (unsigned int)tok->str()[i];
+        if (!tok->originalName().empty()) {
+            for (std::size_t i = 0; i < tok->originalName().size(); i++)
+                subchecksum2 += (unsigned int) tok->originalName()[i];
+        }
+
+        checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);
+    }
+    return checksum;
+}
+
+
+//---------------------------------------------------------------------------
+
 struct AST_state {
     std::stack<Token*> op;
     unsigned int depth;

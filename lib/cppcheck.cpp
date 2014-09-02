@@ -82,8 +82,9 @@ void CppCheck::replaceAll(std::string& code, const std::string &from, const std:
 
 bool CppCheck::findError(std::string code, const char FileName[])
 {
+    std::set<unsigned long long> checksums;
     // First make sure that error occurs with the original code
-    checkFile(code, FileName);
+    checkFile(code, FileName, checksums);
     if (_errorList.empty()) {
         // Error does not occur with this code
         return false;
@@ -102,7 +103,8 @@ bool CppCheck::findError(std::string code, const char FileName[])
             // is still there.
             code = previousCode.substr(found+9);
             _errorList.clear();
-            checkFile(code, FileName);
+            checksums.clear();
+            checkFile(code, FileName, checksums);
         }
 
         if (_errorList.empty()) {
@@ -199,6 +201,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             }
         }
 
+        std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // Check only a few configurations (default 12), after that bail out, unless --force
@@ -232,7 +235,10 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                     return exitcode;
                 }
             } else {
-                checkFile(codeWithoutCfg + appendCode, filename.c_str());
+                if (!checkFile(codeWithoutCfg + appendCode, filename.c_str(), checksums)) {
+                    if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
+                        purgedConfigurationMessage(filename, cfg);
+                }
             }
         }
     } catch (const std::runtime_error &e) {
@@ -325,11 +331,10 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 //---------------------------------------------------------------------------
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
-
-void CppCheck::checkFile(const std::string &code, const char FileName[])
+bool CppCheck::checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums)
 {
     if (_settings.terminated() || _settings.checkConfiguration)
-        return;
+        return true;
 
     Tokenizer _tokenizer(&_settings, this);
     if (_settings._showtime != SHOWTIME_NONE)
@@ -354,9 +359,15 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
         result = _tokenizer.tokenize(istr, FileName, cfg);
         timer.Stop();
+
+        unsigned long long checksum = _tokenizer.list.calculateChecksum();
+        if (checksums.find(checksum) != checksums.end())
+            return false;
+        checksums.insert(checksum);
+
         if (!result) {
             // File had syntax errors, abort
-            return;
+            return true;
         }
 
         // dump
@@ -369,13 +380,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
                 _tokenizer.dump(fdump);
                 fdump << "</dump>" << std::endl;
             }
-            return;
+            return true;
         }
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
-                return;
+                return true;
 
             Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
             (*it)->runChecks(&_tokenizer, &_settings, this);
@@ -387,30 +398,30 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         executeRules("normal", _tokenizer);
 
         if (!_simplify)
-            return;
+            return true;
 
         Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
         result = _tokenizer.simplifyTokenList2();
         timer3.Stop();
         if (!result)
-            return;
+            return true;
 
         // call all "runSimplifiedChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             if (_settings.terminated())
-                return;
+                return true;
 
             Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
             (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
         }
 
         if (_settings.terminated())
-            return;
+            return true;
 
         executeRules("simple", _tokenizer);
 
         if (_settings.terminated())
-            return;
+            return true;
     } catch (const InternalError &e) {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc;
@@ -433,6 +444,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         _errorLogger.reportErr(errmsg);
     }
+    return true;
 }
 
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
@@ -561,6 +573,30 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
     ErrorLogger::ErrorMessage errmsg(loclist,
                                      Severity::information,
                                      msg.str(),
+                                     "toomanyconfigs",
+                                     false);
+
+    reportErr(errmsg);
+}
+
+void CppCheck::purgedConfigurationMessage(const std::string &file, const std::string& configuration)
+{
+
+    tooManyConfigs = false;
+
+    if (_settings.isEnabled("information") && file.empty())
+        return;
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> loclist;
+    if (!file.empty()) {
+        ErrorLogger::ErrorMessage::FileLocation location;
+        location.setfile(file);
+        loclist.push_back(location);
+    }
+
+    ErrorLogger::ErrorMessage errmsg(loclist,
+                                     Severity::information,
+                                     "The configuration '" + configuration + "' was not checked because its code equals another one.",
                                      "toomanyconfigs",
                                      false);
 
