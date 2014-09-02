@@ -1267,6 +1267,10 @@ private:
         // #6106
         code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
         valueOfTok(code, "*");
+	
+	// 6122 survive garbage code
+	code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
+        valueOfTok(code, "*");
     }
 };
 

@@ -1266,7 +1266,7 @@ static bool valueFlowForLoop2(const Token *tok,
             tokens.pop();
             if (!t)
                 continue;
-            if (t->str() == "=" && programMemory.find(t->astOperand1()->varId()) != programMemory.end())
+            if (t->str() == "=" && t->astOperand1() && programMemory.find(t->astOperand1()->varId()) != programMemory.end())
                 // TODO: investigate what variable is assigned.
                 return false;
             tokens.push(t->astOperand1());
