@@ -3490,13 +3490,14 @@ private:
               "    int *p = malloc(3);\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) The given size 3 is mismatching\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) The allocated size 3 is not a multiple of the underlying type's size.\n", errout.str());
+
         check("void foo()\n"
               "{\n"
               "    int *p = g_malloc(3);\n"
               "    g_free(p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) The given size 3 is mismatching\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) The allocated size 3 is not a multiple of the underlying type's size.\n", "", errout.str());
     }
 
 
