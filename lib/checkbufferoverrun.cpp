@@ -1597,10 +1597,9 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        Function * j = scope->function;
-        if (j) {
-            const Token* tok = j->token;
+        const Function * function = symbolDatabase->functionScopes[i]->function;
+        if (function) {
+            const Token* tok = function->token;
 
             // Get the name of the argv variable
             unsigned int varid = 0;
