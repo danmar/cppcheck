@@ -1727,6 +1727,12 @@ private:
               "    return p && p->x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int *p) {\n"
+              "    if (x || !p) {}\n"
+              "    *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
