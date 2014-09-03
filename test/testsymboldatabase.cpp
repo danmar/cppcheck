@@ -224,6 +224,7 @@ private:
         TEST_CASE(symboldatabase42); // only put variables in variable list
         TEST_CASE(symboldatabase43); // #4738
         TEST_CASE(symboldatabase44);
+        TEST_CASE(symboldatabase45); // #6125
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1924,6 +1925,37 @@ private:
         ASSERT_EQUALS(2U, db->scopeList.size());
         for (std::size_t i = 1U; i < db->getVariableListSize(); i++)
             ASSERT(db->getVariableFromVarId(i) != nullptr);
+    }
+
+    void symboldatabase45() {
+        GET_SYMBOL_DB("typedef struct {\n"
+                      "    unsigned long bits;\n"
+                      "} S;\n"
+                      "struct T {\n"
+                      "    S span;\n"
+                      "    int flags;\n"
+                      "};\n"
+                      "struct T f(int x) {\n"
+                      "    return (struct T) {\n"
+                      "        .span = (S) { 0UL },\n"
+                      "        .flags = (x ? 256 : 0),\n"
+                      "    };\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(4U, db->getVariableListSize() - 1);
+        for (std::size_t i = 1U; i < db->getVariableListSize(); i++)
+            ASSERT(db->getVariableFromVarId(i) != nullptr);
+
+        ASSERT_EQUALS(4U, db->scopeList.size());
+        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eFunction, scope->type);
     }
 
     void isImplicitlyVirtual() {

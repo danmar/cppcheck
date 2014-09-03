@@ -765,7 +765,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scopeList.push_back(Scope(this, tok->linkAt(-1)->linkAt(-1), scope, Scope::eLambda, tok));
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
-                    } else if (!Token::Match(tok->previous(), "=|,|(|return")) {
+                    } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
                         scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
