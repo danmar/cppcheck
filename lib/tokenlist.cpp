@@ -410,6 +410,11 @@ unsigned long long TokenList::calculateChecksum() const
         }
 
         checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);
+
+        bool bit1 = (checksum & 1) != 0;
+        checksum >>= 1;
+        if (bit1)
+            checksum |= (1ULL << 63);
     }
     return checksum;
 }
