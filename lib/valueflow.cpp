@@ -96,16 +96,15 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
- * \param varid       variable id for variable
- * \param value       value of variable
+ * \param programMemory   program memory
  */
 static bool conditionIsFalse(const Token *condition, const std::map<unsigned int, MathLib::bigint> &programMemory)
 {
     if (!condition)
         return false;
     if (condition->str() == "&&") {
-        bool result1 = conditionIsFalse(condition->astOperand1(), programMemory);
-        bool result2 = result1 ? true : conditionIsFalse(condition->astOperand2(), programMemory);
+        const bool result1 = conditionIsFalse(condition->astOperand1(), programMemory);
+        const bool result2 = result1 ? true : conditionIsFalse(condition->astOperand2(), programMemory);
         return result2;
     }
     std::map<unsigned int, MathLib::bigint> progmem(programMemory);
@@ -118,8 +117,7 @@ static bool conditionIsFalse(const Token *condition, const std::map<unsigned int
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
- * \param varid       variable id for variable
- * \param value       value of variable
+ * \param programMemory   program memory
  */
 static bool conditionIsTrue(const Token *condition, const std::map<unsigned int, MathLib::bigint> &programMemory)
 {
