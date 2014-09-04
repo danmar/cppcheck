@@ -4475,6 +4475,34 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y <= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y > 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
             "  if (0 <= x)"
             "    bar();\n"
@@ -4497,6 +4525,20 @@ private:
 
         check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
+            "  if (0 <= x->y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x, Bar* y) {\n"
+            "  if (0 <= x->y - y->y )"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
             "  if (0 > x)"
             "    bar();\n"
             "}");
@@ -4512,6 +4554,13 @@ private:
         check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
             "  if (0 > x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x->y)"
             "    bar();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
