@@ -642,6 +642,23 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
     }
 }
 
+static void removeValues(std::list<ValueFlow::Value> &values, const std::list<ValueFlow::Value> &valuesToRemove)
+{
+    for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end();) {
+        bool found = false;
+        for (std::list<ValueFlow::Value>::const_iterator it2 = valuesToRemove.begin(); it2 != valuesToRemove.end(); ++it2) {
+            if (it->intvalue == it2->intvalue) {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            values.erase(it++);
+        else
+            it++;
+    }
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -710,18 +727,30 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // Should scope be skipped because variable value is checked?
-            bool skip = false;
+            std::list<ValueFlow::Value> truevalues;
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                if (conditionIsFalse(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it))) {
-                    skip = true;
-                    break;
-                }
+                if (!conditionIsFalse(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
+                    truevalues.push_back(*it);
             }
-            if (skip) {
-                // goto '{'
-                tok2 = tok2->linkAt(1)->next();
+            if (truevalues.size() != values.size()) {
+                // '{'
+                Token * const startToken1 = tok2->linkAt(1)->next();
+
+                valueFlowForward(startToken1->next(),
+                                 startToken1->link(),
+                                 var,
+                                 varid,
+                                 truevalues,
+                                 constValue,
+                                 tokenlist,
+                                 errorLogger,
+                                 settings);
+
+                if (isVariableChanged(startToken1, startToken1->link(), varid))
+                    removeValues(values, truevalues);
+
                 // goto '}'
-                tok2 = tok2->link();
+                tok2 = startToken1->link();
                 continue;
             }
 
@@ -838,7 +867,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (tok3->varId() == varid) {
                         std::list<ValueFlow::Value>::const_iterator it;
                         for (it = values.begin(); it != values.end(); ++it)
-                            setTokenValue(tok2, *it);
+                            setTokenValue(tok3, *it);
                     } else if (Token::Match(tok3, "++|--|?|:|;"))
                         break;
                 }

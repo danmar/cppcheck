@@ -788,6 +788,22 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n" // #6118 - FP
+               "    int x = 0;\n"
+               "    x = x & 0x1;\n"
+               "    if (x == 0) { x = 2; }\n"
+               "    y = 42 / x;\n" // <- x can't be 0
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
+        code = "void f() {\n" // #6118 - FN
+               "    int x = 0;\n"
+               "    x = x & 0x1;\n"
+               "    if (x == 0) { x += 2; }\n"
+               "    y = 42 / x;\n" // <- x can be 2
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"
