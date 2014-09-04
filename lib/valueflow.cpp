@@ -1306,9 +1306,9 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             while (parent) {
                 const Token * const p = parent;
                 parent = parent->astParent();
-                if (parent && parent->str() == ":")
+                if (!parent || parent->str() == ":")
                     break;
-                if (parent && parent->str() == "?") {
+                if (parent->str() == "?") {
                     if (parent->astOperand2() != p)
                         parent = NULL;
                     break;
