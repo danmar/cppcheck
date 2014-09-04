@@ -384,6 +384,7 @@ private:
         TEST_CASE(removeParentheses20);      // Ticket #5479: a<b<int>>(2);
         TEST_CASE(removeParentheses21);      // Don't "simplify" casts
         TEST_CASE(removeParentheses22);
+        TEST_CASE(removeParentheses23);      // Ticket #6103 - Infinite loop upon valid input
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -5909,6 +5910,31 @@ private:
                              "const static char * c ; "
                              "} ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses23() { // Ticket #6103
+        // Reported case
+        {
+            static char code[] = "* * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            static char  exp[] = "* * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        }
+        // Various valid cases
+        {
+            static char code[] = "int * f [ 1 ] = { new ( int ) } ;";
+            static char  exp[] = "int * f [ 1 ] = { new int } ;";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        }
+        {
+            static char code[] = "int * * f [ 1 ] = { new ( int ) [ 1 ] } ;";
+            static char  exp[] = "int * * f [ 1 ] = { new int [ 1 ] } ;";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        }
+        {
+            static char code[] = "list < int > * f [ 1 ] = { new ( list < int > ) } ;";
+            static char  exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        }
     }
 
     void tokenize_double() {

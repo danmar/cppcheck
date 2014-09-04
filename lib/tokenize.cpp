@@ -7108,6 +7108,13 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
+        if (isCPP() && Token::simpleMatch(tok->previous(), "new (") && Token::Match(tok->link(), ") [;,{}[]")) {
+            // Remove the parentheses in "new (type)" constructs
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
+
         if (Token::Match(tok->previous(), "! ( %var% )")) {
             // Remove the parentheses
             tok->deleteThis();
