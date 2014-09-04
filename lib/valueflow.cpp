@@ -655,7 +655,7 @@ static void removeValues(std::list<ValueFlow::Value> &values, const std::list<Va
         if (found)
             values.erase(it++);
         else
-            it++;
+            ++it;
     }
 }
 

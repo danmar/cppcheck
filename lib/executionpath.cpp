@@ -450,7 +450,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
 
-        {
+        if (tok) {
             tok = check->parse(*tok, checks);
             if (checks.empty())
                 return;
