@@ -433,14 +433,12 @@ void CheckOther::invalidPointerCast()
             const Token* toTok = 0;
             const Token* nextTok = 0;
             // Find cast
-            if (Token::Match(tok, "( const| %type% const| * )") ||
-                Token::Match(tok, "( const| %type% %type% const| * )")) {
+            if (Token::Match(tok, "( const| %type% %type%| const| * )")) {
                 toTok = tok->next();
                 nextTok = tok->link()->next();
                 if (nextTok && nextTok->str() == "(")
                     nextTok = nextTok->next();
-            } else if (Token::Match(tok, "reinterpret_cast < const| %type% const| * > (") ||
-                       Token::Match(tok, "reinterpret_cast < const| %type% %type% const| * > (")) {
+            } else if (Token::Match(tok, "reinterpret_cast < const| %type% %type%| const| * > (")) {
                 nextTok = tok->tokAt(5);
                 while (nextTok->str() != "(")
                     nextTok = nextTok->next();
