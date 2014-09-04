@@ -86,7 +86,7 @@ private:
         TEST_CASE(garbageCode7);
         TEST_CASE(garbageCode8); // #5511
         TEST_CASE(garbageCode9); // #5604
-
+        TEST_CASE(garbageCode10);  // #6127
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
         TEST_CASE(foreach);     // #3690
@@ -1113,6 +1113,10 @@ private:
 
     void garbageCode9() {
         ASSERT_THROW(tokenizeAndStringify("enum { e = { } } ( ) { { enum { } } } { e } ", true), InternalError);
+    }
+
+    void garbageCode10() { // #6127
+        tokenizeAndStringify("for( rl=reslist; rl!=NULL; rl=rl->next )", /*simplify=*/true);
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly

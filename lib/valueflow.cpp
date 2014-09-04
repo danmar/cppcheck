@@ -124,8 +124,8 @@ static bool conditionIsTrue(const Token *condition, const std::map<unsigned int,
     if (!condition)
         return false;
     if (condition->str() == "||") {
-        bool result1 = conditionIsTrue(condition->astOperand1(), programMemory);
-        bool result2 = result1 ? true : conditionIsTrue(condition->astOperand2(), programMemory);
+        const bool result1 = conditionIsTrue(condition->astOperand1(), programMemory);
+        const bool result2 = result1 ? true : conditionIsTrue(condition->astOperand2(), programMemory);
         return result2;
     }
     std::map<unsigned int, MathLib::bigint> progmem(programMemory);
@@ -1440,7 +1440,7 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
             continue;
 
         Token * const bodyStart = tok->linkAt(1)->next();
-        if (!bodyStart->link() || bodyStart->str() != "{")
+        if (!bodyStart || !bodyStart->link() || bodyStart->str() != "{")
             continue;
 
         unsigned int varid(0);
