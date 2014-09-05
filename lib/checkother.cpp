@@ -1608,9 +1608,9 @@ void CheckOther::checkConstantFunctionParameter()
         //       namespace and add them to the pattern. There are
         //       streams for example (however it seems strange with
         //       const stream parameter).
-        if (Token::Match(tok, "std :: string|wstring !!::")) {
+        if (var->isStlStringType()) {
             passedByValueError(tok, var->name());
-        } else if (Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::")) {
+        } else if (var->isStlType() && Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::")) {
             passedByValueError(tok, var->name());
         } else if (var->type()) {  // Check if type is a struct or class.
             passedByValueError(tok, var->name());

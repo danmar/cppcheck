@@ -137,8 +137,9 @@ class CPPCHECKLIB Variable {
         fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
         fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
-        fIsIntType   = (1 << 11), /** @brief Integral type */
-        fIsFloatType = (1 << 12)  /** @brief Floating point type */
+        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string<T>|u16string|u32string */
+        fIsIntType   = (1 << 12), /** @brief Integral type */
+        fIsFloatType = (1 << 13)  /** @brief Floating point type */
     };
 
     /**
@@ -447,6 +448,18 @@ public:
     }
 
     /**
+    * Checks if the variable is an STL type ('std::')
+    * E.g.:
+    *   std::string s;
+    *   ...
+    *   sVar->isStlType() == true
+    * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+    */
+    bool isStlType() const {
+        return getFlag(fIsStlType);
+    }
+
+    /**
      * Checks if the variable is an STL type ('std::')
      * E.g.:
      *   std::string s;
@@ -454,8 +467,8 @@ public:
      *   sVar->isStlType() == true
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
-    bool isStlType() const {
-        return getFlag(fIsStlType);
+    bool isStlStringType() const {
+        return getFlag(fIsStlString);
     }
 
     /**

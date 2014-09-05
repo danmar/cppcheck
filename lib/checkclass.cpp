@@ -779,7 +779,7 @@ void CheckClass::initializationListUsage()
                     }
                     if (!allowed)
                         continue;
-                    if (!var->isPointer() && !var->isReference() && (var->type() || Token::Match(var->typeStartToken(), "std :: string|wstring !!::") || (Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::"))))
+                    if (!var->isPointer() && !var->isReference() && (var->type() || var->isStlStringType() || (Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::"))))
                         suggestInitializationList(tok, tok->str());
                 }
             }

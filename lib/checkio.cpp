@@ -1616,17 +1616,11 @@ bool CheckIO::ArgumentInfo::isComplexType() const
     if (variableInfo->type())
         return (true);
 
-    static std::set<std::string> knownTypes;
-    if (knownTypes.empty()) {
-        knownTypes.insert("string");
-        knownTypes.insert("wstring");
-    }
-
     const Token* varTypeTok = typeToken;
     if (varTypeTok->str() == "std")
         varTypeTok = varTypeTok->tokAt(2);
 
-    return ((knownTypes.find(varTypeTok->str()) != knownTypes.end() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !variableInfo->isArrayOrPointer());
+    return ((variableInfo->isStlStringType() || (varTypeTok->strAt(1) == "<" && varTypeTok->linkAt(1) && varTypeTok->linkAt(1)->strAt(1) != "::")) && !variableInfo->isArrayOrPointer());
 }
 
 bool CheckIO::ArgumentInfo::isKnownType() const

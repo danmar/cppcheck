@@ -187,7 +187,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         return true;
     if (Token::Match(parent->previous(), "%var% (") && tok->strAt(1) == ")") {
         const Variable* var = tok->tokAt(-2)->variable();
-        if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
+        if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
             return true;
     }
 
@@ -217,7 +217,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         else if (parent->astOperand1() && parent->astOperand2() == tok)
             ovar = parent->astOperand1()->variable();
     }
-    if (ovar && !ovar->isPointer() && !ovar->isArray() && Token::Match(ovar->typeStartToken(), "std :: string|wstring !!::"))
+    if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType())
         return true;
 
     // assume that it's not a dereference (no false positives)
@@ -391,7 +391,7 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
                 if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
-                    if (var && !var->isPointer() && !var->isArray() && Token::Match(var->typeStartToken(), "std :: string|wstring !!::"))
+                    if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
@@ -431,7 +431,7 @@ void CheckNullPointer::nullConstantDereference()
                 ovar = tok->variable();
             else if (Token::Match(tok, "%var% =|+ 0 )|]|,|;|+"))
                 ovar = tok->variable();
-            if (ovar && !ovar->isPointer() && !ovar->isArray() && Token::Match(ovar->typeStartToken(), "std :: string|wstring !!::"))
+            if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType())
                 nullPointerError(tok);
         }
     }

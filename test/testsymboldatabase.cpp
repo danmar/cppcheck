@@ -640,6 +640,7 @@ private:
             ASSERT_EQUALS(true, v.isStlType());
             ASSERT_EQUALS(true, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlType(no_types));
+            ASSERT_EQUALS(true, v.isStlStringType());
         }
         {
             reset();
@@ -655,6 +656,7 @@ private:
             ASSERT_EQUALS(true, v.isStlType());
             ASSERT_EQUALS(true, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlType(no_types));
+            ASSERT_EQUALS(false, v.isStlStringType());
         }
         {
             reset();
@@ -667,6 +669,7 @@ private:
             const char* types[] = { "bitset", "set", "vector" };
             ASSERT_EQUALS(false, v.isStlType());
             ASSERT_EQUALS(false, v.isStlType(types));
+            ASSERT_EQUALS(false, v.isStlStringType());
         }
     }
 

@@ -801,7 +801,7 @@ void CheckStl::if_find()
                     const Token * decl = var->typeStartToken();
                     const unsigned int varid = tok->varId();
 
-                    bool str = Token::Match(decl, "std :: string|wstring &| %varid%", varid);
+                    bool str = var->isStlStringType() && !var->isArrayOrPointer();
                     if (if_findCompare(tok->linkAt(3), str))
                         continue;
 
@@ -858,7 +858,7 @@ void CheckStl::if_find()
                             if_findError(tok, true);
                     }
 
-                    else if (decl && decl->str() == "string") {
+                    else if (var->isStlStringType()) {
                         decl = decl->next();
                         if ((Token::Match(decl, "* &| %varid%", varid) ||
                              Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid)) && performance)
