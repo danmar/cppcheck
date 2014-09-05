@@ -360,10 +360,12 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
         result = _tokenizer.tokenize(istr, FileName, cfg);
         timer.Stop();
 
-        unsigned long long checksum = _tokenizer.list.calculateChecksum();
-        if (checksums.find(checksum) != checksums.end())
-            return false;
-        checksums.insert(checksum);
+        if (_settings._force || _settings._maxConfigs > 1) {
+            unsigned long long checksum = _tokenizer.list.calculateChecksum();
+            if (checksums.find(checksum) != checksums.end())
+                return false;
+            checksums.insert(checksum);
+        }
 
         if (!result) {
             // File had syntax errors, abort
