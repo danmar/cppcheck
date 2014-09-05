@@ -1945,6 +1945,17 @@ private:
               "    s->dyn_ltree[0].fc.freq++;\n"
               "}\n", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6132 "crash: daca: kvirc CheckOther::checkRedundantAssignment()"
+        check("void HttpFileTransfer :: transferTerminated ( bool bSuccess@1 ) {\n"
+              "if ( m_szCompletionCallback . isNull ( ) ) {\n"
+              "KVS_TRIGGER_EVENT ( KviEvent_OnHTTPGetTerminated , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams )\n"
+              "} else {\n"
+              "KviKvsScript :: run ( m_szCompletionCallback , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams ) ;\n"
+              "}\n"
+              "}\n", 0, false, false, false, true);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void switchRedundantOperationTest() {
