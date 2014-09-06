@@ -130,7 +130,7 @@ static bool conditionIsTrue(const Token *condition, const std::map<unsigned int,
     }
     std::map<unsigned int, MathLib::bigint> progmem(programMemory);
     bool error = false;
-    MathLib::bigint result;
+    MathLib::bigint result = 0;
     execute(condition, &progmem, &result, &error);
     return !error && result == 1;
 }
