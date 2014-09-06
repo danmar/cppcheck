@@ -304,6 +304,7 @@ private:
         TEST_CASE(simplifyTypedef106); // ticket #3619
         TEST_CASE(simplifyTypedef107); // ticket #3963 - bad code => segmentation fault
         TEST_CASE(simplifyTypedef108); // ticket #4777
+        TEST_CASE(simplifyTypedef109); // ticket #1823 - rvalue reference
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -5723,6 +5724,16 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef109() {
+        const char code[] = "typedef int&& rref;\n"
+                            "rref var;";
+        const char expected[] = "int & & var ;";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1() {
