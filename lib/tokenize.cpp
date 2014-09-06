@@ -687,7 +687,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for pointers and references
-        while (Token::Match(tokOffset, "*|&|const")) {
+        while (Token::Match(tokOffset, "*|&|&&|const")) {
             pointers.push_back(tokOffset->str());
             tokOffset = tokOffset->next();
         }
