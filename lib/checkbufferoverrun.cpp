@@ -1372,7 +1372,7 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
     std::size_t parameterLength = 0;
     for (std::string::size_type i = 0; i < input_string.length(); ++i) {
         if (input_string[i] == '\\') {
-            if (input_string[i+1] == '0')
+            if (i < input_string.length() - 1 && input_string[i + 1] == '0')
                 break;
 
             ++input_string_size;
