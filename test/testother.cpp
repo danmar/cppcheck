@@ -1198,7 +1198,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInvalidPointerCast(const char code[], bool portability = false, bool inconclusive = false) {
+    void checkInvalidPointerCast(const char code[], bool portability = true, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1224,36 +1224,36 @@ private:
                                 "    delete [] (double*)f;\n"
                                 "    delete [] (long double const*)(new float[10]);\n"
                                 "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n"
-                           "[test.cpp:4]: (warning) Casting between float* and long double* which have an incompatible binary data representation.\n",
-                           "[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n"
-                           "[test.cpp:4]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n"
+                           "[test.cpp:4]: (portability) Casting between float* and long double* which have an incompatible binary data representation.\n",
+                           "[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n"
+                           "[test.cpp:4]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(const float* f) {\n"
                                 "    double *d = (double*)f;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(double* d1) {\n"
                                 "    long double *ld = (long double*)d1;\n"
                                 "    double *d2 = (double*)ld;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and long double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:3]: (warning) Casting between long double* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between double* and long double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:3]: (portability) Casting between long double* and double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("char* test(int* i) {\n"
                                 "    long double *d = (long double*)(i);\n"
                                 "    double *d = (double*)(i);\n"
                                 "    float *f = reinterpret_cast<float*>(i);\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and long double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:3]: (warning) Casting between integer* and double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:4]: (warning) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and long double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:3]: (portability) Casting between integer* and double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:4]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i[0];\n"
@@ -1263,7 +1263,7 @@ private:
         checkInvalidPointerCast("float* test(double& d) {\n"
                                 "    return (float*)&d;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between double* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
