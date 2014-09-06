@@ -139,6 +139,7 @@ private:
         TEST_CASE(template44);  // #5297 - TemplateSimplifier::simplifyCalculations not eager enough
         TEST_CASE(template45);  // #5814 - syntax error reported for valid code
         TEST_CASE(template46);  // #5816 - syntax error reported for valid code
+        TEST_CASE(template47);  // #6023 - syntax error reported for valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2422,6 +2423,12 @@ private:
             "template <class T> struct C { "
             "  enum { value = A<typename B<T>::type, int>::value }; "
             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template47() { // #6023
+        tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
+            "class C2 : public C1<C2> {};");
         ASSERT_EQUALS("", errout.str());
     }
 
