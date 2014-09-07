@@ -1951,7 +1951,7 @@ void CheckOther::checkMathFunctions()
                     mathfunctionCallWarning(tok, "1 - erf(x)", "erfc(x)");
                 } else if (Token::simpleMatch(tok, "exp (") && Token::Match(tok->linkAt(1), ") - %num%") && MathLib::toDoubleNumber(tok->linkAt(1)->strAt(2)) == 1.0 && tok->linkAt(1)->next()->astOperand1() == tok->next()) {
                     mathfunctionCallWarning(tok, "exp(x) - 1", "expm1(x)");
-                } else if (Token::Match(tok, "log (") && tok->next()->astOperand2()) {
+                } else if (Token::simpleMatch(tok, "log (") && tok->next()->astOperand2()) {
                     const Token* plus = tok->next()->astOperand2();
                     if (plus->str() == "+" && ((plus->astOperand1() && MathLib::toDoubleNumber(plus->astOperand1()->str()) == 1.0) || (plus->astOperand2() && MathLib::toDoubleNumber(plus->astOperand2()->str()) == 1.0)))
                         mathfunctionCallWarning(tok, "log(1 + x)", "log10(x)");
