@@ -2359,6 +2359,37 @@ static void setVarIdStructMembers(Token **tok1,
 }
 
 
+static const Token * findInitListEndToken(const Token *tok)
+{
+    if (!Token::Match(tok, ") :"))
+        return nullptr;
+
+    tok = tok->tokAt(2);
+
+    while (tok) {
+        if (tok && tok->str()=="::")
+            tok = tok->next();
+
+        while (tok && Token::Match(tok, "%type% ::"))
+            tok = tok->tokAt(2);
+
+        if (Token::Match(tok, "%var% [({]")) {
+            tok = tok->linkAt(1);
+            if (!tok)
+                return nullptr;
+            tok = tok->next();
+        }
+        if (tok && tok->str()==",")
+            tok = tok->next();
+        else if (tok && tok->str()=="{")
+            return tok; // End of init list found
+        else
+            return nullptr;
+    }
+
+    return nullptr;
+}
+
 static void setVarIdClassDeclaration(Token * const startToken,
                                      const std::map<std::string, unsigned int> &variableId,
                                      const unsigned int scopeStartVarId,
@@ -2381,14 +2412,15 @@ static void setVarIdClassDeclaration(Token * const startToken,
 
     // replace varids..
     unsigned int indentlevel = 0;
-    bool initList = false;
+    const Token * initListEndToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
         if (tok->str() == "{") {
-            initList = false;
+            if (tok == initListEndToken)
+                initListEndToken = nullptr;
             ++indentlevel;
         } else if (tok->str() == "}")
             --indentlevel;
-        else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %var% (")) {
+        else if (initListEndToken && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %var% [({]")) {
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
@@ -2411,7 +2443,7 @@ static void setVarIdClassDeclaration(Token * const startToken,
                 }
             }
         } else if (indentlevel == 0 && tok->str() == ":")
-            initList = true;
+            initListEndToken = findInitListEndToken(tok->previous());
     }
 }
 
@@ -2444,18 +2476,6 @@ static void setVarIdClassFunction(const std::string &classname,
     }
 }
 
-static bool isInitList(const Token *tok)
-{
-    if (!Token::Match(tok, ") : %var% ("))
-        return false;
-
-    tok = tok->linkAt(3);
-    while (Token::Match(tok, ") , %var% ("))
-        tok = tok->linkAt(3);
-
-    return Token::simpleMatch(tok, ") {");
-}
-
 void Tokenizer::setVarId()
 {
     // Clear all variable ids
@@ -2486,14 +2506,22 @@ void Tokenizer::setVarId()
     executableScope.push(false);
     std::stack<unsigned int> scopestartvarid;  // varid when scope starts
     scopestartvarid.push(0);
-    bool initlist = false;
+    const Token * initListEndToken = nullptr;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         // scope info to handle shadow variables..
-        if (!initlist && tok->str() == "(" &&
-            (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {") || isInitList(tok->link()))) {
+        bool newScope = false;
+        if (!initListEndToken && tok->str() == "(") {
+            if (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {"))
+                newScope = true;
+            else {
+                initListEndToken = findInitListEndToken(tok->link());
+                if (initListEndToken)
+                    newScope = true;
+            }
+        }
+        if (newScope) {
             scopeInfo.push(variableId);
-            initlist = Token::simpleMatch(tok->link(), ") :");
 
             // function declarations
         } else if (!executableScope.top() && tok->str() == "(" && Token::Match(tok->link(), ") const| ;")) {
@@ -2503,22 +2531,24 @@ void Tokenizer::setVarId()
             scopeInfo.pop();
 
         } else if (tok->str() == "{") {
-            initlist = false;
             // parse anonymous unions as part of the current scope
             if (!(tok->strAt(-1) == "union" && Token::simpleMatch(tok->link(), "} ;"))) {
                 scopestartvarid.push(_varId);
-                if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%")) {
+                if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%") ||
+                    tok == initListEndToken) {
                     executableScope.push(true);
                 } else {
                     executableScope.push(tok->strAt(-1) == "else");
                     scopeInfo.push(variableId);
                 }
             }
+            if (tok == initListEndToken)
+                initListEndToken= nullptr;
         } else if (tok->str() == "}") {
             // parse anonymous unions as part of the current scope
             if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::simpleMatch(tok->link()->previous(), "union {"))) {
                 // Set variable ids in class declaration..
-                if (!isC() && !executableScope.top() && tok->link()) {
+                if (!initListEndToken && !isC() && !executableScope.top() && tok->link()) {
                     setVarIdClassDeclaration(tok->link(),
                                              variableId,
                                              scopestartvarid.top(),

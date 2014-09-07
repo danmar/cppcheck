@@ -5821,6 +5821,27 @@ private:
                                 "    }\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("struct Foo : Bar {\n"
+                                "    int i;\n"
+                                "    Foo(int i)\n"
+                                "        : Bar(""), i(i) {}\n"
+                                "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
+                                "    int i;\n"
+                                "    Foo(int i)\n"
+                                "        : std::Bar(""), i(i) {}\n"
+                                "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
+                                "    int i;\n"
+                                "    Foo(int i)\n"
+                                "        : std::Bar(""), i{i} {}\n"
+                                "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPureVirtualFunctionCall(const char code[], const Settings *s = 0, bool inconclusive = true) {

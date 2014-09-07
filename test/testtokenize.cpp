@@ -337,6 +337,7 @@ private:
         TEST_CASE(varidclass14);
         TEST_CASE(varidclass15);  // initializer list
         TEST_CASE(varidclass16);  // #4577
+        TEST_CASE(varidclass17);  // #6073
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
         TEST_CASE(varidnamespace1);
@@ -4954,6 +4955,21 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: class CPPCHECKLIB Scope { } ;\n",
                       tokenizeDebugListing("class CPPCHECKLIB Scope { };"));
+
+        // #6073
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A : public B , public C :: D {\n"
+                      "2: int i@1 ;\n"
+                      "3: A ( int i@2 ) : B { i@2 } , C :: D { i@2 } , i@1 { i@2 } {\n"
+                      "4: int j@3 { i@2 } ;\n"
+                      "5: }\n"
+                      "6: } ;\n",
+                      tokenizeDebugListing("class A: public B, public C::D {\n"
+                                           "    int i;\n"
+                                           "    A(int i): B{i}, C::D{i}, i{i} {\n"
+                                           "        int j{i};\n"
+                                           "    }\n"
+                                           "};"));
     }
 
     void varid_inheritedMembers() {
@@ -5426,6 +5442,23 @@ private:
                                 "8: void A :: setPFun ( int mode@3 ) {\n"
                                 "9: pFun@1 = & A :: funcNorm ;\n"
                                 "10: }\n";
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
+    void varidclass17() {
+        const char code[] = "class A: public B, public C::D {\n"
+                            "    int i;\n"
+                            "    A(int i): B(i), C::D(i), i(i) {\n"
+                            "        int j(i);\n"
+                            "    }\n"
+                            "};";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A : public B , public C :: D {\n"
+                                "2: int i@1 ;\n"
+                                "3: A ( int i@2 ) : B ( i@2 ) , C :: D ( i@2 ) , i@1 ( i@2 ) {\n"
+                                "4: int j@3 ; j@3 = i@2 ;\n"
+                                "5: }\n"
+                                "6: } ;\n";
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
