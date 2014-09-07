@@ -258,6 +258,7 @@ private:
     void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
     void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
@@ -326,6 +327,7 @@ private:
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
         c.mathfunctionCallWarning(0);
+        c.mathfunctionCallWarning(0, "1 - erf(x)", "erfc(x)");
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
@@ -405,7 +407,8 @@ private:
                "* redundant get and set function of user id (--std=posix).\n"
                "* Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"
                "* NaN (not a number) value used in arithmetic expression.\n"
-               "* comma in return statement (the comma can easily be misread as a semicolon).\n";
+               "* comma in return statement (the comma can easily be misread as a semicolon).\n"
+               "* prefer erfc, expm1 or log1p to avoid loss of precision.\n";
     }
 };
 /// @}

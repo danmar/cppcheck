@@ -1892,6 +1892,8 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkMathFunctions()
 {
+    bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -1943,6 +1945,18 @@ void CheckOther::checkMathFunctions()
                      MathLib::isNegative(tok->strAt(4))) {
                 mathfunctionCallWarning(tok, 2);
             }
+
+            if (styleC99) {
+                if (Token::Match(tok, "%num% - erf (") && MathLib::toDoubleNumber(tok->str()) == 1.0 && tok->next()->astOperand2() == tok->tokAt(3)) {
+                    mathfunctionCallWarning(tok, "1 - erf(x)", "erfc(x)");
+                } else if (Token::simpleMatch(tok, "exp (") && Token::Match(tok->linkAt(1), ") - %num%") && MathLib::toDoubleNumber(tok->linkAt(1)->strAt(2)) == 1.0 && tok->linkAt(1)->next()->astOperand1() == tok->next()) {
+                    mathfunctionCallWarning(tok, "exp(x) - 1", "expm1(x)");
+                } else if (Token::Match(tok, "log (") && tok->next()->astOperand2()) {
+                    const Token* plus = tok->next()->astOperand2();
+                    if (plus->str() == "+" && ((plus->astOperand1() && MathLib::toDoubleNumber(plus->astOperand1()->str()) == 1.0) || (plus->astOperand2() && MathLib::toDoubleNumber(plus->astOperand2()->str()) == 1.0)))
+                        mathfunctionCallWarning(tok, "log(1 + x)", "log10(x)");
+                }
+            }
         }
     }
 }
@@ -1956,6 +1970,11 @@ void CheckOther::mathfunctionCallWarning(const Token *tok, const unsigned int nu
             reportError(tok, Severity::warning, "wrongmathcall", "Passing values " + tok->strAt(2) + " and " + tok->strAt(4) + " to " + tok->str() + "() leads to implementation-defined result.");
     } else
         reportError(tok, Severity::warning, "wrongmathcall", "Passing value '#' to #() leads to implementation-defined result.");
+}
+
+void CheckOther::mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp)
+{
+    reportError(tok, Severity::style, "unpreciseMathCall", "Expression '" + oldexp + "' can be replaced by '" + newexp + "' to avoid loss of precision.");
 }
 
 //---------------------------------------------------------------------------

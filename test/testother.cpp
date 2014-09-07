@@ -88,6 +88,7 @@ private:
         TEST_CASE(mathfunctionCall_asin);
         TEST_CASE(mathfunctionCall_pow);
         TEST_CASE(mathfunctionCall_atan2);
+        TEST_CASE(mathfunctionCall_precision);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -1685,6 +1686,41 @@ private:
               "    std::cout <<  fmod(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodf(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void mathfunctionCall_precision() {
+        check("void foo() {\n"
+              "    print(exp(x) - 1);\n"
+              "    print(log(1 + x));\n"
+              "    print(1 - erf(x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(exp(x) - 1.0);\n"
+              "    print(log(1.0 + x));\n"
+              "    print(1.0 - erf(x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(exp(3 + x*f(a)) - 1);\n"
+              "    print(log(x*4 + 1));\n"
+              "    print(1 - erf(34*x + f(x) - c));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(2*exp(x) - 1);\n"
+              "    print(1 - erf(x)/2.0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
