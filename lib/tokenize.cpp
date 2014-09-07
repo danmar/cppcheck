@@ -2354,8 +2354,8 @@ static void setVarIdStructMembers(Token **tok1,
             tok->varId(members[tok->str()]);
         }
     }
-    if (tok)
-        *tok1 = tok;
+    // tok can't be null
+    *tok1 = tok;
 }
 
 
