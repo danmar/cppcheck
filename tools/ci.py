@@ -94,13 +94,11 @@ def gitpull():
     return False
 
 
-t0 = datetime.date.today()
+t0 = None
 while True:
     if datetime.date.today() != t0:
         print("generate daily reports")
         t0 = datetime.date.today()
+        gitpull()
         generate_webreport()
-
-    if gitpull() == True:
-        print("make test")
-        # maketest(False) # Integral make test build
+    time.sleep(60)
