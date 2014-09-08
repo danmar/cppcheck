@@ -1947,13 +1947,13 @@ void CheckOther::checkMathFunctions()
             }
 
             if (styleC99) {
-                if (Token::Match(tok, "%num% - erf (") && MathLib::toDoubleNumber(tok->str()) == 1.0 && tok->next()->astOperand2() == tok->tokAt(3)) {
+                if (Token::Match(tok, "%num% - erf (") && Tokenizer::isOneNumber(tok->str()) && tok->next()->astOperand2() == tok->tokAt(3)) {
                     mathfunctionCallWarning(tok, "1 - erf(x)", "erfc(x)");
-                } else if (Token::simpleMatch(tok, "exp (") && Token::Match(tok->linkAt(1), ") - %num%") && MathLib::toDoubleNumber(tok->linkAt(1)->strAt(2)) == 1.0 && tok->linkAt(1)->next()->astOperand1() == tok->next()) {
+                } else if (Token::simpleMatch(tok, "exp (") && Token::Match(tok->linkAt(1), ") - %num%") && Tokenizer::isOneNumber(tok->linkAt(1)->strAt(2)) && tok->linkAt(1)->next()->astOperand1() == tok->next()) {
                     mathfunctionCallWarning(tok, "exp(x) - 1", "expm1(x)");
                 } else if (Token::simpleMatch(tok, "log (") && tok->next()->astOperand2()) {
                     const Token* plus = tok->next()->astOperand2();
-                    if (plus->str() == "+" && ((plus->astOperand1() && MathLib::toDoubleNumber(plus->astOperand1()->str()) == 1.0) || (plus->astOperand2() && MathLib::toDoubleNumber(plus->astOperand2()->str()) == 1.0)))
+                    if (plus->str() == "+" && ((plus->astOperand1() && Tokenizer::isOneNumber(plus->astOperand1()->str())) || (plus->astOperand2() && Tokenizer::isOneNumber(plus->astOperand2()->str()))))
                         mathfunctionCallWarning(tok, "log(1 + x)", "log10(x)");
                 }
             }
