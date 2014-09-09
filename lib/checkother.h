@@ -290,7 +290,7 @@ private:
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void negativeBitwiseShiftError(const Token *tok);
-    void tooBigBitwiseShiftError(const Token *tok, int lhsbits, MathLib::bigint rhsbits);
+    void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
@@ -309,7 +309,7 @@ private:
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
-        c.tooBigBitwiseShiftError(0, 32, 64);
+        c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
         c.checkPipeParameterSizeError(0, "varname", "dimension");
 
         //performance

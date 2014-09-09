@@ -2702,17 +2702,28 @@ void CheckOther::checkTooBigBitwiseShift()
 
             // Get biggest rhs value. preferably a value which doesn't have 'condition'.
             const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
-            if (value)
-                tooBigBitwiseShiftError(tok, lhsbits, value->intvalue);
+            if (!value)
+                continue;
+            if (value->condition && !_settings->isEnabled("warning"))
+                continue;
+            if (value->inconclusive && !_settings->inconclusive)
+                continue;
+            tooBigBitwiseShiftError(tok, lhsbits, *value);
         }
     }
 }
 
-void CheckOther::tooBigBitwiseShiftError(const Token *tok, int lhsbits, MathLib::bigint rhsbits)
+void CheckOther::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
 {
+    std::list<const Token*> callstack;
+    callstack.push_back(tok);
+    if (rhsbits.condition)
+        callstack.push_back(rhsbits.condition);
     std::ostringstream errmsg;
-    errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits << " bits is undefined behaviour";
-    reportError(tok, Severity::error, "shiftTooManyBits", errmsg.str());
+    errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
+    if (rhsbits.condition)
+        errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
+    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
