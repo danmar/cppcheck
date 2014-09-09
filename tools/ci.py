@@ -58,8 +58,7 @@ def iconv(filename):
 
 # Generate daily webreport
 def generate_webreport():
-    filenames = glob.glob('*/*.cpp')
-    for filename in filenames:
+    for filename in glob.glob('*/*.cpp'):
         iconv(filename)
     subprocess.call(
         ["git", "commit", "-a", "-m", '"automatic conversion from iso-8859-1 formatting to utf-8"'])
