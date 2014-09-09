@@ -2663,6 +2663,57 @@ void CheckOther::negativeBitwiseShiftError(const Token *tok)
     reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour");
 }
 
+//---------------------------------------------------------------------------
+// Checking for shift by too many bits
+//---------------------------------------------------------------------------
+
+void CheckOther::checkTooBigBitwiseShift()
+{
+    // unknown sizeof(int) => can't run this checker
+    if (_settings->platformType == Settings::Unspecified)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() != "<<" && tok->str() != ">>")
+                continue;
+
+            if (!tok->astOperand1() || !tok->astOperand2())
+                continue;
+
+            // get number of bits of lhs
+            const Variable *var = tok->astOperand1()->variable();
+            if (!var)
+                continue;
+            int lhsbits = 0;
+            for (const Token *type = var->typeStartToken(); type; type = type->next()) {
+                if (Token::Match(type,"char|short|int") && !type->isLong()) {
+                    lhsbits = _settings->sizeof_int * 8;
+                    break;
+                }
+                if (type == var->typeEndToken())
+                    break;
+            }
+            if (lhsbits == 0)
+                continue;
+
+            // Get biggest rhs value. preferably a value which doesn't have 'condition'.
+            const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
+            if (value)
+                tooBigBitwiseShiftError(tok, lhsbits, value->intvalue);
+        }
+    }
+}
+
+void CheckOther::tooBigBitwiseShiftError(const Token *tok, int lhsbits, MathLib::bigint rhsbits)
+{
+    std::ostringstream errmsg;
+    errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits << " bits is undefined behaviour";
+    reportError(tok, Severity::error, "shiftTooManyBits", errmsg.str());
+}
 
 //---------------------------------------------------------------------------
 // Check for incompletely filled buffers.
