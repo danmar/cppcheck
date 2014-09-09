@@ -1864,7 +1864,7 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
                     return false;
             }
 
-            else if (Token::simpleMatch(ftok ? ftok->previous() : nullptr, "= * ("))
+            else if (ftok && Token::simpleMatch(ftok->previous(), "= * ("))
                 return false;
         }
         return true;
