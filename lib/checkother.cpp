@@ -2799,12 +2799,22 @@ void CheckOther::checkIntegerOverflow()
     if (_settings->platformType == Settings::Unspecified)
         return;
 
+    // max int value according to platform settings.
+    const MathLib::bigint maxint = (1LL << (8 * _settings->sizeof_int - 1)) - 1;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!tok->isArithmeticalOp())
+                continue;
+
+            // is there a overflow result value
+            const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
+            if (!value)
+                value = tok->getValueLE(-maxint - 2, _settings);
+            if (!value)
                 continue;
 
             // get size and sign of result..
@@ -2815,15 +2825,7 @@ void CheckOther::checkIntegerOverflow()
             if (sign != 's')  // only signed integer overflow is UB
                 continue;
 
-            // max int value according to platform settings.
-            const MathLib::bigint maxint = (1LL << 8 * (_settings->sizeof_int - 1)) - 1;
-
-            // is there a overflow result value
-            const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
-            if (!value)
-                value = tok->getValueLE(-maxint - 2, _settings);
-            if (value)
-                integerOverflowError(tok, *value);
+            integerOverflowError(tok, *value);
         }
     }
 }
