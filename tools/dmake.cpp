@@ -411,12 +411,12 @@ int main(int argc, char **argv)
     fout << "tags:\n";
     fout << "\tctags -R --exclude=doxyoutput .\n\n";
     fout << "install: cppcheck\n";
-    fout << "\tinstall -d ${BIN}\n";
-    fout << "\tinstall cppcheck ${BIN}\n";
-    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
+    fout << "\tinstall -d ${DESTDIR}${BIN}\n";
+    fout << "\tinstall cppcheck ${DESTDIR}${BIN}\n";
+    fout << "\tinstall htmlreport/cppcheck-htmlreport ${DESTDIR}${BIN}\n";
     fout << "ifdef CFGDIR \n";
-    fout << "\tinstall -d ${CFGDIR}\n";
-    fout << "\tinstall -m 644 cfg/* ${CFGDIR}\n";
+    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
+    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
     fout << "endif\n\n";
 
     fout << "\n###### Build\n\n";

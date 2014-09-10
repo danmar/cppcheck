@@ -263,12 +263,12 @@ tags:
 	ctags -R --exclude=doxyoutput .
 
 install: cppcheck
-	install -d ${BIN}
-	install cppcheck ${BIN}
-	install htmlreport/cppcheck-htmlreport ${BIN}
+	install -d ${DESTDIR}${BIN}
+	install cppcheck ${DESTDIR}${BIN}
+	install htmlreport/cppcheck-htmlreport ${DESTDIR}${BIN}
 ifdef CFGDIR 
-	install -d ${CFGDIR}
-	install -m 644 cfg/* ${CFGDIR}
+	install -d ${DESTDIR}${CFGDIR}
+	install -m 644 cfg/* ${DESTDIR}${CFGDIR}
 endif
 
 
