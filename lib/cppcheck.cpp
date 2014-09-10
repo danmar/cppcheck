@@ -599,7 +599,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     ErrorLogger::ErrorMessage errmsg(loclist,
                                      Severity::information,
                                      "The configuration '" + configuration + "' was not checked because its code equals another one.",
-                                     "toomanyconfigs",
+                                     "purgedConfiguration",
                                      false);
 
     reportErr(errmsg);
