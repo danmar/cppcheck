@@ -59,6 +59,69 @@ bool astIsFloat(const Token *tok, bool unknown)
     return unknown;
 }
 
+static bool astGetSizeSign(const Settings *settings, const Token *tok, int *size, char *sign)
+{
+    if (!tok)
+        return false;
+    if (tok->isArithmeticalOp()) {
+        if (!astGetSizeSign(settings, tok->astOperand1(), size, sign))
+            return false;
+        return !tok->astOperand2() || astGetSizeSign(settings, tok->astOperand2(), size, sign);
+    }
+    if (tok->isNumber() && MathLib::isInt(tok->str())) {
+        if (tok->str().find("L") != std::string::npos)
+            return false;
+        MathLib::bigint value = MathLib::toLongNumber(tok->str());
+        int sz;
+        if (value >= -(1<<7) && value <= (1<<7)-1)
+            sz = 8;
+        else if (value >= -(1<<15) && value <= (1<<15)-1)
+            sz = 16;
+        else if (value >= -(1LL<<31) && value <= (1LL<<31)-1)
+            sz = 32;
+        else
+            return false;
+        if (sz < 8 * settings->sizeof_int)
+            sz = 8 * settings->sizeof_int;
+        if (*size < sz)
+            *size = sz;
+        if (tok->str().find('U') != std::string::npos)
+            *sign = 'u';
+        if (*sign != 'u')
+            *sign = 's';
+        return true;
+    }
+    if (tok->isName()) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return false;
+        int sz = 0;
+        for (const Token *type = var->typeStartToken(); type; type = type->next()) {
+            if (type->str() == "*")
+                return false;  // <- FIXME: handle pointers
+            if (Token::Match(type, "char|short|int")) {
+                sz = 8 * settings->sizeof_int;
+                if (type->isUnsigned())
+                    *sign = 'u';
+                else if (*sign != 'u')
+                    *sign = 's';
+            } else if (Token::Match(type, "float|double|long")) {
+                return false;
+            } else {
+                // TODO: try to lookup type info in library
+            }
+            if (type == var->typeEndToken())
+                break;
+        }
+        if (sz == 0)
+            return false;
+        if (*size < sz)
+            *size = sz;
+        return true;
+    }
+    return false;
+}
+
 static bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
 {
     if (!tok)
@@ -2724,6 +2787,59 @@ void CheckOther::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Va
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
     reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), rhsbits.inconclusive);
+}
+
+//---------------------------------------------------------------------------
+// Checking for integer overflow
+//---------------------------------------------------------------------------
+
+void CheckOther::checkIntegerOverflow()
+{
+    // unknown sizeof(int) => can't run this checker
+    if (_settings->platformType == Settings::Unspecified)
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->isArithmeticalOp())
+                continue;
+
+            // get size and sign of result..
+            int  size = 0;
+            char sign = 0;
+            if (!astGetSizeSign(_settings, tok, &size, &sign))
+                continue;
+            if (sign != 's')  // only signed integer overflow is UB
+                continue;
+
+            // max int value according to platform settings.
+            const MathLib::bigint maxint = (1LL << 8 * (_settings->sizeof_int - 1)) - 1;
+
+            // is there a overflow result value
+            const ValueFlow::Value *value = tok->getValueGE(maxint + 1, _settings);
+            if (!value)
+                value = tok->getValueLE(-maxint - 2, _settings);
+            if (value)
+                integerOverflowError(tok, *value);
+        }
+    }
+}
+
+void CheckOther::integerOverflowError(const Token *tok, const ValueFlow::Value &value)
+{
+    const std::string expr(tok ? tok->expressionString() : "");
+    const std::string cond(value.condition ?
+                           ". See condition at line " + MathLib::toString(value.condition->linenr()) + "." :
+                           "");
+
+    reportError(tok,
+                value.condition ? Severity::warning : Severity::error,
+                "integerOverflow",
+                "Signed integer overflow for expression '"+expr+"'"+cond,
+                value.inconclusive);
 }
 
 //---------------------------------------------------------------------------

@@ -150,6 +150,8 @@ private:
         TEST_CASE(checkNegativeShift);
         TEST_CASE(checkTooBigShift);
 
+        TEST_CASE(checkIntegerOverflow);
+
         TEST_CASE(incompleteArrayFill);
 
         TEST_CASE(redundantVarAssignment);
@@ -5396,6 +5398,29 @@ private:
 
         check("int foo(int x) {\n"
               "   return x << 2;\n"
+              "}","test.cpp",false,false,false,true,&settings);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkIntegerOverflow() {
+        Settings settings;
+        settings.platform(Settings::Unix32);
+
+        check("int foo(int x) {\n"
+              "   if (x==123456) {}\n"
+              "   return x * x;\n"
+              "}","test.cpp",false,false,false,true,&settings);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Signed integer overflow for expression 'x*x'. See condition at line 2.\n", errout.str());
+
+        check("int foo(int x) {\n"
+              "   if (x==123456) {}\n"
+              "   return -123456 * x;\n"
+              "}","test.cpp",false,false,false,true,&settings);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Signed integer overflow for expression '-123456*x'. See condition at line 2.\n", errout.str());
+
+        check("int foo(int x) {\n"
+              "   if (x==123456) {}\n"
+              "   return 123456U * x;\n"
               "}","test.cpp",false,false,false,true,&settings);
         ASSERT_EQUALS("", errout.str());
     }

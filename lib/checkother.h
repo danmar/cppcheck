@@ -103,6 +103,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkTooBigBitwiseShift();
+        checkOther.checkIntegerOverflow();
         checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
@@ -222,6 +223,9 @@ public:
     /** @brief %Check for bitwise shift with too big right operand */
     void checkTooBigBitwiseShift();
 
+    /** @brief %Check for integer overflow */
+    void checkIntegerOverflow();
+
     /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
     void checkIncompleteArrayFill();
 
@@ -291,6 +295,7 @@ private:
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void negativeBitwiseShiftError(const Token *tok);
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
+    void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
@@ -310,6 +315,7 @@ private:
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
+        c.integerOverflowError(0, ValueFlow::Value(1LL<<32));
         c.checkPipeParameterSizeError(0, "varname", "dimension");
 
         //performance
