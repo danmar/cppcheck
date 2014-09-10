@@ -126,6 +126,7 @@ public:
 
 private:
     Settings settings1;
+    Settings settings2;
 
     void check(const char code[], const Settings *settings = nullptr) {
         // Clear the error buffer..
@@ -150,6 +151,7 @@ private:
     void run() {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "gtk.cfg");
+        LOAD_LIB_2(settings2.library, "std.cfg");
 
         // Check that getcode works correctly..
         TEST_CASE(testgetcode);
@@ -367,20 +369,14 @@ private:
         TEST_CASE(posixcfg);
     }
 
-    void loadlib(Library& library) {
-        LOAD_LIB_2(library, "std.cfg");
-    }
-
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.standards.posix = true;
-        loadlib(settings.library);
+        settings2.standards.posix = true;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))
             return "";
@@ -389,7 +385,7 @@ private:
         const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
         // getcode..
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, nullptr);
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
         std::list<const Token *> callstack;
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;

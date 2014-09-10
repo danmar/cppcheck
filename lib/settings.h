@@ -165,6 +165,13 @@ public:
      */
     std::string addEnabled(const std::string &str);
 
+    /**
+     * @brief Disables all severities, except from error.
+     */
+    void clearEnabled() {
+        _enabled.clear();
+    }
+
     enum Language {
         None, C, CPP
     };
