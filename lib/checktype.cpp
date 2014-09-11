@@ -219,7 +219,7 @@ void CheckType::checkSignConversion()
 {
     if (!_settings->isEnabled("warning"))
         return;
-    
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -232,7 +232,7 @@ void CheckType::checkSignConversion()
             char sign = 0;
             if (!astGetSizeSign(_settings, tok, &size, &sign))
                 continue;
-            
+
             if (sign != 'u')
                 continue;
 
@@ -249,7 +249,7 @@ void CheckType::checkSignConversion()
                 const Variable *var = tok1->variable();
                 if (var && tok1->getValueLE(-1,_settings)) {
                     bool signedvar = false;
-                    for (const Token *type = var->typeStartToken();;type = type->next()) {
+                    for (const Token *type = var->typeStartToken();; type = type->next()) {
                         if (type->isSigned()) {
                             signedvar = true;
                             break;
@@ -272,7 +272,7 @@ void CheckType::checkSignConversion()
 void CheckType::signConversionError(const Token *tok)
 {
     const std::string varname(tok ? tok->str() : "var");
-    
+
     reportError(tok,
                 Severity::warning,
                 "signConversion",

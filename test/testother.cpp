@@ -5231,12 +5231,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void check_redundant_copy(const char code[]) {
+    void check_redundant_copy(const char code[], bool inconclusive = true) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("performance");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5332,17 +5333,20 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #5618
-        check_redundant_copy("class Token {\n"
-                             "public:\n"
-                             "    const std::string& str();\n"
-                             "};\n"
-                             "void simplifyArrayAccessSyntax() {\n"
-                             "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
-                             "        const std::string temp = tok->str();\n"
-                             "        tok->str(tok->strAt(2));\n"
-                             "    }\n"
-                             "}\n");
+        const char* code5618 = "class Token {\n"
+                               "public:\n"
+                               "    const std::string& str();\n"
+                               "};\n"
+                               "void simplifyArrayAccessSyntax() {\n"
+                               "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
+                               "        const std::string temp = tok->str();\n"
+                               "        tok->str(tok->strAt(2));\n"
+                               "    }\n"
+                               "}";
+        check_redundant_copy(code5618);
         TODO_ASSERT_EQUALS("", "[test.cpp:7]: (performance, inconclusive) Use const reference for 'temp' to avoid unnecessary data copying.\n", errout.str());
+        check_redundant_copy(code5618, false);
+        ASSERT_EQUALS("", errout.str());
 
         // #5890 - crash: wesnoth desktop_util.cpp / unicode.hpp
         check_redundant_copy("typedef std::vector<char> X;\n"

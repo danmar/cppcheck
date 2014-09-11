@@ -62,7 +62,7 @@ public:
 
     /** @brief %Check for integer overflow */
     void checkIntegerOverflow();
-    
+
     /** @brief %Check for dangerous sign conversion */
     void checkSignConversion();
 
