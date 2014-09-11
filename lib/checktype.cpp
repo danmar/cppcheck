@@ -30,7 +30,7 @@ namespace {
     CheckType instance;
 }
 
-static bool astGetSizeSign(const Settings *settings, const Token *tok, int *size, char *sign)
+static bool astGetSizeSign(const Settings *settings, const Token *tok, unsigned int *size, char *sign)
 {
     if (!tok)
         return false;
@@ -43,7 +43,7 @@ static bool astGetSizeSign(const Settings *settings, const Token *tok, int *size
         if (tok->str().find("L") != std::string::npos)
             return false;
         MathLib::bigint value = MathLib::toLongNumber(tok->str());
-        int sz;
+        unsigned int sz;
         if (value >= -(1<<7) && value <= (1<<7)-1)
             sz = 8;
         else if (value >= -(1<<15) && value <= (1<<15)-1)
@@ -66,7 +66,7 @@ static bool astGetSizeSign(const Settings *settings, const Token *tok, int *size
         const Variable *var = tok->variable();
         if (!var)
             return false;
-        int sz = 0;
+        unsigned int sz = 0;
         for (const Token *type = var->typeStartToken(); type; type = type->next()) {
             if (type->str() == "*")
                 return false;  // <- FIXME: handle pointers
@@ -185,7 +185,7 @@ void CheckType::checkIntegerOverflow()
                 continue;
 
             // get size and sign of result..
-            int  size = 0;
+            unsigned int size = 0;
             char sign = 0;
             if (!astGetSizeSign(_settings, tok, &size, &sign))
                 continue;
@@ -228,7 +228,7 @@ void CheckType::checkSignConversion()
             if (!tok->isArithmeticalOp())
                 continue;
 
-            int size = 0;
+            unsigned int size = 0;
             char sign = 0;
             if (!astGetSizeSign(_settings, tok, &size, &sign))
                 continue;
