@@ -1664,7 +1664,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, bool alloc,
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool alloc, bool cpp)
 {
-    if (vartok->previous()->str() == "return" && !alloc)
+    if (!alloc && vartok->previous()->str() == "return")
         return true;
 
     // Passing variable to typeof/__alignof__
@@ -1673,8 +1673,6 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
     // Passing variable to function..
     if (Token::Match(vartok->previous(), "[(,] %var% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %var% [,)]")) {
-        const bool address(vartok->previous()->str() == "&");
-
         // locate start parentheses in function call..
         unsigned int argumentNumber = 0;
         const Token *start = vartok;
@@ -1693,6 +1691,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
             if (func) {
                 const Variable *arg = func->getArgumentVar(argumentNumber);
                 if (arg) {
+                    const bool address(vartok->previous()->str() == "&");
                     const Token *argStart = arg->typeStartToken();
                     while (argStart->previous() && argStart->previous()->isName())
                         argStart = argStart->previous();
