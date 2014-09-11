@@ -1013,9 +1013,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     // check all known fixed size arrays first by just looking them up
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
-        const Variable *var = symbolDatabase->getVariableFromVarId(i);
+        const Variable * const var = symbolDatabase->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0) {
-            const ArrayInfo arrayInfo(var, _tokenizer, i);
             const Token *tok = var->nameToken();
             while (tok && tok->str() != ";") {
                 if (tok->str() == "{") {
@@ -1030,6 +1029,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 break;
             if (tok->str() == "{")
                 tok = tok->next();
+            const ArrayInfo arrayInfo(var, _tokenizer, i);
             checkScope(tok, arrayInfo);
         }
     }
