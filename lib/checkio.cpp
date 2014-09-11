@@ -220,7 +220,7 @@ void CheckIO::checkFileUsage()
                     if ((tok->str() == "ungetc" || tok->str() == "ungetwc") && fileTok)
                         fileTok = fileTok->nextArgument();
                     operation = Filepointer::UNIMPORTANT;
-                } else if (!Token::Match(tok, "if|for|while|catch|switch")) {
+                } else if (!Token::Match(tok, "if|for|while|catch|switch") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
                     const Token* const end2 = tok->linkAt(1);
                     for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {

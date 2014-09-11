@@ -673,7 +673,7 @@ void CheckOther::checkRedundantAssignment()
                     if (!writtenArgumentsEnd) // Indicates that we are in the first argument of strcpy/memcpy/... function
                         memAssignments.erase(tok->varId());
                 }
-            } else if (Token::Match(tok, "%var% (")) { // Function call. Global variables might be used. Reset their status
+            } else if (Token::Match(tok, "%var% (") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) { // Function call. Global variables might be used. Reset their status
                 const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
                 if (tok->varId()) // operator() or function pointer
                     varAssignments.erase(tok->varId());
@@ -2131,7 +2131,7 @@ void CheckOther::checkInvalidFree()
         // If the previously-allocated variable is passed in to another function
         // as a parameter, it might be modified, so we shouldn't report an error
         // if it is later used to free memory
-        else if (Token::Match(tok, "%var% (")) {
+        else if (Token::Match(tok, "%var% (") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
             const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
             while (tok2 != nullptr) {
                 allocatedVariables.erase(tok2->varId());
@@ -2209,7 +2209,7 @@ void CheckOther::checkDoubleFree()
         }
 
         // If a variable is passed to a function, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% (") && !Token::Match(tok, "printf|sprintf|snprintf|fprintf|wprintf|swprintf|fwprintf")) {
+        else if (Token::Match(tok, "%var% (") && _settings->library.leakignore.find(tok->str()) == _settings->library.leakignore.end()) {
 
             // If this is a new function definition, clear all variables
             if (Token::simpleMatch(tok->next()->link(), ") {")) {

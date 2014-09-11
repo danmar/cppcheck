@@ -4776,12 +4776,14 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
+        Settings settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
         check(
             "void foo(char *p) {\n"
             "  free(p);\n"
             "  printf(\"Freed memory at location %x\", p);\n"
             "  free(p);\n"
-            "}");
+            "}", nullptr, false, false, false, true, &settings);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
         check(
