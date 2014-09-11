@@ -1368,7 +1368,7 @@ void CheckOther::checkVariableScope()
 
     for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
-        if (!var || !var->isLocal() || (!var->isPointer() && !var->typeStartToken()->isStandardType() && !var->typeStartToken()->next()->isStandardType()))
+        if (!var || !var->isLocal() || (!var->isPointer() && !var->typeStartToken()->isStandardType()))
             continue;
 
         if (var->isConst())

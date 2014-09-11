@@ -46,13 +46,10 @@ void CheckBool::checkIncrementBoolean()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% ++")) {
-                if (tok->varId()) {
-                    const Variable *var = tok->variable();
-
-                    if (var && var->typeEndToken()->str() == "bool")
-                        incrementBooleanError(tok);
-                }
+            if (tok->variable() && Token::Match(tok, "%var% ++")) {
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "bool")
+                    incrementBooleanError(tok);
             }
         }
     }
@@ -204,9 +201,9 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 
 static bool tokenIsFunctionReturningBool(const Token* tok)
 {
-    if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), "::|.")) {
-        const Function* func = tok->function();
-        if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+    const Function* func = tok->function();
+    if (func && Token::Match(tok, "%var% (")) {
+        if (func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
             return true;
         }
     }
@@ -483,7 +480,7 @@ void CheckBool::checkAssignBoolToFloat()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% =")) {
-                const Variable * const var = symbolDatabase->getVariableFromVarId(tok->varId());
+                const Variable * const var = tok->variable();
                 if (var && var->isFloatingType() && !var->isArrayOrPointer() && astIsBool(tok->next()->astOperand2()))
                     assignBoolToFloatError(tok->next());
             }
