@@ -28,6 +28,7 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checksizeof.h \
            $${BASEPATH}checkstl.h \
            $${BASEPATH}checkstring.h \
+           $${BASEPATH}checktype.h \
            $${BASEPATH}checkuninitvar.h \
            $${BASEPATH}checkunusedfunctions.h \
            $${BASEPATH}checkunusedvar.h \
@@ -72,6 +73,7 @@ SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}checksizeof.cpp \
            $${BASEPATH}checkstl.cpp \
            $${BASEPATH}checkstring.cpp \
+           $${BASEPATH}checktype.cpp \
            $${BASEPATH}checkuninitvar.cpp \
            $${BASEPATH}checkunusedfunctions.cpp \
            $${BASEPATH}checkunusedvar.cpp \

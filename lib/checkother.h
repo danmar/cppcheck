@@ -102,8 +102,6 @@ public:
         checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
-        checkOther.checkTooBigBitwiseShift();
-        checkOther.checkIntegerOverflow();
         checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
@@ -220,12 +218,6 @@ public:
     /** @brief %Check for bitwise shift with negative right operand */
     void checkNegativeBitwiseShift();
 
-    /** @brief %Check for bitwise shift with too big right operand */
-    void checkTooBigBitwiseShift();
-
-    /** @brief %Check for integer overflow */
-    void checkIntegerOverflow();
-
     /** @brief %Check for buffers that are filled incompletely with memset and similar functions */
     void checkIncompleteArrayFill();
 
@@ -294,8 +286,6 @@ private:
     void SuspiciousSemicolonError(const Token *tok);
     void doubleCloseDirError(const Token *tok, const std::string &varname);
     void negativeBitwiseShiftError(const Token *tok);
-    void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
-    void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
@@ -314,8 +304,6 @@ private:
         c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
-        c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
-        c.integerOverflowError(0, ValueFlow::Value(1LL<<32));
         c.checkPipeParameterSizeError(0, "varname", "dimension");
 
         //performance
@@ -378,7 +366,6 @@ private:
                "* provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "* cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "* invalid input values for functions\n"
-               "* bitwise shift by too many bits\n"
 
                // warning
                "* either division by zero or useless condition\n"

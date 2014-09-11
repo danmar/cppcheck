@@ -48,6 +48,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testtimer.cpp \
            $${BASEPATH}/testtoken.cpp \
            $${BASEPATH}/testtokenize.cpp \
+           $${BASEPATH}/testtype.cpp \
            $${BASEPATH}/testuninitvar.cpp \
            $${BASEPATH}/testunusedfunctions.cpp \
            $${BASEPATH}/testunusedprivfunc.cpp \
