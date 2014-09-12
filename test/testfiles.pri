@@ -15,7 +15,6 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testcondition.cpp \
            $${BASEPATH}/testconstructors.cpp \
            $${BASEPATH}/testcppcheck.cpp \
-           $${BASEPATH}/testdivision.cpp \
            $${BASEPATH}/testerrorlogger.cpp \
            $${BASEPATH}/testexceptionsafety.cpp \
            $${BASEPATH}/testfilelister.cpp \

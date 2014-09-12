@@ -42,7 +42,6 @@
     <ClCompile Include="testcondition.cpp" />
     <ClCompile Include="testconstructors.cpp" />
     <ClCompile Include="testcppcheck.cpp" />
-    <ClCompile Include="testdivision.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />

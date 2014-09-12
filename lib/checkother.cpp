@@ -1212,63 +1212,6 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 }
 
 //---------------------------------------------------------------------------
-// Check for unsigned divisions
-//---------------------------------------------------------------------------
-bool CheckOther::isUnsigned(const Variable* var) const
-{
-    return (var && var->typeStartToken()->isUnsigned() && !var->isPointer() && !var->isArray() && _tokenizer->sizeOfType(var->typeStartToken()) >= _settings->sizeof_int);
-}
-bool CheckOther::isSigned(const Variable* var)
-{
-    return (var && !var->typeStartToken()->isUnsigned() && var->isIntegralType() && !var->isPointer() && !var->isArray());
-}
-
-void CheckOther::checkUnsignedDivision()
-{
-    bool warning = _settings->isEnabled("warning");
-
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        const Token* ifTok = 0;
-        // Check for "ivar / uvar" and "uvar / ivar"
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-
-            if (Token::Match(tok, "[).]")) // Don't check members or casted variables
-                continue;
-
-            if (Token::Match(tok->next(), "%var% / %num%")) {
-                if (tok->strAt(3)[0] == '-' && isUnsigned(tok->next()->variable())) {
-                    udivError(tok->next(), false);
-                }
-            } else if (Token::Match(tok->next(), "%num% / %var%")) {
-                if (tok->strAt(1)[0] == '-' && isUnsigned(tok->tokAt(3)->variable())) {
-                    udivError(tok->next(), false);
-                }
-            } else if (_settings->inconclusive && warning && !ifTok && Token::Match(tok->next(), "%var% / %var%")) {
-                const Variable* var1 = tok->next()->variable();
-                const Variable* var2 = tok->tokAt(3)->variable();
-                if ((isUnsigned(var1) && isSigned(var2)) || (isUnsigned(var2) && isSigned(var1))) {
-                    udivError(tok->next(), true);
-                }
-            } else if (!ifTok && Token::simpleMatch(tok, "if ("))
-                ifTok = tok->next()->link()->next()->link();
-            else if (ifTok == tok)
-                ifTok = 0;
-        }
-    }
-}
-
-void CheckOther::udivError(const Token *tok, bool inconclusive)
-{
-    if (inconclusive)
-        reportError(tok, Severity::warning, "udivError", "Division with signed and unsigned operators. The result might be wrong.", true);
-    else
-        reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
-}
-
-//---------------------------------------------------------------------------
 // memset(p, y, 0 /* bytes to fill */) <- 2nd and 3rd arguments inverted
 //---------------------------------------------------------------------------
 void CheckOther::checkMemsetZeroBytes()

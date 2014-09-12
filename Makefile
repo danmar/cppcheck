@@ -179,7 +179,6 @@ TESTOBJ =     test/options.o \
               test/testcondition.o \
               test/testconstructors.o \
               test/testcppcheck.o \
-              test/testdivision.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
               test/testfilelister.o \
@@ -461,9 +460,6 @@ test/testconstructors.o: test/testconstructors.cpp lib/cxx11emu.h lib/tokenize.h
 
 test/testcppcheck.o: test/testcppcheck.cpp lib/cxx11emu.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h test/testsuite.h test/redirect.h lib/check.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testcppcheck.o test/testcppcheck.cpp
-
-test/testdivision.o: test/testdivision.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
-	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testdivision.o test/testdivision.cpp
 
 test/testerrorlogger.o: test/testerrorlogger.cpp lib/cxx11emu.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testerrorlogger.o test/testerrorlogger.cpp

@@ -46,9 +46,6 @@
     <ClCompile Include="testcppcheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testdivision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testerrorlogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

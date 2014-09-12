@@ -59,7 +59,6 @@ public:
         // Checks
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
-        checkOther.checkUnsignedDivision();
         checkOther.checkCharVariable();
         checkOther.checkRedundantAssignment();
         checkOther.checkRedundantAssignmentInSwitch();
@@ -127,9 +126,6 @@ public:
      * - wrong input value according to library
      */
     void invalidFunctionUsage();
-
-    /** @brief %Check for unsigned division */
-    void checkUnsignedDivision();
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
@@ -234,9 +230,6 @@ public:
     void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
 private:
-    bool isUnsigned(const Variable *var) const;
-    static bool isSigned(const Variable *var);
-
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
@@ -248,7 +241,6 @@ private:
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
-    void udivError(const Token *tok, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
     void charArrayIndexError(const Token *tok);
@@ -297,7 +289,6 @@ private:
         // error
         c.invalidFunctionArgError(0, "func_name", 1, "1-4");
         c.invalidFunctionArgBoolError(0, "func_name", 1);
-        c.udivError(0, false);
         c.zerodivError(0, false);
         c.zerodivcondError(0,0,false);
         c.misusedScopeObjectError(NULL, "varname");
@@ -382,7 +373,6 @@ private:
                "* C-style pointer cast in cpp file\n"
                "* casting between incompatible pointer types\n"
                "* redundant if\n"
-               "* [[CheckUnsignedDivision|unsigned division]]\n"
                "* passing parameter by value\n"
                "* [[IncompleteStatement|Incomplete statement]]\n"
                "* [[charvar|check how signed char variables are used]]\n"
