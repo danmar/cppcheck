@@ -168,16 +168,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 
     // read/write member variable
     if (firstOperand && parent->str() == "." && (!parent->astParent() || parent->astParent()->str() != "&")) {
-        const Token* rightTok = parent->astOperand2();
-        if (rightTok) {
-            const Function* func = rightTok->function();
-            if (func && func->isStatic)
-                return false;
-            const Variable* var = rightTok->variable();
-            if (var && var->isStatic()) {
-                return false;
-            }
-        }
         if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
             return true;
         unknown = true;
