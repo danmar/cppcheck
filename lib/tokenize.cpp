@@ -4955,8 +4955,7 @@ void Tokenizer::simplifyCasts()
         }
 
         // Replace pointer casts of 0.. "(char *)0" => "0"
-        while (Token::Match(tok->next(), "( %type% * ) 0") ||
-               Token::Match(tok->next(), "( %type% %type% * ) 0")) {
+        while (Token::Match(tok->next(), "( %type% %type%| * ) 0")) {
             Token::eraseTokens(tok, tok->next()->link()->next());
             if (tok->str() == ")" && tok->link()->previous()) {
                 // If there was another cast before this, go back
@@ -5174,10 +5173,8 @@ void Tokenizer:: simplifyFunctionPointers()
         }
 
         // check for function pointer cast
-        if (Token::Match(tok, "( %type% *| *| ( * ) (") ||
-            Token::Match(tok, "( %type% %type% *| *| ( * ) (") ||
-            Token::Match(tok, "static_cast < %type% *| *| ( * ) (") ||
-            Token::Match(tok, "static_cast < %type% %type% *| *| ( * ) (")) {
+        if (Token::Match(tok, "( %type% %type%| *| *| ( * ) (") ||
+            Token::Match(tok, "static_cast < %type% %type%| *| *| ( * ) (")) {
             Token *tok1 = tok;
 
             if (tok1->str() == "static_cast")
