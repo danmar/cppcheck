@@ -250,6 +250,13 @@ void TestFixture::warn(const char msg[])
     warnings << "Warning: " << currentTest << " " << msg << std::endl;
 }
 
+void TestFixture::warnUnsimplified(const std::string& unsimplified, const std::string& simplified)
+{
+    warn(("Unsimplified code in test case. It looks like this test "
+          "should either be cleaned up or moved to TestTokenizer or "
+          "TestSimplifyTokens instead.\nactual=" + unsimplified + "\nexpected=" + simplified).c_str());
+}
+
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();

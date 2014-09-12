@@ -2628,7 +2628,7 @@ private:
         tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         if (verify && str1 != str2)
-            warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
+            warnUnsimplified(str1, str2);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
