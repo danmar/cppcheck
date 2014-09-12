@@ -59,12 +59,6 @@ private:
         // Check..
         CheckType checkType(&tokenizer, settings, this);
         checkType.runChecks(&tokenizer, settings, this);
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-        if (str1 != str2)
-            warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
-        checkType.runSimplifiedChecks(&tokenizer, settings, this);
     }
 
     void checkTooBigShift() {
@@ -78,6 +72,11 @@ private:
 
         check("int foo(int x) {\n"
               "   return x << 2;\n"
+              "}",&settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int x) {\n"
+              "   return (long long)x << 40;\n"
               "}",&settings);
         ASSERT_EQUALS("", errout.str());
     }

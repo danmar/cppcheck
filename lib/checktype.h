@@ -44,17 +44,18 @@ public:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        // These are not "simplified" because casts can't be ignored
         CheckType checkType(tokenizer, settings, errorLogger);
         checkType.checkTooBigBitwiseShift();
         checkType.checkIntegerOverflow();
         checkType.checkSignConversion();
+    }
+
+    /** @brief Run checks against the simplified token list */
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** @brief %Check for bitwise shift with too big right operand */
