@@ -3171,7 +3171,15 @@ private:
                         "void test() {\n"
                         "    Element *element; element->f();\n"
                         "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
 
         checkUninitVar2("class Element {\n"
                         "    static int v;\n"
@@ -3179,7 +3187,15 @@ private:
                         "void test() {\n"
                         "    Element *element; element->v;\n"
                         "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
 
         checkUninitVar2("class Element {\n"
                         "    void f() { }\n"
@@ -3190,10 +3206,26 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
 
         checkUninitVar2("class Element {\n"
+                        "    void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
                         "    int v;\n"
                         "};\n"
                         "void test() {\n"
                         "    Element *element; element->v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).v;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
 
@@ -3429,7 +3461,9 @@ private:
                         "    struct AB *ab = malloc(sizeof(struct AB));\n"
                         "    return ab->a;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+        ASSERT_EQUALS(  "[test.cpp:4]: (error) Memory is allocated but not initialized: ab\n"
+                        "[test.cpp:4]: (error) Uninitialized struct member: ab.a\n",
+                        errout.str());
 
         checkUninitVar2("struct t_udf_file {  int dir_left; };\n"
                         "\n"

@@ -1671,6 +1671,21 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     if (Token::Match(vartok->tokAt(-3), "typeof|__alignof__ ( * %var%"))
         return false;
 
+    // Accessing Rvalue member using "." or "->" 
+    if (vartok->strAt(1) == "." && vartok->strAt(-1) != "&") {
+        bool assignment = false;
+        const Token* parent = vartok->astParent();
+        while (parent) {
+            if (parent->str() == "=") {
+                assignment = true;
+                break;
+            }
+            parent = parent->astParent();
+        }
+        if(!assignment) 
+            return true;
+    }
+
     // Passing variable to function..
     if (Token::Match(vartok->previous(), "[(,] %var% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %var% [,)]")) {
         // locate start parentheses in function call..
