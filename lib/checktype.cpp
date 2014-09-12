@@ -225,7 +225,7 @@ void CheckType::checkSignConversion()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (!tok->isArithmeticalOp())
+            if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
                 continue;
 
             unsigned int size = 0;

@@ -116,6 +116,13 @@ private:
               "}\n"
               "void f2() { f1(-4); }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious code: sign conversion of x in calculation, even though x can have a negative value\n", errout.str());
+
+        // Dont warn for + and -
+        check("void f1(int x) {"
+              "  a = x + 5U;\n"
+              "}\n"
+              "void f2() { f1(-4); }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
