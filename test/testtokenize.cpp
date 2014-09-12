@@ -10982,7 +10982,7 @@ private:
         ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
         ASSERT_EQUALS("ac(=", testAst("a = (some<strange, type>)c;"));
         ASSERT_EQUALS("afoveon_avgimage((foveon_avgimage((+=", testAst("a = foveon_avg(((short(*)[4]) image)) + foveon_avg(((short(*)[4]) image));"));
-
+        ASSERT_EQUALS("c(40<<return", testAst("return (long long)c << 40;"));
         ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
     }
 
