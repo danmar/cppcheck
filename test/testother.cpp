@@ -1208,6 +1208,15 @@ private:
                                  "class MS : public M\n"
                                  "{ virtual void addController(C*) override {} };");
         ASSERT_EQUALS("", errout.str());
+
+        // #6164
+        checkOldStylePointerCast("class Base {};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void testCC() {\n"
+                                 "  std::vector<Base*> v;\n"
+                                 "  v.push_back((Base*)new Derived);\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) C-style pointer casting\n", errout.str());
     }
 
     void checkInvalidPointerCast(const char code[], bool portability = true, bool inconclusive = false) {
