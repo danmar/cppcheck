@@ -59,9 +59,7 @@ private:
 
         // Ensure that the test case is not bad.
         if (verify && str1 != str2) {
-            warn(("Unsimplified code in test case. It looks like this test "
-                  "should either be cleaned up or moved to TestTokenizer or "
-                  "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
+            warnUnsimplified(str1, str2);
         }
 
         // Check for buffer overruns..

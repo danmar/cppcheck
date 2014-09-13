@@ -51,7 +51,7 @@ private:
         tokenizer.simplifyTokenList2();
         const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         if (str1 != str2)
-            warn("Unsimplified code in test case");
+            warnUnsimplified(str1, str2);
 
         // Check..
         CheckBoost checkBoost;
