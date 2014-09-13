@@ -17,7 +17,7 @@
  */
 
 //---------------------------------------------------------------------------
-// Obsolete functions
+// Obsolescent functions
 //---------------------------------------------------------------------------
 
 #include "checkobsolescentfunctions.h"
@@ -28,10 +28,10 @@
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckObsoleteFunctions instance;
+    CheckObsolescentFunctions instance;
 }
 
-void CheckObsoleteFunctions::obsoleteFunctions()
+void CheckObsolescentFunctions::obsolescentFunctions()
 {
     if (!_settings->isEnabled("style"))
         return;
@@ -41,9 +41,9 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     // Functions defined somewhere?
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
-        _obsoleteStandardFunctions.erase(scope->className);
-        _obsoletePosixFunctions.erase(scope->className);
-        _obsoleteC99Functions.erase(scope->className);
+        _obsolescentStandardFunctions.erase(scope->className);
+        _obsolescentPosixFunctions.erase(scope->className);
+        _obsolescentC99Functions.erase(scope->className);
     }
 
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
@@ -52,23 +52,23 @@ void CheckObsoleteFunctions::obsoleteFunctions()
             if (tok->isName() && tok->varId()==0 && (tok->next() && tok->next()->str() == "(") &&
                 (!Token::Match(tok->previous(), ".|::") || Token::simpleMatch(tok->tokAt(-2), "std ::"))) {
 
-                std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
-                if (it != _obsoleteStandardFunctions.end()) {
-                    // If checking an old code base it might be uninteresting to update obsolete functions.
-                    reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
+                std::map<std::string,std::string>::const_iterator it = _obsolescentStandardFunctions.find(tok->str());
+                if (it != _obsolescentStandardFunctions.end()) {
+                    // If checking an old code base it might be uninteresting to update obsolescent functions.
+                    reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
                 } else {
                     if (_settings->standards.posix) {
-                        it = _obsoletePosixFunctions.find(tok->str());
-                        if (it != _obsoletePosixFunctions.end()) {
-                            // If checking an old code base it might be uninteresting to update obsolete functions.
-                            reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
+                        it = _obsolescentPosixFunctions.find(tok->str());
+                        if (it != _obsolescentPosixFunctions.end()) {
+                            // If checking an old code base it might be uninteresting to update obsolescent functions.
+                            reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
                         }
                     }
                     if (_settings->standards.c >= Standards::C99) {
-                        // alloca : this function is obsolete in C but not in C++ (#4382)
-                        it = _obsoleteC99Functions.find(tok->str());
-                        if (it != _obsoleteC99Functions.end() && !(tok->str() == "alloca" && _tokenizer->isCPP())) {
-                            reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
+                        // alloca : this function is obsolescent in C but not in C++ (#4382)
+                        it = _obsolescentC99Functions.find(tok->str());
+                        if (it != _obsolescentC99Functions.end() && !(tok->str() == "alloca" && _tokenizer->isCPP())) {
+                            reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
                         }
                     }
                 }

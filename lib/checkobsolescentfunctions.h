@@ -18,8 +18,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef checkobsoletefunctionsH
-#define checkobsoletefunctionsH
+#ifndef checkobsolescentfunctionsH
+#define checkobsolescentfunctionsH
 //---------------------------------------------------------------------------
 
 #include "config.h"
@@ -32,39 +32,39 @@
 /// @{
 
 /**
- * @brief Using obsolete functions that are always insecure to use.
+ * @brief Using obsolescent functions that are always insecure to use.
  */
 
-class CPPCHECKLIB CheckObsoleteFunctions : public Check {
+class CPPCHECKLIB CheckObsolescentFunctions : public Check {
 public:
-    /** This constructor is used when registering the CheckObsoleteFunctions */
-    CheckObsoleteFunctions() : Check(myName()) {
-        initObsoleteFunctions();
+    /** This constructor is used when registering the CheckObsolescentFunctions */
+    CheckObsolescentFunctions() : Check(myName()) {
+        initObsolescentFunctions();
     }
 
     /** This constructor is used when running checks. */
-    CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckObsolescentFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {
-        initObsoleteFunctions();
+        initObsolescentFunctions();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        CheckObsoleteFunctions checkObsoleteFunctions(tokenizer, settings, errorLogger);
-        checkObsoleteFunctions.obsoleteFunctions();
+        CheckObsolescentFunctions checkObsolescentFunctions(tokenizer, settings, errorLogger);
+        checkObsolescentFunctions.obsolescentFunctions();
     }
 
-    /** Check for obsolete functions */
-    void obsoleteFunctions();
+    /** Check for obsolescent functions */
+    void obsolescentFunctions();
 
 private:
     /* function name / error message */
-    std::map<std::string, std::string> _obsoleteStandardFunctions;
-    std::map<std::string, std::string> _obsoletePosixFunctions;
-    std::map<std::string, std::string> _obsoleteC99Functions;
+    std::map<std::string, std::string> _obsolescentStandardFunctions;
+    std::map<std::string, std::string> _obsolescentPosixFunctions;
+    std::map<std::string, std::string> _obsolescentC99Functions;
 
-    /** init obsolete functions list ' */
-    void initObsoleteFunctions() {
-        // Obsolete posix functions, which messages suggest only one alternative and doesn't contain additional information.
+    /** init obsolescent functions list ' */
+    void initObsolescentFunctions() {
+        // Obsolescent posix functions, which messages suggest only one alternative and doesn't contain additional information.
         const struct {
             const char* bad;
             const char* good;
@@ -91,53 +91,53 @@ private:
         };
 
         for (std::size_t i = 0; i < (sizeof(posix_stdmsgs) / sizeof(*posix_stdmsgs)); ++i) {
-            _obsoletePosixFunctions[posix_stdmsgs[i].bad] = "Obsolete function '" + std::string(posix_stdmsgs[i].bad) + "' called. It is recommended to use the function '" + posix_stdmsgs[i].good + "' instead.";
+            _obsolescentPosixFunctions[posix_stdmsgs[i].bad] = "Obsolescent function '" + std::string(posix_stdmsgs[i].bad) + "' called. It is recommended to use the function '" + posix_stdmsgs[i].good + "' instead.";
         }
 
-        _obsoletePosixFunctions["usleep"] = "Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n"
-                                            "The obsolete function 'usleep' is called. POSIX.1-2001 declares usleep() function obsolete and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
+        _obsolescentPosixFunctions["usleep"] = "Obsolescent function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n"
+                                            "The obsolescent function 'usleep' is called. POSIX.1-2001 declares usleep() function obsolescent and POSIX.1-2008 removes it. It is recommended that new applications use the 'nanosleep' or 'setitimer' function.";
 
-        _obsoletePosixFunctions["bcopy"] = "Obsolete function 'bcopy' called. It is recommended to use the 'memmove' or 'memcpy' function instead.";
+        _obsolescentPosixFunctions["bcopy"] = "Obsolescent function 'bcopy' called. It is recommended to use the 'memmove' or 'memcpy' function instead.";
 
-        _obsoletePosixFunctions["ftime"] = "Obsolete function 'ftime' called. It is recommended to use time(), gettimeofday() or clock_gettime() instead.";
+        _obsolescentPosixFunctions["ftime"] = "Obsolescent function 'ftime' called. It is recommended to use time(), gettimeofday() or clock_gettime() instead.";
 
-        _obsoletePosixFunctions["getcontext"] = "Obsolete function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
-        _obsoletePosixFunctions["makecontext"] = "Obsolete function 'makecontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
-        _obsoletePosixFunctions["swapcontext"] = "Obsolete function 'swapcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
+        _obsolescentPosixFunctions["getcontext"] = "Obsolescent function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
+        _obsolescentPosixFunctions["makecontext"] = "Obsolescent function 'makecontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
+        _obsolescentPosixFunctions["swapcontext"] = "Obsolescent function 'swapcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.";
 
-        _obsoletePosixFunctions["scalbln"] = "Obsolete function 'scalb' called. It is recommended to use 'scalbln', 'scalblnf' or 'scalblnl' instead.";
+        _obsolescentPosixFunctions["scalbln"] = "Obsolescent function 'scalb' called. It is recommended to use 'scalbln', 'scalblnf' or 'scalblnl' instead.";
 
-        _obsoletePosixFunctions["ualarm"] = "Obsolete function 'ualarm' called. It is recommended to use 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime' or 'timer_settime' instead.";
+        _obsolescentPosixFunctions["ualarm"] = "Obsolescent function 'ualarm' called. It is recommended to use 'timer_create', 'timer_delete', 'timer_getoverrun', 'timer_gettime' or 'timer_settime' instead.";
 
-        _obsoletePosixFunctions["tmpnam"] = "Obsolete function 'tmpnam' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
+        _obsolescentPosixFunctions["tmpnam"] = "Obsolescent function 'tmpnam' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
 
-        _obsoletePosixFunctions["tmpnam_r"] = "Obsolete function 'tmpnam_r' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
+        _obsolescentPosixFunctions["tmpnam_r"] = "Obsolescent function 'tmpnam_r' called. It is recommended to use 'tmpfile', 'mkstemp' or 'mkdtemp' instead.";
 
-        _obsoleteStandardFunctions["gets"] = "Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
-                                             "The obsolete function 'gets' is called. With 'gets' you'll get a buffer overrun if the input data exceeds the size of the buffer. It is recommended to use the function 'fgets' instead.";
-        _obsoleteC99Functions["alloca"] = "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
-                                          "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
-        _obsoleteC99Functions["asctime"] = "Obsolete function 'asctime' called. It is recommended to use the function 'strftime' instead.";
-        // ctime is obsolete - it's not threadsafe. but there is no good replacement.
-        //_obsoleteC99Functions["ctime"] = "Obsolete function 'ctime' called. It is recommended to use the function 'strftime' instead.";
+        _obsolescentStandardFunctions["gets"] = "Obsolescent function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
+                                             "The obsolescent function 'gets' is called. With 'gets' you'll get a buffer overrun if the input data exceeds the size of the buffer. It is recommended to use the function 'fgets' instead.";
+        _obsolescentC99Functions["alloca"] = "Obsolescent function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
+                                          "The obsolescent function 'alloca' is called. In C99 and later it is recommended to use a variable length array or a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons (http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).";
+        _obsolescentC99Functions["asctime"] = "Obsolescent function 'asctime' called. It is recommended to use the function 'strftime' instead.";
+        // ctime is obsolescent - it's not threadsafe. but there is no good replacement.
+        //_obsolescentC99Functions["ctime"] = "Obsolescent function 'ctime' called. It is recommended to use the function 'strftime' instead.";
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckObsoleteFunctions c(0, settings, errorLogger);
+        CheckObsolescentFunctions c(0, settings, errorLogger);
 
-        std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
+        std::map<std::string,std::string>::const_iterator it(_obsolescentPosixFunctions.begin()), itend(_obsolescentPosixFunctions.end());
         for (; it!=itend; ++it) {
-            c.reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
+            c.reportError(0, Severity::style, "obsolescentFunctions"+it->first, it->second);
         }
     }
 
     static std::string myName() {
-        return "Obsolete functions";
+        return "Obsolescent functions";
     }
 
     std::string classInfo() const {
-        std::string info = "Warn if any of these obsolete functions are used:\n";
-        std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
+        std::string info = "Warn if any of these obsolescent functions are used:\n";
+        std::map<std::string,std::string>::const_iterator it(_obsolescentPosixFunctions.begin()), itend(_obsolescentPosixFunctions.end());
         for (; it!=itend; ++it) {
             info += "* " + it->first + "\n";
         }
@@ -146,4 +146,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif // checkobsoletefunctionsH
+#endif // checkobsolescentfunctionsH
