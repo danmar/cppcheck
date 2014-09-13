@@ -472,11 +472,19 @@ std::list<Token *> TemplateSimplifier::getTemplateDeclarations(Token *tokens, bo
             Token *parmEnd = tok->next()->findClosingBracket();
             codeWithTemplates = true;
 
+            int indentlevel = 0;
             for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
+                if (tok2->str() == "(")
+                    ++indentlevel;
+                else if (tok2->str() == ")")
+                    --indentlevel;
+
+                if (indentlevel) // In an argument list; move to the next token
+                    continue;
+
                 // Just a declaration => ignore this
                 if (tok2->str() == ";")
                     break;
-
                 // Implementation => add to "templates"
                 if (tok2->str() == "{") {
                     templates.push_back(tok);
