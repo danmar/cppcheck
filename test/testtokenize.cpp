@@ -68,6 +68,7 @@ private:
         TEST_CASE(tokenize31);  // #3503 (Wrong handling of member function taking function pointer as argument)
         TEST_CASE(tokenize32);  // #5884 (fsanitize=undefined: left shift of negative value -10000 in lib/templatesimplifier.cpp:852:46)
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
+        TEST_CASE(tokenize34);  // #6121 (crash upon invalid enum)
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
@@ -915,6 +916,12 @@ private:
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+    }
+
+    void tokenize34() { // #6121
+        const char code[] = "enum E { f = {} };\n"
+                            "int a = f;";
         ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 

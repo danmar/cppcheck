@@ -7698,7 +7698,7 @@ void Tokenizer::simplifyEnum()
                     enumName = tok1;
                     lastValue = 0;
                     tok1 = tok1->tokAt(2);
-                    if (tok1->str() == "," || tok1->str() == "}") {
+                    if (tok1->str() == "," || Token::Match(tok1, "{|}")) {
                         syntaxError(tok1);
                         break;
                     }
