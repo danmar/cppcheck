@@ -140,6 +140,7 @@ private:
         TEST_CASE(template45);  // #5814 - syntax error reported for valid code
         TEST_CASE(template46);  // #5816 - syntax error reported for valid code
         TEST_CASE(template47);  // #6023 - syntax error reported for valid code
+        TEST_CASE(template48);  // #6134 - 100% CPU upon invalid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -2429,6 +2430,12 @@ private:
     void template47() { // #6023
         tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
             "class C2 : public C1<C2> {};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template48() { // #6134
+        tok("template <int> int f( {  } ); "
+            "int foo = f<1>(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
