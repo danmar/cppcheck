@@ -38,7 +38,7 @@
     <ClCompile Include="checknullpointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkobsoletefunctions.cpp">
+    <ClCompile Include="checkobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkother.cpp">
@@ -163,7 +163,7 @@
     <ClInclude Include="checknullpointer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checkobsoletefunctions.h">
+    <ClInclude Include="checkobsolescentfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">

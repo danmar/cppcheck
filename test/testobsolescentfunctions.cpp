@@ -18,7 +18,7 @@
 
 
 #include "tokenize.h"
-#include "checkobsoletefunctions.h"
+#include "checkobsolescentfunctions.h"
 #include "testsuite.h"
 
 #include <sstream>

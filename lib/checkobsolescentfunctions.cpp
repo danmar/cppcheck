@@ -20,7 +20,7 @@
 // Obsolete functions
 //---------------------------------------------------------------------------
 
-#include "checkobsoletefunctions.h"
+#include "checkobsolescentfunctions.h"
 #include "symboldatabase.h"
 
 //---------------------------------------------------------------------------
