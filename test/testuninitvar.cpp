@@ -3459,9 +3459,9 @@ private:
                         "    struct AB *ab = malloc(sizeof(struct AB));\n"
                         "    return ab->a;\n"
                         "}");
-        ASSERT_EQUALS(  "[test.cpp:4]: (error) Memory is allocated but not initialized: ab\n"
-                        "[test.cpp:4]: (error) Uninitialized struct member: ab.a\n",
-                        errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: ab\n"
+                      "[test.cpp:4]: (error) Uninitialized struct member: ab.a\n",
+                      errout.str());
 
         checkUninitVar2("struct t_udf_file {  int dir_left; };\n"
                         "\n"

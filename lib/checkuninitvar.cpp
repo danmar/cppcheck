@@ -1671,7 +1671,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     if (Token::Match(vartok->tokAt(-3), "typeof|__alignof__ ( * %var%"))
         return false;
 
-    // Accessing Rvalue member using "." or "->" 
+    // Accessing Rvalue member using "." or "->"
     if (vartok->strAt(1) == "." && vartok->strAt(-1) != "&") {
         bool assignment = false;
         const Token* parent = vartok->astParent();
@@ -1682,7 +1682,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
             }
             parent = parent->astParent();
         }
-        if(!assignment) 
+        if (!assignment)
             return true;
     }
 
