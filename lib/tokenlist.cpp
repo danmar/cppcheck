@@ -511,7 +511,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         return;
     if (Token::Match(tok, "L %str%|%char%"))
         tok = tok->next();
-    if (state.inArrayAssignment && tok->str() == "." && (tok->strAt(-1) == "," || tok->strAt(-1) == "{")) // Jump over . in C style struct initialization
+    if (state.inArrayAssignment && tok->str() == "." && Token::Match(tok->tokAt(-1), ",|{")) // Jump over . in C style struct initialization
         tok = tok->next();
 
     if (tok->isLiteral()) {
@@ -758,7 +758,7 @@ static void compileAnd(Token *&tok, AST_state& state)
             Token* tok2 = tok->next();
             if (tok2->str() == "&")
                 tok2 = tok2->next();
-            if (state.cpp && (tok2->str() == "," || tok2->str() == ")")) {
+            if (state.cpp && Token::Match(tok2, ",|)")) {
                 tok = tok2;
                 break; // rValue reference
             }
@@ -855,7 +855,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 init1 = tok2;
                 AST_state state1(cpp);
                 compileExpression(tok2, state1);
-                if (tok2->str() == ";" || tok2->str() == ")")
+                if (Token::Match(tok2, ";|)"))
                     break;
                 init1 = 0;
             }
