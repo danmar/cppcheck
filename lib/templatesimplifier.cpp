@@ -285,7 +285,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // Function pointer or prototype..
-        while (tok && (tok->str() == "(" || tok->str() == "[")) {
+        while (tok && Token::Match(tok, "(|[")) {
             tok = tok->link()->next();
             while (tok && Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
                 tok = tok->next();
@@ -303,7 +303,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // ,/>
-        while (tok->str() == ">" || tok->str() == ">>") {
+        while (Token::Match(tok, ">|>>")) {
             if (level == 0)
                 return numberOfParameters;
             --level;
@@ -564,7 +564,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 ++templateParmDepth;
 
             // end of template parameters?
-            if (tok->str() == ">" || tok->str() == ">>") {
+            if (Token::Match(tok, ">|>>")) {
                 if (Token::Match(tok, ">|>> class|struct %var%"))
                     classname = tok->strAt(2);
                 templateParmDepth -= (1 + (tok->str() == ">>"));
@@ -722,7 +722,7 @@ void TemplateSimplifier::expandTemplate(
     std::list<Token *> &templateInstantiations)
 {
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
-        if (tok3->str() == "{" || tok3->str() == "(" || tok3->str() == "[")
+        if (Token::Match(tok3, "{|(|["))
             tok3 = tok3->link();
 
         // Start of template..
@@ -843,11 +843,11 @@ static bool isLowerThanShift(const Token* lower)
 }
 static bool isLowerThanPlusMinus(const Token* lower)
 {
-    return isLowerThanShift(lower) || lower->str() == "<<" || lower->str() == ">>";
+    return isLowerThanShift(lower) || Token::Match(lower, "<<|>>");
 }
 static bool isLowerThanMulDiv(const Token* lower)
 {
-    return isLowerThanPlusMinus(lower) || lower->str() == "+" || lower->str() == "-";
+    return isLowerThanPlusMinus(lower) || Token::Match(lower, "+|-");
 }
 static bool isLowerEqualThanMulDiv(const Token* lower)
 {
@@ -1222,7 +1222,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         for (const Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
             // #2648 - unhandled parentheses => bail out
             // #2721 - unhandled [ => bail out
-            if (tok3->str() == "(" || tok3->str() == "[") {
+            if (Token::Match(tok3, "(|[")) {
                 typeForNewNameStr.clear();
                 break;
             }
