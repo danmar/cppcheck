@@ -1717,7 +1717,7 @@ private:
               "    print(1 - erf(x));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
-                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
                       "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
 
         check("void foo() {\n"
@@ -1726,7 +1726,7 @@ private:
               "    print(1.0 - erf(x));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
-                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
                       "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
 
         check("void foo() {\n"
@@ -1735,7 +1735,7 @@ private:
               "    print(1 - erf(34*x + f(x) - c));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
-                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log10(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
                       "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
 
         check("void foo() {\n"

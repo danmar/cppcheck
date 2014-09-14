@@ -1897,7 +1897,7 @@ void CheckOther::checkMathFunctions()
                 } else if (Token::simpleMatch(tok, "log (") && tok->next()->astOperand2()) {
                     const Token* plus = tok->next()->astOperand2();
                     if (plus->str() == "+" && ((plus->astOperand1() && Tokenizer::isOneNumber(plus->astOperand1()->str())) || (plus->astOperand2() && Tokenizer::isOneNumber(plus->astOperand2()->str()))))
-                        mathfunctionCallWarning(tok, "log(1 + x)", "log10(x)");
+                        mathfunctionCallWarning(tok, "log(1 + x)", "log1p(x)");
                 }
             }
         }
