@@ -260,7 +260,7 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
                 return true;
 
             const Token *parent = tok->astParent();
-            while (parent && (parent->str() == "." || parent->str() == "::"))
+            while (parent && Token::Match(parent, ".|::"))
                 parent = parent->astParent();
             if (parent && parent->type() == Token::eIncDecOp)
                 return true;
@@ -1154,7 +1154,7 @@ static void execute(const Token *expr,
             *error = true;
     }
 
-    else if (expr->str() == "++" || expr->str() == "--") {
+    else if (Token::Match(expr, "++|--")) {
         if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
             *error = true;
         else {
@@ -1522,7 +1522,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 if (Token::Match(tok2, "%varid% !!=", varid2)) {
                     for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
                         setTokenValue(const_cast<Token*>(tok2), *val);
-                } else if (tok2->str() == "{" || tok2->str() == "?") {
+                } else if (Token::Match(tok2, "{|?")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "parameter " + arg->name() + ", at '" + tok2->str() + "'");
                     break;

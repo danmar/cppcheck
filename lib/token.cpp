@@ -719,9 +719,9 @@ Token* Token::nextArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && (tok->str() == "(" || tok->str() == "{" || tok->str() == "[" || tok->str() == "<"))
+        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
             tok = tok->link();
-        else if (tok->str() == ")" || tok->str() == ";")
+        else if (Token::Match(tok, ")|;"))
             return 0;
     }
     return 0;
@@ -732,13 +732,13 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && (tok->str() == "(" || tok->str() == "{" || tok->str() == "["))
+        else if (tok->link() && Token::Match(tok, "(|{|["))
             tok = tok->link();
         else if (tok->str() == "<") {
             const Token* temp = tok->findClosingBracket();
             if (temp)
                 tok = temp;
-        } else if (tok->str() == ")" || tok->str() == ";")
+        } else if (Token::Match(tok, ")|;"))
             return 0;
     }
     return 0;
@@ -751,9 +751,9 @@ const Token * Token::findClosingBracket() const
     if (_str == "<") {
         unsigned int depth = 0;
         for (closing = this; closing != nullptr; closing = closing->next()) {
-            if (closing->str() == "{" || closing->str() == "[" || closing->str() == "(")
+            if (Token::Match(closing, "{|[|("))
                 closing = closing->link();
-            else if (closing->str() == "}" || closing->str() == "]" || closing->str() == ")" || closing->str() == ";" || closing->str() == "=")
+            else if (Token::Match(closing, "}|]|)|;|="))
                 break;
             else if (closing->str() == "<")
                 ++depth;
