@@ -117,6 +117,12 @@ private:
               "void f2() { f1(-4); }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious code: sign conversion of x in calculation, even though x can have a negative value\n", errout.str());
 
+        check("unsigned int f1(int x) {" // #6168: FP for inner calculation
+              "  return 5U * (1234 - x);\n" // <- signed subtraction, x is not sign converted
+              "}\n"
+              "void f2() { f1(-4); }");
+        ASSERT_EQUALS("", errout.str());
+
         // Dont warn for + and -
         check("void f1(int x) {"
               "  a = x + 5U;\n"

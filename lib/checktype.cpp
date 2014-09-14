@@ -238,7 +238,8 @@ void CheckType::checkSignConversion()
 
             // Check if there are signed operands that can be negative..
             std::stack<const Token *> tokens;
-            tokens.push(tok);
+            tokens.push(tok->astOperand1());
+            tokens.push(tok->astOperand2());
             while (!tokens.empty()) {
                 const Token *tok1 = tokens.top();
                 tokens.pop();
@@ -268,8 +269,6 @@ void CheckType::checkSignConversion()
                         break;
                     }
                 }
-                tokens.push(tok1->astOperand1());
-                tokens.push(tok1->astOperand2());
             }
         }
     }
