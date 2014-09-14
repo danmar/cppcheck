@@ -285,9 +285,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // Function pointer or prototype..
-        while (tok && Token::Match(tok, "(|[")) {
+        while (Token::Match(tok, "(|[")) {
             tok = tok->link()->next();
-            while (tok && Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
+            while (Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
                 tok = tok->next();
         }
         if (!tok)

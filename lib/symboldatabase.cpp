@@ -2608,7 +2608,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         tok = vartok->next();
-        while (tok && Token::Match(tok, "[|{"))
+        while (Token::Match(tok, "[|{"))
             tok = tok->link()->next();
 
         if (vartok->varId() == 0) {
@@ -2681,7 +2681,7 @@ static const Token* skipPointers(const Token* tok)
 
 bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const
 {
-    if (tok && check && check->_tokenizer->isCPP() && Token::Match(tok, "throw|new"))
+    if (check && check->_tokenizer->isCPP() && Token::Match(tok, "throw|new"))
         return false;
 
     const Token* localTypeTok = skipScopeIdentifiers(tok);

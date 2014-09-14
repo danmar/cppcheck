@@ -260,7 +260,7 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
                 return true;
 
             const Token *parent = tok->astParent();
-            while (parent && Token::Match(parent, ".|::"))
+            while (Token::Match(parent, ".|::"))
                 parent = parent->astParent();
             if (parent && parent->type() == Token::eIncDecOp)
                 return true;

@@ -1524,7 +1524,7 @@ void Tokenizer::simplifyMulAndParens()
             }
             if (!tokend || !(tokend->isAssignmentOp()))
                 continue;
-            while (tokbegin && (Token::Match(tokbegin, "&|("))) {
+            while (Token::Match(tokbegin, "&|(")) {
                 if (tokbegin->str() == "&") {
                     if (Token::Match(tokbegin->tokAt(-2), "[;{}&(] *")) {
                         //remove '* &'
