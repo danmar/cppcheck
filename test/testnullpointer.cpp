@@ -2572,6 +2572,9 @@ private:
         ASSERT_EQUALS("",errout.str());
         check("size_t get (wchar_t *value) { return wcstombs (NULL, value, 0); }");
         ASSERT_EQUALS("",errout.str());
+
+        check("void f() { strtok(NULL, 'x');}");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void nullpointerFputc() {
