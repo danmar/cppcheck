@@ -2947,6 +2947,70 @@ private:
                         "}\n", "test.c");
         ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
+        checkUninitVar2("class Element {\n"
+                        "    static void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; element->f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; element->v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    static int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; element->f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    void f() { }\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).f();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; element->v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
+        checkUninitVar2("class Element {\n"
+                        "    int v;\n"
+                        "};\n"
+                        "void test() {\n"
+                        "    Element *element; (*element).v;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
+
         checkUninitVar2("struct AB { int a; int b; };\n"  // pass struct member by address
                         "void f(void) {\n"
                         "    struct AB ab;\n"
@@ -2963,6 +3027,27 @@ private:
                         "    do_something(ab);\n"
                         "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            checkUninitVar2("void f(void) {\n"
+                            "    struct AB ab;\n"
+                            "    strcpy(ab.a, STR);\n"
+                            "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar2("void f(void) {\n"
+                            "    struct AB ab;\n"
+                            "    strcpy(x, ab.a);\n"
+                            "}\n", "test.c");
+            TODO_ASSERT_EQUALS("error", "", errout.str());
+
+            checkUninitVar2("struct AB { int a; };\n"
+                            "void f(void) {\n"
+                            "    struct AB ab;\n"
+                            "    dosomething(ab.a);\n"
+                            "}\n", "test.c");
+            TODO_ASSERT_EQUALS("error","", errout.str());
+        }
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void do_something(const struct AB ab);\n"
@@ -3162,70 +3247,6 @@ private:
                         "    for (Element *ptr3 = ptr3->Next(); ptr3; ptr3 = ptr3->Next()) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: ptr3\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    static void f() { }\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; element->f();\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    static void f() { }\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; (*element).f();\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    static int v;\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; element->v;\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    static int v;\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; (*element).v;\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    void f() { }\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; element->f();\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    void f() { }\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; (*element).f();\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    int v;\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; element->v;\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
-
-        checkUninitVar2("class Element {\n"
-                        "    int v;\n"
-                        "};\n"
-                        "void test() {\n"
-                        "    Element *element; (*element).v;\n"
-                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: element\n", errout.str());
 
         checkUninitVar2("void f() {\n" // #4911 - bad simplification => don't crash
                         "    int a;\n"
