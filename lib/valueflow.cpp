@@ -1233,7 +1233,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
     tok = tok->tokAt(2);
     if (!Token::Match(tok,"%type%| %var% ="))
         return false;
-    const Token * const vartok = tok->tokAt(Token::Match(tok, "%var% =") ? 0 : 1);
+    const Token * const vartok = Token::Match(tok, "%var% =") ? tok : tok->next();
     if (vartok->varId() == 0U)
         return false;
     *varid = vartok->varId();
@@ -1492,7 +1492,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             std::list<ValueFlow::Value> argvalues;
 
             // passing value(s) to function
-            if (Token::Match(argtok, "%var%|%num%|%str% [,)]") && !argtok->values.empty())
+            if (!argtok->values.empty() && Token::Match(argtok, "%var%|%num%|%str% [,)]"))
                 argvalues = argtok->values;
             else {
                 // bool operator => values 1/0 are passed to function..
