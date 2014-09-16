@@ -4904,8 +4904,7 @@ void Tokenizer::simplifyCasts()
         // (*(void (*)(char *))fp)(x);
         if (!tok->isName() &&
             Token::simpleMatch(tok->next(), "* (") &&
-            !Token::Match(tok->linkAt(2), ") %var%") &&
-            !Token::simpleMatch(tok->linkAt(2), ") &")) {
+            !Token::Match(tok->linkAt(2), ") %var%|&")) {
             tok = tok->linkAt(2);
             continue;
         }
