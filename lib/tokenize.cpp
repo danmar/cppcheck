@@ -2935,6 +2935,7 @@ bool Tokenizer::simplifySizeof()
 {
     // Locate variable declarations and calculate the size
     std::map<unsigned int, unsigned int> sizeOfVar;
+    std::map<unsigned int, Token *> declTokOfVar;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->varId() != 0 && sizeOfVar.find(tok->varId()) == sizeOfVar.end()) {
             const unsigned int varId = tok->varId();
@@ -2948,15 +2949,17 @@ bool Tokenizer::simplifySizeof()
                 }
 
                 sizeOfVar[varId] = size;
+                declTokOfVar[varId] = tok;
             }
 
-            else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [;=]") ||
-                     Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [;=]")) {
+            else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [[;=]") ||
+                     Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [[;=]")) {
                 const unsigned int size = sizeOfType(tok->previous());
                 if (size == 0)
                     continue;
 
                 sizeOfVar[varId] = size * static_cast<unsigned int>(MathLib::toLongNumber(tok->strAt(2)));
+                declTokOfVar[varId] = tok;
             }
 
             else if (Token::Match(tok->previous(), "%type% %var% [ %num% ] [,)]") ||
@@ -2964,6 +2967,7 @@ bool Tokenizer::simplifySizeof()
                 Token tempTok(0);
                 tempTok.str("*");
                 sizeOfVar[varId] = sizeOfType(&tempTok);
+                declTokOfVar[varId] = tok;
             }
         }
     }
@@ -3131,15 +3135,23 @@ bool Tokenizer::simplifySizeof()
             std::size_t sz = 0;
 
             const unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
-            if (varid != 0) {
+            if ((varid != 0) && (declTokOfVar.find(varid) != declTokOfVar.end())) {
                 // Try to locate variable declaration..
-                const Token *decltok = Token::findmatch(list.front(), "%varid%", varid);
-                if (Token::Match(decltok->previous(), "%type% %var% [")) {
-                    sz = sizeOfType(decltok->previous());
-                } else if (Token::Match(decltok->previous(), "* %var% [")) {
+                const Token *decltok = declTokOfVar[varid];
+                if (Token::Match(decltok->previous(), "%type%|* %var% [")) {
                     sz = sizeOfType(decltok->previous());
                 } else if (Token::Match(decltok->tokAt(-2), "%type% * %var%")) {
                     sz = sizeOfType(decltok->tokAt(-2));
+                }
+                // Multi-dimensional array..
+                if (Token::Match(decltok,"%var% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
+                    const Token *tok2 = decltok->linkAt(1);
+                    while (Token::Match(tok2, "] [ %num% ]")) {
+                        sz = sz * MathLib::toLongNumber(tok2->strAt(2));
+                        tok2 = tok2->linkAt(3);
+                    }
+                    if (Token::simpleMatch(tok2, "] ["))
+                        sz = 0;
                 }
             } else if (tok->strAt(3) == "[" && tok->tokAt(2)->isStandardType()) {
                 sz = sizeOfType(tok->tokAt(2));

@@ -65,9 +65,7 @@ private:
         TEST_CASE(elseif1);
         TEST_CASE(ifa_ifa);     // "if (a) { if (a) .." => "if (a) { if (1) .."
 
-        TEST_CASE(sizeof2);
-        TEST_CASE(sizeof3);
-        TEST_CASE(sizeof4);
+        TEST_CASE(sizeof_array);
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
         TEST_CASE(sizeof7);
@@ -1028,38 +1026,37 @@ private:
 
 
 
-    void sizeof2() {
-        const char code[] = "void foo()\n"
+    void sizeof_array() {
+        const char *code;
+        
+        code = "void foo()\n"
                             "{\n"
                             "    int i[4];\n"
                             "    sizeof(i);\n"
                             "    sizeof(*i);\n"
                             "}\n";
         ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", tok(code));
-    }
 
-    void sizeof3() {
-        const char code[] = "static int i[4];\n"
+        code = "static int i[4];\n"
                             "void f()\n"
                             "{\n"
                             "    int i[10];\n"
                             "    sizeof(i);\n"
                             "}\n";
         ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", tok(code));
-    }
-
-    void sizeof4() {
         {
-            const char code[] = "int i[10];\n"
+            code = "int i[10];\n"
                                 "sizeof(i[0]);\n";
             ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
-        }
 
-        {
-            const char code[] = "int i[10];\n"
+            code = "int i[10];\n"
                                 "sizeof i[0];\n";
             ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
         }
+
+        code = "char i[2][20];\n"
+               "sizeof(i[1]);";
+            ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ;", tok(code));
     }
 
     void sizeof5() {
