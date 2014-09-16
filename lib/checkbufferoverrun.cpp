@@ -890,9 +890,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
 
             // Writing data into array..
-            if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
+            if (total_size > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
                 const std::size_t len = Token::getStrLength(tok->tokAt(4));
-                if (total_size > 0 && len >= (unsigned int)total_size) {
+                if (len >= (unsigned int)total_size) {
                     bufferOverrunError(tok, arrayInfo.varname());
                     continue;
                 }
