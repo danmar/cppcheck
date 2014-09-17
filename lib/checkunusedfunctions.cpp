@@ -105,60 +105,58 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         if (!settings->library.markupFile(FileName) // only check source files
             && settings->library.isexporter(tok->str()) && tok->next() != 0) {
-            const Token * qPropToken = tok;
-            qPropToken = qPropToken->next();
-            while (qPropToken && qPropToken->str() != ")") {
-                if (settings->library.isexportedprefix(tok->str(), qPropToken->str())) {
-                    const Token* qNextPropToken = qPropToken->next();
-                    const std::string& value = qNextPropToken->str();
+            const Token * propToken = tok->next();
+            while (propToken && propToken->str() != ")") {
+                if (settings->library.isexportedprefix(tok->str(), propToken->str())) {
+                    const Token* nextPropToken = propToken->next();
+                    const std::string& value = nextPropToken->str();
                     if (_functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
                 }
-                if (settings->library.isexportedsuffix(tok->str(), qPropToken->str())) {
-                    const Token* qNextPropToken = qPropToken->previous();
-                    const std::string& value = qNextPropToken->str();
+                if (settings->library.isexportedsuffix(tok->str(), propToken->str())) {
+                    const Token* prevPropToken = propToken->previous();
+                    const std::string& value = prevPropToken->str();
                     if (value != ")" && _functions.find(value) != _functions.end()) {
                         _functions[value].usedOtherFile = true;
                     }
                 }
-                qPropToken = qPropToken->next();
+                propToken = propToken->next();
             }
         }
 
         if (settings->library.markupFile(FileName)
             && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
-            const Token * qPropToken = tok;
-            qPropToken = qPropToken->next();
-            if (qPropToken->next()) {
-                qPropToken = qPropToken->next();
-                while (qPropToken && qPropToken->str() != ")") {
-                    const std::string& value = qPropToken->str();
+            const Token * propToken = tok->next();
+            if (propToken->next()) {
+                propToken = propToken->next();
+                while (propToken && propToken->str() != ")") {
+                    const std::string& value = propToken->str();
                     if (!value.empty()) {
                         _functions[value].usedOtherFile = true;
                         break;
                     }
-                    qPropToken = qPropToken->next();
+                    propToken = propToken->next();
                 }
             }
         }
 
         if (settings->library.isreflection(tok->str())) {
-            const int index = settings->library.reflectionArgument(tok->str());
-            if (index >= 0) {
+            const int argIndex = settings->library.reflectionArgument(tok->str());
+            if (argIndex >= 0) {
                 const Token * funcToken = tok->next();
-                int p = 0;
+                int index = 0;
                 std::string value;
                 while (funcToken) {
                     if (funcToken->str()==",") {
-                        if (++p==index)
+                        if (++index == argIndex)
                             break;
                         value = "";
                     } else
                         value += funcToken->str();
                     funcToken = funcToken->next();
                 }
-                if (p==index) {
+                if (index == argIndex) {
                     value = value.substr(1, value.length() - 2);
                     _functions[value].usedOtherFile = true;
                 }
