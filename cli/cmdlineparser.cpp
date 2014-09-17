@@ -677,7 +677,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else {
                 std::string message("cppcheck: error: unrecognized showtime mode: \"");
                 message += showtimeMode;
-                message +=  "\".";
+                message +=  "\". Supported modes: file, summary, top5.";
                 PrintMessage(message);
                 return false;
             }
