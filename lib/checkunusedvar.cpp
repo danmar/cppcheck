@@ -1232,9 +1232,7 @@ void CheckUnusedVar::checkStructMemberUsage()
 
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
                 varname = tok->strAt(2);
-            else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))
-                varname = tok->strAt(3);
-            else if (Token::Match(tok->next(), "%type% * %var% [;[]"))
+            else if (Token::Match(tok->next(), "%type% %type%|* %var% [;[]"))
                 varname = tok->strAt(3);
             else if (Token::Match(tok->next(), "%type% %type% * %var% [;[]"))
                 varname = tok->strAt(4);

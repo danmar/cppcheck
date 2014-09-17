@@ -862,13 +862,14 @@ static std::string ShiftInt(const char cop, const Token* left, const Token* righ
     const MathLib::bigint leftInt = MathLib::toLongNumber(left->str());
     const MathLib::bigint rightInt = MathLib::toLongNumber(right->str());
     const bool rightIntIsPositive = rightInt >= 0;
-    const bool leftIntIsPositive = leftInt >= 0;
-    const bool leftOperationIsNotLeftShift = left->previous()->str() != "<<";
-    const bool operandIsLeftShift = right->previous()->str() == "<<";
 
     if (cop == '<') {
+        const bool leftOperationIsNotLeftShift = left->previous()->str() != "<<";
+        const bool operandIsLeftShift = right->previous()->str() == "<<";
+
         // Ensure that its not a shift operator as used for streams
         if (leftOperationIsNotLeftShift && operandIsLeftShift && rightIntIsPositive) {
+            const bool leftIntIsPositive = leftInt >= 0;
             if (!leftIntIsPositive) { // In case the left integer is negative, e.g. -1000 << 16. Do not simplify.
                 return left->str() + " << " + right->str();
             }
