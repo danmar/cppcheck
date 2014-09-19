@@ -22,9 +22,17 @@
 
 int main(int argc, char *argv[])
 {
-    options args(argc, const_cast<const char**>(argv));
+    try {
+        options args(argc, const_cast<const char**>(argv));
 
-    std::size_t failedTestsCount = TestFixture::runTests(args);
-
-    return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+        std::size_t failedTestsCount = TestFixture::runTests(args);
+        return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    } catch (const InternalError& e) {
+        printf("%s\n", e.errorMessage.c_str());
+    } catch (const std::exception& error) {
+        printf("%s\n", error.what());
+    } catch (...) {
+        printf("Unknown exception\n");
+    }
+    return EXIT_FAILURE;
 }

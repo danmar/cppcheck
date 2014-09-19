@@ -119,7 +119,17 @@ int main(int argc, char* argv[])
     GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
     argv[0] = exename;
 #endif
-    return exec.check(argc, argv);
+
+    try {
+        return exec.check(argc, argv);
+    } catch (const InternalError& e) {
+        printf("%s\n", e.errorMessage.c_str());
+    } catch (const std::exception& error) {
+        printf("%s\n", error.what());
+    } catch (...) {
+        printf("Unknown exception\n");
+    }
+    return EXIT_FAILURE;
 }
 
 
