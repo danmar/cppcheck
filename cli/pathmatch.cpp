@@ -17,8 +17,11 @@
  */
 
 #include "pathmatch.h"
+#include "path.h"
 #include <algorithm>
 #include <ctype.h>
+#include <string>
+#include <iostream>
 
 PathMatch::PathMatch(const std::vector<std::string> &masks, bool caseSensitive)
     : _masks(masks), _caseSensitive(caseSensitive)
@@ -34,7 +37,11 @@ bool PathMatch::Match(const std::string &path) const
         return false;
 
     for (std::vector<std::string>::const_iterator iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask) {
-        const std::string& mask(*iterMask);
+        std::string mask(*iterMask);
+
+        // Convert the mask into a relative path to current working directory
+        if (Path::isAbsolute(mask))
+            mask.erase(0, (int)Path::getCurrentPath().length() + 1);
 
         std::string findpath(path);
         if (!_caseSensitive)
