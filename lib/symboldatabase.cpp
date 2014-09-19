@@ -1541,8 +1541,9 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         } else if (func->type != Function::eDestructor && !destructor) {
                             // normal function?
                             if ((*tok)->next()->link()) {
-                                if ((func->isConst && (*tok)->next()->link()->next()->str() == "const") ||
-                                    (!func->isConst && (*tok)->next()->link()->next()->str() != "const")) {
+                                const bool hasConstKeyword = (*tok)->next()->link()->next()->str() == "const";
+                                if ((func->isConst && hasConstKeyword) ||
+                                    (!func->isConst && !hasConstKeyword)) {
                                     func->hasBody = true;
                                 }
                             }
@@ -1620,15 +1621,13 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 
         // check for base classes
         else if (Token::Match(tok2, ":|,")) {
-            Type::BaseInfo base;
-
-            base.isVirtual = false;
-
             tok2 = tok2->next();
 
             // check for invalid code
             if (!tok2 || !tok2->next())
                 return nullptr;
+
+            Type::BaseInfo base;
 
             if (tok2->str() == "virtual") {
                 base.isVirtual = true;
@@ -1669,7 +1668,6 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             }
 
             base.name = tok2->str();
-            base.type = nullptr;
 
             // add unhandled templates
             if (tok2->next() && tok2->next()->str() == "<") {
@@ -2188,12 +2186,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         unsigned int count = 0;
 
         for (const Token* tok = start->next(); tok; tok = tok->next()) {
+            if (Token::Match(tok, ",|)"))
+                return; // Syntax error
+
             const Token* startTok = tok;
             const Token* endTok   = nullptr;
             const Token* nameTok  = nullptr;
-
-            if (Token::Match(tok, ",|)"))
-                return; // Syntax error
 
             do {
                 if (tok->varId() != 0) {
@@ -2572,10 +2570,6 @@ void Scope::getVariableList()
 
 const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
 {
-    // This is the start of a statement
-    const Token *vartok = nullptr;
-    const Token *typetok = nullptr;
-
     // Is it a throw..?
     if (Token::Match(tok, "throw %any% (") &&
         Token::simpleMatch(tok->linkAt(2), ") ;")) {
@@ -2604,6 +2598,10 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     if (Token::Match(tok, "struct|union")) {
         tok = tok->next();
     }
+
+    // This is the start of a statement
+    const Token *vartok = nullptr;
+    const Token *typetok = nullptr;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
         // If the vartok was set in the if-blocks above, create a entry for this variable..
