@@ -201,11 +201,15 @@ const std::string Path::getCurrentPath()
 
 bool Path::isAbsolute(const std::string& path)
 {
-#if defined(__linux__) || defined(__sun) || defined(__hpux)
-    if (path[0] == '/')
+#ifdef _WIN32
+    if (path.length() < 2)
+        return false;
+
+    // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
+    if (path.compare(0, 2, "\\\\") == 0 || (isalpha(path[0]) != 0 && path.compare(1, 2, ":\\") == 0))
         return true;
-#elif defined(_MSC_VER) || (defined(__GNUC__) && defined(_WIN32))
-	if (path[0] == '\\' || path[1] == ':')
+#else
+    if (path[0] == '/')
         return true;
 #endif
 
