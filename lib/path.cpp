@@ -28,7 +28,6 @@
 #ifndef _WIN32
     #include <unistd.h>
 #endif
-#include <string>
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -201,15 +200,17 @@ const std::string Path::getCurrentPath()
 
 bool Path::isAbsolute(const std::string& path)
 {
+    std::string nativePath = toNativeSeparators(path);
+
 #ifdef _WIN32
     if (path.length() < 2)
         return false;
 
     // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
-    if (path.compare(0, 2, "\\\\") == 0 || (isalpha(path[0]) != 0 && path.compare(1, 2, ":\\") == 0))
+    if (nativePath.compare(0, 2, "\\\\") == 0 || (isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0))
         return true;
 #else
-    if (path[0] == '/')
+    if (nativePath[0] == '/')
         return true;
 #endif
 

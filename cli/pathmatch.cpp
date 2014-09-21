@@ -20,8 +20,6 @@
 #include "path.h"
 #include <algorithm>
 #include <ctype.h>
-#include <string>
-#include <iostream>
 
 PathMatch::PathMatch(const std::vector<std::string> &masks, bool caseSensitive)
     : _masks(masks), _caseSensitive(caseSensitive)
