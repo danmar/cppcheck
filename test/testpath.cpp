@@ -109,7 +109,7 @@ private:
         ASSERT_EQUALS(true, Path::isAbsolute("/foo/bar"));
         ASSERT_EQUALS(true, Path::isAbsolute("/"));
         ASSERT_EQUALS(false, Path::isAbsolute("foo/bar"));
-        ASSERT(EQUALS(false, Path::isAbsolute("foo.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
 #endif
     }
     
