@@ -53,7 +53,7 @@ private:
         std::istringstream s1("123");
         ASSERT_EQUALS("Failed to add suppression. Invalid id \"123\"", suppressions.parseFile(s1));
 
-        std::istringstream s2("obsolescentFunctionsrand_r");
+        std::istringstream s2("obsoleteFunctionsrand_r");
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 

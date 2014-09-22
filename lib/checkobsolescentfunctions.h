@@ -127,7 +127,7 @@ private:
 
         std::map<std::string,std::string>::const_iterator it(_obsolescentPosixFunctions.begin()), itend(_obsolescentPosixFunctions.end());
         for (; it!=itend; ++it) {
-            c.reportError(0, Severity::style, "obsolescentFunctions"+it->first, it->second);
+            c.reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
         }
     }
 

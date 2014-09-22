@@ -55,20 +55,20 @@ void CheckObsolescentFunctions::obsolescentFunctions()
                 std::map<std::string,std::string>::const_iterator it = _obsolescentStandardFunctions.find(tok->str());
                 if (it != _obsolescentStandardFunctions.end()) {
                     // If checking an old code base it might be uninteresting to update obsolescent functions.
-                    reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
+                    reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
                 } else {
                     if (_settings->standards.posix) {
                         it = _obsolescentPosixFunctions.find(tok->str());
                         if (it != _obsolescentPosixFunctions.end()) {
                             // If checking an old code base it might be uninteresting to update obsolescent functions.
-                            reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
+                            reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
                         }
                     }
                     if (_settings->standards.c >= Standards::C99) {
                         // alloca : this function is obsolescent in C but not in C++ (#4382)
                         it = _obsolescentC99Functions.find(tok->str());
                         if (it != _obsolescentC99Functions.end() && !(tok->str() == "alloca" && _tokenizer->isCPP())) {
-                            reportError(tok, Severity::style, "obsolescentFunctions"+it->first, it->second);
+                            reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
                         }
                     }
                 }
