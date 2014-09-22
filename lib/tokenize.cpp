@@ -7526,8 +7526,9 @@ public:
 
     void simplify(const std::map<std::string, EnumValue> &enumValues) {
         for (Token *tok = start; tok; tok = tok->next()) {
-            if (enumValues.find(tok->str()) != enumValues.end()) {
-                const EnumValue &other = enumValues.find(tok->str())->second;
+            std::map<std::string, EnumValue>::const_iterator it = enumValues.find(tok->str());
+            if (it != enumValues.end()) {
+                const EnumValue &other = it->second;
                 if (other.value != nullptr)
                     tok->str(other.value->str());
                 else {
