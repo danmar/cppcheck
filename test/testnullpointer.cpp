@@ -1099,7 +1099,7 @@ private:
               "\n"
               "    *p = 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer7() {

@@ -871,6 +871,43 @@ private:
                "  }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 34));
+
+        // while/for
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can be 0
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      ;\n" // <- no break
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x cant be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x cant be 0 at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  while (++i < 10) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can be 0
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
     }
 
     void valueFlowAfterCondition() {

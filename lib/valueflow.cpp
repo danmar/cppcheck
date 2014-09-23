@@ -820,9 +820,34 @@ static bool valueFlowForward(Token * const               startToken,
                     ++number_of_if;
                     tok2 = end;
                 } else {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in conditional code");
-                    return false;
+                    bool bail = true;
+
+                    // loop that conditionally set variable and then break => either loop condition is
+                    // redundant or the variable can be unchanged after the loop.
+                    bool loopCondition = false;
+                    if (Token::simpleMatch(tok2, "while (") && Token::Match(tok2->next()->astOperand2(), "%op%"))
+                        loopCondition = true;
+                    else if (Token::simpleMatch(tok2, "for (") &&
+                             Token::simpleMatch(tok2->next()->astOperand2(), ";") &&
+                             Token::simpleMatch(tok2->next()->astOperand2()->astOperand2(), ";") &&
+                             Token::Match(tok2->next()->astOperand2()->astOperand2()->astOperand1(), "%op%"))
+                        loopCondition = true;
+                    if (loopCondition) {
+                        const Token *tok3 = Token::findmatch(start, "%varid%", end, varid);
+                        if (Token::Match(tok3, "%varid% =", varid) &&
+                            tok3->scope()->classEnd                &&
+                            Token::Match(tok3->scope()->classEnd->tokAt(-3), "[;}] break ;") &&
+                            !Token::findmatch(tok3->next(), "%varid%", end, varid)) {
+                            bail = false;
+                            tok2 = end;
+                        }
+                    }
+
+                    if (bail) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in conditional code");
+                        return false;
+                    }
                 }
             }
         }
