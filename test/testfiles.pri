@@ -27,6 +27,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testmemleak.cpp \
            $${BASEPATH}/testnonreentrantfunctions.cpp \
            $${BASEPATH}/testnullpointer.cpp \
+           $${BASEPATH}/testobsolescentfunctions.cpp \
            $${BASEPATH}/testoptions.cpp \
            $${BASEPATH}/testother.cpp \
            $${BASEPATH}/testpath.cpp \
