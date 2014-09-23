@@ -22,7 +22,6 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkmemoryleak.h \
            $${BASEPATH}checknonreentrantfunctions.h \
            $${BASEPATH}checknullpointer.h \
-           $${BASEPATH}checkobsolescentfunctions.h \
            $${BASEPATH}checkother.h \
            $${BASEPATH}checkpostfixoperator.h \
            $${BASEPATH}checksizeof.h \
@@ -67,7 +66,6 @@ SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}checkmemoryleak.cpp \
            $${BASEPATH}checknonreentrantfunctions.cpp \
            $${BASEPATH}checknullpointer.cpp \
-           $${BASEPATH}checkobsolescentfunctions.cpp \
            $${BASEPATH}checkother.cpp \
            $${BASEPATH}checkpostfixoperator.cpp \
            $${BASEPATH}checksizeof.cpp \
