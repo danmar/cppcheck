@@ -126,8 +126,8 @@
 		<Unit filename="lib/checknonreentrantfunctions.h" />
 		<Unit filename="lib/checknullpointer.cpp" />
 		<Unit filename="lib/checknullpointer.h" />
-		<Unit filename="lib/checkobsoletefunctions.cpp" />
-		<Unit filename="lib/checkobsoletefunctions.h" />
+		<Unit filename="lib/checkobsolescentfunctions.cpp" />
+		<Unit filename="lib/checkobsolescentfunctions.h" />
 		<Unit filename="lib/checkother.cpp" />
 		<Unit filename="lib/checkother.h" />
 		<Unit filename="lib/checkpostfixoperator.cpp" />
@@ -191,7 +191,7 @@
 		<Unit filename="test/testmemleak.cpp" />
 		<Unit filename="test/testnonreentrantfunctions.cpp" />
 		<Unit filename="test/testnullpointer.cpp" />
-		<Unit filename="test/testobsoletefunctions.cpp" />
+		<Unit filename="test/testobsolescentfunctions.cpp" />
 		<Unit filename="test/testoptions.cpp" />
 		<Unit filename="test/testother.cpp" />
 		<Unit filename="test/testpath.cpp" />
