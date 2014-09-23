@@ -53,7 +53,7 @@
     <ClCompile Include="checkmemoryleak.cpp" />
     <ClCompile Include="checknonreentrantfunctions.cpp" />
     <ClCompile Include="checknullpointer.cpp" />
-    <ClCompile Include="checkobsoletefunctions.cpp" />
+    <ClCompile Include="checkobsolescentfunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
@@ -99,7 +99,7 @@
     <ClInclude Include="checkmemoryleak.h" />
     <ClInclude Include="checknonreentrantfunctions.h" />
     <ClInclude Include="checknullpointer.h" />
-    <ClInclude Include="checkobsoletefunctions.h" />
+    <ClInclude Include="checkobsolescentfunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />

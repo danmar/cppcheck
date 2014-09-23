@@ -131,7 +131,7 @@ LIBOBJ =      $(SRCDIR)/check.o \
               $(SRCDIR)/checkmemoryleak.o \
               $(SRCDIR)/checknonreentrantfunctions.o \
               $(SRCDIR)/checknullpointer.o \
-              $(SRCDIR)/checkobsoletefunctions.o \
+              $(SRCDIR)/checkobsolescentfunctions.o \
               $(SRCDIR)/checkother.o \
               $(SRCDIR)/checkpostfixoperator.o \
               $(SRCDIR)/checksizeof.o \
@@ -191,7 +191,7 @@ TESTOBJ =     test/options.o \
               test/testmemleak.o \
               test/testnonreentrantfunctions.o \
               test/testnullpointer.o \
-              test/testobsoletefunctions.o \
+              test/testobsolescentfunctions.o \
               test/testoptions.o \
               test/testother.o \
               test/testpath.o \
@@ -323,8 +323,8 @@ $(SRCDIR)/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/c
 $(SRCDIR)/checknullpointer.o: lib/checknullpointer.cpp lib/cxx11emu.h lib/checknullpointer.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checknullpointer.o $(SRCDIR)/checknullpointer.cpp
 
-$(SRCDIR)/checkobsoletefunctions.o: lib/checkobsoletefunctions.cpp lib/cxx11emu.h lib/checkobsoletefunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkobsoletefunctions.o $(SRCDIR)/checkobsoletefunctions.cpp
+$(SRCDIR)/checkobsolescentfunctions.o: lib/checkobsolescentfunctions.cpp lib/cxx11emu.h lib/checkobsolescentfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkobsolescentfunctions.o $(SRCDIR)/checkobsolescentfunctions.cpp
 
 $(SRCDIR)/checkother.o: lib/checkother.cpp lib/cxx11emu.h lib/checkother.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkother.o $(SRCDIR)/checkother.cpp
@@ -497,8 +497,8 @@ test/testnonreentrantfunctions.o: test/testnonreentrantfunctions.cpp lib/cxx11em
 test/testnullpointer.o: test/testnullpointer.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checknullpointer.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testnullpointer.o test/testnullpointer.cpp
 
-test/testobsoletefunctions.o: test/testobsoletefunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkobsoletefunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
-	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testobsoletefunctions.o test/testobsoletefunctions.cpp
+test/testobsolescentfunctions.o: test/testobsolescentfunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkobsolescentfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testobsolescentfunctions.o test/testobsolescentfunctions.cpp
 
 test/testoptions.o: test/testoptions.cpp lib/cxx11emu.h test/options.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testoptions.o test/testoptions.cpp
