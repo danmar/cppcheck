@@ -1028,35 +1028,35 @@ private:
 
     void sizeof_array() {
         const char *code;
-        
+
         code = "void foo()\n"
-                            "{\n"
-                            "    int i[4];\n"
-                            "    sizeof(i);\n"
-                            "    sizeof(*i);\n"
-                            "}\n";
+               "{\n"
+               "    int i[4];\n"
+               "    sizeof(i);\n"
+               "    sizeof(*i);\n"
+               "}\n";
         ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", tok(code));
 
         code = "static int i[4];\n"
-                            "void f()\n"
-                            "{\n"
-                            "    int i[10];\n"
-                            "    sizeof(i);\n"
-                            "}\n";
+               "void f()\n"
+               "{\n"
+               "    int i[10];\n"
+               "    sizeof(i);\n"
+               "}\n";
         ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", tok(code));
         {
             code = "int i[10];\n"
-                                "sizeof(i[0]);\n";
+                   "sizeof(i[0]);\n";
             ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
 
             code = "int i[10];\n"
-                                "sizeof i[0];\n";
+                   "sizeof i[0];\n";
             ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
         }
 
         code = "char i[2][20];\n"
                "sizeof(i[1]);";
-            ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ;", tok(code));
+        ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ;", tok(code));
     }
 
     void sizeof5() {
