@@ -59,6 +59,8 @@ private:
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
+
+        TEST_CASE(testTernary); // ticket #6182
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -3639,6 +3641,14 @@ private:
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void testTernary() {  // ticket #6182
+        check("void test(const std::string &val) {\n"
+              "    printf(\"%s\n\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestIO)
