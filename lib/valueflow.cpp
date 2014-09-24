@@ -978,8 +978,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, ErrorLogger *errorLogger,
         // Rhs values..
         if (!tok->astOperand2() || tok->astOperand2()->values.empty())
             continue;
-        std::list<ValueFlow::Value> values = tok->astOperand2()->values;
 
+        const std::list<ValueFlow::Value>& values = tok->astOperand2()->values;
         const bool constValue = tok->astOperand2()->isNumber();
         valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
     }
