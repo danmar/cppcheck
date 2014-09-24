@@ -95,6 +95,9 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #ifdef _WIN32
 #include <windows.h>
 static char exename[1024] = {0};
