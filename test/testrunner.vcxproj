@@ -63,7 +63,9 @@
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsamples.cpp" />
+    <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
+    <ClCompile Include="testsimplifytypedef.cpp" />
     <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
@@ -86,6 +88,7 @@
     <ClCompile Include="testunusedvar.cpp" />
     <ClCompile Include="testvaarg.cpp" />
     <ClCompile Include="testvalueflow.cpp" />
+    <ClCompile Include="testvarid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\cli\cmdlineparser.h" />
