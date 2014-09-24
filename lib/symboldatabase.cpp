@@ -254,9 +254,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             tok = tok2;
         }
 
-        // anonymous struct and union
-        else if (Token::Match(tok, "struct|union {") &&
-                 Token::simpleMatch(tok->next()->link(), "} ;")) {
+        // anonymous struct, union and namespace
+        else if ((Token::Match(tok, "struct|union {") &&
+                  Token::simpleMatch(tok->next()->link(), "} ;")) ||
+                 Token::simpleMatch(tok, "namespace {")) {
             scopeList.push_back(Scope(this, tok, scope));
 
             Scope *new_scope = &scopeList.back();
