@@ -33,8 +33,11 @@ public:
 
 
 private:
+    Settings settings_std;
 
     void run() {
+        LOAD_LIB_2(settings_std.library, "std.cfg");
+
         // Make sure the Tokenizer::simplifyTokenList works.
         // The order of the simplifications is important. So this test
         // case shall make sure the simplifications are done in the
@@ -311,12 +314,7 @@ private:
     std::string tokWithStdLib(const char code[]) {
         errout.str("");
 
-        Settings settings;
-        if ((settings.library.load("./testrunner", "../cfg/std.cfg").errorcode != Library::OK) && (settings.library.load("./testrunner", "cfg/std.cfg").errorcode != Library::OK)) {
-            complainMissingLib("std.cfg");
-            return "";
-        }
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings_std, this);
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
