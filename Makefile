@@ -182,6 +182,7 @@ TESTOBJ =     test/options.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
               test/testfilelister.o \
+              test/testgarbage.o \
               test/testincompletestatement.o \
               test/testinternal.o \
               test/testio.o \
@@ -200,7 +201,9 @@ TESTOBJ =     test/options.o \
               test/testpreprocessor.o \
               test/testrunner.o \
               test/testsamples.o \
+              test/testsimplifytemplate.o \
               test/testsimplifytokens.o \
+              test/testsimplifytypedef.o \
               test/testsizeof.o \
               test/teststl.o \
               test/teststring.o \
@@ -217,7 +220,8 @@ TESTOBJ =     test/options.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
               test/testvaarg.o \
-              test/testvalueflow.o
+              test/testvalueflow.o \
+              test/testvarid.o
 
 ifndef TINYXML
     TINYXML = externals/tinyxml/tinyxml2.o
@@ -470,6 +474,9 @@ test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/cxx11emu.h lib/toke
 test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testfilelister.o test/testfilelister.cpp
 
+test/testgarbage.o: test/testgarbage.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testgarbage.o test/testgarbage.cpp
+
 test/testincompletestatement.o: test/testincompletestatement.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
@@ -524,8 +531,14 @@ test/testrunner.o: test/testrunner.cpp lib/cxx11emu.h test/testsuite.h lib/error
 test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsamples.o test/testsamples.cpp
 
-test/testsimplifytokens.o: test/testsimplifytokens.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h lib/templatesimplifier.h
+test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h lib/templatesimplifier.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytemplate.o test/testsimplifytemplate.cpp
+
+test/testsimplifytokens.o: test/testsimplifytokens.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
+
+test/testsimplifytypedef.o: test/testsimplifytypedef.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytypedef.o test/testsimplifytypedef.cpp
 
 test/testsizeof.o: test/testsizeof.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checksizeof.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/path.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsizeof.o test/testsizeof.cpp
@@ -577,6 +590,9 @@ test/testvaarg.o: test/testvaarg.cpp lib/cxx11emu.h test/testsuite.h lib/errorlo
 
 test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvalueflow.o test/testvalueflow.cpp
+
+test/testvarid.o: test/testvarid.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvarid.o test/testvarid.cpp
 
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp

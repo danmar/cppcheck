@@ -18,6 +18,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testerrorlogger.cpp \
            $${BASEPATH}/testexceptionsafety.cpp \
            $${BASEPATH}/testfilelister.cpp \
+           $${BASEPATH}/testgarbage.cpp \
            $${BASEPATH}/testincompletestatement.cpp \
            $${BASEPATH}/testinternal.cpp \
            $${BASEPATH}/testio.cpp \
@@ -36,7 +37,9 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testpreprocessor.cpp \
            $${BASEPATH}/testrunner.cpp \
            $${BASEPATH}/testsamples.cpp \
+           $${BASEPATH}/testsimplifytemplate.cpp \
            $${BASEPATH}/testsimplifytokens.cpp \
+           $${BASEPATH}/testsimplifytypedef.cpp \
            $${BASEPATH}/testsizeof.cpp \
            $${BASEPATH}/teststl.cpp \
            $${BASEPATH}/teststring.cpp \
@@ -53,4 +56,5 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testunusedprivfunc.cpp \
            $${BASEPATH}/testunusedvar.cpp \
            $${BASEPATH}/testvaarg.cpp \
-           $${BASEPATH}/testvalueflow.cpp
+           $${BASEPATH}/testvalueflow.cpp \
+           $${BASEPATH}/testvarid.cpp
