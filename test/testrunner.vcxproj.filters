@@ -199,6 +199,9 @@
     <ClCompile Include="testsimplifytypedef.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testgarbage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">

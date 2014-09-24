@@ -69,24 +69,7 @@ private:
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
         TEST_CASE(tokenize34);  // #6121 (crash upon invalid enum)
 
-        // don't freak out when the syntax is wrong
-        TEST_CASE(wrong_syntax1);
-        TEST_CASE(wrong_syntax2);
-        TEST_CASE(wrong_syntax3); // #3544
-        TEST_CASE(wrong_syntax4); // #3618
-        TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
-        TEST_CASE(wrong_syntax_class_x_y); // #3585 - class x y { };
         TEST_CASE(syntax_case_default);
-        TEST_CASE(garbageCode1);
-        TEST_CASE(garbageCode2); // #4300
-        TEST_CASE(garbageCode3); // #4869
-        TEST_CASE(garbageCode4); // #4887
-        TEST_CASE(garbageCode5); // #5168
-        TEST_CASE(garbageCode6); // #5214
-        TEST_CASE(garbageCode7);
-        TEST_CASE(garbageCode8); // #5511
-        TEST_CASE(garbageCode9); // #5604
-        TEST_CASE(garbageCode10);  // #6127
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
         TEST_CASE(foreach);     // #3690
@@ -480,7 +463,6 @@ private:
         TEST_CASE(asttemplate);
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
-        TEST_CASE(astGarbage);
 
         TEST_CASE(startOfExecutableScope);
     }
@@ -801,208 +783,42 @@ private:
         ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
-    void wrong_syntax1() {
-        {
-            const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
-            ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code, true));
-            ASSERT_EQUALS("", errout.str());
-        }
+    void syntax_case_default() { // correct syntax
+        tokenizeAndStringify("void f() {switch (n) { case 0: z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        {
-            const char code[] ="struct A { template<int> struct { }; };";
-            ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
-        }
+        tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        {
-            const char code[] ="enum ABC { A,B, typedef enum { C } };";
-            ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
-        }
+        tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        {
-            // #3314 - don't report syntax error.
-            const char code[] ="struct A { typedef B::C (A::*f)(); };";
-            tokenizeAndStringify(code, true);
-            ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
-        }
-    }
+        tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-    void wrong_syntax2() {   // #3504
-        const char code[] = "void f() {\n"
-                            "    X<int> x;\n"
-                            "    Y<int, int, int, int, int, char> y;\n"
-                            "}\n"
-                            "\n"
-                            "void G( template <typename T> class (j) ) {}";
+        //allow GCC '({ %var%|%num%|%bool% ; })' statement expression extension
+        tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        // don't segfault..
-        tokenizeAndStringify(code);
-    }
+        //'b' can be or a macro or an undefined enum
+        tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-    void wrong_syntax3() {   // #3544
-        const char code[] = "X #define\n"
-                            "{\n"
-                            " (\n"
-                            "  for(  #endif typedef typedef cb[N] )\n"
-                            "        ca[N]; =  cb[i]\n"
-                            " )\n"
-                            "}";
+        //valid, when there's this declaration: 'constexpr int g() { return 2; }'
+        tokenizeAndStringify("void f() {switch (n) { case g(): z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        try {
-            tokenizer.tokenize(istr, "test.cpp");
-            assertThrowFail(__FILE__, __LINE__);
-        } catch (InternalError& e) {
-            ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
-            ASSERT_EQUALS("cppcheckError", e.id);
-            ASSERT_EQUALS(5, e.token->linenr());
-        }
-    }
+        //valid, when there's also this declaration: 'constexpr int g[1] = {0};'
+        tokenizeAndStringify("void f() {switch (n) { case g[0]: z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-    void wrong_syntax4() {   // #3618
-        const char code[] = "typedef void (x) (int);    return x&";
+        //valid, similar to above case
+        tokenizeAndStringify("void f() {switch (n) { case *g: z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
 
-        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
-    }
-
-    void wrong_syntax_if_macro() {
-        // #2518 #4171
-        ASSERT_THROW(tokenizeAndStringify("void f() { if MACRO(); }", false), InternalError);
-
-        // #4668 - note there is no semicolon after MACRO()
-        ASSERT_THROW(tokenizeAndStringify("void f() { if (x) MACRO() {} }", false), InternalError);
-
-        // #4810 - note there is no semicolon after MACRO()
-        ASSERT_THROW(tokenizeAndStringify("void f() { if (x) MACRO() else ; }", false), InternalError);
-    }
-
-    void wrong_syntax_class_x_y() {
-        // #3585
-        const char code[] = "class x y { };";
-
-        errout.str("");
-
-        Settings settings;
-        settings.addEnabled("information");
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.c");
-        tokenizer.simplifyTokenList2();
-
-        ASSERT_EQUALS("[test.c:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
-    }
-
-    void syntax_case_default() {
-        //correct syntax
-        {
-            tokenizeAndStringify("void f() {switch (n) { case 0: z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            tokenizeAndStringify("void f() {switch (n) { case 0:; break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            tokenizeAndStringify("void f() {switch (n) { case 0?1:2 : z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            tokenizeAndStringify("void f() {switch (n) { case 0?(1?3:4):2 : z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //allow GCC '({ %var%|%num%|%bool% ; })' statement expression extension
-            tokenizeAndStringify("void f() {switch (n) { case 0?({0;}):1: z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //'b' can be or a macro or an undefined enum
-            tokenizeAndStringify("void f() {switch (n) { case b: z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //valid, when there's this declaration: 'constexpr int g() { return 2; }'
-            tokenizeAndStringify("void f() {switch (n) { case g(): z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //valid, when there's also this declaration: 'constexpr int g[1] = {0};'
-            tokenizeAndStringify("void f() {switch (n) { case g[0]: z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //valid, similar to above case
-            tokenizeAndStringify("void f() {switch (n) { case *g: z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-
-            //valid, when 'x' and 'y' are constexpr.
-            tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
-            ASSERT_EQUALS("", errout.str());
-        }
-
-        //wrong syntax
-        {
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case: z(); break;}}"), InternalError);
-
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case;: z(); break;}}"), InternalError);
-
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case {}: z(); break;}}"), InternalError);
-
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?{1}:{2} : z(); break;}}"), InternalError);
-
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?1;:{2} : z(); break;}}"), InternalError);
-
-            ASSERT_THROW(tokenizeAndStringify("void f() {switch (n) { case 0?(1?{3:4}):2 : z(); break;}}"), InternalError);
-
-            //ticket #4234
-            ASSERT_THROW(tokenizeAndStringify("( ) { switch break ; { switch ( x ) { case } y break ; : } }"), InternalError);
-
-            //ticket #4267
-            ASSERT_THROW(tokenizeAndStringify("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }"), InternalError);
-        }
-    }
-
-    void garbageCode1() {
-        tokenizeAndStringify("struct x foo_t; foo_t typedef y;");
-    }
-
-    void garbageCode2() { //#4300 (segmentation fault)
-        ASSERT_THROW(tokenizeAndStringify("enum { D = 1  struct  { } ; }  s.b = D;"), InternalError);
-    }
-
-    void garbageCode3() { //#4849 (segmentation fault in Tokenizer::simplifyStructDecl (invalid code))
-        ASSERT_THROW(tokenizeAndStringify("enum {  D = 2 s ; struct y  { x } ; } { s.a = C ; s.b = D ; }"), InternalError);
-    }
-
-    void garbageCode4() { // #4887
-        ASSERT_THROW(tokenizeAndStringify("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }"), InternalError);
-    }
-
-    void garbageCode5() { // #5168
-        tokenizeAndStringify("( asm : ; void : );");
-    }
-
-    void garbageCode6() { // #5214
-        tokenizeAndStringify("int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
-        tokenizeAndStringify("int a = int b = ( 0 ? ? ) 1 : 0 ;", /*simplify=*/true);
-    }
-
-    void garbageCode7() {
-        ASSERT_THROW(tokenizeAndStringify("1 (int j) { return return (c) * sizeof } y[1];", /*simplify=*/true), InternalError);
-        tokenizeAndStringify("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)", /*simplify=*/true);
-    }
-
-    void garbageCode8() { // #5604
-        ASSERT_THROW(tokenizeAndStringify("{ enum struct : };", true), InternalError);
-        ASSERT_THROW(tokenizeAndStringify("int ScopedEnum{ template<typename T> { { e = T::error }; };\n"
-                                          "ScopedEnum1<int> se1; { enum class E : T { e = 0 = e ScopedEnum2<void*> struct UnscopedEnum3 { T{ e = 4 }; };\n"
-                                          "arr[(int) E::e]; }; UnscopedEnum3<int> e2 = f()\n"
-                                          "{ { e = e1; T::error } int test1 ue2; g() { enum class E { e = T::error }; return E::e; } int test2 = } \n"
-                                          "namespace UnscopedEnum { template<typename T> struct UnscopedEnum1 { E{ e = T::error }; }; UnscopedEnum1<int> { enum E : { e = 0 }; };\n"
-                                          "UnscopedEnum2<void*> ue3; template<typename T> struct UnscopedEnum3 { enum { }; }; int arr[E::e]; };\n"
-                                          "UnscopedEnum3<int> namespace template<typename T> int f() { enum E { e }; T::error }; return (int) E(); } int test1 int g() { enum E { e = E };\n"
-                                          "E::e; } int test2 = g<int>(); }", true), InternalError);
-    }
-
-    void garbageCode9() {
-        ASSERT_THROW(tokenizeAndStringify("enum { e = { } } ( ) { { enum { } } } { e } ", true), InternalError);
-    }
-
-    void garbageCode10() { // #6127
-        tokenizeAndStringify("for( rl=reslist; rl!=NULL; rl=rl->next )", /*simplify=*/true);
+        //valid, when 'x' and 'y' are constexpr.
+        tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyFileAndLineMacro() { // tokenize 'return - __LINE__' correctly
@@ -8702,16 +8518,6 @@ private:
         const std::string code = preprocessor.getcode(filedata, "", "");
 
         tokenizeAndStringify(code.c_str()); // just survive...
-    }
-
-    void astGarbage() {
-        testAst("--"); // don't crash
-
-        testAst("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"
-                "int #define for (i = avx_test i < c[i]; i++)\n"
-                "b[i + 3] = a[i] * {}"); // Don't hang (#5787)
-
-        testAst("START_SECTION([EXTRA](bool isValid(const String &filename)))"); // Don't crash (#5991)
     }
 
     bool isStartOfExecutableScope(int offset, const char code[]) {
