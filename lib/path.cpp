@@ -25,6 +25,9 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#ifndef _WIN32
+    #include <unistd.h>
+#endif
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -183,6 +186,35 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
         }
     }
     return absolutePath;
+}
+
+const std::string Path::getCurrentPath()
+{
+    char currentPath[4096];
+
+    if (getcwd(currentPath, 4096) != 0)
+        return std::string(currentPath);
+
+    return emptyString;
+}
+
+bool Path::isAbsolute(const std::string& path)
+{
+    std::string nativePath = toNativeSeparators(path);
+
+#ifdef _WIN32
+    if (path.length() < 2)
+        return false;
+
+    // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
+    if (nativePath.compare(0, 2, "\\\\") == 0 || (isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0))
+        return true;
+#else
+    if (nativePath[0] == '/')
+        return true;
+#endif
+
+    return false;
 }
 
 bool Path::isC(const std::string &path)

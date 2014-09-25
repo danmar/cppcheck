@@ -125,6 +125,19 @@ public:
     static bool acceptFile(const std::string &filename, const std::set<std::string> &extra);
 
     /**
+     * @brief Returns the absolute path of current working directory
+     * @return absolute path of current working directory
+     */
+    static const std::string getCurrentPath();
+
+    /**
+     * @brief Check if given path is absolute
+     * @param path Path to check
+     * @return true if given path is absolute
+     */
+    static bool isAbsolute(const std::string& path);
+
+    /**
      * @brief Identify language based on file extension.
      * @param path filename to check. path info is optional
      * @return true if extension is meant for C files
