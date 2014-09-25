@@ -415,8 +415,8 @@ int main(int argc, char **argv)
     fout << "\tinstall cppcheck ${BIN}\n";
     fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
     fout << "ifdef CFGDIR \n";
-    fout << "\tinstall -d ${CFGDIR}\n";
-    fout << "\tinstall -m 644 cfg/* ${CFGDIR}\n";
+    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
+    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
     fout << "endif\n\n";
 
     fout << "\n###### Build\n\n";

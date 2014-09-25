@@ -272,8 +272,8 @@ install: cppcheck
 	install cppcheck ${BIN}
 	install htmlreport/cppcheck-htmlreport ${BIN}
 ifdef CFGDIR 
-	install -d ${CFGDIR}
-	install -m 644 cfg/* ${CFGDIR}
+	install -d ${DESTDIR}${CFGDIR}
+	install -m 644 cfg/* ${DESTDIR}${CFGDIR}
 endif
 
 
