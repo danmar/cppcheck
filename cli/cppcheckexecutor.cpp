@@ -688,6 +688,16 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
 #endif
 }
 
+
+/*
+ * Predicate for sets of strings size comparison
+ * */
+static bool first_is_shorter(const std::set<std::string>& v1, const std::set<std::string>& v2)
+{
+    return v1.size() < v2.size();
+}
+
+
 /*
  * That is a method which gets called from check_wrapper
  * */
@@ -722,7 +732,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         time1 = std::time(0);
 
     if (settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version));
+        reportNotErr(ErrorLogger::ErrorMessage::getXMLHeader(settings._xml_version));
     }
 
     unsigned int returnValue = 0;
@@ -790,8 +800,29 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         }
     }
 
+	if (settings._rarest_first) {
+		std::map<std::string, std::set<std::string> >::iterator mi = _errorIdMsgMap.begin();
+		std::map<std::string, std::set<std::string> >::iterator endmi = _errorIdMsgMap.end();
+		std::vector<std::set<std::string> > errorsById;
+		for(; mi != endmi; ++mi) {
+			errorsById.push_back( mi->second );
+		}
+
+		std::sort(errorsById.begin(), errorsById.end(), first_is_shorter);
+
+		std::vector<std::set<std::string> >::iterator vi = errorsById.begin();
+		std::vector<std::set<std::string> >::iterator endvi = errorsById.end();
+		for(; vi != endvi; ++vi) {
+			std::set<std::string>::iterator vsi = (*vi).begin();
+			std::set<std::string>::iterator endvsi = (*vi).end();
+			for(; vsi != endvsi; ++vsi) {
+				reportNotErr(*vsi);
+			}
+		}
+	}
+
     if (settings._xml) {
-        reportErr(ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version));
+        reportNotErr(ErrorLogger::ErrorMessage::getXMLFooter(settings._xml_version));
     }
 
     _settings = 0;
@@ -801,14 +832,28 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         return 0;
 }
 
-void CppCheckExecutor::reportErr(const std::string &errmsg)
+void CppCheckExecutor::reportErr(const std::string &errmsg, const std::string &errid = "")
 {
-    // Alert only about unique errors
-    if (_errorList.find(errmsg) != _errorList.end())
-        return;
+	if (_settings->_rarest_first) {
+	    // Stash only about unique errors
+		if(_errorIdMsgMap[errid].find(errmsg) == _errorIdMsgMap[errid].end()) {
+			_errorIdMsgMap[errid].insert(errmsg);
+		}
+	} else {
+	    // Alert only about unique errors
+	    if (_errorList.find(errmsg) != _errorList.end())
+	        return;
 
-    _errorList.insert(errmsg);
-    std::cerr << errmsg << std::endl;
+	    _errorList.insert(errmsg);
+
+		std::cerr << errmsg << std::endl;
+	}
+}
+
+void CppCheckExecutor::reportNotErr(const std::string &msg)
+{
+    // No concern about error list
+    std::cerr << msg << std::endl;
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg)
@@ -861,9 +906,9 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (errorlist) {
         reportOut(msg.toXML(false, _settings->_xml_version));
     } else if (_settings->_xml) {
-        reportErr(msg.toXML(_settings->_verbose, _settings->_xml_version));
+        reportErr(msg.toXML(_settings->_verbose, _settings->_xml_version), msg._id);
     } else {
-        reportErr(msg.toString(_settings->_verbose, _settings->_outputFormat));
+        reportErr(msg.toString(_settings->_verbose, _settings->_outputFormat), msg._id);
     }
 }
 

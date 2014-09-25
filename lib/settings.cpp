@@ -37,6 +37,7 @@ Settings::Settings()
       _force(false),
       _relativePaths(false),
       _xml(false), _xml_version(1),
+      _rarest_first(false),
       _jobs(1),
       _loadAverage(0),
       _exitCode(0),

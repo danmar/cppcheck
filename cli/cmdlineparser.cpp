@@ -324,6 +324,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_xml = true;
         }
 
+		// Sort results rarest first
+        else if (std::strcmp(argv[i], "--rarest-first") == 0)
+            _settings->_rarest_first = true;
+
         // Only print something when there are errors
         else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
             _settings->_errorsOnly = true;
@@ -1010,7 +1014,8 @@ void CmdLineParser::PrintHelp()
               "    --xml                Write results in xml format to error stream (stderr).\n"
               "    --xml-version=<version>\n"
               "                         Select the XML file version. Currently versions 1 and\n"
-              "                         2 are available. The default version is 1."
+              "                         2 are available. The default version is 1.\n"
+              "    --rarest-first       Write results sorted by the number of error occurrences.\n"
               "\n"
               "Example usage:\n"
               "  # Recursively check the current folder. Print the progress on the screen and\n"
