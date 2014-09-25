@@ -695,10 +695,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 {
     Settings& settings = cppcheck.settings();
     _settings = &settings;
-    bool std = (settings.library.load(argv[0], "std.cfg").errorcode == Library::OK);
+    bool std = (settings.library.load(argv[0], "std.cfg").errorcode == Library::OK || settings.library.load(argv[0], "cfg/std.cfg").errorcode == Library::OK);
     bool posix = true;
     if (settings.standards.posix)
-        posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::OK);
+        posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::OK || settings.library.load(argv[0], "cfg/posix.cfg").errorcode == Library::OK );
 
     if (!std || !posix) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
