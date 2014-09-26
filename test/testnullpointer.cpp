@@ -2008,10 +2008,15 @@ private:
     }
 
     void nullpointerStdString() {
+        // line 3 and 5 don't seem to compile with recent compilers...
+        // To fix #6189 "assign with operator= a '\0' to a std::string is not an error" the result for those
+        // has been adjusted as well.
         check("void f(std::string s1) {\n"
               "    void* p = 0;\n"
               "    s1 = 0;\n"
+              "    s1 = '\\0';\n"
               "    std::string s2 = 0;\n"
+              "    std::string s2 = '\\0';\n"
               "    std::string s3(0);\n"
               "    foo(std::string(0));\n"
               "    s1 = p;\n"
@@ -2019,15 +2024,13 @@ private:
               "    std::string s5(p);\n"
               "    foo(std::string(p));\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: p\n"
-                      "[test.cpp:8]: (error) Possible null pointer dereference: p\n"
-                      "[test.cpp:3]: (error) Null pointer dereference\n"
-                      "[test.cpp:4]: (error) Null pointer dereference\n"
-                      "[test.cpp:5]: (error) Null pointer dereference\n"
-                      "[test.cpp:6]: (error) Null pointer dereference\n"
-                      /* TODO: handle std::string
-                      "[test.cpp:9]: (error) Possible null pointer dereference: p\n"
+        ASSERT_EQUALS("[test.cpp:9]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:10]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:7]: (error) Null pointer dereference\n"
+                      "[test.cpp:8]: (error) Null pointer dereference\n"
+                      /* TODO: handle std::string
+                      "[test.cpp:11]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:12]: (error) Possible null pointer dereference: p\n"
                       */
                       , errout.str());
 

@@ -431,7 +431,7 @@ void CheckNullPointer::nullConstantDereference()
                 ovar = tok->variable();
             else if (Token::Match(tok, "%var% =|+ 0 )|]|,|;|+"))
                 ovar = tok->variable();
-            if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType())
+            if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType() && !tok->tokAt(2)->isLiteral())
                 nullPointerError(tok);
         }
     }
