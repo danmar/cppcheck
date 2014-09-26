@@ -2753,6 +2753,7 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (unsigned int i = 0; i < 0; i++) { a; } }"));
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (long long i = 0; i < 0; i++) { a; } }"));
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { for (signed long long i = 0; i < 0; i++) { a; } }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int n = 0; for (signed long long i = 0; i < n; i++) { a; } }"));
     }
 
     void while1() {
@@ -4059,6 +4060,16 @@ private:
                                 "    }"
                                 "}";
             ASSERT_EQUALS("void f ( ) { x = 0 ; { y = 1 + x ; } x = 1 ; }", tok(code, true));
+        }
+
+        {
+            const char code[] = "void f() {"
+                                "    foo();"
+                                "    for(int x=0;x<1;x++) {"
+                                "        y = 1 + x;"
+                                "    }"
+                                "}";
+            ASSERT_EQUALS("void f ( ) { foo ( ) ; { int x = 0 ; y = 1 + x ; } }", tok(code, true));
         }
     }
 

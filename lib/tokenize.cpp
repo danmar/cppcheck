@@ -3711,7 +3711,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyIfNotNull();
     simplifyIfSameInnerCondition();
     simplifyNestedStrcat();
-    simplifyWhile0();
     simplifyFuncInWhile();
 
     simplifyIfAndWhileAssign(); // Could be affected by simplifyIfNot
@@ -3741,7 +3740,8 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyCalculations();
     }
 
-    // simplify redundant for
+    // simplify redundant loops
+    simplifyWhile0();
     removeRedundantFor();
 
     // Remove redundant parentheses in return..
@@ -4304,21 +4304,26 @@ bool Tokenizer::removeRedundantConditions()
 void Tokenizer::removeRedundantFor()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] for ( %var% = %num% ; %var% < %num% ; ++| %var% ++| ) {")) {
+        if (Token::Match(tok, "[;{}] for ( %var% = %num% ; %var% < %num% ; ++| %var% ++| ) {") ||
+            Token::Match(tok, "[;{}] for ( %type% %var% = %num% ; %var% < %num% ; ++| %var% ++| ) {")) {
             // Same variable name..
-            const std::string varname(tok->strAt(3));
-            const unsigned int varid(tok->tokAt(3)->varId());
-            if (varname != tok->strAt(7))
+            const Token* varTok = tok->tokAt(3);
+            bool type = varTok->next()->isName();
+            if (type)
+                varTok = varTok->next();
+            const std::string varname(varTok->str());
+            const unsigned int varid(varTok->varId());
+            if (varname != varTok->strAt(4))
                 continue;
-            const Token *vartok = tok->tokAt(11);
-            if (vartok->str() == "++")
-                vartok = vartok->next();
-            if (varname != vartok->str())
+            const Token *vartok2 = tok->linkAt(2)->previous();
+            if (vartok2->str() == "++")
+                vartok2 = vartok2->previous();
+            if (varname != vartok2->str())
                 continue;
 
             // Check that the difference of the numeric values is 1
-            const MathLib::bigint num1(MathLib::toLongNumber(tok->strAt(5)));
-            const MathLib::bigint num2(MathLib::toLongNumber(tok->strAt(9)));
+            const MathLib::bigint num1(MathLib::toLongNumber(varTok->strAt(2)));
+            const MathLib::bigint num2(MathLib::toLongNumber(varTok->strAt(6)));
             if (num1 + 1 != num2)
                 continue;
 
@@ -4341,12 +4346,18 @@ void Tokenizer::removeRedundantFor()
 
             // Simplify loop if loop variable isn't written
             if (!write) {
+                Token* bodyBegin = tok->linkAt(2)->next();
                 // remove "for ("
                 tok->deleteNext(2);
 
                 // If loop variable is read then keep assignment before
                 // loop body..
-                if (read) {
+                if (type) {
+                    tok->insertToken("{");
+                    Token::createMutualLinks(tok->next(), bodyBegin->link());
+                    bodyBegin->deleteThis();
+                    tok = tok->tokAt(6);
+                } else if (read) {
                     // goto ";"
                     tok = tok->tokAt(4);
                 } else {
@@ -4357,14 +4368,16 @@ void Tokenizer::removeRedundantFor()
                 // remove "x < 1 ; x ++ )"
                 tok->deleteNext(7);
 
-                // Add assignment after the loop body so the loop variable
-                // get the correct end value
-                Token *tok2 = tok->next()->link();
-                tok2->insertToken(";");
-                tok2->insertToken(MathLib::toString(num2));
-                tok2->insertToken("=");
-                tok2->insertToken(varname);
-                tok2->next()->varId(varid);
+                if (!type) {
+                    // Add assignment after the loop body so the loop variable
+                    // get the correct end value
+                    Token *tok2 = tok->next()->link();
+                    tok2->insertToken(";");
+                    tok2->insertToken(MathLib::toString(num2));
+                    tok2->insertToken("=");
+                    tok2->insertToken(varname);
+                    tok2->next()->varId(varid);
+                }
             }
         }
     }
