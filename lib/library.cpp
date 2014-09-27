@@ -163,6 +163,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     functionpure.insert(name); // a constant function is pure
                 } else if (functionnodename == "leak-ignore")
                     leakignore.insert(name);
+                else if (functionnodename == "use-retval")
+                    useretval.insert(name);
                 else if (functionnodename == "arg" && functionnode->Attribute("nr") != nullptr) {
                     const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
                     const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));

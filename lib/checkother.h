@@ -73,6 +73,7 @@ public:
         checkOther.checkVarFuncNullUB();
         checkOther.checkNanInArithmeticExpression();
         checkOther.checkCommaSeparatedReturn();
+        checkOther.checkReturnIgnoredReturnValue();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -229,6 +230,9 @@ public:
     /** @brief %Check for using of comparison functions evaluating always to true or false. */
     void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
+    /** @brief %Check for ignored return values. */
+    void checkReturnIgnoredReturnValue();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -282,6 +286,7 @@ private:
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
+    void ignoredReturnValueError(const Token* tok, const std::string& function);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -337,6 +342,7 @@ private:
         c.varFuncNullUBError(0);
         c.nanInArithmeticExpressionError(0);
         c.commaSeparatedReturnError(0);
+        c.ignoredReturnValueError(0, "malloc");
     }
 
     static std::string myName() {
@@ -361,6 +367,7 @@ private:
                // warning
                "* either division by zero or useless condition\n"
                "* memset() with a value out of range as the 2nd parameter\n"
+               "* return value of certain functions not used\n"
 
                // performance
                "* redundant data copying for const variable\n"

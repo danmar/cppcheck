@@ -2740,3 +2740,31 @@ void CheckOther::varFuncNullUBError(const Token *tok)
                 "    return 0;\n"
                 "}");
 }
+
+//---------------------------------------------------------------------------
+// Check for ignored return values.
+//---------------------------------------------------------------------------
+void CheckOther::checkReturnIgnoredReturnValue()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var% ("))
+                continue;
+
+            if (!tok->next()->astParent() && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
+                ignoredReturnValueError(tok, tok->str());
+        }
+    }
+}
+
+void CheckOther::ignoredReturnValueError(const Token* tok, const std::string& function)
+{
+    reportError(tok, Severity::warning, "ignoredReturnValue",
+                "Return value of function " + function + "() is not used.", false);
+}

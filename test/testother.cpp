@@ -33,9 +33,11 @@ public:
     }
 
 private:
-
+    Settings settings_std;
 
     void run() {
+        LOAD_LIB_2(settings_std.library, "std.cfg");
+
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -167,7 +169,9 @@ private:
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
 
-        TEST_CASE(integerOverflow) // #5895
+        TEST_CASE(integerOverflow); // #5895
+
+        TEST_CASE(testReturnIgnoredReturnValue);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -4174,14 +4178,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        {
-            Settings settings;
-            LOAD_LIB_2(settings.library, "std.cfg");
-            check("void foo() {\n"
-                  "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
-                  "}", "test.cpp", false, false, false, true, &settings);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
-        }
+        check("void foo() {\n"
+              "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"
               "void foo() {\n"
@@ -4785,14 +4785,12 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
-        Settings settings;
-        LOAD_LIB_2(settings.library, "std.cfg");
         check(
             "void foo(char *p) {\n"
             "  free(p);\n"
             "  printf(\"Freed memory at location %x\", p);\n"
             "  free(p);\n"
-            "}", nullptr, false, false, false, true, &settings);
+            "}", nullptr, false, false, false, true, &settings_std);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
 
         check(
@@ -6258,6 +6256,28 @@ private:
         check("void f(unsigned long long ull) {\n"
               "    if (ull == 0x89504e470d0a1a0a || ull == 0x8a4d4e470d0a1a0a) ;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnIgnoredReturnValue() {
+        check("void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+
+        check("void foo() {\n"
+              "    return strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if(strcmp(a, b));\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    bool b = strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
         ASSERT_EQUALS("", errout.str());
     }
 };
