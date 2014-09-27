@@ -114,7 +114,10 @@ void CheckVaarg::va_list_usage()
                 tok = tok->linkAt(1);
             } else if (Token::Match(tok, "throw|return"))
                 exitOnEndOfStatement = true;
-            else if (!open && tok->varId() == var->declarationId())
+            else if (_tokenizer->isCPP() && tok->str() == "try") {
+                open = false;
+                break;
+            } else if (!open && tok->varId() == var->declarationId())
                 va_list_usedBeforeStartedError(tok, var->name());
             else if (exitOnEndOfStatement && tok->str() == ";")
                 break;

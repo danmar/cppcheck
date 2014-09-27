@@ -116,6 +116,18 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #6186
+        check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
+              "    va_list arg_ptr;\n"
+              "    va_start(arg_ptr, szBuffer);\n"
+              "    try {\n"
+              "        throw sth;\n"
+              "    } catch(...) {\n"
+              "        va_end(arg_ptr);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
