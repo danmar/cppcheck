@@ -153,9 +153,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             Token::Match(tok2, "new ( nothrow ) struct| %type% [;()]"))
             return New;
 
-        if (Token::Match(tok2, "new struct| %type% [") ||
-            Token::Match(tok2, "new ( std :: nothrow ) struct| %type% [") ||
-            Token::Match(tok2, "new ( nothrow ) struct| %type% ["))
+        if (Token::Match(tok2, "new struct| %type% *| [") ||
+            Token::Match(tok2, "new ( std :: nothrow ) struct| %type% *| [") ||
+            Token::Match(tok2, "new ( nothrow ) struct| %type% *| ["))
             return NewArray;
 
         if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))

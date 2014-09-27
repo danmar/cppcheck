@@ -410,6 +410,7 @@ private:
         ASSERT_EQUALS(";;alloc;", getcode("int *a = malloc(100);", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int;", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int[10];", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("int **a = new int*[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("const int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int i = open(a,b);", "i"));
