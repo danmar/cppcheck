@@ -3800,6 +3800,17 @@ private:
                        "  mbstowcs (wbuf, str, 3);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo() {\n"
+                       "  char buf[10];\n"
+                       "  tmpnam(buf);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar("void foo() {\n"
+                       "  char *ptr;\n"
+                       "  tmpnam(ptr);\n"
+                       "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: ptr\n", "", errout.str());
     }
 
     void checkDeadPointer(const char code[]) {
