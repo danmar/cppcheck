@@ -3176,6 +3176,17 @@ private:
               "    snprintf(pString, 1024, \"ab\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6141 FP: Unknown type is assumed to have size 0
+        check("typedef struct {\n"
+              "    CHAR s[42];\n"
+              "} sct_t;\n"
+              "void foo() {\n"
+              "    sct_t p;\n"
+              "    snprintf(p.s, 42, \"abcdef\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void strncat1() {

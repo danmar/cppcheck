@@ -666,7 +666,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
         if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
             const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varcount));
-            if (n > total_size)
+            if ((n > total_size) && total_size > 0)
                 outOfBoundsError(tok->tokAt(4 + varcount), "snprintf size", true, n, total_size);
         }
 
