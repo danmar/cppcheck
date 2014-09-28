@@ -758,6 +758,8 @@ static void compileAnd(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->str() == "&" && !tok->astOperand1()) {
             Token* tok2 = tok->next();
+            if(!tok2)
+               break;
             if (tok2->str() == "&")
                 tok2 = tok2->next();
             if (state.cpp && Token::Match(tok2, ",|)")) {
