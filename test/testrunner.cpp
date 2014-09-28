@@ -23,11 +23,14 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef NDEBUG
     try {
+#endif
         options args(argc, const_cast<const char**>(argv));
 
         std::size_t failedTestsCount = TestFixture::runTests(args);
         return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+#ifdef NDEBUG
     } catch (const InternalError& e) {
         printf("%s\n", e.errorMessage.c_str());
     } catch (const std::exception& error) {
@@ -36,4 +39,5 @@ int main(int argc, char *argv[])
         printf("Unknown exception\n");
     }
     return EXIT_FAILURE;
+#endif
 }

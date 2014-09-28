@@ -123,8 +123,11 @@ int main(int argc, char* argv[])
     argv[0] = exename;
 #endif
 
+#ifdef NDEBUG
     try {
+#endif
         return exec.check(argc, argv);
+#ifdef NDEBUG
     } catch (const InternalError& e) {
         printf("%s\n", e.errorMessage.c_str());
     } catch (const std::exception& error) {
@@ -133,6 +136,7 @@ int main(int argc, char* argv[])
         printf("Unknown exception\n");
     }
     return EXIT_FAILURE;
+#endif
 }
 
 
