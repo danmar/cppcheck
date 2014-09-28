@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.67 dev</title>
 
-    <date>2013-12-23</date>
+    <date>2014-09-28</date>
   </bookinfo>
 
   <chapter>
@@ -842,6 +842,39 @@ Checking noreturn.c...
 &lt;def&gt;
   &lt;function name="ZeroMemory"&gt;
     &lt;noreturn&gt;false&lt;/noreturn&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>use-retval</title>
+
+      <para>Per default, cppcheck assumes that ignoring the return value of a function is ok:</para>
+
+      <programlisting>bool test(const char* a, const char* b)
+{
+    strcmp(a, b);  // &lt;- bug: The call of strcmp does not have side-effects, but the return value is ignored.
+    return true;
+}</programlisting>
+
+      <para>In case <literal>strcmp</literal> has side effects, such as assigning the result to one of the parameters passed to it, nothing bad would happen:</para>
+
+      <programlisting># cppcheck useretval.c 
+Checking useretval.c...</programlisting>
+
+      <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
+      detected:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+Checking useretval.c...
+[noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
+
+      <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="strcmp"&gt;
+    &lt;use-retval/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
     </section>
