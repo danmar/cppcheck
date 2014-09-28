@@ -50,8 +50,8 @@ private:
         TEST_CASE(garbageCode8); // #5511
         TEST_CASE(garbageCode9); // #5604
         TEST_CASE(garbageCode10);  // #6127
-        TEST_CASE(garbageCode11);  
-        
+        TEST_CASE(garbageCode11);
+
         TEST_CASE(astGarbage);
     }
 
@@ -233,7 +233,7 @@ private:
     void garbageCode10() { // #6127
         checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )");
     }
-    
+
     void garbageCode11() { // do not crash
         checkCode("( ) &");
     }
