@@ -2207,7 +2207,7 @@ void CheckMemoryLeakInFunction::check()
     }
 
     // Check variables..
-    for (unsigned int i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
         if (!var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || !var->scope())
             continue;
@@ -2449,7 +2449,7 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 void CheckMemoryLeakStructMember::check()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
         if (!var || !var->isLocal() || var->isStatic())
             continue;

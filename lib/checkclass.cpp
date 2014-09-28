@@ -1421,7 +1421,7 @@ void CheckClass::virtualDestructor()
                     // pointer variables of type 'Base *'
                     std::set<unsigned int> basepointer;
 
-                    for (std::size_t k = 0; k < symbolDatabase->getVariableListSize(); k++) {
+                    for (std::size_t k = 1; k < symbolDatabase->getVariableListSize(); k++) {
                         const Variable* var = symbolDatabase->getVariableFromVarId(k);
                         if (var && var->isPointer() && var->type() == derivedFrom)
                             basepointer.insert(var->declarationId());

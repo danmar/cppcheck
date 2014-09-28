@@ -2522,7 +2522,7 @@ void CheckOther::checkRedundantCopy()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::size_t i = 0; i < symbolDatabase->getVariableListSize(); i++) {
+    for (std::size_t i = 1; i < symbolDatabase->getVariableListSize(); i++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(i);
 
         if (!var || var->isReference() || !var->isConst() || var->isPointer() || (!var->type() && !var->isStlType())) // bailout if var is of standard type, if it is a pointer or non-const
