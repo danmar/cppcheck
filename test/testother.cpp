@@ -6285,6 +6285,12 @@ private:
               "    std::ofstream log(logfile.c_str(), std::ios::out);\n"
               "}", "test.cpp", false, false, false, true, &settings_std);
         ASSERT_EQUALS("", errout.str());
+
+        // #6197
+        check("void foo() {\n"
+              "    DebugLog::getInstance().log(systemInfo.getSystemInfo());\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

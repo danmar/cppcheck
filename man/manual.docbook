@@ -949,6 +949,10 @@ Checking useretval.c...
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
+    <para>CDATA can be used to include characters in a pattern that might interfere with XML:</para>
+
+    <programlisting>&lt;![CDATA[some&lt;strange&gt;pattern]]&gt;</programlisting>
+
     <section>
       <title>&lt;tokenlist&gt;</title>
 

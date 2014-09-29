@@ -2754,7 +2754,7 @@ void CheckOther::checkReturnIgnoredReturnValue()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (tok->varId() || !Token::Match(tok, "%var% ("))
+            if (tok->varId() || !Token::Match(tok, "%var% (") || tok->strAt(-1) == ".")
                 continue;
 
             if (!tok->next()->astParent() && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
