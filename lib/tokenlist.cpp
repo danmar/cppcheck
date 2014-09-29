@@ -557,7 +557,7 @@ static void compileScope(Token *&tok, AST_state& state)
             if (tok)
                 compileTerm(tok, state);
 
-            if (binop->previous() && binop->previous()->isName())
+            if (binop->previous() && (binop->previous()->isName() || (binop->previous()->link() && binop->strAt(-1) == ">")))
                 compileBinOp(binop, state, nullptr);
             else
                 compileUnaryOp(binop, state, nullptr);
