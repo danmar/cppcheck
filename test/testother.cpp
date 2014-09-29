@@ -6288,7 +6288,7 @@ private:
 
         // #6197
         check("void foo() {\n"
-              "    return strcmp(a, b);\n"
+              "    DebugLog::getInstance().log(systemInfo.getSystemInfo());\n"
               "}", "test.cpp", false, false, false, true, &settings_std);
         ASSERT_EQUALS("", errout.str());
     }
