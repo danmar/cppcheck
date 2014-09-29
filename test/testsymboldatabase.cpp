@@ -1062,7 +1062,7 @@ private:
         // 1 scope: Global
         ASSERT(db && db->scopeList.size() == 1);
 
-        if (db && db->scopeList.size() >= 1) {
+        if (db && !db->scopeList.empty()) {
             // No functions
             ASSERT(db->scopeList.front().functionList.empty());
         }
