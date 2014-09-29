@@ -6279,6 +6279,12 @@ private:
               "    bool b = strcmp(a, b);\n"
               "}", "test.cpp", false, false, false, true, &settings_std);
         ASSERT_EQUALS("", errout.str());
+
+        // #6194
+        check("void foo() {\n"
+              "    std::ofstream log(logfile.c_str(), std::ios::out);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
