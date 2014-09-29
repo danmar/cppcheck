@@ -662,11 +662,13 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             if (tok->str() == "(" && Token::Match(tok->link(), ") %type%"))
                 tok = tok->link()->next();
             state.op.push(tok);
-            while (Token::Match(tok, "%var%|*|&|<|[")) {
+            while (Token::Match(tok, "%var%|*|&|<")) {
                 if (tok->link())
                     tok = tok->link();
                 tok = tok->next();
             }
+            if (tok->str() == "[")
+                compilePrecedence2(tok, state);
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "delete %var%|*|&|::|(|[")) {
             Token* tok2 = tok;
