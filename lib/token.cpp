@@ -928,7 +928,7 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
     std::cout << stringifyList(true, true, true, true, true, &fileNames, 0) << std::endl;
 }
 
-void Token::stringify(std::ostream& os, bool varid, bool attributes) const
+void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
 {
     if (attributes) {
         if (isUnsigned())
@@ -942,7 +942,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes) const
                 os << "long ";
         }
     }
-    if (isExpandedMacro())
+    if (macro && isExpandedMacro())
         os << "$";
     if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
         os << _str;
@@ -1007,7 +1007,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
             lineNumber = tok->linenr();
         }
 
-        tok->stringify(ret, varid, attributes); // print token
+        tok->stringify(ret, varid, attributes, attributes); // print token
         if (tok->next() != end && (!linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret << ' ';
     }
