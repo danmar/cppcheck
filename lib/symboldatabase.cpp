@@ -1074,6 +1074,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
 bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart)
 {
+    if (tok->varId())
+        return false;
+
     // function returning function pointer? '... ( ... %var% ( ... ))( ... ) {'
     if (tok->str() == "(" &&
         tok->link()->previous()->str() == ")") {

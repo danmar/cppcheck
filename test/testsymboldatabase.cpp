@@ -152,6 +152,7 @@ private:
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
+        TEST_CASE(constructorInitialization);
         TEST_CASE(memberFunctionOfUnknownClassMacro1);
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
         TEST_CASE(memberFunctionOfUnknownClassMacro3);
@@ -1051,6 +1052,19 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
 
             ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
+        }
+    }
+
+    void constructorInitialization() {
+        GET_SYMBOL_DB("std::string logfile;\n"
+                      "std::ofstream log(logfile.c_str(), std::ios::out);");
+
+        // 1 scope: Global
+        ASSERT(db && db->scopeList.size() == 1);
+
+        if (db && db->scopeList.size() >= 1) {
+            // No functions
+            ASSERT(db->scopeList.front().functionList.empty());
         }
     }
 
