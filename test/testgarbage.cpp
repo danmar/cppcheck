@@ -51,6 +51,7 @@ private:
         TEST_CASE(garbageCode9); // #5604
         TEST_CASE(garbageCode10);  // #6127
         TEST_CASE(garbageCode11);
+        TEST_CASE(garbageCode12);
 
         TEST_CASE(astGarbage);
     }
@@ -60,6 +61,12 @@ private:
 
         Settings settings;
         settings.debugwarnings = true;
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.addEnabled("portability");
+        settings.addEnabled("performance");
+        settings.inconclusive = true;
+        settings.experimental = true;
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -236,6 +243,10 @@ private:
 
     void garbageCode11() { // do not crash
         checkCode("( ) &");
+    }
+
+    void garbageCode12() { // do not crash
+        checkCode("{ g; S (void) { struct } { } int &g; }");
     }
 
     void astGarbage() {
