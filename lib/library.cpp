@@ -93,6 +93,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     if (strcmp(rootnode->Name(),"def") != 0)
         return Error(BAD_ELEMENT, rootnode->Name());
 
+    const char* format_string = rootnode->Attribute("format");
+    int format = 1;
+    if (format_string)
+        format = atoi(format_string);
+
+    if (format > 1)
+        return Error(UNSUPPORTED_FORMAT);
+
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         std::string nodename = node->Name();
         if (nodename == "memory" || nodename == "resource") {

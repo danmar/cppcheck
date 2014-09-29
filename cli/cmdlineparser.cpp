@@ -531,6 +531,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             case Library::BAD_ATTRIBUTE_VALUE:
                 errmsg = "Bad attribute value";
                 break;
+            case Library::UNSUPPORTED_FORMAT:
+                errmsg = "File is of unsupported format version";
+                break;
             }
             if (!err.reason.empty())
                 errmsg += " '" + err.reason + "'";

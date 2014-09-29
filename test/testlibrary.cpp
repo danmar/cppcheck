@@ -39,6 +39,7 @@ private:
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
         TEST_CASE(podtype);
+        TEST_CASE(version);
     }
 
     void empty() const {
@@ -273,6 +274,42 @@ private:
         const struct Library::PodType *type = library.podtype("s16");
         ASSERT_EQUALS(2U,   type ? type->size : 0U);
         ASSERT_EQUALS(0,    type ? type->sign : '?');
+    }
+
+    void version() const {
+        {
+            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                    "<def>\n"
+                                    "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+
+            Library library;
+            Library::Error err = library.load(doc);
+            ASSERT_EQUALS(err.errorcode, Library::OK);
+        }
+        {
+            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                    "<def format=\"1\">\n"
+                                    "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+
+            Library library;
+            Library::Error err = library.load(doc);
+            ASSERT_EQUALS(err.errorcode, Library::OK);
+        }
+        {
+            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
+                                    "<def format=\"42\">\n"
+                                    "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+
+            Library library;
+            Library::Error err = library.load(doc);
+            ASSERT_EQUALS(err.errorcode, Library::UNSUPPORTED_FORMAT);
+        }
     }
 };
 
