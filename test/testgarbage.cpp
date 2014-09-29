@@ -19,6 +19,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
+#include "checkother.h"
 #include "settings.h"
 
 extern std::ostringstream errout;
@@ -75,6 +76,8 @@ private:
         tokenizer.simplifyTokenList2();
 
         // TODO: Run checks
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.runChecks(&tokenizer, &settings, this);
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }
