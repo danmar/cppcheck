@@ -2171,6 +2171,17 @@ private:
               "    char name[255];\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #5754
+        check("class John\n"
+              "{\n"
+              "public:\n"
+              "    John() {*this->name = '\\0';}\n"
+              "\n"
+              "private:\n"
+              "    char name[255];\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray3() {

@@ -528,7 +528,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         if (!Token::Match(ftok->next(), "::| %var%") &&
-            !Token::Match(ftok->next(), "this . %var%") &&
+            !Token::Match(ftok->next(), "*| this . %var%") &&
             !Token::Match(ftok->next(), "* %var% =") &&
             !Token::Match(ftok->next(), "( * this ) . %var%"))
             continue;
@@ -700,6 +700,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% =")) {
             assignVar(ftok->next()->str(), scope, usage);
+        } else if (Token::Match(ftok, "* this . %var% =")) {
+            assignVar(ftok->strAt(3), scope, usage);
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
