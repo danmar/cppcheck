@@ -3980,6 +3980,15 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+
+        // #5835
+        checkstd("int main(int argc, char* argv[]) {\n"
+                 "    char prog[10];\n"
+                 "    sprintf(prog, \"%s\", argv[0]);\n"
+                 "    sprintf(prog, \"%s\", argv[0]);\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer overrun possible for long command line arguments.\n"
+                      "[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
     }
 
     void scope() {

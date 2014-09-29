@@ -1613,10 +1613,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 continue;
 
             // Jump to the opening curly brace
-            tok = tok->next()->link();
-            if (!Token::simpleMatch(tok, ") {"))
-                continue;
-            tok = tok->next();
+            tok = symbolDatabase->functionScopes[i]->classStart;
 
             // Search within main() for possible buffer overruns involving argv
             for (const Token* end = tok->link(); tok != end; tok = tok->next()) {
@@ -1629,12 +1626,15 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 if (Token::Match(tok, "strcpy|strcat ( %var% , * %varid%", varid) ||
                     Token::Match(tok, "strcpy|strcat ( %var% , %varid% [", varid)) {
                     cmdLineArgsError(tok);
+                    tok = tok->linkAt(1);
                 } else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
                            tok->strAt(4).find("%s") != std::string::npos) {
                     cmdLineArgsError(tok);
+                    tok = tok->linkAt(1);
                 } else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
                            tok->strAt(4).find("%s") != std::string::npos) {
                     cmdLineArgsError(tok);
+                    tok = tok->linkAt(1);
                 }
             }
         }
