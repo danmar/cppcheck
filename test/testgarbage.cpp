@@ -76,13 +76,11 @@ private:
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
-        // TODO: Run more checks
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.runChecks(&tokenizer, &settings, this);
-        checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
-        CheckStl checkStl(&tokenizer, &settings, this);
-        checkStl.runChecks(&tokenizer, &settings, this);
-        checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
+        // call all "runChecks" in all registered Check classes
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+            (*it)->runChecks(&tokenizer, &settings, this);
+            (*it)->runSimplifiedChecks(&tokenizer, &settings, this);
+        }
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }
