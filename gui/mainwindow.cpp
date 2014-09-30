@@ -593,6 +593,9 @@ Settings MainWindow::GetCppcheckSettings()
                 case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
                     errmsg = tr("Bad attribute value");
                     break;
+                case Library::ErrorCode::UNSUPPORTED_FORMAT:
+                    errmsg = tr("Unsupported format");
+                    break;
                 }
                 if (!error.reason.empty())
                     errmsg += " '" + QString::fromStdString(error.reason) + "'";
