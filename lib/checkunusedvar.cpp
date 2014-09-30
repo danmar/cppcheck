@@ -1025,8 +1025,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.read(tok->varId(), tok);
         }
 
-        else if (Token::Match(tok, "[{,] %var% [,}]")) {
-            variables.read(tok->next()->varId(), tok);
+        else if (Token::Match(tok->previous(), "[{,] %var% [,}]")) {
+            variables.read(tok->varId(), tok);
         }
 
         else if (tok->varId() && Token::Match(tok, "%var% .")) {

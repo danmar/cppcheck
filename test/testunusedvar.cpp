@@ -156,6 +156,8 @@ private:
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
         TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
 
+        TEST_CASE(localvarCpp11Initialization);
+
         TEST_CASE(chainedAssignment); // #5466
 
         TEST_CASE(crash1);
@@ -3771,6 +3773,15 @@ private:
                               " if (i<3)\n"
                               "     goto start;\n"
                               " return i;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarCpp11Initialization() {
+        // #6160
+        functionVariableUsage("void foo() {\n"
+                              "    int myNewValue{ 3u };\n"
+                              "    myManager.theDummyTable.addRow(UnsignedIndexValue{ myNewValue }, DummyRowData{ false });\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
