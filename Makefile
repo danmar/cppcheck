@@ -474,7 +474,7 @@ test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/cxx11emu.h lib/toke
 test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testfilelister.o test/testfilelister.cpp
 
-test/testgarbage.o: test/testgarbage.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
+test/testgarbage.o: test/testgarbage.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/settings.h lib/standards.h lib/timer.h lib/checkstl.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testgarbage.o test/testgarbage.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/path.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/settings.h lib/standards.h lib/timer.h

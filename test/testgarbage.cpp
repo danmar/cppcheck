@@ -20,6 +20,7 @@
 #include "tokenize.h"
 #include "token.h"
 #include "checkother.h"
+#include "checkstl.h"
 #include "settings.h"
 
 extern std::ostringstream errout;
@@ -75,9 +76,13 @@ private:
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
-        // TODO: Run checks
+        // TODO: Run more checks
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.runChecks(&tokenizer, &settings, this);
+        checkOther.runSimplifiedChecks(&tokenizer, &settings, this);
+        CheckStl checkStl(&tokenizer, &settings, this);
+        checkStl.runChecks(&tokenizer, &settings, this);
+        checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }
