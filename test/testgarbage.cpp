@@ -73,11 +73,15 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             (*it)->runChecks(&tokenizer, &settings, this);
+        }
+
+        tokenizer.simplifyTokenList2();
+        // call all "runSimplifiedChecks" in all registered Check classes
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             (*it)->runSimplifiedChecks(&tokenizer, &settings, this);
         }
 
