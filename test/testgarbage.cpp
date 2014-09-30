@@ -19,9 +19,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 #include "token.h"
-#include "checkother.h"
-#include "checkstl.h"
 #include "settings.h"
+#include "check.h"
 
 extern std::ostringstream errout;
 
