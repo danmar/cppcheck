@@ -934,7 +934,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 }
 
 //---------------------------------------------------------------------------
-// Checking member variables of structs..
+// Checking member variables of structs.
 //---------------------------------------------------------------------------
 bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
 {
@@ -1130,7 +1130,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
 
 //---------------------------------------------------------------------------
-// Checking member variables of structs..
+// Checking member variables of structs.
 //---------------------------------------------------------------------------
 
 void CheckBufferOverrun::checkStructVariable()
@@ -1733,7 +1733,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 if (tok->type() == Token::eComparisonOp)
                     tok = tok->tokAt(2);
 
-                // skip close parenthesis
+                // skip close parentheses
                 if (tok->str() == ")")
                     tok = tok->next();
 
