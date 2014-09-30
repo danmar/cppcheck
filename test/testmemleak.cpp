@@ -555,6 +555,7 @@ private:
         ASSERT_EQUALS(";;;dealloc;assign;;", getcode(";int res; res = close(res);", "res"));
 
         ASSERT_EQUALS(";;dealloc;", getcode("int f; e |= fclose(f);", "f"));
+        ASSERT_EQUALS(";;dealloc;", getcode("int f; e += fclose(f);", "f"));
 
         // fcloseall..
         ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = malloc(10); fcloseall();", "s"));
