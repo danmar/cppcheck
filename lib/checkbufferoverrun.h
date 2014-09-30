@@ -258,16 +258,16 @@ private:
 
     std::string classInfo() const {
         return "Out of bounds checking:\n"
-               "* Array index out of bounds detection by value flow analysis\n"
-               "* Dangerous usage of strncat()\n"
-               "* char constant passed as size to function like memset()\n"
-               "* strncpy() leaving string unterminated\n"
-               "* Accessing array with negative index\n"
-               "* Unsafe usage of main(argv, argc) arguments\n"
-               "* Accessing array with index variable before checking its value\n"
-               "* Check for large enough arrays being passed to functions\n"
-               "* Writing beyond bounds of a buffer\n"
-               "* Allocating memory with a negative size\n";
+               "- Array index out of bounds detection by value flow analysis\n"
+               "- Dangerous usage of strncat()\n"
+               "- char constant passed as size to function like memset()\n"
+               "- strncpy() leaving string unterminated\n"
+               "- Accessing array with negative index\n"
+               "- Unsafe usage of main(argv, argc) arguments\n"
+               "- Accessing array with index variable before checking its value\n"
+               "- Check for large enough arrays being passed to functions\n"
+               "- Writing beyond bounds of a buffer\n"
+               "- Allocating memory with a negative size\n";
     }
 };
 /// @}

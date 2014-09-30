@@ -89,9 +89,9 @@ private:
 
     std::string classInfo() const {
         return "Type checks\n"
-               "* bitwise shift by too many bits (only enabled when --platform is used)\n"
-               "* signed integer overflow (only enabled when --platform is used)\n"
-               "* dangerous sign conversion, when signed value can be negative\n";
+               "- bitwise shift by too many bits (only enabled when --platform is used)\n"
+               "- signed integer overflow (only enabled when --platform is used)\n"
+               "- dangerous sign conversion, when signed value can be negative\n";
     }
 };
 /// @}

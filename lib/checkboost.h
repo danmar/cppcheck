@@ -70,7 +70,7 @@ private:
 
     std::string classInfo() const {
         return "Check for invalid usage of Boost:\n"
-               "* container modification during BOOST_FOREACH\n";
+               "- container modification during BOOST_FOREACH\n";
     }
 };
 /// @}

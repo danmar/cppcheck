@@ -110,12 +110,12 @@ private:
     std::string classInfo() const {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
-               "* returning a pointer to auto or temporary variable\n"
-               "* assigning address of an variable to an effective parameter of a function\n"
-               "* returning reference to local/temporary variable\n"
-               "* returning address of function parameter\n"
-               "* suspicious assignment of pointer argument\n"
-               "* useless assignment of function argument\n";
+               "- returning a pointer to auto or temporary variable\n"
+               "- assigning address of an variable to an effective parameter of a function\n"
+               "- returning reference to local/temporary variable\n"
+               "- returning address of function parameter\n"
+               "- suspicious assignment of pointer argument\n"
+               "- useless assignment of function argument\n";
     }
 };
 /// @}

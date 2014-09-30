@@ -67,16 +67,16 @@ private:
     }
 
     static std::string myName() {
-        return "CheckVaarg";
+        return "Vaarg";
     }
 
     std::string classInfo() const {
         return "Check for misusage of variable argument lists:\n"
-               "* Wrong parameter passed to va_start()\n"
-               "* Reference passed to va_start()\n"
-               "* Missing va_end()\n"
-               "* Using va_list before it is opened\n"
-               "* Subsequent calls to va_start/va_copy()\n";
+               "- Wrong parameter passed to va_start()\n"
+               "- Reference passed to va_start()\n"
+               "- Missing va_end()\n"
+               "- Using va_list before it is opened\n"
+               "- Subsequent calls to va_start/va_copy()\n";
     }
 };
 

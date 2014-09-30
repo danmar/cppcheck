@@ -105,7 +105,7 @@ private:
     /** class info in WIKI format. Used by --doc */
     std::string classInfo() const {
         return "Null pointers\n"
-               "* null pointer dereferencing\n";
+               "- null pointer dereferencing\n";
     }
 
     /**

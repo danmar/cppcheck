@@ -225,19 +225,19 @@ private:
 
     std::string classInfo() const {
         return "Check for invalid usage of STL:\n"
-               "* out of bounds errors\n"
-               "* misuse of iterators when iterating through a container\n"
-               "* mismatching containers in calls\n"
-               "* dereferencing an erased iterator\n"
-               "* for vectors: using iterator/pointer after push_back has been used\n"
-               "* optimisation: use empty() instead of size() to guarantee fast code\n"
-               "* suspicious condition when using find\n"
-               "* redundant condition\n"
-               "* common mistakes when using string::c_str()\n"
-               "* using auto pointer (auto_ptr)\n"
-               "* useless calls of string and STL functions\n"
-               "* dereferencing an invalid iterator\n"
-               "* reading from empty STL container\n";
+               "- out of bounds errors\n"
+               "- misuse of iterators when iterating through a container\n"
+               "- mismatching containers in calls\n"
+               "- dereferencing an erased iterator\n"
+               "- for vectors: using iterator/pointer after push_back has been used\n"
+               "- optimisation: use empty() instead of size() to guarantee fast code\n"
+               "- suspicious condition when using find\n"
+               "- redundant condition\n"
+               "- common mistakes when using string::c_str()\n"
+               "- using auto pointer (auto_ptr)\n"
+               "- useless calls of string and STL functions\n"
+               "- dereferencing an invalid iterator\n"
+               "- reading from empty STL container\n";
     }
 };
 /// @}

@@ -163,15 +163,15 @@ private:
     /** wiki formatted description of the class (for --doc) */
     std::string classInfo() const {
         return "Checking exception safety\n"
-               "* Throwing exceptions in destructors\n"
-               "* Throwing exception during invalid state\n"
-               "* Throwing a copy of a caught exception instead of rethrowing the original exception\n"
-               "* Exception caught by value instead of by reference\n"
-               "* Throwing exception in noexcept function\n"
-               "* Throwing exception in nothrow() function\n"
-               "* Throwing exception in __attribute__((nothrow)) function\n"
-               "* Throwing exception in __declspec(nothrow) function\n"
-               "* Unhandled exception specification when calling function foo()\n";
+               "- Throwing exceptions in destructors\n"
+               "- Throwing exception during invalid state\n"
+               "- Throwing a copy of a caught exception instead of rethrowing the original exception\n"
+               "- Exception caught by value instead of by reference\n"
+               "- Throwing exception in noexcept function\n"
+               "- Throwing exception in nothrow() function\n"
+               "- Throwing exception in __attribute__((nothrow)) function\n"
+               "- Throwing exception in __declspec(nothrow) function\n"
+               "- Unhandled exception specification when calling function foo()\n";
     }
 };
 /// @}

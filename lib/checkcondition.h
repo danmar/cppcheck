@@ -130,14 +130,14 @@ private:
 
     std::string classInfo() const {
         return "Match conditions with assignments and other conditions:\n"
-               "* Mismatching assignment and comparison => comparison is always true/false\n"
-               "* Mismatching lhs and rhs in comparison => comparison is always true/false\n"
-               "* Detect matching 'if' and 'else if' conditions\n"
-               "* Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
-               "* Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
-               "* condition that is always true/false\n"
-               "* mutual exclusion over || always evaluating to true\n"
-               "* Comparisons of modulo results that are always true/false.\n";
+               "- Mismatching assignment and comparison => comparison is always true/false\n"
+               "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"
+               "- Detect matching 'if' and 'else if' conditions\n"
+               "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
+               "- Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
+               "- condition that is always true/false\n"
+               "- mutual exclusion over || always evaluating to true\n"
+               "- Comparisons of modulo results that are always true/false.\n";
     }
 };
 /// @}

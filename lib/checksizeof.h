@@ -120,13 +120,13 @@ private:
 
     std::string classInfo() const {
         return "sizeof() usage checks\n"
-               "* sizeof for array given as function argument\n"
-               "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) instead of the size of pointed data\n"
-               "* look for 'sizeof sizeof ..'\n"
-               "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n"
-               "* using 'sizeof(void)' which is undefined\n";
+               "- sizeof for array given as function argument\n"
+               "- sizeof for numeric given as function argument\n"
+               "- using sizeof(pointer) instead of the size of pointed data\n"
+               "- look for 'sizeof sizeof ..'\n"
+               "- look for calculations inside sizeof()\n"
+               "- look for suspicious calculations with sizeof()\n"
+               "- using 'sizeof(void)' which is undefined\n";
     }
 };
 /// @}

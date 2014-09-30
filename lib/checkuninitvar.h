@@ -108,8 +108,9 @@ private:
 
     std::string classInfo() const {
         return "Uninitialized variables\n"
-               "* using uninitialized variables and data\n"
-               "* using dead pointer\n";
+               "- using uninitialized local variables\n"
+               "- using allocated data before it has been initialized\n"
+               "- using dead pointer\n";
     }
 };
 /// @}

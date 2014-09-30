@@ -130,14 +130,13 @@ private:
 
     std::string classInfo() const {
         return "Boolean type checks\n"
-
-               "* using increment on boolean\n"
-               "* comparison of a boolean with a non-zero integer\n"
-               "* comparison of a boolean expression with an integer other than 0 or 1\n"
-               "* comparison of a function returning boolean value using relational operator\n"
-               "* comparison of a boolean value with boolean value using relational operator\n"
-               "* using bool in bitwise expression\n"
-               "* pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
+               "- using increment on boolean\n"
+               "- comparison of a boolean with a non-zero integer\n"
+               "- comparison of a boolean expression with an integer other than 0 or 1\n"
+               "- comparison of a function returning boolean value using relational operator\n"
+               "- comparison of a boolean value with boolean value using relational operator\n"
+               "- using bool in bitwise expression\n"
+               "- pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
     }
 };
 /// @}

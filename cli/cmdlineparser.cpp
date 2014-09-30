@@ -657,7 +657,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const std::string& name((*it)->name());
                 const std::string info((*it)->classInfo());
                 if (!name.empty() && !info.empty())
-                    doc << "===" << name << "===\n"
+                    doc << "## " << name << " ##\n"
                         << info << "\n";
             }
 

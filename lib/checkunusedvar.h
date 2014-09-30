@@ -101,11 +101,11 @@ private:
         return "UnusedVar checks\n"
 
                // style
-               "* unused variable\n"
-               "* allocated but unused variable\n"
-               "* unred variable\n"
-               "* unassigned variable\n"
-               "* unused struct member\n";
+               "- unused variable\n"
+               "- allocated but unused variable\n"
+               "- unred variable\n"
+               "- unassigned variable\n"
+               "- unused struct member\n";
     }
 
     std::map<const Type *,bool> isRecordTypeWithoutSideEffectsMap;
