@@ -108,6 +108,8 @@ private:
         TEST_CASE(configuration4);
 
         TEST_CASE(ptrptr);
+
+        TEST_CASE(nestedAllocation);
     }
 
     void check(const char code[]) {
@@ -695,6 +697,20 @@ private:
               "    char **p = malloc(10);\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void nestedAllocation() {
+        check("void QueueDSMCCPacket(unsigned char *data, int length) {\n"
+              "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
+              "    m_dsmccQueue.enqueue(new DSMCCPacket(dataCopy));\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function DSMCCPacket() should have <use>/<ignore> configuration\n", errout.str());
+
+        check("void QueueDSMCCPacket(unsigned char *data, int length) {\n"
+              "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
+              "    m_dsmccQueue.enqueue(new DSMCCPacket(somethingunrelated));\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: dataCopy\n", errout.str());
     }
 };
 

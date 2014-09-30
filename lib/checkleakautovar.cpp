@@ -402,6 +402,9 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const in
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
 
     for (const Token *arg = tok->tokAt(2); arg; arg = arg->nextArgument()) {
+        if (arg->str() == "new")
+            arg = arg->next();
+
         if ((Token::Match(arg, "%var% [-,)]") && arg->varId() > 0) ||
             (Token::Match(arg, "& %var%") && arg->next()->varId() > 0)) {
 
