@@ -6257,14 +6257,14 @@ bool Tokenizer::simplifyCAlternativeTokens()
             tok = start;
             Token * const end = tok->link();
             for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%var%|%num%|)|] %any% %var%|%num%|(")) {
+                if (Token::Match(tok2, "%var%|%num%|)|]|> %any% %var%|%num%|(|%op%")) {
                     const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok2->next()->str());
                     if (cOpIt != cAlternativeTokens.end()) {
                         tok2->next()->str(cOpIt->second);
                         ret = true;
                     }
                 }
-                if (Token::Match(tok2, "not|compl %var%|(") &&
+                if (Token::Match(tok2, "not|compl %var%|(|%op%") &&
                     !Token::Match(tok2->previous(), "[;{}]")) { // Don't simplify 'not p;' (in case 'not' is a type)
                     tok2->str((tok2->str() == "not") ? "!" : "~");
                     ret = true;
