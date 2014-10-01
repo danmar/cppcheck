@@ -141,12 +141,12 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     return 1;
 }
 
-bool ThreadExecutor::checkLoadAverage(size_t nchilds)
+bool ThreadExecutor::checkLoadAverage(size_t nchildren)
 {
 #ifdef __CYGWIN__  // getloadavg() is unsupported on Cygwin.
     return true;
 #else
-    if (!nchilds || !_settings._loadAverage) {
+    if (!nchildren || !_settings._loadAverage) {
         return true;
     }
 
@@ -178,8 +178,8 @@ unsigned int ThreadExecutor::check()
     std::map<std::string, std::size_t>::const_iterator i = _files.begin();
     for (;;) {
         // Start a new child
-        size_t nchilds = rpipes.size();
-        if (i != _files.end() && nchilds < _settings._jobs && checkLoadAverage(nchilds)) {
+        size_t nchildren = rpipes.size();
+        if (i != _files.end() && nchildren < _settings._jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
