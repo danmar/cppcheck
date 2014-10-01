@@ -125,6 +125,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     }
     if (! tok2)
         return No;
+    if (tok2->str() == "::")
+        tok2 = tok2->next();
     if (! tok2->isName())
         return No;
 

@@ -408,6 +408,7 @@ private:
     void testgetcode() {
         // alloc;
         ASSERT_EQUALS(";;alloc;", getcode("int *a = malloc(100);", "a"));
+        TODO_ASSERT_EQUALS(";;alloc;", ";;alloccallfunc;", getcode("int *a = ::malloc(100);", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int;", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int **a = new int*[10];", "a"));
