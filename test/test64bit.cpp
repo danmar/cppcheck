@@ -103,11 +103,11 @@ private:
     }
 
     void structmember() {
-        check("struct Foo { int *p };\n"
+        check("struct Foo { int *p; };\n"
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
     }
 
     void ptrcompare() {
