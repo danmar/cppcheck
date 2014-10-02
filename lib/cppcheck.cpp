@@ -225,17 +225,17 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             }
 
             Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
-            const std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename);
+            std::string codeWithoutCfg = preprocessor.getcode(filedata, cfg, filename);
             t.Stop();
 
-            const std::string &appendCode = _settings.append();
+            codeWithoutCfg += _settings.append();
 
             if (_settings.debugFalsePositive) {
-                if (findError(codeWithoutCfg + appendCode, filename.c_str())) {
+                if (findError(codeWithoutCfg, filename.c_str())) {
                     return exitcode;
                 }
             } else {
-                if (!checkFile(codeWithoutCfg + appendCode, filename.c_str(), checksums)) {
+                if (!checkFile(codeWithoutCfg, filename.c_str(), checksums)) {
                     if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
                         purgedConfigurationMessage(filename, cfg);
                 }
