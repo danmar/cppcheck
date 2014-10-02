@@ -2224,7 +2224,7 @@ private:
 
         checkSimplifyTypedef(code1);
         ASSERT_EQUALS(expected1, tok(code1));
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         const char code2[] = "class A {\n"
                              "public:\n"
@@ -2243,7 +2243,7 @@ private:
 
         checkSimplifyTypedef(code2);
         ASSERT_EQUALS(expected2, tok(code2));
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (debug) Scope::checkVariable found variable 'd' with varid 0.\n", "", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         const char code3[] = "class A {\n"
                              "public:\n"
