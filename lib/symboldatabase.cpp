@@ -2254,6 +2254,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                                     break;
                             }
                         }
+                        if (argType)
+                            break;
                         parent = parent->nestedIn;
                     }
                 }
