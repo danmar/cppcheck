@@ -548,6 +548,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
 
         check("void foo(const std::string& foo, unsigned int ii) {\n"
+              "    do {\n"
+              "       foo[ii] = 'x';\n"
+              "       ++i;\n"
+              "    } while(ii <= foo.length());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+
+        check("void foo(const std::string& foo, unsigned int ii) {\n"
               "    if (anything()) {\n"
               "    } else if (ii <= foo.length()) {\n"
               "       foo[ii] = 'x';\n"

@@ -308,12 +308,14 @@ void CheckStl::stlOutOfBounds()
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         const Token* tok = i->classDef;
         // only interested in conditions
-        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf) || !tok)
+        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf && i->type != Scope::eDo) || !tok)
             continue;
 
         if (i->type == Scope::eFor)
             tok = Token::findsimplematch(tok->tokAt(2), ";");
-        else
+        else if (i->type == Scope::eDo) {
+            tok = tok->linkAt(1)->tokAt(2);
+        } else
             tok = tok->next();
 
         // check if the for loop condition is wrong
@@ -331,7 +333,7 @@ void CheckStl::stlOutOfBounds()
             // variable id for the container variable
             const unsigned int declarationId = container->declarationId();
 
-            for (const Token *tok3 = tok->tokAt(8); tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+            for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
                 if (tok3->varId() == declarationId) {
                     if (Token::Match(tok3->next(), ". size|length ( )"))
                         break;
