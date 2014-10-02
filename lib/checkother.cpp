@@ -319,7 +319,7 @@ void CheckOther::clarifyStatementError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-// Check for suspicious occurences of 'if(); {}'.
+// Check for suspicious occurrences of 'if(); {}'.
 //---------------------------------------------------------------------------
 void CheckOther::checkSuspiciousSemicolon()
 {

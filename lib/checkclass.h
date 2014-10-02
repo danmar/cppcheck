@@ -125,7 +125,7 @@ public:
 
     void copyconstructors();
 
-    /** @brief call of pure virtual funcion */
+    /** @brief call of pure virtual function */
     void checkPureVirtualFunctionCall();
 
     /** @brief Check duplicated inherited members */
