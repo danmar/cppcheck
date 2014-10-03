@@ -1622,7 +1622,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
 
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, "")) {
+        if (!list.createTokens(istr)) {
             cppcheckError(0);
             return false;
         }

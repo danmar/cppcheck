@@ -215,7 +215,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             if (_settings._errorsOnly == false && it != configurations.begin()) {
                 std::string fixedpath = Path::simplifyPath(filename);
                 fixedpath = Path::toNativeSeparators(fixedpath);
-                _errorLogger.reportOut(std::string("Checking ") + fixedpath + ": " + cfg + std::string("..."));
+                _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
             }
 
             if (!_settings.userDefines.empty()) {
@@ -311,7 +311,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     // Tokenize..
     Tokenizer tokenizer(&_settings, this);
     std::istringstream istr(code);
-    tokenizer.tokenize(istr, filename.c_str(), "");
+    tokenizer.tokenize(istr, filename.c_str());
     tokenizer.simplifyTokenList2();
 
     // Analyse the tokens..
@@ -340,8 +340,6 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
     if (_settings._showtime != SHOWTIME_NONE)
         _tokenizer.setTimerResults(&S_timerResults);
     try {
-        bool result;
-
         // Execute rules for "raw" code
         for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
             if (it->tokenlist == "raw") {
@@ -357,7 +355,7 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
         std::istringstream istr(code);
 
         Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
-        result = _tokenizer.tokenize(istr, FileName, cfg);
+        bool result = _tokenizer.tokenize(istr, FileName, cfg);
         timer.Stop();
 
         if (_settings._force || _settings._maxConfigs > 1) {

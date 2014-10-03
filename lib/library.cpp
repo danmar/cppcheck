@@ -396,7 +396,7 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
         return true;
     TokenList tokenList(0);
     std::istringstream istr(ac->valid + ',');
-    tokenList.createTokens(istr,"");
+    tokenList.createTokens(istr);
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
