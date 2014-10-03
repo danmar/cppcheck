@@ -142,10 +142,10 @@ private:
     /**
      * @brief Process one file.
      * @param filename file name
-     * @param fileContent If this is non-empty then the file will not be loaded
+     * @param fileStream stream the file content can be read from
      * @return amount of errors found
      */
-    unsigned int processFile(const std::string& filename, const std::string& fileContent);
+    unsigned int processFile(const std::string& filename, std::istream& fileStream);
 
     /** @brief Check file */
     bool checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums);
