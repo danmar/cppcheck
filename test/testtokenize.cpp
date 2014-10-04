@@ -254,6 +254,7 @@ private:
         TEST_CASE(simplify_constants3);
         TEST_CASE(simplify_constants4);
         TEST_CASE(simplify_constants5);
+        TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
         TEST_CASE(simplify_null);
         TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
@@ -3589,6 +3590,20 @@ private:
                             "x = NELEMS;\n"
                             "y = NELEMS2;\n";
         ASSERT_EQUALS("int buffer [ 10 ] ;\n\n\nx = 10 ;\ny = 10 ;", tokenizeAndStringify(code,true));
+    }
+
+    void simplify_constants6() { // Ticket #5625
+        const char code[] = "template < class T > struct foo ;\n"
+                            "void bar ( ) {\n"
+                              "foo < 1 ? 0 ? 1 : 6 : 2 > x ;\n"
+                              "foo < 1 ? 0 : 2 > y ;\n"
+                            "}";
+        const char exp [] = "template < class T > struct foo ;\n"
+                            "void bar ( ) {\n"
+                              "foo < 6 > x ;\n"
+                              "foo < 0 > y ;\n"
+                            "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code, true));
     }
 
     void simplify_null() {

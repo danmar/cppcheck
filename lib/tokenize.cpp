@@ -4862,7 +4862,7 @@ bool Tokenizer::simplifyConstTernaryOp()
 
                 else if (endTok->str() == "?")
                     ++ternaryOplevel;
-                else if (Token::Match(endTok, ")|}|]|;|,|:")) {
+                else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
                     if (endTok->str() == ":" && ternaryOplevel)
                         --ternaryOplevel;
                     else {
