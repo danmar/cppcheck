@@ -667,7 +667,11 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     tok = tok->link();
                 tok = tok->next();
             }
-            if (tok->str() == "[" || tok->str() == "(")
+            if (Token::Match(tok, "( %type% ) (")) {
+                state.op.push(tok->next());
+                tok = tok->tokAt(3);
+                compileBinOp(tok, state, compilePrecedence2);
+            } else if (tok->str() == "[" || tok->str() == "(")
                 compilePrecedence2(tok, state);
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "delete %var%|*|&|::|(|[")) {

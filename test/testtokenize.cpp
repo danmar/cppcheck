@@ -8378,6 +8378,10 @@ private:
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
+
+        // clang testsuite..
+        ASSERT_EQUALS("const0(new", testAst("new const auto (0);"));
+        ASSERT_EQUALS("auto0.0(new", testAst("new (auto) (0.0);"));
     }
 
     void astpar() const { // parentheses
