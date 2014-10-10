@@ -8370,9 +8370,10 @@ private:
     void astnewdelete() const {
         ASSERT_EQUALS("aintnew=", testAst("a = new int;"));
         ASSERT_EQUALS("aint4[new=", testAst("a = new int[4];"));
-        ASSERT_EQUALS("aFoonew=", testAst("a = new Foo(bar);"));
-        ASSERT_EQUALS("aFoonew=", testAst("a = new Foo<bar>();"));
-        ASSERT_EQUALS("Xnew", testAst("new (a,b,c) X(1,2,3);"));
+        ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
+        ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
+        ASSERT_EQUALS("aFoo(new=", testAst("a = new Foo<bar>();"));
+        ASSERT_EQUALS("X12,3,(new", testAst("new (a,b,c) X(1,2,3);"));
         ASSERT_EQUALS("adelete", testAst("delete a;"));
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));

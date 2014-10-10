@@ -667,7 +667,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     tok = tok->link();
                 tok = tok->next();
             }
-            if (tok->str() == "[")
+            if (tok->str() == "[" || tok->str() == "(")
                 compilePrecedence2(tok, state);
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "delete %var%|*|&|::|(|[")) {
