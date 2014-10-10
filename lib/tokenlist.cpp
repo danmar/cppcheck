@@ -667,9 +667,9 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     tok = tok->link();
                 tok = tok->next();
             }
-            if (Token::Match(tok, "( %type% ) (")) {
+            if (Token::Match(tok, "( const| %type% ) (")) {
                 state.op.push(tok->next());
-                tok = tok->tokAt(3);
+                tok = tok->link()->next();
                 compileBinOp(tok, state, compilePrecedence2);
             } else if (tok->str() == "[" || tok->str() == "(")
                 compilePrecedence2(tok, state);
