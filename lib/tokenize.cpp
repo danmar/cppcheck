@@ -2601,7 +2601,7 @@ void Tokenizer::setVarId()
             if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
-            if (Token::Match(tok2, "const new") && !isC())
+            if (Token::simpleMatch(tok2, "const new") && !isC())
                 continue;
 
             bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
