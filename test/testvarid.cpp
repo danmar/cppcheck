@@ -95,6 +95,7 @@ private:
         TEST_CASE(varidFunctionCall3);
         TEST_CASE(varidFunctionCall4);  // ticket #3280
         TEST_CASE(varidStl);
+        TEST_CASE(varid_newauto);       // not declaration: new const auto(0);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
         TEST_CASE(varid_sizeof);
@@ -163,7 +164,7 @@ private:
 
         Settings settings;
         settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP03;
+        settings.standards.cpp = Standards::CPP11;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -1068,7 +1069,7 @@ private:
                                    "2: list < int > :: iterator it@2 ;\n"
                                    "3: std :: vector < std :: string > dirs@3 ;\n"
                                    "4: std :: map < int , int > coords@4 ;\n"
-                                   "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
+                                   "5: std :: unordered_map < int , int > xy@5 ;\n"
                                    "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
                                    "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                    "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
@@ -1076,6 +1077,12 @@ private:
                                   );
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid_newauto() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( ) { const new auto ( 0 ) ; }\n",
+                      tokenize("void f(){new const auto(0);}"));
     }
 
     void varid_delete() {

@@ -2601,6 +2601,9 @@ void Tokenizer::setVarId()
             if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
+            if (Token::Match(tok2, "const new") && !isC())
+                continue;
+
             bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
             if (decl) {
                 const Token* prev2 = tok2->previous();
