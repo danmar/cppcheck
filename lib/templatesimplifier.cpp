@@ -1087,7 +1087,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             // Remove parentheses around number..
-            if (Token::Match(tok->tokAt(-2), "%any% ( %num% )") && !tok->tokAt(-2)->isName() && tok->strAt(-2) != ">") {
+            if (Token::Match(tok->tokAt(-2), "%op%|< ( %num% )") && !tok->tokAt(-2)->isName() && tok->strAt(-2) != ">") {
                 tok = tok->previous();
                 tok->deleteThis();
                 tok->deleteNext();

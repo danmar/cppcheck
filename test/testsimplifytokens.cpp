@@ -2059,6 +2059,9 @@ private:
         ASSERT_EQUALS("( y % 2 - 2 )", tok("(y % 2 - 2)"));
 
         ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
+
+        // don't remove these spaces..
+        ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
     }
 
     void comparisons() {
