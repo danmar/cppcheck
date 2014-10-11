@@ -127,6 +127,7 @@ private:
         TEST_CASE(varid_templatePtr); // #4319
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
+        TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
         TEST_CASE(varid_rvalueref);
@@ -1726,6 +1727,20 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: VertexArrayIterator < float [ 2 ] > attrPos@1 ; attrPos@1 = m_AttributePos . GetIterator < float [ 2 ] > ( ) ;\n",
                       tokenize("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
+    }
+
+    void varid_cppcast() {
+        ASSERT_EQUALS("\n\n##file 0\n1: const_cast < int * > ( code ) [ 0 ] = 0 ;\n",
+                      tokenize("const_cast<int *>(code)[0] = 0;"));
+
+        ASSERT_EQUALS("\n\n##file 0\n1: dynamic_cast < int * > ( code ) [ 0 ] = 0 ;\n",
+                      tokenize("dynamic_cast<int *>(code)[0] = 0;"));
+
+        ASSERT_EQUALS("\n\n##file 0\n1: reinterpret_cast < int * > ( code ) [ 0 ] = 0 ;\n",
+                      tokenize("reinterpret_cast<int *>(code)[0] = 0;"));
+
+        ASSERT_EQUALS("\n\n##file 0\n1: static_cast < int * > ( code ) [ 0 ] = 0 ;\n",
+                      tokenize("static_cast<int *>(code)[0] = 0;"));
     }
 
     void varid_variadicFunc() {

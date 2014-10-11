@@ -2494,7 +2494,7 @@ void Tokenizer::setVarId()
     notstart.insert("sizeof");
     notstart.insert("typedef");
     if (!isC()) {
-        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit"};
+        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit","const_cast","dynamic_cast","reinterpret_cast","static_cast"};
         notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
     }
 
