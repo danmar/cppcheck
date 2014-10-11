@@ -3465,6 +3465,12 @@ private:
             static char  exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
+        // don't remove parentheses in operator new overload
+        {
+            static char code[] = "void *operator new(__SIZE_TYPE__, int);";
+            static char  exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+        }
     }
 
     void tokenize_double() {
