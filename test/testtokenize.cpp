@@ -8391,6 +8391,9 @@ private:
         ASSERT_EQUALS("intnew", testAst("new (int S::*[3][4][5]) ();"));
         ASSERT_EQUALS("pSnew=", testAst("p=new (x)(S)(1,2);"));
         ASSERT_EQUALS("inti[new(", testAst("(void)new (int[i]);"));
+        ASSERT_EQUALS("intp* pnew malloc4(", testAst("int*p; new (p) (malloc(4));"));
+        ASSERT_EQUALS("intnew", testAst("new (&w.x)(int*)(0);"));
+        ASSERT_EQUALS("&new", testAst("new (&w.x)(0);")); // <- the "(int*)" has been simplified
     }
 
     void astpar() const { // parentheses
