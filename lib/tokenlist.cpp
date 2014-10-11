@@ -657,10 +657,12 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             compilePrecedence3(tok, state);
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "new %var%|::|(")) {
-            Token* tok2 = tok;
+            Token* newtok = tok;
             tok = tok->next();
             if (tok->str() == "(" && Token::Match(tok->link(), ") %type%"))
                 tok = tok->link()->next();
+            else if (Token::Match(tok, "( %type%") && Token::simpleMatch(tok->link(), ") ( )"))
+                tok = tok->next();
             state.op.push(tok);
             while (Token::Match(tok, "%var%|*|&|<")) {
                 if (tok->link())
@@ -673,7 +675,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compilePrecedence2);
             } else if (tok->str() == "[" || tok->str() == "(")
                 compilePrecedence2(tok, state);
-            compileUnaryOp(tok2, state, nullptr);
+            compileUnaryOp(newtok, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "delete %var%|*|&|::|(|[")) {
             Token* tok2 = tok;
             tok = tok->next();

@@ -8382,6 +8382,7 @@ private:
         // clang testsuite..
         ASSERT_EQUALS("const0(new", testAst("new const auto (0);"));
         ASSERT_EQUALS("auto0.0(new", testAst("new (auto) (0.0);"));
+        ASSERT_EQUALS("intnew", testAst("new (int S::*[3][4][5]) ();"));
     }
 
     void astpar() const { // parentheses
