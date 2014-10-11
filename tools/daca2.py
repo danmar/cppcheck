@@ -144,7 +144,7 @@ def scanarchive(filepath):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:6] == 'iceowl' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:6] == 'iceowl' or filename[:7] == 'insight' or filename[:8] == 'valgrind' or filename[:9] == 'wxwidgets':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
