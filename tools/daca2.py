@@ -121,7 +121,7 @@ def removeLargeFiles(path):
                 os.remove(g)
 
 
-def scanarchive(filepath):
+def scanarchive(filepath, jobs):
     # remove all files/folders except results.txt
     removeAllExceptResults()
 
@@ -160,7 +160,7 @@ def scanarchive(filepath):
          '-D__GCC__',
          '--enable=style',
          '--error-exitcode=0',
-         '--suppressions-list=../suppressions.txt',
+         jobs,
          '.'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -175,10 +175,13 @@ def scanarchive(filepath):
     results.close()
 
 FOLDER = None
+JOBS = '-j1'
 REV = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--rev=':
         REV = arg[6:]
+    elif arg[:2] == '-j':
+        JOBS = arg
     else:
         FOLDER = arg
 
@@ -196,12 +199,6 @@ time.sleep(10)
 
 workdir = os.path.expanduser('~/daca2/')
 
-print('~/daca2/suppressions.txt')
-if not os.path.isfile(workdir + 'suppressions.txt'):
-    suppressions = open(workdir + 'suppressions.txt', 'wt')
-    suppressions.write('\n')
-    suppressions.close()
-
 print('~/daca2/' + FOLDER)
 if not os.path.isdir(workdir + FOLDER):
     os.makedirs(workdir + FOLDER)
@@ -216,7 +213,7 @@ try:
     results.close()
 
     for archive in archives:
-        scanarchive(archive)
+        scanarchive(archive, JOBS)
 
     results = open('results.txt', 'at')
     results.write('DATE ' + str(datetime.date.today()) + '\n')
