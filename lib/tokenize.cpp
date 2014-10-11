@@ -4823,8 +4823,12 @@ bool Tokenizer::simplifyConstTernaryOp()
 
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
-        if (tok->strAt(-2*offset) == "<" && !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
-            continue;
+        bool inTemplateParameter = false;
+        if (tok->strAt(-2*offset) == "<") {
+            if (!TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
+                continue;
+            inTemplateParameter = true;
+        }
 
         // Find the token ":" then go to the next token
         Token *semicolon = skipTernaryOp(tok);
@@ -4869,6 +4873,8 @@ bool Tokenizer::simplifyConstTernaryOp()
                 else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
                     if (endTok->str() == ":" && ternaryOplevel)
                         --ternaryOplevel;
+                    else if (endTok->str() == ">" && !inTemplateParameter)
+                        ;
                     else {
                         Token::eraseTokens(semicolon->tokAt(-2), endTok);
                         ret = true;
