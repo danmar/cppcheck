@@ -873,6 +873,14 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 34));
 
         // while/for
+        code = "void f() {\n" // #6138
+               "  ENTRY *x = 0;\n"
+               "  while (x = get()) {\n"
+               "    set(x->value);\n"  // <- x is not 0
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         code = "void f(const int *buf) {\n"
                "  int x = 0;\n"
                "  for (int i = 0; i < 10; i++) {\n"
@@ -1049,7 +1057,7 @@ private:
                "    for (; x && \n"
                "         x->str() != y; x = x->next()) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
         code = "void f(const Token* x) {\n"

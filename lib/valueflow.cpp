@@ -726,6 +726,13 @@ static bool valueFlowForward(Token * const               startToken,
 
         // conditional block of code that assigns variable..
         else if (Token::Match(tok2, "%var% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
+            // is variable changed in condition?
+            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
+                return false;
+            }
+
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
