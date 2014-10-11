@@ -3599,17 +3599,24 @@ private:
     }
 
     void simplify_constants6() { // Ticket #5625
-        const char code[] = "template < class T > struct foo ;\n"
-                            "void bar ( ) {\n"
-                            "foo < 1 ? 0 ? 1 : 6 : 2 > x ;\n"
-                            "foo < 1 ? 0 : 2 > y ;\n"
-                            "}";
-        const char exp [] = "template < class T > struct foo ;\n"
-                            "void bar ( ) {\n"
-                            "foo < 6 > x ;\n"
-                            "foo < 0 > y ;\n"
-                            "}";
-        ASSERT_EQUALS(exp, tokenizeAndStringify(code, true));
+        {
+            const char code[] = "template < class T > struct foo ;\n"
+                                "void bar ( ) {\n"
+                                "foo < 1 ? 0 ? 1 : 6 : 2 > x ;\n"
+                                "foo < 1 ? 0 : 2 > y ;\n"
+                                "}";
+            const char exp [] = "template < class T > struct foo ;\n"
+                                "void bar ( ) {\n"
+                                "foo < 6 > x ;\n"
+                                "foo < 0 > y ;\n"
+                                "}";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "bool b = true ? false : 1 > 2 ;";
+            const char exp [] = "bool b ; b = false ;";
+            ASSERT_EQUALS(exp, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplify_null() {
