@@ -8394,6 +8394,7 @@ private:
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
         ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
+        ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
 
         // clang testsuite..
         ASSERT_EQUALS("const0(new", testAst("new const auto (0);"));
