@@ -1201,8 +1201,11 @@ void Variable::evaluate()
     }
     // check for C++11 member initialization
     if (_scope && _scope->isClassOrStruct()) {
+        // type var = x or
+        // type var = {x}
         // type var = x; gets simplified to: type var ; var = x ;
-        if (Token::Match(_name, "%var% ; %var% = %any% ;") && _name->strAt(2) == _name->str())
+        if ((Token::Match(_name, "%var% ; %var% = ") && _name->strAt(2) == _name->str()) ||
+            Token::Match(_name, "%var% {"))
             setFlag(fHasDefault, true);
     }
 

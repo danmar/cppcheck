@@ -64,7 +64,7 @@ private:
         TEST_CASE(simple8);
         TEST_CASE(simple9); // ticket #4574
         TEST_CASE(simple10); // ticket #4388
-        TEST_CASE(simple11); // ticket #4536
+        TEST_CASE(simple11); // ticket #4536, #6214
         TEST_CASE(simple12); // ticket #4620
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
 
@@ -377,12 +377,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simple11() { // ticket #4536
+    void simple11() { // ticket #4536, #6214
         check("class Fred {\n"
               "public:\n"
               "    Fred() {}\n"
               "private:\n"
               "    int x = 0;\n"
+              "    int y = f();\n"
+              "    int z{0};\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
