@@ -8393,11 +8393,12 @@ private:
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
+        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
 
         // clang testsuite..
         ASSERT_EQUALS("const0(new", testAst("new const auto (0);"));
         ASSERT_EQUALS("autonew", testAst("new (auto) (0.0);"));
-        ASSERT_EQUALS("intnew", testAst("new (int S::*[3][4][5]) ();"));
+        ASSERT_EQUALS("int3[4[5[new", testAst("new (int S::*[3][4][5]) ();"));
         ASSERT_EQUALS("pSnew=", testAst("p=new (x)(S)(1,2);"));
         ASSERT_EQUALS("inti[new(", testAst("(void)new (int[i]);"));
         ASSERT_EQUALS("intp* pnew malloc4(", testAst("int*p; new (p) (malloc(4));"));

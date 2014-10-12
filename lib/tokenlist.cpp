@@ -662,7 +662,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             if (tok->str() == "(") {
                 if (Token::Match(tok, "( &| %var%") && Token::Match(tok->link(), ") ( %type%") && Token::simpleMatch(tok->link()->linkAt(1), ") ("))
                     tok = tok->link()->next();
-                if (Token::Match(tok->link(), ") %type%"))
+                if (Token::Match(tok->link(), ") ::| %type%"))
                     tok = tok->link()->next();
                 else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,]"))
                     tok = tok->next();
@@ -670,7 +670,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     tok = tok->next();
             }
             state.op.push(tok);
-            while (Token::Match(tok, "%var%|*|&|<")) {
+            while (Token::Match(tok, "%var%|*|&|<|::")) {
                 if (tok->link())
                     tok = tok->link();
                 tok = tok->next();
