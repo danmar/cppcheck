@@ -8388,6 +8388,7 @@ private:
         ASSERT_EQUALS("aFoo(new=", testAst("a = new Foo<bar>();"));
         ASSERT_EQUALS("X12,3,(new", testAst("new (a,b,c) X(1,2,3);"));
         ASSERT_EQUALS("aXnew(", testAst("a (new (X));"));
+        ASSERT_EQUALS("aXnew5,(", testAst("a (new (X), 5);"));
         ASSERT_EQUALS("adelete", testAst("delete a;"));
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
