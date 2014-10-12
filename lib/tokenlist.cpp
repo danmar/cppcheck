@@ -665,11 +665,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                     tok = tok->link()->next();
                 if (Token::Match(tok->link(), ") ::| %type%"))
                     tok = tok->link()->next();
-                else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,]")) {
+                else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,[]")) {
                     tok = tok->next();
                     innertype = true;
-                }
-                else if (Token::Match(tok, "( &| %var%") && Token::simpleMatch(tok->link(), ") (")) {
+                } else if (Token::Match(tok, "( &| %var%") && Token::simpleMatch(tok->link(), ") (")) {
                     tok = tok->next();
                     innertype = true;
                 }
@@ -686,6 +685,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 compileBinOp(tok, state, compilePrecedence2);
             } else if (tok->str() == "[" || tok->str() == "(")
                 compilePrecedence2(tok, state);
+            else if (innertype && Token::simpleMatch(tok, ") [")) {
+                tok = tok->next();
+                compilePrecedence2(tok, state);
+            }
             compileUnaryOp(newtok, state, nullptr);
             if (innertype && Token::simpleMatch(tok, ") ,"))
                 tok = tok->next();
