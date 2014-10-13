@@ -8396,6 +8396,12 @@ private:
         ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
 
+        // invalid code (libreoffice), don't hang
+        // #define SlideSorterViewShell
+        // SfxViewFrame* pFrame;
+        // new SlideSorterViewShell(pFrame,rViewShellBase,pParentWindow,pFrameViewArgument);
+        ASSERT_EQUALS("fxnewy,z,(", testAst("f(new (x,y,z));"));
+
         // clang testsuite..
         ASSERT_EQUALS("const0(new", testAst("new const auto (0);"));
         ASSERT_EQUALS("autonew", testAst("new (auto) (0.0);"));

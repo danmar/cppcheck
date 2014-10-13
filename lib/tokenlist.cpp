@@ -671,6 +671,9 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 } else if (Token::Match(tok, "( &| %var%") && Token::simpleMatch(tok->link(), ") (")) {
                     tok = tok->next();
                     innertype = true;
+                } else {
+                    /* bad code */
+                    continue;
                 }
             }
             state.op.push(tok);
