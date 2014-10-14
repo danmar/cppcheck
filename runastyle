@@ -35,5 +35,13 @@ astyle $style $options --recursive "samples/*.cpp"
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
 
-# strip useless whitespaces from config files
-sed -i "s/\ \ *$//" cfg/*
+# format config files
+# TODO: use other tool than xmllint? use tabs instead of spaces?
+cat cfg/avr.cfg     | xmllint --format - | tee cfg/avr.cfg     > /dev/null
+#cat cfg/gtk.cfg     | xmllint --format - | tee cfg/gtk.cfg     > /dev/null
+cat cfg/linux.cfg   | xmllint --format - | tee cfg/linux.cfg   > /dev/null
+cat cfg/posix.cfg   | xmllint --format - | tee cfg/posix.cfg   > /dev/null
+cat cfg/qt.cfg      | xmllint --format - | tee cfg/qt.cfg      > /dev/null
+cat cfg/sdl.cfg     | xmllint --format - | tee cfg/sdl.cfg     > /dev/null
+cat cfg/std.cfg     | xmllint --format - | tee cfg/std.cfg     > /dev/null
+cat cfg/windows.cfg | xmllint --format - | tee cfg/windows.cfg > /dev/null
