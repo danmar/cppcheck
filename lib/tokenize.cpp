@@ -2327,6 +2327,12 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             return false;
     }
 
+    if (typeCount >= 2 && tok2 && tok2->str() == "(") {
+        const Token *tok3 = tok2->next();
+        if (tok3->str() != "new" && tok3->str() != "sizeof" && setVarIdParseDeclaration(&tok3, variableId, executableScope, cpp))
+            return false;
+    }
+
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 

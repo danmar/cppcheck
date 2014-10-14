@@ -1171,6 +1171,13 @@ private:
                                        "1: void f ( struct foobar ) ;\n");
             ASSERT_EQUALS(expected, actual);
         }
+
+        {
+            const std::string actual = tokenize("bool f(X x, int=3);", false, "test.cpp");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: bool f ( X x@1 , int = 3 ) ;\n");
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_sizeof() {
