@@ -224,6 +224,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
             }
 
+            // non-pod variable
+            if (_tokenizer->isCPP() && (!var || !var->typeStartToken()->isStandardType()))
+                continue;
+
             // Don't check reference variables
             if (var && var->isReference())
                 continue;

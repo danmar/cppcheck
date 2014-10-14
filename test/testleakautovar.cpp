@@ -97,6 +97,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);  // #3954 - reference pointer
         TEST_CASE(test4);  // #5923 - static pointer
+        TEST_CASE(test5);  // unknown type
 
         // Execution reaches a 'throw'
         TEST_CASE(throw1);
@@ -128,6 +129,31 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");
+        tokenizer.simplifyTokenList2();
+
+        // Check for leaks..
+        CheckLeakAutoVar c;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        c.runSimplifiedChecks(&tokenizer, &settings, this);
+    }
+
+    void checkcpp(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Settings settings;
+        int id = 0;
+        while (!settings.library.ismemory(++id));
+        settings.library.setalloc("malloc",id);
+        settings.library.setdealloc("free",id);
+        while (!settings.library.isresource(++id));
+        settings.library.setalloc("fopen",id);
+        settings.library.setdealloc("fclose",id);
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.c.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check for leaks..
@@ -620,6 +646,14 @@ private:
               "    if (x) { free(p); p = 0; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void test5() { // unknown type
+        checkcpp("void f() { Fred *p = malloc(10); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { Fred *p = malloc(10); }");
+        ASSERT_EQUALS("[test.c:1]: (error) Memory leak: p\n", errout.str());
     }
 
     void throw1() { // 3987 - Execution reach a 'throw'
