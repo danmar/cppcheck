@@ -2327,12 +2327,6 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             return false;
     }
 
-    if (typeCount >= 2 && tok2 && tok2->str() == "(") {
-        const Token *tok3 = tok2->next();
-        if (tok3->str() != "new" && tok3->str() != "sizeof" && setVarIdParseDeclaration(&tok3, variableId, executableScope, cpp))
-            return false;
-    }
-
     return bool(typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 
@@ -2630,8 +2624,22 @@ void Tokenizer::setVarId()
                         if (!executableScope.top()) {
                             // Detecting initializations with () in non-executable scope is hard and often impossible to be done safely. Thus, only treat code as a variable that definitly is one.
                             decl = false;
+                            bool rhs = false;
                             for (; tok3; tok3 = tok3->nextArgumentBeforeCreateLinks2()) {
-                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || (tok3->next()->isOp() && !Token::Match(tok3->next(), "*|&|<")) || notstart.find(tok3->str()) != notstart.end()) {
+                                if (tok3->str() == "=") {
+                                    rhs = true;
+                                    continue;
+                                }
+
+                                if (tok3->str() == ",") {
+                                    rhs = false;
+                                    continue;
+                                }
+
+                                if (rhs)
+                                    continue;
+
+                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || notstart.find(tok3->str()) != notstart.end()) {
                                     decl = true;
                                     break;
                                 }
