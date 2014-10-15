@@ -2141,7 +2141,8 @@ const Token * Tokenizer::startOfExecutableScope(const Token * tok)
                 } else
                     return nullptr;
             } else {
-                if (tok->isName() && tok->next() && tok->next()->str() == "(") {
+                if (tok->isName() && tok->next() && (tok->next()->str() == "(" ||
+                                                     (inInit && tok->next()->str() == "{"))) {
                     tok = tok->next()->link()->next();
                 } else if (tok->str() == ",") {
                     tok = tok->next();

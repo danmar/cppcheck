@@ -682,6 +682,22 @@ private:
         // #3496 - make sure hasComplicatedSyntaxErrorsInTemplates works
         ASSERT_EQUALS("void a ( Fred * f ) { for ( ; n < f . x ( ) ; ) { } }",
                       tokenizeAndStringify("void a(Fred* f) MACRO { for (;n < f->x();) {} }"));
+
+        // #6216 - make sure hasComplicatedSyntaxErrorsInTemplates works
+        ASSERT_EQUALS("C :: C ( )\n"
+                      ": v { }\n"
+                      "{\n"
+                      "for ( int dim = 0 ; dim < v . size ( ) ; ++ dim ) {\n"
+                      "v [ dim ] . f ( ) ;\n"
+                      "}\n"
+                      "} ;",
+                      tokenizeAndStringify("C::C()\n"
+                                           ":v{}\n"
+                                           "{\n"
+                                           "    for (int dim = 0; dim < v.size(); ++dim) {\n"
+                                           "        v[dim]->f();\n"
+                                           "    }\n"
+                                           "};"));
     }
 
     void tokenize20() { // replace C99 _Bool => bool
@@ -8605,6 +8621,8 @@ private:
         ASSERT(isStartOfExecutableScope(3, "void foo() const throw(int) { }"));
         ASSERT(isStartOfExecutableScope(2, "foo() : a(1) { }"));
         ASSERT(isStartOfExecutableScope(2, "foo() : a(1), b(2) { }"));
+        ASSERT(isStartOfExecutableScope(2, "foo() : a{1} { }"));
+        ASSERT(isStartOfExecutableScope(2, "foo() : a{1}, b{2} { }"));
     }
 
 };
