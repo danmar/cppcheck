@@ -1554,7 +1554,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 if (Token::Match(tok2, "%varid% !!=", varid2)) {
                     for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
                         setTokenValue(const_cast<Token*>(tok2), *val);
-                } else if (Token::Match(tok2, "{|?")) {
+                } else if (Token::Match(tok2, "%oror%|&&|{|?")) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "parameter " + arg->name() + ", at '" + tok2->str() + "'");
                     break;
