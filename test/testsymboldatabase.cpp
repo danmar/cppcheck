@@ -227,6 +227,7 @@ private:
         TEST_CASE(symboldatabase43); // #4738
         TEST_CASE(symboldatabase44);
         TEST_CASE(symboldatabase45); // #6125
+        TEST_CASE(symboldatabase46); // #6171 (anonymous namespace)
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1981,6 +1982,27 @@ private:
         ASSERT_EQUALS(Scope::eStruct, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eFunction, scope->type);
+    }
+
+    void symboldatabase46() { // #6171 (anonymous namespace)
+        GET_SYMBOL_DB("struct S { };\n"
+                      "namespace {\n"
+                      "    struct S { };\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(4U, db->scopeList.size());
+        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS(scope->className, "S");
+        ++scope;
+        ASSERT_EQUALS(Scope::eNamespace, scope->type);
+        ASSERT_EQUALS(scope->className, "");
+        ++scope;
+        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS(scope->className, "S");
     }
 
     void isImplicitlyVirtual() {
