@@ -7359,7 +7359,7 @@ void Tokenizer::simplifyReference()
                         }
                     }
 
-                    tok2->deleteNext(6+(tok->strAt(6)==")" ? 1 : 0));
+                    tok2->deleteNext(6+(tok2->strAt(6)==")" ? 1 : 0));
                 }
             }
             tok = end;

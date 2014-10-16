@@ -3352,6 +3352,9 @@ private:
                       tok("void f() { int a; int &b(a); b++; }"));
         ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
                       tok("void f() { int a; int &b = a; b++; }"));
+
+        ASSERT_EQUALS("void test ( ) { c . f ( 7 ) ; }",
+                      tok("void test() { c.f(7); T3 &t3 = c; }")); // #6133
     }
 
     void simplifyRealloc() {
