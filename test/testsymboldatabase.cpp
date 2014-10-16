@@ -49,15 +49,6 @@ public:
     }
 
 private:
-    void createSymbolDatabase(const char code[]) {
-        errout.str("");
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.getSymbolDatabase();
-    }
-
     const Scope si;
     const Token* vartok;
     const Token* typetok;
