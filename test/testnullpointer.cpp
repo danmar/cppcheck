@@ -2026,6 +2026,8 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:9]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:10]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:3]: (error) Null pointer dereference\n"
+                      "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:7]: (error) Null pointer dereference\n"
                       "[test.cpp:8]: (error) Null pointer dereference\n"
                       /* TODO: handle std::string
