@@ -1599,13 +1599,13 @@ private:
     }
 
     void simplifyTypedef57() { // ticket #1846
-        const char code[] = "void foo {\n"
+        const char code[] = "void foo() {\n"
                             "    typedef int A;\n"
                             "    A a = A(1) * A(2);\n"
                             "};\n";
 
         // The expected result..
-        const std::string expected("void foo { "
+        const std::string expected("void foo ( ) { "
                                    ""
                                    "int a ; a = int ( 1 ) * int ( 2 ) ; "
                                    "} ;");

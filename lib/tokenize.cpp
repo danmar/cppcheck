@@ -5527,6 +5527,16 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                     if (tok2 && tok2->str() == ";")
                         tok2 = nullptr;
                 }
+            }
+
+            // brace initialization
+            else if (Token::Match(varName, "%var% {")) {
+                tok2 = varName->next();
+                tok2 = tok2->link();
+                if (tok2)
+                    tok2 = tok2->next();
+                if (tok2 && tok2->str() != ",")
+                    tok2 = nullptr;
             } else
                 tok2 = nullptr;
         } else {

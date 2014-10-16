@@ -5942,37 +5942,37 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo {\n"
+        check("void foo() {\n"
               "  int *cp;\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // test with unknown variable
-        check("void foo {\n"
+        check("void foo() {\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo {\n"
+        check("void foo() {\n"
               "  int *cp;\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // test with unknown variable
-        check("void foo {\n"
+        check("void foo() {\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
     }

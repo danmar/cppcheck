@@ -1851,11 +1851,13 @@ private:
                       "1: int i@1 { 1 } ;\n"
                       "2: std :: vector < int > vec@2 { 1 , 2 , 3 } ;\n"
                       "3: namespace n { int z@3 ; } ;\n"
-                      "4: int & j@4 { i@1 } ;\n",
+                      "4: int & j@4 { i@1 } ;\n"
+                      "5: int k@5 { 1 } ; int l@6 { 2 } ;\n",
                       tokenize("int i{1};\n"
                                "std::vector<int> vec{1, 2, 3};\n"
                                "namespace n { int z; };\n"
-                               "int& j{i};\n"));
+                               "int& j{i};\n"
+                               "int k{1}, l{2};"));
 
         // #6030
         ASSERT_EQUALS("\n\n##file 0\n"
