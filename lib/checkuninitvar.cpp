@@ -1128,7 +1128,7 @@ void CheckUninitVar::checkStruct(const Scope* scope, const Token *tok, const Var
         if (scope2->className == structname && scope2->numConstructors == 0U) {
             for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
                 const Variable &var = *it;
-                if (!var.isArray()) {
+                if (!var.hasDefault() && !var.isArray()) {
                     // is the variable declared in a inner union?
                     bool innerunion = false;
                     for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {

@@ -3203,6 +3203,15 @@ private:
                         "    int *p = ab.a;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // non static data-member initialization
+        checkUninitVar2("struct AB { int a=1; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    int a = ab.a;\n"
+                        "    int b = ab.b;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
     }
 
     void uninitvar2_while() {

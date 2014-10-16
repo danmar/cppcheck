@@ -2427,6 +2427,22 @@ private:
               "    { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // non static data-member initialization
+        check("struct POINT\n"
+              "{\n"
+              "    int x=0;\n"
+              "    int y=0;\n"
+              "};\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "    POINT p;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarUnion1() { // ticket #3196

@@ -912,7 +912,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                 else if (var->type()->needInitialization == Type::Unknown)
                                     unknown = true;
                             }
-                        } else
+                        } else if (!var->hasDefault())
                             needInitialization = true;
                     }
 
