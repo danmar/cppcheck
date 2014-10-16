@@ -2713,7 +2713,7 @@ void CheckOther::varFuncNullUBError(const Token *tok)
                 "    va_start(ap,s);\n"
                 "    for (;;) {\n"
                 "        char *p = va_arg(ap,char*);\n"
-                "        printf(\"%018p, %s\n\", p, (long)p & 255 ? p : \"\");\n"
+                "        printf(\"%018p, %s\\n\", p, (long)p & 255 ? p : \"\");\n"
                 "        if(!p) break;\n"
                 "    }\n"
                 "    va_end(ap);\n"
