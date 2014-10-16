@@ -9091,7 +9091,8 @@ void Tokenizer::simplifyWhile0()
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
             Token *end = tok->next()->link();
             end = end->next()->link();
-            eraseDeadCode(tok->previous(), end->next());
+            tok = tok->previous();
+            eraseDeadCode(tok, end->next());
         }
     }
 }
