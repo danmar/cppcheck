@@ -453,7 +453,7 @@ static bool iscast(const Token *tok)
         if (!Token::Match(tok2, "%var%|*|&|::"))
             return false;
 
-        if (tok2->isStandardType())
+        if (tok2->isStandardType() && tok2->next()->str() != "(")
             type = true;
     }
 
