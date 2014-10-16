@@ -385,8 +385,24 @@ private:
               "    int x = 0;\n"
               "    int y = f();\n"
               "    int z{0};\n"
+              "    int (*pf[2])(){nullptr, nullptr};\n"
+              "    int a[2][3] = {{1,2,3},{4,5,6}};\n"
+              "    int d, e{3};\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::d' is not initialized in the constructor.\n", errout.str());
+
+        check("class Fred {\n"
+              "public:\n"
+              "    Fred() {}\n"
+              "private:\n"
+              "    int b{1}, c{2};\n"
+              "    int d, e{3};\n"
+              "    int f{4}, g;\n"
+              "};");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::d' is not initialized in the constructor.\n"
+                           "[test.cpp:3]: (warning) Member variable 'Fred::g' is not initialized in the constructor.\n",
+                           "[test.cpp:3]: (warning) Member variable 'Fred::d' is not initialized in the constructor.\n",
+                           errout.str()); // fails due to missing varid
     }
 
     void simple12() { // ticket #4620

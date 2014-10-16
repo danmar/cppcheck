@@ -216,6 +216,15 @@ public:
     }
 
     /**
+     * Get end token of variable declaration
+     * E.g.
+     * int i[2][3] = ...
+     *   end token ^
+     * @return variable declaration end token
+     */
+    const Token *declEndToken() const;
+
+    /**
      * Get name string.
      * @return name string
      */

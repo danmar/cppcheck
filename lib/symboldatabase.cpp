@@ -1136,6 +1136,17 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
+const Token * Variable::declEndToken() const
+{
+    Token const * declEnd = typeStartToken();
+    while (declEnd && !Token::Match(declEnd, "[;,)={]")) {
+        if (declEnd->link() && Token::Match(declEnd,"(|["))
+            declEnd = declEnd->link();
+        declEnd = declEnd->next();
+    }
+    return declEnd;
+}
+
 void Variable::evaluate()
 {
     const Token* tok = _start;
@@ -1204,8 +1215,9 @@ void Variable::evaluate()
         // type var = x or
         // type var = {x}
         // type var = x; gets simplified to: type var ; var = x ;
-        if ((Token::Match(_name, "%var% ; %var% = ") && _name->strAt(2) == _name->str()) ||
-            Token::Match(_name, "%var% {"))
+        Token const * declEnd = declEndToken();
+        if ((Token::Match(declEnd, "; %var% = ") && declEnd->strAt(1) == _name->str()) ||
+            Token::Match(declEnd, "=|{"))
             setFlag(fHasDefault, true);
     }
 
