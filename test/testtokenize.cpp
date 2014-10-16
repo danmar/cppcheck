@@ -5203,8 +5203,6 @@ private:
         //with unhandled MACRO() code
         ASSERT_EQUALS("void f(){ MACRO( ab: b=0;, foo)}", labels_("void f() { MACRO(ab: b=0;, foo)}"));
         ASSERT_EQUALS("void f(){ MACRO( bar, ab:{&(* b. x)=0;})}", labels_("void f() { MACRO(bar, ab: {&(*b.x)=0;})}"));
-        //don't crash with garbage code
-        ASSERT_THROW(labels_("switch(){case}"), InternalError);
     }
 
     void simplifyInitVar() {
@@ -5946,8 +5944,6 @@ private:
                       tokenizeAndStringify("int f(int a) { return 0 * a; }", true));
         ASSERT_EQUALS("bool f ( int i ) { switch ( i ) { case 15 : ; return true ; } }",
                       tokenizeAndStringify("bool f(int i) { switch (i) { case 10 + 5: return true; } }", true));
-        // ticket #3512 - Don't crash on garbage code
-        ASSERT_EQUALS("p = const", tokenizeAndStringify("1 *p = const", true));
 
         // ticket #3576 - False positives in boolean expressions
         ASSERT_EQUALS("int foo ( ) { return 1 ; }",
@@ -5962,9 +5958,6 @@ private:
 
         // ticket #3964 - simplify numeric calculations in tokenization
         ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
-
-        // #3953 (valgrind errors on garbage code)
-        ASSERT_EQUALS("void f ( 0 * ) ;", tokenizeAndStringify("void f ( 0 * ) ;"));
     }
 
     void simplifyCompoundAssignment() {

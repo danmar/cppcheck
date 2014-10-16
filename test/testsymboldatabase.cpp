@@ -231,8 +231,6 @@ private:
 
         TEST_CASE(isImplicitlyVirtual);
 
-        TEST_CASE(garbage);
-
         TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
 
         TEST_CASE(findFunction1);
@@ -2116,27 +2114,6 @@ private:
                           "}");
             //ASSERT(db && db->findScopeByName("InfiniteA") && !db->findScopeByName("InfiniteA")->functionList.front().isImplicitlyVirtual());
             TODO_ASSERT_EQUALS(1, 0, db->findScopeByName("InfiniteA")->functionList.size());
-        }
-    }
-
-    void garbage() {
-        {
-            GET_SYMBOL_DB("void f( { u = 1 ; } ) { }");
-            (void)db;
-        }
-        {
-            GET_SYMBOL_DB("{ }; void namespace A::f; { g() { int } }");
-            (void)db;
-        }
-        {
-            ASSERT_THROW(createSymbolDatabase("class Foo {}; class Bar : public Foo"), InternalError);
-        }
-        {
-            ASSERT_THROW(createSymbolDatabase("YY_DECL { switch (yy_act) {\n"
-                                              "    case 65: YY_BREAK\n"
-                                              "    case YY_STATE_EOF(block):\n"
-                                              "        yyterminate(); \n"
-                                              "} }"), InternalError); // #5663
         }
     }
 

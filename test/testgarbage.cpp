@@ -53,8 +53,21 @@ private:
         TEST_CASE(garbageCode10);  // #6127
         TEST_CASE(garbageCode11);
         TEST_CASE(garbageCode12);
+        TEST_CASE(garbageCode13);  // Ticket #2607 - crash
+        TEST_CASE(garbageCode14);  // TIcket #5595 - crash
+        TEST_CASE(garbageCode15);  // Ticket #5203
+        TEST_CASE(garbageCode16);
+        TEST_CASE(garbageCode17);
+        TEST_CASE(garbageCode18);
+        TEST_CASE(garbageCode19);
+        TEST_CASE(garbageCode20);
+        TEST_CASE(garbageCode21);
+        TEST_CASE(garbageCode22);
+        TEST_CASE(garbageCode23);
 
-        TEST_CASE(astGarbage);
+        TEST_CASE(garbageValueFlow);
+        TEST_CASE(garbageSymbolDatabase);
+        TEST_CASE(garbageAST);
     }
 
     std::string checkCode(const char code[], const char filename[] = "test.cpp") {
@@ -258,7 +271,102 @@ private:
         checkCode("{ g; S (void) { struct } { } int &g; }");
     }
 
-    void astGarbage() {
+    void garbageCode13() {
+        checkCode("struct C {} {} x");
+    }
+
+    void garbageCode14() {
+        checkCode("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
+    }
+
+    void garbageCode15() { // Ticket #5203
+        checkCode("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
+    }
+
+    void garbageCode16() {
+        checkCode("{ } A() { delete }"); // #6080
+    }
+
+    void garbageCode17() {
+        ASSERT_THROW(checkCode("void h(int l) {\n"
+                               "    while\n" // Don't crash (#3870)
+                               "}"), InternalError);
+    }
+
+    void garbageCode18() {
+        ASSERT_THROW(checkCode("switch(){case}"), InternalError);
+    }
+
+    void garbageCode19() {
+        // ticket #3512 - Don't crash on garbage code
+        ASSERT_EQUALS("p = const", checkCode("1 *p = const"));
+    }
+
+    void garbageCode20() {
+        // #3953 (valgrind errors on garbage code)
+        ASSERT_EQUALS("void f ( 0 * ) ;", checkCode("void f ( 0 * ) ;"));
+    }
+
+    void garbageCode21() {
+        // Ticket #3486 - Don't crash garbage code
+        checkCode("void f()\n"
+                  "{\n"
+                  "  (\n"
+                  "    x;\n"
+                  "    int a, a2, a2*x; if () ;\n"
+                  "  )\n"
+                  "}");
+    }
+
+    void garbageCode22() {
+        // Ticket #3480 - Don't crash garbage code
+        ASSERT_THROW(checkCode("int f()\n"
+                               "{\n"
+                               "    return if\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode23() {
+        //garbage code : don't crash (#3481)
+        checkCode("{\n"
+                  "    if (1) = x\n"
+                  "    else abort s[2]\n"
+                  "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageValueFlow() {
+        // #6089
+        const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
+                           "{\n"
+                           "    (foo(s, , 2, , , 5, , 7)) abort()\n"
+                           "}\n";
+        ASSERT_THROW(checkCode(code), InternalError);
+
+        // #6106
+        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
+        checkCode(code);
+
+        // 6122 survive garbage code
+        code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
+        checkCode(code);
+    }
+
+    void garbageSymbolDatabase() {
+        checkCode("void f( { u = 1 ; } ) { }");
+
+        checkCode("{ }; void namespace A::f; { g() { int } }");
+
+        ASSERT_THROW(checkCode("class Foo {}; class Bar : public Foo"), InternalError);
+
+        ASSERT_THROW(checkCode("YY_DECL { switch (yy_act) {\n"
+                               "    case 65: YY_BREAK\n"
+                               "    case YY_STATE_EOF(block):\n"
+                               "        yyterminate(); \n"
+                               "} }"), InternalError); // #5663
+    }
+
+    void garbageAST() {
         checkCode("--"); // don't crash
 
         checkCode("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"

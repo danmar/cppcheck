@@ -288,12 +288,8 @@ private:
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
-        TEST_CASE(crash2);  // Ticket #2607 - crash
-        TEST_CASE(crash3);  // Ticket #3034 - crash
-        TEST_CASE(crash4);  // Ticket #5426 - crash
-        TEST_CASE(crash5);  // TIcket #5595 - crash
-
-        TEST_CASE(garbage1);  // Ticket #5203
+        TEST_CASE(crash2);  // Ticket #3034 - crash
+        TEST_CASE(crash3);  // Ticket #5426 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -3749,10 +3745,6 @@ private:
     }
 
     void crash2() {
-        check("struct C {} {} x");
-    }
-
-    void crash3() {
         check("void a(char *p) {\n"
               "    f( { if(finally_arg); } );\n"
               "}\n"
@@ -3763,17 +3755,9 @@ private:
               "}");
     }
 
-    void crash4() {
+    void crash3() {
         check("struct b { unknown v[0]; };\n"
               "void d() { struct b *f; f = malloc(108); }");
-    }
-
-    void crash5() {
-        check("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }", true, "test.cpp", false); // Garbage code
-    }
-
-    void garbage1() { // Ticket #5203
-        check("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
     }
 
     void epcheck(const char code[], const char filename[] = "test.cpp") {

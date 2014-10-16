@@ -361,8 +361,6 @@ private:
         // #1879 non regression test case
         TEST_CASE(trac1879);
 
-        TEST_CASE(garbageCode);
-
         TEST_CASE(ptrptr);
 
         // test that the cfg files are configured correctly
@@ -4211,12 +4209,6 @@ private:
               "catch(...) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
-    }
-
-    void garbageCode() {
-        ASSERT_THROW(check("void h(int l) {\n"
-                           "    while\n" // Don't crash (#3870)
-                           "}"), InternalError);
     }
 
     void ptrptr() {

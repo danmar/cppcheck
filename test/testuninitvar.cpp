@@ -585,12 +585,6 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        // Ticket #3480 - Don't crash garbage code
-        ASSERT_THROW(checkUninitVar("int f()\n"
-                                    "{\n"
-                                    "    return if\n"
-                                    "}"), InternalError);
-
         // Ticket #3873 (false positive)
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"
                        "  MachineLoopRange *&Range = Cache[Loop];\n"
@@ -2535,15 +2529,6 @@ private:
                         "    a = malloc(sizeof(*a));\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
-
-        // Ticket #3486 - Don't crash garbage code
-        checkUninitVar2("void f()\n"
-                        "{\n"
-                        "  (\n"
-                        "    x;\n"
-                        "    int a, a2, a2*x; if () ;\n"
-                        "  )\n"
-                        "}");
 
         // Ticket #3890 - False positive for std::map
         checkUninitVar2("void f() {\n"

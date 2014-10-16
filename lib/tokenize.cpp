@@ -8398,7 +8398,8 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                     break;
             }
             tok->deleteNext();
-        } else {        //no need to keep the other strings, remove them.
+        } else {
+            // no need to keep the other strings, remove them.
             if (tok->strAt(1) == "while") {
                 if (tok->str() == "}" && tok->link()->strAt(-1) == "do")
                     tok->link()->previous()->deleteThis();

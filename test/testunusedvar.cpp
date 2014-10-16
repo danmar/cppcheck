@@ -90,13 +90,12 @@ private:
         TEST_CASE(localvar38);
         TEST_CASE(localvar39); // ticket #3454
         TEST_CASE(localvar40); // ticket #3473
-        TEST_CASE(localvar41); // ticket #3481
-        TEST_CASE(localvar42); // ticket #3603
-        TEST_CASE(localvar43); // ticket #3742
-        TEST_CASE(localvar44); // ticket #3602
-        TEST_CASE(localvar45); // ticket #4020
-        TEST_CASE(localvar46); // ticket #4899
-        TEST_CASE(localvar47); // ticket #5491 (C++11 style initialization)
+        TEST_CASE(localvar41); // ticket #3603
+        TEST_CASE(localvar42); // ticket #3742
+        TEST_CASE(localvar43); // ticket #3602
+        TEST_CASE(localvar44); // ticket #4020
+        TEST_CASE(localvar45); // ticket #4899
+        TEST_CASE(localvar46); // ticket #5491 (C++11 style initialization)
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1786,15 +1785,6 @@ private:
     }
 
     void localvar41() {
-        //garbage code : don't crash
-        functionVariableUsage("{\n"
-                              "    if (1) = x\n"
-                              "    else abort s[2]\n"
-                              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void localvar42() {
         // #3603 - false positive 'x is assigned a value that is never used'
         functionVariableUsage("int f() {\n"
                               "    int x = 1;\n"
@@ -1804,7 +1794,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar43() { // #3742
+    void localvar42() { // #3742
         functionVariableUsage("float g_float = 1;\n"
                               "extern void SomeTestFunc(float);\n"
                               "void MyFuncError()\n"
@@ -1836,7 +1826,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar44() { // ticket #3602 (false positive)
+    void localvar43() { // ticket #3602 (false positive)
         functionVariableUsage("void bar()\n"
                               "{\n"
                               "    int * piArray = NULL;\n"
@@ -1862,7 +1852,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar45() { // #4020 - FP
+    void localvar44() { // #4020 - FP
         functionVariableUsage("void func() {\n"
                               "    int *sp_mem[2] = { 0x00, 0x00 };\n"
                               "    int src = 1, dst = 2;\n"
@@ -1871,7 +1861,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar46() { // #4899 - FP
+    void localvar45() { // #4899 - FP
         functionVariableUsage("int func() {\n"
                               "    int a = 123;\n"
                               "    int b = (short)-a;;\n"
@@ -1880,7 +1870,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar47() { // #5491/#5494
+    void localvar46() { // #5491/#5494
         functionVariableUsage("int func() {\n"
                               "    int i = 0;\n"
                               "    int j{i};\n"
