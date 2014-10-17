@@ -140,6 +140,7 @@ private:
     *         If no errors are found, 0 is returned.
     */
     int check_internal(CppCheck& cppcheck, int argc, const char* const argv[]);
+
     /**
      * Pointer to current settings; set while check() is running.
      */

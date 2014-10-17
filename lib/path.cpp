@@ -109,14 +109,12 @@ std::string Path::simplifyPath(std::string originalPath)
 
 std::string Path::getPathFromFilename(const std::string &filename)
 {
-    std::string path = "";
-
     std::size_t pos = filename.find_last_of("\\/");
 
     if (pos != std::string::npos)
-        path = filename.substr(0, 1 + pos);
+        return filename.substr(0, 1 + pos);
 
-    return path;
+    return "";
 }
 
 
