@@ -1131,8 +1131,12 @@ static void valueFlowAfterCondition(TokenList *tokenlist, ErrorLogger *errorLogg
                     isreturn |= (codeblock == 2 && isReturn(after));
                 }
 
-                if (!isreturn)
-                    valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, true, tokenlist, errorLogger, settings);
+                if (!isreturn) {
+                    // TODO: constValue could be true if there are no assignments in the conditional blocks and
+                    //       perhaps if there are no && and no || in the condition
+                    bool constValue = false;
+                    valueFlowForward(after->next(), top->scope()->classEnd, var, varid, values, constValue, tokenlist, errorLogger, settings);
+                }
             }
         }
     }

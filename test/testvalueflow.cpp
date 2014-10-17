@@ -1020,11 +1020,11 @@ private:
         code = "void f(int x) {\n"
                "  if (x == 2) {}\n"
                "  if (x > 0)\n"
-               "    a = x;\n"
+               "    a = x;\n"  // <- TODO, x can be 2
                "  else\n"
                "    b = x;\n"
                "}";
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 2));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 2));
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 2));
 
         // condition with 2nd variable
@@ -1035,6 +1035,16 @@ private:
                "    a = x;\n" // <- x can not be 7 here
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 7));
+
+        code = "void f(struct X *x) {\n"
+               "  bool b = TRUE;\n"
+               "  if(x) { }\n"
+               "  else\n"
+               "    b = FALSE;\n"
+               "  if (b)\n"
+               "    abc(x->value);\n" // <- x is not 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
 
         // In condition, after && and ||
         code = "void f(int x) {\n"
