@@ -527,35 +527,30 @@ void Tokenizer::simplifyTypedef()
             tok = tok->previous();
         }
 
-        // Skip typedefs inside parentheses (#2453 and #4002)
-        if (tok->str() == "(" && tok->strAt(1) == "typedef") {
-            tok = tok->next();
+        if (tok->str() != "typedef") {
+            if (tok->str() == "(" && tok->strAt(1) == "typedef") {
+                // Skip typedefs inside parentheses (#2453 and #4002)
+                tok = tok->next();
+            } else if (Token::Match(tok, "class|struct|namespace %any%") &&
+                       (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
+                isNamespace = (tok->str() == "namespace");
+                hasClass = true;
+                className = tok->next()->str();
+            } else if (hasClass && tok->str() == ";") {
+                hasClass = false;
+            } else if (hasClass && tok->str() == "{") {
+                Space info;
+                info.isNamespace = isNamespace;
+                info.className = className;
+                info.classEnd = tok->link();
+                spaceInfo.push_back(info);
+
+                hasClass = false;
+            } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().classEnd == tok) {
+                spaceInfo.pop_back();
+            }
             continue;
         }
-
-        if (Token::Match(tok, "class|struct|namespace %any%") &&
-            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
-            isNamespace = (tok->str() == "namespace");
-            hasClass = true;
-            className = tok->next()->str();
-            continue;
-        } else if (hasClass && tok->str() == ";") {
-            hasClass = false;
-            continue;
-        } else if (hasClass && tok->str() == "{") {
-            Space info;
-            info.isNamespace = isNamespace;
-            info.className = className;
-            info.classEnd = tok->link();
-            spaceInfo.push_back(info);
-
-            hasClass = false;
-            continue;
-        } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().classEnd == tok) {
-            spaceInfo.pop_back();
-            continue;
-        } else if (tok->str() != "typedef")
-            continue;
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
@@ -597,7 +592,6 @@ void Tokenizer::simplifyTypedef()
         }
 
         Token *typeName;
-        std::list<std::string> pointers;
         Token *typeStart = nullptr;
         Token *typeEnd = nullptr;
         Token *argStart = nullptr;
@@ -686,6 +680,7 @@ void Tokenizer::simplifyTypedef()
             tokOffset = tok->next();
         }
 
+        std::list<std::string> pointers;
         // check for pointers and references
         while (Token::Match(tokOffset, "*|&|&&|const")) {
             pointers.push_back(tokOffset->str());
@@ -919,7 +914,7 @@ void Tokenizer::simplifyTypedef()
         // pointer/reference to array
         else if (Token::Match(tokOffset, "( *|& %type% ) [")) {
             ptrToArray = (tokOffset->next()->str() == "*");
-            refToArray = (tokOffset->next()->str() == "&");
+            refToArray = !ptrToArray;
             tokOffset = tokOffset->tokAt(2);
             typeName = tokOffset;
             arrayStart = tokOffset->tokAt(2);
