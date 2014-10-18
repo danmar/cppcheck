@@ -2008,9 +2008,6 @@ private:
     }
 
     void nullpointerStdString() {
-        // line 3 and 5 don't seem to compile with recent compilers...
-        // To fix #6189 "assign with operator= a '\0' to a std::string is not an error" the result for those
-        // has been adjusted as well.
         check("void f(std::string s1) {\n"
               "    void* p = 0;\n"
               "    s1 = 0;\n"
@@ -2030,10 +2027,8 @@ private:
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:7]: (error) Null pointer dereference\n"
                       "[test.cpp:8]: (error) Null pointer dereference\n"
-                      /* TODO: handle std::string
-                      "[test.cpp:11]: (error) Possible null pointer dereference: p\n"
-                      "[test.cpp:12]: (error) Possible null pointer dereference: p\n"
-                      */
+                      /*"[test.cpp:11]: (error) Possible null pointer dereference: p\n"
+                      "[test.cpp:12]: (error) Possible null pointer dereference: p\n"*/
                       , errout.str());
 
         check("void f(std::string s1, const std::string& s2, const std::string* s3) {\n"
