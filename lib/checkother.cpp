@@ -2242,7 +2242,7 @@ static bool isWithoutSideEffects(const Tokenizer *tokenizer, const Token* tok)
 
     while (tok && tok->astOperand2() && tok->astOperand2()->str() != "(")
         tok = tok->astOperand2();
-    if (tok->varId()) {
+    if (tok && tok->varId()) {
         const Variable* var = tok->variable();
         return var && (!var->isClass() || var->isPointer() || var->isStlType());
     }
