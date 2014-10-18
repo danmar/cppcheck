@@ -675,6 +675,10 @@ Options:
 %2</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unsupported format</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
