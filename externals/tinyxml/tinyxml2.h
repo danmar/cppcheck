@@ -523,10 +523,7 @@ public:
         return p;
     }
     static char* SkipWhiteSpace( char* p )				{
-        while( !IsUTF8Continuation(*p) && isspace( *reinterpret_cast<unsigned char*>(p) ) )		{
-            ++p;
-        }
-        return p;
+        return const_cast<char*>( SkipWhiteSpace( const_cast<const char*>(p) ) );
     }
     static bool IsWhiteSpace( char p )					{
         return !IsUTF8Continuation(p) && isspace( static_cast<unsigned char>(p) );
@@ -561,8 +558,8 @@ public:
         return false;
     }
     
-    inline static int IsUTF8Continuation( const char p ) {
-        return p & 0x80;
+    inline static bool IsUTF8Continuation( const char p ) {
+        return ( p & 0x80 ) != 0;
     }
 
     static const char* ReadBOM( const char* p, bool* hasBOM );
