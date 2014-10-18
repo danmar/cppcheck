@@ -139,7 +139,7 @@ private:
         std::string info = "Warn if any of these obsolete functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
         for (; it!=itend; ++it) {
-            info += "* " + it->first + "\n";
+            info += "- " + it->first + "\n";
         }
         return info;
     }

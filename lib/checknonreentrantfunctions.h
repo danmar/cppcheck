@@ -99,7 +99,7 @@ private:
         std::string info = "Warn if any of these non reentrant functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
         for (; it!=itend; ++it) {
-            info += "* " + it->first + "\n";
+            info += "- " + it->first + "\n";
         }
         return info;
     }
