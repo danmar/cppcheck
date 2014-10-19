@@ -46,6 +46,7 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error();
     }
 
+    std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.LoadFile(path);
@@ -55,6 +56,8 @@ Library::Error Library::load(const char exename[], const char path[])
         if (Path::getFilenameExtension(fullfilename) == "") {
             fullfilename += ".cfg";
             error = doc.LoadFile(fullfilename.c_str());
+            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+                absolute_path = Path::getAbsoluteFilePath(fullfilename.c_str());
         }
 
         if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
@@ -69,12 +72,24 @@ Library::Error Library::load(const char exename[], const char path[])
             const char *sep = (!cfgfolder.empty() && cfgfolder[cfgfolder.size()-1U]=='/' ? "" : "/");
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
+            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+                absolute_path = Path::getAbsoluteFilePath(filename.c_str());
         }
+    } else
+        absolute_path = Path::getAbsoluteFilePath(path);
+
+    if (error == tinyxml2::XML_NO_ERROR) {
+        if (_files.find(absolute_path) == _files.end()) {
+            Error err = load(doc);
+            if (err.errorcode == OK)
+                _files.insert(absolute_path);
+            return err;
+        }
+
+        return Error(OK); // ignore duplicates
     }
 
-    return (error == tinyxml2::XML_NO_ERROR) ?
-           load(doc) :
-           Error(error == tinyxml2::XML_ERROR_FILE_NOT_FOUND ? FILE_NOT_FOUND : BAD_XML);
+    return Error(error == tinyxml2::XML_ERROR_FILE_NOT_FOUND ? FILE_NOT_FOUND : BAD_XML);
 }
 
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
@@ -381,6 +396,59 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (sign)
                 podType.sign = *sign;
             podtypes[name] = podType;
+        }
+
+        else if (nodename == "platformtype") {
+            const char * const type_name = node->Attribute("name");
+            if (type_name == nullptr)
+                return Error(MISSING_ATTRIBUTE, "name");
+            const char *value = node->Attribute("value");
+            if (value == nullptr)
+                return Error(MISSING_ATTRIBUTE, "value");
+            PlatformType type;
+            type._type = value;
+            std::set<std::string> platform;
+            for (const tinyxml2::XMLElement *typenode = node->FirstChildElement(); typenode; typenode = typenode->NextSiblingElement()) {
+                if (strcmp(typenode->Name(), "platform") == 0) {
+                    const char * const type_attribute = typenode->Attribute("type");
+                    if (type_attribute == nullptr)
+                        return Error(MISSING_ATTRIBUTE, "type");
+                    platform.insert(type_attribute);
+                } else if (strcmp(typenode->Name(), "signed") == 0)
+                    type._signed = true;
+                else if (strcmp(typenode->Name(), "unsigned") == 0)
+                    type._unsigned = true;
+                else if (strcmp(typenode->Name(), "long") == 0)
+                    type._long = true;
+                else if (strcmp(typenode->Name(), "pointer") == 0)
+                    type._pointer= true;
+                else if (strcmp(typenode->Name(), "ptr_ptr") == 0)
+                    type._ptr_ptr = true;
+                else if (strcmp(typenode->Name(), "const_ptr") == 0)
+                    type._const_ptr = true;
+                else
+                    return Error(BAD_ELEMENT, typenode->Name());
+            }
+            if (platform.empty()) {
+                const PlatformType * const type_ptr = platform_type(type_name, "");
+                if (type_ptr) {
+                    if (*type_ptr == type)
+                        return Error(DUPLICATE_PLATFORM_TYPE, type_name);
+                    return Error(PLATFORM_TYPE_REDEFINED, type_name);
+                }
+                platform_types[type_name] = type;
+            } else {
+                std::set<std::string>::const_iterator it;
+                for (it = platform.begin(); it != platform.end(); ++it) {
+                    const PlatformType * const type_ptr = platform_type(type_name, *it);
+                    if (type_ptr) {
+                        if (*type_ptr == type)
+                            return Error(DUPLICATE_PLATFORM_TYPE, type_name);
+                        return Error(PLATFORM_TYPE_REDEFINED, type_name);
+                    }
+                    platforms[*it]._platform_types[type_name] = type;
+                }
+            }
         }
 
         else

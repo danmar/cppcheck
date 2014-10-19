@@ -699,10 +699,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     bool posix = true;
     if (settings.standards.posix)
         posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::OK);
+    bool windows = true;
+    if (settings.isWindowsPlatform())
+        windows = (settings.library.load(argv[0], "windows.cfg").errorcode == Library::OK);
 
-    if (!std || !posix) {
+    if (!std || !posix || !windows) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
 #ifdef CFGDIR
         const std::string details("The Cppcheck binary was compiled with CFGDIR set to \"" +
                                   std::string(CFGDIR) + "\" and will therefore search for "

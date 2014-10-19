@@ -46,7 +46,7 @@ class CPPCHECKLIB Library {
 public:
     Library();
 
-    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, BAD_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT };
+    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, BAD_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
     class Error {
     public:
@@ -330,6 +330,59 @@ public:
         return (it != podtypes.end()) ? &(it->second) : nullptr;
     }
 
+    struct PlatformType {
+        PlatformType()
+            : _signed(false)
+            , _unsigned(false)
+            , _long(false)
+            , _pointer(false)
+            , _ptr_ptr(false)
+            , _const_ptr(false) {
+        }
+        bool operator == (const PlatformType & type) const {
+            return (_type == type._type &&
+                    _signed == type._signed &&
+                    _unsigned == type._unsigned &&
+                    _long == type._long &&
+                    _pointer == type._pointer &&
+                    _ptr_ptr == type._ptr_ptr &&
+                    _const_ptr == type._const_ptr);
+        }
+        bool operator != (const PlatformType & type) const {
+            return !(*this == type);
+        }
+        std::string _type;
+        bool _signed;
+        bool _unsigned;
+        bool _long;
+        bool _pointer;
+        bool _ptr_ptr;
+        bool _const_ptr;
+    };
+
+    struct Platform {
+        const PlatformType *platform_type(const std::string &name) const {
+            const std::map<std::string, struct PlatformType>::const_iterator it = _platform_types.find(name);
+            return (it != _platform_types.end()) ? &(it->second) : nullptr;
+        }
+        std::map<std::string, PlatformType> _platform_types;
+    };
+
+    const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
+        const std::map<std::string, Platform>::const_iterator it = platforms.find(platform);
+
+        if (it != platforms.end()) {
+            const PlatformType * const type = it->second.platform_type(name);
+
+            if (type)
+                return type;
+        }
+
+        const std::map<std::string, PlatformType>::const_iterator it2 = platform_types.find(name);
+
+        return (it2 != platform_types.end()) ? &(it2->second) : nullptr;
+    }
+
 private:
     class ExportedFunctions {
     public:
@@ -386,6 +439,7 @@ private:
         std::set<std::string> _blocks;
     };
     int allocid;
+    std::set<std::string> _files;
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
@@ -400,6 +454,8 @@ private:
     std::map<std::string,int> _reflection; // invocation of reflection
     std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
     std::map<std::string, struct PodType> podtypes; // pod types
+    std::map<std::string, PlatformType> platform_types; // platform independent typedefs
+    std::map<std::string, Platform> platforms; // platform dependent typedefs
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
 

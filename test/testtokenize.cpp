@@ -33,8 +33,11 @@ public:
     }
 
 private:
+    Settings settings_windows;
 
     void run() {
+        LOAD_LIB_2(settings_windows.library, "windows.cfg");
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize3);
@@ -411,6 +414,7 @@ private:
         TEST_CASE(platformUnix64);
         TEST_CASE(platformWin32AStringCat); // ticket #5015
         TEST_CASE(platformWin32WStringCat); // ticket #5015
+        TEST_CASE(platformWinWithNamespace);
 
         TEST_CASE(simplifyMathFunctions); // ticket #5031
         TEST_CASE(simplifyMathFunctions_sqrt);
@@ -478,6 +482,36 @@ private:
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+        if (simplify)
+            tokenizer.simplifyTokenList2();
+
+        // filter out ValueFlow messages..
+        const std::string debugwarnings = errout.str();
+        errout.str("");
+        std::istringstream istr2(debugwarnings.c_str());
+        std::string line;
+        while (std::getline(istr2,line)) {
+            if (line.find("ValueFlow") == std::string::npos)
+                errout << line << "\n";
+        }
+
+        if (tokenizer.tokens())
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+        else
+            return "";
+    }
+
+    std::string tokenizeAndStringifyWindows(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
+        errout.str("");
+
+        settings_windows.debugwarnings = true;
+        settings_windows.platform(platform);
+        settings_windows.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
+
+        // tokenize..
+        Tokenizer tokenizer(&settings_windows, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         if (simplify)
@@ -6323,10 +6357,10 @@ private:
                                 "const wchar_t * lpcwstr ;";
 
         // These types should be defined the same on all Windows platforms
-        std::string win32A = tokenizeAndStringify(code, true, true, Settings::Win32A);
+        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
-        ASSERT_EQUALS(win32A, tokenizeAndStringify(code, true, true, Settings::Win32W));
-        ASSERT_EQUALS(win32A, tokenizeAndStringify(code, true, true, Settings::Win64));
+        ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
+        ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));
     }
 
     void platformWin32() {
@@ -6397,9 +6431,9 @@ private:
                                 "int int_ptr ;";
 
         // These types should be defined the same on all Win32 platforms
-        std::string win32A = tokenizeAndStringify(code, true, true, Settings::Win32A);
+        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
-        ASSERT_EQUALS(win32A, tokenizeAndStringify(code, true, true, Settings::Win32W));
+        ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
     }
 
     void platformWin32A() {
@@ -6444,8 +6478,8 @@ private:
                                 "scanf ( \"%s\" , dst ) ; "
                                 "sscanf ( dst , \"%s\" , dst ) ; "
                                 "} "
-                                "unsigned short tbyte ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32A));
+                                "unsigned char tbyte ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, false, true, Settings::Win32A));
     }
 
     void platformWin32W() {
@@ -6476,7 +6510,7 @@ private:
                                 "wchar_t * lptstr ; "
                                 "const wchar_t * pctstr ; "
                                 "const wchar_t * lpctstr ; "
-                                "unsigned char tbyte ; "
+                                "unsigned wchar_t tbyte ; "
                                 "void foo ( ) { "
                                 "wchar_t tc ; tc = L\'c\' ; "
                                 "wchar_t src [ 10 ] = L\"123456789\" ; "
@@ -6491,7 +6525,7 @@ private:
                                 "wscanf ( L\"%s\" , dst ) ; "
                                 "swscanf ( dst , L\"%s\" , dst ) ; "
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false, true, Settings::Win32W));
+        ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, false, true, Settings::Win32W));
     }
 
     void platformWin64() {
@@ -6561,7 +6595,7 @@ private:
                                 "int half_ptr ; "
                                 "long long int_ptr ;";
 
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win64));
+        ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));
     }
 
     void platformUnix32() {
@@ -6659,13 +6693,23 @@ private:
     void platformWin32AStringCat() { //#5150
         const char code[] = "TCHAR text[] = _T(\"123\") _T(\"456\") _T(\"789\");";
         const char expected[] = "char text [ 10 ] = \"123456789\" ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32A));
+        ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, true, true, Settings::Win32A));
     }
 
     void platformWin32WStringCat() { //#5150
         const char code[] = "TCHAR text[] = _T(\"123\") _T(\"456\") _T(\"789\");";
         const char expected[] = "wchar_t text [ 10 ] = L\"123456789\" ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Win32W));
+        ASSERT_EQUALS(expected, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
+    }
+
+    void platformWinWithNamespace() {
+        const char code1[] = "UINT32 a; ::UINT32 b; foo::UINT32 c;";
+        const char expected1[] = "unsigned int a ; unsigned int b ; foo :: UINT32 c ;";
+        ASSERT_EQUALS(expected1, tokenizeAndStringifyWindows(code1, true, true, Settings::Win32A));
+
+        const char code2[] = "LPCVOID a; ::LPCVOID b; foo::LPCVOID c;";
+        const char expected2[] = "const void * a ; const void * b ; foo :: LPCVOID c ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringifyWindows(code2, true, true, Settings::Win32A));
     }
 
     void isZeroNumber() const {

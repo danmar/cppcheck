@@ -219,3 +219,21 @@ bool Path::isHeader(const std::string &path)
     const std::string extension = getFilenameExtensionInLowerCase(path);
     return (extension.compare(0, 2, ".h") == 0);
 }
+
+std::string Path::getAbsoluteFilePath(const std::string& filePath)
+{
+    std::string absolute_path;
+#if defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
+    char * absolute = realpath(filePath.c_str(), NULL);
+    if (absolute)
+        absolute_path = absolute;
+    free(absolute);
+#elif defined(_WIN32)
+    char absolute[_MAX_PATH];
+    if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
+        absolute_path = absolute;
+#else
+#error Platform absolute path function needed
+#endif
+    return absolute_path;
+}

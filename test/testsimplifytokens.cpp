@@ -34,9 +34,11 @@ public:
 
 private:
     Settings settings_std;
+    Settings settings_windows;
 
     void run() {
         LOAD_LIB_2(settings_std.library, "std.cfg");
+        LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         // Make sure the Tokenizer::simplifyTokenList works.
         // The order of the simplifications is important. So this test
@@ -288,6 +290,22 @@ private:
         settings.addEnabled("portability");
         settings.platform(type);
         Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        if (simplify)
+            tokenizer.simplifyTokenList2();
+
+        return tokenizer.tokens()->stringifyList(0, !simplify);
+    }
+
+    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+        errout.str("");
+
+        settings_windows.addEnabled("portability");
+        settings_windows.platform(type);
+        Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -897,7 +915,7 @@ private:
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
         ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", tok(code, true, Settings::Unspecified));
-        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", tok(code, true, Settings::Win32A));
+        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", tokWithWindows(code, true, Settings::Win32A));
     }
 
     void sizeof8() {

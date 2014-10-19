@@ -105,6 +105,13 @@ public:
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
+      * @brief Get an absolute file path from a relative one.
+      * @param filePath File path to be made absolute.
+      * @return absolute path, if possible. Otherwise an empty path is returned
+      */
+    static std::string getAbsoluteFilePath(const std::string& filePath);
+
+    /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional

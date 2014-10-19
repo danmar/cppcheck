@@ -33,6 +33,7 @@ private:
 
     void run() {
         LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(coutCerrMisusage);
 
@@ -51,8 +52,6 @@ private:
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
         TEST_CASE(testPosixPrintfScanfParameterPosition);  // #4900
-
-        LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
         TEST_CASE(testMicrosoftScanfArgument);
@@ -3213,6 +3212,18 @@ private:
               "    printf(\"%Ix %Ix %Ix\", lp, wp, lr);\n"
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(UINT32 a, ::UINT32 b, Fred::UINT32 c) {\n"
+              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "};\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
+                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout.str());
+
+        check("void foo(LPCVOID a, ::LPCVOID b, Fred::LPCVOID c) {\n"
+              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "};\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
+                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
 
     }
 

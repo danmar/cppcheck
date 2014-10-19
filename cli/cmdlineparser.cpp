@@ -534,6 +534,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             case Library::UNSUPPORTED_FORMAT:
                 errmsg = "File is of unsupported format version";
                 break;
+            case Library::DUPLICATE_PLATFORM_TYPE:
+                errmsg = "Duplicate platform type";
+                break;
+            case Library::PLATFORM_TYPE_REDEFINED:
+                errmsg = "Platform type redefined";
+                break;
             }
             if (!err.reason.empty())
                 errmsg += " '" + err.reason + "'";
