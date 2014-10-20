@@ -834,6 +834,27 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
 
+        // pointer/reference to x
+        code = "int f(void) {\n"
+               "  int x = 2;\n"
+               "  int *px = &x;\n"
+               "  for (int i = 0; i < 1; i++) {\n"
+               "    *px = 1;\n"
+               "  }\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 2));
+
+        code = "int f(void) {\n"
+               "  int x = 5;\n"
+               "  int &rx = x;\n"
+               "  for (int i = 0; i < 1; i++) {\n"
+               "    rx = 1;\n"
+               "  }\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 5));
+
         // break
         code = "void f() {\n"
                "  for (;;) {\n"

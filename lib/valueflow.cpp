@@ -946,6 +946,20 @@ static bool valueFlowForward(Token * const               startToken,
                     setTokenValue(tok2, *it);
             }
 
+            // bailout if address of var is taken..
+            if (tok2->astParent() && tok2->astParent()->str() == "&" && !tok2->astParent()->astOperand2()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "Taking address of " + tok2->str());
+                return false;
+            }
+
+            // bailout if reference is created..
+            if (tok2->astParent() && Token::Match(tok2->astParent()->tokAt(-2), "& %var% =")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "Reference of " + tok2->str());
+                return false;
+            }
+
             // assigned by subfunction?
             bool inconclusive = false;
             if (bailoutFunctionPar(tok2, ValueFlow::Value(), settings, &inconclusive)) {
