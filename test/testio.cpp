@@ -3100,6 +3100,19 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
                       "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n", errout.str());
 
+        check("template <class T, size_t S>\n"
+              "struct Array {\n"
+              "    T data[S];\n"
+              "    T & operator [] (size_t i) { return data[i]; }\n"
+              "};\n"
+              "void foo() {\n"
+              "    Array<int, 10> array1;\n"
+              "    Array<float, 10> array2;\n"
+              "    printf(\"%u %u\", array1[0], array2[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:9]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'float'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
