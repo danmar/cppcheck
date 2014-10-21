@@ -8313,51 +8313,58 @@ void Tokenizer::cppcheckError(const Token *tok) const
     printDebugOutput();
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
+/**
+ * Helper function to check whether number is equal to integer constant X
+ * or floating point pattern X.0
+ * @param s the string to check
+ * @param intConstant the integer constant to check against
+ * @param floatConstant the string with stringified float constant to check against
+ * @return true in case s is equal to X or X.0 and false otherwise.
+ */
+static bool isNumberOneOf(const std::string &s, const MathLib::bigint& intConstant, const char* floatConstant)
+{
+    if (MathLib::isInt(s)) {
+        if (MathLib::toLongNumber(s) == intConstant)
+            return true;
+    } else if (MathLib::isFloat(s)) {
+        if (MathLib::toString(MathLib::toDoubleNumber(s)) == floatConstant)
+            return true;
+    }
+    return false;
+}
+
 // ------------------------------------------------------------------------
-// Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
-// @param s --> a string to check
+// Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
+// @param s the string to check
 // @return true in case s is zero and false otherwise.
 // ------------------------------------------------------------------------
 bool Tokenizer::isZeroNumber(const std::string &s)
 {
-    const bool isInteger = MathLib::isInt(s);
-    const bool isFloat = MathLib::isFloat(s);
-    const bool isZeroValue = ((isInteger && (MathLib::toLongNumber(s) == 0L)) // case: integer number
-                              || (isFloat && MathLib::toString(MathLib::toDoubleNumber(s)) == "0.0")); // case: float number
-
-    return isZeroValue;
+    return isNumberOneOf(s, 0L, "0.0");
 }
 
 // ------------------------------------------------------------------------
-// Helper function to check wether number is one (1 or 0.1E+1 or 1E+0) or not?
-// @param s --> a string to check
+// Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
+// @param s the string to check
 // @return true in case s is one and false otherwise.
 // ------------------------------------------------------------------------
 bool Tokenizer::isOneNumber(const std::string &s)
 {
-    const bool isPositive = MathLib::isPositive(s);
-    const bool isInteger = MathLib::isInt(s);
-    const bool isFloat = MathLib::isFloat(s);
-    const bool isZeroValue = ((isPositive && isInteger && (MathLib::toLongNumber(s) == 1L)) // case: integer number
-                              || (isPositive && isFloat && MathLib::toString(MathLib::toDoubleNumber(s)) == "1.0")); // case: float number
-
-    return isZeroValue;
+    if (!MathLib::isPositive(s))
+        return false;
+    return isNumberOneOf(s, 1L, "1.0");
 }
 
 // ------------------------------------------------------------------------
-// Helper function to check wether number is one (2 or 0.2E+1 or 2E+0) or not?
-// @param s --> a string to check
+// Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
+// @param s the string to check
 // @return true in case s is two and false otherwise.
 // ------------------------------------------------------------------------
 bool Tokenizer::isTwoNumber(const std::string &s)
 {
-    const bool isPositive = MathLib::isPositive(s);
-    const bool isInteger = MathLib::isInt(s);
-    const bool isFloat = MathLib::isFloat(s);
-    const bool isZeroValue = ((isPositive && isInteger && (MathLib::toLongNumber(s) == 2L)) // case: integer number
-                              || (isPositive && isFloat && MathLib::toString(MathLib::toDoubleNumber(s)) == "2.0")); // case: float number
-
-    return isZeroValue;
+    if (!MathLib::isPositive(s))
+        return false;
+    return isNumberOneOf(s, 2L, "2.0");
 }
 
 // ------------------------------------------------------
