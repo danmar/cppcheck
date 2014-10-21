@@ -79,6 +79,7 @@ private:
         TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar12); // ticket #5024 - crash
         TEST_CASE(testautovar13); // ticket #5537 - crash
+        TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -376,6 +377,17 @@ private:
               "    delete &UniqueRealDirs;\n"
               "   }\n"
               "};\n");
+    }
+
+    void testautovar14() { // Ticket #4776
+        check("void f(int x) {\n"
+              "label:"
+              "  if (x>0) {\n"
+              "    x = x >> 1;\n"
+              "    goto label;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1() {
