@@ -2130,6 +2130,10 @@ private:
         check("class X { static const int x[100]; };\n" // #6070
               "const int X::x[100] = {0};", false, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace { class X { static const int x[100]; };\n" // #6232
+              "const int X::x[100] = {0}; }", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_1_posix_functions() {

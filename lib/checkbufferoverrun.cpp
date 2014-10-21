@@ -698,8 +698,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
 {
-    // Declaration in global scope?
-    if (tok->scope()->type == Scope::eGlobal)
+    // Declaration in global scope or namespace?
+    if (tok->scope()->type == Scope::eGlobal || tok->scope()->type == Scope::eNamespace)
         return;
     /*
          {
