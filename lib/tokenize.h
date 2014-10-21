@@ -763,22 +763,22 @@ public:
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
-    * Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
+    * @param s the string to check
     * @return true in case is is zero and false otherwise.
     */
     static bool isZeroNumber(const std::string &s);
 
     /**
-    * Helper function to check wether number is one (1 or 0.1E+1 or 1E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
+    * @param s the string to check
     * @return true in case is is one and false otherwise.
     */
     static bool isOneNumber(const std::string &s);
 
     /**
-    * Helper function to check wether number is one (2 or 0.2E+1 or 2E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
+    * @param s the string to check
     * @return true in case is is two and false otherwise.
     */
     static bool isTwoNumber(const std::string &s);
