@@ -5662,8 +5662,6 @@ void Tokenizer::simplifyPlatformTypes()
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (tok->type() != Token::eType && tok->type() != Token::eName)
                 continue;
-            if (!tok->isUpperCaseName()) // All WinAPI types are uppercase. Reduce number of Token::Match calls by this condition.
-                continue;
 
             const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
 
@@ -5712,14 +5710,14 @@ void Tokenizer::simplifyStdType()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // long unsigned => unsigned long
-        if (Token::Match(tok, "char|short|int|long|__int8|__int16|__int32|__int64 unsigned|signed")) {
+        if (Token::Match(tok, "char|short|int|long unsigned|signed")) {
             bool isUnsigned = tok->next()->str() == "unsigned";
             tok->deleteNext();
             tok->isUnsigned(isUnsigned);
             tok->isSigned(!isUnsigned);
         }
 
-        else if (!Token::Match(tok, "unsigned|signed|char|short|int|long|__int8|__int16|__int32|__int64"))
+        else if (!Token::Match(tok, "unsigned|signed|char|short|int|long"))
             continue;
 
         // check if signed or unsigned specified
@@ -5727,7 +5725,7 @@ void Tokenizer::simplifyStdType()
             bool isUnsigned = tok->str() == "unsigned";
 
             // unsigned i => unsigned int i
-            if (!Token::Match(tok->next(), "char|short|int|long|__int8|__int16|__int32|__int64"))
+            if (!Token::Match(tok->next(), "char|short|int|long"))
                 tok->str("int");
             else
                 tok->deleteThis();
@@ -5735,20 +5733,7 @@ void Tokenizer::simplifyStdType()
             tok->isSigned(!isUnsigned);
         }
 
-        if (tok->str() == "__int8") {
-            tok->originalName(tok->str());
-            tok->str("char");
-        } else if (tok->str() == "__int16") {
-            tok->originalName(tok->str());
-            tok->str("short");
-        } else if (tok->str() == "__int32") {
-            tok->originalName(tok->str());
-            tok->str("int");
-        } else if (tok->str() == "__int64") {
-            tok->originalName(tok->str());
-            tok->str("long");
-            tok->isLong(true);
-        } else if (tok->str() == "int") {
+        if (tok->str() == "int") {
             if (tok->strAt(1) == "long") {
                 tok->str("long");
                 tok->deleteNext();

@@ -5459,16 +5459,16 @@ private:
         ASSERT_EQUALS("struct A { long x ; } ;", tokenizeAndStringify(code5,false));
 
         const char code6[] = "struct A { __int8 x : 3; };";
-        ASSERT_EQUALS("struct A { char x ; } ;", tokenizeAndStringify(code6,false));
+        ASSERT_EQUALS("struct A { char x ; } ;", tokenizeAndStringifyWindows(code6,false, true, Settings::Win32A));
 
         const char code7[] = "struct A { __int16 x : 3; };";
-        ASSERT_EQUALS("struct A { short x ; } ;", tokenizeAndStringify(code7,false));
+        ASSERT_EQUALS("struct A { short x ; } ;", tokenizeAndStringifyWindows(code7,false, true, Settings::Win32A));
 
         const char code8[] = "struct A { __int32 x : 3; };";
-        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringify(code8,false));
+        ASSERT_EQUALS("struct A { int x ; } ;", tokenizeAndStringifyWindows(code8,false, true, Settings::Win32A));
 
         const char code9[] = "struct A { __int64 x : 3; };";
-        ASSERT_EQUALS("struct A { long long x ; } ;", tokenizeAndStringify(code9,false));
+        ASSERT_EQUALS("struct A { long long x ; } ;", tokenizeAndStringifyWindows(code9,false, true, Settings::Win32A));
 
         const char code10[] = "struct A { unsigned char x : 3; };";
         ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringify(code10,false));
@@ -5483,16 +5483,16 @@ private:
         ASSERT_EQUALS("struct A { unsigned long x ; } ;", tokenizeAndStringify(code13,false));
 
         const char code14[] = "struct A { unsigned __int8 x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringify(code14,false));
+        ASSERT_EQUALS("struct A { unsigned char x ; } ;", tokenizeAndStringifyWindows(code14,false, true, Settings::Win32A));
 
         const char code15[] = "struct A { unsigned __int16 x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned short x ; } ;", tokenizeAndStringify(code15,false));
+        ASSERT_EQUALS("struct A { unsigned short x ; } ;", tokenizeAndStringifyWindows(code15,false, true, Settings::Win32A));
 
         const char code16[] = "struct A { unsigned __int32 x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned int x ; } ;", tokenizeAndStringify(code16,false));
+        ASSERT_EQUALS("struct A { unsigned int x ; } ;", tokenizeAndStringifyWindows(code16,false, true, Settings::Win32A));
 
         const char code17[] = "struct A { unsigned __int64 x : 3; };";
-        ASSERT_EQUALS("struct A { unsigned long long x ; } ;", tokenizeAndStringify(code17,false));
+        ASSERT_EQUALS("struct A { unsigned long long x ; } ;", tokenizeAndStringifyWindows(code17,false, true, Settings::Win32A));
 
         const char code18[] = "struct A { signed char x : 3; };";
         ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringify(code18,false));
@@ -5504,19 +5504,19 @@ private:
         ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringify(code20,false));
 
         const char code21[] = "struct A { signed long x : 3; };";
-        ASSERT_EQUALS("struct A { signed long x ; } ;", tokenizeAndStringify(code21,false));
+        ASSERT_EQUALS("struct A { signed long x ; } ;", tokenizeAndStringifyWindows(code21,false));
 
         const char code22[] = "struct A { signed __int8 x : 3; };";
-        ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringify(code22,false));
+        ASSERT_EQUALS("struct A { signed char x ; } ;", tokenizeAndStringifyWindows(code22,false, true, Settings::Win32A));
 
         const char code23[] = "struct A { signed __int16 x : 3; };";
-        ASSERT_EQUALS("struct A { signed short x ; } ;", tokenizeAndStringify(code23,false));
+        ASSERT_EQUALS("struct A { signed short x ; } ;", tokenizeAndStringifyWindows(code23,false, true, Settings::Win32A));
 
         const char code24[] = "struct A { signed __int32 x : 3; };";
-        ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringify(code24,false));
+        ASSERT_EQUALS("struct A { signed int x ; } ;", tokenizeAndStringifyWindows(code24,false, true, Settings::Win32A));
 
         const char code25[] = "struct A { signed __int64 x : 3; };";
-        ASSERT_EQUALS("struct A { signed long long x ; } ;", tokenizeAndStringify(code25,false));
+        ASSERT_EQUALS("struct A { signed long long x ; } ;", tokenizeAndStringifyWindows(code25,false, true, Settings::Win32A));
     }
 
     void bitfields2() {
