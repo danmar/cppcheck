@@ -2393,6 +2393,16 @@ private:
 
         ASSERT_EQUALS("void foo ( ) { exit ( 0 ) ; }",
                       tokWithStdLib("void foo() { do { exit(0); } while (true); }"));
+
+        // #6187
+        tokWithStdLib("void foo() {\n"
+                      "  goto label;\n"
+                      "  for (int i = 0; i < 0; ++i) {\n"
+                      "    ;\n"
+                      "label:\n"
+                      "    ;\n"
+                      "  }\n"
+                      "}");
     }
 
     void strcat1() {
