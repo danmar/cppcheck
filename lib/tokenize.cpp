@@ -8967,10 +8967,13 @@ void Tokenizer::simplifyWhile0()
 
         // remove "while (0) { .. }"
         if (Token::simpleMatch(tok->next()->link(), ") {")) {
-            Token *end = tok->next()->link();
+            Token *end = tok->next()->link(), *old_prev = tok->previous();
             end = end->next()->link();
-            tok = tok->previous();
-            eraseDeadCode(tok, end->next());
+            eraseDeadCode(old_prev, end->next());
+            if (old_prev && old_prev->next())
+                tok = old_prev->next();
+            else
+                break;
         }
     }
 }
