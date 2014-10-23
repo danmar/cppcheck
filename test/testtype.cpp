@@ -79,6 +79,12 @@ private:
               "   return (long long)x << 40;\n"
               "}",&settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "  QList<int> someList;\n"
+              "  someList << 300;\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {

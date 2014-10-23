@@ -124,7 +124,7 @@ void CheckType::checkTooBigBitwiseShift()
                     lhsbits = _settings->sizeof_int * 8;
                     break;
                 }
-                if (type == var->typeEndToken())
+                if (type == var->typeEndToken() || type->str() == "<")
                     break;
             }
             if (lhsbits == 0)
