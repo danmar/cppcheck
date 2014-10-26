@@ -1,0 +1,57 @@
+<!ELEMENT def (platformtype*,
+               define*,
+               function*,
+               memory*,
+               resource*,
+               podtype*)>
+<!ATTLIST def format CDATA "1">
+
+<!ELEMENT platformtype (platform+)>
+<!ATTLIST platformtype name CDATA #REQUIRED>
+<!ATTLIST platformtype value CDATA #REQUIRED>
+
+<!ELEMENT platform EMPTY>
+<!ATTLIST platform type CDATA #REQUIRED>
+
+<!ELEMENT define EMPTY>
+<!ATTLIST define name CDATA #REQUIRED>
+<!ATTLIST define value CDATA #REQUIRED>
+
+<!ELEMENT function (leak-ignore?,
+                    (noreturn|use-retval)?,
+                    arg*)>
+<!ATTLIST function name NMTOKEN #REQUIRED>
+
+<!ELEMENT leak-ignore EMPTY>
+
+<!ELEMENT noreturn EMPTY>
+
+<!ELEMENT use-retval EMPTY>
+
+<!ELEMENT arg (not-bool?,
+               not-uninit?,
+               not-null?,
+               formatstr?,
+               valid?)>
+<!ATTLIST arg nr CDATA #REQUIRED>
+
+<!ELEMENT not-bool EMPTY>
+
+<!ELEMENT not-uninit EMPTY>
+
+<!ELEMENT not-null EMPTY>
+
+<!ELEMENT formatstr EMPTY>
+
+<!ELEMENT valid ANY>
+
+<!ELEMENT memory (alloc+,
+                  dealloc*)>
+<!ELEMENT resource (alloc+,
+                    dealloc*)>
+<!ATTLIST alloc init CDATA "true">
+
+<!ELEMENT podtype EMPTY>
+<!ATTLIST podtype name NMTOKEN #REQUIRED>
+<!ATTLIST podtype sign NMTOKEN #REQUIRED>
+<!ATTLIST podtype size CDATA #REQUIRED>
