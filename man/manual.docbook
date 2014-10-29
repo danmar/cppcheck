@@ -849,7 +849,7 @@ Checking noreturn.c...
     <section>
       <title>use-retval</title>
 
-      <para>Per default, cppcheck assumes that ignoring the return value of a function is ok:</para>
+      <para>As long as nothing else is specified, cppcheck assumes that ignoring the return value of a function is ok:</para>
 
       <programlisting>bool test(const char* a, const char* b)
 {
@@ -877,6 +877,47 @@ Checking useretval.c...
     &lt;use-retval/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>define</title>
+
+      <para>Libraries can be used to define preprocessor macros as well. For example:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;define name="NULL_VALUE" value="0"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Each occurence of "NULL_VALUE" in the code would then be replaced by "0" at preprocessor stage.</para>
+    </section>
+
+    <section>
+      <title>podtype</title>
+
+      <para>Lots of code relies on typedefs providing platform independant types. "podtype"-tags can be used to provide necessary information to cppcheck to support them. Without further information, cppcheck does not understand the type "uint16_t" in the following example:</para>
+
+      <programlisting>void test() {
+    uint16_t a;
+}</programlisting>
+
+      <para>No message about variable 'a' being unused is printed:</para>
+
+      <programlisting># cppcheck --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...</programlisting>
+
+      <para>If uint16_t is defined in a library as follows, the result improves:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;podtype name="uint16_t" sign="u" size="2"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>The size of the type is specified in bytes. Possible values for the "sign" attribute are "s" (signed) and "u" (unsigned). Both attributes are optional. Using this library, cppcheck prints:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...
+[unusedvar.cpp:2]: (style) Unused variable: a</programlisting>
     </section>
 
     <section>
