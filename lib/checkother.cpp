@@ -2757,7 +2757,7 @@ void CheckOther::checkReturnIgnoredReturnValue()
             if (tok->varId() || !Token::Match(tok, "%var% (") || tok->strAt(-1) == ".")
                 continue;
 
-            if (!tok->next()->astParent() && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
+            if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %var%")) && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
                 ignoredReturnValueError(tok, tok->str());
         }
     }

@@ -6265,6 +6265,18 @@ private:
               "}", "test.cpp", false, false, false, true, &settings_std);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strcmp() is not used.\n", errout.str());
 
+        check("bool strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition, but it returns a value. Assume it is the one specified in the library.
+              "void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+
+        check("void strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition which returns void!
+              "void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo() {\n"
               "    return strcmp(a, b);\n"
               "}", "test.cpp", false, false, false, true, &settings_std);
