@@ -2797,9 +2797,32 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
  */
 const Function* Scope::findFunction(const Token *tok) const
 {
-    for (std::list<Function>::const_iterator i = functionList.begin(); i != functionList.end(); ++i) {
-        if (i->tokenDef->str() == tok->str()) {
-            const Function *func = &*i;
+    std::list<Function>::const_iterator it;
+
+    // check for the actual definiton or declaration
+    for (it = functionList.begin(); it != functionList.end(); ++it) {
+        if (it->tokenDef == tok || it->token == tok)
+            return &*it;
+    }
+
+    // check in base classes
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
+        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
+            const Type *base = definedType->derivedFrom[i].type;
+            if (base && base->classScope) {
+                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
+                    continue;
+                const Function * func = base->classScope->findFunction(tok);
+                if (func)
+                    return func;
+            }
+        }
+    }
+
+    // this is a function call so try to find it based on name and arguments
+    for (it = functionList.begin(); it != functionList.end(); ++it) {
+        if (it->tokenDef->str() == tok->str()) {
+            const Function *func = &*it;
             if ((tok->strAt(1) == "(" || (func->name() == tok->str() && tok->strAt(1) == "{" && func->type == Function::eConstructor)) && tok->tokAt(2)) {
                 std::string end(tok->strAt(1) == "{" ? "}" : ")");
                 // check the arguments
@@ -2830,21 +2853,7 @@ const Function* Scope::findFunction(const Token *tok) const
         }
     }
 
-    // check in base classes
-    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
-        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
-            const Type *base = definedType->derivedFrom[i].type;
-            if (base && base->classScope) {
-                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
-                    continue;
-                const Function * func = base->classScope->findFunction(tok);
-                if (func)
-                    return func;
-            }
-        }
-    }
-
-    return 0;
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------
