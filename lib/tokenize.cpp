@@ -2885,9 +2885,8 @@ void Tokenizer::createLinks2()
             if (token->str() == ">>" && type.size() < 2)
                 continue;
 
-            // if > is followed by ; .. "new a<b>;" is expected
             // if > is followed by [ .. "new a<b>[" is expected
-            if (Token::Match(token->next(), ";|[")) {
+            if (token->strAt(1) == "[") {
                 Token *prev = type.top()->previous();
                 while (prev && Token::Match(prev->previous(), ":: %var%"))
                     prev = prev->tokAt(-2);

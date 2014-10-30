@@ -4887,6 +4887,21 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            // #6242
+            const char code[] = "func = integral_<uchar, int, double>;";
+            errout.str("");
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->tokAt(3) == tok->linkAt(9));
+            ASSERT_EQUALS(true, tok->linkAt(3) == tok->tokAt(9));
+
+            ASSERT_EQUALS("", errout.str());
+        }
 
         {
             // if (a < b || c > d) { }
