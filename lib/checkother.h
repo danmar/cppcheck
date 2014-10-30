@@ -73,7 +73,7 @@ public:
         checkOther.checkVarFuncNullUB();
         checkOther.checkNanInArithmeticExpression();
         checkOther.checkCommaSeparatedReturn();
-        checkOther.checkReturnIgnoredReturnValue();
+        checkOther.checkIgnoredReturnValue();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -231,7 +231,7 @@ public:
     void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
     /** @brief %Check for ignored return values. */
-    void checkReturnIgnoredReturnValue();
+    void checkIgnoredReturnValue();
 
 private:
     // Error messages..

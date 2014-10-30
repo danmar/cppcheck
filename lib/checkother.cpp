@@ -2744,7 +2744,7 @@ void CheckOther::varFuncNullUBError(const Token *tok)
 //---------------------------------------------------------------------------
 // Check for ignored return values.
 //---------------------------------------------------------------------------
-void CheckOther::checkReturnIgnoredReturnValue()
+void CheckOther::checkIgnoredReturnValue()
 {
     if (!_settings->isEnabled("warning"))
         return;
@@ -2754,8 +2754,11 @@ void CheckOther::checkReturnIgnoredReturnValue()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (tok->varId() || !Token::Match(tok, "%var% (") || tok->strAt(-1) == ".")
+            if (tok->varId() || !Token::Match(tok, "%var% (") || tok->strAt(-1) == "." || tok->next()->astOperand1() != tok)
                 continue;
+
+            if (!tok->scope()->isExecutable())
+                tok = tok->scope()->classEnd;
 
             if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %var%")) && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
                 ignoredReturnValueError(tok, tok->str());
