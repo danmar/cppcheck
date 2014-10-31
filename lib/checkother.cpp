@@ -998,45 +998,49 @@ void CheckOther::checkSuspiciousEqualityComparison()
     if (!_settings->isEnabled("warning") || !_settings->inconclusive)
         return;
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "for (")) {
+                const Token* const openParen = tok->next();
+                const Token* const closeParen = tok->linkAt(1);
 
-        if (Token::simpleMatch(tok, "for (")) {
-            const Token* const openParen = tok->next();
-            const Token* const closeParen = tok->linkAt(1);
+                // Search for any suspicious equality comparison in the initialization
+                // or increment-decrement parts of the for() loop.
+                // For example:
+                //    for (i == 2; i < 10; i++)
+                // or
+                //    for (i = 0; i < 10; i == a)
+                if (Token::Match(openParen->next(), "%var% =="))
+                    suspiciousEqualityComparisonError(openParen->tokAt(2));
+                if (Token::Match(closeParen->tokAt(-2), "== %any%"))
+                    suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
-            // Search for any suspicious equality comparison in the initialization
-            // or increment-decrement parts of the for() loop.
-            // For example:
-            //    for (i == 2; i < 10; i++)
-            // or
-            //    for (i = 0; i < 10; i == a)
-            if (Token::Match(openParen->next(), "%var% =="))
-                suspiciousEqualityComparisonError(openParen->tokAt(2));
-            if (Token::Match(closeParen->tokAt(-2), "== %any%"))
-                suspiciousEqualityComparisonError(closeParen->tokAt(-2));
+                // Equality comparisons with 0 are simplified to negation. For instance,
+                // (x == 0) is simplified to (!x), so also check for suspicious negation
+                // in the initialization or increment-decrement parts of the for() loop.
+                // For example:
+                //    for (!i; i < 10; i++)
+                if (Token::Match(openParen->next(), "! %var%"))
+                    suspiciousEqualityComparisonError(openParen->next());
+                if (Token::Match(closeParen->tokAt(-2), "! %var%"))
+                    suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
-            // Equality comparisons with 0 are simplified to negation. For instance,
-            // (x == 0) is simplified to (!x), so also check for suspicious negation
-            // in the initialization or increment-decrement parts of the for() loop.
-            // For example:
-            //    for (!i; i < 10; i++)
-            if (Token::Match(openParen->next(), "! %var%"))
-                suspiciousEqualityComparisonError(openParen->next());
-            if (Token::Match(closeParen->tokAt(-2), "! %var%"))
-                suspiciousEqualityComparisonError(closeParen->tokAt(-2));
+                // Skip over for() loop conditions because "for (;running==1;)"
+                // is a bit strange, but not necessarily incorrect.
+                tok = closeParen;
+            } else if (Token::Match(tok, "[;{}] *| %var% == %any% ;")) {
 
-            // Skip over for() loop conditions because "for (;running==1;)"
-            // is a bit strange, but not necessarily incorrect.
-            tok = closeParen;
-        } else if (Token::Match(tok, "[;{}] *| %var% == %any% ;")) {
-
-            // Exclude compound statements surrounded by parentheses, such as
-            //    printf("%i\n", ({x==0;}));
-            // because they may appear as an expression in GNU C/C++.
-            // See http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
-            const Token* afterStatement = tok->strAt(1) == "*" ? tok->tokAt(6) : tok->tokAt(5);
-            if (!Token::simpleMatch(afterStatement, "} )"))
-                suspiciousEqualityComparisonError(tok->next());
+                // Exclude compound statements surrounded by parentheses, such as
+                //    printf("%i\n", ({x==0;}));
+                // because they may appear as an expression in GNU C/C++.
+                // See http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
+                const Token* afterStatement = tok->strAt(1) == "*" ? tok->tokAt(6) : tok->tokAt(5);
+                if (!Token::simpleMatch(afterStatement, "} )"))
+                    suspiciousEqualityComparisonError(tok->next());
+            }
         }
     }
 }
@@ -2027,58 +2031,64 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 void CheckOther::checkInvalidFree()
 {
     std::map<unsigned int, bool> allocatedVariables;
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
 
-        // Keep track of which variables were assigned addresses to newly-allocated memory
-        if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
-            allocatedVariables.insert(std::make_pair(tok->varId(), false));
-        }
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
 
-        // If a previously-allocated pointer is incremented or decremented, any subsequent
-        // free involving pointer arithmetic may or may not be invalid, so we should only
-        // report an inconclusive result.
-        else if (Token::Match(tok, "%var% = %var% +|-") &&
-                 tok->varId() == tok->tokAt(2)->varId() &&
-                 allocatedVariables.find(tok->varId()) != allocatedVariables.end()) {
-            if (_settings->inconclusive)
-                allocatedVariables[tok->varId()] = true;
-            else
-                allocatedVariables.erase(tok->varId());
-        }
-
-        // If a previously-allocated pointer is assigned a completely new value,
-        // we can't know if any subsequent free() on that pointer is valid or not.
-        else if (Token::Match(tok, "%var% =")) {
-            allocatedVariables.erase(tok->varId());
-        }
-
-        // If a variable that was previously assigned a newly-allocated memory location is
-        // added or subtracted from when used to free the memory, report an error.
-        else if (Token::Match(tok, "free|g_free|delete ( %any% +|- %any%") ||
-                 Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
-                 Token::Match(tok, "delete %any% +|- %any%")) {
-
-            const int varIndex = tok->strAt(1) == "(" ? 2 :
-                                 tok->strAt(3) == "(" ? 4 : 1;
-            const unsigned int var1 = tok->tokAt(varIndex)->varId();
-            const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
-            const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
-            const std::map<unsigned int, bool>::iterator alloc2 = allocatedVariables.find(var2);
-            if (alloc1 != allocatedVariables.end()) {
-                invalidFreeError(tok, alloc1->second);
-            } else if (alloc2 != allocatedVariables.end()) {
-                invalidFreeError(tok, alloc2->second);
+            // Keep track of which variables were assigned addresses to newly-allocated memory
+            if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
+                allocatedVariables.insert(std::make_pair(tok->varId(), false));
             }
-        }
 
-        // If the previously-allocated variable is passed in to another function
-        // as a parameter, it might be modified, so we shouldn't report an error
-        // if it is later used to free memory
-        else if (Token::Match(tok, "%var% (") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
-            const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
-            while (tok2 != nullptr) {
-                allocatedVariables.erase(tok2->varId());
-                tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
+            // If a previously-allocated pointer is incremented or decremented, any subsequent
+            // free involving pointer arithmetic may or may not be invalid, so we should only
+            // report an inconclusive result.
+            else if (Token::Match(tok, "%var% = %var% +|-") &&
+                     tok->varId() == tok->tokAt(2)->varId() &&
+                     allocatedVariables.find(tok->varId()) != allocatedVariables.end()) {
+                if (_settings->inconclusive)
+                    allocatedVariables[tok->varId()] = true;
+                else
+                    allocatedVariables.erase(tok->varId());
+            }
+
+            // If a previously-allocated pointer is assigned a completely new value,
+            // we can't know if any subsequent free() on that pointer is valid or not.
+            else if (Token::Match(tok, "%var% =")) {
+                allocatedVariables.erase(tok->varId());
+            }
+
+            // If a variable that was previously assigned a newly-allocated memory location is
+            // added or subtracted from when used to free the memory, report an error.
+            else if (Token::Match(tok, "free|g_free|delete ( %any% +|- %any%") ||
+                     Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
+                     Token::Match(tok, "delete %any% +|- %any%")) {
+
+                const int varIndex = tok->strAt(1) == "(" ? 2 :
+                                     tok->strAt(3) == "(" ? 4 : 1;
+                const unsigned int var1 = tok->tokAt(varIndex)->varId();
+                const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
+                const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
+                const std::map<unsigned int, bool>::iterator alloc2 = allocatedVariables.find(var2);
+                if (alloc1 != allocatedVariables.end()) {
+                    invalidFreeError(tok, alloc1->second);
+                } else if (alloc2 != allocatedVariables.end()) {
+                    invalidFreeError(tok, alloc2->second);
+                }
+            }
+
+            // If the previously-allocated variable is passed in to another function
+            // as a parameter, it might be modified, so we shouldn't report an error
+            // if it is later used to free memory
+            else if (Token::Match(tok, "%var% (") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
+                const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
+                while (tok2 != nullptr) {
+                    allocatedVariables.erase(tok2->varId());
+                    tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
+                }
             }
         }
     }
@@ -2099,92 +2109,97 @@ void CheckOther::checkDoubleFree()
     std::set<unsigned int> freedVariables;
     std::set<unsigned int> closeDirVariables;
 
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
-        // and report an error if the same variable is passed twice.
-        if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
-            const unsigned int varId = tok->tokAt(2)->varId();
-            if (varId) {
-                if (Token::Match(tok, "free|g_free")) {
-                    if (freedVariables.find(varId) != freedVariables.end())
-                        doubleFreeError(tok, tok->strAt(2));
-                    else
-                        freedVariables.insert(varId);
-                } else if (tok->str() == "closedir") {
-                    if (closeDirVariables.find(varId) != closeDirVariables.end())
-                        doubleCloseDirError(tok, tok->strAt(2));
-                    else
-                        closeDirVariables.insert(varId);
-                }
-            }
-        }
-
-        // Keep track of any variables operated on by "delete" or "delete[]"
-        // and report an error if the same variable is delete'd twice.
-        else if (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")) {
-            const int varIndex = (tok->strAt(1) == "[") ? 3 : 1;
-            const unsigned int varId = tok->tokAt(varIndex)->varId();
-            if (varId) {
-                if (freedVariables.find(varId) != freedVariables.end())
-                    doubleFreeError(tok, tok->strAt(varIndex));
-                else
-                    freedVariables.insert(varId);
-            }
-        }
-
-        // If this scope doesn't return, clear the set of previously freed variables
-        else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok)) {
-            freedVariables.clear();
-            closeDirVariables.clear();
-        }
-
-        // If this scope is a "for" or "while" loop that contains "break" or "continue",
-        // give up on trying to figure out the flow of execution and just clear the set
-        // of previously freed variables.
-        // TODO: There are false negatives. This bailout is only needed when the
-        // loop will exit without free()'ing the memory on the last iteration.
-        else if (tok->str() == "}" && tok->link() && tok->link()->previous() &&
-                 tok->link()->linkAt(-1) &&
-                 Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
-                 Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != nullptr) {
-            freedVariables.clear();
-            closeDirVariables.clear();
-        }
-
-        // If a variable is passed to a function, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% (") && _settings->library.leakignore.find(tok->str()) == _settings->library.leakignore.end()) {
-
-            // If this is a new function definition, clear all variables
-            if (Token::simpleMatch(tok->next()->link(), ") {")) {
-                freedVariables.clear();
-                closeDirVariables.clear();
-            }
-            // If it is a function call, then clear those variables in its argument list
-            else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
-                for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
-                    const unsigned int varId = tok2->varId();
-                    if (varId) {
-                        freedVariables.erase(varId);
-                        closeDirVariables.erase(varId);
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // Keep track of any variables passed to "free()", "g_free()" or "closedir()",
+            // and report an error if the same variable is passed twice.
+            if (Token::Match(tok, "free|g_free|closedir ( %var% )")) {
+                const unsigned int varId = tok->tokAt(2)->varId();
+                if (varId) {
+                    if (Token::Match(tok, "free|g_free")) {
+                        if (freedVariables.find(varId) != freedVariables.end())
+                            doubleFreeError(tok, tok->strAt(2));
+                        else
+                            freedVariables.insert(varId);
+                    } else if (tok->str() == "closedir") {
+                        if (closeDirVariables.find(varId) != closeDirVariables.end())
+                            doubleCloseDirError(tok, tok->strAt(2));
+                        else
+                            closeDirVariables.insert(varId);
                     }
                 }
             }
-        }
 
-        // If a pointer is assigned a new value, remove it from the set of previously freed variables
-        else if (Token::Match(tok, "%var% =")) {
-            const unsigned int varId = tok->varId();
-            if (varId) {
-                freedVariables.erase(varId);
-                closeDirVariables.erase(varId);
+            // Keep track of any variables operated on by "delete" or "delete[]"
+            // and report an error if the same variable is delete'd twice.
+            else if (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")) {
+                const int varIndex = (tok->strAt(1) == "[") ? 3 : 1;
+                const unsigned int varId = tok->tokAt(varIndex)->varId();
+                if (varId) {
+                    if (freedVariables.find(varId) != freedVariables.end())
+                        doubleFreeError(tok, tok->strAt(varIndex));
+                    else
+                        freedVariables.insert(varId);
+                }
             }
-        }
 
-        // Any control statements in-between delete, free() or closedir() statements
-        // makes it unclear whether any subsequent statements would be redundant.
-        if (Token::Match(tok, "if|else|for|while|break|continue|goto|return|throw|switch")) {
-            freedVariables.clear();
-            closeDirVariables.clear();
+            // If this scope doesn't return, clear the set of previously freed variables
+            else if (tok->str() == "}" && _tokenizer->IsScopeNoReturn(tok)) {
+                freedVariables.clear();
+                closeDirVariables.clear();
+            }
+
+            // If this scope is a "for" or "while" loop that contains "break" or "continue",
+            // give up on trying to figure out the flow of execution and just clear the set
+            // of previously freed variables.
+            // TODO: There are false negatives. This bailout is only needed when the
+            // loop will exit without free()'ing the memory on the last iteration.
+            else if (tok->str() == "}" && tok->link() && tok->link()->previous() &&
+                     tok->link()->linkAt(-1) &&
+                     Token::Match(tok->link()->linkAt(-1)->previous(), "while|for") &&
+                     Token::findmatch(tok->link()->linkAt(-1), "break|continue ;", tok) != nullptr) {
+                freedVariables.clear();
+                closeDirVariables.clear();
+            }
+
+            // If a variable is passed to a function, remove it from the set of previously freed variables
+            else if (Token::Match(tok, "%var% (") && _settings->library.leakignore.find(tok->str()) == _settings->library.leakignore.end()) {
+
+                // If this is a new function definition, clear all variables
+                if (Token::simpleMatch(tok->next()->link(), ") {")) {
+                    freedVariables.clear();
+                    closeDirVariables.clear();
+                }
+                // If it is a function call, then clear those variables in its argument list
+                else if (Token::simpleMatch(tok->next()->link(), ") ;")) {
+                    for (const Token* tok2 = tok->tokAt(2); tok2 != tok->linkAt(1); tok2 = tok2->next()) {
+                        const unsigned int varId = tok2->varId();
+                        if (varId) {
+                            freedVariables.erase(varId);
+                            closeDirVariables.erase(varId);
+                        }
+                    }
+                }
+            }
+
+            // If a pointer is assigned a new value, remove it from the set of previously freed variables
+            else if (Token::Match(tok, "%var% =")) {
+                const unsigned int varId = tok->varId();
+                if (varId) {
+                    freedVariables.erase(varId);
+                    closeDirVariables.erase(varId);
+                }
+            }
+
+            // Any control statements in-between delete, free() or closedir() statements
+            // makes it unclear whether any subsequent statements would be redundant.
+            if (Token::Match(tok, "if|else|for|while|break|continue|goto|return|throw|switch")) {
+                freedVariables.clear();
+                closeDirVariables.clear();
+            }
         }
     }
 }
@@ -2375,14 +2390,20 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
 //-----------------------------------------------------------------------------
 void CheckOther::redundantGetAndSetUserId()
 {
-    if (_settings->isEnabled("warning")
-        && _settings->standards.posix) {
+    if (!_settings->standards.posix || !_settings->isEnabled("warning"))
+        return;
 
-        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        // check all the code in the function
+        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "setuid ( getuid ( ) )")
-                ||  Token::simpleMatch(tok, "seteuid ( geteuid ( ) )")
-                ||  Token::simpleMatch(tok, "setgid ( getgid ( ) )")
-                ||  Token::simpleMatch(tok, "setegid ( getegid ( ) )")) {
+                || Token::simpleMatch(tok, "seteuid ( geteuid ( ) )")
+                || Token::simpleMatch(tok, "setgid ( getgid ( ) )")
+                || Token::simpleMatch(tok, "setegid ( getegid ( ) )")) {
                 redundantGetAndSetUserIdError(tok);
             }
         }

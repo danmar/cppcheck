@@ -3682,20 +3682,20 @@ private:
     }
 
     void redundantGetAndSetUserId() {
-        check("seteuid(geteuid());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(geteuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setuid(getuid());\n", nullptr, false , false, true);
+        check("void foo() { setuid(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setgid(getgid());\n", nullptr, false , false, true);
+        check("void foo() { setgid(getgid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setegid(getegid());\n", nullptr, false , false, true);
+        check("void foo() { setegid(getegid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
 
-        check("seteuid(getuid());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("seteuid(foo());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(foo()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("foo(getuid());\n", nullptr, false , false, true);
+        check("void foo() { foo(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
     }
 

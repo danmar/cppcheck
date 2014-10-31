@@ -172,7 +172,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                     return No;
 
                 // is there a user function with this name?
-                if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
+                if (tok2->function())
                     return No;
                 return Fd;
             }
