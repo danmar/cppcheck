@@ -5955,7 +5955,7 @@ void Tokenizer::simplifyVariableMultipleAssign()
 
             Token *stopAt = tok->tokAt(2);
             const Token *valueTok = tok->tokAt(4);
-            const std::string value(valueTok->str());
+            const std::string& value(valueTok->str());
             tok2 = tok2->next();
 
             while (tok2 != stopAt) {
@@ -6037,7 +6037,7 @@ void Tokenizer::simplifyIfNotNull()
         // Remove 'x = (x != 0)'
         if (Token::simpleMatch(tok, "= (")) {
             if (Token::Match(tok->tokAt(-2), "[;{}] %var%")) {
-                const std::string varname(tok->previous()->str());
+                const std::string& varname(tok->previous()->str());
 
                 if (Token::simpleMatch(tok->tokAt(2), (varname + " != 0 ) ;").c_str()) ||
                     Token::simpleMatch(tok->tokAt(2), ("0 != " + varname + " ) ;").c_str())) {
@@ -8037,7 +8037,7 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 
     // Is this a function call?
     if (ftok && Token::Match(ftok->tokAt(-2), "[;{}=] %var% (")) {
-        const std::string functionName(ftok->previous()->str());
+        const std::string& functionName(ftok->previous()->str());
 
         if (functionName == "return")
             return true;
