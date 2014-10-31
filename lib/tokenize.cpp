@@ -1672,7 +1672,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     simplifyCAlternativeTokens();
 
     // Convert e.g. atol("0") into 0
-    while (simplifyMathFunctions()) {};
+    simplifyMathFunctions();
 
     simplifyDoublePlusAndDoubleMinus();
 
@@ -3563,7 +3563,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyInitVar();
 
     // Convert e.g. atol("0") into 0
-    while (simplifyMathFunctions()) {};
+    simplifyMathFunctions();
 
     simplifyDoublePlusAndDoubleMinus();
 
@@ -3786,7 +3786,7 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyStaticConst();
 
-    while (simplifyMathFunctions()) {};
+    simplifyMathFunctions();
 
     validate();
 
@@ -8384,10 +8384,10 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 // Reference:
 // - http://www.cplusplus.com/reference/cmath/
 // ------------------------------------------------------
-bool Tokenizer::simplifyMathFunctions()
+void Tokenizer::simplifyMathFunctions()
 {
-    bool simplifcationMade = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool simplifcationMade = false;
         if (tok->isName() && tok->strAt(1) == "(") { // precondition for function
             if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
                 if (tok->previous() &&
@@ -8619,9 +8619,13 @@ bool Tokenizer::simplifyMathFunctions()
                 }
             }
         }
+        // Jump back to begin of statement if a simplification was performed
+        if (simplifcationMade) {
+            while (tok->previous() && tok->str() != ";") {
+                tok = tok->previous();
+            }
+        }
     }
-    // returns true if a simplifcation was performed and false otherwise.
-    return simplifcationMade;
 }
 
 void Tokenizer::simplifyComma()

@@ -8088,6 +8088,7 @@ private:
                              "    std::cout<<llabs(-1);\n"
                              "    std::cout<<atol(\"1\");\n"
                              "    std::cout<<atol(\"x\");\n"
+                             "    std::cout<<abs(atol(\"1\"));\n" // nested calls
                              "}";
         const char expected1[] = "void foo ( ) {\n"
                                  "std :: cout << 0 ;\n"
@@ -8104,6 +8105,7 @@ private:
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << 1 ;\n"
                                  "std :: cout << atol ( \"x\" ) ;\n"
+                                 "std :: cout << 1 ;\n"
                                  "}";
         ASSERT_EQUALS(expected1, tokenizeAndStringify(code1));
 

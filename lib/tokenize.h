@@ -499,9 +499,8 @@ public:
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
-     * @return true if simplifcations performed and false otherwise.
      */
-    bool simplifyMathFunctions();
+    void simplifyMathFunctions();
 
     /**
      * Simplify e.g. 'sin(0)' into '0'
