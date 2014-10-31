@@ -8395,16 +8395,16 @@ bool Tokenizer::simplifyMathFunctions()
                     tok = tok->tokAt(-2);// set token index two steps back
                     tok->deleteNext(2);  // delete "std ::"
                 }
-                const std::string strNumber = tok->tokAt(2)->strValue(); // get number
+                const std::string& strNumber = tok->tokAt(2)->strValue(); // get number
                 const bool isNotAnInteger = (!MathLib::isInt(strNumber));// check: is not an integer
-                if (!strNumber.empty() && isNotAnInteger) {
+                if (strNumber.empty() || isNotAnInteger) {
                     // Ignore strings which we can't convert
                     continue;
                 }
-                // remove atol ( %num%
-                tok->deleteNext(3);
                 // Convert string into a number and insert into token list
                 tok->str(MathLib::toString(MathLib::toLongNumber(strNumber)));
+                // remove ( %num% )
+                tok->deleteNext(3);
                 simplifcationMade = true;
             } else if (Token::Match(tok, "abs|fabs|labs|llabs ( %num% )")) {
                 if (tok->previous() &&
@@ -8415,7 +8415,7 @@ bool Tokenizer::simplifyMathFunctions()
                 // get number string
                 std::string strNumber(tok->strAt(2));
                 // is the string negative?
-                if (!strNumber.empty() && strNumber[0] == '-') {
+                if (strNumber[0] == '-') {
                     strNumber = strNumber.substr(1); // remove '-' sign
                 }
                 tok->deleteNext(3);  // delete e.g. abs ( 1 )
@@ -8424,19 +8424,17 @@ bool Tokenizer::simplifyMathFunctions()
             } else if (Token::Match(tok, "fma|fmaf|fmal ( %any% , %any% , %any% )")) {
                 // Simplify: fma(a,b,c) == > ( a ) * ( b ) + ( c )
                 // get parameters
-                const std::string a(tok->strAt(2));
-                const std::string b(tok->strAt(4));
-                const std::string c(tok->strAt(6));
-                if (!a.empty() && !b.empty() && !c.empty()) {
-                    tok->deleteNext(7);  // delete fma call
-                    tok->str("( " + a + " ) * ( " + b + " ) + ( " + c + " )");  // insert result into token list
-                    simplifcationMade = true;
-                }
+                const std::string& a(tok->strAt(2));
+                const std::string& b(tok->strAt(4));
+                const std::string& c(tok->strAt(6));
+                tok->str("( " + a + " ) * ( " + b + " ) + ( " + c + " )");  // insert result into token list
+                tok->deleteNext(7);  // delete fma call
+                simplifcationMade = true;
             } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
                 // Simplify: sqrt(0) = 0 and cbrt(0) == 0
                 //           sqrt(1) = 1 and cbrt(1) == 1
                 // get number string
-                const std::string parameter(tok->strAt(2));
+                const std::string& parameter(tok->strAt(2));
                 // is parameter 0 ?
                 if (isZeroNumber(parameter)) {
                     tok->deleteNext(3);  // delete tokens
@@ -8452,7 +8450,7 @@ bool Tokenizer::simplifyMathFunctions()
                 //           cosh[f|l](0) = 1 and cos[f|l](0)  = 1
                 //           erfc[f|l](0) = 1
                 // get number string
-                const std::string parameter(tok->strAt(2));
+                const std::string& parameter(tok->strAt(2));
                 // is parameter 0 ?
                 if (isZeroNumber(parameter)) {
                     tok->deleteNext(3);  // delete tokens
@@ -8467,7 +8465,7 @@ bool Tokenizer::simplifyMathFunctions()
                 //           atan[f|l](0)  = 0 and atanh[f|l](0)= 0
                 //           expm1[f|l](0) = 0
                 // get number string
-                const std::string parameter(tok->strAt(2));
+                const std::string& parameter(tok->strAt(2));
                 // is parameter 0 ?
                 if (isZeroNumber(parameter)) {
                     tok->deleteNext(3);  // delete tokens
@@ -8480,7 +8478,7 @@ bool Tokenizer::simplifyMathFunctions()
                 //           acosh[f|l](1) = 0 , acos[f|l](1)   = 0
                 //           ilogb[f|l](1) = 0
                 // get number string
-                const std::string parameter(tok->strAt(2));
+                const std::string& parameter(tok->strAt(2));
                 // is parameter 1 ?
                 if (isOneNumber(parameter)) {
                     tok->deleteNext(3);  // delete tokens
@@ -8491,148 +8489,132 @@ bool Tokenizer::simplifyMathFunctions()
                 // @todo if one of the parameters is NaN the other is returned
                 // e.g. printf ("fmin (NaN, -1.0) = %f\n", fmin(NaN,-1.0));
                 // e.g. printf ("fmin (-1.0, NaN) = %f\n", fmin(-1.0,NaN));
-                const std::string strLeftNumber(tok->strAt(2));
-                const std::string strRightNumber(tok->strAt(4));
+                const std::string& strLeftNumber(tok->strAt(2));
+                const std::string& strRightNumber(tok->strAt(4));
                 const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
                 // case: left <= right ==> insert left
-                if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
-                    tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
+                if (isLessEqual) {
                     tok->str(strLeftNumber); // insert e.g. -1.0
+                    tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
                     simplifcationMade = true;
                 } else { // case left > right ==> insert right
-                    tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
                     tok->str(strRightNumber); // insert e.g. 0.0
+                    tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
                     simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
                 // @todo if one of the parameters is NaN the other is returned
                 // e.g. printf ("fmax (NaN, -1.0) = %f\n", fmax(NaN,-1.0));
                 // e.g. printf ("fmax (-1.0, NaN) = %f\n", fmax(-1.0,NaN));
-                const std::string strLeftNumber(tok->strAt(2));
-                const std::string strRightNumber(tok->strAt(4));
+                const std::string& strLeftNumber(tok->strAt(2));
+                const std::string& strRightNumber(tok->strAt(4));
                 const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
                 // case: left <= right ==> insert right
-                if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
-                    tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
+                if (isLessEqual) {
                     tok->str(strRightNumber);// insert e.g. 1.0
+                    tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
                     simplifcationMade = true;
                 } else { // case left > right ==> insert left
-                    tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
                     tok->str(strLeftNumber);  // insert e.g. 1.0
+                    tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
                     simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "isgreater ( %num% , %num% )")) {
                 // The isgreater(x,y) function is the same as calculating (x)>(y).
                 // It returns true (1) if x is greater than y and false (0) otherwise.
-                const std::string strLeftNumber(tok->strAt(2)); // get left number
-                const std::string strRightNumber(tok->strAt(4)); // get right number
-                if (!strRightNumber.empty() && !strLeftNumber.empty()) {
-                    const bool isGreater =  MathLib::isGreater(strLeftNumber, strRightNumber); // compare numbers
-                    tok->deleteNext(5); // delete tokens
-                    tok->str((isGreater == true) ? "true": "false");  // insert results
-                    simplifcationMade = true;
-                }
+                const std::string& strLeftNumber(tok->strAt(2)); // get left number
+                const std::string& strRightNumber(tok->strAt(4)); // get right number
+                const bool isGreater =  MathLib::isGreater(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isGreater == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             } else if (Token::Match(tok, "isgreaterequal ( %num% , %num% )")) {
                 // The isgreaterequal(x,y) function is the same as calculating (x)>=(y).
                 // It returns true (1) if x is greater than or equal to y.
                 // False (0) is returned otherwise.
-                const std::string strLeftNumber(tok->strAt(2)); // get left number
-                const std::string strRightNumber(tok->strAt(4)); // get right number
-                if (!strRightNumber.empty() && !strLeftNumber.empty()) {
-                    const bool isGreaterEqual =  MathLib::isGreaterEqual(strLeftNumber, strRightNumber); // compare numbers
-                    tok->deleteNext(5); // delete tokens
-                    tok->str((isGreaterEqual == true) ? "true": "false");  // insert results
-                    simplifcationMade = true;
-                }
+                const std::string& strLeftNumber(tok->strAt(2)); // get left number
+                const std::string& strRightNumber(tok->strAt(4)); // get right number
+                const bool isGreaterEqual =  MathLib::isGreaterEqual(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isGreaterEqual == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             } else if (Token::Match(tok, "isless ( %num% , %num% )")) {
                 // Calling this function is the same as calculating (x)<(y).
                 // It returns true (1) if x is less than y.
                 // False (0) is returned otherwise.
-                const std::string strLeftNumber(tok->strAt(2)); // get left number
-                const std::string strRightNumber(tok->strAt(4)); // get right number
-                if (!strRightNumber.empty() && !strLeftNumber.empty()) {
-                    const bool isLess = MathLib::isLess(strLeftNumber, strRightNumber); // compare numbers
-                    tok->deleteNext(5); // delete tokens
-                    tok->str((isLess == true) ? "true": "false");  // insert results
-                    simplifcationMade = true;
-                }
+                const std::string& strLeftNumber(tok->strAt(2)); // get left number
+                const std::string& strRightNumber(tok->strAt(4)); // get right number
+                const bool isLess = MathLib::isLess(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLess == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             } else if (Token::Match(tok, "islessequal ( %num% , %num% )")) {
                 // Calling this function is the same as calculating (x)<=(y).
                 // It returns true (1) if x is less or equal to y.
                 // False (0) is returned otherwise.
-                const std::string strLeftNumber(tok->strAt(2)); // get left number
-                const std::string strRightNumber(tok->strAt(4)); // get right number
-                if (!strRightNumber.empty() && !strLeftNumber.empty()) {
-                    const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber); // compare numbers
-                    tok->deleteNext(5); // delete tokens
-                    tok->str((isLessEqual == true) ? "true": "false");  // insert results
-                    simplifcationMade = true;
-                }
+                const std::string& strLeftNumber(tok->strAt(2)); // get left number
+                const std::string& strRightNumber(tok->strAt(4)); // get right number
+                const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber); // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLessEqual == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             } else if (Token::Match(tok, "islessgreater ( %num% , %num% )")) {
                 // Calling this function is the same as calculating (x)<(y) || (x)>(y).
                 // It returns true (1) if x is less than y or x is greater than y.
                 // False (0) is returned otherwise.
-                const std::string strLeftNumber(tok->strAt(2)); // get left number
-                const std::string strRightNumber(tok->strAt(4)); // get right number
-                if (!strRightNumber.empty() && !strLeftNumber.empty()) {
-                    const bool isLessOrGreater(MathLib::isLess(strLeftNumber, strRightNumber) ||
-                                               MathLib::isGreater(strLeftNumber, strRightNumber));  // compare numbers
-                    tok->deleteNext(5); // delete tokens
-                    tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
-                    simplifcationMade = true;
-                }
+                const std::string& strLeftNumber(tok->strAt(2)); // get left number
+                const std::string& strRightNumber(tok->strAt(4)); // get right number
+                const bool isLessOrGreater(MathLib::isLess(strLeftNumber, strRightNumber) ||
+                                           MathLib::isGreater(strLeftNumber, strRightNumber));  // compare numbers
+                tok->deleteNext(5); // delete tokens
+                tok->str((isLessOrGreater == true) ? "true": "false");  // insert results
+                simplifcationMade = true;
             } else if (Token::Match(tok, "div|ldiv|lldiv ( %any% , %num% )")) {
                 // Calling the function 'div(x,y)' is the same as calculating (x)/(y). In case y has the value 1
                 // (the identity element), the call can be simplified to (x).
-                const std::string leftParameter(tok->strAt(2)); // get the left parameter
-                const std::string rightNumber(tok->strAt(4)); // get right number
-                if (!rightNumber.empty() && !leftParameter.empty()) {
-                    if (isOneNumber(rightNumber)) {
-                        tok->deleteNext(5); // delete tokens
-                        tok->str(leftParameter);  // insert simplified result
-                        simplifcationMade = true;
-                    }
+                const std::string& leftParameter(tok->strAt(2)); // get the left parameter
+                const std::string& rightNumber(tok->strAt(4)); // get right number
+                if (isOneNumber(rightNumber)) {
+                    tok->str(leftParameter);  // insert simplified result
+                    tok->deleteNext(5); // delete tokens
+                    simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "pow|powf|powl (")) {
                 if (tok && Token::Match(tok->tokAt(2), "%num% , %num% )")) {
                     // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
                     // In case of pow ( 0 , 0 ): It simplified to 1
                     // In case of pow ( 1 , anyNumber ): It simplified to 1
-                    const std::string leftNumber(tok->strAt(2)); // get the left parameter
-                    const std::string rightNumber(tok->strAt(4)); // get the right parameter
-                    if (!leftNumber.empty() && !rightNumber.empty()) {
-                        const bool isLeftNumberZero = isZeroNumber(leftNumber);
-                        const bool isLeftNumberOne = isOneNumber(leftNumber);
-                        const bool isRightNumberZero = isZeroNumber(rightNumber);
-                        if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
-                            tok->deleteNext(5); // delete tokens
-                            tok->str("0");  // insert simplified result
-                            simplifcationMade = true;
-                        } else if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
-                            tok->deleteNext(5); // delete tokens
-                            tok->str("1");  // insert simplified result
-                            simplifcationMade = true;
-                        } else if (isLeftNumberOne) { // case 1^(y) = 1
-                            tok->deleteNext(5); // delete tokens
-                            tok->str("1");  // insert simplified result
-                            simplifcationMade = true;
-                        }
+                    const std::string& leftNumber(tok->strAt(2)); // get the left parameter
+                    const std::string& rightNumber(tok->strAt(4)); // get the right parameter
+                    const bool isLeftNumberZero = isZeroNumber(leftNumber);
+                    const bool isLeftNumberOne = isOneNumber(leftNumber);
+                    const bool isRightNumberZero = isZeroNumber(rightNumber);
+                    if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("0");  // insert simplified result
+                        simplifcationMade = true;
+                    } else if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
+                    } else if (isLeftNumberOne) { // case 1^(y) = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
                     }
                 }
                 if (tok && Token::Match(tok->tokAt(2), "%any% , %num% )")) {
                     // In case of pow( x , 1 ): It can be simplified to x.
-                    const std::string leftParameter(tok->strAt(2)); // get the left parameter
-                    const std::string rightNumber(tok->strAt(4)); // get right number
-                    if (!rightNumber.empty() && !leftParameter.empty()) {
-                        if (isOneNumber(rightNumber)) { // case: x^(1) = x
-                            tok->deleteNext(5); // delete tokens
-                            tok->str(leftParameter);  // insert simplified result
-                            simplifcationMade = true;
-                        } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
-                            tok->deleteNext(5); // delete tokens
-                            tok->str("1");  // insert simplified result
-                            simplifcationMade = true;
-                        }
+                    const std::string& leftParameter(tok->strAt(2)); // get the left parameter
+                    const std::string& rightNumber(tok->strAt(4)); // get right number
+                    if (isOneNumber(rightNumber)) { // case: x^(1) = x
+                        tok->str(leftParameter);  // insert simplified result
+                        tok->deleteNext(5); // delete tokens
+                        simplifcationMade = true;
+                    } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
+                        tok->deleteNext(5); // delete tokens
+                        tok->str("1");  // insert simplified result
+                        simplifcationMade = true;
                     }
                 }
             }
