@@ -8493,15 +8493,12 @@ bool Tokenizer::simplifyMathFunctions()
                 // e.g. printf ("fmin (-1.0, NaN) = %f\n", fmin(-1.0,NaN));
                 const std::string strLeftNumber(tok->strAt(2));
                 const std::string strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert left
-                if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
-                    tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
-                    tok->str(strLeftNumber); // insert e.g. -1.0
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert right
-                    tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
-                    tok->str(strRightNumber); // insert e.g. 0.0
+                if (!strLeftNumber.empty() && !strRightNumber.empty()) {
+                    const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber);
+                    tok->deleteNext(5); // delete fmin( %leftNum%, %rightNum% )
+                    // left <= right ==> insert left
+                    // left > right ==> insert right
+                    tok->str(isLessEqual ? strLeftNumber : strRightNumber);
                     simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
@@ -8510,15 +8507,12 @@ bool Tokenizer::simplifyMathFunctions()
                 // e.g. printf ("fmax (-1.0, NaN) = %f\n", fmax(-1.0,NaN));
                 const std::string strLeftNumber(tok->strAt(2));
                 const std::string strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert right
-                if (!strLeftNumber.empty() && !strRightNumber.empty() && isLessEqual) {
-                    tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
-                    tok->str(strRightNumber);// insert e.g. 1.0
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert left
-                    tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
-                    tok->str(strLeftNumber);  // insert e.g. 1.0
+                if (!strLeftNumber.empty() && !strRightNumber.empty()) {
+                    const bool isLessEqual = MathLib::isLessEqual(strLeftNumber, strRightNumber);
+                    tok->deleteNext(5);      // delete fmax( %leftNum%, %rightNum% )
+                    // left <= right ==> insert right
+                    // left > right ==> insert left
+                    tok->str(isLessEqual ? strRightNumber : strLeftNumber);
                     simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "isgreater ( %num% , %num% )")) {
