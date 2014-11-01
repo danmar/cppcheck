@@ -115,7 +115,7 @@ make LDFLAGS=-lshlwapi
 
 ```shell
 sudo apt-get install mingw32
-make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
+make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi" RDYNAMIC=""
 mv cppcheck cppcheck.exe
 ```
 
