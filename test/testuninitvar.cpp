@@ -2405,6 +2405,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar2("static void f() {\n"
+                        "    int a=0, b;\n"
+                        "    if (something) { a = dostuff(&b); }\n"
+                        "    if (!a || b) { }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar2("static void f(int x, int y) {\n"
                         "    int a;\n"
                         "    if (x == 0 && (a == 1)) { }\n"
@@ -2798,7 +2805,7 @@ private:
                         "    if (!x) i = 0;\n"
                         "    if (!x || i>0) {}\n" // <- error
                         "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", "", errout.str());
 
         checkUninitVar2("void f(int x) {\n"
                         "    int i;\n"

@@ -1525,6 +1525,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, bool alloc, const std::string &membervar)
 {
     const Token * const endpar = startparentheses->link();
+    if (Token::Match(startparentheses, "( ! %var% %oror%") && startparentheses->tokAt(2)->getValue(0))
+        suppressErrors = true;
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.declarationId()) {
             if (Token::Match(tok, "%var% . %var%")) {
