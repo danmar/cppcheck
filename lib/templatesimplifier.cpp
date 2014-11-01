@@ -721,7 +721,19 @@ void TemplateSimplifier::expandTemplate(
     std::vector<const Token *> &typesUsedInTemplateInstantiation,
     std::list<Token *> &templateInstantiations)
 {
+    bool inTemplateDefinition=false;
+    std::vector<const Token *> localTypeParametersInDeclaration;
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
+        if (tok3->str()=="template") {
+            if (tok3->next() && tok3->next()->str()=="<") {
+                TemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
+                if (localTypeParametersInDeclaration.size() != typeParametersInDeclaration.size())
+                    inTemplateDefinition = false; // Partial specialization
+                else
+                    inTemplateDefinition = true;
+            } else
+                inTemplateDefinition = false; // Only template instantiation
+        }
         if (Token::Match(tok3, "{|(|["))
             tok3 = tok3->link();
 
@@ -731,7 +743,8 @@ void TemplateSimplifier::expandTemplate(
         }
 
         // member function implemented outside class definition
-        else if (TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
+        else if (inTemplateDefinition &&
+                 TemplateSimplifier::instantiateMatch(tok3, name, typeParametersInDeclaration.size(), ":: ~| %var% (")) {
             tokenlist.addtoken(newName, tok3->linenr(), tok3->fileIndex());
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();
@@ -1150,6 +1163,17 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
     return ret;
 }
 
+const Token * TemplateSimplifier::TemplateParametersInDeclaration(
+    const Token * tok,
+    std::vector<const Token *> & typeParametersInDeclaration)
+{
+    typeParametersInDeclaration.clear();
+    for (; tok && tok->str() != ">"; tok = tok->next()) {
+        if (Token::Match(tok, "%var% ,|>"))
+            typeParametersInDeclaration.push_back(tok);
+    }
+    return tok;
+}
 
 bool TemplateSimplifier::simplifyTemplateInstantiations(
     TokenList& tokenlist,
@@ -1165,10 +1189,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
     // Contains tokens such as "T"
     std::vector<const Token *> typeParametersInDeclaration;
-    for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next()) {
-        if (Token::Match(tok, "%var% ,|>"))
-            typeParametersInDeclaration.push_back(tok);
-    }
+    tok = TemplateParametersInDeclaration(tok->tokAt(2), typeParametersInDeclaration);
 
     // bail out if the end of the file was reached
     if (!tok)

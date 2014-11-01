@@ -118,6 +118,19 @@ public:
         std::list<Token *> &templateInstantiations);
 
     /**
+     * @brief TemplateParametersInDeclaration
+     * @param tok  template < typename T, typename S >
+     *                        ^ tok
+     * @param typeParametersInDeclaration  template < typename T, typename S >
+     *                                                         ^ [0]       ^ [1]
+     * @return  template < typename T, typename S >
+     *                                              ^ return
+     */
+    static const Token * TemplateParametersInDeclaration(
+        const Token * tok,
+        std::vector<const Token *> & typeParametersInDeclaration);
+
+    /**
      * Simplify templates : expand all instantiations for a template
      * @todo It seems that inner templates should be instantiated recursively
      * @param tokenlist token list

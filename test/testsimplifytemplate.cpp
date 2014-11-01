@@ -83,6 +83,8 @@ private:
         TEST_CASE(template46);  // #5816 - syntax error reported for valid code
         TEST_CASE(template47);  // #6023 - syntax error reported for valid code
         TEST_CASE(template48);  // #6134 - 100% CPU upon invalid code
+        TEST_CASE(template49);  // #6237 - template instantiation
+        TEST_CASE(template50);  // #4272 - simple partial specialization
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -877,6 +879,45 @@ private:
             "int foo = f<1>(0);");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void template49() { // #6237
+        const char code[] = "template <classname T> class Fred { void f(); void g(); };\n"
+                            "template <classname T> void Fred<T>::f() { }\n"
+                            "template <classname T> void Fred<T>::g() { }\n"
+                            "template void Fred<float>::f();\n"
+                            "template void Fred<int>::g();\n";
+
+        const std::string expected("template < classname T > void Fred<T> :: f ( ) { } "
+                                   "template < classname T > void Fred<T> :: g ( ) { } "
+                                   "template void Fred<float> :: f ( ) ; "
+                                   "template void Fred<int> :: g ( ) ; "
+                                   "class Fred<T> { void f ( ) ; void g ( ) ; } ; "
+                                   "Fred<T> :: f ( ) { } "
+                                   "Fred<T> :: g ( ) { } "
+                                   "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
+                                   "class Fred<int> { void f ( ) ; void g ( ) ; } ;");
+
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template50() { // #4272
+        const char code[] = "template <classname T> class Fred { void f(); };\n"
+                            "template <classname T> void Fred<T>::f() { }\n"
+                            "template<> void Fred<float>::f() { }\n"
+                            "template<> void Fred<int>::g() { }\n";
+
+        const std::string expected("template < classname T > void Fred<T> :: f ( ) { } "
+                                   "template < > void Fred<float> :: f ( ) { } "
+                                   "template < > void Fred<int> :: g ( ) { } "
+                                   "class Fred<T> { void f ( ) ; } ; "
+                                   "Fred<T> :: f ( ) { } "
+                                   "class Fred<float> { void f ( ) ; } ; "
+                                   "class Fred<int> { void f ( ) ; } ;");
+
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+
 
     void template_default_parameter() {
         {
