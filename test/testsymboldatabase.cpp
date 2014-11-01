@@ -223,9 +223,8 @@ private:
         TEST_CASE(isImplicitlyVirtual);
 
         TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
-
-        TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
+        TEST_CASE(findFunction3);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2165,6 +2164,21 @@ private:
         ASSERT_EQUALS(true,  db != nullptr); // not null
         ASSERT_EQUALS(true,  callfunc != nullptr); // not null
         ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
+    }
+
+    void findFunction3() {
+        GET_SYMBOL_DB("struct base { void foo() { } };\n"
+                      "struct derived : public base { void foo() { } };\n"
+                      "void foo() {\n"
+                      "    derived d;\n"
+                      "    d.foo();\n"
+                      "}");
+
+        const Token *callfunc = Token::findsimplematch(tokenizer.tokens(), "d . foo ( ) ;");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true, db != nullptr); // not null
+        ASSERT_EQUALS(true, callfunc != nullptr); // not null
+        ASSERT_EQUALS(true, callfunc && callfunc->tokAt(2)->function() && callfunc->tokAt(2)->function()->tokenDef->linenr() == 2); // should find function on line 2
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

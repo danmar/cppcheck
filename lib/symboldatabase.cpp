@@ -1070,6 +1070,119 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             }
         }
     }
+
+    // Set scope pointers
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        Token* start = const_cast<Token*>(it->classStart);
+        Token* end = const_cast<Token*>(it->classEnd);
+        if (it->type == Scope::eGlobal) {
+            start = const_cast<Token*>(_tokenizer->list.front());
+            end = const_cast<Token*>(_tokenizer->list.back());
+        }
+        if (start && end) {
+            start->scope(&*it);
+            end->scope(&*it);
+        }
+        if (start != end && start->next() != end) {
+            for (Token* tok = start->next(); tok != end; tok = tok->next()) {
+                if (tok->str() == "{") {
+                    bool break2 = false;
+                    for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
+                        if (tok == (*innerScope)->classStart) { // Is begin of inner scope
+                            tok = tok->link();
+                            if (!tok || tok->next() == end || !tok->next()) {
+                                break2 = true;
+                                break;
+                            }
+                            tok = tok->next();
+                            break;
+                        }
+                    }
+                    if (break2)
+                        break;
+                }
+                tok->scope(&*it);
+            }
+        }
+    }
+
+    // Set function definition and declaration pointers
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+        for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+            if (func->tokenDef)
+                const_cast<Token *>(func->tokenDef)->function(&*func);
+
+            if (func->token)
+                const_cast<Token *>(func->token)->function(&*func);
+        }
+    }
+
+    // Set function call pointers
+    for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
+        if (Token::Match(tok, "%var% (")) {
+            if (!tok->function())
+                const_cast<Token *>(tok)->function(findFunction(tok));
+        }
+    }
+
+    // Set variable pointers
+    for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
+        if (tok->varId())
+            const_cast<Token *>(tok)->variable(getVariableFromVarId(tok->varId()));
+
+        // Set Token::variable pointer for array member variable
+        // Since it doesn't point at a fixed location it doesn't have varid
+        if (tok->variable() != nullptr &&
+            tok->variable()->typeScope() &&
+            Token::Match(tok, "%var% [|.")) {
+
+            Token *tok2 = tok->next();
+            // Locate "]"
+            if (tok->next()->str() == "[") {
+                while (tok2 && tok2->str() == "[")
+                    tok2 = tok2->link()->next();
+            }
+
+            Token *membertok = nullptr;
+            if (Token::Match(tok2, ". %var%"))
+                membertok = tok2->next();
+            else if (Token::Match(tok2, ") . %var%") && tok->strAt(-1) == "(")
+                membertok = tok2->tokAt(2);
+
+            if (membertok) {
+                const Variable *var = tok->variable();
+                if (var && var->typeScope()) {
+                    const Variable *membervar = var->typeScope()->getVariable(membertok->str());
+                    if (membervar)
+                        membertok->variable(membervar);
+                }
+            }
+        }
+
+        // check for function returning record type
+        // func(...).var
+        // func(...)[...].var
+        else if (tok->function() && tok->next()->str() == "(" &&
+                 (Token::Match(tok->next()->link(), ") . %var% !!(") ||
+                  (Token::Match(tok->next()->link(), ") [") && Token::Match(tok->next()->link()->next()->link(), "] . %var% !!(")))) {
+            const Type *type = tok->function()->retType;
+            if (type) {
+                Token *membertok;
+                if (tok->next()->link()->next()->str() == ".")
+                    membertok = tok->next()->link()->next()->next();
+                else
+                    membertok = tok->next()->link()->next()->link()->next()->next();
+                const Variable *membervar = membertok->variable();
+                if (!membervar) {
+                    if (type->classScope) {
+                        membervar = type->classScope->getVariable(membertok->str());
+                        if (membervar)
+                            membertok->variable(membervar);
+                    }
+                }
+            }
+        }
+    }
 }
 
 bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart)
@@ -2799,26 +2912,6 @@ const Function* Scope::findFunction(const Token *tok) const
 {
     std::list<Function>::const_iterator it;
 
-    // check for the actual definiton or declaration
-    for (it = functionList.begin(); it != functionList.end(); ++it) {
-        if (it->tokenDef == tok || it->token == tok)
-            return &*it;
-    }
-
-    // check in base classes
-    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
-        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
-            const Type *base = definedType->derivedFrom[i].type;
-            if (base && base->classScope) {
-                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
-                    continue;
-                const Function * func = base->classScope->findFunction(tok);
-                if (func)
-                    return func;
-            }
-        }
-    }
-
     // this is a function call so try to find it based on name and arguments
     for (it = functionList.begin(); it != functionList.end(); ++it) {
         if (it->tokenDef->str() == tok->str()) {
@@ -2848,6 +2941,20 @@ const Function* Scope::findFunction(const Token *tok) const
                 // check for argument count match or default arguments
                 if (args == func->argCount() ||
                     (args < func->argCount() && args >= func->minArgCount()))
+                    return func;
+            }
+        }
+    }
+
+    // check in base classes
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
+        for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
+            const Type *base = definedType->derivedFrom[i].type;
+            if (base && base->classScope) {
+                if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
+                    continue;
+                const Function * func = base->classScope->findFunction(tok);
+                if (func)
                     return func;
             }
         }
