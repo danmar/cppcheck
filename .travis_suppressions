@@ -2,7 +2,6 @@ unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 uselessAssignmentPtrArg:build/checkstl.cpp
 variableScope:test/testtokenize.cpp
-variableScope:test/testvalueflow.cpp
 *:gui/test*
 *:test/test.cxx
 
