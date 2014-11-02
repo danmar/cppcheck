@@ -223,6 +223,8 @@ private:
         TEST_CASE(isImplicitlyVirtual);
 
         TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
+
+        TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
         TEST_CASE(findFunction3);
 

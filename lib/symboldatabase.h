@@ -801,6 +801,7 @@ private:
 class CPPCHECKLIB SymbolDatabase {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
     std::list<Scope> scopeList;

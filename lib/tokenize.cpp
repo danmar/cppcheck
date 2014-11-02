@@ -10081,13 +10081,6 @@ void Tokenizer::createSymbolDatabase()
 
 void Tokenizer::deleteSymbolDatabase()
 {
-    // Clear scope, function, and variable pointers
-    for (Token* tok = list.front(); tok != list.back(); tok = tok->next()) {
-        tok->scope(0);
-        tok->function(0);
-        tok->variable(0);
-    }
-
     delete _symbolDatabase;
     _symbolDatabase = 0;
 }
