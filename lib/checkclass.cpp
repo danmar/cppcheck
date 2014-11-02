@@ -1802,6 +1802,21 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
                 return (false);
 
+
+            const Token* lhs = tok1->tokAt(-1);
+            if (lhs->str() == "&") {
+                lhs = lhs->previous();
+                if (lhs->type() == Token::eAssignmentOp && lhs->previous()->variable()) {
+                    if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
+                        return false;
+                }
+            } else {
+                const Variable* v2 = lhs->previous()->variable();
+                if (lhs->type() == Token::eAssignmentOp && v2)
+                    if (!v2->isConst() && v2->isReference() && lhs == v2->nameToken()->next())
+                        return false;
+            }
+
             const Token* jumpBackToken = 0;
             const Token *lastVarTok = tok1;
             const Token *end = tok1;

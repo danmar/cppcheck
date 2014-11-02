@@ -143,6 +143,7 @@ private:
         TEST_CASE(const60); // ticket #3322
         TEST_CASE(const61); // ticket #5606
         TEST_CASE(const62); // ticket #5701
+        TEST_CASE(const63); // ticket #5983
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4840,6 +4841,53 @@ private:
                    "         }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const63() {
+        checkConst("struct A {\n"
+                   "    std::string s;\n"
+                   "    void clear() {\n"
+                   "         std::string* p = &s;\n"
+                   "         p->clear();\n"
+                   "     }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    std::string s;\n"
+                   "    void clear() {\n"
+                   "         std::string& r = s;\n"
+                   "         r.clear();\n"
+                   "     }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    std::string s;\n"
+                   "    void clear() {\n"
+                   "         std::string& r = sth; r = s;\n"
+                   "         r.clear();\n"
+                   "     }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    std::string s;\n"
+                   "    void clear() {\n"
+                   "         const std::string* p = &s;\n"
+                   "         p->somefunction();\n"
+                   "     }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    std::string s;\n"
+                   "    void clear() {\n"
+                   "         const std::string& r = s;\n"
+                   "         r.somefunction();\n"
+                   "     }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {
