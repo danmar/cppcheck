@@ -5146,7 +5146,21 @@ private:
         );
         ASSERT_EQUALS("", errout.str());
 
-
+        check( // #6252
+            "struct Wrapper {\n"
+            "    Thing* m_thing;\n"
+            "    Wrapper() : m_thing(0) {\n"
+            "    }\n"
+            "    ~Wrapper() {\n"
+            "        delete m_thing;\n"
+            "    }\n"
+            "    void changeThing() {\n"
+            "        delete m_thing;\n"
+            "        m_thing = new Thing;\n"
+            "    }\n"
+            "};\n"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 
 
