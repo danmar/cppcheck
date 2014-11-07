@@ -227,6 +227,7 @@ private:
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
         TEST_CASE(findFunction3);
+        TEST_CASE(findFunction4);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2181,6 +2182,154 @@ private:
         ASSERT_EQUALS(true, db != nullptr); // not null
         ASSERT_EQUALS(true, callfunc != nullptr); // not null
         ASSERT_EQUALS(true, callfunc && callfunc->tokAt(2)->function() && callfunc->tokAt(2)->function()->tokenDef->linenr() == 2); // should find function on line 2
+    }
+
+    void findFunction4() {
+        GET_SYMBOL_DB("void foo(UNKNOWN) { }\n"
+                      "void foo(int a) { }\n"
+                      "void foo(unsigned int a) { }\n"
+                      "void foo(unsigned long a) { }\n"
+                      "void foo(unsigned long long a) { }\n"
+                      "void foo(float a) { }\n"
+                      "void foo(double a) { }\n"
+                      "void foo(long double a) { }\n"
+                      "int i;\n"
+                      "unsigned int ui;\n"
+                      "unsigned long ul;\n"
+                      "unsigned long long ull;\n"
+                      "float f;\n"
+                      "double d;\n"
+                      "long double ld;\n"
+                      "int & ri = i;\n"
+                      "unsigned int & rui = ui;\n"
+                      "unsigned long & rul = ul;\n"
+                      "unsigned long long & rull = ull;\n"
+                      "float & rf = f;\n"
+                      "double & rd = d;\n"
+                      "long double & rld = ld;\n"
+                      "const int & cri = i;\n"
+                      "const unsigned int & crui = ui;\n"
+                      "const unsigned long & crul = ul;\n"
+                      "const unsigned long long & crull = ull;\n"
+                      "const float & crf = f;\n"
+                      "const double & crd = d;\n"
+                      "const long double & crld = ld;\n"
+                      "void foo() {\n"
+                      "    foo(1);\n"
+                      "    foo(1U);\n"
+                      "    foo(1UL);\n"
+                      "    foo(1ULL);\n"
+                      "    foo(1.0F);\n"
+                      "    foo(1.0);\n"
+                      "    foo(1.0L);\n"
+                      "    foo(i);\n"
+                      "    foo(ui);\n"
+                      "    foo(ul);\n"
+                      "    foo(ull);\n"
+                      "    foo(f);\n"
+                      "    foo(d);\n"
+                      "    foo(ld);\n"
+                      "    foo(ri);\n"
+                      "    foo(rui);\n"
+                      "    foo(rul);\n"
+                      "    foo(rull);\n"
+                      "    foo(rf);\n"
+                      "    foo(rd);\n"
+                      "    foo(rld);\n"
+                      "    foo(cri);\n"
+                      "    foo(crui);\n"
+                      "    foo(crul);\n"
+                      "    foo(crull);\n"
+                      "    foo(crf);\n"
+                      "    foo(crd);\n"
+                      "    foo(crld);\n"
+                      "}");
+
+        ASSERT_EQUALS("", errout.str());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1U ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1UL ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1ULL ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1.0F ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1.0 ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 1.0L ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( i ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ui ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ul ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ull ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( d ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ld ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( ri ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rui ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rul ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rull ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rf ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rd ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( rld ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( cri ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crui ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crul ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crull ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crf ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crd ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 7, false);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "foo ( crld ) ;");
+        TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8, false);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
