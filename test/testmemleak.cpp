@@ -258,6 +258,7 @@ private:
         TEST_CASE(throw2);
 
         TEST_CASE(linux_list_1);
+        TEST_CASE(linux_list_2);
 
         TEST_CASE(sizeof1);
 
@@ -2852,6 +2853,14 @@ private:
               "    func(&ab->a);\n"
               "}");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void linux_list_2() { // #5993
+        check("void foo() {\n"
+              "    struct AB *ab = malloc(sizeof(struct AB));\n"
+              "    list_add_tail(&(ab->list));\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
