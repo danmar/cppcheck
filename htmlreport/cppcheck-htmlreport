@@ -268,13 +268,13 @@ class AnnotateCodeFormatter(HtmlFormatter):
                     if error['line'] == line_no:
                         try:
                             if error['inconclusive'] == 'true':
-                                if error.get('verbose'):
+                                if error.get('verbose') and (error['verbose'] != error['msg']): # only print verbose msg if it really differs from actual message
                                     index = t.rfind('\n')
                                     t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index+1:]
                                 else:
                                     t = t.replace('\n', HTML_INCONCLUSIVE % error['msg'])
                         except KeyError:
-                            if error.get('verbose'):
+                            if error.get('verbose') and (error['verbose'] != error['msg']):
                                 index = t.rfind('\n')
                                 t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index+1:]
                             else:
