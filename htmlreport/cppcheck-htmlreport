@@ -232,7 +232,6 @@ HTML_FOOTER = """
          Cppcheck %s - a tool for static C/C++ code analysis</br>
          </br>
          Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></br>
-         Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></br>
          IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
         <p>
       </div>
