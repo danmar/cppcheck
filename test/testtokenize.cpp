@@ -4410,7 +4410,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");   // shouldn't segfault
     }
 
-    void syntax_error_templates_3() { // Ticket #5605, #5759, #5762, #5774, #5823
+    void syntax_error_templates_3() { // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         tokenizeAndStringify("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }");
         tokenizeAndStringify("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
         tokenizeAndStringify("() template < T = typename = x > struct a {} { f <int> () }");
@@ -4432,6 +4432,10 @@ private:
                              "    C() : _a(0), _b(0) {} "
                              "    int _a, _b; "
                              "};");
+        tokenizeAndStringify("template<class... T> struct A { "
+                             "  static int i; "
+                             "}; "
+                             "void f() { A<int>::i = 0; }");
     }
 
     void template_member_ptr() { // Ticket #5786

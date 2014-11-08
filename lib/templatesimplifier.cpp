@@ -240,8 +240,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (Token::Match(tok, "& ::| %var%"))
             tok = tok->next();
 
-        // Skip 'typename...' (Ticket #5774)
-        if (Token::simpleMatch(tok, "typename . . .")) {
+        // Skip 'typename...' and 'class...' (Ticket #5774, #6059)
+        if (Token::Match(tok, "typename|class . . .")) {
             tok = tok->tokAt(4);
             continue;
         }
