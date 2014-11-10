@@ -1926,6 +1926,18 @@ private:
                                      "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "int foo ()\n"
+                                "{\n"
+                                "    return a=1, b=2;\n"
+                                "}\n";
+            const char expected[]  = "int foo ( ) "
+                                     "{"
+                                     " a = 1 ; return b = 2 ; "
+                                     "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void simplifyConditionOperator() {

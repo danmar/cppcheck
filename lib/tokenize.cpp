@@ -8630,6 +8630,8 @@ void Tokenizer::simplifyMathFunctions()
 
 void Tokenizer::simplifyComma()
 {
+    bool inReturn = false;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         if (Token::Match(tok, "(|[") ||
@@ -8641,6 +8643,12 @@ void Tokenizer::simplifyComma()
         // Skip unhandled template specifiers..
         if (tok->link() && tok->str() == "<")
             tok = tok->link();
+
+        if (tok->str() == "return" && Token::Match(tok->previous(), "[;{}]"))
+            inReturn = true;
+
+        if (inReturn && Token::Match(tok, "[;{}?:]"))
+            inReturn = false;
 
         if (!tok->next() || tok->str() != ",")
             continue;
@@ -8657,7 +8665,7 @@ void Tokenizer::simplifyComma()
             // Handle "delete a, b;"
             tok->str(";");
             tok->insertToken("delete");
-        } else if (tok->tokAt(-2)) {
+        } else if (!inReturn && tok->tokAt(-2)) {
             bool replace = false;
             for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
                 if (tok2->str() == "=") {
@@ -8675,28 +8683,19 @@ void Tokenizer::simplifyComma()
             }
         }
 
-        bool inReturn = false;
-        Token *startFrom = nullptr;    // "[;{}]" token before "return"
-        Token *endAt = nullptr;        // first ";" token after "[;{}] return"
-
-        // find "; return" pattern before comma
-        for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
-            if (Token::Match(tok2, "[;{}?]")) {
-                break;
-
-            } else if (Token::Match(tok2, ")|]") ||
-                       (tok2->str() == "}" && tok2->link()->previous() && tok2->link()->previous()->str() == "=")) {
-                tok2 = tok2->link();
-
-            } else if (tok2->str() == "return" && Token::Match(tok2->previous(), "[;{}]")) {
-                inReturn = true;
-                startFrom = tok2->previous();
-                break;
-            }
-        }
-
         // find token where return ends and also count commas
         if (inReturn) {
+            Token *startFrom = nullptr;    // "[;{}]" token before "return"
+            Token *endAt = nullptr;        // first ";" token after "[;{}] return"
+
+            // find "; return" pattern before comma
+            for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
+                if (tok2->str() == "return") {
+                    startFrom = tok2->previous();
+                    break;
+                }
+            }
+
             std::size_t commaCounter = 0;
 
             for (Token *tok2 = startFrom->next(); tok2; tok2 = tok2->next()) {
