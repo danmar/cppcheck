@@ -228,7 +228,6 @@ private:
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
         TEST_CASE(findFunction3);
         TEST_CASE(findFunction4);
-        TEST_CASE(findFunction5); // #6230: don't guess when there are overloaded functions
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2331,16 +2330,6 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( crld ) ;");
         TODO_ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8, false);
-    }
-
-    void findFunction5() {
-        GET_SYMBOL_DB("void f(A x);\n"
-                      "void f(B x);\n"
-                      "void caller() {\n"
-                      "  f(1);\n"
-                      "}");
-        const Token *f = Token::findsimplematch(tokenizer.tokens(), "f ( 1 ) ;");
-        ASSERT_EQUALS(true, db && f && !f->function());
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

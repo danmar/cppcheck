@@ -2923,8 +2923,6 @@ const Function* Scope::findFunction(const Token *tok) const
     std::list<Function>::const_iterator it;
 
     // this is a function call so try to find it based on name and arguments
-    // if more than 1 function matches (it is overloaded) and we dont see which function is called, return 0
-    const Function *foundfunction = nullptr;
     for (it = functionList.begin(); it != functionList.end(); ++it) {
         if (it->tokenDef->str() == tok->str()) {
             const Function *func = &*it;
@@ -2952,19 +2950,11 @@ const Function* Scope::findFunction(const Token *tok) const
 
                 // check for argument count match or default arguments
                 if (args == func->argCount() ||
-                    (args < func->argCount() && args >= func->minArgCount())) {
-                    if (foundfunction == nullptr)
-                        foundfunction = func;
-                    else {
-                        // Two or more functions match, don't guess which one is right
-                        return nullptr;
-                    }
-                }
+                    (args < func->argCount() && args >= func->minArgCount()))
+                    return func;
             }
         }
     }
-    if (foundfunction)
-        return foundfunction;
 
     // check in base classes
     if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
