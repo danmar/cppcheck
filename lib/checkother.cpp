@@ -2292,8 +2292,18 @@ void CheckOther::checkDuplicateExpression()
                         const bool assignment = tok->str() == "=";
                         if (assignment)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
-                        else
+                        else {
+                            if (_settings->CPP && _settings->standards.CPP11 && tok->str() == "==") {
+                                const Token* parent = tok->astParent();
+                                while (parent && parent->astParent()) {
+                                    parent = parent->astParent();
+                                }
+                                if (parent && parent->previous() && parent->previous()->str() == "static_assert") {
+                                    continue;
+                                }
+                            }
                             duplicateExpressionError(tok, tok, tok->str());
+                        }
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, tok->astOperand2()))
