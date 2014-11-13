@@ -4102,6 +4102,38 @@ private:
               "        a++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    if (Four == 4) {}"
+              "}", nullptr, false, true, false, false);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    static_assert(Four == 4, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    static_assert(4 == Four, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum { FourInEnumOne = 4 };\n"
+              "    enum { FourInEnumTwo = 4 };\n"
+              "    if (FourInEnumOne == FourInEnumTwo) {}\n"
+              "}", nullptr, false, true, false, false);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { FourInEnumOne = 4 };\n"
+              "    enum { FourInEnumTwo = 4 };\n"
+              "    static_assert(FourInEnumOne == FourInEnumTwo, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
