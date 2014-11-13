@@ -427,7 +427,7 @@ struct AST_state {
     unsigned int depth;
     unsigned int inArrayAssignment;
     bool cpp;
-    AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_) {}
+    explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_) {}
 };
 
 static bool iscast(const Token *tok)

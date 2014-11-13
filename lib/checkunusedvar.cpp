@@ -40,12 +40,12 @@ public:
     /** Store information about variable usage */
     class VariableUsage {
     public:
-        VariableUsage(const Variable *var = nullptr,
-                      VariableType type = standard,
-                      bool read = false,
-                      bool write = false,
-                      bool modified = false,
-                      bool allocateMemory = false) :
+        explicit VariableUsage(const Variable *var = nullptr,
+                               VariableType type = standard,
+                               bool read = false,
+                               bool write = false,
+                               bool modified = false,
+                               bool allocateMemory = false) :
             _var(var),
             _lastAccess(var?var->nameToken():0),
             _type(type),

@@ -88,7 +88,7 @@ struct Filepointer {
     unsigned int op_indent;
     enum AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
     AppendMode append_mode;
-    Filepointer(OpenMode mode_ = UNKNOWN_OM)
+    explicit Filepointer(OpenMode mode_ = UNKNOWN_OM)
         : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0), append_mode(UNKNOWN_AM) {
     }
 };
