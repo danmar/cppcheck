@@ -444,7 +444,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 if (ftok->str() != func.name()) {
                     initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
-                    const Function *member = scope->findFunction(ftok);
+                    const Function *member = ftok->function();
                     // member function found
                     if (member) {
                         // recursive call
