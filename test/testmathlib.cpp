@@ -31,7 +31,7 @@ private:
     void run() {
         TEST_CASE(isint);
         TEST_CASE(isbin);
-	TEST_CASE(isdec);
+        TEST_CASE(isdec);
         TEST_CASE(isoct);
         TEST_CASE(ishex);
         TEST_CASE(isnegative);
@@ -614,9 +614,8 @@ private:
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0f")); // -inf (#5142)
         ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
-    
-    void isdec(void)
-    {
+
+    void isdec(void) {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isDec("1"));
         ASSERT_EQUALS(true, MathLib::isDec("+1"));
@@ -631,7 +630,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isDec("-x"));
         ASSERT_EQUALS(false, MathLib::isDec("+x"));
         ASSERT_EQUALS(false, MathLib::isDec("x"));
-    }    
+    }
 
     void isNullValue() const {
         // inter zero value
