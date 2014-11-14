@@ -422,7 +422,7 @@ static std::string analyzeType(const Token* tok)
 
 void CheckOther::invalidPointerCast()
 {
-    if (!_settings->isEnabled("warning") && !_settings->isEnabled("portability"))
+    if (!_settings->isEnabled("portability"))
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -481,7 +481,7 @@ void CheckOther::invalidPointerCast()
 
             std::string fromType = analyzeType(fromTok);
             std::string toType = analyzeType(toTok);
-            if (fromType != toType && !fromType.empty() && !toType.empty() && _settings->isEnabled("portability") && (toTok->str() != "char" || _settings->inconclusive))
+            if (fromType != toType && !fromType.empty() && !toType.empty() && (toTok->str() != "char" || _settings->inconclusive))
                 invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
         }
     }
