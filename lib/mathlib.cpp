@@ -464,7 +464,7 @@ bool MathLib::isBin(const std::string& s)
 bool MathLib::isDec(const std::string & s)
 {
     enum Status {
-        START, PLUSMINUS, DIGIT, SUFFIX
+        START, PLUSMINUS, DIGIT
     } state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -487,8 +487,6 @@ bool MathLib::isDec(const std::string & s)
                 state = DIGIT;
             else
                 return isValidSuffix(it,s.end());
-            break;
-        case SUFFIX:
             break;
         }
     }
