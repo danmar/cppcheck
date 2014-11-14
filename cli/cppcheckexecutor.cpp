@@ -35,8 +35,14 @@
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <signal.h>
 #include <cstdio>
+#include <signal.h>
+#include <unistd.h>
+#include <ucontext.h>
+#ifdef __linux__
+#include <sys/syscall.h>
+#include <sys/types.h>
+#endif
 #endif
 
 #if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(USE_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4)
@@ -296,9 +302,21 @@ static void print_stacktrace(FILE* f, bool demangling)
 
 /*
  * Entry pointer for signal handlers
+ * It uses functions which are not safe to be called from a signal handler,
+ * but when ending up here something went terribly wrong anyway.
+ * And all which is left is just printing some information and terminate.
  */
-static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*/)
+static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
+    int type = -1;
+    pid_t killid = getpid();
+    const ucontext_t* uc = reinterpret_cast<const ucontext_t*>(context);
+#ifdef __linux__
+    killid = (pid_t) syscall(SYS_gettid);
+    if (uc) {
+        type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
+    }
+#endif
     const char * const signame = signal_name(signo);
     const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
@@ -311,22 +329,22 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGBUS:
         switch (info->si_code) {
         case BUS_ADRALN: // invalid address alignment
-            fprintf(f, " - BUS_ADRALN");
+            fputs(" - BUS_ADRALN", f);
             break;
         case BUS_ADRERR: // nonexistent physical address
-            fprintf(f, " - BUS_ADRERR");
+            fputs(" - BUS_ADRERR", f);
             break;
         case BUS_OBJERR: // object-specific hardware error
-            fprintf(f, " - BUS_OBJERR");
+            fputs(" - BUS_OBJERR", f);
             break;
 #ifdef BUS_MCEERR_AR
         case BUS_MCEERR_AR: // Hardware memory error consumed on a machine check;
-            fprintf(f, " - BUS_MCEERR_AR");
+            fputs(" - BUS_MCEERR_AR", f);
             break;
 #endif
 #ifdef BUS_MCEERR_AO
         case BUS_MCEERR_AO: // Hardware memory error detected in process but not consumed
-            fprintf(f, " - BUS_MCEERR_AO");
+            fputs(" - BUS_MCEERR_AO", f);
             break;
 #endif
         default:
@@ -338,28 +356,28 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGFPE:
         switch (info->si_code) {
         case FPE_INTDIV: //     integer divide by zero
-            fprintf(f, " - FPE_INTDIV");
+            fputs(" - FPE_INTDIV", f);
             break;
         case FPE_INTOVF: //     integer overflow
-            fprintf(f, " - FPE_INTOVF");
+            fputs(" - FPE_INTOVF", f);
             break;
         case FPE_FLTDIV: //     floating-point divide by zero
-            fprintf(f, " - FPE_FLTDIV");
+            fputs(" - FPE_FLTDIV", f);
             break;
         case FPE_FLTOVF: //     floating-point overflow
-            fprintf(f, " - FPE_FLTOVF");
+            fputs(" - FPE_FLTOVF", f);
             break;
         case FPE_FLTUND: //     floating-point underflow
-            fprintf(f, " - FPE_FLTUND");
+            fputs(" - FPE_FLTUND", f);
             break;
         case FPE_FLTRES: //     floating-point inexact result
-            fprintf(f, " - FPE_FLTRES");
+            fputs(" - FPE_FLTRES", f);
             break;
         case FPE_FLTINV: //     floating-point invalid operation
-            fprintf(f, " - FPE_FLTINV");
+            fputs(" - FPE_FLTINV", f);
             break;
         case FPE_FLTSUB: //     subscript out of range
-            fprintf(f, " - FPE_FLTSUB");
+            fputs(" - FPE_FLTSUB", f);
             break;
         default:
             break;
@@ -370,28 +388,28 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGILL:
         switch (info->si_code) {
         case ILL_ILLOPC: //     illegal opcode
-            fprintf(f, " - ILL_ILLOPC");
+            fputs(" - ILL_ILLOPC", f);
             break;
         case ILL_ILLOPN: //    illegal operand
-            fprintf(f, " - ILL_ILLOPN");
+            fputs(" - ILL_ILLOPN", f);
             break;
         case ILL_ILLADR: //    illegal addressing mode
-            fprintf(f, " - ILL_ILLADR");
+            fputs(" - ILL_ILLADR", f);
             break;
         case ILL_ILLTRP: //    illegal trap
-            fprintf(f, " - ILL_ILLTRP");
+            fputs(" - ILL_ILLTRP", f);
             break;
         case ILL_PRVOPC: //    privileged opcode
-            fprintf(f, " - ILL_PRVOPC");
+            fputs(" - ILL_PRVOPC", f);
             break;
         case ILL_PRVREG: //    privileged register
-            fprintf(f, " - ILL_PRVREG");
+            fputs(" - ILL_PRVREG", f);
             break;
         case ILL_COPROC: //    coprocessor error
-            fprintf(f, " - ILL_COPROC");
+            fputs(" - ILL_COPROC", f);
             break;
         case ILL_BADSTK: //    internal stack error
-            fprintf(f, " - ILL_BADSTK");
+            fputs(" - ILL_BADSTK", f);
             break;
         default:
             break;
@@ -401,20 +419,22 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         break;
     case SIGINT:
         bPrintCallstack=false;
-        fprintf(f, ".\n");
+        fputs(".\n", f);
         break;
     case SIGSEGV:
         switch (info->si_code) {
         case SEGV_MAPERR: //    address not mapped to object
-            fprintf(f, " - SEGV_MAPERR");
+            fputs(" - SEGV_MAPERR", f);
             break;
         case SEGV_ACCERR: //    invalid permissions for mapped object
-            fprintf(f, " - SEGV_ACCERR");
+            fputs(" - SEGV_ACCERR", f);
             break;
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).\n",
+        fprintf(f, " (%sat 0x%p).\n",
+                (type==-1)? "" :
+                (type==0) ? "reading " : "writing ",
                 info->si_addr);
         break;
     default:
@@ -425,7 +445,10 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         print_stacktrace(f, true);
         fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
-    abort();
+
+    // now let the system proceed, shutdown and hopefully dump core for post-mortem analysis
+    signal(signo, SIG_DFL);
+    kill(killid, signo);
 }
 #endif
 
