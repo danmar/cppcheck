@@ -112,8 +112,8 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         // some template/cast stuff.. check that the template arguments are same
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
-        const Token *end1 = tok1->next()->link();
-        const Token *end2 = tok2->next()->link();
+        const Token *end1 = t1->link();
+        const Token *end2 = t2->link();
         while (t1 && t2 && t1 != end1 && t2 != end2) {
             if (t1->str() != t2->str())
                 return false;
