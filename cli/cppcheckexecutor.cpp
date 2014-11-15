@@ -38,7 +38,13 @@
 #include <cstdio>
 #include <signal.h>
 #include <unistd.h>
-#include <ucontext.h>
+#if defined(__APPLE__)
+#   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
+#   include <ucontext.h>
+#   undef _XOPEN_SOURCE
+#else
+#   include <ucontext.h>
+#endif
 #ifdef __linux__
 #include <sys/syscall.h>
 #include <sys/types.h>
