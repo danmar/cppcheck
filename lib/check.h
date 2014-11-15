@@ -58,26 +58,6 @@ public:
         return _instances;
     }
 
-    /**
-     * analyse code - must be thread safe
-     * @param tokens The tokens to analyse
-     * @param result container where results are stored
-     */
-    virtual void analyse(const Token *tokens, std::set<std::string> &result) const {
-        // suppress compiler warnings
-        (void)tokens;
-        (void)result;
-    }
-
-    /**
-     * Save analysis data - the caller ensures thread safety
-     * @param data The data where the results are saved
-     */
-    virtual void saveAnalysisData(const std::set<std::string> &data) const {
-        // suppress compiler warnings
-        (void)data;
-    }
-
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
     }
@@ -105,6 +85,23 @@ public:
 
     bool inconclusiveFlag() const {
         return _settings && _settings->inconclusive;
+    }
+
+    /** Base class used for whole-program analysis */
+    class FileInfo {
+    public:
+        FileInfo() {}
+        virtual ~FileInfo() {}
+    };
+
+    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer) const {
+        (void)tokenizer;
+        return nullptr;
+    }
+
+    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, ErrorLogger &errorLogger) {
+        (void)fileInfo;
+        (void)errorLogger;
     }
 
 protected:

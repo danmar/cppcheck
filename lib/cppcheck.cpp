@@ -48,6 +48,10 @@ CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
 
 CppCheck::~CppCheck()
 {
+    while (!fileInfo.empty()) {
+        delete fileInfo.back();
+        fileInfo.pop_back();
+    }
     S_timerResults.ShowResults(_settings._showtime);
 }
 
@@ -309,19 +313,6 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     std::istringstream istr(code);
     tokenizer.tokenize(istr, filename.c_str());
     tokenizer.simplifyTokenList2();
-
-    // Analyse the tokens..
-    std::set<std::string> data;
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        (*it)->analyse(tokenizer.tokens(), data);
-    }
-
-    // Save analysis results..
-    // TODO: This loop should be protected by a mutex or something like that
-    //       The saveAnalysisData must _not_ be called from many threads at the same time.
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        (*it)->saveAnalysisData(data);
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -409,6 +400,13 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
 
             Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
             (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
+        }
+
+        // Analyse the tokens..
+        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+            Check::FileInfo *fi = (*it)->getFileInfo(&_tokenizer);
+            if (fi != nullptr)
+                fileInfo.push_back(fi);
         }
 
         if (_settings.terminated())
@@ -690,3 +688,11 @@ void CppCheck::getErrorMessages()
     Tokenizer::getErrorMessages(this, &_settings);
     Preprocessor::getErrorMessages(this, &_settings);
 }
+
+void CppCheck::analyseWholeProgram()
+{
+    // Analyse the tokens..
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+        (*it)->analyseWholeProgram(fileInfo, *this);
+}
+

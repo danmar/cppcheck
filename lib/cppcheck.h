@@ -24,6 +24,7 @@
 #include "config.h"
 #include "settings.h"
 #include "errorlogger.h"
+#include "check.h"
 
 #include <string>
 #include <list>
@@ -134,6 +135,9 @@ public:
         _simplify = false;
     }
 
+    /** analyse whole program, run this after all TUs has been scanned. */
+    void analyseWholeProgram();
+
 private:
 
     /** @brief There has been a internal error => Report information message */
@@ -210,6 +214,9 @@ private:
 
     /** Simplify code? true by default */
     bool _simplify;
+
+    /** File info used for whole program analysis */
+    std::list<Check::FileInfo*> fileInfo;
 };
 
 /// @}
