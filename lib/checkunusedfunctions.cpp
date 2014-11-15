@@ -25,19 +25,25 @@
 #include <cctype>
 //---------------------------------------------------------------------------
 
-
-
 // Register this check class
-CheckUnusedFunctions CheckUnusedFunctions::instance;
-
+namespace {
+    CheckUnusedFunctions instance;
+}
 
 //---------------------------------------------------------------------------
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
+Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
+    if (!settings->isEnabled("unusedFunction"))
+        return nullptr;
+
+    const SymbolDatabase* symbolDatabase = tokenizer->getSymbolDatabase();
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+
+    const std::string FileName = tokenizer->list.getFiles().front();
 
     // Function declarations..
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
@@ -54,24 +60,24 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (func->retDef->str() == "template")
             continue;
 
-        FunctionUsage &usage = _functions[func->name()];
+        FunctionUsage &usage = fileInfo->_functions[func->name()];
 
         if (!usage.lineNumber)
             usage.lineNumber = func->token->linenr();
 
         // No filename set yet..
         if (usage.filename.empty()) {
-            usage.filename = tokenizer.list.getSourceFilePath();
+            usage.filename = tokenizer->list.getSourceFilePath();
         }
         // Multiple files => filename = "+"
-        else if (usage.filename != tokenizer.list.getSourceFilePath()) {
+        else if (usage.filename != tokenizer->list.getSourceFilePath()) {
             //func.filename = "+";
             usage.usedOtherFile |= usage.usedSameFile;
         }
     }
 
     // Function usage..
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = tokenizer->tokens(); tok; tok = tok->next()) {
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
@@ -88,11 +94,11 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
-                    if (_functions.find(markupVarToken->str()) != _functions.end())
-                        _functions[markupVarToken->str()].usedOtherFile = true;
+                    if (fileInfo->_functions.find(markupVarToken->str()) != fileInfo->_functions.end())
+                        fileInfo->_functions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
-                        FunctionUsage &func = _functions[markupVarToken->str()];
-                        func.filename = tokenizer.list.getSourceFilePath();
+                        FunctionUsage &func = fileInfo->_functions[markupVarToken->str()];
+                        func.filename = tokenizer->list.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
                         else
@@ -110,15 +116,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 if (settings->library.isexportedprefix(tok->str(), propToken->str())) {
                     const Token* nextPropToken = propToken->next();
                     const std::string& value = nextPropToken->str();
-                    if (_functions.find(value) != _functions.end()) {
-                        _functions[value].usedOtherFile = true;
+                    if (fileInfo->_functions.find(value) != fileInfo->_functions.end()) {
+                        fileInfo->_functions[value].usedOtherFile = true;
                     }
                 }
                 if (settings->library.isexportedsuffix(tok->str(), propToken->str())) {
                     const Token* prevPropToken = propToken->previous();
                     const std::string& value = prevPropToken->str();
-                    if (value != ")" && _functions.find(value) != _functions.end()) {
-                        _functions[value].usedOtherFile = true;
+                    if (value != ")" && fileInfo->_functions.find(value) != fileInfo->_functions.end()) {
+                        fileInfo->_functions[value].usedOtherFile = true;
                     }
                 }
                 propToken = propToken->next();
@@ -133,7 +139,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 while (propToken && propToken->str() != ")") {
                     const std::string& value = propToken->str();
                     if (!value.empty()) {
-                        _functions[value].usedOtherFile = true;
+                        fileInfo->_functions[value].usedOtherFile = true;
                         break;
                     }
                     propToken = propToken->next();
@@ -158,7 +164,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 }
                 if (index == argIndex) {
                     value = value.substr(1, value.length() - 2);
-                    _functions[value].usedOtherFile = true;
+                    fileInfo->_functions[value].usedOtherFile = true;
                 }
             }
         }
@@ -202,7 +208,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (funcname) {
-            FunctionUsage &func = _functions[ funcname->str()];
+            FunctionUsage &func = fileInfo->_functions[ funcname->str()];
 
             if (func.filename.empty() || func.filename == "+")
                 func.usedOtherFile = true;
@@ -210,13 +216,33 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 func.usedSameFile = true;
         }
     }
+
+    return fileInfo;
 }
 
 
 
-
-void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
+void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger)
 {
+    std::map<std::string, FunctionUsage> _functions;
+    for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+        const MyFileInfo *f = dynamic_cast<MyFileInfo*>(*it);
+        if (f) {
+            for (std::map<std::string, FunctionUsage>::const_iterator it2 = f->_functions.begin(); it2 != f->_functions.end(); ++it2) {
+                std::map<std::string, FunctionUsage>::iterator it3 = _functions.find(it2->first);
+                if (it3 == _functions.end())
+                    _functions[it2->first] = it2->second;
+                else {
+                    if (it3->second.filename.empty()) {
+                        it3->second.filename   = it2->second.filename;
+                        it3->second.lineNumber = it2->second.lineNumber;
+                    }
+                    it3->second.usedOtherFile |= it2->second.usedOtherFile;
+                }
+            }
+        }
+    }
+
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
@@ -233,7 +259,7 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
                 filename = "";
             else
                 filename = func.filename;
-            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
+            CheckUnusedFunctions::unusedFunctionError(&errorLogger, filename, func.lineNumber, it->first);
         } else if (! func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*

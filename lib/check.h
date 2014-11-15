@@ -94,8 +94,9 @@ public:
         virtual ~FileInfo() {}
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer) const {
+    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
         (void)tokenizer;
+        (void)settings;
         return nullptr;
     }
 

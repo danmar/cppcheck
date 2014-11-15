@@ -1013,8 +1013,9 @@ public:
 /// @}
 
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer) const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
+    (void)settings;
     MyFileInfo * mfi = new MyFileInfo;
     analyseFunctions(tokenizer, mfi->uvarFunctions);
     // TODO: add suspicious function calls

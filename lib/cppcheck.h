@@ -83,12 +83,6 @@ public:
     unsigned int check(const std::string &path, const std::string &content);
 
     /**
-     * @brief Check function usage.
-     * @note Call this after all files has been checked
-     */
-    void checkFunctionUsage();
-
-    /**
      * @brief Get reference to current settings.
      * @return a reference to current settings
      */

@@ -65,7 +65,7 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
+        settings.addEnabled("unusedFunction");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -74,8 +74,10 @@ private:
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
-        checkUnusedFunctions.check(this);
+        std::list<Check::FileInfo*> fileInfo;
+        fileInfo.push_back(checkUnusedFunctions.getFileInfo(&tokenizer, &settings));
+        checkUnusedFunctions.analyseWholeProgram(fileInfo,*this);
+        delete fileInfo.back();
     }
 
     void incondition() {
@@ -326,6 +328,8 @@ private:
 
         const char code[] = "static void f() { }";
 
+        std::list<Check::FileInfo*> fileInfo;
+
         for (int i = 1; i <= 2; ++i) {
             std::ostringstream fname;
             fname << "test" << i << ".cpp";
@@ -334,16 +338,21 @@ private:
             errout.str("");
 
             Settings settings;
+            settings.addEnabled("unusedFunction");
 
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, fname.str().c_str());
 
-            c.parseTokens(tokenizer, "someFile.c", &settings);
+            fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
         }
 
         // Check for unused functions..
-        c.check(this);
+        c.analyseWholeProgram(fileInfo,*this);
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
