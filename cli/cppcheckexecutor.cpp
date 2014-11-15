@@ -786,6 +786,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         }
 
         cppcheck.checkFunctionUsage();
+        cppcheck.analyseWholeProgram();
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {

@@ -1804,3 +1804,94 @@ void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std
                 "The number of bytes to write (" + MathLib::toString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::toString(stringLength)+ " bytes)."
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
+
+Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer) const
+{
+    MyFileInfo *fileInfo = new MyFileInfo;
+
+    // Array usage..
+    const SymbolDatabase* const symbolDatabase = tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * const scope = symbolDatabase->functionScopes[i];
+        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% [")          &&
+                Token::Match(tok->linkAt(1), "] !![") &&
+                tok->variable()                       &&
+                tok->variable()->isExtern()           &&
+                tok->variable()->isGlobal()           &&
+                tok->next()->astOperand2()) {
+                const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
+                if (value && value->intvalue > 0) {
+                    struct MyFileInfo::ArrayUsage arrayUsage;
+                    arrayUsage.index = value->intvalue;
+                    arrayUsage.fileName = tokenizer->list.file(tok);
+                    arrayUsage.linenr = tok->linenr();
+                    std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
+                    if (it == fileInfo->arrayUsage.end() || it->second.index < arrayUsage.index)
+                        fileInfo->arrayUsage[tok->str()] = arrayUsage;
+                }
+            }
+        }
+    }
+
+    // Arrays..
+    const std::list<Variable> &varlist = symbolDatabase->scopeList.front().varlist;
+    for (std::list<Variable>::const_iterator it = varlist.begin(); it != varlist.end(); ++it) {
+        const Variable &var = *it;
+        if (!var.isStatic() && var.isArray() && var.dimensions().size() == 1U)
+            fileInfo->arraySize[var.name()] = var.dimension(0U);
+    }
+
+    return fileInfo;
+}
+
+void CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger)
+{
+    // Merge all fileInfo
+    MyFileInfo all;
+    for (std::list<Check::FileInfo*>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(*it);
+        if (!fi)
+            continue;
+
+        // merge array usage
+        for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it2 = fi->arrayUsage.begin(); it2 != fi->arrayUsage.end(); ++it2) {
+            std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator allit = all.arrayUsage.find(it2->first);
+            if (allit == all.arrayUsage.end() || it2->second.index > allit->second.index)
+                all.arrayUsage[it2->first] = it2->second;
+        }
+
+        // merge array info
+        for (std::map<std::string, MathLib::bigint>::const_iterator it2 = fi->arraySize.begin(); it2 != fi->arraySize.end(); ++it2) {
+            std::map<std::string, MathLib::bigint>::const_iterator allit = all.arraySize.find(it2->first);
+            if (allit == all.arraySize.end())
+                all.arraySize[it2->first] = it2->second;
+            else
+                all.arraySize[it2->first] = -1;
+        }
+    }
+
+    // Check buffer usage
+    for (std::map<std::string, struct MyFileInfo::ArrayUsage>::const_iterator it = all.arrayUsage.begin(); it != all.arrayUsage.end(); ++it) {
+        std::map<std::string, MathLib::bigint>::const_iterator sz = all.arraySize.find(it->first);
+        if (sz != all.arraySize.end() && sz->second > 0 && sz->second < it->second.index) {
+            ErrorLogger::ErrorMessage::FileLocation fileLoc;
+            fileLoc.setfile(it->second.fileName);
+            fileLoc.line = it->second.linenr;
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            locationList.push_back(fileLoc);
+
+            std::ostringstream ostr;
+            ostr << "Array " << it->first << '[' << sz->second << "] accessed at index " << it->second.index << " which is out of bounds";
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   Severity::error,
+                                                   ostr.str(),
+                                                   "arrayIndexOutOfBounds",
+                                                   false);
+            errorLogger.reportErr(errmsg);
+        }
+    }
+}

@@ -203,6 +203,28 @@ public:
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index);
 
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct ArrayUsage {
+            MathLib::bigint   index;
+            std::string       fileName;
+            unsigned int      linenr;
+        };
+
+        /* key:arrayName */
+        std::map<std::string, struct ArrayUsage> arrayUsage;
+
+        /* key:arrayName, data:arraySize */
+        std::map<std::string, MathLib::bigint>  arraySize;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer) const;
+
+    /** @brief Analyse all file infos for all TU */
+    virtual void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+
 private:
 
     static bool isArrayOfStruct(const Token* tok, int &position);

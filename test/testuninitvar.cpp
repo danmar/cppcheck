@@ -1735,7 +1735,7 @@ private:
 
         std::set<std::string> f;
         const CheckUninitVar check((const Tokenizer *)0, (const Settings *)0, (ErrorLogger *)0);
-        check.analyse(tokenizer.tokens(), f);
+        check.analyseFunctions(&tokenizer, f);
 
         std::string ret;
         for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)

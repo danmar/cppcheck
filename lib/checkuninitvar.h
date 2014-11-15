@@ -69,15 +69,23 @@ public:
     void deadPointer();
     void deadPointerError(const Token *pointer, const Token *alias);
 
-    /**
-     * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
-     * @param tokens [in] the token list
-     * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
-     */
-    void analyse(const Token * tokens, std::set<std::string> &func) const;
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /* functions that must have initialized data */
+        std::set<std::string>  uvarFunctions;
 
-    /** Save analysis results */
-    void saveAnalysisData(const std::set<std::string> &data) const;
+        /* functions calls with uninitialized data */
+        std::set<std::string>  functionCalls;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer) const;
+
+    /** @brief Analyse all file infos for all TU */
+    virtual void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+
+    void analyseFunctions(const Tokenizer *tokenizer, std::set<std::string> &f) const;
 
     /** @brief new type of check: check execution paths */
     void executionPaths();
