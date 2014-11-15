@@ -144,7 +144,16 @@ def scanarchive(filepath, jobs):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:6] == 'iceowl' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
+#
+# List of skipped packages - which trigger known yet unresolved problems with cppcheck.
+# The issues on trac (http://trac.cppcheck.net) are given for reference 
+# boost #3654 (?)
+# flite #5975
+# insight#5184
+# valgrind #6151
+#
+
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
