@@ -388,6 +388,7 @@ public:
      *
      * @param needle Current token
      * @param haystack e.g. "one|two" or "|one|two"
+     * @param varid optional varid of token
      * @return 1 if needle is found from the haystack
      *         0 if needle was empty string
      *        -1 if needle was not found

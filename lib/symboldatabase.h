@@ -137,7 +137,7 @@ class CPPCHECKLIB Variable {
         fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
         fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
-        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string<T>|u16string|u32string */
+        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
         fIsIntType   = (1 << 12), /** @brief Integral type */
         fIsFloatType = (1 << 13)  /** @brief Floating point type */
     };
