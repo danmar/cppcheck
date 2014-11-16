@@ -49,6 +49,10 @@ private:
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
         TEST_CASE(incdec);
+        TEST_CASE(sin);
+        TEST_CASE(cos);
+        TEST_CASE(tan);
+        TEST_CASE(abs);
     }
 
     void isGreater() const {
@@ -139,7 +143,7 @@ private:
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
     }
 
-    void calculate1() const { // mod
+    void calculate1() const {
         ASSERT_EQUALS("0"    , MathLib::calculate("2"    , "1"    , '%'));
         ASSERT_EQUALS("0.0"  , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
@@ -149,6 +153,9 @@ private:
         ASSERT_EQUALS("1.7"  , MathLib::calculate("18.5" , "4.2" , '%'));
         ASSERT_THROW(MathLib::calculate("123", "0", '%'), InternalError); // throw
         MathLib::calculate("123", "0.0", '%'); // don't throw
+
+        ASSERT_EQUALS("0"    , MathLib::calculate("1"    , "1"    , '^'));
+        ASSERT_EQUALS("3"    , MathLib::calculate("2"    , "1"    , '^'));
     }
 
     void convert() const {
@@ -820,6 +827,25 @@ private:
         }
         // invalid operation
         ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
+    }
+
+    void sin() {
+        ASSERT_EQUALS("0.0"   , MathLib::sin("0"));
+    }
+    void cos() {
+        ASSERT_EQUALS("1.0"   , MathLib::cos("0"));
+    }
+    void tan() {
+        ASSERT_EQUALS("0.0"   , MathLib::tan("0"));
+    }
+    void abs() {
+        ASSERT_EQUALS("0.0"   , MathLib::abs("0"));
+        ASSERT_EQUALS("0.0"   , MathLib::abs("+0"));
+        ASSERT_EQUALS("0.0"   , MathLib::abs("-0"));
+        ASSERT_EQUALS("1.0"   , MathLib::abs("+1"));
+        ASSERT_EQUALS("1.0"   , MathLib::abs("+1.0"));
+        ASSERT_EQUALS("1.0"   , MathLib::abs("-1"));
+        ASSERT_EQUALS("1.0"   , MathLib::abs("-1.0"));
     }
 };
 
