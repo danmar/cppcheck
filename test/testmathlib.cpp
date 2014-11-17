@@ -552,6 +552,10 @@ private:
         ASSERT_EQUALS(false, MathLib::isFloat(" 0"));
 
         ASSERT_EQUALS(true , MathLib::isFloat("0."));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.L"));
         ASSERT_EQUALS(false , MathLib::isFloat("0. "));
         ASSERT_EQUALS(false , MathLib::isFloat(" 0. "));
         ASSERT_EQUALS(false , MathLib::isFloat(" 0."));
@@ -560,6 +564,10 @@ private:
         ASSERT_EQUALS(false , MathLib::isFloat("..0.."));
         ASSERT_EQUALS(false , MathLib::isFloat("..0"));
         ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.0f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.0F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.0l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.0L"));
         ASSERT_EQUALS(true , MathLib::isFloat("-0."));
         ASSERT_EQUALS(true , MathLib::isFloat("+0."));
         ASSERT_EQUALS(true , MathLib::isFloat("-0.0"));
@@ -583,8 +591,14 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+100"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+100f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+100L"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+007")); // to be sure about #5485
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+001f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+1E+001L"));
         ASSERT_EQUALS(false , MathLib::isFloat("+1E+001f2"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+10000"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1E+1"));
@@ -597,8 +611,14 @@ private:
 
         ASSERT_EQUALS(true , MathLib::isFloat("0.4"));
         ASSERT_EQUALS(true , MathLib::isFloat("2352.3f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.3F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.3l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.3L"));
         ASSERT_EQUALS(true , MathLib::isFloat("0.00004"));
         ASSERT_EQUALS(true , MathLib::isFloat("2352.00001f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001F"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001l"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001L"));
         ASSERT_EQUALS(true , MathLib::isFloat(".4"));
         ASSERT_EQUALS(true , MathLib::isFloat(".3e2"));
         ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
