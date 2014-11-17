@@ -3006,7 +3006,8 @@ const Function* Scope::findFunction(const Token *tok) const
             // check for a match with a variable
             if (Token::Match(arguments[j], "%var% ,|)") && arguments[j]->varId()) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
-                if (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                if (callarg &&
+                    callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
                     callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
                     callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
                     same++;
