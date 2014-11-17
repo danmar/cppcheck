@@ -135,6 +135,7 @@ private:
         TEST_CASE(uninitVar25); // ticket #4789
         TEST_CASE(uninitVar26);
         TEST_CASE(uninitVar27); // ticket #5170 - rtl::math::setNan(&d)
+        TEST_CASE(uninitVar28); // ticket #6258
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2106,6 +2107,21 @@ private:
               "    A() {\n"
               "        ::rtl::math::setNan(&d);\n"
               "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar28() {
+        check("class Fred {\n"
+              "    int i;\n"
+              "    float f;\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        foo(1);\n"
+              "        foo(1.0f);\n"
+              "    }\n"
+              "    void foo(int a) { i = a; }\n"
+              "    void foo(float a) { f = a; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

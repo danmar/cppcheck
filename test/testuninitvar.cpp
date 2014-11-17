@@ -68,6 +68,7 @@ private:
         TEST_CASE(uninitvar2_4494);      // #4494
         TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
         TEST_CASE(uninitvar7); // ticket #5971
+        TEST_CASE(uninitvar8); // ticket #6230
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2647,6 +2648,21 @@ private:
 
         // Assume dfs is a non POD type if file is C++
         checkUninitVar2(code, "test.cpp");
+    }
+
+    void uninitvar8() {
+        const char code[] = "struct Fred {\n"
+                            "    void Sync(dsmp_t& type, int& len, int limit = 123);\n"
+                            "    void Sync(int& syncpos, dsmp_t& type, int& len, int limit = 123);\n"
+                            "    void FindSyncPoint();\n"
+                            "};\n"
+                            "void Fred::FindSyncPoint() {\n"
+                            "    dsmp_t type;\n"
+                            "    int syncpos, len;\n"
+                            "    Sync(syncpos, type, len);\n"
+                            "}";
+        checkUninitVar2(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Handling of function calls

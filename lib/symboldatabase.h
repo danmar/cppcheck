@@ -796,6 +796,8 @@ private:
      * @return true if tok points to a variable declaration, false otherwise
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+
+    void findFunctionInBase(const Token * tok, size_t args, std::vector<const Function *> & matches) const;
 };
 
 class CPPCHECKLIB SymbolDatabase {

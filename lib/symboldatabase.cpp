@@ -2935,60 +2935,174 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
 //---------------------------------------------------------------------------
 
-/** @todo This function only counts the number of arguments in the function call.
-    It does not take into account function constantness.
-    It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
- */
-const Function* Scope::findFunction(const Token *tok) const
+void Scope::findFunctionInBase(const Token * tok, size_t args, std::vector<const Function *> & matches) const
 {
-    std::list<Function>::const_iterator it;
-
-    // this is a function call so try to find it based on name and arguments
-    for (it = functionList.begin(); it != functionList.end(); ++it) {
-        if (it->tokenDef->str() == tok->str()) {
-            const Function *func = &*it;
-            const Token *end = tok->linkAt(1);
-            if (end) {
-                // check the arguments
-                unsigned int args = 0;
-                const Token *arg = tok->tokAt(2);
-                while (arg && arg != end) {
-                    /** @todo check argument type for match */
-
-                    // mismatch parameter: passing parameter by address to function, argument is reference
-                    if (arg->str() == "&") {
-                        // check that function argument type is not mismatching
-                        const Variable *funcarg = func->getArgumentVar(args);
-                        if (funcarg && funcarg->isReference()) {
-                            args = ~0U;
-                            break;
-                        }
-                    }
-
-                    args++;
-                    arg = arg->nextArgument();
-                }
-
-                // check for argument count match or default arguments
-                if (args == func->argCount() ||
-                    (args < func->argCount() && args >= func->minArgCount()))
-                    return func;
-            }
-        }
-    }
-
-    // check in base classes
     if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
         for (std::size_t i = 0; i < definedType->derivedFrom.size(); ++i) {
             const Type *base = definedType->derivedFrom[i].type;
             if (base && base->classScope) {
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
-                const Function * func = base->classScope->findFunction(tok);
-                if (func)
-                    return func;
+
+                for (std::list<Function>::const_iterator it = base->classScope->functionList.begin(); it != base->classScope->functionList.end(); ++it) {
+                    if (it->tokenDef->str() == tok->str()) {
+                        const Function *func = &*it;
+                        if (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount())) {
+                            matches.push_back(func);
+                        }
+                    }
+                }
+
+                base->classScope->findFunctionInBase(tok, args, matches);
             }
         }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+/** @todo This function only counts the number of arguments in the function call.
+    It does not take into account function constantness.
+    It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
+ */
+const Function* Scope::findFunction(const Token *tok) const
+{
+    // make sure this is a function call
+    const Token *end = tok->linkAt(1);
+    if (!end)
+        return nullptr;
+
+    std::vector<const Token *> arguments;
+
+    // find all the arguments for this function call
+    const Token *arg = tok->tokAt(2);
+    while (arg && arg != end) {
+        arguments.push_back(arg);
+        arg = arg->nextArgument();
+    }
+
+    std::vector<const Function *> matches;
+
+    // find all the possible functions that could match
+    const std::size_t args = arguments.size();
+    for (std::list<Function>::const_iterator it = functionList.begin(); it != functionList.end(); ++it) {
+        if (it->tokenDef->str() == tok->str()) {
+            const Function *func = &*it;
+            if (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount())) {
+                matches.push_back(func);
+            }
+        }
+    }
+
+    // check in base classes
+    findFunctionInBase(tok, args, matches);
+
+    // check each function against the arguments in the function call for a match
+    for (size_t i = 0; i < matches.size(); ++i) {
+        const Function * func = matches[i];
+        size_t same = 0;
+        for (std::size_t j = 0; j < args; ++j) {
+            const Variable *funcarg = func->getArgumentVar(j);
+            // check for a match with a variable
+            if (Token::Match(arguments[j], "%var% ,|)") && arguments[j]->varId()) {
+                const Variable * callarg = check->getVariableFromVarId(arguments[j]->varId());
+                if (callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
+                    callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
+                    callarg->typeStartToken()->isLong() == funcarg->typeStartToken()->isLong()) {
+                    same++;
+                }
+            }
+
+            // check for a match with a numeric literal
+            else if (Token::Match(arguments[j], "%num% ,|)")) {
+                if (MathLib::isInt(arguments[j]->str())) {
+                    if (arguments[j]->str().find("ll") != std::string::npos ||
+                        arguments[j]->str().find("LL") != std::string::npos) {
+                        if (arguments[j]->str().find("u") != std::string::npos ||
+                            arguments[j]->str().find("U") != std::string::npos) {
+                            if (funcarg->typeStartToken()->str() == "long" &&
+                                funcarg->typeStartToken()->isLong() &&
+                                funcarg->typeStartToken()->isUnsigned()) {
+                                same++;
+                            }
+                        } else {
+                            if (funcarg->typeStartToken()->str() == "long" &&
+                                funcarg->typeStartToken()->isLong() &&
+                                !funcarg->typeStartToken()->isUnsigned()) {
+                                same++;
+                            }
+                        }
+                    } else if (arguments[j]->str().find("l") != std::string::npos ||
+                               arguments[j]->str().find("L") != std::string::npos) {
+                        if (arguments[j]->str().find("u") != std::string::npos ||
+                            arguments[j]->str().find("U") != std::string::npos) {
+                            if (funcarg->typeStartToken()->str() == "long" &&
+                                !funcarg->typeStartToken()->isLong() &&
+                                funcarg->typeStartToken()->isUnsigned()) {
+                                same++;
+                            }
+                        } else {
+                            if (funcarg->typeStartToken()->str() == "long" &&
+                                !funcarg->typeStartToken()->isLong() &&
+                                !funcarg->typeStartToken()->isUnsigned()) {
+                                same++;
+                            }
+                        }
+                    } else if (arguments[j]->str().find("u") != std::string::npos ||
+                               arguments[j]->str().find("U") != std::string::npos) {
+                        if (funcarg->typeStartToken()->str() == "int" &&
+                            funcarg->typeStartToken()->isUnsigned()) {
+                            same++;
+                        } else if (Token::Match(funcarg->typeStartToken(), "char|short")) {
+                            same++;
+                        }
+                    } else {
+                        if (funcarg->typeStartToken()->str() == "int" &&
+                            !funcarg->typeStartToken()->isUnsigned()) {
+                            same++;
+                        } else if (Token::Match(funcarg->typeStartToken(), "char|short|int")) {
+                            same++;
+                        }
+                    }
+                } else {
+                    if (arguments[j]->str().find("f") != std::string::npos ||
+                        arguments[j]->str().find("F") != std::string::npos) {
+                        if (funcarg->typeStartToken()->str() == "float") {
+                            same++;
+                        }
+                    } else if (arguments[j]->str().find("l") != std::string::npos ||
+                               arguments[j]->str().find("L") != std::string::npos) {
+                        if (funcarg->typeStartToken()->str() == "double" &&
+                            funcarg->typeStartToken()->isLong())  {
+                            same++;
+                        }
+                    } else {
+                        if (funcarg->typeStartToken()->str() == "double" &&
+                            !funcarg->typeStartToken()->isLong()) {
+                            same++;
+                        }
+                    }
+                }
+            }
+
+            // check that function argument type is not mismatching
+            else if (arguments[j]->str() == "&" && funcarg && funcarg->isReference()) {
+                // can't match so remove this function from possible matches
+                matches.erase(matches.begin() + i--);
+                break;
+            }
+        }
+
+        // check if all arguments matched
+        if (same == args) {
+            // found a match
+            return func;
+        }
+    }
+
+    // no exact match so just return first function found
+    if (!matches.empty()) {
+        return matches[0];
     }
 
     return nullptr;
