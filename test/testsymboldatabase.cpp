@@ -229,6 +229,7 @@ private:
         TEST_CASE(findFunction3);
         TEST_CASE(findFunction4);
         TEST_CASE(findFunction5); // #6230
+        TEST_CASE(findFunction6);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2351,6 +2352,14 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "Sync ( type");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
     }
+
+    void findFunction6() { // avoid null pointer access
+        GET_SYMBOL_DB("void addtoken(Token** rettail, const Token *tok);\n"
+                      "void CheckMemoryLeakInFunction::getcode(const Token *tok ) {\n"
+                      "   addtoken(&rettail, tok);\n"
+                      "}");
+    }
+
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
                 ASSERT_EQUALS(true, x != nullptr);                                  \
