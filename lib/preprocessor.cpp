@@ -3099,10 +3099,10 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     }
 
                     // get parameters from line..
+                    if (macro->params().size() && pos >= line.length())
+                        break;
                     std::vector<std::string> params;
                     std::string::size_type pos2 = pos;
-                    if (macro->params().size() && pos2 >= line.length())
-                        break;
 
                     // number of newlines within macro use
                     unsigned int numberOfNewlines = 0;

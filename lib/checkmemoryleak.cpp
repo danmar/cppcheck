@@ -636,7 +636,9 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
     for (; tok; tok = tok->nextArgument()) {
         ++par;
-        if (varid > 0 && Token::Match(tok, "%varid% [,()]", varid)) {
+        if (varid == 0)
+            continue;
+        if (Token::Match(tok, "%varid% [,()]", varid)) {
             if (dot)
                 return "use";
 
@@ -648,10 +650,10 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (numpar != function->argCount()) // TODO: Handle default parameters
                 return "recursive";
 
+            if (!function->functionScope)
+                return "use";
             const Variable* param = function->getArgumentVar(par-1);
             if (!param || !param->nameToken())
-                return "use";
-            if (!function->functionScope)
                 return "use";
             Token *func = getcode(function->functionScope->classStart->next(), callstack, param->declarationId(), alloctype, dealloctype, false, sz);
             //simplifycode(func);
@@ -671,7 +673,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             TokenList::deleteTokens(func);
             return ret;
         }
-        if (varid > 0 && Token::Match(tok, "& %varid% [,()]", varid)) {
+        if (Token::Match(tok, "& %varid% [,()]", varid)) {
             const Function *func = functok->function();
             if (func == 0)
                 continue;
@@ -687,7 +689,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                 return ret;
             }
         }
-        if (varid > 0 && Token::Match(tok, "%varid% . %var% [,)]", varid))
+        if (Token::Match(tok, "%varid% . %var% [,)]", varid))
             return "use";
     }
     return (eq || _settings->experimental) ? 0 : "callfunc";
@@ -908,9 +910,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             break;
                         }
 
-                        if (!used) {
+                        if (!used && !rhs) {
                             if (Token::Match(tok2, "[=+(,] %varid%", varid)) {
-                                if (!rhs && Token::Match(tok2, "[(,]")) {
+                                if (Token::Match(tok2, "[(,]")) {
                                     used = true;
                                     addtoken(&rettail, tok, "use");
                                     addtoken(&rettail, tok, ";");
