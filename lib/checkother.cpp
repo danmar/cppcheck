@@ -1699,7 +1699,7 @@ void CheckOther::checkIncompleteStatement()
             tok = tok->next()->link();
 
         // C++11 struct/array/etc initialization in initializer list
-        else if (Token::Match(tok->previous(), "%var% {") && !Token::findsimplematch(tok,";",tok->link()))
+        else if (Token::Match(tok->previous(), "%var%|] {") && !Token::findsimplematch(tok,";",tok->link()))
             tok = tok->link();
 
         // C++11 vector initialization / return { .. }

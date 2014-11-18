@@ -185,6 +185,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #6260 - C++11 array initialization
+        check("void foo() {\n"
+              "    static const char* a[][2] {\n"
+              "        {\"b\", \"\"},\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #2482 - false positive for empty struct
         check("struct A {};");
         ASSERT_EQUALS("", errout.str());
