@@ -96,6 +96,7 @@ private:
         TEST_CASE(removeCast13);
         TEST_CASE(removeCast14);
         TEST_CASE(removeCast15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        TEST_CASE(removeCast16); // #6278
 
         TEST_CASE(simplifyFloatCasts); // float casting a integer
 
@@ -1030,7 +1031,12 @@ private:
 
     void removeCast15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
         ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
-                      tokenizeAndStringify("a + static_cast<int>(b ? 60 : 0);",true));
+                      tokenizeAndStringify("a + static_cast<int>(b ? 60 : 0);", true));
+    }
+
+    void removeCast16() { // #6278
+        ASSERT_EQUALS("Get ( pArray ) ;",
+                      tokenizeAndStringify("Get((CObject*&)pArray);", true));
     }
 
     void simplifyFloatCasts() { // float casting integers

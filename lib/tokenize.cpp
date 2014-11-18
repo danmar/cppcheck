@@ -4959,7 +4959,7 @@ void Tokenizer::simplifyCasts()
             continue;
         }
         // #4164 : ((unsigned char)1) => (1)
-        if (Token::Match(tok->next(), "( unsigned| %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
+        if (Token::Match(tok->next(), "( %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
             const MathLib::bigint value = MathLib::toLongNumber(tok->next()->link()->next()->str());
             unsigned int bits = 8 * _typeSize[tok->next()->link()->previous()->str()];
             if (!tok->tokAt(2)->isUnsigned())
@@ -4970,11 +4970,11 @@ void Tokenizer::simplifyCasts()
             continue;
         }
 
-        while ((Token::Match(tok->next(), "( %type% *| *| *| ) *|&| %var%") && (tok->str() != ")" || tok->tokAt(2)->isStandardType())) ||
-               Token::Match(tok->next(), "( const| %type% * *| *| ) *|&| %var%") ||
-               Token::Match(tok->next(), "( const| %type% %type% *| *| *| ) *|&| %var%") ||
-               (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *| ) (") ||
-                                   Token::Match(tok->next(), "( const| %type% %type% * *| *| ) (")))) {
+        while ((Token::Match(tok->next(), "( %type% *| *| *|&| ) *|&| %var%") && (tok->str() != ")" || tok->tokAt(2)->isStandardType())) ||
+               Token::Match(tok->next(), "( const| %type% * *| *|&| ) *|&| %var%") ||
+               Token::Match(tok->next(), "( const| %type% %type% *| *| *|&| ) *|&| %var%") ||
+               (!tok->isName() && (Token::Match(tok->next(), "( %type% * *| *|&| ) (") ||
+                                   Token::Match(tok->next(), "( const| %type% %type% * *| *|&| ) (")))) {
             if (tok->isName() && tok->str() != "return")
                 break;
 
