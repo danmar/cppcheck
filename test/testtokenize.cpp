@@ -6197,6 +6197,7 @@ private:
     void simplifyNull() {
         ASSERT_EQUALS("if ( ! p )", tokenizeAndStringify("if (p==NULL)"));
         ASSERT_EQUALS("f ( NULL ) ;", tokenizeAndStringify("f(NULL);"));
+        ASSERT_EQUALS("char * i ; i = 0 ;", tokenizeAndStringify("char* i = (NULL);"));
     }
 
     void simplifyNullArray() {
