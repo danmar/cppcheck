@@ -30,7 +30,7 @@ private:
     Tokenizer _tokenizer;
 
 public:
-    givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
+    explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
         : _tokenizer(&_settings, 0) {
         std::istringstream iss(sample);
         if (createOnly)
