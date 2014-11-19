@@ -505,7 +505,7 @@ bool MathLib::isDec(const std::string & s)
 
 bool MathLib::isInt(const std::string & s)
 {
-    return isDec(s) || isHex(s) || isOct(s);
+    return isDec(s) || isHex(s) || isOct(s) || isBin(s);
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)

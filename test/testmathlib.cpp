@@ -274,6 +274,8 @@ private:
 
         ASSERT_EQUALS(true , MathLib::isInt("0xff"));
         ASSERT_EQUALS(true , MathLib::isInt("0xa"));
+        ASSERT_EQUALS(true , MathLib::isInt("0b1000"));
+        ASSERT_EQUALS(true , MathLib::isInt("0B1000"));
         ASSERT_EQUALS(true , MathLib::isInt("0l"));
         ASSERT_EQUALS(true , MathLib::isInt("0L"));
         ASSERT_EQUALS(true , MathLib::isInt("0ul"));
