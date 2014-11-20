@@ -423,7 +423,6 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
             break;
         default:
             return false;
-            break;
         }
     }
     return ((state == SUFFIX_U)   ||

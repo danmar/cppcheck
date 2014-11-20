@@ -93,6 +93,9 @@ public:
         }
 
     private:
+        /** No implementation */
+        ScopeGuard& operator=(const ScopeGuard &);
+
         Variables & _guarded;
         bool _insideLoop;
     };
