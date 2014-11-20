@@ -453,7 +453,12 @@ private:
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a) { }", "s"));
         ASSERT_EQUALS(";;dealloc;ifv{}", getcode("FILE *f; if (fclose(f)) { }", "f"));
         ASSERT_EQUALS(";;if(!var){}else{}", getcode("char *s; if (!s) { } else { }", "s"));
-        ASSERT_EQUALS(";;if{}", getcode("char *s; if (a && s) { }", "s"));
+        TODO_ASSERT_EQUALS(";;ifv{}",";;if{}", getcode("char *s; if (a && s) { }", "s"));
+        ASSERT_EQUALS(";;ifv{}", getcode("char *s; if (s && a) { }", "s"));
+        ASSERT_EQUALS(";;;ifv{}", getcode("char *s; int a; if (a && s) { }", "s"));
+        ASSERT_EQUALS(";;;ifv{}", getcode("char *s; int a; if (s && a) { }", "s"));
+        ASSERT_EQUALS(";;ifv{}", getcode("char *s; if (a || s) { }", "s"));
+        ASSERT_EQUALS(";;ifv{}", getcode("char *s; if (s || a) { }", "s"));
         ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
         ASSERT_EQUALS(";;ifv{}", getcode("char *s; if (foo(!s)) { }", "s"));
         ASSERT_EQUALS(";;;if{dealloc;};if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));

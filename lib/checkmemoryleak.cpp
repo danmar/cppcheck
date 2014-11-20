@@ -1036,7 +1036,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             }
                         } else if (tok2->varId() && extravar.find(tok2->varId()) != extravar.end()) {
                             dep = true;
-                        } else if (tok2->varId() == varid && tok2->next()->isConstOp())
+                        } else if (tok2->varId() == varid &&
+                                   (tok2->next()->isConstOp() || tok2->previous()->isConstOp()))
                             dep = true;
                     }
 
