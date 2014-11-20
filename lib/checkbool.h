@@ -37,19 +37,16 @@ class Variable;
 class CPPCHECKLIB CheckBool : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckBool() : Check(myName())
-    {
+    CheckBool() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckBool(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBool checkBool(tokenizer, settings, errorLogger);
 
         // Checks
@@ -60,8 +57,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckBool checkBool(tokenizer, settings, errorLogger);
 
         // Checks
@@ -114,8 +110,7 @@ private:
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void pointerArithBoolError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBool c(0, settings, errorLogger);
 
         c.assignBoolToPointerError(0);
@@ -129,13 +124,11 @@ private:
         c.pointerArithBoolError(0);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Boolean";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Boolean type checks\n"
                "- using increment on boolean\n"
                "- comparison of a boolean with a non-zero integer\n"

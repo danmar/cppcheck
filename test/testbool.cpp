@@ -26,15 +26,13 @@ extern std::ostringstream errout;
 
 class TestBool : public TestFixture {
 public:
-    TestBool() : TestFixture("TestBool")
-    {
+    TestBool() : TestFixture("TestBool") {
     }
 
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
         TEST_CASE(incrementBoolean);
         TEST_CASE(assignBoolToPointer);
@@ -65,8 +63,7 @@ private:
         TEST_CASE(pointerArithBool1);
     }
 
-    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp")
-    {
+    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -89,8 +86,7 @@ private:
     }
 
 
-    void assignBoolToPointer()
-    {
+    void assignBoolToPointer() {
 
         check("void foo(bool *p) {\n"
               "    p = false;\n"
@@ -144,8 +140,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assignBoolToFloat()
-    {
+    void assignBoolToFloat() {
         check("void foo1() {\n"
               "    double d = false;\n"
               "}");
@@ -168,8 +163,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt1()
-    {
+    void comparisonOfBoolExpressionWithInt1() {
         check("void f(int x) {\n"
               "    if ((x && 0x0f)==6)\n"
               "        a++;\n"
@@ -382,8 +376,7 @@ private:
         ASSERT_EQUALS("",errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt2()
-    {
+    void comparisonOfBoolExpressionWithInt2() {
         check("void f(int x) {\n"
               "    if (!x == 10) {\n"
               "        printf(\"x not equal to 10\");\n"
@@ -463,16 +456,14 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt3()
-    {
+    void comparisonOfBoolExpressionWithInt3() {
         check("int f(int x) {\n"
               "    return t<0>() && x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt4()
-    {
+    void comparisonOfBoolExpressionWithInt4() {
         // #5016
         check("void f() {\n"
               "  for(int i = 4; i > -1 < 5 ; --i) {}\n"
@@ -508,8 +499,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool1()
-    {
+    void checkComparisonOfFuncReturningBool1() {
         check("void f(){\n"
               "     int temp = 4;\n"
               "     if(compare1(temp) > compare2(temp)){\n"
@@ -533,8 +523,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool2()
-    {
+    void checkComparisonOfFuncReturningBool2() {
         check("void f(){\n"
               " int temp = 4;\n"
               " bool a = true;\n"
@@ -552,8 +541,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool3()
-    {
+    void checkComparisonOfFuncReturningBool3() {
         check("void f(){\n"
               " int temp = 4;\n"
               " if(compare(temp) > temp){\n"
@@ -570,8 +558,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool4()
-    {
+    void checkComparisonOfFuncReturningBool4() {
         check("void f(){\n"
               "   int temp = 4;\n"
               " bool b = compare2(6);\n"
@@ -596,8 +583,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool5()
-    {
+    void checkComparisonOfFuncReturningBool5() {
         check("void f(){\n"
               "     int temp = 4;\n"
               "     if(compare1(temp) > !compare2(temp)){\n"
@@ -621,8 +607,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool6()
-    {
+    void checkComparisonOfFuncReturningBool6() {
         check("int compare1(int temp);\n"
               "namespace Foo {\n"
               "    bool compare1(int temp);\n"
@@ -681,8 +666,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkComparisonOfBoolWithBool()
-    {
+    void checkComparisonOfBoolWithBool() {
         const char code[] = "void f(){\n"
                             "    int temp = 4;\n"
                             "    bool b = compare2(6);\n"
@@ -711,8 +695,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitwiseOnBoolean()   // 3062
-    {
+    void bitwiseOnBoolean() { // 3062
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a & b) {}\n"
               "}");
@@ -778,8 +761,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incrementBoolean()
-    {
+    void incrementBoolean() {
         check("bool bValue = true;\n"
               "void f() { bValue++; }");
         ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
@@ -795,8 +777,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt1()
-    {
+    void comparisonOfBoolWithInt1() {
         check("void f(bool x) {\n"
               "    if (x < 10) {\n"
               "        printf(\"foo\");\n"
@@ -849,8 +830,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt2()
-    {
+    void comparisonOfBoolWithInt2() {
         check("void f(bool x, int y) {\n"
               "    if (x == y) {\n"
               "        printf(\"foo\");\n"
@@ -880,8 +860,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt3()
-    {
+    void comparisonOfBoolWithInt3() {
         check("void f(int y) {\n"
               "    if (y > false) {\n"
               "        printf(\"foo\");\n"
@@ -911,16 +890,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean with an integer.\n", errout.str());
     }
 
-    void comparisonOfBoolWithInt4()
-    {
+    void comparisonOfBoolWithInt4() {
         check("void f(int x) {\n"
               "    if (!x == 1) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt5()
-    {
+    void comparisonOfBoolWithInt5() {
         check("void SetVisible(int index, bool visible) {\n"
               "    bool (SciTEBase::*ischarforsel)(char ch);\n"
               "    if (visible != GetVisible(index)) { }\n"
@@ -928,24 +905,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt6()   // #4224 - integer is casted to bool
-    {
+    void comparisonOfBoolWithInt6() { // #4224 - integer is casted to bool
         check("void SetVisible(bool b, int i) {\n"
               "    if (b == (bool)i) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt7()   // #4846 - (!x==true)
-    {
+    void comparisonOfBoolWithInt7() { // #4846 - (!x==true)
         check("void f(int x) {\n"
               "    if (!x == true) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pointerArithBool1()   // #5126
-    {
+    void pointerArithBool1() { // #5126
         check("void f(char *p) {\n"
               "    if (p+1){}\n"
               "}");

@@ -86,8 +86,7 @@ private:
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
-        : tokenizer(t), errorLogger(e), settings1(s)
-    {
+        : tokenizer(t), errorLogger(e), settings1(s) {
     }
 
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
@@ -182,14 +181,12 @@ public:
 class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(NULL)
-    {
+    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(0, 0, 0), symbolDatabase(NULL) {
     }
 
     /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings)
-    {
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings) {
         // get the symbol database
         if (tokenizr)
             symbolDatabase = tokenizr->getSymbolDatabase();
@@ -198,8 +195,7 @@ public:
     }
 
     /** @brief run all simplified checks */
-    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.checkReallocUsage();
         checkMemoryLeak.check();
@@ -302,8 +298,7 @@ public:
 
 private:
     /** Report all possible errors (for the --errorlist) */
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakInFunction c(0, settings, e);
 
         c.memleakError(0, "varname");
@@ -321,8 +316,7 @@ private:
      * Get name of class (--doc)
      * @return name of class
      */
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Memory leaks (function variables)";
     }
 
@@ -330,8 +324,7 @@ private:
      * Get class information (--doc)
      * @return Wiki formatted information about this class
      */
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Is there any allocated memory when a function goes out of scope\n";
     }
 
@@ -346,17 +339,14 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakInClass : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(0, 0, 0)
-    {
+    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
     }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings)
-    {
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
         if (!tokenizr->isCPP())
             return;
 
@@ -375,20 +365,17 @@ private:
 
     void unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakInClass c(0, settings, e);
         c.publicAllocationError(0, "varname");
         c.unsafeClassError(0, "class", "class::varname");
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Memory leaks (class variables)";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "If the constructor allocate memory then the destructor must deallocate it.\n";
     }
 };
@@ -399,17 +386,14 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(0, 0, 0)
-    {
+    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
     }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings)
-    {
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
         CheckMemoryLeakStructMember checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }
@@ -423,17 +407,14 @@ private:
 
     void checkStructVariable(const Variable * const variable);
 
-    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
-    {
+    void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const {
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Memory leaks (struct members)";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Don't forget to deallocate struct members\n";
     }
 };
@@ -444,17 +425,14 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(0, 0, 0)
-    {
+    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(0, 0, 0) {
     }
 
     CheckMemoryLeakNoVar(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings)
-    {
+        : Check(myName(), tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog, settings) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) {
         CheckMemoryLeakNoVar checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }
@@ -471,21 +449,18 @@ private:
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
     void returnValueNotUsedError(const Token* tok, const std::string &alloc);
 
-    void getErrorMessages(ErrorLogger *e, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
         c.returnValueNotUsedError(0, "funcName");
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Memory leaks (address not taken)";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Not taking the address to allocated memory\n";
     }
 };

@@ -98,8 +98,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled()
-    {
+    static bool isEnabled() {
         return true;
     }
 
@@ -129,8 +128,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled()
-    {
+    static bool isEnabled() {
         return true;
     }
 #else
@@ -138,8 +136,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled()
-    {
+    static bool isEnabled() {
         return false;
     }
 #endif

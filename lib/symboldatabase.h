@@ -68,8 +68,7 @@ public:
     class BaseInfo {
     public:
         BaseInfo() :
-            type(NULL), nameTok(NULL), access(Public), isVirtual(false)
-        {
+            type(NULL), nameTok(NULL), access(Public), isVirtual(false) {
         }
 
         std::string name;
@@ -78,16 +77,14 @@ public:
         AccessControl access;  // public/protected/private
         bool isVirtual;
         // allow ordering within containers
-        bool operator<(const BaseInfo& rhs) const
-        {
+        bool operator<(const BaseInfo& rhs) const {
             return this->type < rhs.type;
         }
     };
 
     struct FriendInfo {
         FriendInfo() :
-            nameStart(NULL), nameEnd(NULL), type(NULL)
-        {
+            nameStart(NULL), nameEnd(NULL), type(NULL) {
         }
 
         const Token* nameStart;
@@ -103,12 +100,10 @@ public:
         classDef(classDef_),
         classScope(classScope_),
         enclosingScope(enclosingScope_),
-        needInitialization(Unknown)
-    {
+        needInitialization(Unknown) {
     }
 
-    const std::string& name() const
-    {
+    const std::string& name() const {
         const Token* next = classDef->next();
         if (next->isName())
             return next->str();
@@ -152,8 +147,7 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag_) const
-    {
+    bool getFlag(int flag_) const {
         return bool((_flags & flag_) != 0);
     }
 
@@ -162,8 +156,7 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(int flag_, bool state_)
-    {
+    void setFlag(int flag_, bool state_) {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
@@ -186,8 +179,7 @@ public:
           _access(access_),
           _flags(0),
           _type(type_),
-          _scope(scope_)
-    {
+          _scope(scope_) {
         evaluate();
     }
 
@@ -195,8 +187,7 @@ public:
      * Get name token.
      * @return name token
      */
-    const Token *nameToken() const
-    {
+    const Token *nameToken() const {
         return _name;
     }
 
@@ -208,8 +199,7 @@ public:
      * type start token ^
      * @return type start token
      */
-    const Token *typeStartToken() const
-    {
+    const Token *typeStartToken() const {
         return _start;
     }
 
@@ -221,8 +211,7 @@ public:
      *       type end token ^
      * @return type end token
      */
-    const Token *typeEndToken() const
-    {
+    const Token *typeEndToken() const {
         return _end;
     }
 
@@ -239,8 +228,7 @@ public:
      * Get name string.
      * @return name string
      */
-    const std::string &name() const
-    {
+    const std::string &name() const {
         // name may not exist for function arguments
         if (_name)
             return _name->str();
@@ -252,8 +240,7 @@ public:
      * Get declaration ID (varId used for variable in its declaration).
      * @return declaration ID
      */
-    unsigned int declarationId() const
-    {
+    unsigned int declarationId() const {
         // name may not exist for function arguments
         if (_name)
             return _name->varId();
@@ -265,8 +252,7 @@ public:
      * Get index of variable in declared order.
      * @return variable index
      */
-    std::size_t index() const
-    {
+    std::size_t index() const {
         return _index;
     }
 
@@ -274,8 +260,7 @@ public:
      * Is variable public.
      * @return true if public, false if not
      */
-    bool isPublic() const
-    {
+    bool isPublic() const {
         return _access == Public;
     }
 
@@ -283,8 +268,7 @@ public:
      * Is variable protected.
      * @return true if protected, false if not
      */
-    bool isProtected() const
-    {
+    bool isProtected() const {
         return _access == Protected;
     }
 
@@ -292,8 +276,7 @@ public:
      * Is variable private.
      * @return true if private, false if not
      */
-    bool isPrivate() const
-    {
+    bool isPrivate() const {
         return _access == Private;
     }
 
@@ -301,8 +284,7 @@ public:
      * Is variable global.
      * @return true if global, false if not
      */
-    bool isGlobal() const
-    {
+    bool isGlobal() const {
         return _access == Global;
     }
 
@@ -310,8 +292,7 @@ public:
      * Is variable in a namespace.
      * @return true if in a namespace, false if not
      */
-    bool isNamespace() const
-    {
+    bool isNamespace() const {
         return _access == Namespace;
     }
 
@@ -319,8 +300,7 @@ public:
      * Is variable a function argument.
      * @return true if a function argument, false if not
      */
-    bool isArgument() const
-    {
+    bool isArgument() const {
         return _access == Argument;
     }
 
@@ -328,8 +308,7 @@ public:
      * Is variable local.
      * @return true if local, false if not
      */
-    bool isLocal() const
-    {
+    bool isLocal() const {
         return (_access == Local) && !isExtern();
     }
 
@@ -337,8 +316,7 @@ public:
      * Is variable mutable.
      * @return true if mutable, false if not
      */
-    bool isMutable() const
-    {
+    bool isMutable() const {
         return getFlag(fIsMutable);
     }
 
@@ -346,8 +324,7 @@ public:
      * Is variable static.
      * @return true if static, false if not
      */
-    bool isStatic() const
-    {
+    bool isStatic() const {
         return getFlag(fIsStatic);
     }
 
@@ -355,8 +332,7 @@ public:
      * Is variable extern.
      * @return true if extern, false if not
      */
-    bool isExtern() const
-    {
+    bool isExtern() const {
         return getFlag(fIsExtern);
     }
 
@@ -364,8 +340,7 @@ public:
      * Is variable const.
      * @return true if const, false if not
      */
-    bool isConst() const
-    {
+    bool isConst() const {
         return getFlag(fIsConst);
     }
 
@@ -373,8 +348,7 @@ public:
      * Is variable a throw type.
      * @return true if throw type, false if not
      */
-    bool isThrow() const
-    {
+    bool isThrow() const {
         return _access == Throw;
     }
 
@@ -382,8 +356,7 @@ public:
      * Is variable a user defined (or unknown) type.
      * @return true if user defined type, false if not
      */
-    bool isClass() const
-    {
+    bool isClass() const {
         return getFlag(fIsClass);
     }
 
@@ -391,8 +364,7 @@ public:
      * Is variable an array.
      * @return true if array, false if not
      */
-    bool isArray() const
-    {
+    bool isArray() const {
         return getFlag(fIsArray);
     }
 
@@ -400,8 +372,7 @@ public:
      * Is pointer variable.
      * @return true if pointer, false otherwise
      */
-    bool isPointer() const
-    {
+    bool isPointer() const {
         return getFlag(fIsPointer);
     }
 
@@ -409,8 +380,7 @@ public:
      * Is array or pointer variable.
      * @return true if pointer or array, false otherwise
      */
-    bool isArrayOrPointer() const
-    {
+    bool isArrayOrPointer() const {
         return getFlag(fIsArray) || getFlag(fIsPointer);
     }
 
@@ -418,8 +388,7 @@ public:
      * Is reference variable.
      * @return true if reference, false otherwise
      */
-    bool isReference() const
-    {
+    bool isReference() const {
         return getFlag(fIsReference);
     }
 
@@ -427,8 +396,7 @@ public:
      * Is reference variable.
      * @return true if reference, false otherwise
      */
-    bool isRValueReference() const
-    {
+    bool isRValueReference() const {
         return getFlag(fIsRValueRef);
     }
 
@@ -436,8 +404,7 @@ public:
      * Does variable have a default value.
      * @return true if has a default falue, false if not
      */
-    bool hasDefault() const
-    {
+    bool hasDefault() const {
         return getFlag(fHasDefault);
     }
 
@@ -445,8 +412,7 @@ public:
      * Get Type pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
-    const Type *type() const
-    {
+    const Type *type() const {
         return _type;
     }
 
@@ -454,8 +420,7 @@ public:
      * Get Scope pointer of known type.
      * @return pointer to type scope if known, NULL if not known
      */
-    const Scope *typeScope() const
-    {
+    const Scope *typeScope() const {
         return _type ? _type->classScope : 0;
     }
 
@@ -463,8 +428,7 @@ public:
      * Get Scope pointer of enclosing scope.
      * @return pointer to enclosing scope
      */
-    const Scope *scope() const
-    {
+    const Scope *scope() const {
         return _scope;
     }
 
@@ -472,8 +436,7 @@ public:
      * Get array dimensions.
      * @return array dimensions vector
      */
-    const std::vector<Dimension> &dimensions() const
-    {
+    const std::vector<Dimension> &dimensions() const {
         return _dimensions;
     }
 
@@ -481,8 +444,7 @@ public:
      * Get array dimension length.
      * @return length of dimension
      */
-    MathLib::bigint dimension(std::size_t index_) const
-    {
+    MathLib::bigint dimension(std::size_t index_) const {
         return _dimensions[index_].num;
     }
 
@@ -490,8 +452,7 @@ public:
      * Get array dimension known.
      * @return length of dimension known
      */
-    bool dimensionKnown(std::size_t index_) const
-    {
+    bool dimensionKnown(std::size_t index_) const {
         return _dimensions[index_].known;
     }
 
@@ -503,8 +464,7 @@ public:
     *   sVar->isStlType() == true
     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
     */
-    bool isStlType() const
-    {
+    bool isStlType() const {
         return getFlag(fIsStlType);
     }
 
@@ -516,8 +476,7 @@ public:
      *   sVar->isStlType() == true
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
-    bool isStlStringType() const
-    {
+    bool isStlStringType() const {
         return getFlag(fIsStlString);
     }
 
@@ -532,8 +491,7 @@ public:
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     template <std::size_t array_length>
-    bool isStlType(const char* const(&stlTypes)[array_length]) const
-    {
+    bool isStlType(const char* const(&stlTypes)[array_length]) const {
         return isStlType() && std::binary_search(stlTypes, stlTypes + array_length, _start->strAt(2));
     }
 
@@ -541,8 +499,7 @@ public:
     * Determine whether it's a floating number type
     * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
     */
-    bool isFloatingType() const
-    {
+    bool isFloatingType() const {
         return getFlag(fIsFloatType);
     }
 
@@ -550,8 +507,7 @@ public:
      * Determine whether it's an integral number type
      * @return true if the type is known and it's an integral type (bool, char, short, int, long long and their unsigned counter parts) or a pointer/array to it
      */
-    bool isIntegralType() const
-    {
+    bool isIntegralType() const {
         return getFlag(fIsIntType);
     }
 
@@ -564,8 +520,7 @@ private:
      * Set Type pointer to known type.
      * @param t type
      */
-    void type(const Type * t)
-    {
+    void type(const Type * t) {
         _type = t;
     }
 
@@ -630,65 +585,52 @@ public:
           isThrow(false),
           isOperator(false),
           noexceptArg(nullptr),
-          throwArg(nullptr)
-    {
+          throwArg(nullptr) {
     }
 
-    const std::string &name() const
-    {
+    const std::string &name() const {
         return tokenDef->str();
     }
 
-    std::size_t argCount() const
-    {
+    std::size_t argCount() const {
         return argumentList.size();
     }
-    std::size_t minArgCount() const
-    {
+    std::size_t minArgCount() const {
         return argumentList.size() - initArgCount;
     }
     const Variable* getArgumentVar(std::size_t num) const;
-    unsigned int initializedArgCount() const
-    {
+    unsigned int initializedArgCount() const {
         return initArgCount;
     }
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
-    bool isConstructor() const
-    {
+    bool isConstructor() const {
         return type==eConstructor ||
                type==eCopyConstructor ||
                type==eMoveConstructor;
     }
 
-    bool isDestructor() const
-    {
+    bool isDestructor() const {
         return type==eDestructor;
     }
-    bool isAttributeConstructor() const
-    {
+    bool isAttributeConstructor() const {
         return tokenDef->isAttributeConstructor();
     }
-    bool isAttributeDestructor() const
-    {
+    bool isAttributeDestructor() const {
         return tokenDef->isAttributeDestructor();
     }
-    bool isAttributePure() const
-    {
+    bool isAttributePure() const {
         return tokenDef->isAttributePure();
     }
-    bool isAttributeConst() const
-    {
+    bool isAttributeConst() const {
         return tokenDef->isAttributeConst();
     }
-    bool isAttributeNothrow() const
-    {
+    bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }
-    bool isDeclspecNothrow() const
-    {
+    bool isDeclspecNothrow() const {
         return tokenDef->isDeclspecNothrow();
     }
 
@@ -761,18 +703,15 @@ public:
     const Scope *functionOf; // scope this function belongs to
     Function *function; // function info for this function
 
-    bool isClassOrStruct() const
-    {
+    bool isClassOrStruct() const {
         return (type == eClass || type == eStruct);
     }
 
-    bool isExecutable() const
-    {
+    bool isExecutable() const {
         return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace;
     }
 
-    bool isLocal() const
-    {
+    bool isLocal() const {
         return (type == eIf || type == eElse ||
                 type == eFor || type == eWhile || type == eDo ||
                 type == eSwitch || type == eUnconditional ||
@@ -793,14 +732,12 @@ public:
     Scope *findInNestedList(const std::string & name);
 
     const Scope *findRecordInNestedList(const std::string & name) const;
-    Scope *findRecordInNestedList(const std::string & name)
-    {
+    Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
 
     const Type* findType(const std::string& name) const;
-    Type* findType(const std::string& name)
-    {
+    Type* findType(const std::string& name) {
         return const_cast<Type*>(static_cast<const Scope *>(this)->findType(name));
     }
 
@@ -812,8 +749,7 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_)
-    {
+                     const Scope *scope_) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_,
                                    type_, scope_));
@@ -899,32 +835,27 @@ public:
     const Scope *findScopeByName(const std::string& name) const;
 
     const Type* findType(const Token *tok, const Scope *startScope) const;
-    Type* findType(const Token *tok, Scope *startScope) const
-    {
+    Type* findType(const Token *tok, Scope *startScope) const {
         return const_cast<Type*>(this->findType(tok, static_cast<const Scope *>(startScope)));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const
-    {
+    Scope *findScope(const Token *tok, Scope *startScope) const {
         return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
     }
 
-    bool isClassOrStruct(const std::string &type) const
-    {
+    bool isClassOrStruct(const std::string &type) const {
         for (std::list<Type>::const_iterator i = typeList.begin(); i != typeList.end(); ++i)
             if (i->name() == type)
                 return true;
         return false;
     }
 
-    const Variable *getVariableFromVarId(std::size_t varId) const
-    {
+    const Variable *getVariableFromVarId(std::size_t varId) const {
         return _variableList[varId];
     }
 
-    std::size_t getVariableListSize() const
-    {
+    std::size_t getVariableListSize() const {
         return _variableList.size();
     }
 

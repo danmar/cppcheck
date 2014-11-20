@@ -27,16 +27,14 @@ extern std::ostringstream errout;
 
 class TestPostfixOperator : public TestFixture {
 public:
-    TestPostfixOperator() : TestFixture("TestPostfixOperator")
-    {
+    TestPostfixOperator() : TestFixture("TestPostfixOperator") {
     }
 
 private:
 
 
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -55,8 +53,7 @@ private:
         checkPostfixOperator.postfixOperator();
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(testvolatile);
@@ -69,14 +66,12 @@ private:
         TEST_CASE(testcomma);
     }
 
-    void testHangWithInvalidCode()
-    {
+    void testHangWithInvalidCode() {
         check("a,b--\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testsimple()
-    {
+    void testsimple() {
         check("int main()\n"
               "{\n"
               "    unsigned int k(0);\n"
@@ -190,8 +185,7 @@ private:
 
     }
 
-    void testfor()
-    {
+    void testfor() {
         check("int main()\n"
               "{\n"
               "    for ( unsigned int i=0; i <= 10; i++) {\n"
@@ -244,8 +238,7 @@ private:
 
     }
 
-    void testvolatile()
-    {
+    void testvolatile() {
         check("class K {};\n"
               "int main()\n"
               "{\n"
@@ -259,8 +252,7 @@ private:
                            "[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 
-    void testiterator()
-    {
+    void testiterator() {
         check("class Base {};\n"
               "int main() {\n"
               "    std::vector<Base*> v;\n"
@@ -317,23 +309,20 @@ private:
 
     }
 
-    void test2168()
-    {
+    void test2168() {
         check("--> declare allocator lock here\n"
               "int main(){}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pointer()
-    {
+    void pointer() {
         check("static struct class * ab;\n"
               "int * p;\n"
               "p++;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testtemplate()
-    {
+    void testtemplate() {
         check("bool foo() {\n"
               "    std::vector<FilterConfigCacheEntry>::iterator aIter(aImport.begin());\n"
               "    aIter++;\n"
@@ -341,8 +330,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 
-    void testmember()
-    {
+    void testmember() {
         check("bool foo() {\n"
               "    class A {}; class B {A a;};\n"
               "    B b;\n"
@@ -358,8 +346,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testcomma()
-    {
+    void testcomma() {
         check("bool foo(int i) {\n"
               "    class A {};\n"
               "    A a;\n"

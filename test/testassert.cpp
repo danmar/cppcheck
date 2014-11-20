@@ -30,8 +30,7 @@ public:
 private:
     void check(
         const char code[],
-        const char *filename = NULL)
-    {
+        const char *filename = NULL) {
         // Clear the error buffer..
         errout.str("");
 
@@ -48,8 +47,7 @@ private:
         checkAssert.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
         TEST_CASE(memberFunctionCallInAssert);
@@ -57,8 +55,7 @@ private:
     }
 
 
-    void safeFunctionCallInAssert()
-    {
+    void safeFunctionCallInAssert() {
         check(
             "int a;\n"
             "bool b = false;\n"
@@ -80,8 +77,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void functionCallInAssert()
-    {
+    void functionCallInAssert() {
         check(
             "int a;\n"
             "int foo() {\n"
@@ -138,8 +134,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void memberFunctionCallInAssert()
-    {
+    void memberFunctionCallInAssert() {
         check("struct SquarePack {\n"
               "   void Foo();\n"
               "};\n"
@@ -172,8 +167,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assignmentInAssert()
-    {
+    void assignmentInAssert() {
         check("void f() {\n"
               "    int a; a = 0;\n"
               "    assert(a = 2);\n"

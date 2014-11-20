@@ -76,8 +76,7 @@ public:
     * @return List of available translations.
     *
     */
-    QList<TranslationInfo> GetTranslations() const
-    {
+    QList<TranslationInfo> GetTranslations() const {
         return mTranslations;
     }
 

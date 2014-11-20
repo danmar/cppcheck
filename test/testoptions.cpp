@@ -23,14 +23,12 @@ extern std::ostringstream errout;
 class TestOptions: public TestFixture {
 public:
     TestOptions()
-        :TestFixture("TestOptions")
-    {
+        :TestFixture("TestOptions") {
     }
 
 
 private:
-    void run()
-    {
+    void run() {
         TEST_CASE(which_test);
         TEST_CASE(which_test_method);
         TEST_CASE(no_test_method);
@@ -42,64 +40,56 @@ private:
     }
 
 
-    void which_test() const
-    {
+    void which_test() const {
         const char* argv[] = {"./test_runner", "TestClass"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass", args.which_test());
     }
 
 
-    void which_test_method() const
-    {
+    void which_test_method() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass::TestMethod", args.which_test());
     }
 
 
-    void no_test_method() const
-    {
+    void no_test_method() const {
         const char* argv[] = {"./test_runner"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("", args.which_test());
     }
 
 
-    void not_quiet() const
-    {
+    void not_quiet() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-v"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS(false, args.quiet());
     }
 
 
-    void quiet() const
-    {
+    void quiet() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-q"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS(true, args.quiet());
     }
 
 
-    void gcc_errors() const
-    {
+    void gcc_errors() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-g"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS(true, args.gcc_style_errors());
     }
 
 
-    void multiple_testcases() const
-    {
+    void multiple_testcases() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "Ignore::ThisOne"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass::TestMethod", args.which_test());
     }
 
 
-    void invalid_switches() const
-    {
+    void invalid_switches() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-a", "-v", "-q", "-g"};
         options args(sizeof argv / sizeof argv[0], argv);
         ASSERT_EQUALS("TestClass::TestMethod", args.which_test());

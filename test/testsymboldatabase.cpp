@@ -45,8 +45,7 @@ public:
         ,vartok(nullptr)
         ,typetok(nullptr)
         ,t(nullptr)
-        ,found(false)
-    {
+        ,found(false) {
     }
 
 private:
@@ -56,16 +55,14 @@ private:
     const Token* t;
     bool found;
 
-    void reset()
-    {
+    void reset() {
         vartok = nullptr;
         typetok = nullptr;
         t = nullptr;
         found = false;
     }
 
-    static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok)
-    {
+    static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
         std::list<Scope>::const_iterator scope;
 
         for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
@@ -77,8 +74,7 @@ private:
         return 0;
     }
 
-    static const Function *findFunctionByName(const char str[], const Scope* startScope)
-    {
+    static const Function *findFunctionByName(const char str[], const Scope* startScope) {
         const Scope* currScope = startScope;
         while (currScope && currScope->isExecutable()) {
             if (currScope->functionOf)
@@ -96,8 +92,7 @@ private:
         return 0;
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(array);
 
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
@@ -256,8 +251,7 @@ private:
         TEST_CASE(lambda); // ticket #5867
     }
 
-    void array() const
-    {
+    void array() const {
         std::istringstream code("int a[10+2];");
         TokenList list(nullptr);
         list.createTokens(code, "test.c");
@@ -268,8 +262,7 @@ private:
         ASSERT_EQUALS(0U, v.dimension(0));
     }
 
-    void test_isVariableDeclarationCanHandleNull()
-    {
+    void test_isVariableDeclarationCanHandleNull() {
         reset();
         bool result = si.isVariableDeclaration(nullptr, vartok, typetok);
         ASSERT_EQUALS(false, result);
@@ -278,8 +271,7 @@ private:
         Variable v(nullptr, nullptr, nullptr, 0, Public, 0, 0);
     }
 
-    void test_isVariableDeclarationIdentifiesSimpleDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
         reset();
         givenACodeSampleToTokenize simpleDeclaration("int x;");
         bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
@@ -292,8 +284,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesInitialization()
-    {
+    void test_isVariableDeclarationIdentifiesInitialization() {
         reset();
         givenACodeSampleToTokenize simpleDeclaration("int x (1);");
         bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
@@ -307,8 +298,7 @@ private:
         ASSERT(true == v.isIntegralType());
     }
 
-    void test_isVariableDeclarationIdentifiesCpp11Initialization()
-    {
+    void test_isVariableDeclarationIdentifiesCpp11Initialization() {
         reset();
         givenACodeSampleToTokenize simpleDeclaration("int x {1};");
         bool result = si.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
@@ -322,8 +312,7 @@ private:
         ASSERT(true == v.isIntegralType());
     }
 
-    void test_isVariableDeclarationIdentifiesScopedDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedDeclaration() {
         reset();
         givenACodeSampleToTokenize ScopedDeclaration("::int x;");
         bool result = si.isVariableDeclaration(ScopedDeclaration.tokens(), vartok, typetok);
@@ -336,8 +325,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesStdDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesStdDeclaration() {
         reset();
         givenACodeSampleToTokenize StdDeclaration("std::string x;");
         bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
@@ -350,8 +338,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesScopedStdDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedStdDeclaration() {
         reset();
         givenACodeSampleToTokenize StdDeclaration("::std::string x;");
         bool result = si.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
@@ -364,8 +351,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesManyScopes()
-    {
+    void test_isVariableDeclarationIdentifiesManyScopes() {
         reset();
         givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE x;");
         bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
@@ -378,8 +364,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesPointers()
-    {
+    void test_isVariableDeclarationIdentifiesPointers() {
         reset();
         givenACodeSampleToTokenize pointer("int* p;");
         bool result1 = si.isVariableDeclaration(pointer.tokens(), vartok, typetok);
@@ -412,8 +397,7 @@ private:
         ASSERT(false == v3.isReference());
     }
 
-    void test_isVariableDeclarationDoesNotIdentifyConstness()
-    {
+    void test_isVariableDeclarationDoesNotIdentifyConstness() {
         reset();
         givenACodeSampleToTokenize constness("const int* cp;");
         bool result = si.isVariableDeclaration(constness.tokens(), vartok, typetok);
@@ -422,8 +406,7 @@ private:
         ASSERT(nullptr == typetok);
     }
 
-    void test_isVariableDeclarationIdentifiesFirstOfManyVariables()
-    {
+    void test_isVariableDeclarationIdentifiesFirstOfManyVariables() {
         reset();
         givenACodeSampleToTokenize multipleDeclaration("int first, second;");
         bool result = si.isVariableDeclaration(multipleDeclaration.tokens(), vartok, typetok);
@@ -436,8 +419,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesScopedPointerDeclaration()
-    {
+    void test_isVariableDeclarationIdentifiesScopedPointerDeclaration() {
         reset();
         givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE* p;");
         bool result = si.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
@@ -450,8 +432,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesDeclarationWithIndirection()
-    {
+    void test_isVariableDeclarationIdentifiesDeclarationWithIndirection() {
         reset();
         givenACodeSampleToTokenize pointerToPointer("int** pp;");
         bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
@@ -464,8 +445,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection()
-    {
+    void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection() {
         reset();
         givenACodeSampleToTokenize pointerToPointer("int***** p;");
         bool result = si.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
@@ -478,8 +458,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesArray()
-    {
+    void test_isVariableDeclarationIdentifiesArray() {
         reset();
         givenACodeSampleToTokenize arr("::std::string v[3];");
         bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
@@ -492,8 +471,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesOfArrayPointers()
-    {
+    void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
         givenACodeSampleToTokenize arr("A *a[5];");
         bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
@@ -506,8 +484,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesTemplatedPointerVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedPointerVariable() {
         reset();
         givenACodeSampleToTokenize var("std::set<char>* chars;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -520,8 +497,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<int>*** ints;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -534,8 +510,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesTemplatedArrayVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedArrayVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<int> ints[3];");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -548,8 +523,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesTemplatedVariable()
-    {
+    void isVariableDeclarationIdentifiesTemplatedVariable() {
         reset();
         givenACodeSampleToTokenize var("std::vector<int> ints;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -562,8 +536,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesTemplatedVariableIterator()
-    {
+    void isVariableDeclarationIdentifiesTemplatedVariableIterator() {
         reset();
         givenACodeSampleToTokenize var("std::list<int>::const_iterator floats;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -576,8 +549,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesNestedTemplateVariable()
-    {
+    void isVariableDeclarationIdentifiesNestedTemplateVariable() {
         reset();
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -590,8 +562,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationIdentifiesReference()
-    {
+    void isVariableDeclarationIdentifiesReference() {
         reset();
         givenACodeSampleToTokenize var1("int& foo;");
         bool result1 = si.isVariableDeclaration(var1.tokens(), vartok, typetok);
@@ -620,24 +591,21 @@ private:
         ASSERT(true == v3.isReference());
     }
 
-    void isVariableDeclarationDoesNotIdentifyTemplateClass()
-    {
+    void isVariableDeclarationDoesNotIdentifyTemplateClass() {
         reset();
         givenACodeSampleToTokenize var("template <class T> class SomeClass{};");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
     }
 
-    void isVariableDeclarationDoesNotIdentifyCppCast()
-    {
+    void isVariableDeclarationDoesNotIdentifyCppCast() {
         reset();
         givenACodeSampleToTokenize var("reinterpret_cast <char *> (code)[0] = 0;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
     }
 
-    void isVariableDeclarationPointerConst()
-    {
+    void isVariableDeclarationPointerConst() {
         reset();
         givenACodeSampleToTokenize var("std::string const* s;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -648,8 +616,7 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void isVariableDeclarationRValueRef()
-    {
+    void isVariableDeclarationRValueRef() {
         reset();
         givenACodeSampleToTokenize var("int&& i;");
         bool result = si.isVariableDeclaration(var.tokens(), vartok, typetok);
@@ -662,8 +629,7 @@ private:
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
     }
 
-    void isVariableStlType()
-    {
+    void isVariableStlType() {
         {
             reset();
             std::istringstream code("std::string s;");
@@ -710,8 +676,7 @@ private:
         }
     }
 
-    void arrayMemberVar1()
-    {
+    void arrayMemberVar1() {
         const char code[] = "struct Foo {\n"
                             "    int x;\n"
                             "};\n"
@@ -731,8 +696,7 @@ private:
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
-    void arrayMemberVar2()
-    {
+    void arrayMemberVar2() {
         const char code[] = "struct Foo {\n"
                             "    int x;\n"
                             "};\n"
@@ -752,8 +716,7 @@ private:
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
-    void arrayMemberVar3()
-    {
+    void arrayMemberVar3() {
         const char code[] = "struct Foo {\n"
                             "    int x;\n"
                             "};\n"
@@ -773,8 +736,7 @@ private:
         ASSERT(tok && tok->varId() == 0U); // It's possible to set a varId
     }
 
-    void staticMemberVar()
-    {
+    void staticMemberVar() {
         GET_SYMBOL_DB("class Foo {\n"
                       "    static const double d;\n"
                       "};\n"
@@ -785,8 +747,7 @@ private:
         ASSERT(v && v->isStatic() && v->isConst() && v->isPrivate());
     }
 
-    void hasRegularFunction()
-    {
+    void hasRegularFunction() {
         GET_SYMBOL_DB("void func() { }\n")
 
         // 2 scopes: Global and Function
@@ -808,8 +769,7 @@ private:
         }
     }
 
-    void hasInlineClassFunction()
-    {
+    void hasInlineClassFunction() {
         GET_SYMBOL_DB("class Fred { void func() { } };\n")
 
         // 3 scopes: Global, Class, and Function
@@ -835,8 +795,7 @@ private:
         }
     }
 
-    void hasMissingInlineClassFunction()
-    {
+    void hasMissingInlineClassFunction() {
         GET_SYMBOL_DB("class Fred { void func(); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
@@ -857,8 +816,7 @@ private:
         }
     }
 
-    void hasClassFunction()
-    {
+    void hasClassFunction() {
         GET_SYMBOL_DB("class Fred { void func(); }; void Fred::func() { }\n")
 
         // 3 scopes: Global, Class, and Function
@@ -881,8 +839,7 @@ private:
         }
     }
 
-    void hasRegularFunctionReturningFunctionPointer()
-    {
+    void hasRegularFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("void (*func(int f))(char) { }\n")
 
         // 2 scopes: Global and Function
@@ -903,8 +860,7 @@ private:
         }
     }
 
-    void hasInlineClassFunctionReturningFunctionPointer()
-    {
+    void hasInlineClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char) { } };\n")
 
         // 3 scopes: Global, Class, and Function
@@ -925,8 +881,7 @@ private:
         }
     }
 
-    void hasMissingInlineClassFunctionReturningFunctionPointer()
-    {
+    void hasMissingInlineClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); };\n")
 
         // 2 scopes: Global and Class (no Function scope because there is no function implementation)
@@ -947,8 +902,7 @@ private:
         }
     }
 
-    void hasClassFunctionReturningFunctionPointer()
-    {
+    void hasClassFunctionReturningFunctionPointer() {
         GET_SYMBOL_DB("class Fred { void (*func(int f))(char); }; void (*Fred::func(int f))(char) { }\n")
 
         // 3 scopes: Global, Class, and Function
@@ -969,8 +923,7 @@ private:
         }
     }
 
-    void complexFunctionArrayPtr()
-    {
+    void complexFunctionArrayPtr() {
         GET_SYMBOL_DB("int(*p1)[10]; \n"                            // pointer to array 10 of int
                       "void(*p2)(char); \n"                         // pointer to function (char) returning void
                       "int(*(*p3)(char))[10];\n"                    // pointer to function (char) returning pointer to array 10 of int
@@ -1000,8 +953,7 @@ private:
         }
     }
 
-    void pointerToMemberFunction()
-    {
+    void pointerToMemberFunction() {
         GET_SYMBOL_DB("bool (A::*pFun)();"); // Pointer to member function of A, returning bool and taking no parameters
 
         ASSERT(db != nullptr);
@@ -1015,8 +967,7 @@ private:
         }
     }
 
-    void hasSubClassConstructor()
-    {
+    void hasSubClassConstructor() {
         GET_SYMBOL_DB("class Foo { class Sub; }; class Foo::Sub { Sub() {} };");
         ASSERT(db != nullptr);
 
@@ -1034,8 +985,7 @@ private:
         }
     }
 
-    void testConstructors()
-    {
+    void testConstructors() {
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
@@ -1062,8 +1012,7 @@ private:
         }
     }
 
-    void functionDeclarationTemplate()
-    {
+    void functionDeclarationTemplate() {
         GET_SYMBOL_DB("std::map<int, string> foo() {}")
 
         // 2 scopes: Global and Function
@@ -1081,8 +1030,7 @@ private:
         }
     }
 
-    void functionDeclarations()
-    {
+    void functionDeclarations() {
         GET_SYMBOL_DB("void foo();\nvoid foo();\nint foo(int i);\nvoid foo() {}")
 
         // 2 scopes: Global and Function
@@ -1109,8 +1057,7 @@ private:
         }
     }
 
-    void constructorInitialization()
-    {
+    void constructorInitialization() {
         GET_SYMBOL_DB("std::string logfile;\n"
                       "std::ofstream log(logfile.c_str(), std::ios::out);");
 
@@ -1123,8 +1070,7 @@ private:
         }
     }
 
-    void memberFunctionOfUnknownClassMacro1()
-    {
+    void memberFunctionOfUnknownClassMacro1() {
         GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE; };\n"
                       "void ScVbaValidation::getFormula1() {\n"
                       "    sal_uInt16 nFlags = 0;\n"
@@ -1140,8 +1086,7 @@ private:
         }
     }
 
-    void memberFunctionOfUnknownClassMacro2()
-    {
+    void memberFunctionOfUnknownClassMacro2() {
         GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() SAL_OVERRIDE {} };\n"
                       "void getFormula1() {\n"
                       "    sal_uInt16 nFlags = 0;\n"
@@ -1161,8 +1106,7 @@ private:
         }
     }
 
-    void memberFunctionOfUnknownClassMacro3()
-    {
+    void memberFunctionOfUnknownClassMacro3() {
         GET_SYMBOL_DB("class ScVbaFormatCondition { OUString getServiceImplName() THROW(whatever); };\n"
                       "void ScVbaValidation::getFormula1() {\n"
                       "    sal_uInt16 nFlags = 0;\n"
@@ -1178,8 +1122,7 @@ private:
         }
     }
 
-    void classWithFriend()
-    {
+    void classWithFriend() {
         GET_SYMBOL_DB("class Foo {}; class Bar1 { friend class Foo; }; class Bar2 { friend Foo; };")
         // 3 scopes: Global, 3 classes
         ASSERT(db && db->scopeList.size() == 4);
@@ -1198,8 +1141,7 @@ private:
         }
     }
 
-    void parseFunctionCorrect()
-    {
+    void parseFunctionCorrect() {
         // ticket 3188 - "if" statement parsed as function
         GET_SYMBOL_DB("void func(i) int i; { if (i == 1) return; }\n")
         ASSERT(db != nullptr);
@@ -1211,16 +1153,14 @@ private:
         ASSERT(findFunctionByName("if", &db->scopeList.back()) == nullptr);
     }
 
-    void parseFunctionDeclarationCorrect()
-    {
+    void parseFunctionDeclarationCorrect() {
         GET_SYMBOL_DB("void func();\n"
                       "int bar() {}\n"
                       "void func() {}")
         ASSERT_EQUALS(3, db->findScopeByName("func")->classStart->linenr());
     }
 
-    void Cpp11InitInInitList()
-    {
+    void Cpp11InitInInitList() {
         GET_SYMBOL_DB("class Foo {\n"
                       "    std::vector<std::string> bar;\n"
                       "    Foo() : bar({\"a\", \"b\"})\n"
@@ -1229,8 +1169,7 @@ private:
         ASSERT_EQUALS(4, db->scopeList.front().nestedList.front()->nestedList.front()->classStart->linenr());
     }
 
-    void hasGlobalVariables1()
-    {
+    void hasGlobalVariables1() {
         GET_SYMBOL_DB("int i;\n")
 
         ASSERT(db && db->scopeList.size() == 1);
@@ -1245,8 +1184,7 @@ private:
         }
     }
 
-    void hasGlobalVariables2()
-    {
+    void hasGlobalVariables2() {
         GET_SYMBOL_DB("int array[2][2];\n")
 
         ASSERT(db && db->scopeList.size() == 1);
@@ -1261,8 +1199,7 @@ private:
         }
     }
 
-    void hasGlobalVariables3()
-    {
+    void hasGlobalVariables3() {
         GET_SYMBOL_DB("int array[2][2] = { { 0, 0 }, { 0, 0 } };\n")
 
         ASSERT(db && db->scopeList.size() == 1);
@@ -1277,8 +1214,7 @@ private:
         }
     }
 
-    void checkTypeStartEndToken1()
-    {
+    void checkTypeStartEndToken1() {
         GET_SYMBOL_DB("static std::string i;\n"
                       "static const std::string j;\n"
                       "const std::string* k;\n"
@@ -1301,8 +1237,7 @@ private:
         }
     }
 
-    void checkTypeStartEndToken2()
-    {
+    void checkTypeStartEndToken2() {
         GET_SYMBOL_DB("class CodeGenerator {\n"
                       "  DiagnosticsEngine Diags;\n"
                       "public:\n"
@@ -1318,8 +1253,7 @@ private:
         ASSERT_EQUALS("DiagnosticsEngine", db->getVariableFromVarId(1)->typeStartToken()->str());
     }
 
-    void check(const char code[], bool debug = true)
-    {
+    void check(const char code[], bool debug = true) {
         // Clear the error log
         errout.str("");
 
@@ -1337,8 +1271,7 @@ private:
         tokenizer.getSymbolDatabase();
     }
 
-    void functionArgs1()
-    {
+    void functionArgs1() {
         {
             GET_SYMBOL_DB("void f(std::vector<std::string>, const std::vector<int> & v) { }");
             ASSERT_EQUALS(1+1, db->getVariableListSize());
@@ -1379,8 +1312,7 @@ private:
         }
     }
 
-    void functionArgs2()
-    {
+    void functionArgs2() {
         GET_SYMBOL_DB("void f(int a[][4]) { }");
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT_EQUALS("a", a->nameToken()->str());
@@ -1391,15 +1323,13 @@ private:
         ASSERT_EQUALS(true, a->dimensions()[1].known);
     }
 
-    void functionArgs3()
-    {
+    void functionArgs3() {
         GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT_EQUALS("i", a->nameToken()->str());
     }
 
-    void functionArgs4()
-    {
+    void functionArgs4() {
         GET_SYMBOL_DB("void f1(char [10], struct foo [10]);");
         ASSERT_EQUALS(true, db->scopeList.front().functionList.size() == 1UL);
         const Function *func = &db->scopeList.front().functionList.front();
@@ -1416,8 +1346,7 @@ private:
         }
     }
 
-    void namespaces1()
-    {
+    void namespaces1() {
         GET_SYMBOL_DB("namespace fred {\n"
                       "    namespace barney {\n"
                       "        class X { X(int); };\n"
@@ -1447,8 +1376,7 @@ private:
     }
 
     // based on namespaces1 but here the namespaces match
-    void namespaces2()
-    {
+    void namespaces2() {
         GET_SYMBOL_DB("namespace fred {\n"
                       "    namespace barney {\n"
                       "        class X { X(int); };\n"
@@ -1482,8 +1410,7 @@ private:
         ASSERT_EQUALS(true, function->hasBody);
     }
 
-    void namespaces3()   // #3854 - namespace with unknown macro
-    {
+    void namespaces3() { // #3854 - namespace with unknown macro
         GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
                       "}");
         ASSERT_EQUALS(2U, db->scopeList.size());
@@ -1491,8 +1418,7 @@ private:
         ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
     }
 
-    void tryCatch1()
-    {
+    void tryCatch1() {
         const char str[] = "void foo() {\n"
                            "    try { }\n"
                            "    catch (const Error1 & x) { }\n"
@@ -1508,8 +1434,7 @@ private:
     }
 
 
-    void symboldatabase1()
-    {
+    void symboldatabase1() {
         check("namespace foo {\n"
               "    class bar;\n"
               "};");
@@ -1520,8 +1445,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase2()
-    {
+    void symboldatabase2() {
         check("class foo {\n"
               "public slots :\n"
               "foo() { }\n"
@@ -1535,8 +1459,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase3()
-    {
+    void symboldatabase3() {
         check("typedef void (func_type)();\n"
               "struct A {\n"
               "    friend func_type f : 2;\n"
@@ -1544,8 +1467,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase4()
-    {
+    void symboldatabase4() {
         check("static void function_declaration_before(void) __attribute__((__used__));\n"
               "static void function_declaration_before(void) {}\n"
               "static void function_declaration_after(void) {}\n"
@@ -1577,8 +1499,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase5()
-    {
+    void symboldatabase5() {
         // ticket #2178 - segmentation fault
         check("int CL_INLINE_DECL(integer_decode_float) (int x) {\n"
               "    return (sign ? cl_I() : 0);\n"
@@ -1586,8 +1507,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase6()
-    {
+    void symboldatabase6() {
         // ticket #2221 - segmentation fault
         check("template<int i> class X { };\n"
               "X< 1>2 > x1;\n"
@@ -1599,8 +1519,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase7()
-    {
+    void symboldatabase7() {
         // ticket #2230 - segmentation fault
         check("template<template<class> class E,class D> class C : E<D>\n"
               "{\n"
@@ -1615,8 +1534,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (debug) simplifyTemplates: bailing out\n", errout.str());
     }
 
-    void symboldatabase8()
-    {
+    void symboldatabase8() {
         // ticket #2252 - segmentation fault
         check("struct PaletteColorSpaceHolder: public rtl::StaticWithInit<uno::Reference<rendering::XColorSpace>,\n"
               "                                                           PaletteColorSpaceHolder>\n"
@@ -1630,8 +1548,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase9()
-    {
+    void symboldatabase9() {
         // ticket #2425 - segmentation fault
         check("class CHyperlink : public CString\n"
               "{\n"
@@ -1645,8 +1562,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase10()
-    {
+    void symboldatabase10() {
         // ticket #2537 - segmentation fault
         check("class A {\n"
               "private:\n"
@@ -1659,8 +1575,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase11()
-    {
+    void symboldatabase11() {
         // ticket #2539 - segmentation fault
         check("int g ();\n"
               "struct S {\n"
@@ -1670,8 +1585,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase12()
-    {
+    void symboldatabase12() {
         // ticket #2547 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = __null;\n"
@@ -1680,8 +1594,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase13()
-    {
+    void symboldatabase13() {
         // ticket #2577 - segmentation fault
         check("class foo {\n"
               "    void bar2 () = A::f;\n"
@@ -1690,58 +1603,50 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase14()
-    {
+    void symboldatabase14() {
         // ticket #2589 - segmentation fault
         ASSERT_THROW(check("struct B : A\n"), InternalError);
     }
 
-    void symboldatabase15()
-    {
+    void symboldatabase15() {
         // ticket #2591 - segmentation fault
         ASSERT_THROW(check("struct A :\n"), InternalError);
     }
 
-    void symboldatabase16()
-    {
+    void symboldatabase16() {
         // ticket #2637 - segmentation fault
         check("{} const const\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase17()
-    {
+    void symboldatabase17() {
         // ticket #2657 - segmentation fault
         check("return f(){}");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase18()
-    {
+    void symboldatabase18() {
         // ticket #2865 - segmentation fault
         check("char a[1]\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase19()
-    {
+    void symboldatabase19() {
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase20()
-    {
+    void symboldatabase20() {
         // ticket #3013 - segmentation fault
         ASSERT_THROW(check("struct x : virtual y\n"), InternalError);
     }
 
-    void symboldatabase21()
-    {
+    void symboldatabase21() {
         check("class Fred {\n"
               "    class Foo { };\n"
               "    void func() const;\n"
@@ -1754,16 +1659,14 @@ private:
     }
 
     // #ticket 3437 (segmentation fault)
-    void symboldatabase22()
-    {
+    void symboldatabase22() {
         check("template <class C> struct A {};\n"
               "A<int> a;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
     // #ticket 3435 (std::vector)
-    void symboldatabase23()
-    {
+    void symboldatabase23() {
         GET_SYMBOL_DB("class A { std::vector<int*> ints; };");
         ASSERT_EQUALS(2U, db->scopeList.size());
         const Scope &scope = db->scopeList.back();
@@ -1774,8 +1677,7 @@ private:
     }
 
     // #ticket 3508 (constructor, destructor)
-    void symboldatabase24()
-    {
+    void symboldatabase24() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    ~Fred();\n"
                       "    Fred();\n"
@@ -1817,8 +1719,7 @@ private:
     }
 
     // #ticket #3561 (throw C++)
-    void symboldatabase25()
-    {
+    void symboldatabase25() {
         const char str[] = "int main() {\n"
                            "    foo bar;\n"
                            "    throw bar;\n"
@@ -1830,8 +1731,7 @@ private:
     }
 
     // #ticket #3561 (throw C)
-    void symboldatabase26()
-    {
+    void symboldatabase26() {
         const char str[] = "int main() {\n"
                            "    throw bar;\n"
                            "}";
@@ -1842,8 +1742,7 @@ private:
     }
 
     // #ticket #3543 (segmentation fault)
-    void symboldatabase27()
-    {
+    void symboldatabase27() {
         check("class C : public B1\n"
               "{\n"
               "    B1()\n"
@@ -1852,31 +1751,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase28()
-    {
+    void symboldatabase28() {
         GET_SYMBOL_DB("struct S {};\n"
                       "void foo(struct S s) {}");
         ASSERT(db && db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->typeScope() && db->getVariableFromVarId(1)->typeScope()->className == "S");
     }
 
     // #ticket #4442 (segmentation fault)
-    void symboldatabase29()
-    {
+    void symboldatabase29() {
         check("struct B : A {\n"
               "    B() : A {}\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase30()
-    {
+    void symboldatabase30() {
         GET_SYMBOL_DB("struct A { void foo(const int a); };\n"
                       "void A::foo(int a) { }");
         ASSERT(db && db->functionScopes.size() == 1 && db->functionScopes[0]->functionOf);
     }
 
-    void symboldatabase31()
-    {
+    void symboldatabase31() {
         GET_SYMBOL_DB("class Foo;\n"
                       "class Bar;\n"
                       "class Sub;\n"
@@ -1921,8 +1816,7 @@ private:
         ASSERT(Bar_Sub && Bar_Sub->classScope && Bar_Sub->classScope->numConstructors == 2 && Bar_Sub->classScope->className == "Sub");
     }
 
-    void symboldatabase32()
-    {
+    void symboldatabase32() {
         GET_SYMBOL_DB("struct Base {\n"
                       "    void foo() {}\n"
                       "};\n"
@@ -1931,8 +1825,7 @@ private:
         ASSERT(db && db->findScopeByName("Deri") && db->findScopeByName("Deri")->definedType->getFunction("foo"));
     }
 
-    void symboldatabase33()   // ticket #4682
-    {
+    void symboldatabase33() { // ticket #4682
         GET_SYMBOL_DB("static struct A::B s;\n"
                       "static struct A::B t = { 0 };\n"
                       "static struct A::B u(0);\n"
@@ -1942,8 +1835,7 @@ private:
         ASSERT(db && db->functionScopes.size() == 1);
     }
 
-    void symboldatabase34()   // ticket #4694
-    {
+    void symboldatabase34() { // ticket #4694
         check("typedef _Atomic(int(A::*)) atomic_mem_ptr_to_int;\n"
               "typedef _Atomic(int)&atomic_int_ref;\n"
               "struct S {\n"
@@ -1952,21 +1844,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase35()   // ticket #4806 and #4841
-    {
+    void symboldatabase35() { // ticket #4806 and #4841
         check("class FragmentQueue : public CL_NS(util)::PriorityQueue<CL_NS(util)::Deletor::Object<TextFragment> >\n"
               "{};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase36()   // ticket #4892
-    {
+    void symboldatabase36() { // ticket #4892
         check("void struct ( ) { if ( 1 ) } int main ( ) { }");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase37()
-    {
+    void symboldatabase37() {
         GET_SYMBOL_DB("class Fred {\n"
                       "public:\n"
                       "    struct Wilma { };\n"
@@ -1999,8 +1888,7 @@ private:
         ASSERT(db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->type() && db->getVariableFromVarId(3)->type()->name() == "Barney");
     }
 
-    void symboldatabase38()   // ticket #5125
-    {
+    void symboldatabase38() { // ticket #5125
         check("template <typename T = class service> struct scoped_service;\n"
               "struct service {};\n"
               "template <> struct scoped_service<service> {};\n"
@@ -2012,13 +1900,11 @@ private:
               "};");
     }
 
-    void symboldatabase39()   // ticket #5120
-    {
+    void symboldatabase39() { // ticket #5120
         check("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }");
     }
 
-    void symboldatabase40()   // ticket #5153
-    {
+    void symboldatabase40() { // ticket #5153
         check("void f() {\n"
               "    try {  }\n"
               "    catch (std::bad_alloc) {  }\n"
@@ -2026,14 +1912,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase41()   // ticket #5197 (unknown macro)
-    {
+    void symboldatabase41() { // ticket #5197 (unknown macro)
         GET_SYMBOL_DB("struct X1 { MACRO1 f(int spd) MACRO2; };\n");
         ASSERT(db && db->findScopeByName("X1") && db->findScopeByName("X1")->functionList.size() == 1 && !db->findScopeByName("X1")->functionList.front().hasBody);
     }
 
-    void symboldatabase42()   // only put variables in variable list
-    {
+    void symboldatabase42() { // only put variables in variable list
         GET_SYMBOL_DB("void f() { extern int x(); }\n");
         ASSERT(!!db);
         const Scope * const fscope = db ? db->findScopeByName("f") : nullptr;
@@ -2041,16 +1925,14 @@ private:
         ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
-    void symboldatabase43()   // ticket #4738
-    {
+    void symboldatabase43() { // ticket #4738
         check("void f() {\n"
               "    new int;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase44()
-    {
+    void symboldatabase44() {
         GET_SYMBOL_DB("int i { 1 };\n"
                       "int j ( i );\n"
                       "void foo() {\n"
@@ -2064,8 +1946,7 @@ private:
             ASSERT(db->getVariableFromVarId(i) != nullptr);
     }
 
-    void symboldatabase45()
-    {
+    void symboldatabase45() {
         GET_SYMBOL_DB("typedef struct {\n"
                       "    unsigned long bits;\n"
                       "} S;\n"
@@ -2096,8 +1977,7 @@ private:
         ASSERT_EQUALS(Scope::eFunction, scope->type);
     }
 
-    void symboldatabase46()   // #6171 (anonymous namespace)
-    {
+    void symboldatabase46() { // #6171 (anonymous namespace)
         GET_SYMBOL_DB("struct S { };\n"
                       "namespace {\n"
                       "    struct S { };\n"
@@ -2118,8 +1998,7 @@ private:
         ASSERT_EQUALS(scope->className, "S");
     }
 
-    void isImplicitlyVirtual()
-    {
+    void isImplicitlyVirtual() {
         {
             GET_SYMBOL_DB("class Base {\n"
                           "    virtual void foo() {}\n"
@@ -2233,8 +2112,7 @@ private:
         }
     }
 
-    void isFunction()   // #5602 - UNKNOWN_MACRO(a,b) { .. }
-    {
+    void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
         GET_SYMBOL_DB("TEST(a,b) {\n"
                       "  std::vector<int> messages;\n"
                       "  foo(messages[2].size());\n"
@@ -2247,8 +2125,7 @@ private:
                var->typeStartToken()->str() == "std");
     }
 
-    void findFunction1()
-    {
+    void findFunction1() {
         GET_SYMBOL_DB("int foo(int x);\n" /* 1 */
                       "void foo();\n"     /* 2 */
                       "void bar() {\n"    /* 3 */
@@ -2280,8 +2157,7 @@ private:
         }
     }
 
-    void findFunction2()
-    {
+    void findFunction2() {
         // The function does not match the function call.
         GET_SYMBOL_DB("void func(const int x, const Fred &fred);\n"
                       "void otherfunc() {\n"
@@ -2295,8 +2171,7 @@ private:
         ASSERT_EQUALS(false, (callfunc && callfunc->function())); // callfunc->function() should be null
     }
 
-    void findFunction3()
-    {
+    void findFunction3() {
         GET_SYMBOL_DB("struct base { void foo() { } };\n"
                       "struct derived : public base { void foo() { } };\n"
                       "void foo() {\n"
@@ -2311,8 +2186,7 @@ private:
         ASSERT_EQUALS(true, callfunc && callfunc->tokAt(2)->function() && callfunc->tokAt(2)->function()->tokenDef->linenr() == 2); // should find function on line 2
     }
 
-    void findFunction4()
-    {
+    void findFunction4() {
         GET_SYMBOL_DB("void foo(UNKNOWN) { }\n"
                       "void foo(int a) { }\n"
                       "void foo(unsigned int a) { }\n"
@@ -2460,8 +2334,7 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 8);
     }
 
-    void findFunction5()
-    {
+    void findFunction5() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    void Sync(dsmp_t& type, int& len, int limit = 123);\n"
                       "    void Sync(int& syncpos, dsmp_t& type, int& len, int limit = 123);\n"
@@ -2480,8 +2353,7 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
     }
 
-    void findFunction6()   // avoid null pointer access
-    {
+    void findFunction6() { // avoid null pointer access
         GET_SYMBOL_DB("void addtoken(Token** rettail, const Token *tok);\n"
                       "void CheckMemoryLeakInFunction::getcode(const Token *tok ) {\n"
                       "   addtoken(&rettail, tok);\n"
@@ -2495,8 +2367,7 @@ private:
                 ASSERT_EQUALS(true, x != nullptr);                                  \
                 if (x) ASSERT_EQUALS(true, x->isNoExcept);
 
-    void noexceptFunction1()
-    {
+    void noexceptFunction1() {
         GET_SYMBOL_DB("void func1() noexcept;\n"
                       "void func2() noexcept { }\n"
                       "void func3() noexcept(true);\n"
@@ -2512,8 +2383,7 @@ private:
         }
     }
 
-    void noexceptFunction2()
-    {
+    void noexceptFunction2() {
         GET_SYMBOL_DB("template <class T> void self_assign(T& t) noexcept(noexcept(t = t)) {t = t; }\n");
 
         ASSERT_EQUALS("", errout.str());
@@ -2528,8 +2398,7 @@ private:
                          ASSERT_EQUALS(true, x != nullptr);             \
                          if (x) ASSERT_EQUALS(true, x->isNoExcept);
 
-    void noexceptFunction3()
-    {
+    void noexceptFunction3() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    void func1() noexcept;\n"
                       "    void func2() noexcept { }\n"
@@ -2567,8 +2436,7 @@ private:
         }
     }
 
-    void noexceptFunction4()
-    {
+    void noexceptFunction4() {
         GET_SYMBOL_DB("class A {\n"
                       "public:\n"
                       "   A(A&& a) {\n"
@@ -2596,8 +2464,7 @@ private:
                       ASSERT_EQUALS(true, x != nullptr);                                  \
                       if (x) ASSERT_EQUALS(true, x->isThrow);
 
-    void throwFunction1()
-    {
+    void throwFunction1() {
         GET_SYMBOL_DB("void func1() throw();\n"
                       "void func2() throw() { }\n"
                       "void func3() throw(int);\n"
@@ -2616,8 +2483,7 @@ private:
 #define CLASS_FUNC_THROW(x, y) const Function *x = findFunctionByName(#x, y); \
                                ASSERT_EQUALS(true, x != nullptr);             \
                                if (x) ASSERT_EQUALS(true, x->isThrow);
-    void throwFunction2()
-    {
+    void throwFunction2() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    void func1() throw();\n"
                       "    void func2() throw() { }\n"
@@ -2655,8 +2521,7 @@ private:
         }
     }
 
-    void nothrowAttributeFunction()
-    {
+    void nothrowAttributeFunction() {
         GET_SYMBOL_DB("void func() __attribute__((nothrow));\n"
                       "void func() { }\n");
         ASSERT_EQUALS("", errout.str());
@@ -2670,8 +2535,7 @@ private:
         }
     }
 
-    void nothrowDeclspecFunction()
-    {
+    void nothrowDeclspecFunction() {
         GET_SYMBOL_DB("void __declspec(nothrow) func() { }\n");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
@@ -2684,8 +2548,7 @@ private:
         }
     }
 
-    void varTypesIntegral()
-    {
+    void varTypesIntegral() {
         GET_SYMBOL_DB("void f() { bool b; char c; unsigned char uc; short s; unsigned short us; int i; unsigned u; unsigned int ui; long l; unsigned long ul; long long ll; }");
         const Variable *b = db->getVariableFromVarId(1);
         ASSERT(b != nullptr);
@@ -2766,8 +2629,7 @@ private:
         }
     }
 
-    void varTypesFloating()
-    {
+    void varTypesFloating() {
         {
             GET_SYMBOL_DB("void f() { float f; double d; long double ld; }");
             const Variable *f = db->getVariableFromVarId(1);
@@ -2824,8 +2686,7 @@ private:
         }
     }
 
-    void varTypesOther()
-    {
+    void varTypesOther() {
         GET_SYMBOL_DB("void f() { class A {} a; void *b;  }");
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT(a != nullptr);
@@ -2843,8 +2704,7 @@ private:
         }
     }
 
-    void functionPrototype()
-    {
+    void functionPrototype() {
         check("int foo(int x) {\n"
               "    extern int func1();\n"
               "    extern int func2(int);\n"
@@ -2855,8 +2715,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void lambda()
-    {
+    void lambda() {
         GET_SYMBOL_DB("void func() {\n"
                       "    float y = 0.0f;\n"
                       "    auto lambda = [&]()\n"

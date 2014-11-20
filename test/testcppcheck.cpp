@@ -32,8 +32,7 @@ extern std::ostringstream output;
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck")
-    {
+    TestCppcheck() : TestFixture("TestCppcheck") {
     }
 
 private:
@@ -42,25 +41,21 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/)
-        {
+        void reportOut(const std::string & /*outmsg*/) {
         }
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg)
-        {
+        void reportErr(const ErrorLogger::ErrorMessage &msg) {
             id.push_back(msg._id);
         }
     };
 
-    void run()
-    {
+    void run() {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);
     }
 
-    void instancesSorted() const
-    {
+    void instancesSorted() const {
         for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             std::list<Check *>::const_iterator j = i;
             ++j;
@@ -70,8 +65,7 @@ private:
         }
     }
 
-    void classInfoFormat() const
-    {
+    void classInfoFormat() const {
         for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
@@ -83,8 +77,7 @@ private:
         }
     }
 
-    void getErrorMessages() const
-    {
+    void getErrorMessages() const {
         ErrorLogger2 errorLogger;
         CppCheck cppCheck(errorLogger, true);
         cppCheck.getErrorMessages();

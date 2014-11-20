@@ -27,19 +27,16 @@
 
 class TestSamples : public TestFixture {
 public:
-    TestSamples() : TestFixture("TestSamples")
-    {
+    TestSamples() : TestFixture("TestSamples") {
     }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(runSamples);
     }
 
-    void runSamples() const
-    {
+    void runSamples() const {
         REDIRECT;
 
         std::map<std::string, std::size_t> files;

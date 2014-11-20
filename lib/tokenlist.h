@@ -36,8 +36,7 @@ public:
     TokenList(const Settings* settings);
     ~TokenList();
 
-    void setSettings(const Settings *settings)
-    {
+    void setSettings(const Settings *settings) {
         _settings = settings;
     }
 
@@ -45,14 +44,12 @@ public:
     const std::string& getSourceFilePath() const;
 
     /** Is the code C. Used for bailouts */
-    bool isC() const
-    {
+    bool isC() const {
         return _isC;
     }
 
     /** Is the code CPP. Used for bailouts */
-    bool isCPP() const
-    {
+    bool isCPP() const {
         return _isCPP;
     }
 
@@ -85,22 +82,18 @@ public:
     unsigned int appendFileIfNew(const std::string &file);
 
     /** get first token of list */
-    const Token *front() const
-    {
+    const Token *front() const {
         return _front;
     }
-    Token *front()
-    {
+    Token *front() {
         return _front;
     }
 
     /** get last token of list */
-    const Token *back() const
-    {
+    const Token *back() const {
         return _back;
     }
-    Token *back()
-    {
+    Token *back() {
         return _back;
     }
 
@@ -109,8 +102,7 @@ public:
      * The first filename is the filename for the sourcefile
      * @return vector with filenames
      */
-    const std::vector<std::string>& getFiles() const
-    {
+    const std::vector<std::string>& getFiles() const {
         return _files;
     }
 

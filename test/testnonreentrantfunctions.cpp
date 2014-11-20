@@ -27,20 +27,17 @@ extern std::ostringstream errout;
 
 class TestNonReentrantFunctions : public TestFixture {
 public:
-    TestNonReentrantFunctions() : TestFixture("TestNonReentrantFunctions")
-    {
+    TestNonReentrantFunctions() : TestFixture("TestNonReentrantFunctions") {
     }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(test_crypt);
         TEST_CASE(test_namespace_handling);
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -59,8 +56,7 @@ private:
         checkNonReentrantFunctions.nonReentrantFunctions();
     }
 
-    void test_crypt()
-    {
+    void test_crypt() {
         check("void f(char *pwd)\n"
               "{\n"
               "    char *cpwd;"
@@ -84,8 +80,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test_namespace_handling()
-    {
+    void test_namespace_handling() {
         check("int f()\n"
               "{\n"
               "    time_t t = 0;"

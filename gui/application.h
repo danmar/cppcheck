@@ -49,8 +49,7 @@ public:
     * @brief Get application name.
     * @return Application name.
     */
-    QString getName() const
-    {
+    QString getName() const {
         return mName;
     }
 
@@ -58,8 +57,7 @@ public:
     * @brief Get application path.
     * @return Application path.
     */
-    QString getPath() const
-    {
+    QString getPath() const {
         return mPath;
     }
 
@@ -67,8 +65,7 @@ public:
     * @brief Get application command line parameters.
     * @return Application command line parameters.
     */
-    QString getParameters() const
-    {
+    QString getParameters() const {
         return mParameters;
     }
 
@@ -76,8 +73,7 @@ public:
     * @brief Set application name.
     * @param name Application name.
     */
-    void setName(const QString &name)
-    {
+    void setName(const QString &name) {
         mName = name;
     }
 
@@ -85,8 +81,7 @@ public:
     * @brief Set application path.
     * @param path Application path.
     */
-    void setPath(const QString &path)
-    {
+    void setPath(const QString &path) {
         mPath = path;
     }
 
@@ -94,8 +89,7 @@ public:
     * @brief Set application command line parameters.
     * @param parameters Application command line parameters.
     */
-    void setParameters(const QString &parameters)
-    {
+    void setParameters(const QString &parameters) {
         mParameters = parameters;
     }
 

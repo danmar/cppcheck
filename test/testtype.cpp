@@ -29,22 +29,19 @@ extern std::ostringstream errout;
 
 class TestType : public TestFixture {
 public:
-    TestType() : TestFixture("TestType")
-    {
+    TestType() : TestFixture("TestType") {
     }
 
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(checkTooBigShift);
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);
     }
 
-    void check(const char code[], Settings* settings = 0)
-    {
+    void check(const char code[], Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -64,8 +61,7 @@ private:
         checkType.runChecks(&tokenizer, settings, this);
     }
 
-    void checkTooBigShift()
-    {
+    void checkTooBigShift() {
         Settings settings;
         settings.platform(Settings::Unix32);
 
@@ -91,8 +87,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkIntegerOverflow()
-    {
+    void checkIntegerOverflow() {
         Settings settings;
         settings.platform(Settings::Unix32);
 
@@ -115,8 +110,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void signConversion()
-    {
+    void signConversion() {
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
               "}\n"

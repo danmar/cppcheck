@@ -27,14 +27,12 @@ extern std::ostringstream errout;
 
 class TestObsoleteFunctions : public TestFixture {
 public:
-    TestObsoleteFunctions() : TestFixture("TestObsoleteFunctions")
-    {
+    TestObsoleteFunctions() : TestFixture("TestObsoleteFunctions") {
     }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(testbsd_signal);
         TEST_CASE(testgethostbyname);
         TEST_CASE(testgethostbyaddr);
@@ -70,8 +68,7 @@ private:
         TEST_CASE(ticket3238);
     }
 
-    void check(const char code[], const char filename[]="test.cpp")
-    {
+    void check(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -91,8 +88,7 @@ private:
         checkObsoleteFunctions.obsoleteFunctions();
     }
 
-    void testbsd_signal()
-    {
+    void testbsd_signal() {
         check("void f()\n"
               "{\n"
               "    bsd_signal(SIGABRT, SIG_IGN);\n"
@@ -108,8 +104,7 @@ private:
     }
 
 
-    void testgethostbyname()
-    {
+    void testgethostbyname() {
         check("void f()\n"
               "{\n"
               "    struct hostent *hp;\n"
@@ -120,8 +115,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'gethostbyname' called. It is recommended to use the function 'getaddrinfo' instead.\n", errout.str());
     }
 
-    void testgethostbyaddr()
-    {
+    void testgethostbyaddr() {
         check("void f()\n"
               "{\n"
               "    long addr;\n"
@@ -133,8 +127,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Obsolete function 'gethostbyaddr' called. It is recommended to use the function 'getnameinfo' instead.\n", errout.str());
     }
 
-    void testusleep()
-    {
+    void testusleep() {
         check("void f()\n"
               "{\n"
               "    usleep( 1000 );\n"
@@ -142,8 +135,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
     }
 
-    void testindex()
-    {
+    void testindex() {
 
         check("namespace n1 {\n"
               "    int index(){};\n"
@@ -184,16 +176,14 @@ private:
                       errout.str());
     }
 
-    void test_qt_index()
-    {
+    void test_qt_index() {
         check("void TDataModel::forceRowRefresh(int row) {\n"
               "    emit dataChanged(index(row, 0), index(row, columnCount() - 1));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Obsolete function 'index' called. It is recommended to use the function 'strchr' instead.\n", errout.str());
     }
 
-    void testrindex()
-    {
+    void testrindex() {
         check("void f()\n"
               "{\n"
               "    int rindex( 0 );\n"
@@ -209,8 +199,7 @@ private:
     }
 
 
-    void testvar()
-    {
+    void testvar() {
         check("class Fred {\n"
               "public:\n"
               "    Fred() : index(0) { }\n"
@@ -219,8 +208,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testgets()
-    {
+    void testgets() {
         check("void f()\n"
               "{\n"
               "    char *x = gets();\n"
@@ -234,8 +222,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
     }
 
-    void testalloca()
-    {
+    void testalloca() {
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
@@ -250,8 +237,7 @@ private:
     }
 
     // ticket #3121
-    void test_declared_function()
-    {
+    void test_declared_function() {
         check("int ftime ( int a )\n"
               "{\n"
               "    return a;\n"
@@ -265,8 +251,7 @@ private:
     }
 
     // test std::gets
-    void test_std_gets()
-    {
+    void test_std_gets() {
         check("void f(char * str)\n"
               "{\n"
               "    char *x = std::gets(str);\n"
@@ -275,8 +260,7 @@ private:
     }
 
     // multiple use
-    void test_multiple()
-    {
+    void test_multiple() {
         check("void f(char * str)\n"
               "{\n"
               "    char *x = std::gets(str);\n"
@@ -286,8 +270,7 @@ private:
                       "[test.cpp:4]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
     }
 
-    void test_c_declaration()
-    {
+    void test_c_declaration() {
         check("char * gets ( char * c ) ;\n"
               "int main ()\n"
               "{\n"
@@ -304,8 +287,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.\n", errout.str());
     }
 
-    void test_function_with_body()
-    {
+    void test_function_with_body() {
         check("char * gets ( char * c ) { return c; }\n"
               "int main ()\n"
               "{\n"
@@ -315,8 +297,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ticket3238()
-    {
+    void ticket3238() {
         check("__FBSDID(\"...\");\n");
         ASSERT_EQUALS("", errout.str());
     }

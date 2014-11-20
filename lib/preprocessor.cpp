@@ -2542,8 +2542,7 @@ private:
 
     /** @brief expand inner macro */
     std::vector<std::string> expandInnerMacros(const std::vector<std::string> &params1,
-            const std::map<std::string, PreprocessorMacro *> &macros) const
-    {
+            const std::map<std::string, PreprocessorMacro *> &macros) const {
         std::string innerMacroName;
 
         // Is there an inner macro..
@@ -2601,8 +2600,7 @@ public:
      * e.g. "A(x) foo(x);"
      */
     explicit PreprocessorMacro(const std::string &macro)
-        : _macro(macro), _prefix("__cppcheck__")
-    {
+        : _macro(macro), _prefix("__cppcheck__") {
         tokenizer.setSettings(&settings);
 
         // Tokenize the macro to make it easier to handle
@@ -2643,32 +2641,27 @@ public:
     }
 
     /** return tokens of this macro */
-    const Token *tokens() const
-    {
+    const Token *tokens() const {
         return tokenizer.tokens();
     }
 
     /** read parameters of this macro */
-    const std::vector<std::string> &params() const
-    {
+    const std::vector<std::string> &params() const {
         return _params;
     }
 
     /** check if this is macro has a variable number of parameters */
-    bool variadic() const
-    {
+    bool variadic() const {
         return _variadic;
     }
 
     /** Check if this macro has parentheses but no parameters */
-    bool nopar() const
-    {
+    bool nopar() const {
         return _nopar;
     }
 
     /** name of macro */
-    const std::string &name() const
-    {
+    const std::string &name() const {
         return _name;
     }
 
@@ -2679,8 +2672,7 @@ public:
      * @param macrocode output string
      * @return true if the expanding was successful
      */
-    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> &macros, std::string &macrocode) const
-    {
+    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> &macros, std::string &macrocode) const {
         if (_nopar || (_params.empty() && _variadic)) {
             macrocode = _macro.substr(1 + _macro.find(")"));
             if (macrocode.empty())

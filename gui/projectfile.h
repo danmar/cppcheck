@@ -50,8 +50,7 @@ public:
     * @brief Get project root path.
     * @return project root path.
     */
-    QString GetRootPath() const
-    {
+    QString GetRootPath() const {
         return mRootPath;
     }
 
@@ -95,8 +94,7 @@ public:
     * @brief Get filename for the project file.
     * @return file name.
     */
-    QString GetFilename() const
-    {
+    QString GetFilename() const {
         return mFilename;
     }
 
@@ -104,8 +102,7 @@ public:
     * @brief Set project root path.
     * @param rootpath new project root path.
     */
-    void SetRootPath(const QString &rootpath)
-    {
+    void SetRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
 
@@ -164,8 +161,7 @@ public:
     * @brief Set filename for the project file.
     * @param filename Filename to use.
     */
-    void SetFilename(const QString &filename)
-    {
+    void SetFilename(const QString &filename) {
         mFilename = filename;
     }
 

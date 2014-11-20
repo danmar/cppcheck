@@ -56,26 +56,22 @@ class UninitVar : public ExecutionPath {
 public:
     /** Startup constructor */
     explicit UninitVar(Check *c, const SymbolDatabase* db, const Library *lib, bool isc)
-        : ExecutionPath(c, 0), symbolDatabase(db), library(lib), isC(isc), var(0), alloc(false), strncpy_(false), memset_nonzero(false)
-    {
+        : ExecutionPath(c, 0), symbolDatabase(db), library(lib), isC(isc), var(0), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 
 private:
     /** Create a copy of this check */
-    ExecutionPath *copy()
-    {
+    ExecutionPath *copy() {
         return new UninitVar(*this);
     }
 
     /** internal constructor for creating extra checks */
     UninitVar(Check *c, const Variable* v, const SymbolDatabase* db, const Library *lib, bool isc)
-        : ExecutionPath(c, v->declarationId()), symbolDatabase(db), library(lib), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false)
-    {
+        : ExecutionPath(c, v->declarationId()), symbolDatabase(db), library(lib), isC(isc), var(v), alloc(false), strncpy_(false), memset_nonzero(false) {
     }
 
     /** is other execution path equal? */
-    bool is_equal(const ExecutionPath *e) const
-    {
+    bool is_equal(const ExecutionPath *e) const {
         const UninitVar *c = static_cast<const UninitVar *>(e);
         return (var == c->var && alloc == c->alloc && strncpy_ == c->strncpy_ && memset_nonzero == c->memset_nonzero);
     }
@@ -101,8 +97,7 @@ private:
     bool  memset_nonzero;
 
     /** allocating pointer. For example : p = malloc(10); */
-    static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
-    {
+    static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid) {
         // loop through the checks and perform a allocation if the
         // variable id matches
         std::list<ExecutionPath *>::const_iterator it;
@@ -119,8 +114,7 @@ private:
     }
 
     /** Initializing a pointer value. For example: *p = 0; */
-    static void init_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void init_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
         const unsigned int varid(tok->varId());
         if (!varid)
             return;
@@ -145,8 +139,7 @@ private:
     }
 
     /** Deallocate a pointer. For example: free(p); */
-    static void dealloc_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void dealloc_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
         const unsigned int varid(tok->varId());
         if (!varid)
             return;
@@ -177,8 +170,7 @@ private:
      * \param tok1 the "p" token
      * \param tok2 the "x" token
      */
-    static void pointer_assignment(std::list<ExecutionPath *> &checks, const Token *tok1, const Token *tok2)
-    {
+    static void pointer_assignment(std::list<ExecutionPath *> &checks, const Token *tok1, const Token *tok2) {
         // Variable id for "left hand side" variable
         const unsigned int varid1(tok1->varId());
         if (varid1 == 0)
@@ -212,8 +204,7 @@ private:
 
 
     /** Initialize an array with strncpy. */
-    static void init_strncpy(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void init_strncpy(std::list<ExecutionPath *> &checks, const Token *tok) {
         const unsigned int varid(tok->varId());
         if (!varid)
             return;
@@ -228,8 +219,7 @@ private:
     }
 
     /** Initialize an array with memset (not zero). */
-    static void init_memset_nonzero(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void init_memset_nonzero(std::list<ExecutionPath *> &checks, const Token *tok) {
         const unsigned int varid(tok->varId());
         if (!varid)
             return;
@@ -252,8 +242,7 @@ private:
      * @param mode specific behaviour
      * @return if error is found, true is returned
      */
-    static bool use(std::list<ExecutionPath *> &checks, const Token *tok, const int mode)
-    {
+    static bool use(std::list<ExecutionPath *> &checks, const Token *tok, const int mode) {
         const unsigned int varid(tok->varId());
         if (varid == 0)
             return false;
@@ -317,8 +306,7 @@ private:
      * @param tok variable token
      * @return if error is found, true is returned
      */
-    static bool use(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static bool use(std::list<ExecutionPath *> &checks, const Token *tok) {
         return use(checks, tok, 0);
     }
 
@@ -327,8 +315,7 @@ private:
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_array(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void use_array(std::list<ExecutionPath *> &checks, const Token *tok) {
         use(checks, tok, 1);
     }
 
@@ -337,8 +324,7 @@ private:
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_array_mem(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static void use_array_mem(std::list<ExecutionPath *> &checks, const Token *tok) {
         use(checks, tok, 2);
     }
 
@@ -348,8 +334,7 @@ private:
      * @param tok variable token
      * @return if error is found, true is returned
      */
-    static bool use_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static bool use_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
         return use(checks, tok, 3);
     }
 
@@ -359,8 +344,7 @@ private:
      * @param tok variable token
      * @return if error is found, true is returned
      */
-    static bool use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static bool use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok) {
         return use(checks, tok, 4);
     }
 
@@ -371,8 +355,7 @@ private:
      * @param tok variable token
      * @return if error is found, true is returned
      */
-    static bool use_array_or_pointer_data(std::list<ExecutionPath *> &checks, const Token *tok)
-    {
+    static bool use_array_or_pointer_data(std::list<ExecutionPath *> &checks, const Token *tok) {
         return use(checks, tok, 5);
     }
 
@@ -381,8 +364,7 @@ private:
      * @param tok2 start token of rhs
      * @param checks the execution paths
      */
-    static void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks)
-    {
+    static void parserhs(const Token *tok2, std::list<ExecutionPath *> &checks) {
         // check variable usages in rhs/index
         while (nullptr != (tok2 = tok2->next())) {
             if (Token::Match(tok2, "[;)=]"))
@@ -425,8 +407,7 @@ private:
     }
 
     /** parse tokens. @sa ExecutionPath::parse */
-    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
-    {
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
         // Variable declaration..
         if (tok.varId() && Token::Match(&tok, "%var% [[;]")) {
             const Variable* var2 = tok.variable();
@@ -892,8 +873,7 @@ private:
         return &tok;
     }
 
-    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
-    {
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) {
         if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)"))
             use(checks, &tok);
 
@@ -921,8 +901,7 @@ private:
         return ExecutionPath::parseCondition(tok, checks);
     }
 
-    void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const
-    {
+    void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const {
         while (tok) {
             if (tok->str() == "{" || tok->str() == "}" || tok->str() == "for")
                 return;
@@ -941,8 +920,7 @@ private:
 
 public:
 
-    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func)
-    {
+    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func) {
         for (const Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "{") {
                 tok = tok->link();

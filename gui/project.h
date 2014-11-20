@@ -79,8 +79,7 @@ public:
     * @brief Return current project file.
     * @return project file.
     */
-    ProjectFile * GetProjectFile() const
-    {
+    ProjectFile * GetProjectFile() const {
         return mPFile;
     }
 

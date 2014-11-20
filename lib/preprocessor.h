@@ -247,8 +247,7 @@ public:
      */
     std::string handleIncludes(const std::string &code, const std::string &filePath, const std::list<std::string> &includePaths, std::map<std::string,std::string> &defs, std::set<std::string> &pragmaOnce, std::list<std::string> includes);
 
-    void setFile0(const std::string &f)
-    {
+    void setFile0(const std::string &f) {
         file0 = f;
     }
 

@@ -37,19 +37,16 @@ class Variable;
 class CPPCHECKLIB CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
-    CheckUninitVar() : Check(myName()), testrunner(false)
-    {
+    CheckUninitVar() : Check(myName()), testrunner(false) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUninitVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), testrunner(false)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger), testrunner(false) {
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.executionPaths();
         checkUninitVar.check();
@@ -102,8 +99,7 @@ public:
     bool testrunner;
 
 private:
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUninitVar c(0, settings, errorLogger);
 
         // error
@@ -114,13 +110,11 @@ private:
         c.deadPointerError(0,0);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Uninitialized variables";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Uninitialized variables\n"
                "- using uninitialized local variables\n"
                "- using allocated data before it has been initialized\n"

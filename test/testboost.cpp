@@ -27,18 +27,15 @@ extern std::ostringstream errout;
 
 class TestBoost : public TestFixture {
 public:
-    TestBoost() : TestFixture("TestBoost")
-    {
+    TestBoost() : TestFixture("TestBoost") {
     }
 
 private:
-    void run()
-    {
+    void run() {
         TEST_CASE(BoostForeachContainerModification)
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -61,8 +58,7 @@ private:
         checkBoost.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void BoostForeachContainerModification()
-    {
+    void BoostForeachContainerModification() {
         check("void f() {\n"
               "    vector<int> data;\n"
               "    BOOST_FOREACH(int i, data) {\n"

@@ -26,15 +26,13 @@ extern std::ostringstream errout;
 
 class TestSizeof : public TestFixture {
 public:
-    TestSizeof() : TestFixture("TestSizeof")
-    {
+    TestSizeof() : TestFixture("TestSizeof") {
     }
 
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);
         TEST_CASE(checkPointerSizeof);
@@ -46,8 +44,7 @@ private:
         TEST_CASE(customStrncat);
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -66,8 +63,7 @@ private:
         checkSizeof.runChecks(&tokenizer, &settings, this);
     }
 
-    void sizeofsizeof()
-    {
+    void sizeofsizeof() {
         check("void foo()\n"
               "{\n"
               "    int i = sizeof sizeof char;\n"
@@ -87,8 +83,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Calling 'sizeof' on 'sizeof'.\n", errout.str());
     }
 
-    void sizeofCalculation()
-    {
+    void sizeofCalculation() {
         check("int a, b; int a,sizeof(a+b)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
 
@@ -117,8 +112,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
     }
 
-    void sizeofForArrayParameter()
-    {
+    void sizeofForArrayParameter() {
         check("void f() {\n"
               "    int a[10];\n"
               "    std::cout << sizeof(a) / sizeof(int) << std::endl;\n"
@@ -250,8 +244,7 @@ private:
 
     }
 
-    void sizeofForNumericParameter()
-    {
+    void sizeofForNumericParameter() {
         check("void f() {\n"
               "    std::cout << sizeof(10) << std::endl;\n"
               "}\n");
@@ -273,8 +266,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious usage of 'sizeof' with a numeric constant as parameter.\n", errout.str());
     }
 
-    void suspiciousSizeofCalculation()
-    {
+    void suspiciousSizeofCalculation() {
         check("int* p;\n"
               "return sizeof(p)/5;");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
@@ -308,8 +300,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkPointerSizeof()
-    {
+    void checkPointerSizeof() {
         check("void f() {\n"
               "    char *x = malloc(10);\n"
               "    free(x);\n"
@@ -511,8 +502,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void sizeofDivisionMemset()
-    {
+    void sizeofDivisionMemset() {
         check("void foo(memoryMapEntry_t* entry, memoryMapEntry_t* memoryMapEnd) {\n"
               "    memmove(entry, entry + 1, (memoryMapEnd - entry) / sizeof(entry));\n"
               "}");
@@ -524,8 +514,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). malloc() expects a size in bytes, did you intend to multiply instead?\n", errout.str());
     }
 
-    void sizeofVoid()
-    {
+    void sizeofVoid() {
         check("void f() {\n"
               "  int size = sizeof(void);\n"
               "}");
@@ -665,8 +654,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void customStrncat()
-    {
+    void customStrncat() {
         // Ensure we don't crash on custom-defined strncat, ticket #5875
         check("char strncat ();\n"
               "int main () {\n"

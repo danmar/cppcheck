@@ -64,70 +64,58 @@ public:
     bool loadxmldata(const char xmldata[], std::size_t len);
 
     /** get allocation id for function by name */
-    int alloc(const char name[]) const
-    {
+    int alloc(const char name[]) const {
         return getid(_alloc, name);
     }
 
     /** get allocation id for function */
-    int alloc(const Token *tok) const
-    {
+    int alloc(const Token *tok) const {
         return tok->function() ? 0 : getid(_alloc, tok->str());
     }
 
     /** get deallocation id for function */
-    int dealloc(const Token *tok) const
-    {
+    int dealloc(const Token *tok) const {
         return tok->function() ? 0 : getid(_dealloc, tok->str());
     }
 
     /** get deallocation id for function by name */
-    int dealloc(const char name[]) const
-    {
+    int dealloc(const char name[]) const {
         return getid(_dealloc, name);
     }
 
     /** set allocation id for function */
-    void setalloc(const std::string &functionname, int id)
-    {
+    void setalloc(const std::string &functionname, int id) {
         _alloc[functionname] = id;
     }
 
-    void setdealloc(const std::string &functionname, int id)
-    {
+    void setdealloc(const std::string &functionname, int id) {
         _dealloc[functionname] = id;
     }
 
     /** add noreturn function setting */
-    void setnoreturn(const std::string& funcname, bool noreturn)
-    {
+    void setnoreturn(const std::string& funcname, bool noreturn) {
         _noreturn[funcname] = noreturn;
     }
 
     /** is allocation type memory? */
-    static bool ismemory(int id)
-    {
+    static bool ismemory(int id) {
         return ((id > 0) && ((id & 1) == 0));
     }
 
     /** is allocation type resource? */
-    static bool isresource(int id)
-    {
+    static bool isresource(int id) {
         return ((id > 0) && ((id & 1) == 1));
     }
 
-    bool formatstr_function(const std::string& funcname) const
-    {
+    bool formatstr_function(const std::string& funcname) const {
         return _formatstr.find(funcname) != _formatstr.end();
     }
 
-    bool formatstr_scan(const std::string& funcname) const
-    {
+    bool formatstr_scan(const std::string& funcname) const {
         return _formatstr.at(funcname).first;
     }
 
-    bool formatstr_secure(const std::string& funcname) const
-    {
+    bool formatstr_secure(const std::string& funcname) const {
         return _formatstr.at(funcname).second;
     }
 
@@ -137,14 +125,12 @@ public:
     std::set<std::string> functionpure;
     std::set<std::string> useretval;
 
-    bool isnoreturn(const std::string &name) const
-    {
+    bool isnoreturn(const std::string &name) const {
         std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
         return (it != _noreturn.end() && it->second);
     }
 
-    bool isnotnoreturn(const std::string &name) const
-    {
+    bool isnotnoreturn(const std::string &name) const {
         std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
         return (it != _noreturn.end() && !it->second);
     }
@@ -158,8 +144,7 @@ public:
             notnull(false),
             notuninit(false),
             formatstr(false),
-            strz(false)
-        {
+            strz(false) {
         }
 
         bool         notbool;
@@ -183,46 +168,39 @@ public:
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
 
-    bool isboolargbad(const std::string &functionName, int argnr) const
-    {
+    bool isboolargbad(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->notbool;
     }
 
-    bool isnullargbad(const std::string &functionName, int argnr) const
-    {
+    bool isnullargbad(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->notnull;
     }
 
-    bool isuninitargbad(const std::string &functionName, int argnr) const
-    {
+    bool isuninitargbad(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->notuninit;
     }
 
-    bool isargformatstr(const std::string &functionName, int argnr) const
-    {
+    bool isargformatstr(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->formatstr;
     }
 
-    bool isargstrz(const std::string &functionName, int argnr) const
-    {
+    bool isargstrz(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg && arg->strz;
     }
 
     bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
 
-    const std::string& validarg(const std::string &functionName, int argnr) const
-    {
+    const std::string& validarg(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg ? arg->valid : emptyString;
     }
 
-    bool hasminsize(const std::string &functionName) const
-    {
+    bool hasminsize(const std::string &functionName) const {
         std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
         it1 = argumentChecks.find(functionName);
         if (it1 == argumentChecks.end())
@@ -235,47 +213,39 @@ public:
         return false;
     }
 
-    const std::list<ArgumentChecks::MinSize> *argminsizes(const std::string &functionName, int argnr) const
-    {
+    const std::list<ArgumentChecks::MinSize> *argminsizes(const std::string &functionName, int argnr) const {
         const ArgumentChecks *arg = getarg(functionName, argnr);
         return arg ? &arg->minsizes : nullptr;
     }
 
-    bool markupFile(const std::string &path) const
-    {
+    bool markupFile(const std::string &path) const {
         return _markupExtensions.find(Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
     }
 
-    bool processMarkupAfterCode(const std::string &path) const
-    {
+    bool processMarkupAfterCode(const std::string &path) const {
         const std::map<std::string, bool>::const_iterator it = _processAfterCode.find(Path::getFilenameExtensionInLowerCase(path));
         return (it == _processAfterCode.end() || it->second);
     }
 
-    const std::set<std::string> &markupExtensions() const
-    {
+    const std::set<std::string> &markupExtensions() const {
         return _markupExtensions;
     }
 
-    bool reportErrors(const std::string &path) const
-    {
+    bool reportErrors(const std::string &path) const {
         const std::map<std::string, bool>::const_iterator it = _reporterrors.find(Path::getFilenameExtensionInLowerCase(path));
         return (it == _reporterrors.end() || it->second);
     }
 
-    bool ignorefunction(const std::string &function) const
-    {
+    bool ignorefunction(const std::string &function) const {
         return (_ignorefunction.find(function) != _ignorefunction.end());
     }
 
-    bool isexecutableblock(const std::string &file, const std::string &token) const
-    {
+    bool isexecutableblock(const std::string &file, const std::string &token) const {
         const std::map<std::string, CodeBlock>::const_iterator it = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
         return (it != _executableblocks.end() && it->second.isBlock(token));
     }
 
-    int blockstartoffset(const std::string &file) const
-    {
+    int blockstartoffset(const std::string &file) const {
         int offset = -1;
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
@@ -286,8 +256,7 @@ public:
         return offset;
     }
 
-    const std::string& blockstart(const std::string &file) const
-    {
+    const std::string& blockstart(const std::string &file) const {
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
@@ -297,8 +266,7 @@ public:
         return emptyString;
     }
 
-    const std::string& blockend(const std::string &file) const
-    {
+    const std::string& blockend(const std::string &file) const {
         const std::map<std::string, CodeBlock>::const_iterator map_it
             = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
 
@@ -308,46 +276,39 @@ public:
         return emptyString;
     }
 
-    bool iskeyword(const std::string &file, const std::string &keyword) const
-    {
+    bool iskeyword(const std::string &file, const std::string &keyword) const {
         const std::map<std::string, std::set<std::string> >::const_iterator it =
             _keywords.find(Path::getFilenameExtensionInLowerCase(file));
         return (it != _keywords.end() && it->second.count(keyword));
     }
 
-    bool isexporter(const std::string &prefix) const
-    {
+    bool isexporter(const std::string &prefix) const {
         return _exporters.find(prefix) != _exporters.end();
     }
 
-    bool isexportedprefix(const std::string &prefix, const std::string &token) const
-    {
+    bool isexportedprefix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
         return (it != _exporters.end() && it->second.isPrefix(token));
     }
 
-    bool isexportedsuffix(const std::string &prefix, const std::string &token) const
-    {
+    bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
         return (it != _exporters.end() && it->second.isSuffix(token));
     }
 
-    bool isimporter(const std::string& file, const std::string &importer) const
-    {
+    bool isimporter(const std::string& file, const std::string &importer) const {
         const std::map<std::string, std::set<std::string> >::const_iterator it =
             _importers.find(Path::getFilenameExtensionInLowerCase(file));
         return (it != _importers.end() && it->second.count(importer) > 0);
     }
 
-    bool isreflection(const std::string &token) const
-    {
+    bool isreflection(const std::string &token) const {
         const std::map<std::string,int>::const_iterator it
             = _reflection.find(token);
         return it != _reflection.end();
     }
 
-    int reflectionArgument(const std::string &token) const
-    {
+    int reflectionArgument(const std::string &token) const {
         int argIndex = -1;
         const std::map<std::string,int>::const_iterator it
             = _reflection.find(token);
@@ -376,11 +337,9 @@ public:
             , _long(false)
             , _pointer(false)
             , _ptr_ptr(false)
-            , _const_ptr(false)
-        {
+            , _const_ptr(false) {
         }
-        bool operator == (const PlatformType & type) const
-        {
+        bool operator == (const PlatformType & type) const {
             return (_type == type._type &&
                     _signed == type._signed &&
                     _unsigned == type._unsigned &&
@@ -389,8 +348,7 @@ public:
                     _ptr_ptr == type._ptr_ptr &&
                     _const_ptr == type._const_ptr);
         }
-        bool operator != (const PlatformType & type) const
-        {
+        bool operator != (const PlatformType & type) const {
             return !(*this == type);
         }
         std::string _type;
@@ -403,16 +361,14 @@ public:
     };
 
     struct Platform {
-        const PlatformType *platform_type(const std::string &name) const
-        {
+        const PlatformType *platform_type(const std::string &name) const {
             const std::map<std::string, struct PlatformType>::const_iterator it = _platform_types.find(name);
             return (it != _platform_types.end()) ? &(it->second) : nullptr;
         }
         std::map<std::string, PlatformType> _platform_types;
     };
 
-    const PlatformType *platform_type(const std::string &name, const std::string & platform) const
-    {
+    const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
         const std::map<std::string, Platform>::const_iterator it = platforms.find(platform);
 
         if (it != platforms.end()) {
@@ -430,20 +386,16 @@ public:
 private:
     class ExportedFunctions {
     public:
-        void addPrefix(const std::string& prefix)
-        {
+        void addPrefix(const std::string& prefix) {
             _prefixes.insert(prefix);
         }
-        void addSuffix(const std::string& suffix)
-        {
+        void addSuffix(const std::string& suffix) {
             _suffixes.insert(suffix);
         }
-        bool isPrefix(const std::string& prefix) const
-        {
+        bool isPrefix(const std::string& prefix) const {
             return (_prefixes.find(prefix) != _prefixes.end());
         }
-        bool isSuffix(const std::string& suffix) const
-        {
+        bool isSuffix(const std::string& suffix) const {
             return (_suffixes.find(suffix) != _suffixes.end());
         }
 
@@ -455,36 +407,28 @@ private:
     public:
         CodeBlock() : _offset(0) {}
 
-        void setStart(const std::string& s)
-        {
+        void setStart(const std::string& s) {
             _start = s;
         }
-        void setEnd(const std::string& e)
-        {
+        void setEnd(const std::string& e) {
             _end = e;
         }
-        void setOffset(const int o)
-        {
+        void setOffset(const int o) {
             _offset = o;
         }
-        void addBlock(const std::string& blockName)
-        {
+        void addBlock(const std::string& blockName) {
             _blocks.insert(blockName);
         }
-        const std::string& start() const
-        {
+        const std::string& start() const {
             return _start;
         }
-        const std::string& end() const
-        {
+        const std::string& end() const {
             return _end;
         }
-        int offset() const
-        {
+        int offset() const {
             return _offset;
         }
-        bool isBlock(const std::string& blockName) const
-        {
+        bool isBlock(const std::string& blockName) const {
             return _blocks.find(blockName) != _blocks.end();
         }
 
@@ -515,8 +459,7 @@ private:
 
     const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
 
-    static int getid(const std::map<std::string,int> &data, const std::string &name)
-    {
+    static int getid(const std::map<std::string,int> &data, const std::string &name) {
         const std::map<std::string,int>::const_iterator it = data.find(name);
         return (it == data.end()) ? 0 : it->second;
     }

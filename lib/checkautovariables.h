@@ -33,26 +33,22 @@
 class CPPCHECKLIB CheckAutoVariables : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckAutoVariables() : Check(myName())
-    {
+    CheckAutoVariables() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.returnReference();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
@@ -94,8 +90,7 @@ private:
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckAutoVariables c(0,settings,errorLogger);
         c.errorAutoVariableAssignment(0, false);
         c.errorReturnAddressToAutoVariable(0);
@@ -108,13 +103,11 @@ private:
         c.errorUselessAssignmentPtrArg(0);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Auto Variables";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
                "- returning a pointer to auto or temporary variable\n"

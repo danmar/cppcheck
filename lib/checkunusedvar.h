@@ -39,19 +39,16 @@ class Variables;
 class CPPCHECKLIB CheckUnusedVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckUnusedVar() : Check(myName())
-    {
+    CheckUnusedVar() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUnusedVar checkUnusedVar(tokenizer, settings, errorLogger);
 
         // Coding style checks
@@ -60,8 +57,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
@@ -86,8 +82,7 @@ private:
     void unreadVariableError(const Token *tok, const std::string &varname);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUnusedVar c(0, settings, errorLogger);
 
         // style/warning
@@ -98,13 +93,11 @@ private:
         c.unusedStructMemberError(0, "structname", "variable");
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "UnusedVar";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "UnusedVar checks\n"
 
                // style

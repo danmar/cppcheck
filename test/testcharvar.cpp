@@ -26,15 +26,13 @@ extern std::ostringstream errout;
 
 class TestCharVar : public TestFixture {
 public:
-    TestCharVar() : TestFixture("TestCharVar")
-    {
+    TestCharVar() : TestFixture("TestCharVar") {
     }
 
 private:
 
 
-    void run()
-    {
+    void run() {
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(array_index_3);
@@ -48,8 +46,7 @@ private:
         TEST_CASE(pointer);
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -66,8 +63,7 @@ private:
         checkOther.checkCharVariable();
     }
 
-    void array_index_1()
-    {
+    void array_index_1() {
         check("int buf[256];\n"
               "void foo()\n"
               "{\n"
@@ -106,8 +102,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void array_index_2()
-    {
+    void array_index_2() {
         // #3282 - False positive
         check("void foo(char i);\n"
               "void bar(int i) {\n"
@@ -117,8 +112,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void array_index_3()
-    {
+    void array_index_3() {
         // only write error message when array is more than
         // 0x80 elements in size. Otherwise the full valid
         // range is accessible with a char.
@@ -141,8 +135,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitop1()
-    {
+    void bitop1() {
         check("void foo()\n"
               "{\n"
               "    int result = 0;\n"
@@ -152,8 +145,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
-    void bitop2()
-    {
+    void bitop2() {
         check("void foo()\n"
               "{\n"
               "    char ch;\n"
@@ -162,16 +154,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitop3()
-    {
+    void bitop3() {
         check("void f(int& i, char& c) {\n"
               "    i &= c;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
     }
 
-    void bitop4()
-    {
+    void bitop4() {
         check("long f(char c) {\n"
               "  long a;\n"
               "  a = (long)&c;\n"
@@ -180,8 +170,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void return1()
-    {
+    void return1() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -191,8 +180,7 @@ private:
     }
 
 
-    void assignChar()
-    {
+    void assignChar() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -201,8 +189,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void and03()
-    {
+    void and03() {
         check("void foo()\n"
               "{\n"
               "    char c;\n"
@@ -211,8 +198,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pointer()
-    {
+    void pointer() {
         // ticket #2866
         check("void f(char *p) {\n"
               "    int ret = 0;\n"

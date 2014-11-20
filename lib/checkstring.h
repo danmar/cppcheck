@@ -34,19 +34,16 @@
 class CPPCHECKLIB CheckString : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckString() : Check(myName())
-    {
+    CheckString() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckString(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckString checkString(tokenizer, settings, errorLogger);
 
         // Checks
@@ -55,8 +52,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckString checkString(tokenizer, settings, errorLogger);
 
         // Checks
@@ -90,8 +86,7 @@ private:
     void suspiciousStringCompareError(const Token* tok, const std::string& var);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(0, settings, errorLogger);
 
         c.sprintfOverlappingDataError(0, "varname");
@@ -104,13 +99,11 @@ private:
         c.alwaysTrueStringVariableCompareError(0, "varname1", "varname2");
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "String";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Detect misusage of C-style strings:\n"
                "- overlapping buffers passed to sprintf as source and destination\n"
                "- incorrect length arguments for 'substr' and 'strncmp'\n"

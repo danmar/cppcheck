@@ -25,15 +25,13 @@ extern std::ostringstream errout;
 
 class TestIO : public TestFixture {
 public:
-    TestIO() : TestFixture("TestIO")
-    {
+    TestIO() : TestFixture("TestIO") {
     }
 
 private:
     Settings settings;
 
-    void run()
-    {
+    void run() {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "windows.cfg");
 
@@ -64,8 +62,7 @@ private:
         TEST_CASE(testTernary); // ticket #6182
     }
 
-    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified)
-    {
+    void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
@@ -96,8 +93,7 @@ private:
 
 
 
-    void coutCerrMisusage()
-    {
+    void coutCerrMisusage() {
         check(
             "void foo() {\n"
             "  std::cout << std::cout;\n"
@@ -150,8 +146,7 @@ private:
 
 
 
-    void wrongMode_simple()
-    {
+    void wrongMode_simple() {
         // Read mode
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"r\");\n"
@@ -352,8 +347,7 @@ private:
         check("void fopen(std::string const &filepath, std::string const &mode);"); // #3832
     }
 
-    void wrongMode_complex()
-    {
+    void wrongMode_complex() {
         check("void foo(FILE* f) {\n"
               "    if(a) f = fopen(name, \"w\");\n"
               "    else  f = fopen(name, \"r\");\n"
@@ -379,8 +373,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Read operation on a file that was opened only for writing.\n", errout.str());
     }
 
-    void useClosedFile()
-    {
+    void useClosedFile() {
         check("void foo(FILE*& f) {\n"
               "    fclose(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
@@ -505,8 +498,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout.str());
     }
 
-    void fileIOwithoutPositioning()
-    {
+    void fileIOwithoutPositioning() {
         check("void foo(FILE* f) {\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "    fread(buffer, 5, 6, f);\n"
@@ -563,8 +555,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
     }
 
-    void seekOnAppendedFile()
-    {
+    void seekOnAppendedFile() {
         check("void foo() {\n"
               "    FILE* f = fopen(\"\", \"a+\");\n"
               "    fseek(f, 0, SEEK_SET);\n"
@@ -590,8 +581,7 @@ private:
         ASSERT_EQUALS("", errout.str()); // #5578
     }
 
-    void fflushOnInputStream()
-    {
+    void fflushOnInputStream() {
         check("void foo()\n"
               "{\n"
               "    fflush(stdin);\n"
@@ -625,8 +615,7 @@ private:
 
 
 
-    void testScanf1()
-    {
+    void testScanf1() {
         check("void foo() {\n"
               "    int a, b;\n"
               "    FILE *file = fopen(\"test\", \"r\");\n"
@@ -644,8 +633,7 @@ private:
                       "[test.cpp:8]: (warning) scanf without field width limits can crash with huge input data.\n", errout.str());
     }
 
-    void testScanf2()
-    {
+    void testScanf2() {
         check("void foo() {\n"
               "    scanf(\"%5s\", bar);\n" // Width specifier given
               "    scanf(\"%5[^~]\", bar);\n" // Width specifier given
@@ -657,8 +645,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout.str());
     }
 
-    void testScanf3()
-    {
+    void testScanf3() {
         check("void foo() {\n"
               "    scanf(\"%d\", &a);\n"
               "    scanf(\"%n\", &a);\n" // No warning on %n, since it doesn't expect user input
@@ -672,8 +659,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testScanf4()   // ticket #2553
-    {
+    void testScanf4() { // ticket #2553
         check("void f()\n"
               "{\n"
               "  char str [8];\n"
@@ -685,8 +671,7 @@ private:
 
 
 
-    void testScanfArgument()
-    {
+    void testScanfArgument() {
         check("void foo() {\n"
               "    scanf(\"%1d\", &foo);\n"
               "    sscanf(bar, \"%1d\", &foo);\n"
@@ -2286,8 +2271,7 @@ private:
 
     }
 
-    void testPrintfArgument()
-    {
+    void testPrintfArgument() {
         check("void foo() {\n"
               "    printf(\"%u\");\n"
               "    printf(\"%u%s\", 123);\n"
@@ -3131,8 +3115,7 @@ private:
 
     }
 
-    void testPosixPrintfScanfParameterPosition()   // #4900  - No support for parameters in format strings
-    {
+    void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
         check("void foo() {"
               "  int bar;"
               "  printf(\"%1$d\", 1);"
@@ -3156,8 +3139,7 @@ private:
     }
 
 
-    void testMicrosoftPrintfArgument()
-    {
+    void testMicrosoftPrintfArgument() {
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -3258,8 +3240,7 @@ private:
 
     }
 
-    void testMicrosoftScanfArgument()
-    {
+    void testMicrosoftScanfArgument() {
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -3336,8 +3317,7 @@ private:
                       "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout.str());
     }
 
-    void testMicrosoftCStringFormatArguments()   // ticket #4920
-    {
+    void testMicrosoftCStringFormatArguments() { // ticket #4920
         check("void foo() {\n"
               "    unsigned __int32 u32;\n"
               "    String string;\n"
@@ -3364,8 +3344,7 @@ private:
                       "[test.cpp:5]: (warning) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout.str());
     }
 
-    void testMicrosoftSecurePrintfArgument()
-    {
+    void testMicrosoftSecurePrintfArgument() {
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -3555,8 +3534,7 @@ private:
 
     }
 
-    void testMicrosoftSecureScanfArgument()
-    {
+    void testMicrosoftSecureScanfArgument() {
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -3688,8 +3666,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testTernary()    // ticket #6182
-    {
+    void testTernary() {  // ticket #6182
         check("void test(const std::string &val) {\n"
               "    printf(\"%s\n\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
               "}\n");

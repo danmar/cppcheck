@@ -37,20 +37,17 @@
 class CPPCHECKLIB CheckNonReentrantFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckNonReentrantFunctions */
-    CheckNonReentrantFunctions() : Check(myName())
-    {
+    CheckNonReentrantFunctions() : Check(myName()) {
         initNonReentrantFunctions();
     }
 
     /** This constructor is used when running checks. */
     CheckNonReentrantFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
         initNonReentrantFunctions();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNonReentrantFunctions checkNonReentrantFunctions(tokenizer, settings, errorLogger);
         checkNonReentrantFunctions.nonReentrantFunctions();
     }
@@ -64,8 +61,7 @@ private:
     std::map<std::string,std::string> _nonReentrantFunctions;
 
     /** init nonreentrant functions list ' */
-    void initNonReentrantFunctions()
-    {
+    void initNonReentrantFunctions() {
         static const char * const non_reentrant_functions_list[] = {
             "localtime", "gmtime", "strtok", "gethostbyname", "gethostbyaddr", "getservbyname"
             , "getservbyport", "crypt", "ttyname", "gethostbyname2"
@@ -86,8 +82,7 @@ private:
         }
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNonReentrantFunctions c(0, settings, errorLogger);
 
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
@@ -96,13 +91,11 @@ private:
         }
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Non reentrant functions";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         std::string info = "Warn if any of these non reentrant functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
         for (; it!=itend; ++it) {

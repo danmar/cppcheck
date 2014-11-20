@@ -35,19 +35,16 @@ class Token;
 class CPPCHECKLIB CheckBoost : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckBoost() : Check(myName())
-    {
+    CheckBoost() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckBoost(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         if (!tokenizer->isCPP())
             return;
 
@@ -62,19 +59,16 @@ public:
 private:
     void boostForeachError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBoost c(0, settings, errorLogger);
         c.boostForeachError(0);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Boost usage";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check for invalid usage of Boost:\n"
                "- container modification during BOOST_FOREACH\n";
     }

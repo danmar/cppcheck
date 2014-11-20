@@ -27,13 +27,11 @@ extern std::ostringstream errout;
 
 class TestInternal : public TestFixture {
 public:
-    TestInternal() : TestFixture("TestInternal")
-    {
+    TestInternal() : TestFixture("TestInternal") {
     }
 
 private:
-    void run()
-    {
+    void run() {
         TEST_CASE(simplePatternInTokenMatch)
         TEST_CASE(complexPatternInTokenSimpleMatch)
         TEST_CASE(simplePatternSquareBrackets)
@@ -46,8 +44,7 @@ private:
         TEST_CASE(orInComplexPattern);
     }
 
-    void check(const char code[])
-    {
+    void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -65,8 +62,7 @@ private:
         checkInternal.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void simplePatternInTokenMatch()
-    {
+    void simplePatternInTokenMatch() {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \";\");\n"
@@ -86,8 +82,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::findmatch() call: \";\"\n", errout.str());
     }
 
-    void complexPatternInTokenSimpleMatch()
-    {
+    void complexPatternInTokenSimpleMatch() {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"%type%\");\n"
@@ -119,8 +114,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplePatternSquareBrackets()
-    {
+    void simplePatternSquareBrackets() {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"[\");\n"
@@ -158,8 +152,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"[.,;]\"\n", errout.str());
     }
 
-    void simplePatternAlternatives()
-    {
+    void simplePatternAlternatives() {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"||\");\n"
@@ -191,8 +184,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void missingPercentCharacter()
-    {
+    void missingPercentCharacter() {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%type%\");\n"
@@ -250,8 +242,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void unknownPattern()
-    {
+    void unknownPattern() {
         check("void f() {\n"
               "    Token::Match(tok, \"%typ%\");\n"
               "}");
@@ -264,8 +255,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantNextPrevious()
-    {
+    void redundantNextPrevious() {
         check("void f() {\n"
               "    return tok->next()->previous();\n"
               "}");
@@ -317,8 +307,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout.str());
     }
 
-    void internalError()
-    {
+    void internalError() {
         // Make sure cppcheck does not raise an internal error of Token::Match ( Ticket #3727 )
         check("class DELPHICLASS X;\n"
               "class Y {\n"
@@ -334,8 +323,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void invalidMultiCompare()
-    {
+    void invalidMultiCompare() {
         // #5310
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -356,8 +344,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void orInComplexPattern()
-    {
+    void orInComplexPattern() {
         check("void f() {\n"
               "    Token::Match(tok, \"||\");\n"
               "}");

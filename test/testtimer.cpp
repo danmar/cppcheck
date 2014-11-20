@@ -24,19 +24,16 @@
 
 class TestTimer : public TestFixture {
 public:
-    TestTimer() : TestFixture("TestTimer")
-    {
+    TestTimer() : TestFixture("TestTimer") {
     }
 
 private:
 
-    void run()
-    {
+    void run() {
         TEST_CASE(result);
     }
 
-    void result() const
-    {
+    void result() const {
         TimerResultsData t1;
         t1._clocks = ~(std::clock_t)0;
         ASSERT(t1.seconds() > 100.0);

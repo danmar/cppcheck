@@ -36,26 +36,22 @@
 class CPPCHECKLIB CheckCondition : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
-    CheckCondition() : Check(myName())
-    {
+    CheckCondition() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.assignIf();
         checkCondition.comparison();
@@ -114,8 +110,7 @@ private:
 
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckCondition c(0, settings, errorLogger);
 
         c.assignIfError(0, 0, "", false);
@@ -129,13 +124,11 @@ private:
         c.clarifyConditionError(0, true, false);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Condition";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Match conditions with assignments and other conditions:\n"
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"

@@ -48,8 +48,7 @@ public:
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
-        , stopTime(0)
-    {
+        , stopTime(0) {
 
         if (!settings.hang)
             pattern = ":" + MathLib::toString(settings.linenr) + "]";
@@ -57,8 +56,7 @@ public:
         cppcheck.settings() = settings;
     }
 
-    bool run(const char filename[], unsigned int maxtime)
-    {
+    bool run(const char filename[], unsigned int maxtime) {
         foundLine = false;
         stopTime = std::time(0) + maxtime;
         cppcheck.check(filename);
@@ -66,15 +64,13 @@ public:
     }
 
     void reportOut(const std::string &/*outmsg*/) { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg)
-    {
+    void reportErr(const ErrorLogger::ErrorMessage &msg) {
         if (!pattern.empty() && msg.toString(false).find(pattern) != std::string::npos) {
             foundLine = true;
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/)
-    {
+    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;

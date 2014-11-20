@@ -90,14 +90,12 @@ public:
     bool _verbose;
 
     /** @brief Request termination of checking */
-    void terminate()
-    {
+    void terminate() {
         _terminate = true;
     }
 
     /** @brief termination requested? */
-    bool terminated() const
-    {
+    bool terminated() const {
         return _terminate;
     }
 
@@ -155,8 +153,7 @@ public:
      * @return true if the check is enabled.
      */
     template<typename T>
-    bool isEnabled(T&& str) const
-    {
+    bool isEnabled(T&& str) const {
         return bool(_enabled.find(str) != _enabled.end());
     }
 
@@ -171,8 +168,7 @@ public:
     /**
      * @brief Disables all severities, except from error.
      */
-    void clearEnabled()
-    {
+    void clearEnabled() {
         _enabled.clear();
     }
 
@@ -214,8 +210,7 @@ public:
         Rule()
             : tokenlist("simple") // use simple tokenlist
             , id("rule")          // default id
-            , severity("style")   // default severity
-        {
+            , severity("style") { // default severity
         }
 
         std::string tokenlist;
@@ -274,8 +269,7 @@ public:
      * @brief Returns true if platform type is Windows
      * @return true if Windows platform type.
      */
-    bool isWindowsPlatform() const
-    {
+    bool isWindowsPlatform() const {
         return platformType == Win32A ||
                platformType == Win32W ||
                platformType == Win64;
@@ -285,8 +279,7 @@ public:
      * @brief return true if a file is to be excluded from configuration checking
      * @return true for the file to be excluded.
      */
-    bool configurationExcluded(const std::string &file) const
-    {
+    bool configurationExcluded(const std::string &file) const {
         for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
             if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
                 return true;

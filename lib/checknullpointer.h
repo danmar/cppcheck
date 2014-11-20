@@ -35,26 +35,22 @@
 class CPPCHECKLIB CheckNullPointer : public Check {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
-    CheckNullPointer() : Check(myName())
-    {
+    CheckNullPointer() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullPointer();
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullConstantDereference();
     }
@@ -96,21 +92,18 @@ public:
 private:
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(0, settings, errorLogger);
         c.nullPointerError(0, "pointer");
     }
 
     /** Name of check */
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Null pointer";
     }
 
     /** class info in WIKI format. Used by --doc */
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Null pointers\n"
                "- null pointer dereferencing\n";
     }

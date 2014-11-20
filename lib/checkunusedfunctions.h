@@ -32,14 +32,12 @@
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName())
-    {
+    CheckUnusedFunctions() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     // Parse current tokens and determine..
@@ -54,8 +52,7 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUnusedFunctions c(0, settings, errorLogger);
         c.unusedFunctionError(errorLogger, "", 0, "funcName");
     }
@@ -72,20 +69,17 @@ private:
      */
     void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {}
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "Unused functions";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check for functions that are never called\n";
     }
 
     class FunctionUsage {
     public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false)
-        {
+        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {
         }
 
         std::string filename;

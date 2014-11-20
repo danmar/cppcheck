@@ -34,19 +34,16 @@
 class CPPCHECKLIB CheckStl : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckStl() : Check(myName())
-    {
+    CheckStl() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-    {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         if (!tokenizer->isCPP())
             return;
 
@@ -192,8 +189,7 @@ private:
 
     void readingEmptyStlContainerError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
-    {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckStl c(0, settings, errorLogger);
         c.invalidIteratorError(0, "iterator");
         c.iteratorsError(0, "container1", "container2");
@@ -223,13 +219,11 @@ private:
         c.readingEmptyStlContainerError(0);
     }
 
-    static std::string myName()
-    {
+    static std::string myName() {
         return "STL usage";
     }
 
-    std::string classInfo() const
-    {
+    std::string classInfo() const {
         return "Check for invalid usage of STL:\n"
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"

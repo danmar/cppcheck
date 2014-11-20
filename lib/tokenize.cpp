@@ -7407,15 +7407,12 @@ public:
         name(nullptr),
         value(nullptr),
         start(nullptr),
-        end(nullptr)
-    {
+        end(nullptr) {
     }
-    EnumValue(const EnumValue &ev)
-    {
+    EnumValue(const EnumValue &ev) {
         *this = ev;
     }
-    EnumValue& operator=(const EnumValue& ev)
-    {
+    EnumValue& operator=(const EnumValue& ev) {
         name=ev.name;
         value=ev.value;
         start=ev.start;
@@ -7426,12 +7423,10 @@ public:
         name(name_),
         value(value_),
         start(start_),
-        end(end_)
-    {
+        end(end_) {
     }
 
-    void simplify(const std::map<std::string, EnumValue> &enumValues)
-    {
+    void simplify(const std::map<std::string, EnumValue> &enumValues) {
         for (Token *tok = start; tok; tok = tok->next()) {
             std::map<std::string, EnumValue>::const_iterator it = enumValues.find(tok->str());
             if (it != enumValues.end()) {

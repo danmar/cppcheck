@@ -89,8 +89,7 @@ struct Filepointer {
     enum AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
     AppendMode append_mode;
     explicit Filepointer(OpenMode mode_ = UNKNOWN_OM)
-        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0), append_mode(UNKNOWN_AM)
-    {
+        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0), append_mode(UNKNOWN_AM) {
     }
 };
 
@@ -1005,7 +1004,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'l':
                                         if (i+1 != formatString.end() && *(i+1) == *i)
                                             specifier += *i++;
-                                    // fallthrough
+                                        // fallthrough
                                     case 'j':
                                     case 'q':
                                     case 't':
@@ -1307,7 +1306,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                             specifier += *i++;
                                             specifier += *i++;
                                         }
-                                    // fallthrough
+                                        // fallthrough
                                     case 'j': // intmax_t or uintmax_t
                                     case 'z': // size_t
                                     case 't': // ptrdiff_t

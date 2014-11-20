@@ -30,8 +30,7 @@ extern std::ostringstream output;
 
 class TestThreadExecutor : public TestFixture {
 public:
-    TestThreadExecutor() : TestFixture("TestThreadExecutor")
-    {
+    TestThreadExecutor() : TestFixture("TestThreadExecutor") {
     }
 
 private:
@@ -40,8 +39,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data)
-    {
+    void check(unsigned int jobs, int files, int result, const std::string &data) {
         errout.str("");
         output.str("");
         if (!ThreadExecutor::isEnabled()) {
@@ -65,8 +63,7 @@ private:
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run()
-    {
+    void run() {
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(no_errors_more_files);
@@ -76,8 +73,7 @@ private:
         TEST_CASE(one_error_several_files);
     }
 
-    void deadlock_with_many_errors()
-    {
+    void deadlock_with_many_errors() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
@@ -89,8 +85,7 @@ private:
         check(2, 3, 3, oss.str());
     }
 
-    void many_threads()
-    {
+    void many_threads() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
@@ -100,8 +95,7 @@ private:
         check(20, 100, 100, oss.str());
     }
 
-    void no_errors_more_files()
-    {
+    void no_errors_more_files() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n"
@@ -110,8 +104,7 @@ private:
         check(2, 3, 0, oss.str());
     }
 
-    void no_errors_less_files()
-    {
+    void no_errors_less_files() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n"
@@ -120,8 +113,7 @@ private:
         check(2, 1, 0, oss.str());
     }
 
-    void no_errors_equal_amount_files()
-    {
+    void no_errors_equal_amount_files() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n"
@@ -130,8 +122,7 @@ private:
         check(2, 2, 0, oss.str());
     }
 
-    void one_error_less_files()
-    {
+    void one_error_less_files() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n"
@@ -141,8 +132,7 @@ private:
         check(2, 1, 1, oss.str());
     }
 
-    void one_error_several_files()
-    {
+    void one_error_several_files() {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n"

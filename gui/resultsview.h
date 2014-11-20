@@ -151,8 +151,7 @@ public:
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *GetStatistics() const
-    {
+    CheckStatistics *GetStatistics() const {
         return mStatistics;
     }
 
@@ -160,8 +159,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * GetShowTypes() const
-    {
+    ShowTypes * GetShowTypes() const {
         return &mUI.mTree->mShowSeverities;
     }
 

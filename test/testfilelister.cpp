@@ -32,13 +32,11 @@
 class TestFileLister: public TestFixture {
 public:
     TestFileLister()
-        :TestFixture("TestFileLister")
-    {
+        :TestFixture("TestFileLister") {
     }
 
 private:
-    void run()
-    {
+    void run() {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");
@@ -53,15 +51,13 @@ private:
         TEST_CASE(recursiveAddFiles);
     }
 
-    void isDirectory() const
-    {
+    void isDirectory() const {
         ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
         ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
 
 #ifndef _WIN32
-    void absolutePath() const
-    {
+    void absolutePath() const {
         std::vector<char> current_dir;
 #ifdef PATH_MAX
         current_dir.resize(PATH_MAX);
@@ -77,8 +73,7 @@ private:
     }
 #endif
 
-    void recursiveAddFiles() const
-    {
+    void recursiveAddFiles() const {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
         std::set<std::string> extra;

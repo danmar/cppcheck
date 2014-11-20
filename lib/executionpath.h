@@ -44,12 +44,10 @@ protected:
     virtual bool is_equal(const ExecutionPath *) const = 0;
 
 public:
-    ExecutionPath(Check *c, unsigned int id) : owner(c), numberOfIf(0), varId(id)
-    {
+    ExecutionPath(Check *c, unsigned int id) : owner(c), numberOfIf(0), varId(id) {
     }
 
-    virtual ~ExecutionPath()
-    {
+    virtual ~ExecutionPath() {
     }
 
     /** Implement this in each derived class. This function must create a copy of the current instance */
@@ -67,8 +65,7 @@ public:
      * bail out all execution paths
      * @param checks the execution paths to bail out on
      **/
-    static void bailOut(std::list<ExecutionPath *> &checks)
-    {
+    static void bailOut(std::list<ExecutionPath *> &checks) {
         while (!checks.empty()) {
             delete checks.back();
             checks.pop_back();
@@ -80,8 +77,7 @@ public:
      * @param checks the execution paths to bail out on
      * @param varid the specific variable id
      **/
-    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid)
-    {
+    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid) {
         if (varid == 0)
             return;
 
@@ -117,19 +113,16 @@ public:
      * @param tok the first token in the loop body (the token after the {)
      * @param checks The execution paths
      */
-    virtual void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const
-    {
+    virtual void parseLoopBody(const Token *tok, std::list<ExecutionPath *> &checks) const {
         (void)tok;
         (void)checks;
     }
 
     /** going out of scope - all execution paths end */
-    virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
-    {
+    virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const {
     }
 
-    bool operator==(const ExecutionPath &e) const
-    {
+    bool operator==(const ExecutionPath &e) const {
         return bool(varId == e.varId && is_equal(&e));
     }
 
