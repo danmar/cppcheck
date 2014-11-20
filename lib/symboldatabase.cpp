@@ -2961,9 +2961,9 @@ void Scope::findFunctionInBase(const Token * tok, size_t args, std::vector<const
 
 //---------------------------------------------------------------------------
 
-/** @todo This function only counts the number of arguments in the function call.
-    It does not take into account function constantness.
-    It does not take into account argument types.  This can be difficult because of promotion and conversion operators and casts and because the argument can also be a function call.
+/** @todo This function does not take into account argument types when they don't match.
+  This can be difficult because of promotion and conversion operators and casts
+  and because the argument can also be a function call.
  */
 const Function* Scope::findFunction(const Token *tok) const
 {
@@ -2998,7 +2998,8 @@ const Function* Scope::findFunction(const Token *tok) const
     findFunctionInBase(tok, args, matches);
 
     // check each function against the arguments in the function call for a match
-    for (size_t i = 0; i < matches.size(); ++i) {
+    for (std::size_t i = 0; i < matches.size();) {
+        bool erased = false;
         const Function * func = matches[i];
         size_t same = 0;
         for (std::size_t j = 0; j < args; ++j) {
@@ -3089,16 +3090,28 @@ const Function* Scope::findFunction(const Token *tok) const
             // check that function argument type is not mismatching
             else if (arguments[j]->str() == "&" && funcarg && funcarg->isReference()) {
                 // can't match so remove this function from possible matches
-                matches.erase(matches.begin() + i--);
+                matches.erase(matches.begin() + i);
+                erased = true;
                 break;
             }
         }
 
         // check if all arguments matched
         if (same == args) {
-            // found a match
-            return func;
+            // get the function this call is in
+            const Scope * scope = tok->scope();
+
+            // check if this function is a member function
+            if (scope && scope->functionOf && scope->functionOf->isClassOrStruct()) {
+                // check if isConst match
+                if (scope->function && scope->function->isConst == func->isConst)
+                    return func;
+            } else
+                return func;
         }
+
+        if (!erased)
+            ++i;
     }
 
     // no exact match so just return first function found

@@ -4825,7 +4825,7 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n");
+                   "};\n", 0, false);
         ASSERT_EQUALS("", errout.str());
     }
 

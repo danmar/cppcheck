@@ -1682,53 +1682,10 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     return false;
 }
 
-static unsigned int countParameters(const Token *tok)
-{
-    tok = tok->tokAt(2);
-    if (tok->str() == ")")
-        return 0;
-
-    unsigned int numpar = 1;
-    while (nullptr != (tok = tok->nextArgument()))
-        numpar++;
-
-    return numpar;
-}
-
-static unsigned int countMinArgs(const Token* argList)
-{
-    if (!argList)
-        return 0;
-
-    argList = argList->next();
-    if (argList->str() == ")")
-        return 0;
-
-    unsigned int count = 1;
-    for (; argList; argList = argList->next()) {
-        if (argList->link() && Token::Match(argList, "(|[|{|<"))
-            argList = argList->link();
-        else if (argList->str() == ",")
-            count++;
-        else if (argList->str() == "=")
-            return count-1;
-        else if (argList->str() == ")")
-            break;
-    }
-    return count;
-}
-
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 {
-    unsigned int args = countParameters(tok);
-
-    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        /** @todo we need to look at the argument types when there are overloaded functions
-          * with the same number of arguments */
-        if (func->tokenDef->str() == tok->str() && (func->argCount() == args || (func->argCount() > args && countMinArgs(func->argDef) <= args))) {
-            return !func->isStatic;
-        }
-    }
+    if (tok->function() && tok->function()->nestedIn == scope)
+        return !tok->function()->isStatic;
 
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
@@ -1750,25 +1707,8 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 
 bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 {
-    unsigned int args = countParameters(tok);
-
-    std::list<Function>::const_iterator func;
-    unsigned int matches = 0;
-    unsigned int consts = 0;
-
-    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        /** @todo we need to look at the argument types when there are overloaded functions
-          * with the same number of arguments */
-        if (func->tokenDef->str() == tok->str() && (func->argCount() == args || (func->argCount() > args && countMinArgs(func->argDef) <= args))) {
-            matches++;
-            if (func->isConst)
-                consts++;
-        }
-    }
-
-    // if there are multiple matches that are all const, return const
-    if (matches > 0 && matches == consts)
-        return true;
+    if (tok->function() && tok->function()->nestedIn == scope)
+        return tok->function()->isConst;
 
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {

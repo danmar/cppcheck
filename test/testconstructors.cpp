@@ -136,6 +136,7 @@ private:
         TEST_CASE(uninitVar26);
         TEST_CASE(uninitVar27); // ticket #5170 - rtl::math::setNan(&d)
         TEST_CASE(uninitVar28); // ticket #6258
+        TEST_CASE(uninitVar29);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2124,6 +2125,39 @@ private:
               "    void foo(float a) { f = a; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar29() {
+        check("class A {\n"
+              "    int i;\n"
+              "public:\n"
+              "    A() { foo(); }\n"
+              "    void foo() const { };\n"
+              "    void foo() { i = 0; }\n"
+              "};\n"
+              "class B {\n"
+              "    int i;\n"
+              "public:\n"
+              "    B() { foo(); }\n"
+              "    void foo() { i = 0; }\n"
+              "    void foo() const { }\n"
+              "};\n"
+              "class C {\n"
+              "    int i;\n"
+              "public:\n"
+              "    C() { foo(); }\n"
+              "    void foo() const { i = 0; }\n"
+              "    void foo() { }\n"
+              "};\n"
+              "class D {\n"
+              "    int i;\n"
+              "public:\n"
+              "    D() { foo(); }\n"
+              "	void foo() { }\n"
+              "	void foo() const { i = 0; }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:18]: (warning) Member variable 'C::i' is not initialized in the constructor.\n"
+                      "[test.cpp:25]: (warning) Member variable 'D::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {
