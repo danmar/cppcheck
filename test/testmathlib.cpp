@@ -36,6 +36,7 @@ private:
         TEST_CASE(isdec);
         TEST_CASE(isoct);
         TEST_CASE(ishex);
+        TEST_CASE(isValidSuffix);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
         TEST_CASE(isfloat);
@@ -531,6 +532,77 @@ private:
 
         // test empty string
         ASSERT_EQUALS(false, MathLib::isHex(""));
+    }
+
+    void isValidSuffix(void)
+    {
+        // negative testing
+        std::string value = "ux";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "ulx";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "lx";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "lux";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "lll";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "garbage";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "llu ";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "iX";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i6X";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i64X";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i64 ";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i66";
+        ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        // positive testing
+        value = "u";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "ul";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "ull";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "l";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "lu";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "ll";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "llu";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
+
+        value = "i64";
+        ASSERT_EQUALS(true, MathLib::isValidSuffix(value.begin(), value.end()));
     }
 
     void ispositive() const
