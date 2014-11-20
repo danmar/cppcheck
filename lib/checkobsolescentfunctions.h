@@ -38,17 +38,20 @@
 class CPPCHECKLIB CheckObsoleteFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckObsoleteFunctions */
-    CheckObsoleteFunctions() : Check(myName()) {
+    CheckObsoleteFunctions() : Check(myName())
+    {
         initObsoleteFunctions();
     }
 
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
         initObsoleteFunctions();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckObsoleteFunctions checkObsoleteFunctions(tokenizer, settings, errorLogger);
         checkObsoleteFunctions.obsoleteFunctions();
     }
@@ -63,7 +66,8 @@ private:
     std::map<std::string, std::string> _obsoleteC99Functions;
 
     /** init obsolete functions list ' */
-    void initObsoleteFunctions() {
+    void initObsoleteFunctions()
+    {
         // Obsolete posix functions, which messages suggest only one alternative and doesn't contain additional information.
         const struct {
             const char* bad;
@@ -122,7 +126,8 @@ private:
         //_obsoleteC99Functions["ctime"] = "Obsolete function 'ctime' called. It is recommended to use the function 'strftime' instead.";
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckObsoleteFunctions c(0, settings, errorLogger);
 
         std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
@@ -131,11 +136,13 @@ private:
         }
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Obsolete functions";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         std::string info = "Warn if any of these obsolete functions are used:\n";
         std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
         for (; it!=itend; ++it) {

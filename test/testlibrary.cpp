@@ -28,7 +28,8 @@ public:
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(empty);
         TEST_CASE(function);
         TEST_CASE(function_arg);
@@ -42,7 +43,8 @@ private:
         TEST_CASE(version);
     }
 
-    void empty() const {
+    void empty() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<def/>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
@@ -54,7 +56,8 @@ private:
         ASSERT(library.argumentChecks.empty());
     }
 
-    void function() const {
+    void function() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -72,7 +75,8 @@ private:
         ASSERT(library.isnotnoreturn("foo"));
     }
 
-    void function_arg() const {
+    void function_arg() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -95,7 +99,8 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][5].notbool);
     }
 
-    void function_arg_any() const {
+    void function_arg_any() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "<function name=\"foo\">\n"
@@ -110,7 +115,8 @@ private:
         ASSERT_EQUALS(true, library.argumentChecks["foo"][-1].notuninit);
     }
 
-    void function_arg_valid() const {
+    void function_arg_valid() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -160,7 +166,8 @@ private:
         ASSERT_EQUALS(false, library.isargvalid("foo", 5, 2));
     }
 
-    void function_arg_minsize() const {
+    void function_arg_minsize() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"
@@ -195,7 +202,8 @@ private:
         }
     }
 
-    void memory() const {
+    void memory() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <memory>\n"
@@ -215,7 +223,8 @@ private:
         ASSERT(Library::ismemory(library.alloc("CreateX")));
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
     }
-    void memory2() const {
+    void memory2() const
+    {
         const char xmldata1[] = "<?xml version=\"1.0\"?>\n"
                                 "<def>\n"
                                 "  <memory>\n"
@@ -239,7 +248,8 @@ private:
         ASSERT_EQUALS(library.dealloc("free"), library.alloc("foo"));
     }
 
-    void resource() const {
+    void resource() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <resource>\n"
@@ -260,7 +270,8 @@ private:
         ASSERT_EQUALS(library.alloc("CreateX"), library.dealloc("DeleteX"));
     }
 
-    void podtype() const {
+    void podtype() const
+    {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"s16\" sizeof=\"2\"/>\n"
@@ -276,7 +287,8 @@ private:
         ASSERT_EQUALS(0,    type ? type->sign : '?');
     }
 
-    void version() const {
+    void version() const
+    {
         {
             const char xmldata [] = "<?xml version=\"1.0\"?>\n"
                                     "<def>\n"

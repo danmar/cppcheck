@@ -132,7 +132,7 @@ QList<ErrorItem> XmlReportV1::Read()
                 insideResults = false;
             break;
 
-            // Not handled
+        // Not handled
         case QXmlStreamReader::NoToken:
         case QXmlStreamReader::Invalid:
         case QXmlStreamReader::StartDocument:

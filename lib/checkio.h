@@ -31,23 +31,27 @@
 class CPPCHECKLIB CheckIO : public Check {
 public:
     /** @brief This constructor is used when registering CheckIO */
-    CheckIO() : Check(myName()) {
+    CheckIO() : Check(myName())
+    {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
     }
 
     /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkCoutCerrMisusage();
@@ -122,7 +126,8 @@ private:
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
     static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckIO c(0, settings, errorLogger);
 
         c.coutCerrMisusageError(0, "cout");
@@ -149,11 +154,13 @@ private:
         c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "IO using format string";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Check format string input/output operations.\n"
                "- Bad usage of the function 'sprintf' (overlapping data)\n"
                "- Missing or wrong width specifiers in 'scanf' format string\n"

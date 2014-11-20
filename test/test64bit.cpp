@@ -26,13 +26,15 @@ extern std::ostringstream errout;
 
 class Test64BitPortability : public TestFixture {
 public:
-    Test64BitPortability() : TestFixture("Test64BitPortability") {
+    Test64BitPortability() : TestFixture("Test64BitPortability")
+    {
     }
 
 private:
 
 
-    void run() {
+    void run()
+    {
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
@@ -41,7 +43,8 @@ private:
         TEST_CASE(returnIssues);
     }
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -58,7 +61,8 @@ private:
         check64BitPortability.pointerassignment();
     }
 
-    void novardecl() {
+    void novardecl()
+    {
         // if the variable declarations can't be seen then skip the warning
         check("void foo()\n"
               "{\n"
@@ -67,7 +71,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void functionpar() {
+    void functionpar()
+    {
         check("int foo(int *p)\n"
               "{\n"
               "    int a = p;\n"
@@ -102,7 +107,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember() {
+    void structmember()
+    {
         check("struct Foo { int *p; };\n"
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
@@ -110,7 +116,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
     }
 
-    void ptrcompare() {
+    void ptrcompare()
+    {
         // Ticket #2892
         check("void foo(int *p) {\n"
               "    int a = (p != NULL);\n"
@@ -118,7 +125,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ptrarithmetic() {
+    void ptrarithmetic()
+    {
         // #3073
         check("void foo(int *p) {\n"
               "    int x = 10;\n"
@@ -145,7 +153,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnIssues() {
+    void returnIssues()
+    {
         check("void* foo(int i) {\n"
               "    return i;\n"
               "}");

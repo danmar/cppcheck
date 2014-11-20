@@ -37,7 +37,8 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      */
-    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path) {
+    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path)
+    {
         const std::set<std::string> extra;
         recursiveAddFiles(files, path, extra);
     }

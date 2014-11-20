@@ -147,7 +147,8 @@ public:
     /**
     * @brief Returns true if column "Id" is shown
     */
-    bool ShowIdColumn() const {
+    bool ShowIdColumn() const
+    {
         return mShowErrorId;
     }
 

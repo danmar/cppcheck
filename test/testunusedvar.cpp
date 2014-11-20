@@ -29,11 +29,13 @@ extern std::ostringstream errout;
 
 class TestUnusedVar : public TestFixture {
 public:
-    TestUnusedVar() : TestFixture("TestUnusedVar") {
+    TestUnusedVar() : TestFixture("TestUnusedVar")
+    {
     }
 
 private:
-    void run() {
+    void run()
+    {
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
 
@@ -164,7 +166,8 @@ private:
         TEST_CASE(usingNamespace);     // #4585
     }
 
-    void checkStructMemberUsage(const char code[]) {
+    void checkStructMemberUsage(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -182,7 +185,8 @@ private:
     }
 
     // #5355 - False positive: Variable is not assigned a value.
-    void emptyclass() {
+    void emptyclass()
+    {
         functionVariableUsage("class Carla {\n"
                               "};\n"
                               "class Fred : Carla {\n"
@@ -195,7 +199,8 @@ private:
     }
 
     // #5355 - False positive: Variable is not assigned a value.
-    void emptystruct() {
+    void emptystruct()
+    {
         functionVariableUsage("struct Fred {\n"
                               "};\n"
                               "void foo() {\n"
@@ -205,7 +210,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember1() {
+    void structmember1()
+    {
         checkStructMemberUsage("struct abc\n"
                                "{\n"
                                "    int a;\n"
@@ -217,7 +223,8 @@ private:
                       "[test.cpp:5]: (style) struct or union member 'abc::c' is never used.\n", errout.str());
     }
 
-    void structmember2() {
+    void structmember2()
+    {
         checkStructMemberUsage("struct ABC\n"
                                "{\n"
                                "    int a;\n"
@@ -235,7 +242,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember3() {
+    void structmember3()
+    {
         checkStructMemberUsage("struct ABC\n"
                                "{\n"
                                "    int a;\n"
@@ -254,7 +262,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember4() {
+    void structmember4()
+    {
         checkStructMemberUsage("struct ABC\n"
                                "{\n"
                                "    const int a;\n"
@@ -268,7 +277,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember5() {
+    void structmember5()
+    {
         checkStructMemberUsage("struct AB\n"
                                "{\n"
                                "    int a;\n"
@@ -288,7 +298,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember6() {
+    void structmember6()
+    {
         checkStructMemberUsage("struct AB\n"
                                "{\n"
                                "    int a;\n"
@@ -314,7 +325,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember7() {
+    void structmember7()
+    {
         checkStructMemberUsage("struct AB\n"
                                "{\n"
                                "    int a;\n"
@@ -340,7 +352,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember8() {
+    void structmember8()
+    {
         checkStructMemberUsage("struct AB\n"
                                "{\n"
                                "    int a;\n"
@@ -354,7 +367,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember9() {
+    void structmember9()
+    {
         checkStructMemberUsage("struct base {\n"
                                "    int a;\n"
                                "};\n"
@@ -364,7 +378,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember10() {
+    void structmember10()
+    {
         // Fred may have some useful side-effects
         checkStructMemberUsage("struct abc {\n"
                                "    Fred fred;\n"
@@ -372,7 +387,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember11() { // #4168
+    void structmember11()   // #4168
+    {
         checkStructMemberUsage("struct abc { int x; };\n"
                                "struct abc s = {0};\n"
                                "void f() { do_something(&s); }");
@@ -384,7 +400,8 @@ private:
         TODO_ASSERT_EQUALS("abc::x is not used", "", errout.str());
     }
 
-    void structmember_extern() {
+    void structmember_extern()
+    {
         // extern struct => no false positive
         checkStructMemberUsage("extern struct AB\n"
                                "{\n"
@@ -425,7 +442,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) struct or union member 'AB::a' is never used.\n", errout.str());
     }
 
-    void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
+    void functionVariableUsage(const char code[], const char filename[]="test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -443,7 +461,8 @@ private:
         checkUnusedVar.checkFunctionVariableUsage();
     }
 
-    void localvar1() {
+    void localvar1()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i = 0;\n"
@@ -873,7 +892,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar2() {
+    void localvar2()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int i;\n"
@@ -1001,7 +1021,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar3() {
+    void localvar3()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i;\n"
@@ -1012,7 +1033,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar4() {
+    void localvar4()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i = 0;\n"
@@ -1028,7 +1050,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar5() {
+    void localvar5()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a = 0;\n"
@@ -1037,7 +1060,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar6() {
+    void localvar6()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int b[10];\n"
@@ -1056,7 +1080,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar7() { // ticket 1253
+    void localvar7()   // ticket 1253
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i;\n"
@@ -1081,7 +1106,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is not assigned a value.\n", errout.str());
     }
 
-    void localvar8() {
+    void localvar8()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i;\n"
@@ -1282,7 +1308,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar9() {
+    void localvar9()
+    {
         // ticket #1605
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1293,7 +1320,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar10() {
+    void localvar10()
+    {
         functionVariableUsage("void foo(int x)\n"
                               "{\n"
                               "    int i;\n"
@@ -1347,7 +1375,8 @@ private:
                       "[test.cpp:7]: (style) Unused variable: i\n", errout.str());
     }
 
-    void localvar11() {
+    void localvar11()
+    {
         functionVariableUsage("void foo(int x)\n"
                               "{\n"
                               "    int a = 0;\n"
@@ -1376,7 +1405,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar12() {
+    void localvar12()
+    {
         // ticket #1574
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1410,7 +1440,8 @@ private:
             errout.str());
     }
 
-    void localvar13() { // ticket #1640
+    void localvar13()   // ticket #1640
+    {
         functionVariableUsage("void foo( OBJECT *obj )\n"
                               "{\n"
                               "    int x;\n"
@@ -1419,7 +1450,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar14() {
+    void localvar14()
+    {
         // ticket #5
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1428,7 +1460,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
     }
 
-    void localvar15() {
+    void localvar15()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int a = 5;\n"
@@ -1475,7 +1508,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar16() { // ticket #1709
+    void localvar16()   // ticket #1709
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    char buf[5];\n"
@@ -1512,7 +1546,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar17() { // ticket #1720
+    void localvar17()   // ticket #1720
+    {
         // Don't crash when checking the code below!
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1528,7 +1563,8 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (style) Variable 'line_start' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar18() { // ticket #1723
+    void localvar18()   // ticket #1723
+    {
         functionVariableUsage("A::A(int iValue) {\n"
                               "    UserDefinedException* pe = new UserDefinedException();\n"
                               "    throw pe;\n"
@@ -1536,7 +1572,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar19() { // ticket #1776
+    void localvar19()   // ticket #1776
+    {
         functionVariableUsage("void foo() {\n"
                               "    int a[10];\n"
                               "    int c;\n"
@@ -1546,7 +1583,8 @@ private:
                       "[test.cpp:4]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar20() { // ticket #1799
+    void localvar20()   // ticket #1799
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char c1 = 'c';\n"
@@ -1556,7 +1594,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar21() { // ticket #1807
+    void localvar21()   // ticket #1807
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char buffer[1024];\n"
@@ -1565,7 +1604,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar22() { // ticket #1811
+    void localvar22()   // ticket #1811
+    {
         functionVariableUsage("int foo(int u, int v)\n"
                               "{\n"
                               "    int h, i;\n"
@@ -1576,7 +1616,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar23() { // ticket #1808
+    void localvar23()   // ticket #1808
+    {
         functionVariableUsage("int foo(int c)\n"
                               "{\n"
                               "    int a;\n"
@@ -1587,7 +1628,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar24() { // ticket #1803
+    void localvar24()   // ticket #1803
+    {
         functionVariableUsage("class MyException\n"
                               "{\n"
                               "    virtual void raise() const\n"
@@ -1598,7 +1640,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar25() { // ticket #1729
+    void localvar25()   // ticket #1729
+    {
         functionVariableUsage("int main() {\n"
                               "    int ppos = 1;\n"
                               "    int pneg = 0;\n"
@@ -1609,7 +1652,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar26() { // ticket #1894
+    void localvar26()   // ticket #1894
+    {
         functionVariableUsage("int main() {\n"
                               "    const Fred &fred = getfred();\n"
                               "    int *p = fred.x();\n"
@@ -1618,7 +1662,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar27() { // ticket #2160
+    void localvar27()   // ticket #2160
+    {
         functionVariableUsage("void f(struct s *ptr) {\n"
                               "    int param = 1;\n"
                               "    ptr->param = param++;\n"
@@ -1626,7 +1671,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar28() { // ticket #2205
+    void localvar28()   // ticket #2205
+    {
         functionVariableUsage("void f(char* buffer, int value) {\n"
                               "    char* pos = buffer;\n"
                               "    int size = value;\n"
@@ -1635,7 +1681,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar29() { // ticket #2206
+    void localvar29()   // ticket #2206
+    {
         functionVariableUsage("void f() {\n"
                               "    float s_ranges[] = { 0, 256 };\n"
                               "    float* ranges[] = { s_ranges };\n"
@@ -1644,7 +1691,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar30() { // ticket #2264
+    void localvar30()   // ticket #2264
+    {
         functionVariableUsage("void f() {\n"
                               "    Engine *engine = e;\n"
                               "    x->engine = engine->clone();\n"
@@ -1652,7 +1700,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar31() { // ticket #2286
+    void localvar31()   // ticket #2286
+    {
         functionVariableUsage("void f() {\n"
                               "    int x = 0;\n"
                               "    a.x = x - b;\n"
@@ -1660,7 +1709,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar32() {
+    void localvar32()
+    {
         // ticket #2330 - fstream >> x
         functionVariableUsage("void f() {\n"
                               "    int x;\n"
@@ -1706,7 +1756,8 @@ private:
                       "[test.cpp:2]: (style) Variable 'y' is not assigned a value.\n", errout.str());
     }
 
-    void localvar33() { // ticket #2345
+    void localvar33()   // ticket #2345
+    {
         functionVariableUsage("void f() {\n"
                               "    Abc* abc = getabc();\n"
                               "    while (0 != (abc = abc->next())) {\n"
@@ -1716,7 +1767,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar34() { // ticket #2368
+    void localvar34()   // ticket #2368
+    {
         functionVariableUsage("void f() {\n"
                               "    int i = 0;\n"
                               "    if (false) {\n"
@@ -1727,7 +1779,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar35() { // ticket #2535
+    void localvar35()   // ticket #2535
+    {
         functionVariableUsage("void f() {\n"
                               "    int a, b;\n"
                               "    x(1,a,b);\n"
@@ -1735,7 +1788,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar36() { // ticket #2805
+    void localvar36()   // ticket #2805
+    {
         functionVariableUsage("int f() {\n"
                               "    int a, b;\n"
                               "    a = 2 * (b = 3);\n"
@@ -1750,7 +1804,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar37() { // ticket #3078
+    void localvar37()   // ticket #3078
+    {
         functionVariableUsage("void f() {\n"
                               "    int a = 2;\n"
                               "    ints.at(a) = 0;\n"
@@ -1758,7 +1813,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar38() {
+    void localvar38()
+    {
         functionVariableUsage("std::string f() {\n"
                               "    const char code[] = \"foo\";\n"
                               "    const std::string s1(sizeof_(code));\n"
@@ -1768,7 +1824,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar39() {
+    void localvar39()
+    {
         functionVariableUsage("void f() {\n"
                               "    int a = 1;\n"
                               "    foo(x*a);\n"
@@ -1776,7 +1833,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar40() {
+    void localvar40()
+    {
         functionVariableUsage("int f() {\n"
                               "    int a = 1;\n"
                               "    return x & a;\n"
@@ -1784,7 +1842,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar41() {
+    void localvar41()
+    {
         // #3603 - false positive 'x is assigned a value that is never used'
         functionVariableUsage("int f() {\n"
                               "    int x = 1;\n"
@@ -1794,7 +1853,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar42() { // #3742
+    void localvar42()   // #3742
+    {
         functionVariableUsage("float g_float = 1;\n"
                               "extern void SomeTestFunc(float);\n"
                               "void MyFuncError()\n"
@@ -1826,7 +1886,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar43() { // ticket #3602 (false positive)
+    void localvar43()   // ticket #3602 (false positive)
+    {
         functionVariableUsage("void bar()\n"
                               "{\n"
                               "    int * piArray = NULL;\n"
@@ -1852,7 +1913,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar44() { // #4020 - FP
+    void localvar44()   // #4020 - FP
+    {
         functionVariableUsage("void func() {\n"
                               "    int *sp_mem[2] = { 0x00, 0x00 };\n"
                               "    int src = 1, dst = 2;\n"
@@ -1861,7 +1923,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar45() { // #4899 - FP
+    void localvar45()   // #4899 - FP
+    {
         functionVariableUsage("int func() {\n"
                               "    int a = 123;\n"
                               "    int b = (short)-a;;\n"
@@ -1870,7 +1933,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar46() { // #5491/#5494
+    void localvar46()   // #5491/#5494
+    {
         functionVariableUsage("int func() {\n"
                               "    int i = 0;\n"
                               "    int j{i};\n"
@@ -1886,7 +1950,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias1() {
+    void localvaralias1()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a;\n"
@@ -2350,7 +2415,8 @@ private:
                       "[test.cpp:9]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvaralias2() { // ticket 1637
+    void localvaralias2()   // ticket 1637
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int * a;\n"
@@ -2359,7 +2425,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias3() { // ticket 1639
+    void localvaralias3()   // ticket 1639
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    BROWSEINFO    info;\n"
@@ -2370,7 +2437,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias4() { // ticket 1643
+    void localvaralias4()   // ticket 1643
+    {
         functionVariableUsage("struct AB { int a; int b; } ab;\n"
                               "void foo()\n"
                               "{\n"
@@ -2405,7 +2473,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias5() { // ticket 1647
+    void localvaralias5()   // ticket 1647
+    {
         functionVariableUsage("char foo()\n"
                               "{\n"
                               "    char buf[8];\n"
@@ -2443,7 +2512,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias6() { // ticket 1729
+    void localvaralias6()   // ticket 1729
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char buf[8];\n"
@@ -2578,7 +2648,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Unused variable: vdata\n", errout.str());
     }
 
-    void localvaralias7() { // ticket 1732
+    void localvaralias7()   // ticket 1732
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char *c[10];\n"
@@ -2589,7 +2660,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias8() {
+    void localvaralias8()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    char b1[8];\n"
@@ -2774,7 +2846,8 @@ private:
                       "[test.cpp:5]: (style) Unused variable: b3\n", errout.str());
     }
 
-    void localvaralias9() { // ticket 1996
+    void localvaralias9()   // ticket 1996
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    Foo foo;\n"
@@ -2793,7 +2866,8 @@ private:
         ASSERT_EQUALS("[test.c:5]: (style) Variable 'foo' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvaralias10() { // ticket 2004
+    void localvaralias10()   // ticket 2004
+    {
         functionVariableUsage("void foo(Foo &foo)\n"
                               "{\n"
                               "    Foo &ref = foo;\n"
@@ -2812,7 +2886,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias11() { // #4423 - iterator
+    void localvaralias11()   // #4423 - iterator
+    {
         functionVariableUsage("void f(Foo &foo) {\n"
                               "    std::set<int>::iterator x = foo.dostuff();\n"
                               "    *(x) = 0;\n"
@@ -2820,7 +2895,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias12() { // #4394
+    void localvaralias12()   // #4394
+    {
         functionVariableUsage("void f(void) {\n"
                               "    int a[4];\n"
                               "    int *b = (int*)((int*)a+1);\n"
@@ -2836,7 +2912,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvaralias13() { // #4487
+    void localvaralias13()   // #4487
+    {
         functionVariableUsage("void f(char *p) {\n"
                               "    char a[4];\n"
                               "    p = a;\n"
@@ -2852,7 +2929,8 @@ private:
         TODO_ASSERT_EQUALS("a is assigned value that is never used", "", errout.str());
     }
 
-    void localvarasm() {
+    void localvarasm()
+    {
         functionVariableUsage("void foo(int &b)\n"
                               "{\n"
                               "    int a;\n"
@@ -2862,7 +2940,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarStruct1() {
+    void localvarStruct1()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static const struct{ int x, y, w, h; } bounds = {1,2,3,4};\n"
@@ -2871,7 +2950,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarStruct2() {
+    void localvarStruct2()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    struct ABC { int a, b, c; };\n"
@@ -2880,7 +2960,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'abc' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvarStruct3() {
+    void localvarStruct3()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a = 10;\n"
@@ -2893,7 +2974,8 @@ private:
                            "[test.cpp:4]: (style) Unused variable: z\n", "", errout.str());
     }
 
-    void localvarStruct5() {
+    void localvarStruct5()
+    {
         functionVariableUsage("int foo() {\n"
                               "    A a;\n"
                               "    return a.i;\n"
@@ -3008,7 +3090,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: a\n", errout.str());
     }
 
-    void localvarStruct6() {
+    void localvarStruct6()
+    {
         functionVariableUsage("class Type { };\n"
                               "class A {\n"
                               "public:\n"
@@ -3019,7 +3102,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarStructArray() {
+    void localvarStructArray()
+    {
         // #3633 - detect that struct array is assigned a value
         functionVariableUsage("void f() {\n"
                               "    struct X x[10];\n"
@@ -3028,7 +3112,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvarOp() {
+    void localvarOp()
+    {
         const char op[] = "+-*/%&|^";
         for (const char *p = op; *p; ++p) {
             std::string code("int main()\n"
@@ -3041,7 +3126,8 @@ private:
         }
     }
 
-    void localvarInvert() {
+    void localvarInvert()
+    {
         functionVariableUsage("int main()\n"
                               "{\n"
                               "    int tmp = 10;\n"
@@ -3050,7 +3136,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarIf() {
+    void localvarIf()
+    {
         functionVariableUsage("int main()\n"
                               "{\n"
                               "    int tmp = 10;\n"
@@ -3061,7 +3148,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarIfElse() {
+    void localvarIfElse()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int tmp1 = 1;\n"
@@ -3072,7 +3160,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarOpAssign() {
+    void localvarOpAssign()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a = 1;\n"
@@ -3088,7 +3177,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarFor() {
+    void localvarFor()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a = 1;\n"
@@ -3103,7 +3193,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarForEach() { // #4155 - foreach
+    void localvarForEach()   // #4155 - foreach
+    {
         functionVariableUsage("void foo() {\n"
                               "    int i = -1;\n"
                               "    int a[] = {1,2,3};\n"
@@ -3155,7 +3246,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarShift1() {
+    void localvarShift1()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int var = 1;\n"
@@ -3164,7 +3256,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarShift2() {
+    void localvarShift2()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int var = 1;\n"
@@ -3173,7 +3266,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarShift3() {  // #3509
+    void localvarShift3()    // #3509
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    QList<int *> ints;\n"
@@ -3189,7 +3283,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarCast() {
+    void localvarCast()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int a = 1;\n"
@@ -3199,7 +3294,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarClass() {
+    void localvarClass()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    class B : public A {\n"
@@ -3210,7 +3306,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarUnused() {
+    void localvarUnused()
+    {
         functionVariableUsage("int foo()\n"
                               "{\n"
                               "    bool test __attribute__((unused));\n"
@@ -3248,7 +3345,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarFunction() {
+    void localvarFunction()
+    {
         functionVariableUsage("void check_dlsym(void*& h)\n"
                               "{\n"
                               "  typedef void (*function_type) (void);\n"
@@ -3259,7 +3357,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarstatic() {
+    void localvarstatic()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i;\n"
@@ -3304,7 +3403,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarextern() {
+    void localvarextern()
+    {
         functionVariableUsage("void foo() {\n"
                               "    extern int i;\n"
                               "    i = 0;\n"
@@ -3312,7 +3412,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvardynamic1() {
+    void localvardynamic1()
+    {
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    void* ptr = malloc(16);\n"
@@ -3429,7 +3530,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvardynamic2() {
+    void localvardynamic2()
+    {
         functionVariableUsage("struct Fred { int i; };\n"
                               "void foo()\n"
                               "{\n"
@@ -3549,7 +3651,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvardynamic3() {
+    void localvardynamic3()
+    {
         // Ticket #3477 - False positive that 'data' is not assigned a value
         functionVariableUsage("void foo() {\n"
                               "    int* data = new int[100];\n"
@@ -3560,7 +3663,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvararray1() {
+    void localvararray1()
+    {
         functionVariableUsage("void foo() {\n"
                               "    int p[5];\n"
                               "    *p = 0;\n"
@@ -3568,7 +3672,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvararray2() {
+    void localvararray2()
+    {
         functionVariableUsage("int foo() {\n"
                               "    int p[5][5];\n"
                               "    p[0][0] = 0;\n"
@@ -3577,7 +3682,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvararray3() {
+    void localvararray3()
+    {
         functionVariableUsage("int foo() {\n"
                               "    int p[5][5];\n"
                               "    *((int*)p[0]) = 0;\n"
@@ -3586,7 +3692,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarstring1() { // ticket #1597
+    void localvarstring1()   // ticket #1597
+    {
         functionVariableUsage("void foo() {\n"
                               "    std::string s;\n"
                               "}");
@@ -3616,7 +3723,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarstring2() { // ticket #2929
+    void localvarstring2()   // ticket #2929
+    {
         functionVariableUsage("void foo() {\n"
                               "    std::string s;\n"
                               "    int i;\n"
@@ -3625,14 +3733,16 @@ private:
                       "[test.cpp:3]: (style) Unused variable: i\n", errout.str());
     }
 
-    void localvarconst1() {
+    void localvarconst1()
+    {
         functionVariableUsage("void foo() {\n"
                               "    const bool b = true;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvarconst2() {
+    void localvarconst2()
+    {
         functionVariableUsage("void foo() {\n"
                               "    const int N = 10;\n"
                               "    struct X { int x[N]; };\n"
@@ -3640,7 +3750,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarthrow() { // ticket #3687
+    void localvarthrow()   // ticket #3687
+    {
         functionVariableUsage("void foo() {\n"
                               "    try {}"
                               "    catch(Foo& bar) {}\n"
@@ -3648,7 +3759,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localVarStd() {
+    void localVarStd()
+    {
         functionVariableUsage("void f() {\n"
                               "    std::string x = foo();\n"
                               "}");
@@ -3692,7 +3804,8 @@ private:
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
-    void localvarIfNOT() {
+    void localvarIfNOT()
+    {
         functionVariableUsage("void f() {\n"
                               "    bool x = foo();\n"
                               "    if (NOT x) { }\n"
@@ -3700,7 +3813,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarAnd() { // #3672
+    void localvarAnd()   // #3672
+    {
         functionVariableUsage("int main() {\n"
                               "    unsigned flag = 0x1 << i;\n"
                               "    if (m_errorflags & flag) {\n"
@@ -3710,7 +3824,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarSwitch() { // #3744 - false positive when used in switch
+    void localvarSwitch()   // #3744 - false positive when used in switch
+    {
         functionVariableUsage("const char *f(int x) {\n"
                               "    const char a[] = \"abc\";\n"
                               "    const char def[] = \"def\";\n"
@@ -3726,7 +3841,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarNULL() { // #4203 - Setting NULL value is not redundant - it is safe
+    void localvarNULL()   // #4203 - Setting NULL value is not redundant - it is safe
+    {
         functionVariableUsage("void f() {\n"
                               "    char *p = malloc(100);\n"
                               "    foo(p);\n"
@@ -3736,7 +3852,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarUnusedGoto() {
+    void localvarUnusedGoto()
+    {
         // #4447
         functionVariableUsage("bool f(const int &i) {\n"
                               " int X = i;\n"
@@ -3767,7 +3884,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarCpp11Initialization() {
+    void localvarCpp11Initialization()
+    {
         // #6160
         functionVariableUsage("void foo() {\n"
                               "    int myNewValue{ 3u };\n"
@@ -3776,7 +3894,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void chainedAssignment() {
+    void chainedAssignment()
+    {
         // #5466
         functionVariableUsage("void NotUsed(double* pdD, int n) {\n"
                               "    double sum = 0.0;\n"
@@ -3786,14 +3905,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void crash1() {
+    void crash1()
+    {
         functionVariableUsage("SAL_WNODEPRECATED_DECLARATIONS_PUSH\n"
                               "void convertToTokenArray() {\n"
                               "}\n"
                               "SAL_WNODEPRECATED_DECLARATIONS_POP"); // #4033
     }
 
-    void crash2() {
+    void crash2()
+    {
         functionVariableUsage("template<unsigned dim>\n"
                               "struct Y: Y<dim-1> { };\n"
                               "template<>\n"
@@ -3803,7 +3924,8 @@ private:
                               "}"); // #4695
     }
 
-    void usingNamespace() {
+    void usingNamespace()
+    {
         functionVariableUsage("int foo() {\n"
                               "   using namespace ::com::sun::star::i18n;\n"
                               "   bool b = false;\n"

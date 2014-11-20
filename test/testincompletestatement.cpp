@@ -31,11 +31,13 @@ extern std::ostringstream errout;
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement")
+    {
     }
 
 private:
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -53,7 +55,8 @@ private:
         checkOther.checkIncompleteStatement();
     }
 
-    void run() {
+    void run()
+    {
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -73,7 +76,8 @@ private:
         TEST_CASE(block);               // ({ do_something(); 0; })
     }
 
-    void test1() {
+    void test1()
+    {
         check("void foo()\n"
               "{\n"
               "    const char def[] =\n"
@@ -83,7 +87,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test2() {
+    void test2()
+    {
         check("void foo()\n"
               "{\n"
               "    \"abc\";\n"
@@ -92,7 +97,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with string constant.\n", errout.str());
     }
 
-    void test3() {
+    void test3()
+    {
         check("void foo()\n"
               "{\n"
               "    const char *str[] = { \"abc\" };\n"
@@ -101,7 +107,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test4() {
+    void test4()
+    {
         check("void foo()\n"
               "{\n"
               "const char *a =\n"
@@ -115,7 +122,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test5() {
+    void test5()
+    {
         check("void foo()\n"
               "{\n"
               "    50;\n"
@@ -124,7 +132,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
     }
 
-    void test6() {
+    void test6()
+    {
         // dont crash
         check("void f() {\n"
               "  1 == (two + three);\n"
@@ -133,7 +142,8 @@ private:
               "}");
     }
 
-    void test_numeric() {
+    void test_numeric()
+    {
         check("struct P\n"
               "{\n"
               "double a;\n"
@@ -150,12 +160,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void intarray() {
+    void intarray()
+    {
         check("int arr[] = { 100/2, 1*100 };");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structarraynull() {
+    void structarraynull()
+    {
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
@@ -163,7 +175,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structarray() {
+    void structarray()
+    {
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
@@ -171,14 +184,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void conditionalcall() {
+    void conditionalcall()
+    {
         check("void f() {\n"
               "    0==x ? X() : Y();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structinit() {
+    void structinit()
+    {
         // #2462 - C++11 struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
@@ -210,7 +225,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnstruct() {
+    void returnstruct()
+    {
         check("struct s foo() {\n"
               "    return (struct s){0,0};\n"
               "}");
@@ -226,14 +242,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cast() {
+    void cast()
+    {
         check("void f() {\n"
               "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void increment() {
+    void increment()
+    {
         check("void f() {\n"
               "    int x = 1;\n"
               "    x++, x++;\n"
@@ -241,14 +259,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cpp11init() {
+    void cpp11init()
+    {
         check("void f() {\n"
               "    int x{1};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void block() {
+    void block()
+    {
         check("void f() {\n"
               "    ({ do_something(); 0; });\n"
               "}");

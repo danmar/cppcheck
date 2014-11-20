@@ -37,16 +37,19 @@ class Variable;
 class CPPCHECKLIB CheckSizeof : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckSizeof() : Check(myName()) {
+    CheckSizeof() : Check(myName())
+    {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckSizeof(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+    {
         CheckSizeof checkSizeof(tokenizer, settings, errorLogger);
 
         // Checks
@@ -60,7 +63,8 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer*, const Settings*, ErrorLogger*) {
+    void runSimplifiedChecks(const Tokenizer*, const Settings*, ErrorLogger*)
+    {
     }
 
     /** @brief %Check for 'sizeof sizeof ..' */
@@ -98,7 +102,8 @@ private:
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+    {
         CheckSizeof c(0, settings, errorLogger);
 
         c.sizeofForArrayParameterError(0);
@@ -114,11 +119,13 @@ private:
         c.arithOperationsOnVoidPointerError(0, "varname", "vartype");
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Sizeof";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "sizeof() usage checks\n"
                "- sizeof for array given as function argument\n"
                "- sizeof for numeric given as function argument\n"

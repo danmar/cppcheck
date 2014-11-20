@@ -34,16 +34,19 @@
 class CPPCHECKLIB CheckType : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckType() : Check(myName()) {
+    CheckType() : Check(myName())
+    {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckType(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         // These are not "simplified" because casts can't be ignored
         CheckType checkType(tokenizer, settings, errorLogger);
         checkType.checkTooBigBitwiseShift();
@@ -52,7 +55,8 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
@@ -76,18 +80,21 @@ private:
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void signConversionError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckType c(0, settings, errorLogger);
         c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
         c.integerOverflowError(0, ValueFlow::Value(1LL<<32));
         c.signConversionError(0);
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Type";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Type checks\n"
                "- bitwise shift by too many bits (only enabled when --platform is used)\n"
                "- signed integer overflow (only enabled when --platform is used)\n"

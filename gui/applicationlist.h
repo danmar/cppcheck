@@ -69,7 +69,8 @@ public:
     * @brief Return the default application.
     * @return Index of the default application.
     */
-    int GetDefaultApplication() const {
+    int GetDefaultApplication() const
+    {
         return mDefaultApplicationIndex;
     }
 

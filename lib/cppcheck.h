@@ -107,7 +107,8 @@ public:
     /**
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
-    void terminate() {
+    void terminate()
+    {
         _settings.terminate();
     }
 
@@ -125,7 +126,8 @@ public:
     void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
-    void dontSimplify() {
+    void dontSimplify()
+    {
         _simplify = false;
     }
 

@@ -100,7 +100,8 @@ public:
         debug
     };
 
-    static std::string toString(SeverityType severity) {
+    static std::string toString(SeverityType severity)
+    {
         switch (severity) {
         case none:
             return "";
@@ -121,7 +122,8 @@ public:
         };
         throw InternalError(NULL, "Unknown severity");
     }
-    static SeverityType fromString(const std::string &severity) {
+    static SeverityType fromString(const std::string &severity)
+    {
         if (severity.empty())
             return none;
         if (severity == "none")
@@ -164,11 +166,13 @@ public:
         class CPPCHECKLIB FileLocation {
         public:
             FileLocation()
-                : line(0) {
+                : line(0)
+            {
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : line(aline), _file(file) {
+                : line(aline), _file(file)
+            {
             }
 
             FileLocation(const Token* tok, const TokenList* list);
@@ -236,12 +240,14 @@ public:
         void setmsg(const std::string &msg);
 
         /** Short message (single line short message) */
-        const std::string &shortMessage() const {
+        const std::string &shortMessage() const
+        {
             return _shortMessage;
         }
 
         /** Verbose message (may be the same as the short message) */
-        const std::string &verboseMessage() const {
+        const std::string &verboseMessage() const
+        {
             return _verboseMessage;
         }
 
@@ -287,7 +293,8 @@ public:
      * @param stage for example preprocess / tokenize / simplify / check
      * @param value progress value (0-100)
      */
-    virtual void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    virtual void reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+    {
         (void)filename;
         (void)stage;
         (void)value;
@@ -297,7 +304,8 @@ public:
      * Output information messages.
      * @param msg Location and other information about the found error.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) {
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg)
+    {
         reportErr(msg);
     }
 

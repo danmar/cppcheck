@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
-    foreach(const QString arg, app.arguments()) {
+    foreach (const QString arg, app.arguments()) {
         if (arg.startsWith("--data-dir=")) {
             settings->setValue("DATADIR", arg.mid(11));
             return 0;

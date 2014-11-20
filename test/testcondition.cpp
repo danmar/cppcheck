@@ -26,13 +26,15 @@ extern std::ostringstream errout;
 
 class TestCondition : public TestFixture {
 public:
-    TestCondition() : TestFixture("TestCondition") {
+    TestCondition() : TestFixture("TestCondition")
+    {
     }
 
 private:
 
 
-    void run() {
+    void run()
+    {
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
@@ -62,7 +64,8 @@ private:
         TEST_CASE(clarifyCondition6);     // #3818
     }
 
-    void check(const char code[], bool validate=true, const char* filename = "test.cpp") {
+    void check(const char code[], bool validate=true, const char* filename = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -88,7 +91,8 @@ private:
         }
     }
 
-    void assignAndCompare() {
+    void assignAndCompare()
+    {
         // &
         check("void foo(int x)\n"
               "{\n"
@@ -256,7 +260,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void mismatchingBitAnd() {
+    void mismatchingBitAnd()
+    {
         check("void f(int a) {\n"
               "    int b = a & 0xf0;\n"
               "    b &= 1;\n"
@@ -279,7 +284,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void compare() {
+    void compare()
+    {
         check("void foo(int x)\n"
               "{\n"
               "    if ((x & 4) == 3);\n"
@@ -305,7 +311,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
     }
 
-    void multicompare() {
+    void multicompare()
+    {
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
@@ -321,7 +328,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
     }
 
-    void duplicateIf() {
+    void duplicateIf()
+    {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
@@ -403,7 +411,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void invalidMissingSemicolon() {
+    void invalidMissingSemicolon()
+    {
         // simply survive - a syntax error would be even better
         check("void f(int x) {\n"
               " x = 42\n"
@@ -412,7 +421,8 @@ private:
     }
 
 
-    void incorrectLogicOperator1() {
+    void incorrectLogicOperator1()
+    {
         check("void f(int x) {\n"
               "    if ((x != 1) || (x != 3))\n"
               "        a++;\n"
@@ -507,7 +517,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator2() {
+    void incorrectLogicOperator2()
+    {
         check("void f(float x) {\n"
               "    if ((x == 1) && (x == 1.0))\n"
               "        a++;\n"
@@ -727,7 +738,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator3() {
+    void incorrectLogicOperator3()
+    {
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 && x == 1;\n"
               "    c = x < 1 && x == 3;\n"
@@ -740,21 +752,24 @@ private:
                       "[test.cpp:5]: (warning) Logical conjunction always evaluates to false: x <= 1 && x == 3.\n", errout.str());
     }
 
-    void incorrectLogicOperator4() {
+    void incorrectLogicOperator4()
+    {
         check("void f(int x) {\n"
               "  if (x && x != $0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator5() { // complex expressions
+    void incorrectLogicOperator5()   // complex expressions
+    {
         check("void f(int x) {\n"
               "  if (x+3 > 2 || x+3 < 10) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
     }
 
-    void incorrectLogicOperator6() { // char literals
+    void incorrectLogicOperator6()   // char literals
+    {
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
               "}");
@@ -766,14 +781,16 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
-    void incorrectLogicOperator7() { // opposite expressions
+    void incorrectLogicOperator7()   // opposite expressions
+    {
         check("void f(int i) {\n"
               "  if (i || !i) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i||!i.\n", errout.str());
     }
 
-    void secondAlwaysTrueFalseWhenFirstTrueError() {
+    void secondAlwaysTrueFalseWhenFirstTrueError()
+    {
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"
@@ -836,7 +853,8 @@ private:
                       "[test.cpp:5]: (style) Redundant condition: If x < 5, the comparison x < 6 is always true.\n", errout.str());
     }
 
-    void incorrectLogicOp_condSwapping() {
+    void incorrectLogicOp_condSwapping()
+    {
         check("void f(int x) {\n"
               "    if (x < 1 && x > 3)\n"
               "        a++;\n"
@@ -886,7 +904,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
     }
 
-    void modulo() {
+    void modulo()
+    {
         check("bool f(bool& b1, bool& b2, bool& b3) {\n"
               "    b1 = a % 5 == 4;\n"
               "    b2 = a % c == 100000;\n"
@@ -926,7 +945,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerCondition() {
+    void oppositeInnerCondition()
+    {
         check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(a!=b)\n"
@@ -1092,7 +1112,8 @@ private:
     }
 
     // clarify conditions with = and comparison
-    void clarifyCondition1() {
+    void clarifyCondition1()
+    {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n" // don't simplify and verify this code
               "}", false);
@@ -1111,7 +1132,8 @@ private:
     }
 
     // clarify conditions with bitwise operator and comparison
-    void clarifyCondition2() {
+    void clarifyCondition2()
+    {
         check("void f() {\n"
               "    if (x & 3 == 2) {}\n"
               "}");
@@ -1124,7 +1146,8 @@ private:
     }
 
     // clarify condition that uses ! operator and then bitwise operator
-    void clarifyCondition3() {
+    void clarifyCondition3()
+    {
         check("void f(int w) {\n"
               "    if(!w & 0x8000) {}\n"
               "}");
@@ -1153,7 +1176,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition4() { // ticket #3110
+    void clarifyCondition4()   // ticket #3110
+    {
         check("typedef double SomeType;\n"
               "typedef std::pair<std::string,SomeType> PairType;\n"
               "struct S\n"
@@ -1168,12 +1192,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition5() { // ticket #3609 (using | in template instantiation)
+    void clarifyCondition5()   // ticket #3609 (using | in template instantiation)
+    {
         check("CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition6() {
+    void clarifyCondition6()
+    {
         check("template<class Y>\n"
               "SharedPtr& operator=( SharedPtr<Y> const & r ) {\n"
               "    px = r.px;\n"

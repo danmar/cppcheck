@@ -23,12 +23,14 @@
 
 class TestMathLib : public TestFixture {
 public:
-    TestMathLib() : TestFixture("TestMathLib") {
+    TestMathLib() : TestFixture("TestMathLib")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(isint);
         TEST_CASE(isbin);
         TEST_CASE(isdec);
@@ -55,42 +57,49 @@ private:
         TEST_CASE(abs);
     }
 
-    void isGreater() const {
+    void isGreater() const
+    {
         ASSERT_EQUALS(true , MathLib::isGreater("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreater("-1.0", "0.001"));
     }
 
-    void isGreaterEqual() const {
+    void isGreaterEqual() const
+    {
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.00", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.001", "1.0"));
         ASSERT_EQUALS(true , MathLib::isGreaterEqual("1.0", "0.001"));
         ASSERT_EQUALS(false, MathLib::isGreaterEqual("-1.0", "0.001"));
     }
 
-    void isEqual() const {
+    void isEqual() const
+    {
         ASSERT_EQUALS(true  , MathLib::isEqual("1.0", "1.0"));
         ASSERT_EQUALS(false , MathLib::isEqual("1.", "1.01"));
         ASSERT_EQUALS(true  , MathLib::isEqual("0.1","1.0E-1"));
     }
 
-    void isNotEqual() const {
+    void isNotEqual() const
+    {
         ASSERT_EQUALS(false , MathLib::isNotEqual("1.0", "1.0"));
         ASSERT_EQUALS(true  , MathLib::isNotEqual("1.", "1.01"));
     }
 
-    void isLess() const {
+    void isLess() const
+    {
         ASSERT_EQUALS(false , MathLib::isLess("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLess("-1.0", "0.001"));
     }
 
-    void isLessEqual() const {
+    void isLessEqual() const
+    {
         ASSERT_EQUALS(true  , MathLib::isLessEqual("1.00", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.001", "1.0"));
         ASSERT_EQUALS(false , MathLib::isLessEqual("1.0", "0.001"));
         ASSERT_EQUALS(true  , MathLib::isLessEqual("-1.0", "0.001"));
     }
 
-    void calculate() const {
+    void calculate() const
+    {
         // addition
         ASSERT_EQUALS("256", MathLib::add("0xff", "1"));
         ASSERT_EQUALS("249", MathLib::add("250", "-1"));
@@ -143,7 +152,8 @@ private:
         ASSERT_THROW(MathLib::calculate("1","2",'j'),InternalError);
     }
 
-    void calculate1() const {
+    void calculate1() const
+    {
         ASSERT_EQUALS("0"    , MathLib::calculate("2"    , "1"    , '%'));
         ASSERT_EQUALS("0.0"  , MathLib::calculate("2.0"  , "1.0"  , '%'));
         ASSERT_EQUALS("2"    , MathLib::calculate("12"   , "5"   , '%'));
@@ -158,7 +168,8 @@ private:
         ASSERT_EQUALS("3"    , MathLib::calculate("2"    , "1"    , '^'));
     }
 
-    void convert() const {
+    void convert() const
+    {
         // ------------------
         // tolong conversion:
         // ------------------
@@ -248,7 +259,8 @@ private:
         ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("+0.0")));
     }
 
-    void isint() const {
+    void isint() const
+    {
         // zero tests
         ASSERT_EQUALS(true , MathLib::isInt("0"));
         ASSERT_EQUALS(false, MathLib::isInt("0."));
@@ -337,7 +349,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt(""));
     }
 
-    void isbin() const {
+    void isbin() const
+    {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isBin("0b0"));
         ASSERT_EQUALS(true, MathLib::isBin("0b1"));
@@ -377,7 +390,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isBin(""));
     }
 
-    void isnegative() const {
+    void isnegative() const
+    {
         ASSERT_EQUALS(true , MathLib::isNegative("-1"));
         ASSERT_EQUALS(true , MathLib::isNegative("-1."));
         ASSERT_EQUALS(true , MathLib::isNegative("-1.0"));
@@ -393,7 +407,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isNegative(""));
     }
 
-    void isoct() const {
+    void isoct() const
+    {
         // octal number format: [+|-]0[0-7][suffix]
         // positive testing
         ASSERT_EQUALS(true, MathLib::isOct("010"));
@@ -455,7 +470,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isOct("+042LUL+0"));
     }
 
-    void ishex() const {
+    void ishex() const
+    {
         // hex number syntax: [sign]0x[hexnumbers][suffix]
 
         // positive testing
@@ -517,7 +533,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isHex(""));
     }
 
-    void ispositive() const {
+    void ispositive() const
+    {
         ASSERT_EQUALS(false, MathLib::isPositive("-1"));
         ASSERT_EQUALS(false, MathLib::isPositive("-1."));
         ASSERT_EQUALS(false, MathLib::isPositive("-1.0"));
@@ -534,7 +551,8 @@ private:
         ASSERT_EQUALS(true, MathLib::isPositive("")); // because it has opposite result to MathLib::isNegative
     }
 
-    void isfloat() const {
+    void isfloat() const
+    {
         ASSERT_EQUALS(false, MathLib::isFloat(""));
         ASSERT_EQUALS(false, MathLib::isFloat("."));
         ASSERT_EQUALS(false, MathLib::isFloat("..."));
@@ -628,7 +646,8 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
     }
 
-    void naninf() const {
+    void naninf() const
+    {
         ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "0.0")); // nan
         ASSERT_EQUALS("nan.0", MathLib::divide("0.0", "0.f")); // nan (#5875)
         ASSERT_EQUALS("nan.0", MathLib::divide("-0.0", "0.f")); // nan (#5875)
@@ -644,7 +663,8 @@ private:
         ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
-    void isdec(void) {
+    void isdec(void)
+    {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isDec("1"));
         ASSERT_EQUALS(true, MathLib::isDec("+1"));
@@ -661,7 +681,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isDec("x"));
     }
 
-    void isNullValue() const {
+    void isNullValue() const
+    {
         // inter zero value
         ASSERT_EQUALS(true, MathLib::isNullValue("0"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0"));
@@ -830,7 +851,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
     }
 
-    void incdec() {
+    void incdec()
+    {
         // increment
         {
             MathLib::biguint num = ~10U;
@@ -851,16 +873,20 @@ private:
         ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
     }
 
-    void sin() {
+    void sin()
+    {
         ASSERT_EQUALS("0.0"   , MathLib::sin("0"));
     }
-    void cos() {
+    void cos()
+    {
         ASSERT_EQUALS("1.0"   , MathLib::cos("0"));
     }
-    void tan() {
+    void tan()
+    {
         ASSERT_EQUALS("0.0"   , MathLib::tan("0"));
     }
-    void abs() {
+    void abs()
+    {
         ASSERT_EQUALS("0.0"   , MathLib::abs("0"));
         ASSERT_EQUALS("0.0"   , MathLib::abs("+0"));
         ASSERT_EQUALS("0.0"   , MathLib::abs("-0"));

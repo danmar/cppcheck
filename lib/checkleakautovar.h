@@ -36,20 +36,23 @@ public:
     std::set<unsigned int> conditionalAlloc;
     std::set<unsigned int> referenced;
 
-    void clear() {
+    void clear()
+    {
         alloctype.clear();
         possibleUsage.clear();
         conditionalAlloc.clear();
         referenced.clear();
     }
 
-    void erase(unsigned int varid) {
+    void erase(unsigned int varid)
+    {
         alloctype.erase(varid);
         possibleUsage.erase(varid);
         conditionalAlloc.erase(varid);
     }
 
-    void swap(VarInfo &other) {
+    void swap(VarInfo &other)
+    {
         alloctype.swap(other.alloctype);
         possibleUsage.swap(other.possibleUsage);
         conditionalAlloc.swap(other.conditionalAlloc);
@@ -73,16 +76,19 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()) {
+    CheckLeakAutoVar() : Check(myName())
+    {
     }
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -114,17 +120,20 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckLeakAutoVar c(0, settings, errorLogger);
         c.deallocReturnError(0, "p");
         c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Leaks (auto variables)";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Detect when a auto variable is allocated but not deallocated.\n";
     }
 };

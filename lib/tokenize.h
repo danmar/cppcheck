@@ -44,17 +44,20 @@ public:
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     ~Tokenizer();
 
-    void setTimerResults(TimerResults *tr) {
+    void setTimerResults(TimerResults *tr)
+    {
         m_timerResults = tr;
     }
 
     /** Is the code C. Used for bailouts */
-    bool isC() const {
+    bool isC() const
+    {
         return list.isC();
     }
 
     /** Is the code CPP. Used for bailouts */
-    bool isCPP() const {
+    bool isCPP() const
+    {
         return list.isCPP();
     }
 
@@ -701,16 +704,19 @@ public:
     void unsupportedTypedef(const Token *tok) const;
 
     /** Was there templates in the code? */
-    bool codeWithTemplates() const {
+    bool codeWithTemplates() const
+    {
         return _codeWithTemplates;
     }
 
-    void setSettings(const Settings *settings) {
+    void setSettings(const Settings *settings)
+    {
         _settings = settings;
         list.setSettings(settings);
     }
 
-    const SymbolDatabase *getSymbolDatabase() const {
+    const SymbolDatabase *getSymbolDatabase() const
+    {
         return _symbolDatabase;
     }
     void createSymbolDatabase();
@@ -726,7 +732,8 @@ public:
      * Get variable count.
      * @return number of variables
      */
-    unsigned int varIdCount() const {
+    unsigned int varIdCount() const
+    {
         return _varId;
     }
 
@@ -747,7 +754,8 @@ public:
      */
     TokenList list;
     // Implement tokens() as a wrapper for convinience when using the TokenList
-    const Token* tokens() const {
+    const Token* tokens() const
+    {
         return list.front();
     }
 
@@ -798,7 +806,8 @@ private:
     Tokenizer &operator=(const Tokenizer &);
 
     static Token * startOfFunction(Token * tok);
-    static Token * startOfExecutableScope(Token * tok) {
+    static Token * startOfExecutableScope(Token * tok)
+    {
         return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
     }
 

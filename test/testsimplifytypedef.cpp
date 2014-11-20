@@ -28,13 +28,15 @@ extern std::ostringstream errout;
 
 class TestSimplifyTypedef : public TestFixture {
 public:
-    TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef") {
+    TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef")
+    {
     }
 
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
@@ -157,7 +159,8 @@ private:
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified)
+    {
         errout.str("");
 
         Settings settings;
@@ -174,7 +177,8 @@ private:
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
 
-    std::string simplifyTypedef(const char code[]) {
+    std::string simplifyTypedef(const char code[])
+    {
         errout.str("");
 
         Settings settings;
@@ -190,7 +194,8 @@ private:
 
 
 
-    void simplifyTypedef1() {
+    void simplifyTypedef1()
+    {
         const char code[] = "class A\n"
                             "{\n"
                             "public:\n"
@@ -221,7 +226,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef2() {
+    void simplifyTypedef2()
+    {
         const char code[] = "class A;\n"
                             "typedef A duplicate;\n"
                             "class A\n"
@@ -242,7 +248,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef3() {
+    void simplifyTypedef3()
+    {
         const char code[] = "class A {};\n"
                             "typedef A duplicate;\n"
                             "wchar_t foo()\n"
@@ -271,7 +278,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef4() {
+    void simplifyTypedef4()
+    {
         const char code[] = "typedef int s32;\n"
                             "typedef unsigned int u32;\n"
                             "void f()\n"
@@ -291,7 +299,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef5() {
+    void simplifyTypedef5()
+    {
         // ticket #780
         const char code[] =
             "typedef struct yy_buffer_state *YY_BUFFER_STATE;\n"
@@ -309,7 +318,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef6() {
+    void simplifyTypedef6()
+    {
         // ticket #983
         const char code[] =
             "namespace VL {\n"
@@ -326,14 +336,16 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef7() {
+    void simplifyTypedef7()
+    {
         const char code[] = "typedef int abc ; "
                             "Fred :: abc f ;";
         const char expected[] = "Fred :: abc f ;";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef8() {
+    void simplifyTypedef8()
+    {
         const char code[] = "typedef int INT;\n"
                             "typedef unsigned int UINT;\n"
                             "typedef int * PINT;\n"
@@ -364,7 +376,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef9() {
+    void simplifyTypedef9()
+    {
         const char code[] = "typedef struct s S, * PS;\n"
                             "typedef struct t { int a; } T, *TP;\n"
                             "typedef struct { int a; } U;\n"
@@ -390,7 +403,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef10() {
+    void simplifyTypedef10()
+    {
         const char code[] = "typedef union s S, * PS;\n"
                             "typedef union t { int a; float b ; } T, *TP;\n"
                             "typedef union { int a; float b; } U;\n"
@@ -416,7 +430,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef11() {
+    void simplifyTypedef11()
+    {
         const char code[] = "typedef enum { a = 0 , b = 1 , c = 2 } abc;\n"
                             "typedef enum xyz { x = 0 , y = 1 , z = 2 } XYZ;\n"
                             "abc e1;\n"
@@ -428,7 +443,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef12() {
+    void simplifyTypedef12()
+    {
         const char code[] = "typedef vector<int> V1;\n"
                             "typedef std::vector<int> V2;\n"
                             "typedef std::vector<std::vector<int> > V3;\n"
@@ -447,7 +463,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef13() {
+    void simplifyTypedef13()
+    {
         // ticket # 1167
         const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
                             "typedef std::vector<Func> CallQueue;"
@@ -458,7 +475,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef14() {
+    void simplifyTypedef14()
+    {
         // ticket # 1232
         const char code[] = "template <typename F, unsigned int N> struct E"
                             "{"
@@ -477,7 +495,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef15() {
+    void simplifyTypedef15()
+    {
         {
             const char code[] = "typedef char frame[10];\n"
                                 "frame f;";
@@ -497,7 +516,8 @@ private:
         }
     }
 
-    void simplifyTypedef16() {
+    void simplifyTypedef16()
+    {
         // ticket # 1252
         const char code[] = "typedef char MOT8;\n"
                             "typedef  MOT8 CHFOO[4096];\n"
@@ -510,7 +530,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef17() {
+    void simplifyTypedef17()
+    {
         const char code[] = "typedef char * PCHAR, CHAR;\n"
                             "PCHAR pc;\n"
                             "CHAR c;";
@@ -522,7 +543,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef18() {
+    void simplifyTypedef18()
+    {
         const char code[] = "typedef vector<int[4]> a;\n"
                             "a b;\n";
 
@@ -539,7 +561,8 @@ private:
         tokenizer.validate();
     }
 
-    void simplifyTypedef19() {
+    void simplifyTypedef19()
+    {
         {
             // ticket #1275
             const char code[] = "typedef struct {} A, *B, **C;\n"
@@ -585,7 +608,8 @@ private:
         }
     }
 
-    void simplifyTypedef20() {
+    void simplifyTypedef20()
+    {
         // ticket #1284
         const char code[] = "typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);";
 
@@ -602,7 +626,8 @@ private:
         tokenizer.validate();
     }
 
-    void simplifyTypedef21() {
+    void simplifyTypedef21()
+    {
         const char code[] = "typedef void (* PF)();\n"
                             "typedef void * (* PFV)(void *);\n"
                             "PF pf;\n"
@@ -617,7 +642,8 @@ private:
         ASSERT_EQUALS(expected, simplifyTypedef(code));
     }
 
-    void simplifyTypedef22() {
+    void simplifyTypedef22()
+    {
         {
             const char code[] = "class Fred {\n"
                                 "    typedef void (*testfp)();\n"
@@ -705,7 +731,8 @@ private:
         }
     }
 
-    void simplifyTypedef23() {
+    void simplifyTypedef23()
+    {
         const char code[] = "typedef bool (*Callback) (int i);\n"
                             "void    addCallback(Callback callback) { }\n"
                             "void    addCallback1(Callback callback, int j) { }";
@@ -717,7 +744,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef24() {
+    void simplifyTypedef24()
+    {
         {
             const char code[] = "typedef int (*fp)();\n"
                                 "void g( fp f )\n"
@@ -751,7 +779,8 @@ private:
         }
     }
 
-    void simplifyTypedef25() {
+    void simplifyTypedef25()
+    {
         {
             // ticket #1298
             const char code[] = "typedef void (*fill_names_f) (const char *);\n"
@@ -782,7 +811,8 @@ private:
         }
     }
 
-    void simplifyTypedef26() {
+    void simplifyTypedef26()
+    {
         {
             const char code[] = "typedef void (*Callback) ();\n"
                                 "void    addCallback(Callback (*callback)());";
@@ -805,7 +835,8 @@ private:
         }
     }
 
-    void simplifyTypedef27() {
+    void simplifyTypedef27()
+    {
         // ticket #1316
         const char code[] = "int main()\n"
                             "{\n"
@@ -823,7 +854,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef28() {
+    void simplifyTypedef28()
+    {
         const char code[] = "typedef std::pair<double, double> (*F)(double);\n"
                             "F f;";
 
@@ -832,7 +864,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef29() {
+    void simplifyTypedef29()
+    {
         const char code[] = "typedef int array [ice_or<is_int<int>::value, is_int<UDT>::value>::value ? 1 : -1];\n"
                             "typedef int array1 [N];\n"
                             "typedef int array2 [N][M];\n"
@@ -853,7 +886,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef30() {
+    void simplifyTypedef30()
+    {
         const char code[] = "typedef ::std::list<int> int_list;\n"
                             "typedef ::std::list<int>::iterator int_list_iterator;\n"
                             "typedef ::std::list<int> int_list_array[10];\n"
@@ -869,7 +903,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef31() {
+    void simplifyTypedef31()
+    {
         {
             const char code[] = "class A {\n"
                                 "public:\n"
@@ -917,7 +952,8 @@ private:
         }
     }
 
-    void simplifyTypedef32() {
+    void simplifyTypedef32()
+    {
         const char code[] = "typedef char CHAR;\n"
                             "typedef CHAR * LPSTR;\n"
                             "typedef const CHAR * LPCSTR;\n"
@@ -933,7 +969,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef33() {
+    void simplifyTypedef33()
+    {
         const char code[] = "class A {\n"
                             "public:\n"
                             "    typedef char CHAR_A;\n"
@@ -994,7 +1031,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef34() {
+    void simplifyTypedef34()
+    {
         // ticket #1411
         const char code[] = "class X { };\n"
                             "typedef X (*foofunc)(const X&);\n"
@@ -1013,7 +1051,8 @@ private:
     }
 
     // Check simplifyTypedef
-    void checkSimplifyTypedef(const char code[]) {
+    void checkSimplifyTypedef(const char code[])
+    {
         errout.str("");
         // Tokenize..
         Settings settings;
@@ -1025,7 +1064,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
     }
 
-    void simplifyTypedef35() {
+    void simplifyTypedef35()
+    {
         const char code[] = "typedef int A;\n"
                             "class S\n"
                             "{\n"
@@ -1103,7 +1143,8 @@ private:
                       "[test.cpp:24]: (debug) ValueFlow bailout: parameter a, at '{'\n", errout.str());
     }
 
-    void simplifyTypedef36() {
+    void simplifyTypedef36()
+    {
         // ticket #1434
         const char code[] = "typedef void (*TIFFFaxFillFunc)();\n"
                             "void f(va_list ap)\n"
@@ -1117,7 +1158,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef37() {
+    void simplifyTypedef37()
+    {
         {
             // ticket #1449
             const char code[] = "template <class T> class V {};\n"
@@ -1145,7 +1187,8 @@ private:
         }
     }
 
-    void simplifyTypedef38() {
+    void simplifyTypedef38()
+    {
         const char code[] = "typedef C A;\n"
                             "struct AB : public A, public B { };";
         const char expected[] = "struct AB : public C , public B { } ;";
@@ -1155,7 +1198,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef39() {
+    void simplifyTypedef39()
+    {
         const char code[] = "typedef int A;\n"
                             "template <const A, volatile A>::value;";
         const char expected[] = "template < const int , int > :: value ;";
@@ -1165,7 +1209,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef40() {
+    void simplifyTypedef40()
+    {
         const char code[] = "typedef int A;\n"
                             "typedef int B;\n"
                             "template <class A, class B> class C { };";
@@ -1220,7 +1265,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef41() {
+    void simplifyTypedef41()
+    {
         // ticket #1488
         checkSimplifyTypedef("class Y;\n"
                              "class X\n"
@@ -1231,7 +1277,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef42() {
+    void simplifyTypedef42()
+    {
         // ticket #1506
         checkSimplifyTypedef("typedef struct A { } A;\n"
                              "struct A;");
@@ -1248,7 +1295,8 @@ private:
         TODO_ASSERT_EQUALS("class A ;", "class std :: map < std :: string , int > ;", tok(code));
     }
 
-    void simplifyTypedef43() {
+    void simplifyTypedef43()
+    {
         // ticket #1588
         {
             const char code[] = "typedef struct foo A;\n"
@@ -1305,7 +1353,8 @@ private:
         }
     }
 
-    void simplifyTypedef44() {
+    void simplifyTypedef44()
+    {
         {
             const char code[] = "typedef std::map<std::string, int> Map;\n"
                                 "class MyMap : public Map\n"
@@ -1389,7 +1438,8 @@ private:
         }
     }
 
-    void simplifyTypedef45() {
+    void simplifyTypedef45()
+    {
         // ticket # 1613
         const char code[] = "void fn() {\n"
                             "    typedef foo<> bar;\n"
@@ -1400,7 +1450,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef46() {
+    void simplifyTypedef46()
+    {
         const char code[] = "typedef const struct A { int a; } * AP;\n"
                             "AP ap;\n";
 
@@ -1410,7 +1461,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef47() {
+    void simplifyTypedef47()
+    {
         {
             const char code[] = "typedef std::pair<int, int> const I;\n"
                                 "I i;";
@@ -1430,7 +1482,8 @@ private:
         }
     }
 
-    void simplifyTypedef48() { // ticket #1673
+    void simplifyTypedef48()   // ticket #1673
+    {
         const char code[] = "typedef struct string { } string;\n"
                             "void foo (LIST *module_name)\n"
                             "{\n"
@@ -1446,7 +1499,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef49() { // ticket #1691
+    void simplifyTypedef49()   // ticket #1691
+    {
         const char code[] = "class Class2 {\n"
                             "typedef const Class & Const_Reference;\n"
                             "void some_method (Const_Reference x) const {}\n"
@@ -1462,7 +1516,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef50() {
+    void simplifyTypedef50()
+    {
         const char code[] = "typedef char (* type1)[10];\n"
                             "typedef char (& type2)[10];\n"
                             "typedef char (& type3)[x];\n"
@@ -1482,7 +1537,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef51() {
+    void simplifyTypedef51()
+    {
         const char code[] = "class A { public: int i; };\n"
                             "typedef const char (A :: * type1);\n"
                             "type1 t1 = &A::i;";
@@ -1493,7 +1549,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef52() { // ticket #1782
+    void simplifyTypedef52()   // ticket #1782
+    {
         {
             const char code[] = "typedef char (* type1)[10];\n"
                                 "type1 foo() { }";
@@ -1516,7 +1573,8 @@ private:
         }
     }
 
-    void simplifyTypedef53() { // ticket #1801
+    void simplifyTypedef53()   // ticket #1801
+    {
         {
             const char code[] = "typedef int ( * int ( * ) ( ) ) ( ) ;";
 
@@ -1541,7 +1599,8 @@ private:
         }
     }
 
-    void simplifyTypedef54() { // ticket #1814
+    void simplifyTypedef54()   // ticket #1814
+    {
         const char code[] = "void foo()\n"
                             "{\n"
                             "    typedef std::basic_string<char, traits_type, allocator_type> string_type;\n"
@@ -1559,7 +1618,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef55() {
+    void simplifyTypedef55()
+    {
         const char code[] = "typedef volatile unsigned long * const hwreg_t ;\n"
                             "typedef void *const t1[2];\n"
                             "typedef int*const *_Iterator;\n"
@@ -1578,7 +1638,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef56() { // ticket #1829
+    void simplifyTypedef56()   // ticket #1829
+    {
         const char code[] = "struct C {\n"
                             "    typedef void (*fptr)();\n"
                             "    const fptr pr;\n"
@@ -1598,7 +1659,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef57() { // ticket #1846
+    void simplifyTypedef57()   // ticket #1846
+    {
         const char code[] = "void foo() {\n"
                             "    typedef int A;\n"
                             "    A a = A(1) * A(2);\n"
@@ -1616,7 +1678,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef58() { // ticket #1963
+    void simplifyTypedef58()   // ticket #1963
+    {
         {
             const char code[] = "typedef int vec2_t[2];\n"
                                 "vec2_t coords[4] = {1,2,3,4,5,6,7,8};\n";
@@ -1644,7 +1707,8 @@ private:
         }
     }
 
-    void simplifyTypedef59() { // ticket #2011
+    void simplifyTypedef59()   // ticket #2011
+    {
         const char code[] = "template<typename DISPATCHER> class SomeTemplateClass {\n"
                             "    typedef void (SomeTemplateClass<DISPATCHER>::*MessageDispatcherFunc)(SerialInputMessage&);\n"
                             "};\n";
@@ -1657,7 +1721,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef60() { // ticket #2035
+    void simplifyTypedef60()   // ticket #2035
+    {
         const char code[] = "typedef enum {qfalse, qtrue} qboolean;\n"
                             "typedef qboolean (*localEntitiyAddFunc_t) (struct le_s * le, entity_t * ent);\n"
                             "void f()\n"
@@ -1674,7 +1739,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef61() { // ticket #2074 and 2075
+    void simplifyTypedef61()   // ticket #2074 and 2075
+    {
         const char code1[] = "typedef       unsigned char   (*Mf_GetIndexByte_Func)          (void);\n"
                              "typedef const unsigned char * (*Mf_GetPointerToCurrentPos_Func)(void);\n";
 
@@ -1690,7 +1756,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef62() { // ticket #2082
+    void simplifyTypedef62()   // ticket #2082
+    {
         const char code1[] = "typedef char TString[256];\n"
                              "void f()\n"
                              "{\n"
@@ -1748,7 +1815,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef63() { // ticket #2175 'typedef float x[3];'
+    void simplifyTypedef63()   // ticket #2175 'typedef float x[3];'
+    {
         const char code[] = "typedef float x[3];\n"
                             "x a,b,c;\n";
         const std::string actual(tok(code));
@@ -1756,7 +1824,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef64() {
+    void simplifyTypedef64()
+    {
         const char code[] = "typedef __typeof__(__type1() + __type2()) __type;"
                             "__type t;\n";
         const std::string actual(tok(code));
@@ -1764,7 +1833,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef65() { // ticket #2314
+    void simplifyTypedef65()   // ticket #2314
+    {
         const char code[] = "typedef BAR<int> Foo;\n"
                             "int main() {\n"
                             "    Foo b(0);\n"
@@ -1775,14 +1845,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef66() { // ticket #2341
+    void simplifyTypedef66()   // ticket #2341
+    {
         const char code[] = "typedef long* GEN;\n"
                             "extern GEN (*foo)(long);";
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef67() { // ticket #2354
+    void simplifyTypedef67()   // ticket #2354
+    {
         const char code[] = "typedef int ( * Function ) ( ) ;\n"
                             "void f ( ) {\n"
                             "    ((Function * (*) (char *, char *, int, int)) global[6]) ( \"assoc\", \"eggdrop\", 106, 0);\n"
@@ -1794,7 +1866,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef68() { // ticket #2355
+    void simplifyTypedef68()   // ticket #2355
+    {
         const char code[] = "typedef FMAC1 void (* a) ();\n"
                             "void *(*b) ();\n";
         const std::string actual(tok(code));
@@ -1802,7 +1875,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef69() { // ticket #2348
+    void simplifyTypedef69()   // ticket #2348
+    {
         const char code[] = "typedef int (*CompilerHook)();\n"
                             "typedef struct VirtualMachine\n"
                             "{\n"
@@ -1816,7 +1890,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef70() { // ticket #2348
+    void simplifyTypedef70()   // ticket #2348
+    {
         const char code[] = "typedef int pread_f ( int ) ;\n"
                             "pread_f *(*test_func)(char *filename);\n";
         const std::string expected = "int ( * ( * test_func ) ( char * filename ) ) ( int ) ;";
@@ -1824,7 +1899,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef71() { // ticket #2348
+    void simplifyTypedef71()   // ticket #2348
+    {
         {
             const char code[] = "typedef int RexxFunctionHandler();\n"
                                 "RexxFunctionHandler *(efuncs[1]);\n";
@@ -1841,7 +1917,8 @@ private:
         }
     }
 
-    void simplifyTypedef72() { // ticket #2374
+    void simplifyTypedef72()   // ticket #2374
+    {
         // inline operator
         {
             const char code[] = "class Fred {\n"
@@ -1900,7 +1977,8 @@ private:
         }
     }
 
-    void simplifyTypedef73() { // ticket #2412
+    void simplifyTypedef73()   // ticket #2412
+    {
         const char code[] = "struct B {};\n"
                             "typedef struct A : public B {\n"
                             "    void f();\n"
@@ -1913,7 +1991,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef74() { // ticket #2414
+    void simplifyTypedef74()   // ticket #2414
+    {
         const char code[] = "typedef long (*state_func_t)(void);\n"
                             "typedef state_func_t (*state_t)(void);\n"
                             "state_t current_state = death;\n"
@@ -1924,26 +2003,30 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef75() { // ticket #2426
+    void simplifyTypedef75()   // ticket #2426
+    {
         const char code[] = "typedef _Packed struct S { long l; };\n";
         ASSERT_EQUALS("", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef76() { // ticket #2453 segmentation fault
+    void simplifyTypedef76()   // ticket #2453 segmentation fault
+    {
         const char code[] = "void f1(typedef int x) {}\n";
         const std::string expected = "void f1 ( typedef int x ) { }";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef77() { // ticket #2554
+    void simplifyTypedef77()   // ticket #2554
+    {
         const char code[] = "typedef char Str[10]; int x = sizeof(Str);\n";
         const std::string expected = "int x ; x = 10 ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef78() { // ticket #2568
+    void simplifyTypedef78()   // ticket #2568
+    {
         const char code[] = "typedef struct A A_t;\n"
                             "A_t a;\n"
                             "typedef struct A { } A_t;\n"
@@ -1952,7 +2035,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef79() { // ticket #2348
+    void simplifyTypedef79()   // ticket #2348
+    {
         const char code[] = "typedef int (Tcl_ObjCmdProc) (int x);\n"
                             "typedef struct LangVtab\n"
                             "{\n"
@@ -1965,7 +2049,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef80() { // ticket #2587
+    void simplifyTypedef80()   // ticket #2587
+    {
         const char code[] = "typedef struct s { };\n"
                             "void f() {\n"
                             "    sizeof(struct s);\n"
@@ -1981,14 +2066,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef81() { // ticket #2603 segmentation fault
+    void simplifyTypedef81()   // ticket #2603 segmentation fault
+    {
         ASSERT_THROW(checkSimplifyTypedef("typedef\n"), InternalError);
 
         checkSimplifyTypedef("typedef constexpr\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef82() { // ticket #2403
+    void simplifyTypedef82()   // ticket #2403
+    {
         checkSimplifyTypedef("class A {\n"
                              "public:\n"
                              "  typedef int F(int idx);\n"
@@ -2005,7 +2092,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef83() { // ticket #2620
+    void simplifyTypedef83()   // ticket #2620
+    {
         const char code[] = "typedef char Str[10];\n"
                             "void f(Str &cl) { }\n";
 
@@ -2015,7 +2103,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef84() { // ticket #2630 (segmentation fault)
+    void simplifyTypedef84()   // ticket #2630 (segmentation fault)
+    {
         const char code1[] = "typedef y x () x\n";
         ASSERT_THROW(checkSimplifyTypedef(code1), InternalError);
 
@@ -2026,7 +2115,8 @@ private:
         ASSERT_THROW(checkSimplifyTypedef(code3), InternalError);
     }
 
-    void simplifyTypedef85() { // ticket #2651
+    void simplifyTypedef85()   // ticket #2651
+    {
         const char code[] = "typedef FOO ((BAR)(void, int, const int, int*));\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
@@ -2034,7 +2124,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef86() { // ticket #2581
+    void simplifyTypedef86()   // ticket #2581
+    {
         const char code[] = "class relational {\n"
                             "    typedef void (safe_bool_helper::*safe_bool)();\n"
                             "public:\n"
@@ -2052,7 +2143,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef87() { // ticket #2651
+    void simplifyTypedef87()   // ticket #2651
+    {
         const char code[] = "typedef FOO (*(*BAR)(void, int, const int, int*));\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
@@ -2060,7 +2152,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef88() { // ticket #2675
+    void simplifyTypedef88()   // ticket #2675
+    {
         const char code[] = "typedef short int (*x)(...);\n";
         const char expected[] = ";";
         checkSimplifyTypedef(code);
@@ -2068,7 +2161,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef89() { // ticket #2717
+    void simplifyTypedef89()   // ticket #2717
+    {
         const char code[] = "class Fred {\n"
                             "    typedef void f(int) const;\n"
                             "    f func;\n"
@@ -2079,7 +2173,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef90() { // ticket #2718
+    void simplifyTypedef90()   // ticket #2718
+    {
         const char code[] = "typedef int IA[2];\n"
                             "void f(const IA&) {};\n";
         const char expected[] = "void f ( const int ( & ) [ 2 ] ) { } ;";
@@ -2088,7 +2183,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef91() { // ticket #2716
+    void simplifyTypedef91()   // ticket #2716
+    {
         const char code1[] = "namespace NS {\n"
                              "    typedef int (*T)();\n"
                              "    class A {\n"
@@ -2186,7 +2282,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef92() { // ticket #2736 (segmentation fault)
+    void simplifyTypedef92()   // ticket #2736 (segmentation fault)
+    {
         const char code[] = "typedef long Long;\n"
                             "namespace NS {\n"
                             "}\n";
@@ -2196,7 +2293,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef93() { // ticket #2738 (syntax error)
+    void simplifyTypedef93()   // ticket #2738 (syntax error)
+    {
         const char code[] = "struct s { double x; };\n"
                             "typedef struct s (*binop) (struct s, struct s);\n";
         const char expected[] = "struct s { double x ; } ;";
@@ -2206,7 +2304,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef94() { // ticket #1982
+    void simplifyTypedef94()   // ticket #1982
+    {
         const char code1[] = "class A {\n"
                              "public:\n"
                              "  typedef struct {\n"
@@ -2265,7 +2364,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef95() { // ticket #2844
+    void simplifyTypedef95()   // ticket #2844
+    {
         const char code[] = "class symbol_table {\n"
                             "public:\n"
                             "  typedef expression_error::error_code (*valid_func)(void *cbparam, const char *name, expression_space space);\n"
@@ -2281,19 +2381,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef96() { // ticket #2886 (segmentation fault)
+    void simplifyTypedef96()   // ticket #2886 (segmentation fault)
+    {
         const char code[] = "typedef struct x { }\n";
         ASSERT_THROW(tok(code), InternalError);
     }
 
-    void simplifyTypedef97() { // ticket #2983 (segmentation fault)
+    void simplifyTypedef97()   // ticket #2983 (segmentation fault)
+    {
         const char code[] = "typedef x y\n"
                             "(A); y\n";
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef98() { // ticket #2963
+    void simplifyTypedef98()   // ticket #2963
+    {
         const char code[] = "typedef int type ## __LINE__;\n"
                             "typedef int type ## __LINE__;\n"
                             "type1 x;\n"
@@ -2301,7 +2404,8 @@ private:
         ASSERT_EQUALS("int x ; int y ;", tok(code));
     }
 
-    void simplifyTypedef99() { // ticket #2999
+    void simplifyTypedef99()   // ticket #2999
+    {
         const char code[] = "typedef struct Fred Fred;\n"
                             "struct Fred { };\n";
         tok(code);
@@ -2313,7 +2417,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef100() { // ticket #3000
+    void simplifyTypedef100()   // ticket #3000
+    {
         const char code[] = "typedef struct Fred { } Fred;\n"
                             "Fred * foo() {\n"
                             "    Fred *fred;\n"
@@ -2324,13 +2429,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef101() { // ticket #3003 (segmentation fault)
+    void simplifyTypedef101()   // ticket #3003 (segmentation fault)
+    {
         const char code[] = "typedef a x[];\n"
                             "y = x\n";
         ASSERT_THROW(tok(code), InternalError);
     }
 
-    void simplifyTypedef102() { // ticket #3004
+    void simplifyTypedef102()   // ticket #3004
+    {
         const char code[] = "typedef struct { } Fred;\n"
                             "void foo()\n"
                             "{\n"
@@ -2340,7 +2447,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef103() { // ticket #3007
+    void simplifyTypedef103()   // ticket #3007
+    {
         const char code[] = "typedef struct { } Fred;\n"
                             "void foo()\n"
                             "{\n"
@@ -2350,30 +2458,35 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef104() { // ticket #3070
+    void simplifyTypedef104()   // ticket #3070
+    {
         const char code[] = "typedef int (*in_func) (void FAR *, unsigned char FAR * FAR *);\n";
         ASSERT_EQUALS(";", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef105() { // ticket #3616 (segmentation fault)
+    void simplifyTypedef105()   // ticket #3616 (segmentation fault)
+    {
         const char code[] = "( int typedef char x; ){}\n";
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef106() { // ticket #3619 (segmentation fault)
+    void simplifyTypedef106()   // ticket #3619 (segmentation fault)
+    {
         const char code[] = "typedef void f ();\ntypedef { f }";
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
+    void simplifyTypedef107()   // ticket #3963 (bad code => segmentation fault)
+    {
         const char code[] = "typedef int x[]; int main() { return x }";
         ASSERT_THROW(tok(code), InternalError);
     }
 
-    void simplifyTypedef108() { // ticket #4777
+    void simplifyTypedef108()   // ticket #4777
+    {
         const char code[] = "typedef long* GEN;\n"
                             "void sort_factor(GEN *y, long n) {\n"
                             "    GEN a, b;\n"
@@ -2388,7 +2501,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedef109() {
+    void simplifyTypedef109()
+    {
         const char code[] = "typedef int&& rref;\n"
                             "rref var;";
         const char expected[] = "int & & var ;";
@@ -2398,7 +2512,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedefFunction1() {
+    void simplifyTypedefFunction1()
+    {
         {
             const char code[] = "typedef void (*my_func)();\n"
                                 "std::queue<my_func> func_queue;";
@@ -2664,7 +2779,8 @@ private:
         }
     }
 
-    void simplifyTypedefFunction2() { // ticket #1685
+    void simplifyTypedefFunction2()   // ticket #1685
+    {
         const char code[] = "typedef void voidfn (int);\n"
                             "voidfn xxx;";
 
@@ -2673,7 +2789,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyTypedefFunction3() {
+    void simplifyTypedefFunction3()
+    {
         {
             const char code[] = "typedef C func1();\n"
                                 "typedef C (* func2)();\n"
@@ -2857,7 +2974,8 @@ private:
         }
     }
 
-    void simplifyTypedefFunction4() {
+    void simplifyTypedefFunction4()
+    {
         const char code[] = "typedef int ( * ( * type1 ) ( bool ) ) ( int , int ) ;\n"
                             "typedef int ( * ( type2 ) ( bool ) ) ( int , int ) ;\n"
                             "typedef int ( * type3 ( bool ) ) ( int , int ) ;\n"
@@ -2875,7 +2993,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedefFunction5() {
+    void simplifyTypedefFunction5()
+    {
         const char code[] = "typedef int ( * type1 ) ( float ) ;\n"
                             "typedef int ( * const type2 ) ( float ) ;\n"
                             "typedef int ( * volatile type3 ) ( float ) ;\n"
@@ -2920,7 +3039,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedefFunction6() {
+    void simplifyTypedefFunction6()
+    {
         const char code[] = "typedef void (*testfp)();\n"
                             "struct Fred\n"
                             "{\n"
@@ -2949,7 +3069,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedefFunction7() {
+    void simplifyTypedefFunction7()
+    {
         const char code[] = "typedef void ( __gnu_cxx :: _SGIAssignableConcept < _Tp > :: * _func_Tp_SGIAssignableConcept ) () ;"
                             "_func_Tp_SGIAssignableConcept X;\n";
 
@@ -2962,7 +3083,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedefFunction8() {
+    void simplifyTypedefFunction8()
+    {
         // #2376 - internal error
         const char code[] = "typedef int f_expand(const nrv_byte *);\n"
                             "void f(f_expand   *(*get_fexp(int))){}\n";
@@ -2970,7 +3092,8 @@ private:
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) Function::addArguments found argument 'int' with varid 0.\n", errout.str());  // make sure that there is no internal error
     }
 
-    void simplifyTypedefShadow() { // shadow variable (#4445)
+    void simplifyTypedefShadow()   // shadow variable (#4445)
+    {
         const char code[] = "typedef struct { int x; } xyz;;\n"
                             "void f(){\n"
                             "    int abc, xyz;\n" // <- shadow variable

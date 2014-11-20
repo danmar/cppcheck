@@ -27,14 +27,16 @@ extern std::ostringstream errout;
 
 class TestAutoVariables : public TestFixture {
 public:
-    TestAutoVariables() : TestFixture("TestAutoVariables") {
+    TestAutoVariables() : TestFixture("TestAutoVariables")
+    {
     }
 
 private:
 
 
 
-    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true, const char* filename=nullptr) {
+    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true, const char* filename=nullptr)
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -65,7 +67,8 @@ private:
         }
     }
 
-    void run() {
+    void run()
+    {
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
         TEST_CASE(testautovar3); // ticket #2925
@@ -118,7 +121,8 @@ private:
 
 
 
-    void testautovar1() {
+    void testautovar1()
+    {
         check("void func1(int **res)\n"
               "{\n"
               "    int num = 2;\n"
@@ -141,7 +145,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar2() {
+    void testautovar2()
+    {
         check("class Fred {\n"
               "    void func1(int **res);\n"
               "}\n"
@@ -173,7 +178,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar3() { // ticket #2925
+    void testautovar3()   // ticket #2925
+    {
         check("void foo(int **p)\n"
               "{\n"
               "    int x[100];\n"
@@ -182,7 +188,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar4() { // ticket #2928
+    void testautovar4()   // ticket #2928
+    {
         check("void foo(int **p)\n"
               "{\n"
               "    static int x[100];\n"
@@ -191,7 +198,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar5() { // ticket #2926
+    void testautovar5()   // ticket #2926
+    {
         check("void foo(struct AB *ab)\n"
               "{\n"
               "    char a;\n"
@@ -207,7 +215,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar6() { // ticket #2931
+    void testautovar6()   // ticket #2931
+    {
         check("void foo(struct X *x)\n"
               "{\n"
               "    char a[10];\n"
@@ -223,7 +232,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar7() { // ticket #3066
+    void testautovar7()   // ticket #3066
+    {
         check("struct txt_scrollpane_s * TXT_NewScrollPane(struct txt_widget_s * target)\n"
               "{\n"
               "    struct txt_scrollpane_s * scrollpane;\n"
@@ -233,7 +243,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar8() {
+    void testautovar8()
+    {
         check("void foo(int*& p) {\n"
               "    int i = 0;\n"
               "    p = &i;\n"
@@ -246,7 +257,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar9() {
+    void testautovar9()
+    {
         check("struct FN {int i;};\n"
               "struct FP {FN* f};\n"
               "void foo(int*& p, FN* p_fp) {\n"
@@ -259,7 +271,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar10() { // #2930 - assignment of function parameter
+    void testautovar10()   // #2930 - assignment of function parameter
+    {
         check("void foo(char* p) {\n"
               "    p = 0;\n"
               "}");
@@ -327,7 +340,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
     }
 
-    void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
+    void testautovar11()   // #4641 - fp, assign local struct member address to function parameter
+    {
         check("struct A {\n"
               "    char *data[10];\n"
               "};\n"
@@ -360,7 +374,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
+    void testautovar12()   // Ticket #5024, #5050 - Crash on invalid input
+    {
         check("void f(int* a) { a = }");
         check("struct custom_type { custom_type(int) {} };\n"
               "void func(int) {}\n"
@@ -369,7 +384,8 @@ private:
               "UNKNOWN_MACRO_EXPANDING_TO_SIGNATURE { custom_type a(var); }");
     }
 
-    void testautovar13() { // Ticket #5537
+    void testautovar13()   // Ticket #5537
+    {
         check("class FileManager {\n"
               "  FileManager() : UniqueRealDirs(*new UniqueDirContainer())\n"
               "  {}\n"
@@ -379,7 +395,8 @@ private:
               "};\n");
     }
 
-    void testautovar14() { // Ticket #4776
+    void testautovar14()   // Ticket #4776
+    {
         check("void f(int x) {\n"
               "label:"
               "  if (x>0) {\n"
@@ -390,7 +407,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_array1() {
+    void testautovar_array1()
+    {
         check("void func1(int* arr[2])\n"
               "{\n"
               "    int num=2;"
@@ -399,7 +417,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar_array2() {
+    void testautovar_array2()
+    {
         check("class Fred {\n"
               "    void func1(int* arr[2]);\n"
               "}\n"
@@ -411,7 +430,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar_return1() {
+    void testautovar_return1()
+    {
         check("int* func1()\n"
               "{\n"
               "    int num=2;"
@@ -420,7 +440,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of an auto-variable returned.\n", errout.str());
     }
 
-    void testautovar_return2() {
+    void testautovar_return2()
+    {
         check("class Fred {\n"
               "    int* func1()\n"
               "}\n"
@@ -432,7 +453,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of an auto-variable returned.\n", errout.str());
     }
 
-    void testautovar_return3() {
+    void testautovar_return3()
+    {
         // #2975 - FP
         check("void** f()\n"
               "{\n"
@@ -442,7 +464,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_return4() {
+    void testautovar_return4()
+    {
         // #3030
         check("char *foo()\n"
               "{\n"
@@ -459,7 +482,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_extern() {
+    void testautovar_extern()
+    {
         check("struct foo *f()\n"
               "{\n"
               "    extern struct foo f;\n"
@@ -468,7 +492,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testinvaliddealloc() {
+    void testinvaliddealloc()
+    {
         check("void func1() {\n"
               "    char tmp1[256];\n"
               "    free(tmp1);\n"
@@ -552,7 +577,8 @@ private:
 
     }
 
-    void testinvaliddealloc_C() {
+    void testinvaliddealloc_C()
+    {
         // #5691
         check("void svn_repos_dir_delta2() {\n"
               "  struct context c;\n"
@@ -561,7 +587,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testassign1() { // Ticket #1819
+    void testassign1()   // Ticket #1819
+    {
         check("void f(EventPtr *eventP, ActionPtr **actionsP) {\n"
               "    EventPtr event = *eventP;\n"
               "    *actionsP = &event->actions;\n"
@@ -569,7 +596,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testassign2() { // Ticket #2765
+    void testassign2()   // Ticket #2765
+    {
         check("static void function(unsigned long **datap) {\n"
               "    struct my_s *mr = global_structure_pointer;\n"
               "    *datap = &mr->value;\n"
@@ -577,7 +605,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnLocalVariable1() {
+    void returnLocalVariable1()
+    {
         check("char *foo()\n"
               "{\n"
               "    char str[100] = {0};\n"
@@ -596,7 +625,8 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Pointer to local array variable returned.\n", errout.str());
     }
 
-    void returnLocalVariable2() {
+    void returnLocalVariable2()
+    {
         check("std::string foo()\n"
               "{\n"
               "    char str[100] = {0};\n"
@@ -615,7 +645,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference1() {
+    void returnReference1()
+    {
         check("std::string &foo()\n"
               "{\n"
               "    std::string s;\n"
@@ -712,7 +743,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference2() {
+    void returnReference2()
+    {
         check("class Fred {\n"
               "    std::string &foo();\n"
               "}\n"
@@ -802,7 +834,8 @@ private:
               "}");
     }
 
-    void returnReference3() {
+    void returnReference3()
+    {
         check("double & f(double & rd) {\n"
               "    double ret = getValue();\n"
               "    rd = ret;\n"
@@ -812,7 +845,8 @@ private:
     }
 
     // Returning reference to global variable
-    void returnReference4() {
+    void returnReference4()
+    {
         check("double a;\n"
               "double & f() {\n"
               "    return a;\n"
@@ -820,7 +854,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference5() {
+    void returnReference5()
+    {
         check("struct A {\n"
               "    int i;\n"
               "};\n"
@@ -840,7 +875,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference6() {
+    void returnReference6()
+    {
         check("Fred & create() {\n"
               "    Fred &fred(*new Fred);\n"
               "    return fred;\n"
@@ -848,7 +884,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference7() {  // 3791 - false positive for overloaded function
+    void returnReference7()    // 3791 - false positive for overloaded function
+    {
         check("std::string a();\n"
               "std::string &a(int);\n"
               "std::string &b() {\n"
@@ -864,7 +901,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReferenceLiteral() {
+    void returnReferenceLiteral()
+    {
         check("const std::string &a() {\n"
               "    return \"foo\";\n"
               "}");
@@ -876,7 +914,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReferenceCalculation() {
+    void returnReferenceCalculation()
+    {
         check("const std::string &a(const std::string& str) {\n"
               "    return \"foo\" + str;\n"
               "}");
@@ -914,7 +953,8 @@ private:
     }
 
 
-    void testglobalnamespace() {
+    void testglobalnamespace()
+    {
         check("class SharedPtrHolder\n"
               "{\n"
               "   ::std::tr1::shared_ptr<int> pNum;\n"
@@ -928,7 +968,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnParameterAddress() {
+    void returnParameterAddress()
+    {
         check("int* foo(int y)\n"
               "{\n"
               "  return &y;\n"
@@ -951,7 +992,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testconstructor() { // Ticket #5478 - crash while checking a constructor
+    void testconstructor()   // Ticket #5478 - crash while checking a constructor
+    {
         check("class const_tree_iterator {\n"
               "  const_tree_iterator(bool (*_incream)(node_type*&)) {}\n"
               "  const_tree_iterator& parent() {\n"
@@ -960,7 +1002,8 @@ private:
               "};");
     }
 
-    void variableIsUsedInScope() {
+    void variableIsUsedInScope()
+    {
         check("void removed_cb (GList *uids) {\n"
               "for (; uids; uids = uids->next) {\n"
               "}\n"

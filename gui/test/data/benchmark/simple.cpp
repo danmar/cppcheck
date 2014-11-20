@@ -988,7 +988,8 @@ public:
     ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) { }
     ~ScopeInfo();
 
-    ScopeInfo *parent() {
+    ScopeInfo *parent()
+    {
         return _parent;
     }
     ScopeInfo *addChild(const Token *token);
@@ -1053,17 +1054,20 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory) {
+            _allocateMemory(allocateMemory)
+        {
         }
 
         /** variable is used.. set both read+write */
-        void use() {
+        void use()
+        {
             _read = true;
             _write = true;
         }
 
         /** is variable unused? */
-        bool unused() const {
+        bool unused() const
+        {
             return (_read == false && _write == false);
         }
 
@@ -1080,10 +1084,12 @@ public:
 
     typedef std::map<unsigned int, VariableUsage> VariableMap;
 
-    void clear() {
+    void clear()
+    {
         _varUsage.clear();
     }
-    VariableMap &varUsage() {
+    VariableMap &varUsage()
+    {
         return _varUsage;
     }
     void addVar(const Token *name, VariableType type, ScopeInfo *scope, bool write_);
@@ -1098,7 +1104,8 @@ public:
     void modified(unsigned int varid);
     VariableUsage *find(unsigned int varid);
     void alias(unsigned int varid1, unsigned int varid2, bool replace);
-    void erase(unsigned int varid) {
+    void erase(unsigned int varid)
+    {
         _varUsage.erase(varid);
     }
     void eraseAliases(unsigned int varid);

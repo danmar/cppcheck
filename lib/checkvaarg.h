@@ -34,14 +34,17 @@
 
 class CPPCHECKLIB CheckVaarg : public Check {
 public:
-    CheckVaarg() : Check(myName()) {
+    CheckVaarg() : Check(myName())
+    {
     }
 
     CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckVaarg check(tokenizer, settings, errorLogger);
         check.va_start_argument();
         check.va_list_usage();
@@ -57,7 +60,8 @@ private:
     void va_list_usedBeforeStartedError(const Token *tok, const std::string& varname);
     void va_start_subsequentCallsError(const Token *tok, const std::string& varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckVaarg c(0, settings, errorLogger);
         c.wrongParameterTo_va_start_error(0, "arg1", "arg2");
         c.referenceAs_va_start_error(0, "arg1");
@@ -66,11 +70,13 @@ private:
         c.va_start_subsequentCallsError(0, "vl");
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Vaarg";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Check for misusage of variable argument lists:\n"
                "- Wrong parameter passed to va_start()\n"
                "- Reference passed to va_start()\n"

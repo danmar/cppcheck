@@ -22,12 +22,14 @@
 
 class TestPath : public TestFixture {
 public:
-    TestPath() : TestFixture("TestPath") {
+    TestPath() : TestFixture("TestPath")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(simplify_path);
         TEST_CASE(accept_file);
         TEST_CASE(getRelative);
@@ -36,7 +38,8 @@ private:
         TEST_CASE(get_path_from_filename);
     }
 
-    void simplify_path() const {
+    void simplify_path() const
+    {
         // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
         ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));
@@ -64,7 +67,8 @@ private:
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
     }
 
-    void accept_file() const {
+    void accept_file() const
+    {
         ASSERT(Path::acceptFile("index.cpp"));
         ASSERT(Path::acceptFile("index.invalid.cpp"));
         ASSERT(Path::acceptFile("index.invalid.Cpp"));
@@ -80,7 +84,8 @@ private:
         ASSERT_EQUALS(false, Path::acceptFile("index.hpp"));
     }
 
-    void getRelative() const {
+    void getRelative() const
+    {
         std::vector<std::string> basePaths;
         basePaths.push_back(""); // Don't crash with empty paths
         basePaths.push_back("C:/foo");
@@ -94,7 +99,8 @@ private:
         ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
     }
 
-    void is_c() const {
+    void is_c() const
+    {
         ASSERT(Path::isC("index.cpp")==false);
         ASSERT(Path::isC("")==false);
         ASSERT(Path::isC("c")==false);
@@ -109,7 +115,8 @@ private:
 #endif
     }
 
-    void is_cpp() const {
+    void is_cpp() const
+    {
         ASSERT(Path::isCPP("index.c")==false);
 
         // In unix .C is considered C++
@@ -123,7 +130,8 @@ private:
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
     }
 
-    void get_path_from_filename() const {
+    void get_path_from_filename() const
+    {
         ASSERT_EQUALS("", Path::getPathFromFilename("index.h"));
         ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));

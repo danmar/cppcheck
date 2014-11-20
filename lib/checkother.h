@@ -44,16 +44,19 @@ bool astIsFloat(const Token *tok, bool unknown);
 class CPPCHECKLIB CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckOther() : Check(myName()) {
+    CheckOther() : Check(myName())
+    {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -77,7 +80,8 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -288,7 +292,8 @@ private:
     void commaSeparatedReturnError(const Token *tok);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckOther c(0, settings, errorLogger);
 
         // error
@@ -345,11 +350,13 @@ private:
         c.ignoredReturnValueError(0, "malloc");
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Other";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Other checks\n"
 
                // error

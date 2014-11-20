@@ -33,24 +33,28 @@ public:
     CppcheckExecutor()
         : ErrorLogger()
         , stoptime(std::time(NULL)+2U)
-        , cppcheck(*this,false) {
+        , cppcheck(*this,false)
+    {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().inconclusive = true;
     }
 
-    void run(const char code[]) {
+    void run(const char code[])
+    {
         cppcheck.check("test.c", code);
     }
 
     void reportOut(const std::string &outmsg) { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) {
+    void reportErr(const ErrorLogger::ErrorMessage &msg)
+    {
         printf("%s\n", msg.toString(true).c_str());
     }
 
     void reportProgress(const
                         std::string &filename,
                         const char stage[],
-                        const unsigned int value) {
+                        const unsigned int value)
+    {
         if (std::time(NULL) >= stoptime) {
             printf("time to analyse the "
                    "code is more than 1 "

@@ -36,16 +36,19 @@ private:
     std::list<TestFixture *> _tests;
 
 public:
-    static TestRegistry &theInstance() {
+    static TestRegistry &theInstance()
+    {
         static TestRegistry testreg;
         return testreg;
     }
 
-    void addTest(TestFixture *t) {
+    void addTest(TestFixture *t)
+    {
         _tests.push_back(t);
     }
 
-    const std::list<TestFixture *> &tests() const {
+    const std::list<TestFixture *> &tests() const
+    {
         return _tests;
     }
 };

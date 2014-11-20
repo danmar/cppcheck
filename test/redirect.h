@@ -29,7 +29,8 @@ extern std::ostringstream output;
 class RedirectOutputError {
 public:
     /** Set up redirection, flushing anything in the pipes. */
-    RedirectOutputError() {
+    RedirectOutputError()
+    {
         // flush all old output
         std::cout.flush();
         std::cerr.flush();
@@ -42,7 +43,8 @@ public:
     }
 
     /** Revert cout and cerr behaviour */
-    ~RedirectOutputError() {
+    ~RedirectOutputError()
+    {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
 
@@ -51,24 +53,28 @@ public:
     }
 
     /** Return what would be printed to cout. See also clearOutput() */
-    std::string getOutput() const {
+    std::string getOutput() const
+    {
         return _out.str();
     }
 
     /** Normally called after getOutput() to prevent same text to be returned
     twice. */
-    void clearOutput() {
+    void clearOutput()
+    {
         _out.str("");
     }
 
     /** Return what would be printed to cerr. See also clearErrout() */
-    std::string getErrout() const {
+    std::string getErrout() const
+    {
         return _err.str();
     }
 
     /** Normally called after getErrout() to prevent same text to be returned
     twice. */
-    void clearErrout() {
+    void clearErrout()
+    {
         _err.str("");
     }
 

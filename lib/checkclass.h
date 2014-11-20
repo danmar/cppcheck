@@ -35,14 +35,16 @@ class Function;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(NULL) {
+    CheckClass() : Check(myName()), symbolDatabase(NULL)
+    {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         if (tokenizer->isC())
             return;
 
@@ -53,7 +55,8 @@ public:
     }
 
     /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         if (tokenizer->isC())
             return;
 
@@ -160,7 +163,8 @@ private:
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
         //c.copyConstructorMallocError(0, 0, "var");
@@ -187,11 +191,13 @@ private:
         c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Class";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Check the code for each class.\n"
                "- Missing constructors and copy constructors\n"
                //"- Missing allocation of memory in copy constructor\n"

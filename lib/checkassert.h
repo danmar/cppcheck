@@ -34,14 +34,17 @@
 
 class CPPCHECKLIB CheckAssert : public Check {
 public:
-    CheckAssert() : Check(myName()) {
+    CheckAssert() : Check(myName())
+    {
     }
 
     CheckAssert(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckAssert check(tokenizer, settings, errorLogger);
         check.assertWithSideEffects();
     }
@@ -56,17 +59,20 @@ private:
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckAssert c(0, settings, errorLogger);
         c.sideEffectInAssertError(0, "function");
         c.assignmentInAssertError(0, "var");
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Assert";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Warn if there are side effects in assert statements (since this cause different behaviour in debug/release builds).\n";
     }
 };

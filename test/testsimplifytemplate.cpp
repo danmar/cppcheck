@@ -29,12 +29,14 @@ extern std::ostringstream errout;
 
 class TestSimplifyTemplate : public TestFixture {
 public:
-    TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {
+    TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -96,7 +98,8 @@ private:
         TEST_CASE(templateParameters1);  // #4169 - segmentation fault
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified)
+    {
         errout.str("");
 
         Settings settings;
@@ -113,7 +116,8 @@ private:
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
 
-    std::string tok(const char code[], const char filename[]) {
+    std::string tok(const char code[], const char filename[])
+    {
         errout.str("");
 
         Settings settings;
@@ -126,7 +130,8 @@ private:
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
-    void template1() {
+    void template1()
+    {
         const char code[] = "template <classname T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
@@ -136,7 +141,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template2() {
+    void template2()
+    {
         const char code[] = "template <classname T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
@@ -146,7 +152,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template3() {
+    void template3()
+    {
         const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
@@ -156,7 +163,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template4() {
+    void template4()
+    {
         const char code[] = "template <classname T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
@@ -166,7 +174,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template5() {
+    void template5()
+    {
         const char code[] = "template <classname T> class Fred { };\n"
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
@@ -179,7 +188,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template6() {
+    void template6()
+    {
         const char code[] = "template <classname T> class Fred { };\n"
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
@@ -191,7 +201,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template7() {
+    void template7()
+    {
         // A template class that is not used => no simplification
         {
             const char code[] = "template <class T>\n"
@@ -257,7 +268,8 @@ private:
     }
 
     // Template definitions but no usage => no expansion
-    void template8() {
+    void template8()
+    {
         const char code[] = "template<typename T> class A;\n"
                             "template<typename T> class B;\n"
                             "\n"
@@ -283,7 +295,8 @@ private:
         ASSERT_EQUALS("class A { template < typename T > int foo ( T d ) ; } ;", tok("class A{ template<typename T> int foo(T d);};"));
     }
 
-    void template9() {
+    void template9()
+    {
         const char code[] = "template < typename T > class A { } ;\n"
                             "\n"
                             "void f ( ) {\n"
@@ -305,7 +318,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template10() {
+    void template10()
+    {
         const char code[] = "template <int ui, typename T> T * foo()\n"
                             "{ return new T[ui]; }\n"
                             "\n"
@@ -323,7 +337,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template11() {
+    void template11()
+    {
         const char code[] = "template <int ui, typename T> T * foo()\n"
                             "{ return new T[ui]; }\n"
                             "\n"
@@ -341,7 +356,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template12() {
+    void template12()
+    {
         const char code[] = "template <int x, int y, int z>\n"
                             "class A : public B<x, y, (x - y) ? ((y < z) ? 1 : -1) : 0>\n"
                             "{ };\n"
@@ -361,7 +377,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template13() {
+    void template13()
+    {
         const char code[] = "class BB {};\n"
                             "\n"
                             "template <class T>\n"
@@ -390,7 +407,8 @@ private:
         tok(code);
     }
 
-    void template14() {
+    void template14()
+    {
         const char code[] = "template <> void foo<int *>()\n"
                             "{ x(); }\n"
                             "\n"
@@ -408,7 +426,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template15() {
+    void template15()
+    {
         const char code[] = "template <unsigned int i> void a()\n"
                             "{\n"
                             "    a<i-1>();\n"
@@ -433,7 +452,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template16() {
+    void template16()
+    {
         const char code[] = "template <unsigned int i> void a()\n"
                             "{ }\n"
                             "\n"
@@ -454,7 +474,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template17() {
+    void template17()
+    {
         const char code[] = "template<class T>\n"
                             "class Fred\n"
                             "{\n"
@@ -470,7 +491,8 @@ private:
         tok(code);
     }
 
-    void template18() {
+    void template18()
+    {
         const char code[] = "template <class T> class foo { T a; };\n"
                             "foo<int> *f;";
 
@@ -480,7 +502,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template19() {
+    void template19()
+    {
         const char code[] = "template <typename T> T & foo()\n"
                             "{ static T temp; return temp; }\n"
                             "\n"
@@ -498,7 +521,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template20() {
+    void template20()
+    {
         // Ticket #1788 - the destructor implementation is lost
         const char code[] = "template <class T> class A\n"
                             "{\n"
@@ -520,7 +544,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template21() {
+    void template21()
+    {
         {
             const char code[] = "template <classname T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
@@ -564,7 +589,8 @@ private:
         }
     }
 
-    void template22() {
+    void template22()
+    {
         const char code[] = "template <classname T> struct Fred { T a; };\n"
                             "Fred<std::string> fred;";
 
@@ -574,7 +600,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template23() {
+    void template23()
+    {
         const char code[] = "template <classname T> void foo() { }\n"
                             "void bar() {\n"
                             "    std::cout << (foo<double>());\n"
@@ -588,7 +615,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template24() {
+    void template24()
+    {
         // #2648
         const char code[] = "template<int n> struct B\n"
                             "{\n"
@@ -605,7 +633,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template25() {
+    void template25()
+    {
         const char code[] = "template<int n> struct B\n"
                             "{\n"
                             "  int a[n];\n"
@@ -628,7 +657,8 @@ private:
 
     }
 
-    void template26() {
+    void template26()
+    {
         // #2721
         const char code[] = "template<class T>\n"
                             "class A { public: T x; };\n"
@@ -641,20 +671,23 @@ private:
         ASSERT_EQUALS("template < class T > class A { public: T x ; } ; C<2> a ; class C<2> : public A < char [ 2 ] > { } ;", tok(code));
     }
 
-    void template27() {
+    void template27()
+    {
         // #3350 - template inside macro call
         const char code[] = "X(template<class T> class Fred);";
         ASSERT_EQUALS("X ( template < class T > class Fred ) ;", tok(code));
     }
 
-    void template28() {
+    void template28()
+    {
         // #3226 - inner template
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
         ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } ; class Fred<int,Fred<int,int>> { } ;", tok(code));
     }
 
-    void template29() {
+    void template29()
+    {
         // #3449 - garbage code (don't segfault)
         const char code[] = "template<typename T> struct A;\n"
                             "struct B { template<typename T> struct C };\n"
@@ -662,19 +695,22 @@ private:
         ASSERT_EQUALS("template < typename T > struct A ; struct B { template < typename T > struct C } ; { } ;", tok(code));
     }
 
-    void template30() {
+    void template30()
+    {
         // #3529 - template < template < ..
         const char code[] = "template<template<class> class A, class B> void f(){}";
         ASSERT_EQUALS("template < template < class > class A , class B > void f ( ) { }", tok(code));
     }
 
-    void template31() {
+    void template31()
+    {
         // #4010 - template reference type
         const char code[] = "template<class T> struct A{}; A<int&> a;";
         ASSERT_EQUALS("A<int&> a ; struct A<int&> { } ;", tok(code));
     }
 
-    void template32() {
+    void template32()
+    {
         // #3818 - mismatching template not handled well
         const char code[] = "template <class T1, class T2, class T3, class T4 > struct A { };\n"
                             "\n"
@@ -691,7 +727,8 @@ private:
                       "struct B<int> { public: A < int , Pair < int , int > , int > a ; } ;", tok(code));
     }
 
-    void template33() {
+    void template33()
+    {
         {
             // #3818 - inner templates in template instantiation not handled well
             const char code[] = "template<class T> struct A { };\n"
@@ -718,7 +755,8 @@ private:
         }
     }
 
-    void template34() {
+    void template34()
+    {
         // #3706 - namespace => hang
         const char code[] = "namespace abc {\n"
                             "template <typename T> struct X { void f(X<T> &x) {} };\n"
@@ -730,13 +768,15 @@ private:
                       "template < > int X < int > :: Y ( 0 ) ;", tok(code));
     }
 
-    void template35() { // #4074 - "A<'x'> a;" is not recognized as template instantiation
+    void template35()   // #4074 - "A<'x'> a;" is not recognized as template instantiation
+    {
         const char code[] = "template <char c> class A {};\n"
                             "A<'x'> a;";
         ASSERT_EQUALS("A<'x'> a ; class A<'x'> { } ;", tok(code));
     }
 
-    void template36() { // #4310 - Passing unknown template instantiation as template argument
+    void template36()   // #4310 - Passing unknown template instantiation as template argument
+    {
         const char code[] = "template <class T> struct X { T t; };\n"
                             "template <class C> struct Y { Foo < X< Bar<C> > > _foo; };\n" // <- Bar is unknown
                             "Y<int> bar;";
@@ -746,7 +786,8 @@ private:
                       tok(code));
     }
 
-    void template37() { // #4544 - A<class B> a;
+    void template37()   // #4544 - A<class B> a;
+    {
         const char code[] = "class A { };\n"
                             "template<class T> class B {};\n"
                             "B<class A> b1;\n"
@@ -755,12 +796,14 @@ private:
                       tok(code));
     }
 
-    void template_unhandled() {
+    void template_unhandled()
+    {
         // An unhandled template usage should be simplified..
         ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
     }
 
-    void template38() { // #4832 - Crash on C++11 right angle brackets
+    void template38()   // #4832 - Crash on C++11 right angle brackets
+    {
         const char code[] = "template <class T> class A {\n"
                             "  T mT;\n"
                             "public:\n"
@@ -774,7 +817,8 @@ private:
         tok(code); // Don't crash or freeze
     }
 
-    void template39() { // #4742 - Used to freeze in 1.60
+    void template39()   // #4742 - Used to freeze in 1.60
+    {
         const char code[] = "template<typename T> struct vector {"
                             "  operator T() const;"
                             "};"
@@ -785,7 +829,8 @@ private:
         tok(code);
     }
 
-    void template40() { // #5055 - false negatives when there is template specialization outside struct
+    void template40()   // #5055 - false negatives when there is template specialization outside struct
+    {
         const char code[] = "struct A {"
                             "  template<typename T> struct X { T t; };"
                             "};"
@@ -793,7 +838,8 @@ private:
         ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
     }
 
-    void template41() { // #4710 - const in template instantiation not handled perfectly
+    void template41()   // #4710 - const in template instantiation not handled perfectly
+    {
         const char code1[] = "template<class T> struct X { };\n"
                              "void f(const X<int> x) { }";
         ASSERT_EQUALS("void f ( const X<int> x ) { } struct X<int> { } ;", tok(code1));
@@ -803,7 +849,8 @@ private:
         ASSERT_EQUALS("int x ( ) { return f<int> ( 123 ) ; } int f<int> ( int t ) { return t ; }", tok(code2));
     }
 
-    void template42() { // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
+    void template42()   // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
+    {
         const char code[] = "template<typename ...Args>\n"
                             "int f0(Args ...args) {\n"
                             "  return ^ {\n"
@@ -815,7 +862,8 @@ private:
         ASSERT_THROW(tok(code), InternalError);
     }
 
-    void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
+    void template43()   // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
+    {
         const char code[] = "template <typename T> struct C { };"
                             "template <typename T> struct D { static int f() { return C<T>::f(); } };"
                             "template <typename T> inline int f2() { return D<T>::f(); }"
@@ -828,7 +876,8 @@ private:
         tok(code); // Don't assert
     }
 
-    void template44() { // #5297
+    void template44()   // #5297
+    {
         tok("template<class T> struct StackContainer {"
             "  void foo(int i) {"
             "    if (0 >= 1 && i<0) {}"
@@ -839,7 +888,8 @@ private:
             "class FoldedZContainer : public ZContainer<FGSTensor> {};");
     }
 
-    void template45() { // #5814
+    void template45()   // #5814
+    {
         tok("namespace Constants { const int fourtytwo = 42; } "
             "template <class T, int U> struct TypeMath { "
             "  static const int mult = sizeof(T) * U; "
@@ -850,7 +900,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template46() { // #5816
+    void template46()   // #5816
+    {
         tok("template<class T, class U> struct A { static const int value = 0; }; "
             "template <class T> struct B { "
             "  enum { value = A<typename T::type, int>::value }; "
@@ -868,19 +919,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template47() { // #6023
+    void template47()   // #6023
+    {
         tok("template <typename T1, typename T2 = T3<T1> > class C1 {}; "
             "class C2 : public C1<C2> {};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template48() { // #6134
+    void template48()   // #6134
+    {
         tok("template <int> int f( {  } ); "
             "int foo = f<1>(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template49() { // #6237
+    void template49()   // #6237
+    {
         const char code[] = "template <classname T> class Fred { void f(); void g(); };\n"
                             "template <classname T> void Fred<T>::f() { }\n"
                             "template <classname T> void Fred<T>::g() { }\n"
@@ -900,7 +954,8 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template50() { // #4272
+    void template50()   // #4272
+    {
         const char code[] = "template <classname T> class Fred { void f(); };\n"
                             "template <classname T> void Fred<T>::f() { }\n"
                             "template<> void Fred<float>::f() { }\n"
@@ -919,7 +974,8 @@ private:
 
 
 
-    void template_default_parameter() {
+    void template_default_parameter()
+    {
         {
             const char code[] = "template <class T, int n=3>\n"
                                 "class A\n"
@@ -1008,7 +1064,8 @@ private:
         }
     }
 
-    void template_default_type() {
+    void template_default_type()
+    {
         const char code[] = "template <typename T, typename U=T>\n"
                             "class A\n"
                             "{\n"
@@ -1037,7 +1094,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template_typename() {
+    void template_typename()
+    {
         {
             const char code[] = "template <class T>\n"
                                 "void foo(typename T::t *)\n"
@@ -1058,7 +1116,8 @@ private:
         }
     }
 
-    void template_constructor() {
+    void template_constructor()
+    {
         // #3152 - if template constructor is removed then there might be
         //         "no constructor" false positives
         const char code[] = "class Fred {\n"
@@ -1073,7 +1132,8 @@ private:
         ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
     }
 
-    unsigned int templateParameters(const char code[]) {
+    unsigned int templateParameters(const char code[])
+    {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
 
@@ -1083,7 +1143,8 @@ private:
         return TemplateSimplifier::templateParameters(tokenizer.tokens());
     }
 
-    void templateParameters() {
+    void templateParameters()
+    {
         // Test that the function TemplateSimplifier::templateParameters works
         ASSERT_EQUALS(1U, templateParameters("<struct C> x;"));
         ASSERT_EQUALS(1U, templateParameters("<union C> x;"));
@@ -1092,7 +1153,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("<const struct C> x;"));
     }
 
-    void templateParameters1() {
+    void templateParameters1()
+    {
         // #4169 - segmentation fault (invalid code)
         const char code[] = "volatile true , test < test < #ifdef __ppc__ true ,";
         // do not crash on invalid code

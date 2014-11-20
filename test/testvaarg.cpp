@@ -28,7 +28,8 @@ public:
     TestVaarg() : TestFixture("TestVaarg") {}
 
 private:
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -45,7 +46,8 @@ private:
         checkVaarg.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run()
+    {
         TEST_CASE(wrongParameterTo_va_start);
         TEST_CASE(referenceAs_va_start);
         TEST_CASE(va_end_missing);
@@ -53,7 +55,8 @@ private:
         TEST_CASE(va_start_subsequentCalls);
     }
 
-    void wrongParameterTo_va_start() {
+    void wrongParameterTo_va_start()
+    {
         check("void Format(char* szFormat, char* szBuffer, size_t nSize, ...) {\n"
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szFormat);\n"
@@ -92,7 +95,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void referenceAs_va_start() {
+    void referenceAs_va_start()
+    {
         check("void Format(char* szFormat, char (&szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
@@ -108,7 +112,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void va_end_missing() {
+    void va_end_missing()
+    {
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
@@ -143,7 +148,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
     }
 
-    void va_list_usedBeforeStarted() {
+    void va_list_usedBeforeStarted()
+    {
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
               "    return va_arg(arg_ptr, float);\n"
@@ -190,7 +196,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void va_start_subsequentCalls() {
+    void va_start_subsequentCalls()
+    {
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"

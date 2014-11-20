@@ -27,12 +27,14 @@ extern std::ostringstream errout;
 
 class TestGarbage : public TestFixture {
 public:
-    TestGarbage() : TestFixture("TestGarbage") {
+    TestGarbage() : TestFixture("TestGarbage")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
@@ -70,7 +72,8 @@ private:
         TEST_CASE(garbageAST);
     }
 
-    std::string checkCode(const char code[], const char filename[] = "test.cpp") {
+    std::string checkCode(const char code[], const char filename[] = "test.cpp")
+    {
         errout.str("");
 
         Settings settings;
@@ -101,7 +104,8 @@ private:
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }
 
-    void wrong_syntax1() {
+    void wrong_syntax1()
+    {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
             ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", checkCode(code));
@@ -126,7 +130,8 @@ private:
         }
     }
 
-    void wrong_syntax2() {   // #3504
+    void wrong_syntax2()     // #3504
+    {
         const char code[] = "void f() {\n"
                             "    X<int> x;\n"
                             "    Y<int, int, int, int, int, char> y;\n"
@@ -138,7 +143,8 @@ private:
         checkCode(code);
     }
 
-    void wrong_syntax3() {   // #3544
+    void wrong_syntax3()     // #3544
+    {
         const char code[] = "X #define\n"
                             "{\n"
                             " (\n"
@@ -160,13 +166,15 @@ private:
         }
     }
 
-    void wrong_syntax4() {   // #3618
+    void wrong_syntax4()     // #3618
+    {
         const char code[] = "typedef void (x) (int);    return x&";
 
         ASSERT_THROW(checkCode(code), InternalError);
     }
 
-    void wrong_syntax_if_macro() {
+    void wrong_syntax_if_macro()
+    {
         // #2518 #4171
         ASSERT_THROW(checkCode("void f() { if MACRO(); }"), InternalError);
 
@@ -177,7 +185,8 @@ private:
         ASSERT_THROW(checkCode("void f() { if (x) MACRO() else ; }"), InternalError);
     }
 
-    void wrong_syntax_class_x_y() {
+    void wrong_syntax_class_x_y()
+    {
         // #3585
         const char code[] = "class x y { };";
 
@@ -193,7 +202,8 @@ private:
         ASSERT_EQUALS("[test.c:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
     }
 
-    void syntax_case_default() {
+    void syntax_case_default()
+    {
         ASSERT_THROW(checkCode("void f() {switch (n) { case: z(); break;}}"), InternalError);
 
         ASSERT_THROW(checkCode("void f() {switch (n) { case;: z(); break;}}"), InternalError);
@@ -213,37 +223,45 @@ private:
         ASSERT_THROW(checkCode("f ( ) { switch break; { switch ( x ) { case } case break; -6: ( ) ; } }"), InternalError);
     }
 
-    void garbageCode1() {
+    void garbageCode1()
+    {
         checkCode("struct x foo_t; foo_t typedef y;");
     }
 
-    void garbageCode2() { //#4300 (segmentation fault)
+    void garbageCode2()   //#4300 (segmentation fault)
+    {
         ASSERT_THROW(checkCode("enum { D = 1  struct  { } ; }  s.b = D;"), InternalError);
     }
 
-    void garbageCode3() { //#4849 (segmentation fault in Tokenizer::simplifyStructDecl (invalid code))
+    void garbageCode3()   //#4849 (segmentation fault in Tokenizer::simplifyStructDecl (invalid code))
+    {
         ASSERT_THROW(checkCode("enum {  D = 2 s ; struct y  { x } ; } { s.a = C ; s.b = D ; }"), InternalError);
     }
 
-    void garbageCode4() { // #4887
+    void garbageCode4()   // #4887
+    {
         ASSERT_THROW(checkCode("void f ( ) { = a ; if ( 1 ) if = ( 0 ) ; }"), InternalError);
     }
 
-    void garbageCode5() { // #5168
+    void garbageCode5()   // #5168
+    {
         checkCode("( asm : ; void : );");
     }
 
-    void garbageCode6() { // #5214
+    void garbageCode6()   // #5214
+    {
         checkCode("int b = ( 0 ? ? ) 1 : 0 ;");
         checkCode("int a = int b = ( 0 ? ? ) 1 : 0 ;");
     }
 
-    void garbageCode7() {
+    void garbageCode7()
+    {
         ASSERT_THROW(checkCode("1 (int j) { return return (c) * sizeof } y[1];"), InternalError);
         checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)");
     }
 
-    void garbageCode8() { // #5604
+    void garbageCode8()   // #5604
+    {
         ASSERT_THROW(checkCode("{ enum struct : };"), InternalError);
         ASSERT_THROW(checkCode("int ScopedEnum{ template<typename T> { { e = T::error }; };\n"
                                "ScopedEnum1<int> se1; { enum class E : T { e = 0 = e ScopedEnum2<void*> struct UnscopedEnum3 { T{ e = 4 }; };\n"
@@ -255,59 +273,72 @@ private:
                                "E::e; } int test2 = g<int>(); }"), InternalError);
     }
 
-    void garbageCode9() {
+    void garbageCode9()
+    {
         ASSERT_THROW(checkCode("enum { e = { } } ( ) { { enum { } } } { e } "), InternalError);
     }
 
-    void garbageCode10() { // #6127
+    void garbageCode10()   // #6127
+    {
         checkCode("for( rl=reslist; rl!=NULL; rl=rl->next )");
     }
 
-    void garbageCode11() { // do not crash
+    void garbageCode11()   // do not crash
+    {
         checkCode("( ) &");
     }
 
-    void garbageCode12() { // do not crash
+    void garbageCode12()   // do not crash
+    {
         checkCode("{ g; S (void) { struct } { } int &g; }");
     }
 
-    void garbageCode13() {
+    void garbageCode13()
+    {
         checkCode("struct C {} {} x");
     }
 
-    void garbageCode14() {
+    void garbageCode14()
+    {
         checkCode("static f() { int i; int source[1] = { 1 }; for (i = 0; i < 4; i++) (u, if (y u.x e)) }"); // Garbage code
     }
 
-    void garbageCode15() { // Ticket #5203
+    void garbageCode15()   // Ticket #5203
+    {
         checkCode("int f ( int* r ) { {  int s[2] ; f ( s ) ; if ( ) } }");
     }
 
-    void garbageCode16() {
+    void garbageCode16()
+    {
         checkCode("{ } A() { delete }"); // #6080
     }
 
-    void garbageCode17() {
+    void garbageCode17()
+    {
         ASSERT_THROW(checkCode("void h(int l) {\n"
                                "    while\n" // Don't crash (#3870)
                                "}"), InternalError);
     }
 
-    void garbageCode18() {
+    void garbageCode18()
+    {
         ASSERT_THROW(checkCode("switch(){case}"), InternalError);
     }
 
-    void garbageCode19() {
+    void garbageCode19()
+    {
         // ticket #3512 - Don't crash on garbage code
         ASSERT_EQUALS("p = const", checkCode("1 *p = const"));
     }
 
-    void garbageCode20() {
+    void garbageCode20()
+    {
         // #3953 (valgrind errors on garbage code)
         ASSERT_EQUALS("void f ( 0 * ) ;", checkCode("void f ( 0 * ) ;"));
     }
 
-    void garbageCode21() {
+    void garbageCode21()
+    {
         // Ticket #3486 - Don't crash garbage code
         checkCode("void f()\n"
                   "{\n"
@@ -318,7 +349,8 @@ private:
                   "}");
     }
 
-    void garbageCode22() {
+    void garbageCode22()
+    {
         // Ticket #3480 - Don't crash garbage code
         ASSERT_THROW(checkCode("int f()\n"
                                "{\n"
@@ -326,7 +358,8 @@ private:
                                "}"), InternalError);
     }
 
-    void garbageCode23() {
+    void garbageCode23()
+    {
         //garbage code : don't crash (#3481)
         checkCode("{\n"
                   "    if (1) = x\n"
@@ -335,7 +368,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void garbageValueFlow() {
+    void garbageValueFlow()
+    {
         // #6089
         const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
                            "{\n"
@@ -352,7 +386,8 @@ private:
         checkCode(code);
     }
 
-    void garbageSymbolDatabase() {
+    void garbageSymbolDatabase()
+    {
         checkCode("void f( { u = 1 ; } ) { }");
 
         checkCode("{ }; void namespace A::f; { g() { int } }");
@@ -366,7 +401,8 @@ private:
                                "} }"), InternalError); // #5663
     }
 
-    void garbageAST() {
+    void garbageAST()
+    {
         checkCode("--"); // don't crash
 
         checkCode("N 1024 float a[N], b[N + 3], c[N]; void N; (void) i;\n"

@@ -75,7 +75,7 @@ int XmlReport::determineVersion(const QString &filename)
             }
             break;
 
-            // Not handled
+        // Not handled
         case QXmlStreamReader::EndElement:
         case QXmlStreamReader::NoToken:
         case QXmlStreamReader::Invalid:

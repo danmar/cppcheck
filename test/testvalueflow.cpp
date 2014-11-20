@@ -28,12 +28,14 @@
 extern std::ostringstream errout;
 class TestValueFlow : public TestFixture {
 public:
-    TestValueFlow() : TestFixture("TestValueFlow") {
+    TestValueFlow() : TestFixture("TestValueFlow")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowPointerAlias);
@@ -64,7 +66,8 @@ private:
         TEST_CASE(valueFlowFunctionReturn);
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, int value) {
+    bool testValueOfX(const char code[], unsigned int linenr, int value)
+    {
         Settings settings;
 
         // strcpy cfg
@@ -93,7 +96,8 @@ private:
     }
 
 
-    bool testValueOfX(const char code[], unsigned int linenr, const char value[]) {
+    bool testValueOfX(const char code[], unsigned int linenr, const char value[])
+    {
         Settings settings;
 
         // strcpy cfg
@@ -121,7 +125,8 @@ private:
         return false;
     }
 
-    void bailout(const char code[]) {
+    void bailout(const char code[])
+    {
         Settings settings;
         settings.debugwarnings = true;
 
@@ -132,7 +137,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[]) {
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[])
+    {
         const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -142,12 +148,14 @@ private:
         return tok ? tok->values : std::list<ValueFlow::Value>();
     }
 
-    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
+    ValueFlow::Value valueOfTok(const char code[], const char tokstr[])
+    {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
         return values.size() == 1U && !values.front().tokvalue ? values.front() : ValueFlow::Value();
     }
 
-    void valueFlowNumber() {
+    void valueFlowNumber()
+    {
         const char *code;
 
         code  = "void f() {\n"
@@ -156,7 +164,8 @@ private:
         ASSERT_EQUALS(123, valueOfTok(code, "123").intvalue);
     }
 
-    void valueFlowString() {
+    void valueFlowString()
+    {
         const char *code;
 
         // valueFlowAfterAssign
@@ -176,7 +185,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\""));
     }
 
-    void valueFlowPointerAlias() {
+    void valueFlowPointerAlias()
+    {
         const char *code;
 
         code  = "const char * f() {\n"
@@ -196,7 +206,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4, "& i"));
     }
 
-    void valueFlowCalculations() {
+    void valueFlowCalculations()
+    {
         const char *code;
         /*
                 code  = "void f() {\n"
@@ -258,7 +269,8 @@ private:
         }
     }
 
-    void valueFlowBeforeCondition() {
+    void valueFlowBeforeCondition()
+    {
         const char *code;
 
         code = "void f(int x) {\n"
@@ -306,7 +318,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
     }
 
-    void valueFlowBeforeConditionAssignIncDec() {  // assignment / increment
+    void valueFlowBeforeConditionAssignIncDec()    // assignment / increment
+    {
         const char *code;
 
         code = "void f(int x) {\n"
@@ -342,7 +355,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: assignment of x\n", errout.str());
     }
 
-    void valueFlowBeforeConditionAndAndOrOrGuard() { // guarding by &&
+    void valueFlowBeforeConditionAndAndOrOrGuard()   // guarding by &&
+    {
         const char *code;
 
         code = "void f(int x) {\n"
@@ -361,7 +375,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
-    void valueFlowBeforeConditionFunctionCall() { // function calls
+    void valueFlowBeforeConditionFunctionCall()   // function calls
+    {
         const char *code;
 
         code = "void f(int x) {\n"
@@ -388,7 +403,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
-    void valueFlowBeforeConditionLoop() { // while, for, do-while
+    void valueFlowBeforeConditionLoop()   // while, for, do-while
+    {
         const char *code;
 
         code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition
@@ -435,7 +451,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 
-    void valueFlowBeforeConditionTernaryOp() { // bailout: ?:
+    void valueFlowBeforeConditionTernaryOp()   // bailout: ?:
+    {
         const char *code;
 
         bailout("void f(int x) {\n"
@@ -464,7 +481,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 123));
     }
 
-    void valueFlowBeforeConditionSizeof() { // skip sizeof
+    void valueFlowBeforeConditionSizeof()   // skip sizeof
+    {
         const char *code;
 
         code = "void f(int *x) {\n"
@@ -480,7 +498,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
     }
 
-    void valueFlowBeforeConditionIfElse() { // bailout: if/else/etc
+    void valueFlowBeforeConditionIfElse()   // bailout: if/else/etc
+    {
         const char *code;
 
         code = "void f(X * x) {\n"
@@ -509,7 +528,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 7));
     }
 
-    void valueFlowBeforeConditionGlobalVariables() {
+    void valueFlowBeforeConditionGlobalVariables()
+    {
         // bailout: global variables
         bailout("int x;\n"
                 "void f() {\n"
@@ -529,7 +549,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code,3,234));
     }
 
-    void valueFlowBeforeConditionSwitch() {
+    void valueFlowBeforeConditionSwitch()
+    {
         // bailout: switch
         // TODO : handle switch/goto more intelligently
         bailout("void f(int x, int y) {\n"
@@ -549,7 +570,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x stopping on return\n", errout.str());
     }
 
-    void valueFlowBeforeConditionMacro() {
+    void valueFlowBeforeConditionMacro()
+    {
         // bailout: condition is a expanded macro
         bailout("void f(int x) {\n"
                 "    a = x;\n"
@@ -558,7 +580,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable x, condition is defined in macro\n", errout.str());
     }
 
-    void valueFlowBeforeConditionGoto() {
+    void valueFlowBeforeConditionGoto()
+    {
         // bailout: goto label (TODO: handle gotos more intelligently)
         bailout("void f(int x) {\n"
                 "    if (x == 123) { goto out; }\n"
@@ -587,7 +610,8 @@ private:
                       errout.str());
     }
 
-    void valueFlowAfterAssign() {
+    void valueFlowAfterAssign()
+    {
         const char *code;
 
         code = "void f() {\n"
@@ -937,7 +961,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
     }
 
-    void valueFlowAfterCondition() {
+    void valueFlowAfterCondition()
+    {
         const char *code;
 
         // if
@@ -1114,7 +1139,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
-    void valueFlowBitAnd() {
+    void valueFlowBitAnd()
+    {
         const char *code;
 
         code = "int f(int a) {\n"
@@ -1125,7 +1151,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code,3U,0x80));
     }
 
-    void valueFlowForLoop() {
+    void valueFlowForLoop()
+    {
         const char *code;
 
         code = "void f() {\n"
@@ -1265,7 +1292,8 @@ private:
         testValueOfX(code,0,0); // <- dont hang
     }
 
-    void valueFlowSubFunction() {
+    void valueFlowSubFunction()
+    {
         const char *code;
 
         code = "void f1(int x) { return x; }\n"
@@ -1334,7 +1362,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
     }
 
-    void valueFlowFunctionReturn() {
+    void valueFlowFunctionReturn()
+    {
         const char *code;
 
         code = "void f1(int x) {\n"

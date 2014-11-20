@@ -52,18 +52,21 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory) {
+            _allocateMemory(allocateMemory)
+        {
         }
 
         /** variable is used.. set both read+write */
-        void use(std::list<std::set<unsigned int> > & varReadInScope) {
+        void use(std::list<std::set<unsigned int> > & varReadInScope)
+        {
             varReadInScope.back().insert(_var->declarationId());
             _read = true;
             _write = true;
         }
 
         /** is variable unused? */
-        bool unused() const {
+        bool unused() const
+        {
             return (_read == false && _write == false);
         }
 
@@ -84,11 +87,13 @@ public:
         ScopeGuard(Variables & guarded,
                    bool insideLoop)
             :_guarded(guarded),
-             _insideLoop(insideLoop) {
+             _insideLoop(insideLoop)
+        {
             _guarded.enterScope();
         }
 
-        ~ScopeGuard() {
+        ~ScopeGuard()
+        {
             _guarded.leaveScope(_insideLoop);
         }
 
@@ -97,10 +102,12 @@ public:
         bool _insideLoop;
     };
 
-    void clear() {
+    void clear()
+    {
         _varUsage.clear();
     }
-    const std::map<unsigned int, VariableUsage> &varUsage() const {
+    const std::map<unsigned int, VariableUsage> &varUsage() const
+    {
         return _varUsage;
     }
     void addVar(const Variable *var, VariableType type, bool write_);
@@ -115,14 +122,16 @@ public:
     void modified(unsigned int varid, const Token* tok);
     VariableUsage *find(unsigned int varid);
     void alias(unsigned int varid1, unsigned int varid2, bool replace);
-    void erase(unsigned int varid) {
+    void erase(unsigned int varid)
+    {
         _varUsage.erase(varid);
     }
     void eraseAliases(unsigned int varid);
     void eraseAll(unsigned int varid);
     void clearAliases(unsigned int varid);
 
-    ScopeGuard newScope(bool insideLoop) {
+    ScopeGuard newScope(bool insideLoop)
+    {
         return ScopeGuard(*this, insideLoop);
     }
 

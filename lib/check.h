@@ -44,22 +44,26 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname) {
+        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname)
+    {
     }
 
-    virtual ~Check() {
+    virtual ~Check()
+    {
         if (!_tokenizer)
             instances().remove(this);
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances() {
+    static std::list<Check *> &instances()
+    {
         static std::list<Check *> _instances;
         return _instances;
     }
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
+    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *)
+    {
     }
 
     /** run checks, the token list is simplified */
@@ -69,7 +73,8 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
-    const std::string& name() const {
+    const std::string& name() const
+    {
         return _name;
     }
 
@@ -83,7 +88,8 @@ public:
      */
     static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
-    bool inconclusiveFlag() const {
+    bool inconclusiveFlag() const
+    {
         return _settings && _settings->inconclusive;
     }
 
@@ -94,13 +100,15 @@ public:
         virtual ~FileInfo() {}
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
+    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+    {
         (void)tokenizer;
         (void)settings;
         return nullptr;
     }
 
-    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, ErrorLogger &errorLogger) {
+    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, ErrorLogger &errorLogger)
+    {
         (void)fileInfo;
         (void)errorLogger;
     }
@@ -112,14 +120,16 @@ protected:
 
     /** report an error */
     template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false)
+    {
         std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, inconclusive);
     }
 
     /** report an error */
     template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false) {
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, bool inconclusive = false)
+    {
         ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer?&_tokenizer->list:0, severity, id, msg, inconclusive);
         if (_errorLogger)
             _errorLogger->reportErr(errmsg);

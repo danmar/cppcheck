@@ -45,10 +45,12 @@ struct TimerResultsData {
 
     TimerResultsData()
         : _clocks(0)
-        , _numberOfResults(0) {
+        , _numberOfResults(0)
+    {
     }
 
-    double seconds() const {
+    double seconds() const
+    {
         double ret = (double)((unsigned long)_clocks) / (double)CLOCKS_PER_SEC;
         return ret;
     }
@@ -56,7 +58,8 @@ struct TimerResultsData {
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
-    TimerResults() {
+    TimerResults()
+    {
     }
 
     void ShowResults(SHOWTIME_MODES mode) const;

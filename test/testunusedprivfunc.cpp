@@ -27,11 +27,13 @@ extern std::ostringstream errout;
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:
-    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {
+    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction")
+    {
     }
 
 private:
-    void run() {
+    void run()
+    {
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -78,7 +80,8 @@ private:
     }
 
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -98,7 +101,8 @@ private:
 
 
 
-    void test1() {
+    void test1()
+    {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -166,7 +170,8 @@ private:
     }
 
 
-    void test2() {
+    void test2()
+    {
         check("class A {\n"
               "public:\n"
               "    A();\n"
@@ -184,7 +189,8 @@ private:
     }
 
 
-    void test3() {
+    void test3()
+    {
         check("class A {\n"
               "public:\n"
               "    A() { }\n"
@@ -199,7 +205,8 @@ private:
     }
 
 
-    void test4() {
+    void test4()
+    {
         check("class A {\n"
               "public:\n"
               "    A();\n"
@@ -214,7 +221,8 @@ private:
     }
 
 
-    void test5() {
+    void test5()
+    {
         check("class A {\n"
               "private:\n"
               "    A() : lock(new Lock())\n"
@@ -224,7 +232,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test6() { // ticket #2602 segmentation fault
+    void test6()   // ticket #2602 segmentation fault
+    {
         check("class A {\n"
               "    A& operator=(const A&);\n"
               "};");
@@ -235,7 +244,8 @@ private:
 
 
 
-    void func_pointer1() {
+    void func_pointer1()
+    {
         check("class Fred\n"
               "{\n"
               "private:\n"
@@ -261,7 +271,8 @@ private:
 
 
 
-    void func_pointer2() {
+    void func_pointer2()
+    {
         check("class UnusedPrivateFunctionMemberPointer\n"
               "{\n"
               "public:\n"
@@ -278,7 +289,8 @@ private:
     }
 
 
-    void func_pointer3() {
+    void func_pointer3()
+    {
         check("class c1\n"
               "{\n"
               "public:\n"
@@ -292,7 +304,8 @@ private:
     }
 
 
-    void func_pointer4() { // ticket #2807
+    void func_pointer4()   // ticket #2807
+    {
         check("class myclass {\n"
               "public:\n"
               "    myclass();\n"
@@ -306,7 +319,8 @@ private:
     }
 
 
-    void func_pointer5() {
+    void func_pointer5()
+    {
         check("class A {\n"
               "public:\n"
               "    A() { f = A::func; }\n"
@@ -318,7 +332,8 @@ private:
     }
 
 
-    void func_pointer6() { // #4787
+    void func_pointer6()   // #4787
+    {
         check("class Test {\n"
               "private:\n"
               "    static void a(const char* p) { }\n"
@@ -331,7 +346,8 @@ private:
     }
 
 
-    void ctor() {
+    void ctor()
+    {
         check("class PrivateCtor\n"
               "{\n"
               "private:\n"
@@ -346,7 +362,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ctor2() {
+    void ctor2()
+    {
         check("struct State {\n"
               "  State(double const totalWeighting= TotalWeighting()) :\n"
               "    totalWeighting_(totalWeighting) {}\n"
@@ -359,7 +376,8 @@ private:
     }
 
 
-    void classInClass() {
+    void classInClass()
+    {
         check("class A\n"
               "{\n"
               "public:\n"
@@ -395,7 +413,8 @@ private:
     }
 
 
-    void sameFunctionNames() {
+    void sameFunctionNames()
+    {
         check("class A\n"
               "{\n"
               "public:\n"
@@ -411,7 +430,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incompleteImplementation() {
+    void incompleteImplementation()
+    {
         // The implementation for "A::a" is missing - so don't check if
         // "A::b" is used or not
         check("#file \"test.h\"\n"
@@ -429,7 +449,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void derivedClass() {
+    void derivedClass()
+    {
         // skip warning in derived classes in case the base class is invisible
         check("class derived : public base\n"
               "{\n"
@@ -472,7 +493,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void friendClass() {
+    void friendClass()
+    {
         // ticket #2459 - friend class
         check("class Foo {\n"
               "private:\n"
@@ -510,7 +532,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function: 'Foo::f'\n", errout.str());
     }
 
-    void borland1() {
+    void borland1()
+    {
         // ticket #2034 - Borland C++ __property
         check("class Foo {\n"
               "private:\n"
@@ -524,7 +547,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void borland2() {
+    void borland2()
+    {
         // ticket #3661 - Borland C++ __published
         check("class Foo {\n"
               "__published:\n"
@@ -537,7 +561,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template1() {
+    void template1()
+    {
         // ticket #2067 - Template methods do not "use" private ones
         check("class A {\n"
               "public:\n"
@@ -555,7 +580,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void fp_operator() {
+    void fp_operator()
+    {
         // #2407 - FP when function is called from operator()
         check("class Fred\n"
               "{\n"
@@ -596,7 +622,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsFirstFunctionArgument() {
+    void testDoesNotIdentifyMethodAsFirstFunctionArgument()
+    {
         check("void callback(void (*func)(int), int arg)"
               "{"
               "    (*func)(arg);"
@@ -623,7 +650,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsMiddleFunctionArgument() {
+    void testDoesNotIdentifyMethodAsMiddleFunctionArgument()
+    {
         check("void callback(char, void (*func)(int), int arg)"
               "{"
               "    (*func)(arg);"
@@ -650,7 +678,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testDoesNotIdentifyMethodAsLastFunctionArgument() {
+    void testDoesNotIdentifyMethodAsLastFunctionArgument()
+    {
         check("void callback(int arg, void (*func)(int))"
               "{"
               "    (*func)(arg);"
@@ -677,7 +706,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void multiFile() { // ticket #2567
+    void multiFile()   // ticket #2567
+    {
         check("#file \"test.h\"\n"
               "struct Fred\n"
               "{\n"
@@ -696,7 +726,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void unknownBaseTemplate() { // ticket #2580
+    void unknownBaseTemplate()   // ticket #2580
+    {
         check("class Bla : public Base2<Base> {\n"
               "public:\n"
               "    Bla() {}\n"
@@ -708,7 +739,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void hierarchie_loop() {
+    void hierarchie_loop()
+    {
         check("class InfiniteB : InfiniteA {\n"
               "    class D {\n"
               "    };\n"
@@ -727,7 +759,8 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'InfiniteA::foo'\n", errout.str());
     }
 
-    void staticVariable() {
+    void staticVariable()
+    {
         check("class Foo {\n"
               "    static int i;\n"
               "    static int F() const { return 1; }\n"

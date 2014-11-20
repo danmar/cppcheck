@@ -33,16 +33,19 @@
 class CPPCHECKLIB CheckInternal : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckInternal() : Check(myName()) {
+    CheckInternal() : Check(myName())
+    {
     }
 
     /** This constructor is used when running checks. */
     CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         if (!settings->isEnabled("internal"))
             return;
 
@@ -79,7 +82,8 @@ private:
     void redundantNextPreviousError(const Token* tok, const std::string& func1, const std::string& func2);
     void orInComplexPattern(const Token *tok, const std::string &pattern, const std::string &funcname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckInternal c(0, settings, errorLogger);
         c.multiComparePatternError(0, ";|%type%", "Match");
         c.simplePatternError(0, "class {", "Match");
@@ -90,11 +94,13 @@ private:
         c.orInComplexPattern(0, "||", "Match");
     }
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "cppcheck internal API usage";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         // Don't include these checks on the WIKI where people can read what
         // checks there are. These checks are not intended for users.
         return "";

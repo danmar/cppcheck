@@ -40,16 +40,19 @@
 class CPPCHECKLIB CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckExceptionSafety() : Check(myName()) {
+    CheckExceptionSafety() : Check(myName())
+    {
     }
 
     /** This constructor is used when running checks. */
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
     /** Checks that uses the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         if (tokenizer->isC())
             return;
 
@@ -82,7 +85,8 @@ public:
 
 private:
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok, const std::string &className) {
+    void destructorsError(const Token * const tok, const std::string &className)
+    {
         reportError(tok, Severity::warning, "exceptThrowInDestructor",
                     "Class " + className + " is not safe, destructor throws exception\n"
                     "The class " + className + " is not safe because its destructor "
@@ -90,19 +94,22 @@ private:
                     "is thrown that is caught in an outer scope the program will terminate.");
     }
 
-    void deallocThrowError(const Token * const tok, const std::string &varname) {
+    void deallocThrowError(const Token * const tok, const std::string &varname)
+    {
         reportError(tok, Severity::warning, "exceptDeallocThrow", "Exception thrown in invalid state, '" +
                     varname + "' points at deallocated memory.");
     }
 
-    void rethrowCopyError(const Token * const tok, const std::string &varname) {
+    void rethrowCopyError(const Token * const tok, const std::string &varname)
+    {
         reportError(tok, Severity::style, "exceptRethrowCopy",
                     "Throwing a copy of the caught exception instead of rethrowing the original exception.\n"
                     "Rethrowing an exception with 'throw " + varname + ";' creates an unnecessary copy of '" + varname + "'. "
                     "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.");
     }
 
-    void catchExceptionByValueError(const Token *tok) {
+    void catchExceptionByValueError(const Token *tok)
+    {
         reportError(tok, Severity::style,
                     "catchExceptionByValue", "Exception should be caught by reference.\n"
                     "The exception is caught by value. It could be caught "
@@ -110,27 +117,32 @@ private:
     }
 
     /** Don't throw exceptions in noexcept functions */
-    void noexceptThrowError(const Token * const tok) {
+    void noexceptThrowError(const Token * const tok)
+    {
         reportError(tok, Severity::error, "exceptThrowInNoexecptFunction", "Exception thrown in noexcept function.");
     }
 
     /** Don't throw exceptions in throw() functions */
-    void nothrowThrowError(const Token * const tok) {
+    void nothrowThrowError(const Token * const tok)
+    {
         reportError(tok, Severity::error, "exceptThrowInNoThrowFunction", "Exception thrown in throw() function.");
     }
 
     /** Don't throw exceptions in __attribute__((nothrow))  functions */
-    void nothrowAttributeThrowError(const Token * const tok) {
+    void nothrowAttributeThrowError(const Token * const tok)
+    {
         reportError(tok, Severity::error, "exceptThrowInAttributeNoThrowFunction", "Exception thrown in __attribute__((nothrow)) function.");
     }
 
     /** Don't throw exceptions in __declspec(nothrow)  functions */
-    void nothrowDeclspecThrowError(const Token * const tok) {
+    void nothrowDeclspecThrowError(const Token * const tok)
+    {
         reportError(tok, Severity::error, "exceptThrowInDeclspecNoThrowFunction", "Exception thrown in __declspec(nothrow) function.");
     }
 
     /** Missing exception specification */
-    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
+    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname)
+    {
         std::string str1(tok1 ? tok1->str() : "foo");
         std::list<const Token*> locationList;
         locationList.push_back(tok1);
@@ -142,7 +154,8 @@ private:
     }
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckExceptionSafety c(0, settings, errorLogger);
         c.destructorsError(0, "Class");
         c.deallocThrowError(0, "p");
@@ -156,12 +169,14 @@ private:
     }
 
     /** Short description of class (for --doc) */
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Exception Safety";
     }
 
     /** wiki formatted description of the class (for --doc) */
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Checking exception safety\n"
                "- Throwing exceptions in destructors\n"
                "- Throwing exception during invalid state\n"

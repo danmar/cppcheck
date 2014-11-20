@@ -28,12 +28,14 @@ extern std::ostringstream errout;
 
 class TestString : public TestFixture {
 public:
-    TestString() : TestFixture("TestString") {
+    TestString() : TestFixture("TestString")
+    {
     }
 
 private:
 
-    void run() {
+    void run()
+    {
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
         TEST_CASE(suspiciousStringCompare_char);
@@ -51,7 +53,8 @@ private:
         TEST_CASE(incorrectStringCompare);
     }
 
-    void check(const char code[], const char filename[] = "test.cpp") {
+    void check(const char code[], const char filename[] = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -72,7 +75,8 @@ private:
         checkString.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void check_preprocess_suppress(const char precode[]) {
+    void check_preprocess_suppress(const char precode[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -97,7 +101,8 @@ private:
         checkString.checkAlwaysTrueOrFalseStringCompare();
     }
 
-    void alwaysTrueFalseStringCompare() {
+    void alwaysTrueFalseStringCompare()
+    {
         check_preprocess_suppress(
             "#define MACRO \"00FF00\"\n"
             "int main()\n"
@@ -195,7 +200,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void suspiciousStringCompare() {
+    void suspiciousStringCompare()
+    {
         check("bool foo(char* c) {\n"
               "    return c == \"x\";\n"
               "}");
@@ -302,7 +308,8 @@ private:
         ASSERT_EQUALS("[test.c:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout.str());
     }
 
-    void suspiciousStringCompare_char() {
+    void suspiciousStringCompare_char()
+    {
         check("bool foo(char* c) {\n"
               "    return c == '\\0';\n"
               "}");
@@ -357,7 +364,8 @@ private:
     }
 
 
-    void sprintf1() {
+    void sprintf1()
+    {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"
@@ -366,7 +374,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().\n", errout.str());
     }
 
-    void sprintf2() {
+    void sprintf2()
+    {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"
@@ -375,7 +384,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void sprintf3() {
+    void sprintf3()
+    {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"
@@ -385,7 +395,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void sprintf4() {
+    void sprintf4()
+    {
         check("struct A\n"
               "{\n"
               "    char filename[128];\n"
@@ -400,7 +411,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void strPlusChar1() {
+    void strPlusChar1()
+    {
         // Strange looking pointer arithmetic..
         check("void foo()\n"
               "{\n"
@@ -409,7 +421,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic. A value of type 'char' is added to a string literal.\n", errout.str());
     }
 
-    void strPlusChar2() {
+    void strPlusChar2()
+    {
         // Strange looking pointer arithmetic..
         check("void foo()\n"
               "{\n"
@@ -428,7 +441,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void strPlusChar3() {
+    void strPlusChar3()
+    {
         // Strange looking pointer arithmetic..
         check("void foo()\n"
               "{\n"
@@ -438,13 +452,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void strPlusChar4() {
+    void strPlusChar4()
+    {
         // don't crash
         check("int test() { int +; }");
     }
 
 
-    void incorrectStringCompare() {
+    void incorrectStringCompare()
+    {
         check("int f() {\n"
               "    return test.substr( 0 , 4 ) == \"Hello\" ? : 0 : 1 ;\n"
               "}");

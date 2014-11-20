@@ -47,15 +47,18 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {
+    CheckBufferOverrun() : Check(myName())
+    {
     }
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.bufferOverrun2();
@@ -140,36 +143,44 @@ public:
         ArrayInfo limit(MathLib::bigint value) const;
 
         /** array sizes */
-        const std::vector<MathLib::bigint> &num() const {
+        const std::vector<MathLib::bigint> &num() const
+        {
             return _num;
         }
 
         /** array size */
-        MathLib::bigint num(std::size_t index) const {
+        MathLib::bigint num(std::size_t index) const
+        {
             return _num[index];
         }
-        void num(std::size_t index, MathLib::bigint number) {
+        void num(std::size_t index, MathLib::bigint number)
+        {
             _num[index] = number;
         }
 
         /** size of each element */
-        MathLib::bigint element_size() const {
+        MathLib::bigint element_size() const
+        {
             return _element_size;
         }
 
         /** Variable name */
-        unsigned int declarationId() const {
+        unsigned int declarationId() const
+        {
             return _declarationId;
         }
-        void declarationId(unsigned int id) {
+        void declarationId(unsigned int id)
+        {
             _declarationId = id;
         }
 
         /** Variable name */
-        const std::string &varname() const {
+        const std::string &varname() const
+        {
             return _varname;
         }
-        void varname(const std::string &name) {
+        void varname(const std::string &name)
+        {
             _varname = name;
         }
     };
@@ -250,7 +261,8 @@ private:
     void valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo);
 
 public:
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+    {
         CheckBufferOverrun c(0, settings, errorLogger);
         std::vector<MathLib::bigint> indexes;
         indexes.push_back(2);
@@ -274,11 +286,13 @@ public:
     }
 private:
 
-    static std::string myName() {
+    static std::string myName()
+    {
         return "Bounds checking";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const
+    {
         return "Out of bounds checking:\n"
                "- Array index out of bounds detection by value flow analysis\n"
                "- Dangerous usage of strncat()\n"

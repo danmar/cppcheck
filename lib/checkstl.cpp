@@ -363,7 +363,8 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
  */
 class EraseCheckLoop : public ExecutionPath {
 public:
-    static void checkScope(CheckStl *checkStl, const Token *it) {
+    static void checkScope(CheckStl *checkStl, const Token *it)
+    {
         const Token *tok = it;
 
         // Search for the start of the loop body..
@@ -397,7 +398,8 @@ public:
 private:
     /** Startup constructor */
     EraseCheckLoop(Check *o, unsigned int varid, const Token* usetoken)
-        : ExecutionPath(o, varid), eraseToken(0), useToken(usetoken) {
+        : ExecutionPath(o, varid), eraseToken(0), useToken(usetoken)
+    {
     }
 
     /** @brief token where iterator is erased (non-zero => the iterator is invalid) */
@@ -407,18 +409,21 @@ private:
     const Token* useToken;
 
     /** @brief Copy this check. Called from the ExecutionPath baseclass. */
-    ExecutionPath *copy() {
+    ExecutionPath *copy()
+    {
         return new EraseCheckLoop(*this);
     }
 
     /** @brief is another execution path equal? */
-    bool is_equal(const ExecutionPath *e) const {
+    bool is_equal(const ExecutionPath *e) const
+    {
         const EraseCheckLoop *c = static_cast<const EraseCheckLoop *>(e);
         return (eraseToken == c->eraseToken);
     }
 
     /** @brief parse tokens */
-    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const {
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
+    {
         // bail out if there are assignments. We don't check the assignments properly.
         if (Token::Match(&tok, "[;{}] %var% =") || Token::Match(&tok, "= %var% ;")) {
             ExecutionPath::bailOutVar(checks, tok.next()->varId());
@@ -471,7 +476,8 @@ private:
      * @param checks The execution paths. All execution paths in the list are executed in the current scope
      * @return true => bail out all checking
      **/
-    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) {
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
+    {
         // no checking of conditions.
         (void)tok;
         (void)checks;
@@ -479,7 +485,8 @@ private:
     }
 
     /** @brief going out of scope - all execution paths end */
-    void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const {
+    void end(const std::list<ExecutionPath *> &checks, const Token * /*tok*/) const
+    {
         // check if there are any invalid iterators. If so there is an error.
         for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it) {
             EraseCheckLoop *c = dynamic_cast<EraseCheckLoop *>(*it);
