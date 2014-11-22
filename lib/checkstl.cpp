@@ -512,12 +512,8 @@ void CheckStl::erase()
                         const Token *decltok = variableInfo ? variableInfo->typeEndToken() : nullptr;
 
                         // Is variable an iterator?
-                        bool isIterator = false;
-                        if (decltok && Token::Match(decltok->tokAt(-2), "> :: iterator %varid%", tok2->next()->varId()))
-                            isIterator = true;
-
                         // If tok2->next() is an iterator, check scope
-                        if (isIterator)
+                        if (decltok && Token::Match(decltok->tokAt(-2), "> :: iterator %varid%", tok2->next()->varId()))
                             EraseCheckLoop::checkScope(this, tok2->next());
                     }
                     break;
