@@ -1805,10 +1805,8 @@ void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std
                 " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
 
-Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer) const
 {
-    (void)settings;
-
     MyFileInfo *fileInfo = new MyFileInfo;
 
     // Array usage..

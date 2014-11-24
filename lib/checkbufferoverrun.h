@@ -220,7 +220,7 @@ public:
     };
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer) const;
 
     /** @brief Analyse all file infos for all TU */
     virtual void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);

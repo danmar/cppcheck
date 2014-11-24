@@ -19,6 +19,7 @@
 
 #include "preprocessor.h" // Preprocessor
 #include "tokenize.h" // Tokenizer
+#include "checkunusedfunctions.h"
 
 #include "check.h"
 #include "path.h"
@@ -277,6 +278,23 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     }
 }
 
+
+void CppCheck::checkFunctionUsage()
+{
+    // This generates false positives - especially for libraries
+    if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1) {
+        const bool verbose_orig = _settings._verbose;
+        _settings._verbose = false;
+
+        if (_settings._errorsOnly == false)
+            _errorLogger.reportOut("Checking usage of global functions..");
+
+        CheckUnusedFunctions::instance.check(this);
+
+        _settings._verbose = verbose_orig;
+    }
+}
+
 void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 {
     // Preprocess file..
@@ -361,6 +379,9 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
             (*it)->runChecks(&_tokenizer, &_settings, this);
         }
 
+        if (_settings.isEnabled("unusedFunction") && _settings._jobs == 1)
+            CheckUnusedFunctions::instance.parseTokens(_tokenizer, FileName, &_settings);
+
         executeRules("normal", _tokenizer);
 
         if (!_simplify)
@@ -383,7 +404,7 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
 
         // Analyse the tokens..
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            Check::FileInfo *fi = (*it)->getFileInfo(&_tokenizer, &_settings);
+            Check::FileInfo *fi = (*it)->getFileInfo(&_tokenizer);
             if (fi != nullptr)
                 fileInfo.push_back(fi);
         }

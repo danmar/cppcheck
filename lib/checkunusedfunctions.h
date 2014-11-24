@@ -43,12 +43,11 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
+    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
-    /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    void check(ErrorLogger * const errorLogger);
 
-    /** @brief Analyse all file infos for all TU */
-    virtual void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+    static CheckUnusedFunctions instance;
 
 private:
 
@@ -67,7 +66,9 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {}
+    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
+
+    }
 
     static std::string myName() {
         return "Unused functions";
@@ -77,7 +78,7 @@ private:
         return "Check for functions that are never called\n";
     }
 
-    class FunctionUsage {
+    class CPPCHECKLIB FunctionUsage {
     public:
         FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {
         }
@@ -88,10 +89,7 @@ private:
         bool   usedOtherFile;
     };
 
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        std::map<std::string, FunctionUsage> _functions;
-    };
+    std::map<std::string, FunctionUsage> _functions;
 };
 /// @}
 //---------------------------------------------------------------------------
