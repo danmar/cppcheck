@@ -53,10 +53,7 @@ public:
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances() {
-        static std::list<Check *> _instances;
-        return _instances;
-    }
+    static std::list<Check *> &instances(); 
 
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
