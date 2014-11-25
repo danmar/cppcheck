@@ -558,8 +558,23 @@ private:
 
         checkOpertorEq("class A\n"
                        "{\n"
+                       "public:\n"
+                       "    void goo() {}"
+                       "    void operator=(const A&)=delete;\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
                        "private:\n"
                        "    void operator=(const A&);\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    void operator=(const A&)=delete;\n"
                        "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -596,6 +611,12 @@ private:
                        "    void operator=(const A&);\n"
                        "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'A::operator=' should return 'A &'.\n", errout.str());
+
+        checkOpertorEq("struct A\n"
+                       "{\n"
+                       "    void operator=(const A&)=delete;\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEq2() {

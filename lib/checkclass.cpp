@@ -1118,6 +1118,9 @@ void CheckClass::operatorEq()
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access != Private) {
+                // skip if there's =delete in the declaration - cannot be called anyway
+                if (func->tokenDef && func->tokenDef->next() && Token::Match(func->tokenDef->next()->link(), ") const| = delete"))
+                    continue;
                 // use definition for check so we don't have to deal with qualification
                 if (!(Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className)) {
                     // make sure we really have a copy assignment operator
