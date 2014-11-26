@@ -53,7 +53,18 @@ public:
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances(); 
+    static std::list<Check *> &instances() {
+#ifdef __SVR4
+        // Under Solaris, destructors are called in wrong order which causes a segmentation fault.
+        // This fix ensures pointer remains valid and reachable until program terminates.
+        static std::list<Check *> *_instances= new std::list<Check *>;
+        return *_instances;
+#else
+        static std::list<Check *> _instances;
+        return _instances;
+#endif
+
+    }
 
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
