@@ -202,6 +202,16 @@ private:
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
+        ASSERT_EQUALS(0    , MathLib::toULongNumber("0"));
+        ASSERT_EQUALS(0U    , MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(1U    , MathLib::toULongNumber("1U"));
+        ASSERT_EQUALS(10000U    , MathLib::toULongNumber("1e4"));
+        ASSERT_EQUALS(10000U    , MathLib::toULongNumber("1e4"));
+        ASSERT_EQUALS(0xFF00000000000000UL, MathLib::toULongNumber("0xFF00000000000000UL"));
+        ASSERT_EQUALS(0x0A00000000000000UL, MathLib::toULongNumber("0x0A00000000000000UL"));
+        ASSERT_EQUALS(9U, MathLib::toULongNumber("011"));
+        ASSERT_EQUALS(5U, MathLib::toULongNumber("0b101"));
+
         // from long long
         ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
@@ -247,6 +257,9 @@ private:
         ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("+1.0")));
         ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("+0.0f")));
         ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("+0.0")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("-0")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("-0.")));
+        ASSERT_EQUALS("0.0" , MathLib::toString(MathLib::toDoubleNumber("-0.0")));
     }
 
     void isint() const {
