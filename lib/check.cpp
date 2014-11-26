@@ -42,11 +42,3 @@ void Check::reportError(const ErrorLogger::ErrorMessage &errmsg)
 {
     std::cout << errmsg.toXML(true, 1) << std::endl;
 }
-
-#ifdef __SVR4
-std::list<Check *> &Check::instances()
-{
-    static std::list<Check *> *_instances= new std::list<Check *>;
-    return *_instances;
-}
-#endif
