@@ -144,6 +144,7 @@ private:
         TEST_CASE(const61); // ticket #5606
         TEST_CASE(const62); // ticket #5701
         TEST_CASE(const63); // ticket #5983
+        TEST_CASE(const64); // ticket #6268
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -4909,6 +4910,21 @@ private:
                    "     }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+    }
+
+    void const64() {
+        checkConst("namespace B {\n"
+                   "    namespace D {\n"
+                   "        typedef int DKIPtr;\n"
+                   "    }\n"
+                   "    class ZClass  {\n"
+                   "        void set(const ::B::D::DKIPtr& p) {\n"
+                   "            membervariable = p;\n"
+                   "        }\n"
+                   "        ::B::D::DKIPtr membervariable;\n"
+                   "    };\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

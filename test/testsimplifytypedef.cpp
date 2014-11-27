@@ -144,6 +144,7 @@ private:
         TEST_CASE(simplifyTypedef107); // ticket #3963 - bad code => segmentation fault
         TEST_CASE(simplifyTypedef108); // ticket #4777
         TEST_CASE(simplifyTypedef109); // ticket #1823 - rvalue reference
+        TEST_CASE(simplifyTypedef110); // ticket #6268
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2392,6 +2393,68 @@ private:
         const char code[] = "typedef int&& rref;\n"
                             "rref var;";
         const char expected[] = "int & & var ;";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef110() {
+        const char code[] = "namespace A {\n"
+                            "    namespace B {\n"
+                            "        namespace D {\n"
+                            "            typedef int DKIPtr;\n"
+                            "        }\n"
+                            "        struct ZClass {\n"
+                            "            void set1(const A::B::D::DKIPtr& p) {\n"
+                            "                membervariable1 = p;\n"
+                            "            }\n"
+                            "            void set2(const ::A::B::D::DKIPtr& p) {\n"
+                            "                membervariable2 = p;\n"
+                            "            }\n"
+                            "            void set3(const B::D::DKIPtr& p) {\n"
+                            "                membervariable3 = p;\n"
+                            "            }\n"
+                            "            void set4(const ::B::D::DKIPtr& p) {\n"
+                            "                membervariable4 = p;\n"
+                            "            }\n"
+                            "            void set5(const C::D::DKIPtr& p) {\n"
+                            "                membervariable5 = p;\n"
+                            "            }\n"
+                            "            A::B::D::DKIPtr membervariable1;\n"
+                            "            ::A::B::D::DKIPtr membervariable2;\n"
+                            "            B::D::DKIPtr membervariable3;\n"
+                            "            ::B::D::DKIPtr membervariable4;\n"
+                            "            C::D::DKIPtr membervariable5;\n"
+                            "        };\n"
+                            "    }\n"
+                            "}";
+        const char expected[] = "namespace A { "
+                                "namespace B { "
+                                "struct ZClass { "
+                                "void set1 ( const int & p ) { "
+                                "membervariable1 = p ; "
+                                "} "
+                                "void set2 ( const int & p ) { "
+                                "membervariable2 = p ; "
+                                "} "
+                                "void set3 ( const int & p ) { "
+                                "membervariable3 = p ; "
+                                "} "
+                                "void set4 ( const :: B :: D :: DKIPtr & p ) { "
+                                "membervariable4 = p ; "
+                                "} "
+                                "void set5 ( const C :: D :: DKIPtr & p ) { "
+                                "membervariable5 = p ; "
+                                "} "
+                                "int membervariable1 ; "
+                                "int membervariable2 ; "
+                                "int membervariable3 ; "
+                                ":: B :: D :: DKIPtr membervariable4 ; "
+                                "C :: D :: DKIPtr membervariable5 ; "
+                                "} ; "
+                                "} "
+                                "}";
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS(expected, tok(code));

@@ -1067,15 +1067,42 @@ void Tokenizer::simplifyTypedef()
                         pattern1 = pattern;
 
                     if (pattern1.find("::") != std::string::npos) { // has a "something ::"
-                        if (tok2->strAt(-1) == "::") {
-                            tok2->tokAt(-2)->deleteNext();
-                            globalScope = true;
+                        Token *start = tok2;
+                        size_t count = 0;
+                        int back = int(classLevel) - 1;
+                        bool good = true;
+                        // check for extra qualification
+                        while (back >= 0 && Token::Match(start->tokAt(-2), "%type% ::")) {
+                            if (start->strAt(-2) == spaceInfo[back].className) {
+                                start = start->tokAt(-2);
+                                back--;
+                                count++;
+                            } else {
+                                good = false;
+                                break;
+                            }
                         }
+                        // check global namespace
+                        if (good && back == 0 && start->strAt(-1) == "::")
+                            good = false;
 
-                        for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
-                            tok2->deleteNext(2);
+                        if (good) {
+                            // remove any extra qualification if present
+                            while (count--)
+                                tok2->tokAt(-3)->deleteNext(2);
+
+                            // remove global namespace if present
+                            if (tok2->strAt(-1) == "::") {
+                                tok2->tokAt(-2)->deleteNext();
+                                globalScope = true;
+                            }
+
+                            // remove qualification if present
+                            for (std::size_t i = classLevel; i < spaceInfo.size(); ++i) {
+                                tok2->deleteNext(2);
+                            }
+                            simplifyType = true;
                         }
-                        simplifyType = true;
                     } else if ((inScope && !exitThisScope) || inMemberFunc) {
                         if (tok2->strAt(-1) == "::") {
                             // Don't replace this typename if it's preceded by "::" unless it's a namespace
