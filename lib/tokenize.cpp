@@ -10226,7 +10226,7 @@ void Tokenizer::removeUnnecessaryQualification()
     std::vector<Space> classInfo;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct|namespace %type% :|{") &&
-            (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
+            (!tok->previous() || tok->previous()->str() != "enum")) {
             Space info;
             info.isNamespace = tok->str() == "namespace";
             tok = tok->next();
