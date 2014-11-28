@@ -619,13 +619,34 @@ void Tokenizer::simplifyTypedef()
         Token *namespaceEnd = nullptr;
 
         // check for invalid input
-        if (!tok->next()) {
+        if (!tokOffset) {
             syntaxError(tok);
             return;
         }
 
-        if (tok->next()->str() == "::" || Token::Match(tok->next(), "%type%")) {
-            typeStart = tok->next();
+        if (tokOffset->str() == "::") {
+            typeStart = tokOffset;
+            tokOffset = tokOffset->next();
+
+            while (Token::Match(tokOffset, "%type% ::"))
+                tokOffset = tokOffset->tokAt(2);
+
+            typeEnd = tokOffset;
+
+            if (Token::Match(tokOffset, "%type%"))
+                tokOffset = tokOffset->next();
+        } else if (Token::Match(tokOffset, "%type% ::")) {
+            typeStart = tokOffset;
+
+            while (Token::Match(tokOffset, "%type% ::"))
+                tokOffset = tokOffset->tokAt(2);
+
+            typeEnd = tokOffset;
+
+            if (Token::Match(tokOffset, "%type%"))
+                tokOffset = tokOffset->next();
+        } else if (Token::Match(tokOffset, "%type%")) {
+            typeStart = tokOffset;
 
             while (Token::Match(tokOffset, "const|signed|unsigned|struct|enum %type%") ||
                    (tokOffset->next() && tokOffset->next()->isStandardType()))
@@ -730,18 +751,6 @@ void Tokenizer::simplifyTypedef()
             else if (tokOffset && tokOffset->str() == "(") {
                 // unhandled typedef, skip it and continue
                 if (typeName->str() == "void") {
-                    unsupportedTypedef(typeDef);
-                    tok = deleteInvalidTypedef(typeDef);
-                    if (tok == list.front())
-                        //now the next token to process is 'tok', not 'tok->next()';
-                        goback = true;
-                    continue;
-                }
-
-                // unhandled function pointer, skip it and continue
-                // TODO: handle such typedefs. See ticket #3314
-                else if (Token::Match(tokOffset, "( %type% ::") &&
-                         Token::Match(tokOffset->link()->tokAt(-3), ":: * %var% ) (")) {
                     unsupportedTypedef(typeDef);
                     tok = deleteInvalidTypedef(typeDef);
                     if (tok == list.front())

@@ -117,13 +117,6 @@ private:
             const char code[] ="enum ABC { A,B, typedef enum { C } };";
             ASSERT_THROW(checkCode(code), InternalError);
         }
-
-        {
-            // #3314 - don't report syntax error.
-            const char code[] ="struct A { typedef B::C (A::*f)(); };";
-            checkCode(code);
-            ASSERT_EQUALS("[test.cpp:1]: (debug) Failed to parse 'typedef B :: C ( A :: * f ) ( ) ;'. The checking continues anyway.\n", errout.str());
-        }
     }
 
     void wrong_syntax2() {   // #3504

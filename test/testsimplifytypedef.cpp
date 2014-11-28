@@ -154,6 +154,7 @@ private:
         TEST_CASE(simplifyTypedefFunction6);
         TEST_CASE(simplifyTypedefFunction7);
         TEST_CASE(simplifyTypedefFunction8);
+        TEST_CASE(simplifyTypedefFunction9);
 
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
     }
@@ -3031,6 +3032,92 @@ private:
                             "void f(f_expand   *(*get_fexp(int))){}\n";
         checkSimplifyTypedef(code);
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) Function::addArguments found argument 'int' with varid 0.\n", errout.str());  // make sure that there is no internal error
+    }
+
+    void simplifyTypedefFunction9() {
+        {
+            const char code[] = "typedef ::C (::C::* func1)();\n"
+                                "typedef ::C (::C::* func2)() const;\n"
+                                "typedef ::C (::C::* func3)() volatile;\n"
+                                "typedef ::C (::C::* func4)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;";
+
+            // The expected result..
+            const std::string expected(":: C ( :: C :: * f1 ) ( ) ; "
+                                       ":: C ( :: C :: * f2 ) ( ) const ; "
+                                       ":: C ( :: C :: * f3 ) ( ) ; "
+                                       ":: C ( :: C :: * f4 ) ( ) const ;");
+            ASSERT_EQUALS(expected, tok(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef B::C (B::C::* func1)();\n"
+                                "typedef B::C (B::C::* func2)() const;\n"
+                                "typedef B::C (B::C::* func3)() volatile;\n"
+                                "typedef B::C (B::C::* func4)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;";
+
+            // The expected result..
+            const std::string expected("B :: C * f1 ; "
+                                       "B :: C ( B :: C :: * f2 ) ( ) const ; "
+                                       "B :: C * f3 ; "
+                                       "B :: C ( B :: C :: * f4 ) ( ) const ;");
+            ASSERT_EQUALS(expected, tok(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef ::B::C (::B::C::* func1)();\n"
+                                "typedef ::B::C (::B::C::* func2)() const;\n"
+                                "typedef ::B::C (::B::C::* func3)() volatile;\n"
+                                "typedef ::B::C (::B::C::* func4)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;";
+
+            // The expected result..
+            const std::string expected(":: B :: C ( :: B :: C :: * f1 ) ( ) ; "
+                                       ":: B :: C ( :: B :: C :: * f2 ) ( ) const ; "
+                                       ":: B :: C ( :: B :: C :: * f3 ) ( ) ; "
+                                       ":: B :: C ( :: B :: C :: * f4 ) ( ) const ;");
+            ASSERT_EQUALS(expected, tok(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef A::B::C (A::B::C::* func1)();\n"
+                                "typedef A::B::C (A::B::C::* func2)() const;\n"
+                                "typedef A::B::C (A::B::C::* func3)() volatile;\n"
+                                "typedef A::B::C (A::B::C::* func4)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;";
+
+            // The expected result..
+            const std::string expected("A :: B :: C * f1 ; "
+                                       "A :: B :: C ( A :: B :: C :: * f2 ) ( ) const ; "
+                                       "A :: B :: C * f3 ; "
+                                       "A :: B :: C ( A :: B :: C :: * f4 ) ( ) const ;");
+            ASSERT_EQUALS(expected, tok(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyTypedefShadow() { // shadow variable (#4445)
