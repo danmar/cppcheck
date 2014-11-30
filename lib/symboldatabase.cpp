@@ -1226,8 +1226,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         tok->link()->previous()->str() == ")") {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
-            *funcStart = tok->link()->previous()->link()->previous();
-            *argStart = tok->link()->previous()->link();
+            const Token* argStartTok = tok->link()->previous()->link();
+            *funcStart = argStartTok->previous();
+            *argStart = argStartTok;
             return true;
         }
     }
