@@ -290,26 +290,26 @@ void CheckBool::checkComparisonOfBoolWithBool()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            bool first_token_bool = false;
+            bool firstTokenBool = false;
 
-            const Token *first_token = tok->previous();
-            if (first_token->varId()) {
-                if (isBool(first_token->variable())) {
-                    first_token_bool = true;
+            const Token *firstToken = tok->previous();
+            if (firstToken->varId()) {
+                if (isBool(firstToken->variable())) {
+                    firstTokenBool = true;
                 }
             }
-            if (!first_token_bool)
+            if (!firstTokenBool)
                 continue;
 
-            bool second_token_bool = false;
-            const Token *second_token = tok->next();
-            if (second_token->varId()) {
-                if (isBool(second_token->variable())) {
-                    second_token_bool = true;
+            bool secondTokenBool = false;
+            const Token *secondToken = tok->next();
+            if (secondToken->varId()) {
+                if (isBool(secondToken->variable())) {
+                    secondTokenBool = true;
                 }
             }
-            if (second_token_bool) {
-                comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
+            if (secondTokenBool) {
+                comparisonOfBoolWithBoolError(firstToken->next(), secondToken->str());
             }
         }
     }

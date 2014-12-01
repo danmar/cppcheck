@@ -5696,7 +5696,6 @@ void Tokenizer::simplifyPlatformTypes()
             const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
 
             if (platformtype) {
-                Token *type_token;
                 // check for namespace
                 if (tok->strAt(-1) == "::") {
                     const Token * tok1 = tok->tokAt(-2);
@@ -5706,31 +5705,32 @@ void Tokenizer::simplifyPlatformTypes()
                     tok = tok->tokAt(-1);
                     tok->deleteThis();
                 }
+                Token *typeToken;
                 if (platformtype->_const_ptr) {
                     tok->str("const");
                     tok->insertToken("*");
                     tok->insertToken(platformtype->_type);
-                    type_token = tok;
+                    typeToken = tok;
                 } else if (platformtype->_pointer) {
                     tok->str(platformtype->_type);
-                    type_token = tok;
+                    typeToken = tok;
                     tok->insertToken("*");
                 } else if (platformtype->_ptr_ptr) {
                     tok->str(platformtype->_type);
-                    type_token = tok;
+                    typeToken = tok;
                     tok->insertToken("*");
                     tok->insertToken("*");
                 } else {
                     tok->originalName(tok->str());
                     tok->str(platformtype->_type);
-                    type_token = tok;
+                    typeToken = tok;
                 }
                 if (platformtype->_signed)
-                    type_token->isSigned(true);
+                    typeToken->isSigned(true);
                 if (platformtype->_unsigned)
-                    type_token->isUnsigned(true);
+                    typeToken->isUnsigned(true);
                 if (platformtype->_long)
-                    type_token->isLong(true);
+                    typeToken->isLong(true);
             }
         }
     }

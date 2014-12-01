@@ -34,18 +34,18 @@ void CheckBoost::checkBoostForeachModification()
             if (!Token::simpleMatch(tok, "BOOST_FOREACH ("))
                 continue;
 
-            const Token *container_tok = tok->next()->link()->previous();
-            if (!Token::Match(container_tok, "%var% ) {"))
+            const Token *containerTok = tok->next()->link()->previous();
+            if (!Token::Match(containerTok, "%var% ) {"))
                 continue;
 
-            const unsigned int container_id = container_tok->varId();
-            if (container_id == 0)
+            const unsigned int containerId = containerTok->varId();
+            if (containerId == 0)
                 continue;
 
-            const Token *tok2 = container_tok->tokAt(2);
+            const Token *tok2 = containerTok->tokAt(2);
             const Token *end = tok2->link();
             for (; tok2 != end; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%varid% . insert|erase|push_back|push_front|pop_front|pop_back|clear|swap|resize|assign|merge|remove|remove_if|reverse|sort|splice|unique|pop|push", container_id)) {
+                if (Token::Match(tok2, "%varid% . insert|erase|push_back|push_front|pop_front|pop_back|clear|swap|resize|assign|merge|remove|remove_if|reverse|sort|splice|unique|pop|push", containerId)) {
                     const Token* nextStatement = Token::findsimplematch(tok2->linkAt(3), ";", end);
                     if (!Token::Match(nextStatement, "; break|return|throw"))
                         boostForeachError(tok2);
