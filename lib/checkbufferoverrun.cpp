@@ -1116,12 +1116,12 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
             Token sizeTok(0);
             sizeTok.str(type);
-            const MathLib::bigint total_size = size * static_cast<int>(_tokenizer->sizeOfType(&sizeTok));
-            if (total_size == 0)
+            const MathLib::bigint totalSize = size * static_cast<int>(_tokenizer->sizeOfType(&sizeTok));
+            if (totalSize == 0)
                 continue;
 
             std::vector<std::string> v;
-            ArrayInfo temp(var->declarationId(), tok->next()->str(), total_size / size, size);
+            ArrayInfo temp(var->declarationId(), tok->next()->str(), totalSize / size, size);
             checkScope(tok->tokAt(nextTok), v, temp);
         }
     }
