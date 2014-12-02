@@ -47,6 +47,12 @@ public:
 
     void check(ErrorLogger * const errorLogger);
 
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+
+    /** @brief Analyse all file infos for all TU */
+    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
+
     static CheckUnusedFunctions instance;
 
 private:

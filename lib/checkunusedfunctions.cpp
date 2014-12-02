@@ -263,3 +263,17 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
     else
         reportError(errmsg);
 }
+
+Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    if (settings->isEnabled("unusedFunction") && settings->_jobs == 1)
+        instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
+    return nullptr;
+
+}
+
+void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger)
+{
+    (void)fileInfo;
+    instance.check(&errorLogger);
+}
