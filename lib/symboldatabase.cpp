@@ -3183,8 +3183,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
     // check for member function
     else if (Token::Match(tok->tokAt(-2), "!!this .")) {
-        if (Token::Match(tok->tokAt(-2), "%var% .")) {
-            const Token *tok1 = tok->tokAt(-2);
+        const Token *tok1 = tok->tokAt(-2);
+        if (Token::Match(tok1, "%var% .")) {
 
             if (tok1->varId()) {
                 const Variable *var = getVariableFromVarId(tok1->varId());
