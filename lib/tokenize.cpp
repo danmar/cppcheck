@@ -6175,26 +6175,42 @@ static const std::map<std::string, std::string> cAlternativeTokens(cAlternativeT
 //  xor_eq   =>     ^=
 bool Tokenizer::simplifyCAlternativeTokens()
 {
+    /* For C code: executable scope level */
+    unsigned int executableScopeLevel = 0;
+
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        Token *start = startOfExecutableScope(tok);
-        if (start) { // Check for executable scope
-            tok = start;
-            Token * const end = tok->link();
-            for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%var%|%num%|)|]|> %any% %var%|%num%|(|%op%")) {
-                    const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok2->next()->str());
-                    if (cOpIt != cAlternativeTokens.end()) {
-                        tok2->next()->str(cOpIt->second);
-                        ret = true;
-                    }
-                }
-                if (Token::Match(tok2, "not|compl %var%|(|%op%") &&
-                    !Token::Match(tok2->previous(), "[;{}]")) { // Don't simplify 'not p;' (in case 'not' is a type)
-                    tok2->str((tok2->str() == "not") ? "!" : "~");
-                    ret = true;
-                }
-            }
+        if (tok->str() == "{") {
+            if (executableScopeLevel > 0 || Token::Match(tok->previous(), ") {"))
+                ++executableScopeLevel;
+            continue;
+        }
+
+        if (tok->str() == "}") {
+            if (executableScopeLevel > 0)
+                --executableScopeLevel;
+            continue;
+        }
+
+        if (!tok->isName())
+            continue;
+
+        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        if (cOpIt != cAlternativeTokens.end()) {
+            if (isC() && !Token::Match(tok->previous(), "%var%|%num%|%char%|)|]|> %var% %var%|%num%|%char%|%op%|("))
+                continue;
+            tok->str(cOpIt->second);
+            ret = true;
+        }
+        else if (Token::Match(tok, "not|compl")) {
+            // Don't simplify 'not p;' (in case 'not' is a type)
+            if (isC() && (!Token::Match(tok->next(), "%var%|%op%|(") ||
+                          Token::Match(tok->previous(), "[;{}]") ||
+                          (executableScopeLevel == 0U && tok->strAt(-1) == "(")))
+                continue;
+
+            tok->str((tok->str() == "not") ? "!" : "~");
+            ret = true;
         }
     }
     return ret;
