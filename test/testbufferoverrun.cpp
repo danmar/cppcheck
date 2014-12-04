@@ -316,6 +316,8 @@ private:
         TEST_CASE(writeOutsideBufferSize)
 
         TEST_CASE(negativeMemoryAllocationSizeError) // #389
+
+        TEST_CASE(garbage1) // #6303
     }
 
 
@@ -4261,6 +4263,14 @@ private:
               "   free(a);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
+    }
+
+    void garbage1() {
+        check("void foo() {\n"
+              "char *a = malloc(10);\n"
+              "a[0]\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

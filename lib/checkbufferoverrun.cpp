@@ -517,7 +517,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     const bool isPortabilityEnabled = _settings->isEnabled("portability");
 
-    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
+    for (const Token* const end = tok->scope()->classEnd; tok && tok != end; tok = tok->next()) {
         if (declarationId != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", declarationId)) {
             // Abort
             break;
