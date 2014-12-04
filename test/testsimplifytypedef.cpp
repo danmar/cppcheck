@@ -155,6 +155,7 @@ private:
         TEST_CASE(simplifyTypedefFunction7);
         TEST_CASE(simplifyTypedefFunction8);
         TEST_CASE(simplifyTypedefFunction9);
+        TEST_CASE(simplifyTypedefFunction10); // #5191
 
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
     }
@@ -3118,6 +3119,25 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedefFunction10() {
+        const char code[] = "enum Format_E1 { FORMAT11 FORMAT12 } Format_T1;\n"
+                            "namespace MySpace {\n"
+                            "   enum Format_E2 { FORMAT21 FORMAT22 } Format_T2;\n"
+                            "}\n"
+                            "typedef Format_E1 (**PtrToFunPtr_Type1)();\n"
+                            "typedef MySpace::Format_E2 (**PtrToFunPtr_Type2)();\n"
+                            "PtrToFunPtr_Type1 t1;\n"
+                            "PtrToFunPtr_Type2 t2;\n";
+        ASSERT_EQUALS("int Format_T1 ; "
+                      "namespace MySpace "
+                      "{ "
+                      "int Format_T2 ; "
+                      "} "
+                      "int ( * * t1 ) ( ) ; "
+                      "int ( * * t2 ) ( ) ;",
+                      tok(code,false));
     }
 
     void simplifyTypedefShadow() { // shadow variable (#4445)
