@@ -6181,7 +6181,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "{") {
-            if (executableScopeLevel > 0 || Token::Match(tok->previous(), ") {"))
+            if (executableScopeLevel > 0 || Token::simpleMatch(tok->previous(), ") {"))
                 ++executableScopeLevel;
             continue;
         }
