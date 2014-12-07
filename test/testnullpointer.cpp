@@ -2575,6 +2575,13 @@ private:
 
         check("void f() { strtok(NULL, 'x');}");
         ASSERT_EQUALS("",errout.str());
+
+        // #6306 "false positive with strxfrm NULL argument"
+        check("void foo(void) { size_t res = strxfrm(NULL, \"foo\", 0); }");
+        ASSERT_EQUALS("",errout.str());
+        check("void foo(void) { size_t res = strxfrm(NULL, \"foo\", 42); }");
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Null pointer dereference\n", "", errout.str());
+
     }
 
     void nullpointerFputc() {
