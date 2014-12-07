@@ -1870,7 +1870,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar46() { // #5491/#5494
+    void localvar46() { // #5491/#5494/#6301
         functionVariableUsage("int func() {\n"
                               "    int i = 0;\n"
                               "    int j{i};\n"
@@ -1882,6 +1882,11 @@ private:
                               "    std::mutex m;\n"
                               "    std::unique_lock<std::mutex> l{ m };\n"
                               "    return 0;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int func() {\n"
+                              "    std::shared_lock<std::shared_timed_mutex> lock( m );\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
