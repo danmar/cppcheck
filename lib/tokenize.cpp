@@ -10238,6 +10238,8 @@ void Tokenizer::removeUnnecessaryQualification()
     if (isC())
         return;
 
+    const bool portabilityEnabled = _settings->isEnabled("portability");
+
     std::vector<Space> classInfo;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct|namespace %type% :|{") &&
@@ -10277,7 +10279,9 @@ void Tokenizer::removeUnnecessaryQualification()
                     tok1 = tok1->next();
 
                 if (tok1 && Token::Match(tok1->link(), ") const| {|;|:")) {
-                    std::string qualification = tok->str() + "::";
+                    std::string qualification;
+                    if (portabilityEnabled)
+                        qualification = tok->str() + "::";
 
                     // check for extra qualification
                     /** @todo this should be made more generic to handle more levels */
@@ -10285,13 +10289,13 @@ void Tokenizer::removeUnnecessaryQualification()
                         if (classInfo.size() >= 2) {
                             if (classInfo[classInfo.size() - 2].className != tok->strAt(-2))
                                 continue;
-                            else
+                            if (portabilityEnabled)
                                 qualification = tok->strAt(-2) + "::" + qualification;
                         } else
                             continue;
                     }
 
-                    if (_settings->isEnabled("portability"))
+                    if (portabilityEnabled)
                         unnecessaryQualificationError(tok, qualification);
 
                     tok->deleteNext();
