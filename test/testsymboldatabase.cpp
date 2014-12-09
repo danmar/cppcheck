@@ -219,6 +219,7 @@ private:
         TEST_CASE(symboldatabase44);
         TEST_CASE(symboldatabase45); // #6125
         TEST_CASE(symboldatabase46); // #6171 (anonymous namespace)
+        TEST_CASE(symboldatabase47); // #6308
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -1996,6 +1997,19 @@ private:
         ++scope;
         ASSERT_EQUALS(Scope::eStruct, scope->type);
         ASSERT_EQUALS(scope->className, "S");
+    }
+
+    void symboldatabase47() { // #6308 - associate Function and Scope for destructors
+        GET_SYMBOL_DB("namespace NS {\n"
+                      "    class MyClass {\n"
+                      "        ~MyClass();\n"
+                      "    };\n"
+                      "}\n"
+                      "using namespace NS;\n"
+                      "MyClass::~MyClass() {\n"
+                      "    delete Example;\n"
+                      "}");
+        ASSERT(db && !db->functionScopes.empty() && db->functionScopes.front()->function && db->functionScopes.front()->function->functionScope == db->functionScopes.front());
     }
 
     void isImplicitlyVirtual() {

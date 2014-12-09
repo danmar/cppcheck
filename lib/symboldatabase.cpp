@@ -3462,7 +3462,10 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     if (!function) {
         const Scope * scope = ns->findRecordInNestedList(func->str());
         if (scope && func->strAt(1) == "::") {
-            function = findFunctionInScope(func->tokAt(2), scope);
+            func = func->tokAt(2);
+            if (func->str() == "~")
+                func = func->next();
+            function = findFunctionInScope(func, scope);
         }
     }
 
