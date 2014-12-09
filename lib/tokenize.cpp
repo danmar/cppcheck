@@ -1097,8 +1097,10 @@ void Tokenizer::simplifyTypedef()
 
                         if (good) {
                             // remove any extra qualification if present
-                            while (count--)
+                            while (count) {
                                 tok2->tokAt(-3)->deleteNext(2);
+                                --count;
+                            }
 
                             // remove global namespace if present
                             if (tok2->strAt(-1) == "::") {
@@ -1589,10 +1591,11 @@ void Tokenizer::simplifyMulAndParens()
                         Token::Match(tokbegin->tokAt(-2), "[;{}&(] * &") ||
                         Token::Match(tokbegin->tokAt(-3), "[;{}&(] * ( &")) {
                         //remove the excessive parentheses around the variable
-                        while (openpars--) {
+                        while (openpars) {
                             tok->deleteNext();
                             tokbegin->deleteNext();
                             --closedpars;
+                            --openpars;
                         }
                     } else
                         break;
@@ -4998,7 +5001,7 @@ void Tokenizer::simplifyCasts()
         if (Token::Match(tok->next(), "( %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
             const MathLib::bigint value = MathLib::toLongNumber(tok->next()->link()->next()->str());
             unsigned int bits = 8 * _typeSize[tok->next()->link()->previous()->str()];
-            if (!tok->tokAt(2)->isUnsigned())
+            if (!tok->tokAt(2)->isUnsigned() && bits > 0)
                 bits--;
             if (bits < 31 && value >= 0 && value < (1LL << bits)) {
                 Token::eraseTokens(tok, tok->next()->link()->next());
@@ -6525,8 +6528,8 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
-                    std::string::size_type n = std::string::npos;
-                    while ((n = value.find("%%",n+1)) != std::string::npos) {
+                    std::string::difference_type n = -1;
+                    while (static_cast<std::string::size_type>(n = value.find("%%",n+1)) != std::string::npos) {
                         value.replace(n,2,"%");
                     }
                 }

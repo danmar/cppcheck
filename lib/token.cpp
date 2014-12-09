@@ -153,10 +153,11 @@ std::string Token::strValue() const
 
 void Token::deleteNext(unsigned long index)
 {
-    while (_next && index--) {
+    while (_next && index) {
         Token *n = _next;
         _next = n->next();
         delete n;
+        --index;
     }
 
     if (_next)

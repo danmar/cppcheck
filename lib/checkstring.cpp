@@ -217,9 +217,9 @@ void CheckString::checkIncorrectStringCompare()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
-            if (Token::Match(tok, "%var% (") &&
-                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")) &&
-                (tok->str().find("assert") + 6U == tok->str().size() || tok->str().find("ASSERT") + 6U == tok->str().size()))
+            if (tok->str().size() >= 6U && (tok->str().find("assert") == tok->str().size() - 6U || tok->str().find("ASSERT") == tok->str().size() - 6U) &&
+                Token::Match(tok, "%var% (") &&
+                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
                 tok = tok->next()->link();
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
