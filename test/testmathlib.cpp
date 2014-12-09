@@ -54,6 +54,7 @@ private:
         TEST_CASE(cos);
         TEST_CASE(tan);
         TEST_CASE(abs);
+        TEST_CASE(toString);
     }
 
     void isGreater() const {
@@ -165,6 +166,9 @@ private:
         // ------------------
 
         // from hex
+        ASSERT_EQUALS(0     , MathLib::toLongNumber("0x0"));
+        ASSERT_EQUALS(0     , MathLib::toLongNumber("-0x0"));
+        ASSERT_EQUALS(0     , MathLib::toLongNumber("+0x0"));
         ASSERT_EQUALS(10    , MathLib::toLongNumber("0xa"));
         ASSERT_EQUALS(10995 , MathLib::toLongNumber("0x2AF3"));
         ASSERT_EQUALS(-10   , MathLib::toLongNumber("-0xa"));
@@ -202,8 +206,13 @@ private:
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
+        // zero input
         ASSERT_EQUALS(0    , MathLib::toULongNumber("0"));
-        ASSERT_EQUALS(0U    , MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(0    , MathLib::toULongNumber("-0"));
+        ASSERT_EQUALS(0    , MathLib::toULongNumber("+0"));
+        ASSERT_EQUALS(0U   , MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(0    , MathLib::toULongNumber("-0x0"));
+
         ASSERT_EQUALS(1U    , MathLib::toULongNumber("1U"));
         ASSERT_EQUALS(10000U    , MathLib::toULongNumber("1e4"));
         ASSERT_EQUALS(10000U    , MathLib::toULongNumber("1e4"));
@@ -622,10 +631,14 @@ private:
         ASSERT_EQUALS(false, MathLib::isFloat(""));
         ASSERT_EQUALS(false, MathLib::isFloat("."));
         ASSERT_EQUALS(false, MathLib::isFloat("..."));
+        ASSERT_EQUALS(false, MathLib::isFloat(".e"));
+        ASSERT_EQUALS(false, MathLib::isFloat(".E"));
         ASSERT_EQUALS(false, MathLib::isFloat("+E."));
         ASSERT_EQUALS(false, MathLib::isFloat("+e."));
         ASSERT_EQUALS(false, MathLib::isFloat("-E."));
         ASSERT_EQUALS(false, MathLib::isFloat("-e."));
+        ASSERT_EQUALS(false, MathLib::isFloat("-X"));
+        ASSERT_EQUALS(false, MathLib::isFloat("+X"));
         ASSERT_EQUALS(false, MathLib::isFloat("-."));
         ASSERT_EQUALS(false, MathLib::isFloat("-."));
         ASSERT_EQUALS(false, MathLib::isFloat("-"));
@@ -685,7 +698,6 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+001F"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+001l"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+001L"));
-        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001f2"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1E+10000"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1E+1"));
         ASSERT_EQUALS(true , MathLib::isFloat("-1E+10000"));
@@ -694,6 +706,15 @@ private:
         ASSERT_EQUALS(true , MathLib::isFloat("-1E-10000"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1.23e+01"));
         ASSERT_EQUALS(true , MathLib::isFloat("+1.23E+01"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1e+x"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+X"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001lX"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001LX"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001f2"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+001F2"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1e+003x"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+003X"));
+
 
         ASSERT_EQUALS(true , MathLib::isFloat("0.4"));
         ASSERT_EQUALS(true , MathLib::isFloat("2352.3f"));
@@ -952,6 +973,18 @@ private:
         ASSERT_EQUALS("1.0"   , MathLib::abs("+1.0"));
         ASSERT_EQUALS("1.0"   , MathLib::abs("-1"));
         ASSERT_EQUALS("1.0"   , MathLib::abs("-1.0"));
+    }
+
+    void toString() {
+        ASSERT_EQUALS("0.0"   , MathLib::toString(0.0));
+        ASSERT_EQUALS("0.0"   , MathLib::toString(+0.0));
+        ASSERT_EQUALS("0.0"   , MathLib::toString(-0.0));
+        // float (trailing f or F)
+        ASSERT_EQUALS("0"     , MathLib::toString(+0.0f));
+        ASSERT_EQUALS("-0"    , MathLib::toString(-0.0F));
+        // double (tailing l or L)
+        ASSERT_EQUALS("0"     , MathLib::toString(+0.0l));
+        ASSERT_EQUALS("-0"    , MathLib::toString(-0.0L));
     }
 };
 
