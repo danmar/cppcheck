@@ -2665,6 +2665,9 @@ private:
               "  strdup(x);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+
+        check("DIR* f(){ DIR *dirp = 0; return readdir (dirp);}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Possible null pointer dereference: dirp\n",errout.str());
     }
 };
 
