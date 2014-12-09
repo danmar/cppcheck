@@ -2408,9 +2408,9 @@ private:
         }
     }
 
-#define CLASS_FUNC(x, y) const Function *x = findFunctionByName(#x, y); \
+#define CLASS_FUNC(x, y, z) const Function *x = findFunctionByName(#x, y); \
                          ASSERT_EQUALS(true, x != nullptr);             \
-                         if (x) ASSERT_EQUALS(true, x->isNoExcept);
+                         if (x) ASSERT_EQUALS(z, x->isNoExcept);
 
     void noexceptFunction3() {
         GET_SYMBOL_DB("struct Fred {\n"
@@ -2426,6 +2426,7 @@ private:
                       "    void func10() noexcept = 0;\n"
                       "    void func11() const noexcept(true) = 0;\n"
                       "    void func12() const noexcept(true) = 0;\n"
+                      "    void func13() const noexcept(false) = 0;\n"
                       "};");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
@@ -2434,18 +2435,19 @@ private:
             const Scope *fred = db->findScopeByName("Fred");
             ASSERT_EQUALS(true, fred != nullptr);
             if (fred) {
-                CLASS_FUNC(func1, fred);
-                CLASS_FUNC(func2, fred);
-                CLASS_FUNC(func3, fred);
-                CLASS_FUNC(func4, fred);
-                CLASS_FUNC(func5, fred);
-                CLASS_FUNC(func6, fred);
-                CLASS_FUNC(func7, fred);
-                CLASS_FUNC(func8, fred);
-                CLASS_FUNC(func9, fred);
-                CLASS_FUNC(func10, fred);
-                CLASS_FUNC(func11, fred);
-                CLASS_FUNC(func12, fred);
+                CLASS_FUNC(func1, fred, true);
+                CLASS_FUNC(func2, fred, true);
+                CLASS_FUNC(func3, fred, true);
+                CLASS_FUNC(func4, fred, true);
+                CLASS_FUNC(func5, fred, true);
+                CLASS_FUNC(func6, fred, true);
+                CLASS_FUNC(func7, fred, true);
+                CLASS_FUNC(func8, fred, true);
+                CLASS_FUNC(func9, fred, true);
+                CLASS_FUNC(func10, fred, true);
+                CLASS_FUNC(func11, fred, true);
+                CLASS_FUNC(func12, fred, true);
+                CLASS_FUNC(func13, fred, false);
             }
         }
     }
@@ -2469,7 +2471,7 @@ private:
             const Scope *b = db->findScopeByName("B");
             ASSERT_EQUALS(true, b != nullptr);
             if (b) {
-                CLASS_FUNC(B, b);
+                CLASS_FUNC(B, b, true);
             }
         }
     }

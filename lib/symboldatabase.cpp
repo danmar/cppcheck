@@ -475,14 +475,15 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else if (Token::Match(end, ") const| noexcept (") &&
                                  (end->next()->str() == "const" ? Token::Match(end->linkAt(3), ") ;|=") :
                                   Token::Match(end->linkAt(2), ") ;|="))) {
-                            function.isNoExcept = true;
 
                             if (end->next()->str() == "const")
                                 tok = end->tokAt(3);
                             else
                                 tok = end->tokAt(2);
 
-                            if (Token::Match(tok, "= %any% ;")) {
+                            function.isNoExcept = tok->strAt(1) != "false";
+
+                            if (Token::Match(tok->link()->next(), "= %any% ;")) {
                                 function.isPure = true;
                                 tok = tok->tokAt(2);
                             }
