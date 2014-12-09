@@ -121,34 +121,51 @@ private:
     }
 
     void functionpointer() {
+        check("void foo() { }\n"
+              "int main() {\n"
+              "    f(&foo);\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { }\n"
+              "int main() {\n"
+              "    f(&::foo);\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("namespace abc {\n"
-              "void foo() { }\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
               "    f(&abc::foo);\n"
               "    return 0\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace abc {\n"
-              "void foo() { }\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
               "    f = &abc::foo;\n"
               "    return 0\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("namespace abc {\n"  // #3875
-              "void foo() { }\n"
+        check("namespace abc {\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
+              "    f = &::abc::foo;\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace abc {\n"  // #3875
+              "    void foo() { }\n"
+              "};\n"
+              "int main() {\n"
               "    f(abc::foo);\n"
               "    return 0\n"
               "}");

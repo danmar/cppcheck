@@ -165,31 +165,24 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         const Token *funcname = nullptr;
 
-        if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% (")) {
+        if (tok->scope()->isExecutable() && Token::Match(tok, "%var% (")) {
+            funcname = tok;
+        } else if (tok->scope()->isExecutable() && Token::Match(tok, "%var% <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+            funcname = tok;
+        } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
-        }
-
-        else if (tok->scope()->isExecutable() && Token::Match(tok->next(), "%var% <") && Token::simpleMatch(tok->linkAt(2), "> (")) {
-            funcname = tok->next();
-        }
-
-        else if (Token::Match(tok, "[;{}.,()[=+-/|!?:] &| %var% [(),;]:}]")) {
-            funcname = tok->next();
-            if (funcname->str() == "&")
+            if (funcname && funcname->str() == "&")
                 funcname = funcname->next();
-        }
-
-        else if (Token::Match(tok, "[;{}.,()[=+-/|!?:] &| %var% :: %var%")) {
-            funcname = tok->next();
-            if (funcname->str() == "&")
+            if (funcname && funcname->str() == "::")
                 funcname = funcname->next();
-            while (Token::Match(funcname,"%var% :: %var%"))
+            while (Token::Match(funcname, "%var% :: %var%"))
                 funcname = funcname->tokAt(2);
-            if (!Token::Match(funcname, "%var% [(),;:}]"))
+
+            if (!Token::Match(funcname, "%var% [(),;]:}]"))
                 continue;
         }
 
-        else
+        if (!funcname)
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {
