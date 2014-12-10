@@ -331,6 +331,7 @@ private:
         TEST_CASE(tmpfile_function);
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
+        TEST_CASE(posix_rewinddir);
         TEST_CASE(getc_function);
 
         TEST_CASE(open_function);
@@ -3678,6 +3679,14 @@ private:
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
               "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void posix_rewinddir() {
+        Settings settings;
+        settings.standards.posix = true;
+
+        check("void f(DIR *p) { rewinddir(p); }", &settings);
         ASSERT_EQUALS("", errout.str());
     }
 
