@@ -4277,6 +4277,13 @@ private:
               "}", &settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: f\n", errout.str());
 
+        // strdupa allocates on the stack, no free() needed
+        check("void x()\n"
+              "{\n"
+              "    char *s = strdupa(\"Test\");\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
         LOAD_LIB_2(settings.library, "gtk.cfg");
 
         check("void f(char *a) {\n"

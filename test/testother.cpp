@@ -172,6 +172,7 @@ private:
         TEST_CASE(integerOverflow); // #5895
 
         TEST_CASE(testReturnIgnoredReturnValue);
+        TEST_CASE(testReturnIgnoredReturnValuePosix);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6365,6 +6366,23 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnIgnoredReturnValuePosix() {
+        Settings settings_posix;
+        LOAD_LIB_2(settings_posix.library, "posix.cfg");
+
+        check("void f() {\n"
+              "    strdupa(\"test\");\n"
+              "}",
+              "test.cpp",
+              false, // experimental
+              false, // inconclusive
+              true,  // posix
+              false, // runSimpleChecks
+              &settings_posix
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strdupa() is not used.\n", errout.str());
     }
 };
 
