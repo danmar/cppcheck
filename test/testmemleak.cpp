@@ -367,6 +367,7 @@ private:
 
         // test that the cfg files are configured correctly
         TEST_CASE(posixcfg);
+        TEST_CASE(posixcfg_mmap);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -4243,7 +4244,6 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
-
     // Test that posix.cfg is configured correctly
     void posixcfg() {
         Settings settings;
@@ -4302,6 +4302,54 @@ private:
               "    mktemp(s);\n"
               "}", &settings);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
+    }
+
+    void posixcfg_mmap() {
+        Settings settings;
+        settings.standards.posix = true;
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
+        // normal mmap
+        check("void f(int fd) {\n"
+              "    char *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    munmap(addr, 255);\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        // mmap64 - large file support
+        check("void f(int fd) {\n"
+              "    char *addr = mmap64(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    munmap(addr, 255);\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        // pass in fixed address
+        check("void f(int fd) {\n"
+              "    void *fixed_addr = 123;\n"
+              "    void *mapped_addr = mmap(fixed_addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    munmap(mapped_addr, 255);\n"
+              "}", &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        // no munmap()
+        check("void f(int fd) {\n"
+              "    void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: addr\n", errout.str());
+
+        // wrong deallocator
+        check("void f(int fd) {\n"
+              "    void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    free(addr);\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: addr\n", errout.str());
+
+        // wrong deallocator for mmap64
+        check("void f(int fd) {\n"
+              "    void *addr = mmap64(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    free(addr);\n"
+              "}", &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: addr\n", errout.str());
     }
 };
 
