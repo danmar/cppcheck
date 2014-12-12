@@ -6383,6 +6383,21 @@ private:
               &settings_posix
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strdupa() is not used.\n", errout.str());
+
+        // mmap(): error about unused return address since fixed_addr is just a hint
+        check("void f(int fd) {\n"
+              "    void *fixed_addr = 123;\n"
+              "    mmap(fixed_addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    munmap(fixed_addr, 255);\n"
+              "}",
+              "test.cpp",
+              false, // experimental
+              false, // inconclusive
+              true,  // posix
+              false, // runSimpleChecks
+              &settings_posix
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mmap() is not used.\n", errout.str());
     }
 };
 
