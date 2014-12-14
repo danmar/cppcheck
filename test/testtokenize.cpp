@@ -338,6 +338,7 @@ private:
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
+        TEST_CASE(cpp0xtemplate4); // Ticket #6181: Mishandled C++11 syntax
 
         TEST_CASE(arraySize);
 
@@ -826,7 +827,7 @@ private:
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
-        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+        tokenizeAndStringify(code, true);
     }
 
     void tokenize34() { // #6121
@@ -5205,6 +5206,13 @@ private:
                            "{ } ;\n"
                            "S < int , ( T ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
+    }
+
+    void cpp0xtemplate4() { // #6181
+        tokenizeAndStringify("class A; "
+                             "template <class T> class Disposer; "
+                             "template <typename T, class D = Disposer<T>> class Shim {}; "
+                             "class B : public Shim<A> {};");
     }
 
     std::string arraySize_(const std::string &code) {

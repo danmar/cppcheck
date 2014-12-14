@@ -1315,6 +1315,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                         ++indentlevel5;
                     else if (indentlevel5 > 0 && Token::Match(tok5, "> [,>]"))
                         --indentlevel5;
+                    else if (indentlevel5 > 0 && tok5->str() == ">>")
+                        indentlevel5 -= 2;
                     else if (indentlevel5 == 0) {
                         if (tok5->str() != ",") {
                             if (!typetok ||
