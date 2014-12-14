@@ -85,6 +85,7 @@ private:
         TEST_CASE(template48);  // #6134 - 100% CPU upon invalid code
         TEST_CASE(template49);  // #6237 - template instantiation
         TEST_CASE(template50);  // #4272 - simple partial specialization
+        TEST_CASE(template51);  // #6172 - crash upon valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -917,7 +918,16 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-
+    void template51() { // #6172
+        tok("template<int N, int ... M> struct A { "
+            "  static void foo() { "
+            "    int i = N; "
+            "  } "
+            "}; "
+            "void bar() { "
+            "  A<0>::foo(); "
+            "}");
+    }
 
     void template_default_parameter() {
         {
