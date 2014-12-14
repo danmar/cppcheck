@@ -403,6 +403,12 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 37));
 
+        code = "void f(int x) {\n"
+               "  a = x;\n"
+               "  for (; x!=1; x++) { }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
+
         code = "void f(menu *x) {\n"
                "  a = x->parent;\n"
                "  for (i=0;(i<10) && (x!=0); i++) { x = x->next; }\n"

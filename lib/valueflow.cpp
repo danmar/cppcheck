@@ -468,6 +468,16 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, ErrorLogger *errorLog
             if (tok2->astParent() || tok2->str() != "(" || !Token::simpleMatch(tok2->link(), ") {"))
                 continue;
 
+            // Variable changed in 3rd for-expression
+            if (Token::simpleMatch(tok2->previous(), "for (")) {
+                if (isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid)) {
+                    varid = 0U;
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
+                }
+            }
+
+            // Variable changed in loop code
             if (Token::Match(tok2->previous(), "for|while (")) {
                 const Token * const start = tok2->link()->next();
                 const Token * const end   = start->link();
