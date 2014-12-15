@@ -77,6 +77,8 @@ private:
 
         // dead pointer
         TEST_CASE(deadPointer);
+
+        TEST_CASE(uninitvar_posix_write);
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -3871,6 +3873,65 @@ private:
                          "  }\n"
                          "  f(tmp);\n"
                          "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_posix_write() { // #6325
+        // Load posix library file
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
+        // check the first parameter of write
+        checkUninitVar("void uninitvar(char *buf)\n"
+                       "{\n"
+                       "    int fd;\n"
+                       "    write(fd, buf, sizeof(buf));\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: fd\n", errout.str());
+
+        checkUninitVar("void no_uninitvar(int fd, char *buf)\n"
+                       "{\n"
+                       "    write(fd, buf, sizeof(buf));\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // check the second parameter of the posix function write
+        checkUninitVar("void uninitvar() {\n"
+                       "    char *buf;\n"
+                       "    write(STDOUT_FILENO, buf, sizeof(buf));\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: buf\n", errout.str());
+
+        checkUninitVar("void uninitvar() {\n"
+                       "    char buf[2];\n"
+                       "    write(STDOUT_FILENO, buf, 2);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: buf\n", errout.str());
+
+        // avoid false positives
+        checkUninitVar("void no_uninitvar(char *buf) {\n"
+                       "    write(STDOUT_FILENO, buf, sizeof(buf));\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void no_uninitvar() {\n"
+                       "    char buf[1] = {'c'};\n"
+                       "    write(STDOUT_FILENO, &buf, 1);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // check the third parameter of the posix function write
+        checkUninitVar("void uninitvar(char *buf) {\n"
+                       "    int nbytes;\n"
+                       "    write(STDOUT_FILENO, buf, nbytes);\n"
+                       "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: nbytes\n", "", errout.str());
+
+        checkUninitVar("void no_uninitvar(char *buf, int nbytes)\n"
+                       "{\n"
+                       "    write(STDOUT_FILENO, buf, nbytes);\n"
+                       "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
