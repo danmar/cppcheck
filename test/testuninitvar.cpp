@@ -2046,16 +2046,16 @@ private:
     }
 
     void uninitvar_typeof() {
-        checkUninitVar("void f() {\n"
-                       "    struct Fred *fred;\n"
-                       "    typeof(fred->x);\n"
-                       "}");
+        checkUninitVar2("void f() {\n"
+                        "    struct Fred *fred;\n"
+                        "    typeof(fred->x);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void f() {\n"
-                       "    struct SData * s;\n"
-                       "    ab(typeof(s->status));\n"
-                       "}");
+        checkUninitVar2("void f() {\n"
+                        "    struct SData * s;\n"
+                        "    ab(typeof(s->status));\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f() {\n"
@@ -3603,9 +3603,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  clearerr (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  clearerr (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fclose
@@ -3615,9 +3615,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  fclose (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  fclose (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fopen
@@ -3635,9 +3635,9 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: filename\n"
                       "[test.cpp:4]: (error) Uninitialized variable: mode\n", errout.str());
 
-        checkUninitVar("void f(FILE * name, char *mode) {\n"
-                       "  fopen (name, mode);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * name, char *mode) {\n"
+                        "  fopen (name, mode);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // feof
@@ -3647,9 +3647,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  feof (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  feof (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // ferror
@@ -3659,9 +3659,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  ferror (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  ferror (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fflush
@@ -3671,9 +3671,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  fflush (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  fflush (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fgetc
@@ -3683,9 +3683,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: pFile\n", errout.str());
 
-        checkUninitVar("void f(FILE * pFile) {\n"
-                       "  fgetc (pFile);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * pFile) {\n"
+                        "  fgetc (pFile);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -3698,15 +3698,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n"
                       "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
-        checkUninitVar("void f(FILE * f) {\n"
-                       "  fpos_t p;"
-                       "  fgetpos (f, &p);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * f) {\n"
+                        "  fpos_t p;"
+                        "  fgetpos (f, &p);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void f(FILE * f, fpos_t *p) {\n"
-                       "  fgetpos (f, p);\n"
-                       "}");
+        checkUninitVar2("void f(FILE * f, fpos_t *p) {\n"
+                        "  fgetpos (f, p);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fsetpos
@@ -3738,15 +3738,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: n\n"
                       "[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
 
-        checkUninitVar("void f(char * s, int n) {\n"
-                       "  FILE *f;\n"
-                       "  fgets (s, n, f);\n"
-                       "}");
+        checkUninitVar2("void f(char * s, int n) {\n"
+                        "  FILE *f;\n"
+                        "  fgets (s, n, f);\n"
+                        "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: f\n","", errout.str());
 
-        checkUninitVar("void f(char * s, int n, FILE *f) {\n"
-                       "  fgets (s, n, f);\n"
-                       "}");
+        checkUninitVar2("void f(char * s, int n, FILE *f) {\n"
+                        "  fgets (s, n, f);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fputc
@@ -3758,9 +3758,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n"
                       "[test.cpp:3]: (error) Uninitialized variable: f\n", errout.str());
 
-        checkUninitVar("void f(int c, FILE *f) {\n"
-                       "  fputc (c, f);\n"
-                       "}");
+        checkUninitVar2("void f(int c, FILE *f) {\n"
+                        "  fputc (c, f);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // fputs
@@ -3772,9 +3772,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n"
                       "[test.cpp:3]: (error) Uninitialized variable: f\n", errout.str());
 
-        checkUninitVar("void f(char *c, FILE *f) {\n"
-                       "  fputs (c, f);\n"
-                       "}");
+        checkUninitVar2("void f(char *c, FILE *f) {\n"
+                        "  fputs (c, f);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // ftell
@@ -3784,9 +3784,9 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: f\n", errout.str());
 
-        checkUninitVar("void f( FILE *f) {\n"
-                       "  ftell (f);\n"
-                       "}");
+        checkUninitVar2("void f( FILE *f) {\n"
+                        "  ftell (f);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // puts
@@ -3796,44 +3796,44 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: c\n", errout.str());
 
-        checkUninitVar("void f( char *c) {\n"
-                       "  puts (c);\n"
-                       "}");
+        checkUninitVar2("void f( char *c) {\n"
+                        "  puts (c);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // putchar
-        checkUninitVar("void f() {\n"
-                       "  char *c;"
-                       "  putchar (*c);\n"
-                       "}");
+        checkUninitVar2("void f() {\n"
+                        "  char *c;"
+                        "  putchar (*c);\n"
+                        "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: c\n", errout.str());
 
-        checkUninitVar("void f( char *c) {\n"
-                       "  putchar (*c);\n"
-                       "}");
+        checkUninitVar2("void f( char *c) {\n"
+                        "  putchar (*c);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // #6116 False positive uninitvar - first argument to wcstombs()
-        checkUninitVar("void f( wchar_t *wstr) {\n"
-                       "  char buf[10];\n"
-                       "  wcstombs (buf, wstr, 3);\n"
-                       "}");
+        checkUninitVar2("void f( wchar_t *wstr) {\n"
+                        "  char buf[10];\n"
+                        "  wcstombs (buf, wstr, 3);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
-        checkUninitVar("void f( char *str) {\n"
-                       "  wchar_t wbuf[10];\n"
-                       "  mbstowcs (wbuf, str, 3);\n"
-                       "}");
+        checkUninitVar2("void f( char *str) {\n"
+                        "  wchar_t wbuf[10];\n"
+                        "  mbstowcs (wbuf, str, 3);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void foo() {\n"
-                       "  char buf[10];\n"
-                       "  tmpnam(buf);\n"
-                       "}");
+        checkUninitVar2("void foo() {\n"
+                        "  char buf[10];\n"
+                        "  tmpnam(buf);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
-        checkUninitVar("void foo() {\n"
-                       "  char *ptr;\n"
-                       "  tmpnam(ptr);\n"
-                       "}");
+        checkUninitVar2("void foo() {\n"
+                        "  char *ptr;\n"
+                        "  tmpnam(ptr);\n"
+                        "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: ptr\n", "", errout.str());
     }
 
@@ -3893,10 +3893,10 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: fd\n", errout.str());
 
-        checkUninitVar("void no_uninitvar(int fd, char *buf)\n"
-                       "{\n"
-                       "    write(fd, buf, sizeof(buf));\n"
-                       "}");
+        checkUninitVar2("void no_uninitvar(int fd, char *buf)\n"
+                        "{\n"
+                        "    write(fd, buf, 8);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
 
@@ -3914,29 +3914,29 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: buf\n", errout.str());
 
         // avoid false positives
-        checkUninitVar("void no_uninitvar(char *buf) {\n"
-                       "    write(STDOUT_FILENO, buf, sizeof(buf));\n"
-                       "}");
+        checkUninitVar2("void no_uninitvar(char *buf) {\n"
+                        "    write(STDOUT_FILENO, buf, 8);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void no_uninitvar() {\n"
-                       "    char buf[1] = {'c'};\n"
-                       "    write(STDOUT_FILENO, &buf, 1);\n"
-                       "}");
+        checkUninitVar2("void no_uninitvar() {\n"
+                        "    char buf[1] = {'c'};\n"
+                        "    write(STDOUT_FILENO, &buf, 1);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
 
         // check the third parameter of the posix function write
-        checkUninitVar("void uninitvar(char *buf) {\n"
-                       "    int nbytes;\n"
-                       "    write(STDOUT_FILENO, buf, nbytes);\n"
-                       "}");
+        checkUninitVar2("void uninitvar(char *buf) {\n"
+                        "    int nbytes;\n"
+                        "    write(STDOUT_FILENO, buf, nbytes);\n"
+                        "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: nbytes\n", "", errout.str());
 
-        checkUninitVar("void no_uninitvar(char *buf, int nbytes)\n"
-                       "{\n"
-                       "    write(STDOUT_FILENO, buf, nbytes);\n"
-                       "}");
+        checkUninitVar2("void no_uninitvar(char *buf, int nbytes)\n"
+                        "{\n"
+                        "    write(STDOUT_FILENO, buf, nbytes);\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
