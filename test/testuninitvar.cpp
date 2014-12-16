@@ -72,8 +72,24 @@ private:
 
         TEST_CASE(syntax_error); // Ticket #5073
 
-        // Test that std.cfg is configured correctly
-        TEST_CASE(stdcfg);
+        // Test that the functions from std.cfg are configured correctly
+        TEST_CASE(stdcfg_clearerr);
+        TEST_CASE(stdcfg_fclose);
+        TEST_CASE(stdcfg_fopen);
+        TEST_CASE(stdcfg_feof);
+        TEST_CASE(stdcfg_ferror);
+        TEST_CASE(stdcfg_fflush);
+        TEST_CASE(stdcfg_fgetc);
+        TEST_CASE(stdcfg_fgetpos);
+        TEST_CASE(stdcfg_fsetpos);
+        TEST_CASE(stdcfg_fgets);
+        TEST_CASE(stdcfg_fputc);
+        TEST_CASE(stdcfg_fputs);
+        TEST_CASE(stdcfg_ftell);
+        TEST_CASE(stdcfg_puts);
+        TEST_CASE(stdcfg_putchar);
+        TEST_CASE(stdcfg_wcstombs);
+        TEST_CASE(stdcfg_tmpnam);
 
         // dead pointer
         TEST_CASE(deadPointer);
@@ -3594,9 +3610,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (debug) assertion failed '} while ('\n", errout.str());
     }
 
-    // Test that std.cfg is configured correctly
-    void stdcfg() {
-        // clearerr
+    // Test that the clearerr function, defined in std.cfg is configured correctly.
+    void stdcfg_clearerr() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  clearerr (pFile);\n"
@@ -3607,8 +3622,10 @@ private:
                         "  clearerr (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fclose
+    // Test that the fclose function, defined in std.cfg is configured correctly.
+    void stdcfg_fclose() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  fclose (pFile);\n"
@@ -3619,8 +3636,10 @@ private:
                         "  fclose (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fopen
+    // Test that the fopen function, defined in std.cfg is configured correctly.
+    void stdcfg_fopen() {
         checkUninitVar("void f() {\n"
                        "  char * filename;\n"
                        "  fopen (filename, \"w\");\n"
@@ -3639,8 +3658,10 @@ private:
                         "  fopen (name, mode);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // feof
+    // Test that the feof function, defined in std.cfg is configured correctly.
+    void stdcfg_feof() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  feof (pFile);\n"
@@ -3651,8 +3672,10 @@ private:
                         "  feof (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // ferror
+    // Test that the ferror function, defined in std.cfg is configured correctly.
+    void stdcfg_ferror() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  ferror (pFile);\n"
@@ -3663,8 +3686,10 @@ private:
                         "  ferror (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fflush
+    // Test that the fflush function, defined in std.cfg is configured correctly.
+    void stdcfg_fflush() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  fflush (pFile);\n"
@@ -3675,8 +3700,10 @@ private:
                         "  fflush (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fgetc
+    // Test that the fgetc function, defined in std.cfg is configured correctly.
+    void stdcfg_fgetc() {
         checkUninitVar("void f() {\n"
                        "  FILE * pFile;\n"
                        "  fgetc (pFile);\n"
@@ -3687,9 +3714,10 @@ private:
                         "  fgetc (pFile);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-
-        // fgetpos
+    // Test that the fgetpos function, defined in std.cfg is configured correctly.
+    void stdcfg_fgetpos() {
         checkUninitVar("void f() {\n"
                        "  FILE * f;\n"
                        "  fpos_t * p;\n"
@@ -3708,8 +3736,10 @@ private:
                         "  fgetpos (f, p);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fsetpos
+    // Test that the fsetpos function, defined in std.cfg is configured correctly.
+    void stdcfg_fsetpos() {
         checkUninitVar("void f() {\n"
                        "  FILE * f;\n"
                        "  fpos_t * p;\n"
@@ -3728,8 +3758,10 @@ private:
                        "  fsetpos (f, p);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fgets
+    // Test that the fgets function, defined in std.cfg is configured correctly.
+    void stdcfg_fgets() {
         checkUninitVar("void f(FILE *f) {\n"
                        "  char *s;\n"
                        "  int n;\n"
@@ -3748,8 +3780,10 @@ private:
                         "  fgets (s, n, f);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fputc
+    // Test that the fputc function, defined in std.cfg is configured correctly.
+    void stdcfg_fputc() {
         checkUninitVar("void f() {\n"
                        "  int c;\n"
                        "  FILE *f;"
@@ -3762,8 +3796,10 @@ private:
                         "  fputc (c, f);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // fputs
+    // Test that the fputs function, defined in std.cfg is configured correctly.
+    void stdcfg_fputs() {
         checkUninitVar("void f() {\n"
                        "  char *c;\n"
                        "  FILE *f;"
@@ -3776,8 +3812,10 @@ private:
                         "  fputs (c, f);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // ftell
+    // Test that the ftell function, defined in std.cfg is configured correctly.
+    void stdcfg_ftell() {
         checkUninitVar("void f() {\n"
                        "  FILE *f;"
                        "  ftell (f);\n"
@@ -3788,8 +3826,10 @@ private:
                         "  ftell (f);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // puts
+    // Test that the puts function, defined in std.cfg is configured correctly.
+    void stdcfg_puts() {
         checkUninitVar("void f() {\n"
                        "  char *c;"
                        "  puts (c);\n"
@@ -3800,8 +3840,10 @@ private:
                         "  puts (c);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
-        // putchar
+    // Test that the puts function, defined in std.cfg is configured correctly.
+    void stdcfg_putchar() {
         checkUninitVar2("void f() {\n"
                         "  char *c;"
                         "  putchar (*c);\n"
@@ -3812,7 +3854,10 @@ private:
                         "  putchar (*c);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    // Test that the wcstombs function, defined in std.cfg is configured correctly.
+    void stdcfg_wcstombs() {
         // #6116 False positive uninitvar - first argument to wcstombs()
         checkUninitVar2("void f( wchar_t *wstr) {\n"
                         "  char buf[10];\n"
@@ -3824,7 +3869,10 @@ private:
                         "  mbstowcs (wbuf, str, 3);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    // Test that the tmpnam function, defined in std.cfg is configured correctly.
+    void stdcfg_tmpnam() {
         checkUninitVar2("void foo() {\n"
                         "  char buf[10];\n"
                         "  tmpnam(buf);\n"
