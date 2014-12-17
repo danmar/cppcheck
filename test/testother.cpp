@@ -34,9 +34,11 @@ public:
 
 private:
     Settings settings_std;
+    Settings settings_posix;
 
     void run() {
         LOAD_LIB_2(settings_std.library, "std.cfg");
+        LOAD_LIB_2(settings_posix.library, "posix.cfg");
 
         TEST_CASE(emptyBrackets);
 
@@ -183,6 +185,9 @@ private:
             static Settings _settings;
             settings = &_settings;
         }
+        if (posix) {
+            settings = &settings_posix;
+        }
         settings->addEnabled("style");
         settings->addEnabled("warning");
         settings->addEnabled("portability");
@@ -190,16 +195,6 @@ private:
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
         settings->standards.posix = posix;
-
-        if (posix) {
-            const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"usleep\"> <arg nr=\"1\"><valid>0:999999</valid></arg> </function>\n"
-                               "</def>";
-            tinyxml2::XMLDocument xmldoc;
-            xmldoc.Parse(cfg, sizeof(cfg));
-            settings->library.load(xmldoc);
-        }
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -6369,9 +6364,6 @@ private:
     }
 
     void testReturnIgnoredReturnValuePosix() {
-        Settings settings_posix;
-        LOAD_LIB_2(settings_posix.library, "posix.cfg");
-
         check("void f() {\n"
               "    strdupa(\"test\");\n"
               "}",
@@ -6379,8 +6371,7 @@ private:
               false, // experimental
               false, // inconclusive
               true,  // posix
-              false, // runSimpleChecks
-              &settings_posix
+              false  // runSimpleChecks
              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strdupa() is not used.\n", errout.str());
 
@@ -6394,8 +6385,7 @@ private:
               false, // experimental
               false, // inconclusive
               true,  // posix
-              false, // runSimpleChecks
-              &settings_posix
+              false  // runSimpleChecks
              );
         ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mmap() is not used.\n", errout.str());
     }
