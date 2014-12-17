@@ -1449,9 +1449,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                             uninitdataError(tok, tok->str());
                         else
                             uninitvarError(tok, tok->str());
-                    }
-
-                    else
+                    } else
                         // assume that variable is assigned
                         return true;
                 }
@@ -1664,6 +1662,11 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, bool alloc,
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool alloc, bool cpp)
 {
     if (!alloc && vartok->previous()->str() == "return")
+        return true;
+
+    // code like: return foo( variable
+    if (vartok->tokAt(-3) && vartok->tokAt(-3)->str() == "return"
+        && vartok->tokAt(-1) && vartok->tokAt(-1)->str() == "(")
         return true;
 
     // Passing variable to typeof/__alignof__
