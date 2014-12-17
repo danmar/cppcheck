@@ -24,7 +24,7 @@ distribution.
 #include "tinyxml2.h"
 
 #include <new>		// yes, this one new style header, is in the Android SDK.
-#   ifdef ANDROID_NDK
+#if defined(ANDROID_NDK) || defined(__QNXNTO__)
 #   include <stddef.h>
 #else
 #   include <cstddef>
@@ -69,6 +69,29 @@ StrPair::~StrPair()
     Reset();
 }
 
+
+void StrPair::TransferTo( StrPair* other )
+{
+    if ( this == other ) {
+        return;
+    }
+    // This in effect implements the assignment operator by "moving"
+    // ownership (as in auto_ptr).
+
+    TIXMLASSERT( other->_flags == 0 );
+    TIXMLASSERT( other->_start == 0 );
+    TIXMLASSERT( other->_end == 0 );
+
+    other->Reset();
+
+    other->_flags = _flags;
+    other->_start = _start;
+    other->_end = _end;
+
+    _flags = 0;
+    _start = 0;
+    _end = 0;
+}
 
 void StrPair::Reset()
 {
@@ -511,16 +534,19 @@ char* XMLDocument::Identify( char* p, XMLNode** node )
 #endif
     XMLNode* returnNode = 0;
     if ( XMLUtil::StringEqual( p, xmlHeader, xmlHeaderLen ) ) {
+        TIXMLASSERT( sizeof( XMLDeclaration ) == _commentPool.ItemSize() );
         returnNode = new (_commentPool.Alloc()) XMLDeclaration( this );
         returnNode->_memPool = &_commentPool;
         p += xmlHeaderLen;
     }
     else if ( XMLUtil::StringEqual( p, commentHeader, commentHeaderLen ) ) {
+        TIXMLASSERT( sizeof( XMLComment ) == _commentPool.ItemSize() );
         returnNode = new (_commentPool.Alloc()) XMLComment( this );
         returnNode->_memPool = &_commentPool;
         p += commentHeaderLen;
     }
     else if ( XMLUtil::StringEqual( p, cdataHeader, cdataHeaderLen ) ) {
+        TIXMLASSERT( sizeof( XMLText ) == _textPool.ItemSize() );
         XMLText* text = new (_textPool.Alloc()) XMLText( this );
         returnNode = text;
         returnNode->_memPool = &_textPool;
@@ -528,16 +554,19 @@ char* XMLDocument::Identify( char* p, XMLNode** node )
         text->SetCData( true );
     }
     else if ( XMLUtil::StringEqual( p, dtdHeader, dtdHeaderLen ) ) {
+        TIXMLASSERT( sizeof( XMLUnknown ) == _commentPool.ItemSize() );
         returnNode = new (_commentPool.Alloc()) XMLUnknown( this );
         returnNode->_memPool = &_commentPool;
         p += dtdHeaderLen;
     }
     else if ( XMLUtil::StringEqual( p, elementHeader, elementHeaderLen ) ) {
+        TIXMLASSERT( sizeof( XMLElement ) == _elementPool.ItemSize() );
         returnNode = new (_elementPool.Alloc()) XMLElement( this );
         returnNode->_memPool = &_elementPool;
         p += elementHeaderLen;
     }
     else {
+        TIXMLASSERT( sizeof( XMLText ) == _textPool.ItemSize() );
         returnNode = new (_textPool.Alloc()) XMLText( this );
         returnNode->_memPool = &_textPool;
         p = start;	// Back it up, all the text counts.
@@ -600,6 +629,7 @@ void XMLNode::SetValue( const char* str, bool staticMem )
 void XMLNode::DeleteChildren()
 {
     while( _firstChild ) {
+        TIXMLASSERT( _firstChild->_document == _document );
         XMLNode* node = _firstChild;
         Unlink( node );
 
@@ -611,6 +641,7 @@ void XMLNode::DeleteChildren()
 
 void XMLNode::Unlink( XMLNode* child )
 {
+    TIXMLASSERT( child->_document == _document );
     if ( child == _firstChild ) {
         _firstChild = _firstChild->_next;
     }
@@ -630,6 +661,7 @@ void XMLNode::Unlink( XMLNode* child )
 
 void XMLNode::DeleteChild( XMLNode* node )
 {
+    TIXMLASSERT( node->_document == _document );
     TIXMLASSERT( node->_parent == this );
     DeleteNode( node );
 }
@@ -637,8 +669,11 @@ void XMLNode::DeleteChild( XMLNode* node )
 
 XMLNode* XMLNode::InsertEndChild( XMLNode* addThis )
 {
-	if (addThis->_document != _document)
-		return 0;
+    TIXMLASSERT( addThis );
+    if ( addThis->_document != _document ) {
+        TIXMLASSERT( false );
+        return 0;
+    }
 
 	if (addThis->_parent)
 		addThis->_parent->Unlink( addThis );
@@ -668,8 +703,11 @@ XMLNode* XMLNode::InsertEndChild( XMLNode* addThis )
 
 XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
 {
-	if (addThis->_document != _document)
-		return 0;
+    TIXMLASSERT( addThis );
+    if ( addThis->_document != _document ) {
+        TIXMLASSERT( false );
+        return 0;
+    }
 
 	if (addThis->_parent)
 		addThis->_parent->Unlink( addThis );
@@ -700,12 +738,16 @@ XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
 
 XMLNode* XMLNode::InsertAfterChild( XMLNode* afterThis, XMLNode* addThis )
 {
-	if (addThis->_document != _document)
-		return 0;
+    TIXMLASSERT( addThis );
+    if ( addThis->_document != _document ) {
+        TIXMLASSERT( false );
+        return 0;
+    }
 
-    TIXMLASSERT( afterThis->_parent == this );
+    TIXMLASSERT( afterThis );
 
     if ( afterThis->_parent != this ) {
+        TIXMLASSERT( false );
         return 0;
     }
 
@@ -824,7 +866,7 @@ char* XMLNode::ParseDeep( char* p, StrPair* parentEnd )
         // We read the end tag. Return it to the parent.
         if ( ele && ele->ClosingType() == XMLElement::CLOSING ) {
             if ( parentEnd ) {
-                *parentEnd = ele->_value;
+                ele->_value.TransferTo( parentEnd );
             }
 			node->_memPool->SetTracked();	// created and then immediately deleted.
             DeleteNode( node );
@@ -921,6 +963,7 @@ bool XMLText::ShallowEqual( const XMLNode* compare ) const
 
 bool XMLText::Accept( XMLVisitor* visitor ) const
 {
+    TIXMLASSERT( visitor );
     return visitor->Visit( *this );
 }
 
@@ -961,6 +1004,7 @@ XMLNode* XMLComment::ShallowClone( XMLDocument* doc ) const
 
 bool XMLComment::ShallowEqual( const XMLNode* compare ) const
 {
+    TIXMLASSERT( compare );
     const XMLComment* comment = compare->ToComment();
     return ( comment && XMLUtil::StringEqual( comment->Value(), Value() ));
 }
@@ -968,6 +1012,7 @@ bool XMLComment::ShallowEqual( const XMLNode* compare ) const
 
 bool XMLComment::Accept( XMLVisitor* visitor ) const
 {
+    TIXMLASSERT( visitor );
     return visitor->Visit( *this );
 }
 
@@ -1009,6 +1054,7 @@ XMLNode* XMLDeclaration::ShallowClone( XMLDocument* doc ) const
 
 bool XMLDeclaration::ShallowEqual( const XMLNode* compare ) const
 {
+    TIXMLASSERT( compare );
     const XMLDeclaration* declaration = compare->ToDeclaration();
     return ( declaration && XMLUtil::StringEqual( declaration->Value(), Value() ));
 }
@@ -1017,6 +1063,7 @@ bool XMLDeclaration::ShallowEqual( const XMLNode* compare ) const
 
 bool XMLDeclaration::Accept( XMLVisitor* visitor ) const
 {
+    TIXMLASSERT( visitor );
     return visitor->Visit( *this );
 }
 
@@ -1057,6 +1104,7 @@ XMLNode* XMLUnknown::ShallowClone( XMLDocument* doc ) const
 
 bool XMLUnknown::ShallowEqual( const XMLNode* compare ) const
 {
+    TIXMLASSERT( compare );
     const XMLUnknown* unknown = compare->ToUnknown();
     return ( unknown && XMLUtil::StringEqual( unknown->Value(), Value() ));
 }
@@ -1064,6 +1112,7 @@ bool XMLUnknown::ShallowEqual( const XMLNode* compare ) const
 
 bool XMLUnknown::Accept( XMLVisitor* visitor ) const
 {
+    TIXMLASSERT( visitor );
     return visitor->Visit( *this );
 }
 
@@ -1217,17 +1266,6 @@ XMLElement::~XMLElement()
         DeleteAttribute( _rootAttribute );
         _rootAttribute = next;
     }
-}
-
-
-XMLAttribute* XMLElement::FindAttribute( const char* name )
-{
-    for( XMLAttribute* a = _rootAttribute; a; a = a->_next ) {
-        if ( XMLUtil::StringEqual( a->Name(), name ) ) {
-            return a;
-        }
-    }
-    return 0;
 }
 
 
@@ -1393,6 +1431,7 @@ XMLAttribute* XMLElement::FindOrCreateAttribute( const char* name )
         }
     }
     if ( !attrib ) {
+        TIXMLASSERT( sizeof( XMLAttribute ) == _document->_attributePool.ItemSize() );
         attrib = new (_document->_attributePool.Alloc() ) XMLAttribute();
         attrib->_memPool = &_document->_attributePool;
         if ( last ) {
@@ -1442,6 +1481,7 @@ char* XMLElement::ParseAttributes( char* p )
 
         // attribute.
         if (XMLUtil::IsNameStartChar( *p ) ) {
+            TIXMLASSERT( sizeof( XMLAttribute ) == _document->_attributePool.ItemSize() );
             XMLAttribute* attrib = new (_document->_attributePool.Alloc() ) XMLAttribute();
             attrib->_memPool = &_document->_attributePool;
 			attrib->_memPool->SetTracked();
@@ -1544,6 +1584,7 @@ XMLNode* XMLElement::ShallowClone( XMLDocument* doc ) const
 
 bool XMLElement::ShallowEqual( const XMLNode* compare ) const
 {
+    TIXMLASSERT( compare );
     const XMLElement* other = compare->ToElement();
     if ( other && XMLUtil::StringEqual( other->Value(), Value() )) {
 
@@ -1569,6 +1610,7 @@ bool XMLElement::ShallowEqual( const XMLNode* compare ) const
 
 bool XMLElement::Accept( XMLVisitor* visitor ) const
 {
+    TIXMLASSERT( visitor );
     if ( visitor->VisitEnter( *this, _rootAttribute ) ) {
         for ( const XMLNode* node=FirstChild(); node; node=node->NextSibling() ) {
             if ( !node->Accept( visitor ) ) {
@@ -1623,24 +1665,7 @@ XMLDocument::XMLDocument( bool processEntities, Whitespace whitespace ) :
 
 XMLDocument::~XMLDocument()
 {
-    DeleteChildren();
-    delete [] _charBuffer;
-
-#if 0
-    _textPool.Trace( "text" );
-    _elementPool.Trace( "element" );
-    _commentPool.Trace( "comment" );
-    _attributePool.Trace( "attribute" );
-#endif
-
-#ifdef DEBUG
-	if ( Error() == false ) {
-		TIXMLASSERT( _elementPool.CurrentAllocs()   == _elementPool.Untracked() );
-		TIXMLASSERT( _attributePool.CurrentAllocs() == _attributePool.Untracked() );
-		TIXMLASSERT( _textPool.CurrentAllocs()      == _textPool.Untracked() );
-		TIXMLASSERT( _commentPool.CurrentAllocs()   == _commentPool.Untracked() );
-	}
-#endif
+    Clear();
 }
 
 
@@ -1648,17 +1673,37 @@ void XMLDocument::Clear()
 {
     DeleteChildren();
 
+#ifdef DEBUG
+    const bool hadError = Error();
+#endif
     _errorID = XML_NO_ERROR;
     _errorStr1 = 0;
     _errorStr2 = 0;
 
     delete [] _charBuffer;
     _charBuffer = 0;
+
+#if 0
+    _textPool.Trace( "text" );
+    _elementPool.Trace( "element" );
+    _commentPool.Trace( "comment" );
+    _attributePool.Trace( "attribute" );
+#endif
+    
+#ifdef DEBUG
+    if ( !hadError ) {
+        TIXMLASSERT( _elementPool.CurrentAllocs()   == _elementPool.Untracked() );
+        TIXMLASSERT( _attributePool.CurrentAllocs() == _attributePool.Untracked() );
+        TIXMLASSERT( _textPool.CurrentAllocs()      == _textPool.Untracked() );
+        TIXMLASSERT( _commentPool.CurrentAllocs()   == _commentPool.Untracked() );
+    }
+#endif
 }
 
 
 XMLElement* XMLDocument::NewElement( const char* name )
 {
+    TIXMLASSERT( sizeof( XMLElement ) == _elementPool.ItemSize() );
     XMLElement* ele = new (_elementPool.Alloc()) XMLElement( this );
     ele->_memPool = &_elementPool;
     ele->SetName( name );
@@ -1668,6 +1713,7 @@ XMLElement* XMLDocument::NewElement( const char* name )
 
 XMLComment* XMLDocument::NewComment( const char* str )
 {
+    TIXMLASSERT( sizeof( XMLComment ) == _commentPool.ItemSize() );
     XMLComment* comment = new (_commentPool.Alloc()) XMLComment( this );
     comment->_memPool = &_commentPool;
     comment->SetValue( str );
@@ -1677,6 +1723,7 @@ XMLComment* XMLDocument::NewComment( const char* str )
 
 XMLText* XMLDocument::NewText( const char* str )
 {
+    TIXMLASSERT( sizeof( XMLText ) == _textPool.ItemSize() );
     XMLText* text = new (_textPool.Alloc()) XMLText( this );
     text->_memPool = &_textPool;
     text->SetValue( str );
@@ -1686,6 +1733,7 @@ XMLText* XMLDocument::NewText( const char* str )
 
 XMLDeclaration* XMLDocument::NewDeclaration( const char* str )
 {
+    TIXMLASSERT( sizeof( XMLDeclaration ) == _commentPool.ItemSize() );
     XMLDeclaration* dec = new (_commentPool.Alloc()) XMLDeclaration( this );
     dec->_memPool = &_commentPool;
     dec->SetValue( str ? str : "xml version=\"1.0\" encoding=\"UTF-8\"" );
@@ -1695,6 +1743,7 @@ XMLDeclaration* XMLDocument::NewDeclaration( const char* str )
 
 XMLUnknown* XMLDocument::NewUnknown( const char* str )
 {
+    TIXMLASSERT( sizeof( XMLUnknown ) == _commentPool.ItemSize() );
     XMLUnknown* unk = new (_commentPool.Alloc()) XMLUnknown( this );
     unk->_memPool = &_commentPool;
     unk->SetValue( str );
@@ -1703,6 +1752,8 @@ XMLUnknown* XMLDocument::NewUnknown( const char* str )
 
 static FILE* callfopen( const char* filepath, const char* mode )
 {
+    TIXMLASSERT( filepath );
+    TIXMLASSERT( mode );
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 ) && (!defined WINCE)
     FILE* fp = 0;
     errno_t err = fopen_s( &fp, filepath, mode );
@@ -1714,6 +1765,24 @@ static FILE* callfopen( const char* filepath, const char* mode )
 #endif
     return fp;
 }
+    
+void XMLDocument::DeleteNode( XMLNode* node )	{
+    TIXMLASSERT( node );
+    TIXMLASSERT(node->_document == this );
+    if (node->_parent) {
+        node->_parent->DeleteChild( node );
+    }
+    else {
+        // Isn't in the tree.
+        // Use the parent delete.
+        // Also, we need to mark it tracked: we 'know'
+        // it was never used.
+        node->_memPool->SetTracked();
+        // Call the static XMLNode version:
+        XMLNode::DeleteNode(node);
+    }
+}
+
 
 XMLError XMLDocument::LoadFile( const char* filename )
 {
@@ -1821,6 +1890,16 @@ XMLError XMLDocument::Parse( const char* p, size_t len )
 
     ptrdiff_t delta = p - start;	// skip initial whitespace, BOM, etc.
     ParseDeep( _charBuffer+delta, 0 );
+    if ( Error() ) {
+        // clean up now essentially dangling memory.
+        // and the parse fail can put objects in the
+        // pools that are dead and inaccessible.
+        DeleteChildren();
+        _elementPool.Clear();
+        _attributePool.Clear();
+        _textPool.Clear();
+        _commentPool.Clear();
+    }
     return _errorID;
 }
 
@@ -1837,6 +1916,7 @@ void XMLDocument::Print( XMLPrinter* streamer ) const
 
 void XMLDocument::SetError( XMLError error, const char* str1, const char* str2 )
 {
+    TIXMLASSERT( error >= 0 && error < XML_ERROR_COUNT );
     _errorID = error;
     _errorStr1 = str1;
     _errorStr2 = str2;
@@ -1844,13 +1924,13 @@ void XMLDocument::SetError( XMLError error, const char* str1, const char* str2 )
 
 const char* XMLDocument::ErrorName() const
 {
-	TIXMLASSERT(_errorID >= 0 && _errorID < XML_ERROR_COUNT );
+	TIXMLASSERT( _errorID >= 0 && _errorID < XML_ERROR_COUNT );
 	return _errorNames[_errorID];
 }
 
 void XMLDocument::PrintError() const
 {
-    if ( _errorID ) {
+    if ( Error() ) {
         static const int LEN = 20;
         char buf1[LEN] = { 0 };
         char buf2[LEN] = { 0 };
@@ -1887,6 +1967,8 @@ XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
             _entityFlag[ (int)entities[i].value ] = true;
         }
     }
+    // Clang doesn't like indexing arrays with 'char'
+    // so cast to int. (Looks strange.)
     _restrictedEntityFlag[(int)'&'] = true;
     _restrictedEntityFlag[(int)'<'] = true;
     _restrictedEntityFlag[(int)'>'] = true;	// not required, but consistency is nice
