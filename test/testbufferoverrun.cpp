@@ -438,6 +438,14 @@ private:
               "    str[16] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
+
+        check("void a(int i)\n" // valueflow
+              "{\n"
+              "    char *str = new char[0x10];\n"
+              "    str[i] = 0;\n"
+              "}\n"
+              "void b() { a(16); }");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
     }
 
 

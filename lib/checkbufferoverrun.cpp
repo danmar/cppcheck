@@ -532,8 +532,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
 
         // Array index..
-        if ((declarationId > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [ %num% ]", declarationId))) ||
-            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
+        if ((declarationId > 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && Token::Match(tok->next(), "%varid% [", declarationId))) ||
+            (declarationId == 0 && ((tok->str() == "return" || (!tok->isName() && !Token::Match(tok, "[.&]"))) && (Token::Match(tok->next(), (varnames + " [").c_str()) || Token::Match(tok->next(), (varname[0] +" [ %num% ] . " + varname[1] + " [ %num% ]").c_str()))))) {
             std::vector<MathLib::bigint> indexes;
             const Token *tok2 = tok->tokAt(2 + varcount);
             for (; Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3)) {
@@ -543,6 +543,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             for (; Token::Match(tok2->tokAt(3), "[ %num% ]"); tok2 = tok2->tokAt(3)) {
                 const MathLib::bigint index = MathLib::toLongNumber(tok2->strAt(4));
                 indexes.push_back(index);
+            }
+            if (indexes.empty() && arrayInfo.num().size() == 1U && Token::simpleMatch(tok2, "[") && tok2->astOperand2()) {
+                const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(false);
+                if (value) {
+                    indexes.push_back(value->intvalue);
+                }
             }
 
             if (indexes.size() == arrayInfo.num().size()) {
