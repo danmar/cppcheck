@@ -1665,8 +1665,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         return true;
 
     // code like: return foo( variable
-    if (vartok->tokAt(-3) && vartok->tokAt(-3)->str() == "return"
-        && vartok->tokAt(-1) && vartok->tokAt(-1)->str() == "(")
+    if (vartok->tokAt(-3) && vartok->strAt(-3) == "return"
+        && vartok->tokAt(-1) && vartok->strAt(-1) == "(")
         return true;
 
     // Passing variable to typeof/__alignof__
