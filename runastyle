@@ -9,8 +9,10 @@
 ASTYLE_VERSION="Artistic Style Version 2.03"
 ASTYLE="astyle"
 
-if [[ "`$ASTYLE --version 2>&1`" != ${ASTYLE_VERSION}* ]]; then
+DETECTED_VERSION=`$ASTYLE --version 2>&1`
+if [[ "$DETECTED_VERSION" != ${ASTYLE_VERSION}* ]]; then
     echo "You should use: ${ASTYLE_VERSION}";
+    echo "Detected: ${DETECTED_VERSION}"
     exit 1;
 fi
 
