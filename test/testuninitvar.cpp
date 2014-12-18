@@ -73,7 +73,6 @@ private:
         TEST_CASE(syntax_error); // Ticket #5073
 
         // Test that the functions from std.cfg are configured correctly
-        TEST_CASE(stdcfg_btowc);
         TEST_CASE(stdcfg_clearerr);
         TEST_CASE(stdcfg_fclose);
         TEST_CASE(stdcfg_fopen);
@@ -3609,15 +3608,6 @@ private:
                         "  do { } while_each_thread(leader, tsk);\n"
                         "}", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
         ASSERT_EQUALS("[test.cpp:6]: (debug) assertion failed '} while ('\n", errout.str());
-    }
-
-    // Test that the btowc function, defined in std.cfg is configured correctly.
-    void stdcfg_btowc() {
-        checkUninitVar2("wchar_t f() { int i; return btowc(i); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: i\n", errout.str());
-
-        checkUninitVar2("wchar_t f(int i) { return btowc(i); }");
-        ASSERT_EQUALS("", errout.str());
     }
 
     // Test that the clearerr function, defined in std.cfg is configured correctly.

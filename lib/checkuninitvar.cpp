@@ -1449,7 +1449,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                             uninitdataError(tok, tok->str());
                         else
                             uninitvarError(tok, tok->str());
-                    } else
+                    }
+
+                    else
                         // assume that variable is assigned
                         return true;
                 }
@@ -1664,12 +1666,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     if (!alloc && vartok->previous()->str() == "return")
         return true;
 
-    // code like: return foo( variable
-    if (vartok->tokAt(-3) && vartok->strAt(-3) == "return"
-        && vartok->tokAt(-1) && vartok->strAt(-1) == "(")
-        return true;
-
-    // Passing variable to typeof/__alignof__
+   // Passing variable to typeof/__alignof__
     if (Token::Match(vartok->tokAt(-3), "typeof|__alignof__ ( * %var%"))
         return false;
 
