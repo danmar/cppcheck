@@ -568,6 +568,11 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     const std::size_t ri = indexes.size() - 1 - i;
                     totalIndex += indexes[ri] * totalElements;
                     totalElements *= arrayInfo.num(ri);
+                    if (arrayInfo.num(ri) == -1) {
+                        // unknown size
+                        totalElements = 0;
+                        break;
+                    }
                 }
 
                 // totalElements == 0 => Unknown size

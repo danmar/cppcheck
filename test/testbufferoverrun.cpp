@@ -3409,6 +3409,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'f.c[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
+        check("static const size_t MAX_SIZE = UNAVAILABLE_TO_CPPCHECK;\n"
+              "struct Thing { char data[MAX_SIZE]; };\n"
+              "char f4(const Thing& t) { return !t.data[0]; }");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo()\n"
               "{\n"
               "char * buf; buf = new char[8];\n"
