@@ -1717,6 +1717,10 @@ void CheckOther::checkIncompleteStatement()
             if (Token::Match(tok->next(), "%num% [,.]"))
                 continue;
 
+            // No warning for [;{}] 0 ;
+            if (Token::Match(tok, "[;{}] 0 ;"))
+                continue;
+
             // bailout if there is a "? :" in this statement
             bool bailout = false;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {

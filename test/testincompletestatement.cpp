@@ -61,6 +61,7 @@ private:
         TEST_CASE(test5);
         TEST_CASE(test6);
         TEST_CASE(test_numeric);
+        TEST_CASE(void0); // #6327: No fp for statement "(void)0;"
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
@@ -147,6 +148,11 @@ private:
               "};\n"
               "}");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void void0() { // #6327
+        check("void f() { 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
