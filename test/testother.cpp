@@ -2965,6 +2965,27 @@ private:
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
 
+        check("int foo(int unused) {\n"
+              "    return 0;\n"
+              "    (void)unused;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int unused1, int unused2) {\n"
+              "    return 0;\n"
+              "    (void)unused1;\n"
+              "    (void)unused2;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int unused1, int unused2) {\n"
+              "    return 0;\n"
+              "    (void)unused1;\n"
+              "    (void)unused2;\n"
+              "    foo();\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+
         check("int foo() {\n"
               "    if(bar)\n"
               "        return 0;\n"
