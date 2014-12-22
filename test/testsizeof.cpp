@@ -36,6 +36,7 @@ private:
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);
         TEST_CASE(checkPointerSizeof);
+        TEST_CASE(checkPointerSizeofStruct);
         TEST_CASE(sizeofDivisionMemset);
         TEST_CASE(sizeofForArrayParameter);
         TEST_CASE(sizeofForNumericParameter);
@@ -498,6 +499,14 @@ private:
               "{\n"
               " int * pIntArray[10];\n"
               " memset(pIntArray, 0, sizeof(pIntArray));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkPointerSizeofStruct() {
+        check("void f() {\n"
+              "    struct foo *ptr;\n"
+              "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

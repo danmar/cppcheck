@@ -190,10 +190,10 @@ void CheckSizeof::checkSizeofForPointerSize()
             // looks suspicious
             // Do it for first variable
             if (variable && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable->varId()) ||
-                             Token::Match(tokSize, "sizeof &| %varid%", variable->varId()))) {
+                             Token::Match(tokSize, "sizeof &| %varid% !!.", variable->varId()))) {
                 sizeofForPointerError(variable, variable->str());
             } else if (variable2 && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable2->varId()) ||
-                                     Token::Match(tokSize, "sizeof &| %varid%", variable2->varId()))) {
+                                     Token::Match(tokSize, "sizeof &| %varid% !!.", variable2->varId()))) {
                 sizeofForPointerError(variable2, variable2->str());
             }
         }
