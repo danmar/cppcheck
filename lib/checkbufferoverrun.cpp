@@ -175,6 +175,9 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
 {
+    // The severity is portability instead of error since this ub doesnt
+    // cause bad behaviour on most implementations. people create out
+    // of bounds pointers by intention.
     reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
                 "Undefined behaviour: The result of this pointer arithmetic does not point into or just one element past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
 }
