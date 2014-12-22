@@ -230,7 +230,7 @@ if filename is not None:
         functionNames = []
         for node in e.nodes:
             functionname = trimname(node['functionName'])
-            if not functionname in functionNames:
+            if functionname not in functionNames:
                 functionNames.append(functionname)
         functionNames.sort()
 
