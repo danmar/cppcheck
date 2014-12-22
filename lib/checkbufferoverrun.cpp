@@ -175,7 +175,7 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
 
 void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
 {
-    reportError(tok, Severity::error, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
+    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
                 "Undefined behaviour: The result of this pointer arithmetic does not point into or just one element past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
 }
 
@@ -829,6 +829,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
     const unsigned int declarationId = arrayInfo.declarationId();
 
+    const bool isPortabilityEnabled = _settings->isEnabled("portability");
     const bool isWarningEnabled = _settings->isEnabled("warning");
 
     for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
@@ -837,7 +838,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 valueFlowCheckArrayIndex(tok->next(), arrayInfo);
             }
 
-            else if (tok->astParent() && tok->astParent()->str() == "+") {
+            else if (isPortabilityEnabled && tok->astParent() && tok->astParent()->str() == "+") {
                 const ValueFlow::Value *index;
                 if (tok == tok->astParent()->astOperand1())
                     index = tok->astParent()->astOperand2()->getMaxValue(false);
@@ -850,15 +851,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 }
             }
 
-            else if (tok->astParent() && tok->astParent()->str() == "-") {
+            else if (isPortabilityEnabled && tok->astParent() && tok->astParent()->str() == "-") {
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(declarationId);
                 if (var && var->isArray()) {
-                    const Token *index;
-                    if (tok == tok->astParent()->astOperand1())
-                        index = tok->astParent()->astOperand2();
-                    else
-                        index = tok->astParent()->astOperand1();
-
+                    const Token *index = tok->astParent()->astOperand2();
                     if (index && index->getValueGE(1,_settings))
                         pointerOutOfBoundsError(tok, "array");
                 }
