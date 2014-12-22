@@ -232,6 +232,7 @@ private:
         // char *p2 = a + 11   // UB
         TEST_CASE(pointer_out_of_bounds_1);
         TEST_CASE(pointer_out_of_bounds_2);
+        TEST_CASE(pointer_out_of_bounds_sub);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -2947,7 +2948,13 @@ private:
               "    char a[10];\n"
               "    char *p = a + 100;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
+
+        check("void f() {\n"
+              "    char a[10];\n"
+              "    return a + 100;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
     }
 
     void pointer_out_of_bounds_2() {
@@ -2956,7 +2963,7 @@ private:
               "    p += 100;\n"
               "    free(p);"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the buffer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the buffer.\n", errout.str());
 
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2983,6 +2990,14 @@ private:
               "    free(p);"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointer_out_of_bounds_sub() {
+        check("void f() {\n"
+              "    char x[10];\n"
+              "    return x-1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
     }
 
     void sprintf1() {
