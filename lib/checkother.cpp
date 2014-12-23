@@ -1733,8 +1733,8 @@ void CheckOther::checkIncompleteStatement()
             if (Token::Match(tok->next(), "%num% [,.]"))
                 continue;
 
-            // No warning for [;{}] 0 ;
-            if (Token::Match(tok, "[;{}] 0 ;"))
+            // No warning for [;{}] (void *) 0 ;
+            if (Token::Match(tok, "[;{}] 0 ;") && tok->next()->isCasted())
                 continue;
 
             // bailout if there is a "? :" in this statement

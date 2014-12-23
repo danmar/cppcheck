@@ -152,7 +152,7 @@ private:
     }
 
     void void0() { // #6327
-        check("void f() { 0; }");
+        check("void f() { (void*)0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
