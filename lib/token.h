@@ -313,6 +313,12 @@ public:
     void isExpandedMacro(bool m) {
         setFlag(fIsExpandedMacro, m);
     }
+    bool isCasted() const {
+        return getFlag(fIsCasted);
+    }
+    void isCasted(bool c) {
+        setFlag(fIsCasted, c);
+    }
     bool isAttributeConstructor() const {
         return getFlag(fIsAttributeConstructor);
     }
@@ -753,14 +759,15 @@ private:
         fIsLong                 = (1 << 3),
         fIsStandardType         = (1 << 4),
         fIsExpandedMacro        = (1 << 5),
-        fIsAttributeConstructor = (1 << 6),  // __attribute__((constructor)) __attribute__((constructor(priority)))
-        fIsAttributeDestructor  = (1 << 7),  // __attribute__((destructor))  __attribute__((destructor(priority)))
-        fIsAttributeUnused      = (1 << 8),  // __attribute__((unused))
-        fIsAttributePure        = (1 << 9),  // __attribute__((pure))
-        fIsAttributeConst       = (1 << 10), // __attribute__((const))
-        fIsAttributeNothrow     = (1 << 11), // __attribute__((nothrow))
-        fIsDeclspecNothrow      = (1 << 12), // __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 13)  // __attribute__((used))
+        fIsCasted               = (1 << 6),
+        fIsAttributeConstructor = (1 << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
+        fIsAttributeDestructor  = (1 << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
+        fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
+        fIsAttributePure        = (1 << 10), // __attribute__((pure))
+        fIsAttributeConst       = (1 << 11), // __attribute__((const))
+        fIsAttributeNothrow     = (1 << 12), // __attribute__((nothrow))
+        fIsDeclspecNothrow      = (1 << 13), // __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 14)  // __attribute__((used))
     };
 
     unsigned int _flags;

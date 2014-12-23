@@ -2955,6 +2955,12 @@ private:
               "    return a + 100;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the array.\n", errout.str());
+
+        check("void f() {\n" // #6350 - fp when there is cast of buffer
+              "  wchar_t buf[64];\n"
+              "  p = (unsigned char *) buf + sizeof (buf);\n"
+              "}", false, "6350.c", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_2() {
