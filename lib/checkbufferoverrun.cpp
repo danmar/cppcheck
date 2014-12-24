@@ -841,7 +841,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 valueFlowCheckArrayIndex(tok->next(), arrayInfo);
             }
 
-            else if (isPortabilityEnabled && !tok->isCasted() && tok->astParent() && tok->astParent()->str() == "+") {
+            else if (isPortabilityEnabled && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
                 const ValueFlow::Value *index;
                 if (tok == tok->astParent()->astOperand1())
                     index = tok->astParent()->astOperand2()->getMaxValue(false);

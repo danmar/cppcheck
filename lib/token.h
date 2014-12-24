@@ -313,11 +313,11 @@ public:
     void isExpandedMacro(bool m) {
         setFlag(fIsExpandedMacro, m);
     }
-    bool isCasted() const {
-        return getFlag(fIsCasted);
+    bool isCast() const {
+        return getFlag(fIsCast);
     }
-    void isCasted(bool c) {
-        setFlag(fIsCasted, c);
+    void isCast(bool c) {
+        setFlag(fIsCast, c);
     }
     bool isAttributeConstructor() const {
         return getFlag(fIsAttributeConstructor);
@@ -759,7 +759,7 @@ private:
         fIsLong                 = (1 << 3),
         fIsStandardType         = (1 << 4),
         fIsExpandedMacro        = (1 << 5),
-        fIsCasted               = (1 << 6),
+        fIsCast                 = (1 << 6),
         fIsAttributeConstructor = (1 << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
         fIsAttributeDestructor  = (1 << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
         fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))

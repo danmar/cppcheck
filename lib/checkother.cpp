@@ -1734,7 +1734,7 @@ void CheckOther::checkIncompleteStatement()
                 continue;
 
             // No warning for [;{}] (void *) 0 ;
-            if (Token::Match(tok, "[;{}] 0 ;") && tok->next()->isCasted())
+            if (Token::Match(tok, "[;{}] 0 ;") && tok->next()->isCast())
                 continue;
 
             // bailout if there is a "? :" in this statement

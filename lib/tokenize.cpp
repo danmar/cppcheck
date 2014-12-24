@@ -5004,7 +5004,7 @@ void Tokenizer::simplifyCasts()
             if (!tok->tokAt(2)->isUnsigned() && bits > 0)
                 bits--;
             if (bits < 31 && value >= 0 && value < (1LL << bits)) {
-                tok->linkAt(1)->next()->isCasted(true);
+                tok->linkAt(1)->next()->isCast(true);
                 Token::eraseTokens(tok, tok->next()->link()->next());
             }
             continue;
@@ -5027,10 +5027,10 @@ void Tokenizer::simplifyCasts()
             // Set isCasted flag.
             Token *tok2 = tok->next();
             if (!Token::Match(tok2, "%var% [|."))
-                tok2->isCasted(true);
+                tok2->isCast(true);
             else {
                 // TODO: handle more complex expressions
-                tok2->next()->isCasted(true);
+                tok2->next()->isCast(true);
             }
 
             // Remove '* &'
@@ -5048,7 +5048,7 @@ void Tokenizer::simplifyCasts()
 
         // Replace pointer casts of 0.. "(char *)0" => "0"
         while (Token::Match(tok->next(), "( %type% %type%| * ) 0")) {
-            tok->linkAt(1)->next()->isCasted(true);
+            tok->linkAt(1)->next()->isCast(true);
             Token::eraseTokens(tok, tok->next()->link()->next());
             if (tok->str() == ")" && tok->link()->previous()) {
                 // If there was another cast before this, go back
@@ -5062,7 +5062,7 @@ void Tokenizer::simplifyCasts()
             if (!Token::simpleMatch(tok2, "> ("))
                 break;
 
-            tok2->tokAt(2)->isCasted(true);
+            tok2->tokAt(2)->isCast(true);
             Token::eraseTokens(tok, tok2->next());
         }
     }
