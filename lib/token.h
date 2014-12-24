@@ -355,6 +355,12 @@ public:
     void isAttributeConst(bool value) {
         setFlag(fIsAttributeConst, value);
     }
+    bool isAttributeNoreturn() const {
+        return getFlag(fIsAttributeNoreturn);
+    }
+    void isAttributeNoreturn(bool value) {
+        setFlag(fIsAttributeNoreturn, value);
+    }
     bool isAttributeNothrow() const {
         return getFlag(fIsAttributeNothrow);
     }
@@ -765,9 +771,10 @@ private:
         fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
         fIsAttributePure        = (1 << 10), // __attribute__((pure))
         fIsAttributeConst       = (1 << 11), // __attribute__((const))
-        fIsAttributeNothrow     = (1 << 12), // __attribute__((nothrow))
-        fIsDeclspecNothrow      = (1 << 13), // __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 14)  // __attribute__((used))
+        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)) __declspec(noreturn)
+        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow))
+        fIsDeclspecNothrow      = (1 << 14), // __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 15)  // __attribute__((used))
     };
 
     unsigned int _flags;

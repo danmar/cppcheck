@@ -1536,6 +1536,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
             to->isAttributeDestructor(from->isAttributeDestructor());
             to->isAttributePure(from->isAttributePure());
             to->isAttributeConst(from->isAttributeConst());
+            to->isAttributeNoreturn(from->isAttributeNoreturn());
             to->isAttributeNothrow(from->isAttributeNothrow());
             to->isDeclspecNothrow(from->isDeclspecNothrow());
             break;
@@ -2086,6 +2087,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isOperator: " << (func->isOperator ? "true" : "false") << std::endl;
             std::cout << "        isAttributeConst: " << (func->isAttributeConst() ? "true" : "false") << std::endl;
             std::cout << "        isAttributePure: " << (func->isAttributePure() ? "true" : "false") << std::endl;
+            std::cout << "        isAttributeNoreturn: " << (func->isAttributeNoreturn() ? "true" : "false") << std::endl;
             std::cout << "        isAttributeNothrow: " << (func->isAttributeNothrow() ? "true" : "false") << std::endl;
             std::cout << "        isDeclspecNothrow: " << (func->isDeclspecNothrow() ? "true" : "false") << std::endl;
             std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;

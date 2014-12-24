@@ -627,6 +627,9 @@ public:
     bool isAttributeConst() const {
         return tokenDef->isAttributeConst();
     }
+    bool isAttributeNoreturn() const {
+        return tokenDef->isAttributeNoreturn();
+    }
     bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }

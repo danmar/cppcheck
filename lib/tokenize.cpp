@@ -9235,13 +9235,16 @@ void Tokenizer::simplifyDeclspec()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next()) {
-            if (tok->strAt(2) == "nothrow") {
+            if (Token::Match(tok->tokAt(2), "noreturn|nothrow")) {
                 Token *tok1 = tok->next()->link()->next();
                 while (tok1 && !Token::Match(tok1, "%var%")) {
                     tok1 = tok1->next();
                 }
                 if (tok1) {
-                    tok1->isDeclspecNothrow(true);
+                    if (tok->strAt(2) == "noreturn")
+                        tok1->isAttributeNoreturn(true);
+                    else
+                        tok1->isDeclspecNothrow(true);
                 }
             } else if (tok->strAt(2) == "property")
                 tok->next()->link()->insertToken("__property");
@@ -9332,6 +9335,23 @@ void Tokenizer::simplifyAttribute()
                     tok->next()->link()->linkAt(2)->next()->isAttributeConst(true);
                 else if (Token::Match(tok->next()->link(), ") %var% ("))
                     tok->next()->link()->next()->isAttributeConst(true);
+            }
+
+            else if (Token::Match(tok->tokAt(2), "( noreturn|__noreturn__")) {
+                // type func(...) __attribute__((noreturn));
+                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
+                    tok->previous()->link()->previous()->isAttributeNoreturn(true);
+
+                // type __attribute__((noreturn)) func() { }
+                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
+                         Token::Match(tok->next()->link()->linkAt(2), ") __attribute__|__attribute (") &&
+                         Token::Match(tok->next()->link()->linkAt(2)->linkAt(2), ") %var% ("))
+                    tok->next()->link()->linkAt(2)->linkAt(2)->next()->isAttributeNoreturn(true);
+                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
+                         Token::Match(tok->next()->link()->linkAt(2), ") %var% ("))
+                    tok->next()->link()->linkAt(2)->next()->isAttributeNoreturn(true);
+                else if (Token::Match(tok->next()->link(), ") %var% ("))
+                    tok->next()->link()->next()->isAttributeNoreturn(true);
             }
 
             else if (Token::Match(tok->tokAt(2), "( nothrow|__nothrow__")) {
