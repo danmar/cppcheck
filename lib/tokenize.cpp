@@ -9279,96 +9279,55 @@ void Tokenizer::simplifyAttribute()
                     tok->next()->link()->next()->isAttributeDestructor(true);
             }
 
-            else if (Token::Match(tok->tokAt(2), "( unused|__unused__ )")) {
+            else if (Token::Match(tok->tokAt(2), "( unused|__unused__|used|__used__ )")) {
+                const std::string &attribute(tok->strAt(3));
+                Token *vartok = nullptr;
+
                 // check if after variable name
                 if (Token::Match(tok->next()->link()->next(), ";|=")) {
                     if (Token::Match(tok->previous(), "%type%"))
-                        tok->previous()->isAttributeUnused(true);
+                        vartok = tok->previous();
                 }
 
                 // check if before variable name
                 else if (Token::Match(tok->next()->link()->next(), "%type%"))
-                    tok->next()->link()->next()->isAttributeUnused(true);
+                    vartok = tok->next()->link()->next();
+
+                if (vartok) {
+                    if (attribute.find("unused") != std::string::npos)
+                        vartok->isAttributeUnused(true);
+                    else
+                        vartok->isAttributeUsed(true);
+                }
             }
 
-            else if (Token::Match(tok->tokAt(2), "( used|__used__ )")) {
-                // check if after variable name
-                if (Token::Match(tok->next()->link()->next(), ";|=")) {
-                    if (Token::Match(tok->previous(), "%type%"))
-                        tok->previous()->isAttributeUsed(true);
+            else if (Token::Match(tok->tokAt(2), "( pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__ )")) {
+                const std::string &attribute(tok->strAt(3));
+                Token *functok = nullptr;
+
+                // type func(...) __attribute__((attribute));
+                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
+                    functok = tok->previous()->link()->previous();
+
+                // type __attribute__((attribute)) func() { }
+                else {
+                    Token *tok2 = tok->next()->link();
+                    while (Token::Match(tok2, ") __attribute__|__attribute ("))
+                        tok2 = tok2->linkAt(2);
+                    if (Token::Match(tok2, ") %var% ("))
+                        functok = tok2->next();
                 }
 
-                // check if before variable name
-                else if (Token::Match(tok->next()->link()->next(), "%type%"))
-                    tok->next()->link()->next()->isAttributeUsed(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( pure|__pure__ )")) {
-                // type func(...) __attribute__((pure));
-                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
-                    tok->previous()->link()->previous()->isAttributePure(true);
-
-                // type __attribute__((pure)) func() { }
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2)->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->linkAt(2)->next()->isAttributePure(true);
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->next()->isAttributePure(true);
-                else if (Token::Match(tok->next()->link(), ") %var% ("))
-                    tok->next()->link()->next()->isAttributePure(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( const|__const__ )")) {
-                // type func(...) __attribute__((const));
-                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
-                    tok->previous()->link()->previous()->isAttributeConst(true);
-
-                // type __attribute__((const)) func() { }
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2)->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->linkAt(2)->next()->isAttributeConst(true);
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->next()->isAttributeConst(true);
-                else if (Token::Match(tok->next()->link(), ") %var% ("))
-                    tok->next()->link()->next()->isAttributeConst(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( noreturn|__noreturn__")) {
-                // type func(...) __attribute__((noreturn));
-                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
-                    tok->previous()->link()->previous()->isAttributeNoreturn(true);
-
-                // type __attribute__((noreturn)) func() { }
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2)->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->linkAt(2)->next()->isAttributeNoreturn(true);
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->next()->isAttributeNoreturn(true);
-                else if (Token::Match(tok->next()->link(), ") %var% ("))
-                    tok->next()->link()->next()->isAttributeNoreturn(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( nothrow|__nothrow__")) {
-                // type func(...) __attribute__((nothrow));
-                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%var% ("))
-                    tok->previous()->link()->previous()->isAttributeNothrow(true);
-
-                // type __attribute__((nothrow)) func() { }
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2)->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->linkAt(2)->next()->isAttributeNothrow(true);
-                else if (Token::Match(tok->next()->link(), ") __attribute__|__attribute (") &&
-                         Token::Match(tok->next()->link()->linkAt(2), ") %var% ("))
-                    tok->next()->link()->linkAt(2)->next()->isAttributeNothrow(true);
-                else if (Token::Match(tok->next()->link(), ") %var% ("))
-                    tok->next()->link()->next()->isAttributeNothrow(true);
+                if (functok) {
+                    if (attribute.find("pure") != std::string::npos)
+                        functok->isAttributePure(true);
+                    else if (attribute.find("const") != std::string::npos)
+                        functok->isAttributeConst(true);
+                    else if (attribute.find("noreturn") != std::string::npos)
+                        functok->isAttributeNoreturn(true);
+                    else if (attribute.find("nothrow") != std::string::npos)
+                        functok->isAttributeNothrow(true);
+                }
             }
 
             Token::eraseTokens(tok, tok->next()->link()->next());
