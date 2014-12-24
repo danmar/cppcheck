@@ -835,9 +835,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
     const bool isPortabilityEnabled = _settings->isEnabled("portability");
     const bool isWarningEnabled = _settings->isEnabled("warning");
 
+    bool reassigned = false;
+
     for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
+        if (reassigned && tok->str() == ";")
+            break;
+
         if (tok->varId() == declarationId) {
-            if (tok->strAt(1) == "[") {
+            if (tok->strAt(1) == "=") {
+                reassigned = true;
+            }
+
+            else if (tok->strAt(1) == "[") {
                 valueFlowCheckArrayIndex(tok->next(), arrayInfo);
             }
 

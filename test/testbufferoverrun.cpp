@@ -190,6 +190,7 @@ private:
         TEST_CASE(array_index_string_literal);
         TEST_CASE(array_index_same_struct_and_var_name); // #4751 - not handled well when struct name and var name is same
         TEST_CASE(array_index_valueflow);
+        TEST_CASE(array_index_function_parameter);
 
         TEST_CASE(buffer_overrun_1_standard_functions);
         TEST_CASE(buffer_overrun_1_posix_functions);
@@ -2144,6 +2145,19 @@ private:
 
         check("namespace { class X { static const int x[100]; };\n" // #6232
               "const int X::x[100] = {0}; }", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_function_parameter() {
+        check("void f(char a[10]) {\n"
+              "  a[20] = 0;\n" // <- cppcheck warn here even though it's not a definite access out of bounds
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array 'a[10]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f(char a[10]) {\n" // #6353 - reassign 'a'
+              "  a += 4;\n"
+              "  a[-1] = 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
