@@ -24,7 +24,7 @@
 /* Emulate certain features of C++11 in a C++98-compatible way. */
 
 #ifdef __cplusplus
-#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 6) || __cplusplus < 201103L
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 6 && !defined(__clang__)) || __cplusplus < 201103L
 
 // Null pointer literal
 // Source: SC22/WG21/N2431 = J16/07-0301
