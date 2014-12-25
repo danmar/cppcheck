@@ -240,7 +240,7 @@ private:
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void negativeIndexError(const Token *tok, const ValueFlow::Value &index);
     void cmdLineArgsError(const Token *tok);
-    void pointerOutOfBoundsError(const Token *tok, const std::string &object);  // UB when result of calculation is out of bounds
+    void pointerOutOfBoundsError(const Token *tok, const Token *index=nullptr, const MathLib::bigint indexvalue=0);
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
@@ -263,7 +263,7 @@ public:
         c.bufferNotZeroTerminatedError(0, "buffer", "strncpy");
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
-        c.pointerOutOfBoundsError(0, "array");
+        c.pointerOutOfBoundsError(nullptr, nullptr, 0);
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
         c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");

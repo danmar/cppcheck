@@ -173,13 +173,24 @@ void CheckBufferOverrun::outOfBoundsError(const Token *tok, const std::string &w
     reportError(tok, Severity::error, "outOfBounds", oss.str());
 }
 
-void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const std::string &object)
+void CheckBufferOverrun::pointerOutOfBoundsError(const Token *tok, const Token *index, const MathLib::bigint indexvalue)
 {
     // The severity is portability instead of error since this ub doesnt
     // cause bad behaviour on most implementations. people create out
     // of bounds pointers by intention.
-    reportError(tok, Severity::portability, "pointerOutOfBounds", "Undefined behaviour: Pointer arithmetic result does not point into or just past the end of the " + object + ".\n"
-                "Undefined behaviour: The result of this pointer arithmetic does not point into or just one element past the end of the " + object + ". Further information: https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
+    const std::string expr(tok ? tok->expressionString() : std::string(""));
+    std::string errmsg("Undefined behaviour. Pointer arithmetic '" + expr + "' result is out of bounds");
+    if (index && !index->isNumber())
+        errmsg += " when " + index->expressionString() + " is " + MathLib::toString(indexvalue);
+    std::string verbosemsg(errmsg + ". From chapter 6.5.6 in the C specification:\n"
+                           "\"When an expression that has integer type is added to or subtracted from a pointer, ..\" and then \"If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined.\"");
+    reportError(tok, Severity::portability, "pointerOutOfBounds", errmsg + ".\n" + verbosemsg);
+    /*
+         "Undefined behaviour: The result of this pointer arithmetic does not point into
+         or just one element past the end of the " + object + ".
+         Further information:
+          https://www.securecoding.cert.org/confluence/display/seccode/ARR30-C.+Do+not+form+or+use+out+of+bounds+pointers+or+array+subscripts");
+    */
 }
 
 void CheckBufferOverrun::sizeArgumentAsCharError(const Token *tok)
@@ -699,7 +710,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         else if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (isPortabilityEnabled && index > size)
-                pointerOutOfBoundsError(tok->next(), "buffer");
+                pointerOutOfBoundsError(tok->tokAt(2));
             if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", declarationId))
                 pointerIsOutOfBounds = true;
         }
@@ -851,24 +862,24 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
 
             else if (isPortabilityEnabled && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
-                const ValueFlow::Value *index;
-                if (tok == tok->astParent()->astOperand1())
-                    index = tok->astParent()->astOperand2()->getMaxValue(false);
-                else
-                    index = tok->astParent()->astOperand1()->getMaxValue(false);
-
                 // undefined behaviour: result of pointer arithmetic is out of bounds
-                if (index && (index->intvalue < 0 || index->intvalue > arrayInfo.num(0))) {
-                    pointerOutOfBoundsError(tok, "array");
-                }
+                const Token *index;
+                if (tok == tok->astParent()->astOperand1())
+                    index = tok->astParent()->astOperand2();
+                else
+                    index = tok->astParent()->astOperand1();
+                const ValueFlow::Value *value = index ? index->getMaxValue(false) : nullptr;
+                if (value && (value->intvalue < 0 || value->intvalue > arrayInfo.num(0)))
+                    pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
             }
 
             else if (isPortabilityEnabled && tok->astParent() && tok->astParent()->str() == "-") {
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(declarationId);
                 if (var && var->isArray()) {
                     const Token *index = tok->astParent()->astOperand2();
-                    if (index && index->getValueGE(1,_settings))
-                        pointerOutOfBoundsError(tok, "array");
+                    const ValueFlow::Value *value = index ? index->getValueGE(1,_settings) : nullptr;
+                    if (value)
+                        pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
                 }
             }
         }
