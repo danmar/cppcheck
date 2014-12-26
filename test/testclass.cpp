@@ -574,6 +574,13 @@ private:
 
         checkOpertorEq("class A\n"
                        "{\n"
+                       "protected:\n"
+                       "    void operator=(const A&);\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
                        "private:\n"
                        "    void operator=(const A&)=delete;\n"
                        "};");

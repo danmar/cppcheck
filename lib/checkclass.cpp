@@ -1117,7 +1117,7 @@ void CheckClass::operatorEq()
         std::list<Function>::const_iterator func;
 
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eOperatorEqual && func->access != Private) {
+            if (func->type == Function::eOperatorEqual && func->access == Public) {
                 // skip "deleted" functions - cannot be called anyway
                 if (func->isDelete)
                     continue;
