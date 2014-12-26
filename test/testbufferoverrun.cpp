@@ -2970,6 +2970,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'a+100' is out of bounds.\n", errout.str());
 
+        check("void f(int i) {\n"
+              "    char x[10];\n"
+              "    if (i == 123) {}\n"
+              "    dostuff(x+i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
+
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
               "  p = (unsigned char *) buf + sizeof (buf);\n"
@@ -3018,6 +3025,20 @@ private:
               "    return x-1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'x-1' is out of bounds.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    char x[10];\n"
+              "    if (i == 123) {}\n"
+              "    dostuff(x-i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x-i' is out of bounds.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    char x[10];\n"
+              "    if (i == -20) {}\n"
+              "    dostuff(x-i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is -20 the pointer arithmetic 'x-i' is out of bounds.\n", errout.str());
     }
 
     void sprintf1() {
