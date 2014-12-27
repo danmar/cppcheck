@@ -22,6 +22,7 @@
 #include "tokenlist.h"
 #include "mathlib.h"
 #include "token.h"
+#include "symboldatabase.h"
 
 #include <string>
 #include <algorithm>
@@ -526,7 +527,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
         if (funcname->str() == "exit")
             return true;
         if (!isnotnoreturn(funcname->str())) {
-            if (unknownFunc && !isnoreturn(funcname->str()))
+            if (unknownFunc && !(isnoreturn(funcname->str()) || (funcname->function() && funcname->function()->isAttributeNoreturn())))
                 *unknownFunc = funcname->str();
             return true;
         }
