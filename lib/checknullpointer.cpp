@@ -502,7 +502,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
                     }
                     if (!tok)
                         break;
-                } else if (Token::simpleMatch(tok, "if ( "))  {
+                } else if (Token::simpleMatch(tok, "if ("))  {
                     bool dependsOnPointer = false;
                     const Token *endOfCondition = tok->next()->link();
                     if (!endOfCondition)

@@ -847,7 +847,7 @@ void CheckStl::if_find()
                         else if (Token::Match(decl, "%type% >")) {
                             decl = decl->tokAt(2);
                             if (warning && (Token::Match(decl, "* &| %varid%", varid) ||
-                                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid)))
+                                            Token::Match(decl, "&| %varid% [ ]| %any% ]|", varid)))
                                 if_findError(tok, false);
                         }
 
@@ -858,7 +858,7 @@ void CheckStl::if_find()
                     else if (performance && var->isStlStringType()) {
                         decl = decl->next();
                         if (Token::Match(decl, "* &| %varid%", varid) ||
-                            Token::Match(decl, "&| %varid% [ ]| %any% ]| ", varid))
+                            Token::Match(decl, "&| %varid% [ ]| %any% ]|", varid))
                             if_findError(tok, true);
                     }
                 }
