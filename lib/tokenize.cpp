@@ -8946,18 +8946,15 @@ void Tokenizer::simplifyConst()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isStandardType() && tok->strAt(1) == "const") {
-            tok->next()->str(tok->str());
-            tok->str("const");
+            tok->swapWithNext();
         } else if (Token::Match(tok, "struct %type% const")) {
-            tok->tokAt(2)->str(tok->next()->str());
-            tok->str("const");
-            tok->next()->str("struct");
+            tok->next()->swapWithNext();
+            tok->swapWithNext();
         } else if (Token::Match(tok, "%type% const") &&
                    (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
                    tok->str().find(":") == std::string::npos &&
                    tok->str() != "operator") {
-            tok->next()->str(tok->str());
-            tok->str("const");
+            tok->swapWithNext();
         }
     }
 }

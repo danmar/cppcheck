@@ -4963,6 +4963,9 @@ private:
         ASSERT_EQUALS("void foo ( ) { { } const long x ; }",
                       tokenizeAndStringify("void foo(){ {} long const x;}"));
 
+        ASSERT_EQUALS("void foo ( int b , const unsigned int x ) { }",
+                      tokenizeAndStringify("void foo(int b,unsigned const x){}"));
+
         ASSERT_EQUALS("void foo ( ) { bar ( ) ; const char x ; }",
                       tokenizeAndStringify("void foo(){ bar(); char const x;}"));
 
@@ -4978,6 +4981,7 @@ private:
         ASSERT_EQUALS("const int foo ( ) ;", tokenizeAndStringify("int const foo ();"));
 
         ASSERT_EQUALS("const int x ;", tokenizeAndStringify("int const x;"));
+        ASSERT_EQUALS("const unsigned int x ;", tokenizeAndStringify("unsigned const x;"));
         ASSERT_EQUALS("const struct X x ;", tokenizeAndStringify("struct X const x;"));
     }
 

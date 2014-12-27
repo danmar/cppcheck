@@ -60,6 +60,7 @@ private:
         TEST_CASE(testMicrosoftSecureScanfArgument);
 
         TEST_CASE(testTernary); // ticket #6182
+        TEST_CASE(testUnsignedConst); // ticket #6132
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -3669,6 +3670,14 @@ private:
     void testTernary() {  // ticket #6182
         check("void test(const std::string &val) {\n"
               "    printf(\"%s\n\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testUnsignedConst() {  // ticket #6321
+        check("void test() {\n"
+              "    unsigned const x = 5;\n"
+              "    printf(\"%u\", x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

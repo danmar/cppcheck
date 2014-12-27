@@ -93,6 +93,11 @@ public:
     void deleteNext(unsigned long index = 1);
 
     /**
+     * Swap the contents of this token with the next token.
+     */
+    void swapWithNext();
+
+    /**
      * @return token in given index, related to this token.
      * For example index 1 would return next token, and 2
      * would return next from that one.
