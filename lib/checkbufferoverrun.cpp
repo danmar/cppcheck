@@ -889,7 +889,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 if (var && var->isArray()) {
                     const Token *index = tok->astParent()->astOperand2();
                     const ValueFlow::Value *value = index ? index->getValueGE(1,_settings) : nullptr;
-                    if (!value)
+                    if (index && !value)
                         value = index->getValueLE(-1 - arrayInfo.num(0), _settings);
                     if (value)
                         pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
