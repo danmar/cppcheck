@@ -1196,6 +1196,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n" // #5223
+               "    for (int x = 0; x < 300 && x < 18; x++)\n"
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 17));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 299));
+
         code = "void f() {\n"
                "    int x;\n"
                "    for (int i = 0; x = bar[i]; i++)\n"

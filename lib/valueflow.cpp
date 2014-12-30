@@ -1312,13 +1312,13 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         num2tok = tok->astOperand2();
         if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
             num2tok = num2tok->astOperand1();
-        if (!Token::Match(num2tok, "%num%"))
+        if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no lnger be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
             num2tok = 0;
     }
     if (!num2tok)
         return false;
     *num2 = MathLib::toLongNumber(num2tok->str()) - ((tok->str()=="<=") ? 0 : 1);
-    *numAfter = MathLib::toLongNumber(num2tok->str()) + ((tok->str()=="<=") ? 1 : 0);
+    *numAfter = *num2 + 1;
     if (!num1tok)
         *num1 = *num2;
     while (tok && tok->str() != ";")
