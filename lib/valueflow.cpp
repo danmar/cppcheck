@@ -1291,7 +1291,7 @@ static void execute(const Token *expr,
 static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, MathLib::bigint * const num1, MathLib::bigint * const num2, MathLib::bigint * const numAfter)
 {
     tok = tok->tokAt(2);
-    if (!Token::Match(tok,"%type%| %var% ="))
+    if (!Token::Match(tok, "%type%| %var% ="))
         return false;
     const Token * const vartok = Token::Match(tok, "%var% =") ? tok : tok->next();
     if (vartok->varId() == 0U)
@@ -1323,7 +1323,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         *num1 = *num2;
     while (tok && tok->str() != ";")
         tok = tok->next();
-    if (!Token::Match(tok, "; %varid% ++ ) {", vartok->varId()))
+    if (!Token::Match(tok, "; %varid% ++ ) {", vartok->varId()) && !Token::Match(tok, "; ++ %varid% ) {", vartok->varId()))
         return false;
     return true;
 }
@@ -1507,11 +1507,12 @@ static void valueFlowForLoop(TokenList *tokenlist, ErrorLogger *errorLogger, con
         MathLib::bigint num1(0), num2(0), numAfter(0);
 
         if (valueFlowForLoop1(tok, &varid, &num1, &num2, &numAfter)) {
-            if (num1 > num2)
-                continue;
-            valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
-            valueFlowForLoopSimplify(bodyStart, varid, num2, tokenlist, errorLogger, settings);
-            valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
+            if (num1 <= num2) {
+                valueFlowForLoopSimplify(bodyStart, varid, num1, tokenlist, errorLogger, settings);
+                valueFlowForLoopSimplify(bodyStart, varid, num2, tokenlist, errorLogger, settings);
+                valueFlowForLoopSimplifyAfter(tok, varid, numAfter, tokenlist, errorLogger, settings);
+            } else
+                valueFlowForLoopSimplifyAfter(tok, varid, num1, tokenlist, errorLogger, settings);
         } else {
             std::map<unsigned int, MathLib::bigint> mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {

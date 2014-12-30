@@ -1143,12 +1143,22 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 10));
 
         code = "void f() {\n"
-               "    for (int x = 2; x < 1; x++)\n"
+               "    int x;\n"
+               "    for (x = 2; x < 1; x++)\n"
                "        a[x] = 0;\n" // <- not 2
-               "    b = x;\n" // <- TODO: this is 2
+               "    b = x;\n" // 2
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3U, 2));
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
+
+        code = "void f() {\n"
+               "    int x;\n"
+               "    for (x = 2; x < 1; ++x)\n"
+               "        a[x] = 0;\n" // <- not 2
+               "    b = x;\n" // 2
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
 
         code = "void f(int a) {\n"
                "    for (int x = a; x < 10; x++)\n"
