@@ -42,6 +42,7 @@ private:
         TEST_CASE(internalError)
         TEST_CASE(invalidMultiCompare);
         TEST_CASE(orInComplexPattern);
+        TEST_CASE(extraWhitespace);
     }
 
     void check(const char code[]) {
@@ -374,6 +375,50 @@ private:
               "    Token::Match(tok, \"bar foo|\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void extraWhitespace() {
+        // whitespace at the end
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"%str% \");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str% \"\n", errout.str());
+
+        // whitespace at the begin
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \" %str%\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \" %str%\"\n", errout.str());
+
+        // two whitespaces or more
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::Match(tok, \"%str%  bar\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str%  bar\"\n", errout.str());
+
+        // test simpleMatch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::simpleMatch(tok, \"foobar \");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::simpleMatch() call: \"foobar \"\n", errout.str());
+
+        // test findmatch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::findmatch(tok, \"%str% \");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findmatch() call: \"%str% \"\n", errout.str());
+
+        // test findsimplematch
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    Token::findsimplematch(tok, \"foobar \");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findsimplematch() call: \"foobar \"\n", errout.str());
     }
 };
 

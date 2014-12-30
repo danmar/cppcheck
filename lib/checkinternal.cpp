@@ -283,6 +283,32 @@ void CheckInternal::checkRedundantNextPrevious()
     }
 }
 
+void CheckInternal::checkExtraWhitespace()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "Token :: simpleMatch (") &&
+            !Token::simpleMatch(tok, "Token :: findsimplematch (") &&
+            !Token::simpleMatch(tok, "Token :: Match (") &&
+            !Token::simpleMatch(tok, "Token :: findmatch ("))
+            continue;
+
+        const std::string& funcname = tok->strAt(2);
+
+        // Get pattern string
+        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
+            continue;
+
+        const std::string pattern = pattern_tok->strValue();
+        if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
+            extraWhitespaceError(tok, pattern, funcname);
+
+        // two whitespaces or more
+        if (pattern.find("  ") != std::string::npos)
+            extraWhitespaceError(tok, pattern, funcname);
+    }
+}
+
 void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "multiComparePatternError",
@@ -327,6 +353,13 @@ void CheckInternal::orInComplexPattern(const Token* tok, const std::string& patt
 {
     reportError(tok, Severity::error, "orInComplexPattern",
                 "Token::" + funcname + "() pattern \"" + pattern + "\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".");
+}
+
+void CheckInternal::extraWhitespaceError(const Token* tok, const std::string& pattern, const std::string &funcname)
+{
+    reportError(tok, Severity::warning, "extraWhitespaceError",
+                "Found extra whitespace inside Token::" + funcname + "() call: \"" + pattern + "\""
+               );
 }
 
 #endif // #ifdef CHECK_INTERNAL
