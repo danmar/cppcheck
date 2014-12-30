@@ -5251,6 +5251,9 @@ private:
         ASSERT_EQUALS("; int a[2]={ b> c?1:2,3};", arraySize_(";int a[]={ b>c?1:2,3};"));
         TODO_ASSERT_EQUALS("int main(){ int a[2]={ b< c?1:2,3}}", "int main(){ int a[]={ b< c?1:2,3}}", arraySize_("int main(){int a[]={b<c?1:2,3}}"));
         ASSERT_EQUALS("; int a[3]={ ABC,2,3};", arraySize_(";int a[]={ABC,2,3};"));
+        ASSERT_EQUALS("; int a[3]={[2]=5};", arraySize_(";int a[]={ [2] = 5 };"));
+        ASSERT_EQUALS("; int a[5]={1,2,[2]=5,3,4};", arraySize_(";int a[]={ 1, 2, [2] = 5, 3, 4 };"));
+        ASSERT_EQUALS("; int a[]={1,2,[ x]=5,3,4};", arraySize_(";int a[]={ 1, 2, [x] = 5, 3, 4 };"));
     }
 
     std::string labels_(const std::string &code) {
