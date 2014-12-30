@@ -3751,6 +3751,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '-' and '?'.\n", errout.str());
 
+        check("void f() {\n"
+              "    int ab = a | b ? 2 : 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '|' and '?'.\n", errout.str());
+
         // ticket #195
         check("int f(int x, int y) {\n"
               "    return x >> ! y ? 8 : 2;\n"
