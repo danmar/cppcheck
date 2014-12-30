@@ -1362,7 +1362,7 @@ void Variable::evaluate()
         // type var = {x}
         // type var = x; gets simplified to: type var ; var = x ;
         Token const * declEnd = declEndToken();
-        if ((Token::Match(declEnd, "; %var% = ") && declEnd->strAt(1) == _name->str()) ||
+        if ((Token::Match(declEnd, "; %var% =") && declEnd->strAt(1) == _name->str()) ||
             Token::Match(declEnd, "=|{"))
             setFlag(fHasDefault, true);
     }

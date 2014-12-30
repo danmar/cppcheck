@@ -1327,8 +1327,8 @@ void CheckStl::checkAutoPointer()
                         autoPointerError(tok->tokAt(2));
                     }
                 }
-            } else if ((Token::Match(tok, "%var% = new %type% ") && hasArrayEnd(tok)) ||
-                       (Token::Match(tok, "%var% . reset ( new %type% ") && hasArrayEndParen(tok))) {
+            } else if ((Token::Match(tok, "%var% = new %type%") && hasArrayEnd(tok)) ||
+                       (Token::Match(tok, "%var% . reset ( new %type%") && hasArrayEndParen(tok))) {
                 std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);

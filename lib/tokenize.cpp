@@ -2500,7 +2500,7 @@ static void setVarIdClassFunction(const std::string &classname,
             continue;
         if (Token::Match(tok2->tokAt(-4), "%var% :: %var% ::")) // Currently unsupported
             continue;
-        if (Token::Match(tok2->tokAt(-2), "!!this . "))
+        if (Token::Match(tok2->tokAt(-2), "!!this ."))
             continue;
 
         const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());

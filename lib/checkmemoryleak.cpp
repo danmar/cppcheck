@@ -2531,7 +2531,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
         // Struct member is allocated => check if it is also properly deallocated..
         else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% = malloc|strdup|kmalloc (", variable->declarationId())
-                 || Token::Match(tok2->previous(), "[;{}] %varid% . %var% = new ", variable->declarationId())
+                 || Token::Match(tok2->previous(), "[;{}] %varid% . %var% = new", variable->declarationId())
                  || Token::Match(tok2->previous(), "[;{}] %varid% . %var% = fopen (", variable->declarationId())) {
             const unsigned int structid(variable->declarationId());
             const unsigned int structmemberid(tok2->tokAt(2)->varId());

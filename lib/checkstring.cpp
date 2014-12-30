@@ -51,7 +51,7 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var%  . c_str ( )")) {
+            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var% . c_str ( )")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(8);
                 if (str1 == str2)
