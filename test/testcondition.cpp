@@ -1091,6 +1091,18 @@ private:
                   "  }\n"
                   "}");
             ASSERT_EQUALS("", errout.str());
+
+            // #6385 "crash in Variable::getFlag()"
+            check("class TranslationHandler {\n"
+                  "QTranslator *mTranslator;\n"
+                  "void SetLanguage() {\n"
+                  "   if (mTranslator) {\n"
+                  "             qApp->removeTranslator(mTranslator);\n"
+                  "        }\n"
+                  "   }\n"
+                  "};");
+            ASSERT_EQUALS("", errout.str()); // just don't crash...
+
         }
 
         // #5731 - fp when undeclared variable is used

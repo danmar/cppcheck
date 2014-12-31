@@ -426,7 +426,8 @@ void CheckCondition::oppositeInnerCondition()
                 }
                 if (Token::Match(tok->previous(), "++|--|& %var%"))
                     break;
-                if (Token::Match(tok, "%var% . %var% (") &&
+                if (tok->variable() &&
+                    Token::Match(tok, "%var% . %var% (") &&
                     !tok->variable()->isConst() &&
                     !(tok->tokAt(2)->function() && tok->tokAt(2)->function()->isConst))
                     break;
