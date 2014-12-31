@@ -317,7 +317,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     int type = -1;
     pid_t killid = getpid();
     const ucontext_t* uc = reinterpret_cast<const ucontext_t*>(context);
-#ifdef __linux__
+#if defined(__linux__) && defined(REG_ERR)
     killid = (pid_t) syscall(SYS_gettid);
     if (uc) {
         type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
