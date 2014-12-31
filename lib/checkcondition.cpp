@@ -426,6 +426,10 @@ void CheckCondition::oppositeInnerCondition()
                 }
                 if (Token::Match(tok->previous(), "++|--|& %var%"))
                     break;
+                if (Token::Match(tok, "%var% . %var% (") &&
+                    !tok->variable()->isConst() &&
+                    !(tok->tokAt(2)->function() && tok->tokAt(2)->function()->isConst))
+                    break;
                 if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
                     // is variable unchanged? default is false..
                     bool unchanged = false;
