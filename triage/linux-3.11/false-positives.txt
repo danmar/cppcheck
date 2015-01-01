@@ -54,3 +54,25 @@
 [linux-3.11/drivers/media/i2c/ir-kbd-i2c.c:219]: (error) Uninitialized variable: key
 [linux-3.11/drivers/media/platform/exynos4-is/fimc-capture.c:1224]: (error) Possible null pointer dereference: si
 [linux-3.11/drivers/media/usb/gspca/gspca.c:1608]: (error) Possible null pointer dereference: frame
+[linux-3.11/drivers/misc/sgi-xp/xpc_partition.c:426]: (error) Memory leak: remote_rp_base
+[linux-3.11/drivers/mmc/host/rtsx_pci_sdmmc.c:753]: (error) Uninitialized variable: width
+[linux-3.11/drivers/net/bonding/bond_main.c:4618]: (error) Array 'arp_ip_target[16]' accessed at index 9998, which is out of bounds.
+[linux-3.11/drivers/net/bonding/bond_main.c:4619]: (error) Array 'arp_ip_target[16]' accessed at index 9998, which is out of bounds.
+[linux-3.11/drivers/net/can/sja1000/peak_pci.c:690]: (error) Possible null pointer dereference: chan
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:683]: (error) Memory leak: diff.hi
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:683]: (error) Memory leak: diff.lo
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:903]: (error) Memory leak: diff.hi
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:903]: (error) Memory leak: diff.lo
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5011]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5012]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5013]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5014]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5015]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/emulex/benet/be_cmds.c:363]: (error) Uninitialized variable: compl
+[linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5617]: (error) Uninitialized variable: phy_data
+[linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5664]: (error) Uninitialized variable: phy_data
+[linux-3.11/drivers/net/ethernet/marvell/sky2.c:1173]: (error) Uninitialized variable: re
+[linux-3.11/sound/pci/pcxhr/pcxhr.c:729]: (error) Uninitialized struct member: pipe.first_audio
+[linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized variable: map
+[linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized struct member: map.unmap_ip
+[linux-3.11/virt/kvm/kvm_main.c:2305]: (error) Possible null pointer dereference: ops

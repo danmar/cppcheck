@@ -49,3 +49,18 @@
 [linux-3.11/drivers/mfd/pm8921-core.c:178]: (error) Possible null pointer dereference: pmic
 [linux-3.11/drivers/mfd/tps65911-comparator.c:61]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.
 [linux-3.11/drivers/mfd/tps65911-comparator.c:88]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/drivers/misc/lkdtm.c:330]: (error) Uninitialized variable: data
+[linux-3.11/drivers/misc/sgi-xp/xpc_partition.c:73]: (error) Uninitialized variable: buf
+[linux-3.11/drivers/misc/sgi-xp/xpc_sn2.c:2173]: (error) Uninitialized variable: msg
+[linux-3.11/drivers/misc/sgi-xp/xpc_sn2.c:2174]: (error) Uninitialized variable: notify
+[linux-3.11/drivers/mmc/host/sdhci-spear.c:93]: (error) Possible null pointer dereference: pdata
+[linux-3.11/drivers/net/ethernet/emulex/benet/be_cmds.c:1542]: (error) Uninitialized variable: status
+[linux-3.11/drivers/net/ethernet/i825xx/sun3_82586.c:993]: (error) Array 'p.xmit_cmds[1]' accessed at index 1, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/marvell/mvneta.c:2779]: (error) Uninitialized variable: phy_addr
+[linux-3.11/drivers/net/fddi/skfp/ecm.c:500]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/sound/soc/codecs/ad193x.c:488]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/codecs/tlv320aic23.c:675]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/nuc900/nuc900-ac97.c:337]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/txx9/txx9aclc-ac97.c:190]: (error) Uninitialized variable: drvdata
+[linux-3.11/sound/soc/txx9/txx9aclc-ac97.c:192]: (error) Uninitialized variable: drvdata
+[linux-3.11/tools/testing/selftests/timers/posix_timers.c:155]: (error) Uninitialized variable: err
