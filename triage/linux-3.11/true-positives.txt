@@ -42,4 +42,10 @@
 [linux-3.11/drivers/media/dvb-frontends/dib9000.c:1047]: (error) Array 'mb[10]' accessed at index 10, which is out of bounds.
 [linux-3.11/drivers/media/dvb-frontends/ds3000.c:619]: (error) Array 'dvbs2_snr_tab[80]' accessed at index 80, which is out of bounds.
 [linux-3.11/drivers/media/dvb-frontends/stv0367.c:926]: (error) Possible null pointer dereference: tuner_ops
-
+[linux-3.11/drivers/media/i2c/ov9650.c:710]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/i2c/ov9650.c:711]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/pci/saa7134/saa7134-input.c:136]: (error) Uninitialized variable: b
+[linux-3.11/drivers/media/usb/dvb-usb-v2/mxl111sf.c:139]: (error) Uninitialized variable: val
+[linux-3.11/drivers/mfd/pm8921-core.c:178]: (error) Possible null pointer dereference: pmic
+[linux-3.11/drivers/mfd/tps65911-comparator.c:61]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/drivers/mfd/tps65911-comparator.c:88]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.

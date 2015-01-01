@@ -51,3 +51,6 @@
 [linux-3.11/drivers/md/dm-thin-metadata.c:988]: (error) Memory leak: td
 [linux-3.11/drivers/md/dm-thin-metadata.c:1021]: (error) Memory leak: td
 [linux-3.11/drivers/md/dm-thin-metadata.c:1103]: (error) Memory leak: td
+[linux-3.11/drivers/media/i2c/ir-kbd-i2c.c:219]: (error) Uninitialized variable: key
+[linux-3.11/drivers/media/platform/exynos4-is/fimc-capture.c:1224]: (error) Possible null pointer dereference: si
+[linux-3.11/drivers/media/usb/gspca/gspca.c:1608]: (error) Possible null pointer dereference: frame
