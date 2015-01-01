@@ -1,0 +1,37 @@
+[linux-3.11/arch/ia64/sn/pci/tioca_provider.c:484] -> [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:487]: (warning) Possible null pointer dereference: map - otherwise it is redundant to check it against null.
+[linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/acpi/battery.c:553] -> [linux-3.11/drivers/acpi/battery.c:557]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/bus.c:737] -> [linux-3.11/drivers/acpi/bus.c:740]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/glue.c:243] -> [linux-3.11/drivers/acpi/glue.c:245]: (performance) Variable 'retval' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/power.c:264] -> [linux-3.11/drivers/acpi/power.c:266]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/power.c:611] -> [linux-3.11/drivers/acpi/power.c:630]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_core.c:170] -> [linux-3.11/drivers/acpi/processor_core.c:172]: (performance) Variable 'apic_id' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_perflib.c:365] -> [linux-3.11/drivers/acpi/processor_perflib.c:374]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_perflib.c:577] -> [linux-3.11/drivers/acpi/processor_perflib.c:584]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/atm/fore200e.c:2802]: (error) Uninitialized variable: err
+[linux-3.11/drivers/char/tile-srom.c:156]: (error) Uninitialized variable: dummy
+[linux-3.11/drivers/clk/sunxi/clk-sunxi.c:52]: (error) Memory leak: fixed
+[linux-3.11/drivers/clk/sunxi/clk-sunxi.c:52]: (error) Memory leak: gate
+[linux-3.11/drivers/cpufreq/cpufreq.c:341] -> [linux-3.11/drivers/cpufreq/cpufreq.c:353]: (warning) Possible null pointer dereference: policy - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/crypto/caam/caamhash.c:822]: (error) Uninitialized variable: desc
+[linux-3.11/drivers/dma/mmp_tdma.c:190]: (error) Uninitialized variable: tdcr
+[linux-3.11/drivers/dma/mmp_tdma.c:231]: (error) Uninitialized variable: tdcr
+[linux-3.11/drivers/dma/txx9dmac.c:1227] -> [linux-3.11/drivers/dma/txx9dmac.c:1247]: (warning) Possible null pointer dereference: pdata - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-twl4030.c:530] -> [linux-3.11/drivers/gpio/gpio-twl4030.c:543]: (warning) Possible null pointer dereference: pdata - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:60] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:61] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:63] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:64] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:65] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:66] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:67] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:219]: (error) Array 'dsi_errors[31]' accessed at index 31, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:536] -> [linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:541]: (warning) Possible null pointer dereference: sender - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/i915/i915_gem.c:986]: (error) Possible null pointer dereference: ring
+[linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:312] -> [linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:321]: (warning) Possible null pointer dereference: file - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:687] -> [linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:692]: (warning) Possible null pointer dereference: overlay - otherwise it is redundant to check it against null.
+[linux-3.11/fs/btrfs/reada.c:434] -> [linux-3.11/fs/btrfs/reada.c:450]: (warning) Possible null pointer dereference: fs_info - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/net/wireless/b43/phy_n.c:167] -> [linux-3.11/drivers/net/wireless/b43/phy_n.c:171]: (warning) Possible null pointer dereference: e - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5808] -> [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5811]: (warning) Possible null pointer dereference: port - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/bfa/bfa_svc.c:1026] -> [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1028]: (warning) Possible null pointer dereference: fcxp - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.

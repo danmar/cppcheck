@@ -1,0 +1,8 @@
+[linux-3.11/drivers/net/wireless/hostap/hostap_ap.c:3221]: (error) Memory leak: sta
+[linux-3.11/drivers/block/rbd.c:1616]: (error) Possible null pointer dereference: rbd_dev
+[linux-3.11/drivers/crypto/nx/nx-842.c:1030]: (error) Possible null pointer dereference: node
+[linux-3.11/drivers/dma/mmp_pdma.c:461]: (error) Possible null pointer dereference: prev
+[linux-3.11/drivers/edac/i7core_edac.c:1427]: (error) Memory leak: i7core_dev
+[linux-3.11/drivers/edac/sb_edac.c:1198]: (error) Memory leak: sbridge_dev
+[linux-3.11/drivers/gpio/gpio-mcp23s08.c:616]: (error) Uninitialized variable: pdata
+[linux-3.11/drivers/gpu/drm/drm_ioc32.c:359]: (error) Uninitialized variable: s32
