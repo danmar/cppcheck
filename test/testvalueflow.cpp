@@ -738,6 +738,14 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 32));
 
         code = "void f() {\n"
+               "    int x = 33;\n"
+               "    if (x==33) goto fail;\n"
+               "    a[x]=0;\n"
+               "fail:\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 33));
+
+        code = "void f() {\n"
                "    int x = 32;\n"
                "    if (a==1) { z=x+12; }\n"
                "    if (a==2) { z=x+32; }\n"

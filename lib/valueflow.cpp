@@ -243,11 +243,11 @@ static bool isReturn(const Token *tok)
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %var% ("))
             return true;
-        // return statement
+        // return/goto statement
         prev = prev->previous();
         while (prev && !Token::Match(prev,"[;{}]"))
             prev = prev->previous();
-        return Token::Match(prev, "[;{}] return");
+        return Token::Match(prev, "[;{}] return|goto");
     }
     return false;
 }
