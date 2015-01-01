@@ -6,3 +6,48 @@
 [linux-3.11/drivers/edac/sb_edac.c:1198]: (error) Memory leak: sbridge_dev
 [linux-3.11/drivers/gpio/gpio-mcp23s08.c:616]: (error) Uninitialized variable: pdata
 [linux-3.11/drivers/gpu/drm/drm_ioc32.c:359]: (error) Uninitialized variable: s32
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:116]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:132]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3037]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3248]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3487]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:1918]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_ddi.c:983]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_ddi.c:989]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_display.c:9903]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:2459]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:2461]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:4423]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:186]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:189]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:190]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2910]: (error) Uninitialized variable: args
+[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2919]: (error) Uninitialized variable: args                                                                                               
+[linux-3.11/drivers/hid/hid-wiimote-debug.c:147]: (error) Array 'wiidebug_drmmap[13]' accessed at index 63, which is out of bounds.                                                            
+[linux-3.11/drivers/infiniband/hw/cxgb4/mem.c:532]: (error) Memory leak: page_list                                                                                                             
+[linux-3.11/drivers/iommu/dmar.c:1019]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:984]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:1002]: (error) Uninitialized variable: val
+[linux-3.11/drivers/iommu/intel-iommu.c:1226]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:1243]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel_irq_remapping.c:419]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/omap-iommu.c:669]: (error) Possible null pointer dereference: fn
+[linux-3.11/drivers/isdn/gigaset/ev-layer.c:475]: (error) Array index -1 is out of bounds.
+[linux-3.11/drivers/isdn/i4l/isdn_ttyfax.c:329]: (error) Uninitialized variable: c
+[linux-3.11/drivers/isdn/icn/icn.c:1579]: (error) Memory leak: card
+[linux-3.11/drivers/isdn/isdnloop/isdnloop.c:1490]: (error) Memory leak: card
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:540]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:553]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:557]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:294]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:295]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:296]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:297]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:300]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:301]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:302]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:305]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/md/dm-mpath.c:1590]: (error) Possible null pointer dereference: bdev
+[linux-3.11/drivers/md/dm-thin-metadata.c:988]: (error) Memory leak: td
+[linux-3.11/drivers/md/dm-thin-metadata.c:1021]: (error) Memory leak: td
+[linux-3.11/drivers/md/dm-thin-metadata.c:1103]: (error) Memory leak: td

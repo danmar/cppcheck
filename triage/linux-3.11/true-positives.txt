@@ -35,3 +35,11 @@
 [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5808] -> [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5811]: (warning) Possible null pointer dereference: port - otherwise it is redundant to check it against null.
 [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1026] -> [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1028]: (warning) Possible null pointer dereference: fcxp - otherwise it is redundant to check it against null.
 [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/qxl/qxl_draw.c:352]: (error) Uninitialized variable: drawable
+[linux-3.11/drivers/infiniband/hw/ipath/ipath_diag.c:366]: (error) Uninitialized struct member: dp.unit
+[linux-3.11/drivers/input/touchscreen/ad7879-spi.c:37]: (error) Uninitialized variable: _rx_buf
+[linux-3.11/drivers/iommu/amd_iommu.c:460]: (error) Memory leak: dev_data
+[linux-3.11/drivers/media/dvb-frontends/dib9000.c:1047]: (error) Array 'mb[10]' accessed at index 10, which is out of bounds.
+[linux-3.11/drivers/media/dvb-frontends/ds3000.c:619]: (error) Array 'dvbs2_snr_tab[80]' accessed at index 80, which is out of bounds.
+[linux-3.11/drivers/media/dvb-frontends/stv0367.c:926]: (error) Possible null pointer dereference: tuner_ops
+
