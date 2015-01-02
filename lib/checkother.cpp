@@ -2024,11 +2024,14 @@ void CheckOther::checkDuplicateBranch()
             // save if branch code
             std::string branch1 = scope->classStart->next()->stringifyList(scope->classEnd);
 
+            if (branch1.empty())
+                continue;
+
             // save else branch code
             std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
 
             // check for duplicates
-            if (!branch1.empty() && branch1 == branch2)
+            if (branch1 == branch2)
                 duplicateBranchError(scope->classDef, scope->classEnd->next());
         }
     }
