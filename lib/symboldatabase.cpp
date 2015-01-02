@@ -1121,7 +1121,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // Set function call pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (Token::Match(tok, "%var% (")) {
-            if (!tok->function())
+            if (!tok->function() && tok->varId() == 0)
                 const_cast<Token *>(tok)->function(findFunction(tok));
         }
     }
