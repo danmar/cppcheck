@@ -39,7 +39,7 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
         return;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcsncmp (")) {
+        if (Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|strncasecmp_l|strcasecmp_l|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcscasecmp_l|wcsncasecmp_l|wcsncmp (")) {
             if (Token::Match(tok->tokAt(2), "%str% , %str%")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
