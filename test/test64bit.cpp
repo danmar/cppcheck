@@ -100,6 +100,12 @@ private:
               "    return 6 + p[2] * 256;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int *p) {\n" // #6096
+              "    bool a = p;\n"
+              "    return a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember() {

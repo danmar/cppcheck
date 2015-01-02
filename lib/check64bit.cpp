@@ -39,7 +39,7 @@ static bool isaddr(const Variable *var)
 /** Is given variable an integer variable */
 static bool isint(const Variable *var)
 {
-    return (var && var->isIntegralType() && !var->isArrayOrPointer());
+    return (var && var->isIntegralType() && !var->isArrayOrPointer() && var->typeStartToken()->str() != "bool");
 }
 
 void Check64BitPortability::pointerassignment()
