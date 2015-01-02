@@ -31,6 +31,11 @@ namespace {
 
 //---------------------------------------------------------------------------
 
+static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)
+{
+    return !func || (func->argCount() >= arg && func->getArgumentVar(arg - 1) && func->getArgumentVar(arg - 1)->isPointer());
+}
+
 /**
  * @brief parse a function call and extract information about variable usage
  * @param tok first token
@@ -52,17 +57,17 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         (value == 0 && Token::Match(firstParam, "0|NULL ,|)"))) {
         if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
-        else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),1))
+        else if (value == 0 && library != nullptr && library->isnullargbad(tok.str(), 1) && checkNullpointerFunctionCallPlausibility(tok.function(), 1))
             var.push_back(firstParam);
-        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(),1))
+        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(), 1))
             var.push_back(firstParam);
     }
 
     // 2nd parameter..
     if ((value == 0 && Token::Match(secondParam, "0|NULL ,|)")) || (secondParam && secondParam->varId() > 0 && Token::Match(secondParam->next(),"[,)]"))) {
-        if (value == 0 && library != nullptr && library->isnullargbad(tok.str(),2))
+        if (value == 0 && library != nullptr && library->isnullargbad(tok.str(), 2) && checkNullpointerFunctionCallPlausibility(tok.function(), 2))
             var.push_back(secondParam);
-        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(),2))
+        else if (value == 1 && library != nullptr && library->isuninitargbad(tok.str(), 2))
             var.push_back(secondParam);
     }
 

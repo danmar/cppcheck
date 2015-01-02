@@ -59,6 +59,7 @@ private:
         TEST_CASE(nullpointer24); // #5082 fp: chained assignment
         TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer26); // #3589
+        TEST_CASE(nullpointer27); // #6014
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
@@ -1302,6 +1303,36 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer27() { // #6014
+        check("void fgetpos(int x, int y);\n"
+              "void foo() {\n"
+              "    fgetpos(0, x);\n"
+              "    fgetpos(x, 0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void fgetpos(void* x, int y);\n"
+              "void foo() {\n"
+              "    fgetpos(0, x);\n"
+              "    fgetpos(x, 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+
+        check("void fgetpos(int x, void* y);\n"
+              "void foo() {\n"
+              "    fgetpos(0, x);\n"
+              "    fgetpos(x, 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+
+        check("void foo() {\n"
+              "    fgetpos(0, x);\n"
+              "    fgetpos(x, 0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n"
+                      "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
     }
 
     void nullpointerSwitch() { // #2626
