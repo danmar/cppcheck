@@ -19,7 +19,7 @@ falsepositives = f.read()
 f.close();
 
 fin = open(resultfile,'rt')
-results = fin.readlines()
+results = fin.read()
 fin.close()
 
 fout = open('report.html','wt')
@@ -32,8 +32,9 @@ out = {}
 out['untriaged'] = ''
 out['fp'] = ''
 out['tp'] = ''
+out['notfound'] = ''
 
-for result in results:
+for result in results.split('\n'):
     result = result.strip()
 
     res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', result)
@@ -61,9 +62,41 @@ for result in results:
 
     out[css] += html
 
+f = open(project + '/true-positives.txt', 'rt')
+for line in f.readlines():
+    line = line.strip()
+    if line.find('] -> [') > 0 or line.find('(error)') < 0:
+        continue
+
+    res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
+    if res == None:
+        continue
+
+    if line in results:
+        continue
+
+    filename       = res.group(1)
+    linenr         = res.group(2)
+    message        = res.group(3)
+    classification = 'Not Found'
+    css            = 'notfound'
+
+    html =  '  <tr>'
+    html += '<td class='+css+'>'+filename+'</td>'
+    html += '<td class='+css+'>'+linenr+'</td>'
+    html += '<td class='+css+'>'+message+'</td>'
+    html += '<td class='+css+'>'+classification+'</td>'
+    html += '</tr>\n'
+
+    out[css] += html
+
+f.close();
+
+
 fout.write(out['tp'])
-fout.write(out['fp'])
+fout.write(out['notfound'])
 fout.write(out['untriaged'])
+fout.write(out['fp'])
 
 fout.write('</table></body></html>')
 fout.close()

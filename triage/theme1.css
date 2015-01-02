@@ -24,7 +24,8 @@ td {
   border:1px solid gray;
 }
 
+.tp        { color:red; }
+.fp        { color:green; }
+.notfound  { color:blue; }
 .untriaged { color:black; }
-.tp        { color:black; }
-.fp        { color:lightgray; }
 
