@@ -1633,6 +1633,28 @@ private:
                       "3: A ( int x@2 ) : x@1 ( x@2 ) { }\n"
                       "4: } ;\n",
                       tokenize(code4));
+
+        const char code5[] = "class A {\n"
+                             "  A(int x) noexcept : x(x) {}\n"
+                             "  int x;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: A ( int x@1 ) noexcept : x@2 ( x@1 ) { }\n"
+                      "3: int x@2 ;\n"
+                      "4: } ;\n",
+                      tokenize(code5));
+
+        const char code6[] = "class A {\n"
+                             "  A(int x) noexcept(true) : x(x) {}\n"
+                             "  int x;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: A ( int x@1 ) noexcept ( true ) : x@2 ( x@1 ) { }\n"
+                      "3: int x@2 ;\n"
+                      "4: } ;\n",
+                      tokenize(code6));
     }
 
     void varid_operator() {

@@ -2404,8 +2404,14 @@ static void setVarIdStructMembers(Token **tok1,
 
 static const Token * findInitListEndToken(const Token *tok)
 {
-    if (!Token::simpleMatch(tok, ") :"))
+    if (!Token::Match(tok, ") noexcept|:") && !Token::simpleMatch(tok, "noexcept :"))
         return nullptr;
+
+    if (tok->strAt(1) != ":") {
+        tok = tok->next();
+        if (tok->strAt(1) == "(")
+            tok = tok->linkAt(1);
+    }
 
     tok = tok->tokAt(2);
 
