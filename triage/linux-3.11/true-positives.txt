@@ -3,6 +3,7 @@
 [linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
 [linux-3.11/arch/ia64/kernel/palinfo.c:133]: (error) Array 'units[5]' accessed at index 6, which is out of bounds.
 [linux-3.11/arch/powerpc/perf/power4-pmu.c:506]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/arch/powerpc/perf/ppc970-pmu.c:380]: (error) Array 'pmcsel[8]' accessed at index 8, which is out of bounds.
 [linux-3.11/arch/x86/kvm/x86.c:5471]: (error) Uninitialized variable: param
 [linux-3.11/arch/x86/kvm/x86.c:5472]: (error) Uninitialized variable: param
 [linux-3.11/arch/x86/kvm/x86.c:5473]: (error) Uninitialized variable: param

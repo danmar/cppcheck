@@ -84,6 +84,9 @@
 [linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5617]: (error) Uninitialized variable: phy_data
 [linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5664]: (error) Uninitialized variable: phy_data
 [linux-3.11/drivers/net/ethernet/marvell/sky2.c:1173]: (error) Uninitialized variable: re
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:132]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:212]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:391]: (error) Uninitialized variable: ret
 
 # Tokenizer::setVarId
 [linux-3.11/net/ax25/ax25_dev.c:37]: (error) Uninitialized variable: ax25_dev
