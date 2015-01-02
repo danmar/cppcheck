@@ -1,3 +1,15 @@
+# Tokenizer::setVarId , function declaration in function
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: year
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: mon
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: day
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: hour
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: min
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: sec
+# valueflow,uninitvar,etc must stop for(;;){}
+[linux-3.11/arch/sparc/kernel/pcic.c:694]: (error) Uninitialized variable: irq
+# valueFlowSubFunction, stop at assignment
+[linux-3.11/arch/x86/kernel/machine_kexec_32.c:115]: (error) Possible null pointer dereference: pmd
+
 [linux-3.11/drivers/net/wireless/hostap/hostap_ap.c:3221]: (error) Memory leak: sta
 [linux-3.11/drivers/block/rbd.c:1616]: (error) Possible null pointer dereference: rbd_dev
 [linux-3.11/drivers/crypto/nx/nx-842.c:1030]: (error) Possible null pointer dereference: node
@@ -72,6 +84,11 @@
 [linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5617]: (error) Uninitialized variable: phy_data
 [linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5664]: (error) Uninitialized variable: phy_data
 [linux-3.11/drivers/net/ethernet/marvell/sky2.c:1173]: (error) Uninitialized variable: re
+
+# Tokenizer::setVarId
+[linux-3.11/net/ax25/ax25_dev.c:37]: (error) Uninitialized variable: ax25_dev
+[linux-3.11/net/ax25/ax25_dev.c:141]: (error) Uninitialized variable: ax25_dev
+
 [linux-3.11/sound/pci/pcxhr/pcxhr.c:729]: (error) Uninitialized struct member: pipe.first_audio
 [linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized variable: map
 [linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized struct member: map.unmap_ip

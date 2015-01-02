@@ -1,5 +1,25 @@
+[linux-3.11/arch/cris/arch-v32/drivers/sync_serial.c:285]: (error) Array 'ports[1]' accessed at index 1, which is out of bounds.
 [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:484] -> [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:487]: (warning) Possible null pointer dereference: map - otherwise it is redundant to check it against null.
 [linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
+[linux-3.11/arch/ia64/kernel/palinfo.c:133]: (error) Array 'units[5]' accessed at index 6, which is out of bounds.
+[linux-3.11/arch/powerpc/perf/power4-pmu.c:506]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/arch/x86/kvm/x86.c:5471]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5472]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5473]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5474]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/math-emu/poly_2xm1.c:127]: (error) Uninitialized struct member: Denom.msw
+[linux-3.11/arch/x86/math-emu/poly_2xm1.c:73]: (error) Uninitialized struct member: argSignif.msw
+[linux-3.11/arch/x86/math-emu/poly_atan.c:92]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:205]: (error) Uninitialized struct member: Numer.msw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:194]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:199]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:218]: (error) Uninitialized struct member: argSignif.lsw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:219]: (error) Uninitialized struct member: argSignif.midw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:212]: (error) Uninitialized struct member: argSignif.msw
+[linux-3.11/arch/x86/math-emu/poly_sin.c:352]: (error) Uninitialized struct member: fix_up.msw
+[linux-3.11/arch/x86/math-emu/poly_tan.c:108]: (error) Uninitialized struct member: accum.lsw
+[linux-3.11/arch/x86/math-emu/poly_tan.c:186]: (error) Uninitialized struct member: fix_up.msw
+
 [linux-3.11/drivers/acpi/battery.c:553] -> [linux-3.11/drivers/acpi/battery.c:557]: (performance) Variable 'status' is reassigned a value before the old one has been used.
 [linux-3.11/drivers/acpi/bus.c:737] -> [linux-3.11/drivers/acpi/bus.c:740]: (performance) Variable 'status' is reassigned a value before the old one has been used.
 [linux-3.11/drivers/acpi/glue.c:243] -> [linux-3.11/drivers/acpi/glue.c:245]: (performance) Variable 'retval' is reassigned a value before the old one has been used.
