@@ -137,6 +137,7 @@ private:
         TEST_CASE(varid_pointerToArray); // #2645
         TEST_CASE(varid_cpp11initialization); // #4344
         TEST_CASE(varid_inheritedMembers); // #4101
+        TEST_CASE(varid_header); // #6386
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1963,6 +1964,18 @@ private:
                                "        a = 0;\n"
                                "    }\n"
                                "};"));
+    }
+
+    void varid_header() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A ;\n"
+                      "2: struct B {\n"
+                      "3: void setData ( const A & a@1 ) ;\n"
+                      "4: } ;\n",
+                      tokenize("class A;\n"
+                               "struct B {\n"
+                               "    void setData(const A & a);\n"
+                               "}; ", false, "test.h"));
     }
 
     void varidclass1() {

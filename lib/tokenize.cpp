@@ -2295,7 +2295,7 @@ void Tokenizer::simplifyTemplates()
 //---------------------------------------------------------------------------
 
 
-static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope, bool cpp)
+static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope, bool cpp, bool c)
 {
     const Token *tok2 = *tok;
 
@@ -2312,7 +2312,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         if (tok2->isName()) {
             if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
-            if (Token::Match(tok2, "struct|union") || (cpp && Token::Match(tok2, "class|typename"))) {
+            if (Token::Match(tok2, "struct|union") || (!c && Token::Match(tok2, "class|typename"))) {
                 hasstruct = true;
                 typeCount = 0;
                 singleNameCount = 0;
@@ -2648,7 +2648,7 @@ void Tokenizer::setVarId()
             if (Token::simpleMatch(tok2, "const new") && !isC())
                 continue;
 
-            bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP());
+            bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP(), isC());
             if (decl) {
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
