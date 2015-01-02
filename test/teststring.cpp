@@ -98,6 +98,17 @@ private:
     }
 
     void alwaysTrueFalseStringCompare() {
+        check("void f() {\n"
+              "  if (strcmp(\"A\",\"A\") == 0){}\n"
+              "  if (strncmp(\"A\",\"A\",1) == 0){}\n"
+              "  if (strcasecmp(\"A\",\"A\") == 0){}\n"
+              "  if (strncasecmp(\"A\",\"A\",1) == 0){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:5]: (warning) Unnecessary comparison of static strings.\n", errout.str());
+
         check_preprocess_suppress(
             "#define MACRO \"00FF00\"\n"
             "int main()\n"
