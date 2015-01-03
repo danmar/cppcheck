@@ -2273,6 +2273,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     paths.push_back(path);
     std::string::size_type pos = 0;
     std::string::size_type endfilePos = 0;
+    if (code.compare(0,7U,"#file \"")==0) {
+        const std::string::size_type start = code.find("#file \"" + filePath, 7U);
+        if (start != std::string::npos)
+            endfilePos = start;
+    }
     std::set<std::string> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos) {
         if (_settings && _settings->terminated())
