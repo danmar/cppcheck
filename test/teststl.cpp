@@ -1458,7 +1458,14 @@ private:
         // error (pointer)
         check("void f(std::set<int> *s)\n"
               "{\n"
-              "    if (*s.find(12)) { }\n"
+              "    if ((*s).find(12)) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find() is an iterator, but it is not properly checked.\n", errout.str());
+
+        // error (pointer)
+        check("void f(std::set<int> *s)\n"
+              "{\n"
+              "    if (s->find(12)) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find() is an iterator, but it is not properly checked.\n", errout.str());
 
@@ -1500,7 +1507,7 @@ private:
         // ok (pointer)
         check("void f(std::set<int> *s)\n"
               "{\n"
-              "    if (*s.find(12) != s.end()) { }\n"
+              "    if ((*s).find(12) != s.end()) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -1551,6 +1558,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // ok (less than comparison, #6217)
+        check("void f(std::vector<int> s)\n"
+              "{\n"
+              "    if (std::find(a, b, c) < d) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #3714 - segmentation fault for syntax error
         check("void f() {\n"
               "    if (()) { }\n"
@@ -1574,7 +1588,14 @@ private:
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
-              "    if (*s.find(\"abc\")) { }\n"
+              "    if ((*s).find(\"abc\")) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+
+        // error (pointer)
+        check("void f(const std::string *s)\n"
+              "{\n"
+              "    if (s->find(\"abc\")) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
 

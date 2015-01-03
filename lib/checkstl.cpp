@@ -739,27 +739,15 @@ void CheckStl::stlBoundariesError(const Token *tok, const std::string &container
                 "One should use operator!= instead to compare iterators.");
 }
 
-static bool if_findCompare(const Token * const tokBack, bool str)
+static bool if_findCompare(const Token * const tokBack)
 {
-    const Token *tok = tokBack;
-    while (tok && tok->str() == ")") {
-        tok = tok->next();
-
-        if (Token::Match(tok, ") !!{") &&
-            tok->link()->previous() &&
-            (Token::Match(tok->link()->previous(),",|==|!=") ||
-             tok->link()->previous()->isName()))
-            return true;
-    }
-
-    if (Token::Match(tok,",|==|!="))
+    const Token *tok = tokBack->astParent();
+    if (!tok)
+        return false;
+    if (tok->isComparisonOp())
         return true;
-    if (tok) {
-        if (str && tok->isComparisonOp())
-            return true;
-        if (tok->isArithmeticalOp()) // result is used in some calculation
-            return true;  // TODO: check if there is a comparison of the result somewhere
-    }
+    if (tok->isArithmeticalOp()) // result is used in some calculation
+        return true;  // TODO: check if there is a comparison of the result somewhere
     return false;
 }
 
@@ -781,48 +769,30 @@ void CheckStl::if_find()
             tok = tok->next();
 
         for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {
-            if (Token::Match(tok, "&&|(|%oror%"))
-                tok = tok->next();
-            else
-                continue;
-
-            while (tok->str() == "(")
-                tok = tok->next();
-
-            if (tok->str() == "!")
-                tok = tok->next();
-
             if (Token::Match(tok, "%var% . find (")) {
                 const Variable *var = tok->variable();
                 if (var) {
-                    const bool isString = var->isStlStringType() && !var->isArrayOrPointer();
-                    if (if_findCompare(tok->linkAt(3), isString))
+                    if (if_findCompare(tok->tokAt(3)))
                         continue;
 
                     // Is the variable a std::string or STL container?
                     const Token * decl = var->typeStartToken();
-                    const unsigned int varid = tok->varId();
                     // stl container
-                    if (warning && Token::Match(decl, "std :: %var% < %type% > &| %varid%", varid))
+                    if (warning && Token::Match(decl, "std :: %var% <") && Token::Match(decl->linkAt(3), "> !!::"))
                         if_findError(tok, false);
-                    else if (performance && isString)
+                    else if (performance && var->isStlStringType())
                         if_findError(tok, true);
                 }
             }
 
             //check also for vector-like or pointer containers
-            else if (Token::Match(tok, "* %var%") || Token::Match(tok, "%var% [")) {
-                // goto %var%
-                if (tok->str() == "*")
-                    tok = tok->next();
+            else if (tok->variable() && tok->astParent() && (tok->astParent()->str() == "*" || tok->astParent()->str() == "[")) {
+                const Token *tok2 = tok->astParent();
 
-                const Token *tok2 = tok->next();
-                if (tok2->str() == "[")
-                    tok2 = tok2->link()->next();
-
-                if (!Token::simpleMatch(tok2, ". find ("))
+                if (!Token::simpleMatch(tok2->astParent(), ". find ("))
                     continue;
-                if (if_findCompare(tok2->linkAt(2), false))
+
+                if (if_findCompare(tok2->astParent()->tokAt(2)))
                     continue;
 
                 const Variable *var = tok->variable();
@@ -866,7 +836,7 @@ void CheckStl::if_find()
 
             else if (warning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (!if_findCompare(tok->linkAt(3), false)) {
+                if (!if_findCompare(tok->tokAt(3))) {
                     if_findError(tok, false);
                 }
             }
