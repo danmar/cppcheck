@@ -5,6 +5,9 @@
 # Test cppcheck on itself.
 #   cppcheck -q -j2 --inconclusive --enable=all lib
 #
+# Update translations
+#   lupdate gui.pro
+#
 # Make sure "cppcheck --errorlist" works. For example with:
 # make test
 # cppcheck --errorlist > errlist.xml
@@ -13,12 +16,12 @@
 # xmllint --noout errlist.xml
 #
 # Update AUTHORS using output from:
-#   git log --format='%aN' | sort -u
+#   git log --format='%aN' | sort -u > AUTHORS2
+#   diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
 # sed -i "s/1.[0-9][0-9].99/1.62/" cli/main.cpp
-# sed -i "s/1,[0-9][0-9],99,0/1,62,0,0/" lib/version.h
-# sed -i "s/1.[0-9][0-9] dev/1.62/" lib/version.h
+# sed -i "s/MINOR [0-9][0-9]/MINOR 62/" lib/version.h
 # sed -i "s/1.[0-9][0-9] dev/1.62/" man/manual.docbook
 # sed -i "s/1.[0-9][0-9] dev/1.62/" win_installer/productInfo.wxi
 # sed -i "s/1.[0-9][0-9].99/1.62/" win_installer/productInfo.wxi
@@ -56,7 +59,9 @@
 # Upload manual.pdf , manual.html and version.txt...
 # sftp danielmarjamaki,cppcheck@web.sourceforge.net
 #
-# save "cppcheck --doc" output on wiki
+# write a news
+#
+# save "cppcheck --doc" output on wiki, write new release date on wikis
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net
