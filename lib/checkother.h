@@ -353,7 +353,6 @@ private:
         return "Other checks\n"
 
                // error
-               "- Assigning bool value to pointer (converting bool value to address)\n"
                "- division with zero\n"
                "- scoped object destroyed immediately after construction\n"
                "- assignment in an assert statement\n"
@@ -375,37 +374,33 @@ private:
 
                // portability
                "- memset() with a float as the 2nd parameter\n"
+               "- Passing NULL pointer to function with variable number of arguments leads to UB.\n"
 
                // style
-               "- C-style pointer cast in cpp file\n"
+               "- C-style pointer cast in C++ code\n"
                "- casting between incompatible pointer types\n"
-               "- redundant if\n"
                "- passing parameter by value\n"
                "- [Incomplete statement](IncompleteStatement)\n"
                "- [check how signed char variables are used](CharVar)\n"
                "- variable scope can be limited\n"
                "- unusual pointer arithmetic. For example: \"abc\" + 'd'\n"
-               "- redundant assignment in a switch statement\n"
-               "- redundant pre/post operation in a switch statement\n"
-               "- redundant bitwise operation in a switch statement\n"
+               "- redundant assignment, increment, or bitwise operation in a switch statement\n"
                "- redundant strcpy in a switch statement\n"
-               "- assignment of a variable to itself\n"
                "- Suspicious case labels in switch()\n"
-               "- Suspicious equality comparisons\n"
+               "- assignment of a variable to itself\n"
                "- Comparison of values leading always to true or false\n"
                "- Clarify calculation with parentheses\n"
                "- suspicious comparison of '\\0' with a char* variable\n"
                "- duplicate break statement\n"
                "- unreachable code\n"
-               "- testing if unsigned variable is negative\n"
-               "- testing is unsigned variable is positive\n"
+               "- testing if unsigned variable is negative/positive\n"
                "- Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "- Array filled incompletely using memset/memcpy/memmove.\n"
                "- redundant get and set function of user id (--std=posix).\n"
-               "- Passing NULL pointer to function with variable number of arguments leads to UB on some platforms.\n"
                "- NaN (not a number) value used in arithmetic expression.\n"
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
-               "- prefer erfc, expm1 or log1p to avoid loss of precision.\n";
+               "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
+               "- identical code in both branches of if/else or ternary operator.\n";
     }
 };
 /// @}

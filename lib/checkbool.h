@@ -136,7 +136,8 @@ private:
                "- comparison of a function returning boolean value using relational operator\n"
                "- comparison of a boolean value with boolean value using relational operator\n"
                "- using bool in bitwise expression\n"
-               "- pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
+               "- pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n"
+               "- Assigning bool value to pointer or float\n";
     }
 };
 /// @}
