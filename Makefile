@@ -73,7 +73,7 @@ ifdef COMSPEC
 endif # COMSPEC
 
 ifndef CXXFLAGS
-    CXXFLAGS=-O2 -include lib/cxx11emu.h  -DNDEBUG -Wall
+    CXXFLAGS=-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wconversion -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Woverloaded-virtual -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
 ifeq ($(HAVE_RULES),yes)
