@@ -743,11 +743,13 @@ static bool if_findCompare(const Token * const tokBack)
 {
     const Token *tok = tokBack->astParent();
     if (!tok)
-        return false;
+        return true;
     if (tok->isComparisonOp())
         return true;
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
+    if (tok->isAssignmentOp())
+        return if_findCompare(tok); // Go one step upwards in the AST
     return false;
 }
 

@@ -1497,6 +1497,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find() is an iterator, but it is not properly checked.\n", errout.str());
 
+        // error (assignment)
+        check("void f(std::set<int> s)\n"
+              "{\n"
+              "    if (a || (x = s.find(12))) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Suspicious condition. The result of find() is an iterator, but it is not properly checked.\n", errout.str());
+
         // ok (simple)
         check("void f(std::set<int> s)\n"
               "{\n"
@@ -1536,6 +1543,13 @@ private:
         check("void f(std::vector<std::set<int> > s)\n"
               "{\n"
               "    if (s[0].find(123) != s.end()) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok (assignment)
+        check("void f(std::set<int> s)\n"
+              "{\n"
+              "    if (a || (x = s.find(12)) != s.end()) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
