@@ -140,6 +140,7 @@ private:
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
+        TEST_CASE(duplicateExpressionTernary); // #6391
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -4319,6 +4320,23 @@ private:
         check("float IsNan(float value) { return !(value == value); }\n"
               "double IsNan(double value) { return !(value == value); }\n"
               "long double IsNan(long double value) { return !(value == value); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionTernary() { // #6391
+        check("void f() {\n"
+              "    return A ? x : x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression in both branches of ternary operator.\n", errout.str());
+
+        check("void f() {\n"
+              "    if( a ? (b ? false:false): false ) ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression in both branches of ternary operator.\n", errout.str());
+
+        check("void f() {\n"
+              "    return A ? x : z;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

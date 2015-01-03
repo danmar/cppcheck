@@ -87,7 +87,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         tok1 = tok1->astOperand2();
     if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
         tok2 = tok2->astOperand2();
-    if (tok1->str() != tok2->str() || tok1->varId() != tok2->varId())
+    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str())
         return false;
     if (tok1->str() == "." && tok1->originalName() != tok2->originalName())
         return false;
@@ -2303,6 +2303,7 @@ void CheckOther::checkDuplicateExpression()
 
     std::list<Scope>::const_iterator scope;
     std::list<const Function*> constFunctions;
+    const std::set<std::string> temp; // Can be used as dummy for isSameExpression()
     getConstFunctions(symbolDatabase, constFunctions);
 
     for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
@@ -2350,6 +2351,9 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 }
+            } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
+                if (isSameExpression(tok->astOperand1(), tok->astOperand2(), temp))
+                    duplicateExpressionTernaryError(tok);
             }
         }
     }
@@ -2365,6 +2369,13 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.");
+}
+
+void CheckOther::duplicateExpressionTernaryError(const Token *tok)
+{
+    reportError(tok, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
+                "Finding the same expression in both branches of ternary operator is suspicious as "
+                "the same code is executed regardless of the condition.");
 }
 
 void CheckOther::selfAssignmentError(const Token *tok, const std::string &varname)

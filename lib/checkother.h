@@ -271,6 +271,7 @@ private:
     void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
+    void duplicateExpressionTernaryError(const Token *tok);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok, bool inconclusive);
@@ -331,6 +332,7 @@ private:
         c.clarifyStatementError(0);
         c.duplicateBranchError(0, 0);
         c.duplicateExpressionError(0, 0, "&&");
+        c.duplicateExpressionTernaryError(0);
         c.duplicateBreakError(0, false);
         c.unreachableCodeError(0, false);
         c.unsignedLessThanZeroError(0, "varname", false);
