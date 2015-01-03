@@ -31,7 +31,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
         TEST_CASE(iterator3);
@@ -134,7 +138,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
         settings.addEnabled("warning");
         settings.addEnabled("style");
         settings.addEnabled("performance");
