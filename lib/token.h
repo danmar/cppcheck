@@ -650,6 +650,13 @@ public:
     Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
+    * @return the first token of the next template argument. Does only work on template argument
+    * lists. Requires that Tokenizer::createLinks2() has been called before.
+    * Returns 0, if there is no next argument.
+    */
+    Token* nextTemplateArgument() const;
+
+    /**
      * Returns the closing bracket of opening '<'. Should only be used if link()
      * is unavailable.
      * @return closing '>', ')', ']' or '}'. if no closing bracket is found, NULL is returned

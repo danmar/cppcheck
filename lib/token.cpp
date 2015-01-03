@@ -788,6 +788,19 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     return 0;
 }
 
+Token* Token::nextTemplateArgument() const
+{
+    for (const Token* tok = this; tok; tok = tok->next()) {
+        if (tok->str() == ",")
+            return tok->next();
+        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+            tok = tok->link();
+        else if (Token::Match(tok, ">|;"))
+            return 0;
+    }
+    return 0;
+}
+
 const Token * Token::findClosingBracket() const
 {
     const Token *closing = nullptr;

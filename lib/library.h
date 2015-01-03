@@ -137,6 +137,51 @@ public:
 
     bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
 
+    class Container {
+    public:
+        Container() :
+            type_templateArgNo(-1),
+            size_templateArgNo(-1),
+            arrayLike_indexOp(false),
+            stdStringLike(false) {
+        }
+
+        enum Action {
+            RESIZE, CLEAR, PUSH, POP,
+            NO_ACTION
+        };
+        enum Yield {
+            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, SIZE, EMPTY,
+            NO_YIELD
+        };
+        struct Function {
+            Action action;
+            Yield yield;
+        };
+        std::string startPattern, endPattern;
+        std::map<std::string, Function> functions;
+        int type_templateArgNo;
+        int size_templateArgNo;
+        bool arrayLike_indexOp;
+        bool stdStringLike;
+
+        Action getAction(const std::string& function) const {
+            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            if (i != functions.end())
+                return i->second.action;
+            return NO_ACTION;
+        }
+
+        Yield getYield(const std::string& function) const {
+            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            if (i != functions.end())
+                return i->second.yield;
+            return NO_YIELD;
+        }
+    };
+    std::map<std::string, Container> containers;
+    const Container* detectContainer(const Token* typeStart) const;
+
     class ArgumentChecks {
     public:
         ArgumentChecks() :

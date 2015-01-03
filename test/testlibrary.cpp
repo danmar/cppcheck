@@ -39,6 +39,7 @@ private:
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
         TEST_CASE(podtype);
+        TEST_CASE(container);
         TEST_CASE(version);
     }
 
@@ -274,6 +275,80 @@ private:
         const struct Library::PodType *type = library.podtype("s16");
         ASSERT_EQUALS(2U,   type ? type->size : 0U);
         ASSERT_EQUALS(0,    type ? type->sign : '?');
+    }
+
+    void container() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <container id=\"A\" startPattern=\"std :: A &lt;\" endPattern=\"&gt; !!::\">\n"
+                               "    <type templateParameter=\"1\"/>\n"
+                               "    <size templateParameter=\"4\">\n"
+                               "      <function name=\"resize\" action=\"resize\"/>\n"
+                               "      <function name=\"clear\" action=\"clear\"/>\n"
+                               "      <function name=\"size\" yields=\"size\"/>\n"
+                               "      <function name=\"empty\" yields=\"empty\"/>\n"
+                               "      <function name=\"push_back\" action=\"push\"/>\n"
+                               "      <function name=\"pop_back\" action=\"pop\"/>\n"
+                               "    </size>\n"
+                               "    <access>\n"
+                               "      <function name=\"at\" yields=\"at_index\"/>\n"
+                               "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
+                               "      <function name=\"end\" yields=\"end-iterator\"/>\n"
+                               "      <function name=\"data\" yields=\"buffer\"/>\n"
+                               "      <function name=\"c_str\" yields=\"buffer-nt\"/>\n"
+                               "      <function name=\"front\" yields=\"item\"/>\n"
+                               "    </access>\n"
+                               "  </container>\n"
+                               "  <container id=\"B\" startPattern=\"std :: B &lt;\" inherits=\"A\">\n"
+                               "    <size templateParameter=\"3\"/>\n" // Inherits all but templateParameter
+                               "  </container>\n"
+                               "  <container id=\"C\">\n"
+                               "    <type string=\"std-like\"/>\n"
+                               "    <access indexOperator=\"array-like\"/>\n"
+                               "  </container>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        Library library;
+        library.load(doc);
+
+        Library::Container& A = library.containers["A"];
+        Library::Container& B = library.containers["B"];
+        Library::Container& C = library.containers["C"];
+
+        ASSERT_EQUALS(A.type_templateArgNo, 1);
+        ASSERT_EQUALS(A.size_templateArgNo, 4);
+        ASSERT_EQUALS(A.startPattern, "std :: A <");
+        ASSERT_EQUALS(A.endPattern, "> !!::");
+        ASSERT_EQUALS(A.stdStringLike, false);
+        ASSERT_EQUALS(A.arrayLike_indexOp, false);
+        ASSERT_EQUALS(Library::Container::SIZE, A.getYield("size"));
+        ASSERT_EQUALS(Library::Container::EMPTY, A.getYield("empty"));
+        ASSERT_EQUALS(Library::Container::AT_INDEX, A.getYield("at"));
+        ASSERT_EQUALS(Library::Container::START_ITERATOR, A.getYield("begin"));
+        ASSERT_EQUALS(Library::Container::END_ITERATOR, A.getYield("end"));
+        ASSERT_EQUALS(Library::Container::BUFFER, A.getYield("data"));
+        ASSERT_EQUALS(Library::Container::BUFFER_NT, A.getYield("c_str"));
+        ASSERT_EQUALS(Library::Container::ITEM, A.getYield("front"));
+        ASSERT_EQUALS(Library::Container::NO_YIELD, A.getYield("foo"));
+        ASSERT_EQUALS(Library::Container::RESIZE, A.getAction("resize"));
+        ASSERT_EQUALS(Library::Container::CLEAR, A.getAction("clear"));
+        ASSERT_EQUALS(Library::Container::PUSH, A.getAction("push_back"));
+        ASSERT_EQUALS(Library::Container::POP, A.getAction("pop_back"));
+        ASSERT_EQUALS(Library::Container::NO_ACTION, A.getAction("foo"));
+
+        ASSERT_EQUALS(B.type_templateArgNo, 1);
+        ASSERT_EQUALS(B.size_templateArgNo, 3);
+        ASSERT_EQUALS(B.startPattern, "std :: B <");
+        ASSERT_EQUALS(B.endPattern, "> !!::");
+        ASSERT_EQUALS(B.functions.size(), A.functions.size());
+
+        ASSERT(C.functions.empty());
+        ASSERT_EQUALS(C.type_templateArgNo, -1);
+        ASSERT_EQUALS(C.size_templateArgNo, -1);
+        ASSERT_EQUALS(C.stdStringLike, true);
+        ASSERT_EQUALS(C.arrayLike_indexOp, true);
     }
 
     void version() const {

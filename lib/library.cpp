@@ -388,6 +388,106 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (nodename == "container") {
+            const char* const id = node->Attribute("id");
+            if (!id)
+                return Error(MISSING_ATTRIBUTE, "id");
+
+            Container& container = containers[id];
+
+            const char* const inherits = node->Attribute("inherits");
+            if (inherits) {
+                std::map<std::string, Container>::const_iterator i = containers.find(inherits);
+                if (inherits)
+                    container = i->second; // Take values from parent and overwrite them if necessary
+                else
+                    return Error(BAD_ATTRIBUTE_VALUE, inherits);
+            }
+
+            const char* const startPattern = node->Attribute("startPattern");
+            if (startPattern)
+                container.startPattern = startPattern;
+            const char* const endPattern = node->Attribute("endPattern");
+            if (endPattern)
+                container.endPattern = endPattern;
+
+            for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
+                const std::string containerNodeName = containerNode->Name();
+                if (containerNodeName == "size" || containerNodeName == "access" || containerNodeName == "other") {
+                    for (const tinyxml2::XMLElement *functionNode = containerNode->FirstChildElement(); functionNode; functionNode = functionNode->NextSiblingElement()) {
+                        if (std::string(functionNode->Name()) != "function")
+                            return Error(BAD_ELEMENT, functionNode->Name());
+
+                        const char* const functionName = functionNode->Attribute("name");
+                        if (!functionName)
+                            return Error(MISSING_ATTRIBUTE, "name");
+
+                        const char* const action_ptr = functionNode->Attribute("action");
+                        Container::Action action = Container::NO_ACTION;
+                        if (action_ptr) {
+                            std::string actionName = action_ptr;
+                            if (actionName == "resize")
+                                action = Container::RESIZE;
+                            else if (actionName == "clear")
+                                action = Container::CLEAR;
+                            else if (actionName == "push")
+                                action = Container::PUSH;
+                            else if (actionName == "pop")
+                                action = Container::POP;
+                            else
+                                return Error(BAD_ATTRIBUTE_VALUE, actionName);
+                        }
+
+                        const char* const yield_ptr = functionNode->Attribute("yields");
+                        Container::Yield yield = Container::NO_YIELD;
+                        if (yield_ptr) {
+                            std::string yieldName = yield_ptr;
+                            if (yieldName == "at_index")
+                                yield = Container::AT_INDEX;
+                            else if (yieldName == "item")
+                                yield = Container::ITEM;
+                            else if (yieldName == "buffer")
+                                yield = Container::BUFFER;
+                            else if (yieldName == "buffer-nt")
+                                yield = Container::BUFFER_NT;
+                            else if (yieldName == "start-iterator")
+                                yield = Container::START_ITERATOR;
+                            else if (yieldName == "end-iterator")
+                                yield = Container::END_ITERATOR;
+                            else if (yieldName == "size")
+                                yield = Container::SIZE;
+                            else if (yieldName == "empty")
+                                yield = Container::EMPTY;
+                            else
+                                return Error(BAD_ATTRIBUTE_VALUE, yieldName);
+                        }
+
+                        container.functions[functionName].action = action;
+                        container.functions[functionName].yield = yield;
+                    }
+
+                    if (containerNodeName == "size") {
+                        const char* const templateArg = containerNode->Attribute("templateParameter");
+                        if (templateArg)
+                            container.size_templateArgNo = atoi(templateArg);
+                    } else if (containerNodeName == "access") {
+                        const char* const indexArg = containerNode->Attribute("indexOperator");
+                        if (indexArg)
+                            container.arrayLike_indexOp = std::string(indexArg) == "array-like";
+                    }
+                } else if (containerNodeName == "type") {
+                    const char* const templateArg = containerNode->Attribute("templateParameter");
+                    if (templateArg)
+                        container.type_templateArgNo = atoi(templateArg);
+
+                    const char* const string = containerNode->Attribute("string");
+                    if (string)
+                        container.stdStringLike = std::string(string) == "std-like";
+                } else
+                    return Error(BAD_ELEMENT, containerNodeName);
+            }
+        }
+
         else if (nodename == "podtype") {
             const char * const name = node->Attribute("name");
             if (!name)
@@ -535,3 +635,25 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
+const Library::Container* Library::detectContainer(const Token* typeStart) const
+{
+    for (std::map<std::string, Container>::const_iterator i = containers.begin(); i != containers.end(); ++i) {
+        const Container& container = i->second;
+        if (container.startPattern.empty())
+            continue;
+
+        if (Token::Match(typeStart, container.startPattern.c_str())) {
+            if (container.endPattern.empty())
+                return &container;
+
+            for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
+                if (tok->link()) {
+                    if (Token::Match(tok->link(), container.endPattern.c_str()))
+                        return &container;
+                    break;
+                }
+            }
+        }
+    }
+    return nullptr;
+}

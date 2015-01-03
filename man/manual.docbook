@@ -921,6 +921,32 @@ Checking unusedvar.cpp...
     </section>
 
     <section>
+      <title>container</title>
+
+      <para>A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.</para>
+
+      <para>Inside the &lt;container&gt; tag, functions can be defined inside of the tags &lt;size&gt;, &lt;access&gt; and &lt;other&gt; (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".</para>
+
+      <para>The following example provides a definition for std::vector, based on the definition of "stdContainer" (not shown):</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;container id="stdVector" startPattern="std :: vector &amp;lt;" inherits="stdContainer"&gt;
+    &lt;size&gt;
+      &lt;function name="push_back" action="push"/&gt;
+      &lt;function name="pop_back" action="pop"/&gt;
+    &lt;/size&gt;
+    &lt;access indexOperator="array-like"&gt;
+      &lt;function name="at" yields="at_index"/&gt;
+      &lt;function name="front" yields="fixed"/&gt;
+      &lt;function name="back" yields="fixed"/&gt;
+    &lt;/access&gt;
+  &lt;/container&gt;
+&lt;/def&gt;</programlisting>
+
+    </section>
+
+    <section>
       <title>Example configuration for strcpy()</title>
 
       <para>The proper configuration for the standard strcpy() function would
