@@ -4137,6 +4137,7 @@ private:
         ASSERT_EQUALS("int * * * x ;", tok("int * x [][];"));
         ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
         ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
+        ASSERT_EQUALS("int x [ 13 ] = { [ 11 ] = 2 , [ 12 ] = 3 } ;", tok("int x[] = {[11]=2, [12]=3};"));
     }
 
     void simplifyArrayAddress() { // ticket #3304

@@ -4957,7 +4957,7 @@ void Tokenizer::simplifyUndefinedSizeArray()
             Token *tok2 = tok->next();
             while (tok2 && tok2->str() == "*")
                 tok2 = tok2->next();
-            if (!Token::Match(tok2, "%var% [ ]"))
+            if (!Token::Match(tok2, "%var% [ ] ;|["))
                 continue;
 
             tok = tok2->previous();
