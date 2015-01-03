@@ -73,16 +73,13 @@ make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
 
 Flags:
 
-1.  `SRCDIR=build`
-
+1.  `SRCDIR=build`  
     Python is used to optimise cppcheck
 
-2.  `CFGDIR=cfg`
-
+2.  `CFGDIR=cfg`  
     Specify folder where .cfg files are found
 
-3.  `HAVE_RULES=yes`
-
+3.  `HAVE_RULES=yes`  
     Enable rules (PCRE is required if this is used)
 
 ### g++ (for experts)
