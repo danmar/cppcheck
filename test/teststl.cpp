@@ -577,6 +577,11 @@ private:
               "    foo[ii] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    for (B b : D()) {}\n" // Don't crash on range-based for-loop
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void STLSizeNoErr() {

@@ -313,6 +313,9 @@ void CheckStl::stlOutOfBounds()
             tok = tok->linkAt(1)->tokAt(2);
         } else
             tok = tok->next();
+
+        if (!tok)
+            continue;
         tok = tok->next();
 
         // check if the for loop condition is wrong
