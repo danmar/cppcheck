@@ -2651,7 +2651,7 @@ void Tokenizer::setVarId()
             if (notstart.find(tok2->str()) != notstart.end())
                 continue;
 
-            if (Token::simpleMatch(tok2, "const new") && !isC())
+            if (!isC() && Token::simpleMatch(tok2, "const new"))
                 continue;
 
             bool decl = setVarIdParseDeclaration(&tok2, variableId, executableScope.top(), isCPP(), isC());
@@ -2697,7 +2697,7 @@ void Tokenizer::setVarId()
                     } else
                         decl = false;
                 } else if (isCPP() && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
-                    if (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class"))
+                    if (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class|:"))
                         continue;
                 } else
                     decl = false;
@@ -2746,7 +2746,7 @@ void Tokenizer::setVarId()
     // Member functions and variables in this source
     std::list<Token *> allMemberFunctions;
     std::list<Token *> allMemberVars;
-    {
+    if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "%var% :: %var%")) {
                 if (tok2->strAt(3) == "(")
@@ -2806,7 +2806,7 @@ void Tokenizer::setVarId()
                 tok2->varId(varlist[classname][tok2->str()]);
             }
 
-            if (namesp)
+            if (namesp || isC())
                 continue;
 
             // Set variable ids in member functions for this class..

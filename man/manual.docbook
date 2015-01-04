@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.69 dev</title>
 
-    <date>2014-09-28</date>
+    <date>2015-01-03</date>
   </bookinfo>
 
   <chapter>
@@ -938,8 +938,8 @@ Checking unusedvar.cpp...
     &lt;/size&gt;
     &lt;access indexOperator="array-like"&gt;
       &lt;function name="at" yields="at_index"/&gt;
-      &lt;function name="front" yields="fixed"/&gt;
-      &lt;function name="back" yields="fixed"/&gt;
+      &lt;function name="front" yields="item"/&gt;
+      &lt;function name="back" yields="item"/&gt;
     &lt;/access&gt;
   &lt;/container&gt;
 &lt;/def&gt;</programlisting>
