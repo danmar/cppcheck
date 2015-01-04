@@ -2692,6 +2692,10 @@ void CheckMemoryLeakNoVar::check()
         // Checks if a call to an allocation function like malloc() is made and its return value is not assigned.
         checkForUnusedReturnValue(scope);
 
+        // Checks to see if a function is called with memory allocated for an argument that
+        // could be leaked if a function called for another argument throws.
+        checkForUnsafeArgAlloc(scope);
+
         // goto the "}" that ends the executable scope..
         const Token *tok = scope->classEnd;
 
@@ -2748,6 +2752,52 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
     }
 }
 
+//---------------------------------------------------------------------------
+// Check if an exception could cause a leak in an argument constructed with
+// shared_ptr/unique_ptr. For example, in the following code, it is possible
+// that if g() throws an exception, the memory allocated by "new int(42)"
+// could be leaked. See stackoverflow.com/questions/19034538/
+// why-is-there-memory-leak-while-using-shared-ptr-as-a-function-parameter
+//
+// void x() {
+//    f(shared_ptr<int>(new int(42)), g());
+// }
+//---------------------------------------------------------------------------
+void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
+{
+    // This test only applies to C++ source
+    if (!_tokenizer->isCPP() || !_settings->inconclusive || !_settings->isEnabled("warning"))
+        return;
+
+    for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        if (Token::Match(tok, "%var% (")) {
+            const Token *endParamToken = tok->next()->link();
+            std::string pointerType;
+            std::string objectType;
+            std::string functionCalled;
+
+            // Scan through the arguments to the function call
+            for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != endParamToken; tok2 = tok2->nextArgument()) {
+                const Function *pFunc = tok2->function();
+                const bool isNothrow = pFunc && (pFunc->isDeclspecNothrow() || pFunc->isAttributeNothrow());
+
+                if (Token::Match(tok2, "shared_ptr|unique_ptr < %var% > ( new %var%")) {
+                    pointerType = tok2->str();
+                    objectType = tok2->strAt(6);
+                } else if (!isNothrow) {
+                    if (Token::Match(tok2, "%var% ("))
+                        functionCalled = tok2->str();
+                    else if (Token::Match(tok2, "%var% < %var% > ("))
+                        functionCalled = tok2->str() + "<" + tok2->strAt(2) + ">";
+                }
+            }
+
+            if (!pointerType.empty() && !functionCalled.empty())
+                unsafeArgAllocError(tok, functionCalled, pointerType, objectType);
+        }
+    }
+}
+
 void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
 {
     reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.");
@@ -2756,4 +2806,12 @@ void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string 
 void CheckMemoryLeakNoVar::returnValueNotUsedError(const Token *tok, const std::string &alloc)
 {
     reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function " + alloc + " is not used.");
+}
+
+void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string& objType)
+{
+    const std::string factoryFunc = ptrType == "shared_ptr" ? "make_shared" : "make_unique";
+    reportError(tok, Severity::warning, "leakUnsafeArgAlloc",
+                "Unsafe allocation. If " + funcName + "() throws, memory could be leaked. Use " + factoryFunc + "<" + objType + ">() instead.",
+                true); // Inconclusive because funcName may never throw
 }

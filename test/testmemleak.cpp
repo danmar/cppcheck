@@ -6277,6 +6277,8 @@ private:
 
     void run() {
         settings.standards.posix = true;
+        settings.inconclusive = true;
+        settings.addEnabled("warning");
 
         LOAD_LIB_2(settings.library, "gtk.cfg");
 
@@ -6293,8 +6295,12 @@ private:
 
         // pass allocated memory to function..
         TEST_CASE(functionParameter);
+
         // never use leakable resource
         TEST_CASE(missingAssignment);
+
+        // pass allocated memory to function using a smart pointer
+        TEST_CASE(smartPointerFunctionParam);
     }
 
     void functionParameter() {
@@ -6440,6 +6446,55 @@ private:
               "    f();\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Return value of allocation function f is not used.\n", "", errout.str());
+    }
+
+    void smartPointerFunctionParam() {
+        check("void x() {\n"
+              "    f(shared_ptr<int>(new int(42)), g());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    h(12, f(shared_ptr<int>(new int(42)), g()));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    f(unique_ptr<int>(new int(42)), g());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    f(g(), shared_ptr<int>(new int(42)));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    f(g(), unique_ptr<int>(new int(42)));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    f(shared_ptr<char>(new char), make_unique<int>(32));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If make_unique<int>() throws, memory could be leaked. Use make_shared<char>() instead.\n", errout.str());
+
+        check("void x() {\n"
+              "    f(g(124), h(\"test\", 234), shared_ptr<char>(new char));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If h() throws, memory could be leaked. Use make_shared<char>() instead.\n", errout.str());
+
+        check("void g(int x) throw() { }\n"
+              "void x() {\n"
+              "    f(g(124), shared_ptr<char>(new char));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void __declspec(nothrow) g(int x) { }\n"
+              "void x() {\n"
+              "    f(g(124), shared_ptr<char>(new char));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 REGISTER_TEST(TestMemleakNoVar)

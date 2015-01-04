@@ -446,14 +446,22 @@ private:
      */
     void checkForUnusedReturnValue(const Scope *scope);
 
+    /**
+     * @brief %Check if an exception could cause a leak in an argument constructed with shared_ptr/unique_ptr.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnsafeArgAlloc(const Scope *scope);
+
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
     void returnValueNotUsedError(const Token* tok, const std::string &alloc);
+    void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
         c.returnValueNotUsedError(0, "funcName");
+        c.unsafeArgAllocError(0, "funcName", "shared_ptr", "int");
     }
 
     static std::string myName() {
