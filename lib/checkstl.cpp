@@ -329,8 +329,7 @@ void CheckStl::stlOutOfBounds()
             if (!container)
                 continue;
 
-            Library::Container::Yield yield = container->getYield(tok->strAt(4));
-            if (yield != Library::Container::SIZE)
+            if (container->getYield(tok->strAt(4)) != Library::Container::SIZE)
                 continue;
 
             // variable id for loop variable.
@@ -343,8 +342,7 @@ void CheckStl::stlOutOfBounds()
                 if (tok3->varId() == declarationId) {
                     tok3 = tok3->next();
                     if (Token::Match(tok3, ". %var% ( )")) {
-                        Library::Container::Yield yield = container->getYield(tok3->strAt(1));
-                        if (yield == Library::Container::SIZE)
+                        if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
                             break;
                     } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
                         stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
@@ -808,7 +806,7 @@ void CheckStl::if_find()
                     tok2 = Token::findsimplematch(tok->variable()->typeStartToken(), "<", tok->variable()->typeEndToken());
                     if (container && container->type_templateArgNo >= 0 && tok2) {
                         tok2 = tok2->next();
-                        for (int i = 0; i < container->type_templateArgNo; i++)
+                        for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
                         container = _settings->library.detectContainer(tok2); // innner container
