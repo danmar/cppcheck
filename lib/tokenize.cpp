@@ -6142,10 +6142,6 @@ void Tokenizer::simplifyIfNotNull()
             }
         }
 
-        else if (tok->link() && Token::simpleMatch(tok, ") != 0")) {
-            deleteFrom = tok;
-        }
-
         if (deleteFrom) {
             Token::eraseTokens(deleteFrom, deleteFrom->tokAt(3));
             tok = deleteFrom;
