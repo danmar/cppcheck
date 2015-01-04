@@ -297,6 +297,7 @@ private:
                                "      <function name=\"data\" yields=\"buffer\"/>\n"
                                "      <function name=\"c_str\" yields=\"buffer-nt\"/>\n"
                                "      <function name=\"front\" yields=\"item\"/>\n"
+                               "      <function name=\"find\" action=\"find\"/>\n"
                                "    </access>\n"
                                "  </container>\n"
                                "  <container id=\"B\" startPattern=\"std :: B &lt;\" inherits=\"A\">\n"
@@ -336,6 +337,7 @@ private:
         ASSERT_EQUALS(Library::Container::CLEAR, A.getAction("clear"));
         ASSERT_EQUALS(Library::Container::PUSH, A.getAction("push_back"));
         ASSERT_EQUALS(Library::Container::POP, A.getAction("pop_back"));
+        ASSERT_EQUALS(Library::Container::FIND, A.getAction("find"));
         ASSERT_EQUALS(Library::Container::NO_ACTION, A.getAction("foo"));
 
         ASSERT_EQUALS(B.type_templateArgNo, 1);

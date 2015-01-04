@@ -1561,6 +1561,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // ok (dereference, #6402)
+        check("void f(std::set<Foo> s) {\n"
+              "    if (s.find(12).member) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
 
         // ---------------------------
         // std::find

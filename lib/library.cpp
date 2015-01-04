@@ -434,6 +434,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 action = Container::PUSH;
                             else if (actionName == "pop")
                                 action = Container::POP;
+                            else if (actionName == "find")
+                                action = Container::FIND;
                             else
                                 return Error(BAD_ATTRIBUTE_VALUE, actionName);
                         }

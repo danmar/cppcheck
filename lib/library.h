@@ -147,7 +147,7 @@ public:
         }
 
         enum Action {
-            RESIZE, CLEAR, PUSH, POP,
+            RESIZE, CLEAR, PUSH, POP, FIND,
             NO_ACTION
         };
         enum Yield {

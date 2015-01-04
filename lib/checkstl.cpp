@@ -759,6 +759,8 @@ static bool if_findCompare(const Token * const tokBack)
         return true;
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
+    if (tok->str() == ".")
+        return true; // Dereferencing is OK, the programmer might know that the element exists - TODO: An inconclusive warning might be appropriate
     if (tok->isAssignmentOp())
         return if_findCompare(tok); // Go one step upwards in the AST
     return false;
@@ -782,72 +784,48 @@ void CheckStl::if_find()
             tok = tok->next();
 
         for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {
-            if (Token::Match(tok, "%var% . find (")) {
-                const Variable *var = tok->variable();
-                if (var) {
-                    if (if_findCompare(tok->tokAt(3)))
-                        continue;
+            const Token* funcTok = nullptr;
+            const Library::Container* container = nullptr;
 
-                    // Is the variable a std::string or STL container?
-                    const Token * decl = var->typeStartToken();
-                    // stl container
-                    if (warning && Token::Match(decl, "std :: %var% <") && Token::Match(decl->linkAt(3), "> !!::"))
-                        if_findError(tok, false);
-                    else if (performance && var->isStlStringType())
-                        if_findError(tok, true);
-                }
+            if (tok->variable() && Token::Match(tok, "%var% . %var% (")) {
+                container = _settings->library.detectContainer(tok->variable()->typeStartToken());
+                funcTok = tok->tokAt(2);
             }
 
-            //check also for vector-like or pointer containers
+            // check also for vector-like or pointer containers
             else if (tok->variable() && tok->astParent() && (tok->astParent()->str() == "*" || tok->astParent()->str() == "[")) {
                 const Token *tok2 = tok->astParent();
 
-                if (!Token::simpleMatch(tok2->astParent(), ". find ("))
+                if (!Token::Match(tok2->astParent(), ". %var% ("))
                     continue;
 
-                if (if_findCompare(tok2->astParent()->tokAt(2)))
-                    continue;
+                funcTok = tok2->astParent()->next();
 
-                const Variable *var = tok->variable();
-                if (var) {
-                    //pretty bad limitation.. but it is there in order to avoid
-                    //own implementations of 'find' or any container
-                    if (!var->isStlType())
-                        continue;
+                if (tok->variable()->isArrayOrPointer())
+                    container = _settings->library.detectContainer(tok->variable()->typeStartToken());
+                else { // Container of container - find the inner container
+                    container = _settings->library.detectContainer(tok->variable()->typeStartToken()); // outer container
+                    tok2 = Token::findsimplematch(tok->variable()->typeStartToken(), "<", tok->variable()->typeEndToken());
+                    if (container && container->type_templateArgNo >= 0 && tok2) {
+                        tok2 = tok2->next();
+                        for (int i = 0; i < container->type_templateArgNo; i++)
+                            tok2 = tok2->nextTemplateArgument();
 
-                    // Is the variable a std::string or STL container?
-                    const Token * decl = var->typeStartToken();
-                    const unsigned int varid = tok->varId();
-
-                    decl = decl->tokAt(2);
-
-                    if (Token::Match(decl, "%var% <")) {
-                        decl = decl->tokAt(2);
-                        //stl-like
-                        if (warning && Token::Match(decl, "std :: %var% < %type% > > &| %varid%", varid))
-                            if_findError(tok, false);
-                        //not stl-like, then let's hope it's a pointer or an array
-                        else if (Token::Match(decl, "%type% >")) {
-                            decl = decl->tokAt(2);
-                            if (warning && (Token::Match(decl, "* &| %varid%", varid) ||
-                                            Token::Match(decl, "&| %varid% [ ]| %any% ]|", varid)))
-                                if_findError(tok, false);
-                        }
-
-                        else if (performance && Token::Match(decl, "std :: string|wstring > &| %varid%", varid))
-                            if_findError(tok, true);
-                    }
-
-                    else if (performance && var->isStlStringType()) {
-                        decl = decl->next();
-                        if (Token::Match(decl, "* &| %varid%", varid) ||
-                            Token::Match(decl, "&| %varid% [ ]| %any% ]|", varid))
-                            if_findError(tok, true);
-                    }
+                        container = _settings->library.detectContainer(tok2); // innner container
+                    } else
+                        container = nullptr;
                 }
             }
 
-            else if (warning && Token::Match(tok, "std :: find|find_if (")) {
+            if (container && container->getAction(funcTok->str()) == Library::Container::FIND) {
+                if (if_findCompare(funcTok->next()))
+                    continue;
+
+                if (warning && !container->stdStringLike)
+                    if_findError(tok, false);
+                else if (performance && container->stdStringLike)
+                    if_findError(tok, true);
+            } else if (warning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
                 if (!if_findCompare(tok->tokAt(3))) {
                     if_findError(tok, false);
