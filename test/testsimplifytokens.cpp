@@ -223,9 +223,6 @@ private:
         // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
         TEST_CASE(simplifyFuncInWhile);
 
-        // struct ABC abc = { .a = 3 };  =>  struct ABC abc; abc.a = 3;
-        TEST_CASE(initstruct);
-
         // struct ABC { } abc; => struct ABC { }; ABC abc;
         TEST_CASE(simplifyStructDecl1);
         TEST_CASE(simplifyStructDecl2); // ticket #2579
@@ -3446,16 +3443,6 @@ private:
                       "; cppcheck:r2 = fclose ( g ) ; "
                       "}",
                       tok("while(fclose(f)); while(fclose(g));"));
-    }
-
-    void initstruct() {
-        ASSERT_EQUALS("; struct A a ; a . buf = 3 ;", tok("; struct A a ; a = { .buf = 3 };"));
-        ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a ; a = { .buf = x };"));
-        ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a ; a = { .buf = &key };"));
-        ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
-        TODO_ASSERT_EQUALS("; struct A a ; a . buf = { 0 } ;",
-                           "; struct A a ; a = { . buf = { 0 } } ;",
-                           tok("; struct A a = { .buf = {0} };"));
     }
 
     void simplifyStructDecl1() {

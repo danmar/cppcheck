@@ -3534,9 +3534,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // struct simplification "struct S {} s; => struct S { } ; S s ;
     simplifyStructDecl();
 
-    // struct initialization (must be used after simplifyVarDecl)
-    simplifyStructInit();
-
     // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
@@ -8898,59 +8895,6 @@ std::string Tokenizer::simplifyString(const std::string &source)
 
     return str;
 }
-
-
-void Tokenizer::simplifyStructInit()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] struct| %type% %var% ; %var% = { . %type% =")) {
-            tok = Token::findsimplematch(tok->tokAt(3), ";");
-            if (tok->strAt(-1) != tok->strAt(1))
-                continue;
-
-            // Goto "." and check if the initializations have an expected format
-            const Token *tok2 = tok;
-            while (tok2->str() != ".")
-                tok2 = tok2->next();
-            while (tok2 && tok2->str() == ".") {
-                if (Token::Match(tok2, ". %type% = %num%|%var% [,}]"))
-                    tok2 = tok2->tokAt(4);
-                else if (Token::Match(tok2, ". %type% = & %var% [,}]"))
-                    tok2 = tok2->tokAt(5);
-                else
-                    break;
-
-                if (Token::simpleMatch(tok2, ", ."))
-                    tok2 = tok2->next();
-            }
-            if (!Token::simpleMatch(tok2, "} ;"))
-                continue;
-
-            // Known expression format => Perform simplification
-            Token *vartok = tok->next();
-            if (vartok->str() == "=")
-                vartok = vartok->previous();
-            vartok->next()->str(";");
-
-            Token *tok3 = vartok->tokAt(2);
-            tok3->link(0);
-            while (Token::Match(tok3, "[{,] . %type% =")) {
-                tok3->str(vartok->str());
-                tok3->varId(vartok->varId());
-                tok3 = tok3->tokAt(5);
-                while (!Token::Match(tok3, "[,}]"))
-                    tok3 = tok3->next();
-                if (tok3->str() == "}") {
-                    tok3->deleteThis();
-                    break;
-                }
-                tok3->previous()->insertToken(";");
-            }
-            vartok->deleteNext(2);
-        }
-    }
-}
-
 
 void Tokenizer::simplifyConst()
 {
