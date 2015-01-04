@@ -1751,6 +1751,10 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         if (vartok->previous()->str() == "&" && !vartok->previous()->astOperand2())
             return false;
 
+        // bailout to avoid fp for 'int x = 2 + x();' where 'x()' is a unseen preprocessor macro (seen in linux)
+        if (!pointer && vartok->next() && vartok->next()->str() == "(")
+            return false;
+
         if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
             if (alloc && vartok->previous()->str() == "*") {
                 const Token *parent = vartok->previous()->astParent();

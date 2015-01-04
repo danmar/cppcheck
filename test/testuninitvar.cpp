@@ -1934,6 +1934,11 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
 
+        checkUninitVar2("void foo() {\n"
+                        "    int f = 1 + f();\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // calling noreturn function..
         checkUninitVar("int foo(int a) {\n"
                        "    int x;\n"
