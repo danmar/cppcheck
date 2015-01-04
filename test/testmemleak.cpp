@@ -2666,6 +2666,20 @@ private:
               "   free(tmp);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int alloc(char **str) {\n"
+              "   *str = malloc(20);\n"
+              "   if (condition) { free(str); return -123; }\n"
+              "   return 0;\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p;\n"
+              "   if ((ret = alloc(&p)) != 0) return;\n"
+              "   free(p);\n"
+              "}");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 
