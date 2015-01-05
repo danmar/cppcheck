@@ -1295,9 +1295,18 @@ private:
                "  if (x == 5) {\n"
                "    panic();\n"
                "  }\n"
-               "  a = x;\n"
+               "  a = x;\n" // <- x can't be 5
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 7U, 5));
+
+        code = "void f() {\n"
+               "  int x;\n"
+               "  for (x = 0; x < 5; x++) {}\n"
+               "  if (x < 5) {}\n"
+               "  else return;\n"
+               "  a = x;\n" // <- x can't be 5
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 5));
 
         // hang
         code = "void f() {\n"
