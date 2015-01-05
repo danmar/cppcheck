@@ -1289,6 +1289,16 @@ private:
                "}\n";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 20));
 
+        code = "void f() {\n"
+               "  int x;\n"
+               "  for (x = 0; x < 5; x++) {}\n"
+               "  if (x == 5) {\n"
+               "    panic();\n"
+               "  }\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 5));
+
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"

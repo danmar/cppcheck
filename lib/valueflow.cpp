@@ -1480,7 +1480,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
     std::list<ValueFlow::Value> values;
     values.push_back(num);
 
-    valueFlowForward(fortok->linkAt(1)->linkAt(1),
+    valueFlowForward(fortok->linkAt(1)->linkAt(1)->next(),
                      endToken,
                      var,
                      varid,
