@@ -60,6 +60,7 @@ private:
         TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer26); // #3589
         TEST_CASE(nullpointer27); // #6014
+        TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
         TEST_CASE(nullpointer_castToVoid); // #3771
@@ -1333,6 +1334,20 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n"
                       "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer_addressOf() { // address of
+        check("void f() {\n"
+              "  struct X *x = 0;\n"
+              "  if (addr == &x->y) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  struct X *x = 0;\n"
+              "  if (addr == &x->y.z[0]) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerSwitch() { // #2626

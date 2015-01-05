@@ -171,6 +171,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     if (parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
         return true;
 
+    // address of member variable / array element
+    const Token *parent2 = parent;
+    while (Token::Match(parent2, "[|."))
+        parent2 = parent2->astParent();
+    if (parent2 != parent && parent2 && parent2->str() == "&" && !parent2->astOperand2())
+        return false;
+
     // read/write member variable
     if (firstOperand && parent->str() == "." && (!parent->astParent() || parent->astParent()->str() != "&")) {
         if (!parent->astParent() || parent->astParent()->str() != "(" || parent->astParent() == tok->previous())
