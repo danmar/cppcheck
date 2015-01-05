@@ -32,12 +32,14 @@
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName()) {
+    CheckUnusedFunctions() : Check(myName())
+        , function_can_be_static_test(true) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger)
+        , function_can_be_static_test(true) {
     }
 
     // Parse current tokens and determine..
@@ -53,6 +55,9 @@ public:
     /** @brief Analyse all file infos for all TU */
     void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
 
+    /** @brief Disable "function can be made static" test. Used by the unit test */
+    void configureFunctionCanBeStaticTest(bool enable);
+
     static CheckUnusedFunctions instance;
 
 private:
@@ -60,6 +65,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckUnusedFunctions c(0, settings, errorLogger);
         c.unusedFunctionError(errorLogger, "", 0, "funcName");
+        c.functionCanBeStaticError(errorLogger, "", 0, "funcName");
     }
 
     /**
@@ -68,6 +74,11 @@ private:
     static void unusedFunctionError(ErrorLogger * const errorLogger,
                                     const std::string &filename, unsigned int lineNumber,
                                     const std::string &funcname);
+
+
+    static void functionCanBeStaticError(ErrorLogger * const errorLogger,
+                                         const std::string &filename, unsigned int lineNumber,
+                                         const std::string &funcname);
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -86,15 +97,20 @@ private:
 
     class CPPCHECKLIB FunctionUsage {
     public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {
+        FunctionUsage() : lineNumber(0)
+            , usedSameFile(false)
+            , usedOtherFile(false)
+            , isGlobalNonStatic(false) {
         }
 
         std::string filename;
         unsigned int lineNumber;
         bool   usedSameFile;
         bool   usedOtherFile;
+        bool   isGlobalNonStatic;
     };
 
+    bool function_can_be_static_test;
     std::map<std::string, FunctionUsage> _functions;
 };
 /// @}
