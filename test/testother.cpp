@@ -5490,6 +5490,9 @@ private:
               "   std::cout << 3 << -1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+        
+        check("x = y ? z << $-1 : 0;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incompleteArrayFill() {

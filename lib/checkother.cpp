@@ -2663,6 +2663,17 @@ void CheckOther::checkNegativeBitwiseShift()
                     continue;
             }
 
+            // bailout if operation is protected by ?:
+            bool ternary = false;
+            for (const Token *parent = tok; parent; parent = parent->astParent()) {
+                if (Token::Match(parent, "?|:")) {
+                    ternary = true;
+                    break;
+                }
+            }
+            if (ternary)
+                continue;
+
             // Get negative rhs value. preferably a value which doesn't have 'condition'.
             const ValueFlow::Value *value = tok->astOperand2()->getValueLE(-1LL, _settings);
             if (value)
