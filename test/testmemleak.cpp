@@ -253,6 +253,7 @@ private:
         TEST_CASE(allocfunc11);
         TEST_CASE(allocfunc12); // #3660: allocating and returning non-local pointer => not allocfunc
         TEST_CASE(allocfunc13); // Ticket #4494 and #4540 - class function
+        TEST_CASE(allocfunc14); // Use pointer before returning it
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -2825,6 +2826,19 @@ private:
               "    int* b = GetNewObj();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: a\n", errout.str());
+    }
+
+    void allocfunc14() { // use pointer before returning it
+        check("static struct ABC * newabc() {\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    init_abc(&abc->a);\n" // <- might take address
+              "    return abc;\n"
+              "}\n"
+              "\n"
+              "static void f() {\n"
+              "    struct ABC *abc = newabc();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throw1() {
