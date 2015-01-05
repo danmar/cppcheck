@@ -34,9 +34,9 @@
 [linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:189]: (error) Possible null pointer dereference: engine
 [linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:190]: (error) Possible null pointer dereference: engine
 [linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2910]: (error) Uninitialized variable: args
-[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2919]: (error) Uninitialized variable: args                                                                                               
-[linux-3.11/drivers/hid/hid-wiimote-debug.c:147]: (error) Array 'wiidebug_drmmap[13]' accessed at index 63, which is out of bounds.                                                            
-[linux-3.11/drivers/infiniband/hw/cxgb4/mem.c:532]: (error) Memory leak: page_list                                                                                                             
+[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2919]: (error) Uninitialized variable: args
+[linux-3.11/drivers/hid/hid-wiimote-debug.c:147]: (error) Array 'wiidebug_drmmap[13]' accessed at index 63, which is out of bounds.
+[linux-3.11/drivers/infiniband/hw/cxgb4/mem.c:532]: (error) Memory leak: page_list
 [linux-3.11/drivers/iommu/dmar.c:1019]: (error) Uninitialized variable: sts
 [linux-3.11/drivers/iommu/intel-iommu.c:984]: (error) Uninitialized variable: sts
 [linux-3.11/drivers/iommu/intel-iommu.c:1002]: (error) Uninitialized variable: val
@@ -64,6 +64,8 @@
 [linux-3.11/drivers/md/dm-thin-metadata.c:1021]: (error) Memory leak: td
 [linux-3.11/drivers/md/dm-thin-metadata.c:1103]: (error) Memory leak: td
 [linux-3.11/drivers/media/i2c/ir-kbd-i2c.c:219]: (error) Uninitialized variable: key
+[linux-3.11/drivers/media/platform/vino.c:3745]: (error) Array 'vino_indycam_v4l2_controls[9]' accessed at index 9, which is out of bounds.
+[linux-3.11/drivers/media/platform/vino.c:3766]: (error) Array 'vino_saa7191_v4l2_controls[9]' accessed at index 9, which is out of bounds.
 [linux-3.11/drivers/media/platform/exynos4-is/fimc-capture.c:1224]: (error) Possible null pointer dereference: si
 [linux-3.11/drivers/media/usb/gspca/gspca.c:1608]: (error) Possible null pointer dereference: frame
 [linux-3.11/drivers/misc/sgi-xp/xpc_partition.c:426]: (error) Memory leak: remote_rp_base
@@ -87,6 +89,11 @@
 [linux-3.11/drivers/net/wireless/ath/ath10k/core.c:132]: (error) Uninitialized variable: ret
 [linux-3.11/drivers/net/wireless/ath/ath10k/core.c:212]: (error) Uninitialized variable: ret
 [linux-3.11/drivers/net/wireless/ath/ath10k/core.c:391]: (error) Uninitialized variable: ret
+
+[linux-3.11/drivers/scsi/be2iscsi/be_cmds.c:412]: (error) Uninitialized variable: compl
+[linux-3.11/drivers/scsi/libsas/sas_init.c:317]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/libsas/sas_init.c:346]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/libsas/sas_init.c:385]: (error) Uninitialized variable: ret
 
 # Tokenizer::setVarId
 [linux-3.11/net/ax25/ax25_dev.c:37]: (error) Uninitialized variable: ax25_dev

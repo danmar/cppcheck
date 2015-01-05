@@ -1,9 +1,19 @@
+
+[linux-3.11/arch/arm64/kvm/sys_regs.c:1020]: (error) Uninitialized variable: clidr
+[linux-3.11/arch/arm64/kvm/sys_regs.c:1021]: (error) Uninitialized struct member: clidr.val
 [linux-3.11/arch/cris/arch-v32/drivers/sync_serial.c:285]: (error) Array 'ports[1]' accessed at index 1, which is out of bounds.
-[linux-3.11/arch/ia64/sn/pci/tioca_provider.c:484] -> [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:487]: (warning) Possible null pointer dereference: map - otherwise it is redundant to check it against null.
-[linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:1003]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:1502]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:956]: (error) Possible null pointer dereference: ioc
 [linux-3.11/arch/ia64/kernel/palinfo.c:133]: (error) Array 'units[5]' accessed at index 6, which is out of bounds.
+[linux-3.11/arch/ia64/sn/pci/tioca_provider.c:484] -> [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:487]: (warning) Possible null pointer dereference: map - otherwise it is redundant to check it against null.
+[linux-3.11/arch/mips/ralink/prom.c:64]: (error) Uninitialized variable: argc
+[linux-3.11/arch/mips/txx9/generic/pci.c:334]: (error) Array 'regs[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
 [linux-3.11/arch/powerpc/perf/power4-pmu.c:506]: (error) Shifting by a negative value is undefined behaviour
 [linux-3.11/arch/powerpc/perf/ppc970-pmu.c:380]: (error) Array 'pmcsel[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/arch/unicore32/kernel/early_printk.c:48]: (error) Uninitialized variable: keep_early
+[linux-3.11/arch/x86/boot/compressed/mkpiggy.c:61]: (error) Resource leak: f
 [linux-3.11/arch/x86/kvm/x86.c:5471]: (error) Uninitialized variable: param
 [linux-3.11/arch/x86/kvm/x86.c:5472]: (error) Uninitialized variable: param
 [linux-3.11/arch/x86/kvm/x86.c:5473]: (error) Uninitialized variable: param
@@ -11,16 +21,15 @@
 [linux-3.11/arch/x86/math-emu/poly_2xm1.c:127]: (error) Uninitialized struct member: Denom.msw
 [linux-3.11/arch/x86/math-emu/poly_2xm1.c:73]: (error) Uninitialized struct member: argSignif.msw
 [linux-3.11/arch/x86/math-emu/poly_atan.c:92]: (error) Uninitialized variable: argSignif
-[linux-3.11/arch/x86/math-emu/poly_l2.c:205]: (error) Uninitialized struct member: Numer.msw
 [linux-3.11/arch/x86/math-emu/poly_l2.c:194]: (error) Uninitialized variable: argSignif
 [linux-3.11/arch/x86/math-emu/poly_l2.c:199]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:205]: (error) Uninitialized struct member: Numer.msw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:212]: (error) Uninitialized struct member: argSignif.msw
 [linux-3.11/arch/x86/math-emu/poly_l2.c:218]: (error) Uninitialized struct member: argSignif.lsw
 [linux-3.11/arch/x86/math-emu/poly_l2.c:219]: (error) Uninitialized struct member: argSignif.midw
-[linux-3.11/arch/x86/math-emu/poly_l2.c:212]: (error) Uninitialized struct member: argSignif.msw
 [linux-3.11/arch/x86/math-emu/poly_sin.c:352]: (error) Uninitialized struct member: fix_up.msw
 [linux-3.11/arch/x86/math-emu/poly_tan.c:108]: (error) Uninitialized struct member: accum.lsw
 [linux-3.11/arch/x86/math-emu/poly_tan.c:186]: (error) Uninitialized struct member: fix_up.msw
-
 [linux-3.11/drivers/acpi/battery.c:553] -> [linux-3.11/drivers/acpi/battery.c:557]: (performance) Variable 'status' is reassigned a value before the old one has been used.
 [linux-3.11/drivers/acpi/bus.c:737] -> [linux-3.11/drivers/acpi/bus.c:740]: (performance) Variable 'status' is reassigned a value before the old one has been used.
 [linux-3.11/drivers/acpi/glue.c:243] -> [linux-3.11/drivers/acpi/glue.c:245]: (performance) Variable 'retval' is reassigned a value before the old one has been used.
@@ -51,12 +60,13 @@
 [linux-3.11/drivers/gpu/drm/i915/i915_gem.c:986]: (error) Possible null pointer dereference: ring
 [linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:312] -> [linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:321]: (warning) Possible null pointer dereference: file - otherwise it is redundant to check it against null.
 [linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:687] -> [linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:692]: (warning) Possible null pointer dereference: overlay - otherwise it is redundant to check it against null.
-[linux-3.11/fs/btrfs/reada.c:434] -> [linux-3.11/fs/btrfs/reada.c:450]: (warning) Possible null pointer dereference: fs_info - otherwise it is redundant to check it against null.
-[linux-3.11/drivers/net/wireless/b43/phy_n.c:167] -> [linux-3.11/drivers/net/wireless/b43/phy_n.c:171]: (warning) Possible null pointer dereference: e - otherwise it is redundant to check it against null.
-[linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5808] -> [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5811]: (warning) Possible null pointer dereference: port - otherwise it is redundant to check it against null.
-[linux-3.11/drivers/scsi/bfa/bfa_svc.c:1026] -> [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1028]: (warning) Possible null pointer dereference: fcxp - otherwise it is redundant to check it against null.
-[linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.
 [linux-3.11/drivers/gpu/drm/qxl/qxl_draw.c:352]: (error) Uninitialized variable: drawable
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:652]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:653]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:656]: (error) Array 'YCOEF_EN_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:656]: (error) Array 'YCOEF_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:657]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:660]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
 [linux-3.11/drivers/infiniband/hw/ipath/ipath_diag.c:366]: (error) Uninitialized struct member: dp.unit
 [linux-3.11/drivers/input/touchscreen/ad7879-spi.c:37]: (error) Uninitialized variable: _rx_buf
 [linux-3.11/drivers/iommu/amd_iommu.c:460]: (error) Memory leak: dev_data
@@ -65,6 +75,7 @@
 [linux-3.11/drivers/media/dvb-frontends/stv0367.c:926]: (error) Possible null pointer dereference: tuner_ops
 [linux-3.11/drivers/media/i2c/ov9650.c:710]: (error) Shifting by a negative value is undefined behaviour
 [linux-3.11/drivers/media/i2c/ov9650.c:711]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/i2c/ov9650.c:725]: (error) Shifting by a negative value is undefined behaviour
 [linux-3.11/drivers/media/pci/saa7134/saa7134-input.c:136]: (error) Uninitialized variable: b
 [linux-3.11/drivers/media/usb/dvb-usb-v2/mxl111sf.c:139]: (error) Uninitialized variable: val
 [linux-3.11/drivers/mfd/pm8921-core.c:178]: (error) Possible null pointer dereference: pmic
@@ -79,6 +90,21 @@
 [linux-3.11/drivers/net/ethernet/i825xx/sun3_82586.c:993]: (error) Array 'p.xmit_cmds[1]' accessed at index 1, which is out of bounds.
 [linux-3.11/drivers/net/ethernet/marvell/mvneta.c:2779]: (error) Uninitialized variable: phy_addr
 [linux-3.11/drivers/net/fddi/skfp/ecm.c:500]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/net/wireless/b43/phy_n.c:167] -> [linux-3.11/drivers/net/wireless/b43/phy_n.c:171]: (warning) Possible null pointer dereference: e - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/net/wireless/brcm80211/brcmfmac/bcmsdh_sdmmc.c:133]: (error) Uninitialized variable: err_ret
+[linux-3.11/drivers/net/wireless/libertas/cmd.c:1129]: (error) Uninitialized struct member: cmd.control
+[linux-3.11/drivers/net/wireless/libertas/cmd.c:1131]: (error) Uninitialized struct member: cmd.control
+[linux-3.11/drivers/platform/x86/sony-laptop.c:795]: (error) Uninitialized variable: len
+[linux-3.11/drivers/s390/char/con3215.c:733]: (error) Array 'raw3215[1]' accessed at index 1, which is out of bounds.
+[linux-3.11/drivers/scsi/aacraid/rx.c:503]: (error) Uninitialized variable: var
+[linux-3.11/drivers/scsi/advansys.c:11505]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5808] -> [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5811]: (warning) Possible null pointer dereference: port - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/bfa/bfa_svc.c:1026] -> [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1028]: (warning) Possible null pointer dereference: fcxp - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/BusLogic.c:699]: (error) Uninitialized variable: adapter
+[linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/pcmcia/nsp_cs.c:300]: (error) Uninitialized struct member: tmp_sync.AckWidth
+[linux-3.11/drivers/scsi/pcmcia/nsp_cs.c:300]: (error) Uninitialized struct member: tmp_sync.SyncRegister
+[linux-3.11/fs/btrfs/reada.c:434] -> [linux-3.11/fs/btrfs/reada.c:450]: (warning) Possible null pointer dereference: fs_info - otherwise it is redundant to check it against null.
 [linux-3.11/sound/soc/codecs/ad193x.c:488]: (error) Uninitialized variable: ret
 [linux-3.11/sound/soc/codecs/tlv320aic23.c:675]: (error) Uninitialized variable: ret
 [linux-3.11/sound/soc/nuc900/nuc900-ac97.c:337]: (error) Uninitialized variable: ret
