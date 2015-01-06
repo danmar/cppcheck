@@ -303,6 +303,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("static void foo() {\n"
+                       "    int x, y;\n"
+                       "    x = ((y) = 10);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #3597
         checkUninitVar("int f() {\n"
                        "    int a;\n"

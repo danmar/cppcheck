@@ -376,7 +376,7 @@ private:
             if (tok2->varId() &&
                 !Token::Match(tok2->previous(), "&|::") &&
                 !Token::simpleMatch(tok2->tokAt(-2), "& (") &&
-                tok2->strAt(1) != "=") {
+                !Token::Match(tok2->tokAt(1), ")| =")) {
                 // Multiple assignments..
                 if (Token::Match(tok2->next(), ".|[")) {
                     const Token * tok3 = tok2;
