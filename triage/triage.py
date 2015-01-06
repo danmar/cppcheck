@@ -22,17 +22,14 @@ fin = open(resultfile,'rt')
 results = fin.read()
 fin.close()
 
-fout = open('report.html','wt')
-fout.write('<html><head><title>Cppcheck results for ' + project + '</title><link rel="stylesheet" type="text/css" href="theme1.css"></head><body>\n')
-fout.write('<h1>Cppcheck results for ' + project + '</h1>\n')
-fout.write('<table border="0">\n')
-fout.write('<tr><th>Filename</th><th>Line</th><th>Message</th><th>Classification</th></tr>\n')
-
 out = {}
 out['untriaged'] = ''
 out['fp'] = ''
 out['tp'] = ''
 out['notfound'] = ''
+
+numberOfFalsePositives = 0
+numberOfTruePositives  = 0
 
 for result in results.split('\n'):
     result = result.strip()
@@ -49,9 +46,11 @@ for result in results.split('\n'):
     if result in truepositives:
         css = 'tp'
         classification = 'Bug'
+        numberOfTruePositives += 1
     elif result in falsepositives:
         css = 'fp'
         classification = 'Not bug'
+        numberOfFalsePositives += 1
     href = None
 
     html =  '  <tr>'
@@ -98,7 +97,19 @@ for line in f.readlines():
 
 f.close();
 
+project2 = ''
+if project.find('-') > 0:
+    project2 = project[:project.find('-')]
+else:
+    project2 = project
 
+fout = open('report.html','wt')
+fout.write('<html><head><title>Cppcheck results for ' + project + '</title><link rel="stylesheet" type="text/css" href="theme1.css"></head><body>\n')
+fout.write('<h1>Cppcheck results for ' + project + '</h1>\n')
+fout.write('<p>Number of true positives: ' + str(numberOfTruePositives) + '</p>\n')
+fout.write('<p>Number of false positives: ' + str(numberOfFalsePositives) + '</p>\n')
+fout.write('<table border="0">\n')
+fout.write('<tr><th>Filename</th><th>Line</th><th>Message</th><th>Classification</th></tr>\n')
 fout.write(out['tp'])
 fout.write(out['notfound'])
 fout.write(out['untriaged'])
