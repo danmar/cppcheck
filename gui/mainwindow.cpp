@@ -558,7 +558,7 @@ Settings MainWindow::GetCppcheckSettings()
         QStringList dirs = pfile->GetIncludeDirs();
         AddIncludeDirs(dirs, result);
 
-        QStringList defines = pfile->GetDefines();
+        const QStringList defines = pfile->GetDefines();
         QString define;
         foreach(define, defines) {
             if (!result.userDefines.empty())
@@ -566,7 +566,7 @@ Settings MainWindow::GetCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
-        QStringList libraries = pfile->GetLibraries();
+        const QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
             const QString filename = library + ".cfg";
             const Library::Error error = LoadLibrary(&result.library, filename);
@@ -596,6 +596,12 @@ Settings MainWindow::GetCppcheckSettings()
                 case Library::ErrorCode::UNSUPPORTED_FORMAT:
                     errmsg = tr("Unsupported format");
                     break;
+                case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
+                    errmsg = tr("Duplicate platform type");
+                    break;
+                case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
+                    errmsg = tr("Platform type redefined");
+                    break;
                 }
                 if (!error.reason.empty())
                     errmsg += " '" + QString::fromStdString(error.reason) + "'";
@@ -603,7 +609,7 @@ Settings MainWindow::GetCppcheckSettings()
             }
         }
 
-        QStringList suppressions = pfile->GetSuppressions();
+        const QStringList suppressions = pfile->GetSuppressions();
         foreach(QString suppression, suppressions) {
             result.nomsg.addSuppressionLine(suppression.toStdString());
         }
@@ -642,7 +648,7 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    bool std = (LoadLibrary(&result.library, "std.cfg").errorcode == Library::ErrorCode::OK);
+    const bool std = (LoadLibrary(&result.library, "std.cfg").errorcode == Library::ErrorCode::OK);
     bool posix = true;
     if (result.standards.posix)
         posix = (LoadLibrary(&result.library, "posix.cfg").errorcode == Library::ErrorCode::OK);
