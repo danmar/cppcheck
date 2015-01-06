@@ -145,6 +145,7 @@ private:
         c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
         c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
         c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
+        c.invalidLengthModifierError(0, 1, "I");
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
         c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }

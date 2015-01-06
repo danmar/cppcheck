@@ -657,15 +657,22 @@ void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount
 
 void CppCheck::getErrorMessages()
 {
+    Settings s(_settings);
+    s.addEnabled("warning");
+    s.addEnabled("style");
+    s.addEnabled("portability");
+    s.addEnabled("performance");
+    s.addEnabled("information");
+
     tooManyConfigs = true;
     tooManyConfigsError("",0U);
 
     // call all "getErrorMessages" in all registered Check classes
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        (*it)->getErrorMessages(this, &_settings);
+        (*it)->getErrorMessages(this, &s);
 
-    Tokenizer::getErrorMessages(this, &_settings);
-    Preprocessor::getErrorMessages(this, &_settings);
+    Tokenizer::getErrorMessages(this, &s);
+    Preprocessor::getErrorMessages(this, &s);
 }
 
 void CppCheck::analyseWholeProgram()
