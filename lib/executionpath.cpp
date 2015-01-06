@@ -145,6 +145,12 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             return;
         }
 
+        // ({ is not handled well
+        if (Token::simpleMatch(tok, "( {")) {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
+
         if (Token::simpleMatch(tok, "union {")) {
             tok = tok->next()->link();
             continue;
