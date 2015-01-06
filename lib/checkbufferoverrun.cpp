@@ -85,6 +85,8 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     }
 
     if (condition != nullptr) {
+        if (!_settings->isEnabled("warning"))
+            return;
         errmsg << " Otherwise condition '" << condition->expressionString() << "' is redundant.";
         std::list<const Token *> callstack;
         callstack.push_back(tok);
