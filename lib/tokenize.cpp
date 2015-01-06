@@ -3544,9 +3544,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
 
-    // x = ({ 123; });  =>   { x = 123; }
-    simplifyAssignmentBlock();
-
     // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
@@ -9404,36 +9401,6 @@ void Tokenizer::simplifyAssignmentInFunctionCall()
 
                     Token::eraseTokens(tok, vartok);
                     break;
-                }
-            }
-        }
-    }
-}
-
-void Tokenizer::simplifyAssignmentBlock()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %var% = ( {")) {
-            // goto the "} )"
-            unsigned int indentlevel = 0;
-            Token *tok2 = tok;
-            while (nullptr != (tok2 = tok2->next())) {
-                if (Token::Match(tok2, "(|{"))
-                    ++indentlevel;
-                else if (Token::Match(tok2, ")|}")) {
-                    if (indentlevel <= 2)
-                        break;
-                    --indentlevel;
-                }
-            }
-            if (indentlevel == 2 && Token::simpleMatch(tok2, "} )")) {
-                tok2 = tok2->tokAt(-3);
-                if (Token::Match(tok2, "[;{}] %num%|%var% ;")) {
-                    tok2->insertToken("=");
-                    tok2->insertToken(tok->next()->str());
-                    tok2->next()->varId(tok->next()->varId());
-                    tok->deleteNext(3);
-                    tok2->tokAt(5)->deleteNext();
                 }
             }
         }
