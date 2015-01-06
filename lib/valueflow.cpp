@@ -837,7 +837,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (conditionIsTrue(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
                         values.erase(it++);
                     else
-                        it++;
+                        ++it;
                 }
                 if (values.empty())
                     return false;
