@@ -163,7 +163,6 @@
 [linux-3.11/drivers/tty/isicom.c:1581]: (error) Possible null pointer dereference: board
 [linux-3.11/drivers/tty/isicom.c:1582]: (error) Possible null pointer dereference: board
 [linux-3.11/drivers/tty/isicom.c:1583]: (error) Possible null pointer dereference: board
-[linux-3.11/drivers/tty/serial/vt8500_serial.c:564]: (error) Uninitialized variable: port
 [linux-3.11/drivers/tty/tty_io.c:1450]: (error) Possible null pointer dereference: driver
 [linux-3.11/drivers/usb/core/file.c:213]: (error) Array 'usb_minors[256]' accessed at index 256, which is out of bounds.
 [linux-3.11/drivers/usb/gadget/dummy_hcd.c:277]: (error) Uninitialized variable: ep

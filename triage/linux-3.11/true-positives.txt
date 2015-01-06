@@ -258,6 +258,7 @@
 [linux-3.11/drivers/staging/xgifb/vb_init.c:467]: (error) Array 'pVBInfo.CR40[3]' accessed at index 23, which is out of bounds.
 [linux-3.11/drivers/staging/xgifb/vb_init.c:478]: (error) Array 'pVBInfo.CR40[3]' accessed at index 4, which is out of bounds.
 [linux-3.11/drivers/tty/serial/msm_serial.c:818]: (error) Uninitialized variable: baud
+[linux-3.11/drivers/tty/serial/vt8500_serial.c:564]: (error) Uninitialized variable: port
 [linux-3.11/drivers/tty/sysrq.c:139]: (error) Possible null pointer dereference: killer
 [linux-3.11/drivers/usb/atm/cxacru.c:1111]: (error) Uninitialized variable: bp
 [linux-3.11/drivers/usb/atm/usbatm.c:1382]: (error) Undefined behavior: Variable 'buffer' is used as parameter and destination in s[n]printf().
