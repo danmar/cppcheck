@@ -210,6 +210,7 @@
 [linux-3.11/drivers/scsi/BusLogic.c:699]: (error) Uninitialized variable: adapter
 [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.
 [linux-3.11/drivers/scsi/eata_pio.c:923]: (error) Array 'reg_IRQ[16]' accessed at index 16, which is out of bounds.
+[linux-3.11/drivers/scsi/pm8001/pm80xx_hwi.c:811]: (error) Uninitialized variable: ret
 [linux-3.11/drivers/scsi/qla2xxx/qla_attr.c:896]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
 [linux-3.11/drivers/spi/spi-dw.c:659]: (error) Memory leak: chip
 [linux-3.11/drivers/staging/bcm/CmHost.c:1294]: (error) Array 'psfCSType.cCPacketClassificationRule.u8IPv6FlowLable[3]' accessed at index 3, which is out of bounds.

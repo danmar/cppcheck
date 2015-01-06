@@ -144,7 +144,6 @@
 [linux-3.11/drivers/scsi/mpt2sas/mpt2sas_ctl.c:1046]: (error) Buffer is accessed out of bounds.
 [linux-3.11/drivers/scsi/mpt3sas/mpt3sas_ctl.c:1038]: (error) Buffer is accessed out of bounds.
 [linux-3.11/drivers/scsi/mpt3sas/mpt3sas_ctl.c:1039]: (error) Buffer is accessed out of bounds.
-[linux-3.11/drivers/scsi/pm8001/pm80xx_hwi.c:811]: (error) Uninitialized variable: ret
 [linux-3.11/drivers/spi/spi-s3c24xx.c:338]: (error) Possible null pointer dereference: code
 [linux-3.11/drivers/staging/bcm/PHSModule.c:904]: (error) Array 'psServiceFlowTable.stSFList[17]' accessed at index 17, which is out of bounds.
 [linux-3.11/drivers/staging/bcm/PHSModule.c:909]: (error) Array 'psServiceFlowTable.stSFList[17]' accessed at index 17, which is out of bounds.
