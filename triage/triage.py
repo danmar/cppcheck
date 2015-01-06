@@ -52,12 +52,18 @@ for result in results.split('\n'):
     elif result in falsepositives:
         css = 'fp'
         classification = 'Not bug'
+    href = None
 
     html =  '  <tr>'
     html += '<td class='+css+'>'+filename+'</td>'
     html += '<td class='+css+'>'+linenr+'</td>'
     html += '<td class='+css+'>'+message+'</td>'
-    html += '<td class='+css+'>'+classification+'</td>'
+    if project=='linux-3.11':
+        href = 'http://github.com/torvalds/linux/blob/v3.11' + filename[filename.find('/'):] + '#L' + linenr
+    if href:
+        html += '<td class='+css+'><a href="' + href + '">' + classification + '</a></td>'
+    else:
+        html += '<td class='+css+'>' + classification + '</td>'
     html += '</tr>\n'
 
     out[css] += html
