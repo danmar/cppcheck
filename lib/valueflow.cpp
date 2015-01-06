@@ -690,7 +690,7 @@ static bool valueFlowForward(Token * const               startToken,
             ++indentlevel;
         else if (indentlevel >= 0 && tok2->str() == "}") {
             --indentlevel;
-            if (indentlevel == 0 && isReturn(tok2) && Token::Match(tok2->link()->previous(), "else|) {")) {
+            if (indentlevel <= 0 && isReturn(tok2) && Token::Match(tok2->link()->previous(), "else|) {")) {
                 const Token *condition = tok2->link();
                 const bool iselse = Token::simpleMatch(condition->tokAt(-2), "} else {");
                 if (iselse)
@@ -828,6 +828,19 @@ static bool valueFlowForward(Token * const               startToken,
                     else
                         ++it;
                 }
+            }
+
+            // stop after conditional noreturn scopes that are executed
+            if (isReturn(end)) {
+                std::list<ValueFlow::Value>::iterator it;
+                for (it = values.begin(); it != values.end();) {
+                    if (conditionIsTrue(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
+                        values.erase(it++);
+                    else
+                        it++;
+                }
+                if (values.empty())
+                    return false;
             }
 
             // noreturn scopes..
