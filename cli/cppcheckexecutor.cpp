@@ -760,6 +760,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     unsigned int returnValue = 0;
     if (settings._jobs == 1) {
         // Single process
+        settings.jointSuppressionReport = true;
 
         std::size_t totalfilesize = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
@@ -799,8 +800,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
-    if (settings.isEnabled("information") || settings.checkConfiguration)
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(settings._jobs == 1 && settings.isEnabled("unusedFunction")));
+    if (settings.isEnabled("information") || settings.checkConfiguration) {
+        const bool enableUnusedFunctionCheck = cppcheck.unusedFunctionCheckIsEnabled();
+
+        if (settings.jointSuppressionReport) {
+            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+                reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
+            }
+        }
+
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(enableUnusedFunctionCheck));
+    }
 
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);
