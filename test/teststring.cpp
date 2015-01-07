@@ -125,6 +125,27 @@ private:
                       "[test.cpp:12]: (warning) Unnecessary comparison of static strings.\n"
                       "[test.cpp:13]: (warning) Unnecessary comparison of static strings.\n", errout.str());
 
+        // avoid false positives when the address is modified #6415
+        check("void f(void *p, int offset)  {\n"
+              "     if (!memcmp(p, p+offset, 42)){}\n"
+              "     if (!memcmp(p+offset, p, 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positives when the address is modified #6415
+        check("void f(char *c, int offset)  {\n"
+              "     if (!memcmp(c, c + offset, 42)){}\n"
+              "     if (!memcmp(c+ offset, c , 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positives when the address is modified #6415
+        check("void f(std::string s, int offset)  {\n"
+              "     if (!memcmp(s.c_str(), s.c_str() + offset, 42)){}\n"
+              "     if (!memcmp(s.c_str() + offset, s.c_str(), 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check_preprocess_suppress(
             "#define MACRO \"00FF00\"\n"
             "int main()\n"
