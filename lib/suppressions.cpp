@@ -267,6 +267,7 @@ bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::stri
 
 std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, bool unusedFunctionChecking) const
 {
+    (void)unusedFunctionChecking;
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
         if (i->first == "unusedFunction")
