@@ -269,7 +269,7 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
 {
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
-        if (!unusedFunctionChecking && i->first == "unusedFunction")
+        if (i->first == "unusedFunction")
             continue;  // unusedFunction is not a "local" suppression
 
         std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
