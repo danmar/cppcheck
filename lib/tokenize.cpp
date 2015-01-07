@@ -9416,7 +9416,7 @@ void Tokenizer::simplifyAssignmentBlock()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "[;{}] %var% = ( {")) {
             const std::string &varname = tok->next()->str();
-            
+
             // goto the "} )"
             unsigned int indentlevel = 0;
             Token *tok2 = tok;
