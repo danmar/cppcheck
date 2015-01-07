@@ -22,6 +22,8 @@
 #include "cppcheckexecutor.h"
 #include "threadexecutor.h"
 
+#include <string>
+#include <map>
 #include <sstream>
 
 extern std::ostringstream errout;
@@ -115,8 +117,29 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed("errorid", "a.c", 123));
     }
 
+    void reportSuppressions(const Settings &settings, const std::map<std::string, std::string> &files) {
+        // make it verbose that this check is disabled
+        const bool unusedFunctionCheck = false;
+
+        if (settings.jointSuppressionReport) {
+            for (std::map<std::string, std::string>::const_iterator i = files.begin(); i != files.end(); ++i) {
+                reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheck));
+            }
+        }
+
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheck));
+    }
+
     // Check the suppression
     void checkSuppression(const char code[], const std::string &suppression = emptyString) {
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = code;
+
+        checkSuppression(files, suppression);
+    }
+
+    // Check the suppression for multiple files
+    void checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
 
@@ -124,14 +147,18 @@ private:
         Settings& settings = cppCheck.settings();
         settings._inlineSuppressions = true;
         settings.addEnabled("information");
+        settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             ASSERT_EQUALS("", r);
         }
 
-        cppCheck.check("test.cpp", code);
+        for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
+            cppCheck.check(file->first, file->second);
+        }
+        cppCheck.analyseWholeProgram();
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(true));
+        reportSuppressions(settings, files);
     }
 
     void checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
@@ -154,25 +181,11 @@ private:
 
         executor.check();
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(false));
-    }
+        std::map<std::string, std::string> files_for_report;
+        for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
+            files_for_report[file->first] = "";
 
-    // Check the suppression for multiple files
-    void checkSuppression(const char *names[], const char *codes[], const std::string &suppression = emptyString) {
-        // Clear the error log
-        errout.str("");
-
-        CppCheck cppCheck(*this, true);
-        Settings& settings = cppCheck.settings();
-        settings._inlineSuppressions = true;
-        settings.addEnabled("information");
-        if (!suppression.empty())
-            settings.nomsg.addSuppressionLine(suppression);
-
-        for (int i = 0; names[i] != NULL; ++i)
-            cppCheck.check(names[i], codes[i]);
-
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(true));
+        reportSuppressions(settings, files_for_report);
     }
 
     void runChecks(void (TestSuppressions::*check)(const char[], const std::string &)) {
@@ -303,18 +316,16 @@ private:
     }
 
     void suppressionsMultiFile() {
-        const char *names[] = {"abc.cpp", "xyz.cpp", NULL};
-        const char *codes[] = {
-            "void f() {\n"
-            "}\n",
-            "void f() {\n"
-            "    int a;\n"
-            "    a++;\n"
-            "}\n",
-        };
+        std::map<std::string, std::string> files;
+        files["abc.cpp"] = "void f() {\n"
+                           "}\n";
+        files["xyz.cpp"] = "void f() {\n"
+                           "    int a;\n"
+                           "    a++;\n"
+                           "}\n";
 
         // suppress uninitvar for this file and line
-        checkSuppression(names, codes, "uninitvar:xyz.cpp:3");
+        checkSuppression(files, "uninitvar:xyz.cpp:3");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -327,7 +338,7 @@ private:
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
         suppressions.addSuppression("unusedFunction", "test.c", 3U);
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());

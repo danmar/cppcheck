@@ -132,6 +132,10 @@ public:
     /** analyse whole program, run this after all TUs has been scanned. */
     void analyseWholeProgram();
 
+    /** Check if the user wants to check for unused functions
+     * and if it's possible at all */
+    bool unusedFunctionCheckIsEnabled() const;
+
 private:
 
     /** @brief There has been an internal error => Report information message */
