@@ -54,7 +54,7 @@ private:
         TEST_CASE(garbageCode11);
         TEST_CASE(garbageCode12);
         TEST_CASE(garbageCode13);  // Ticket #2607 - crash
-        TEST_CASE(garbageCode14);  // TIcket #5595 - crash
+        TEST_CASE(garbageCode14);  // Ticket #5595 - crash
         TEST_CASE(garbageCode15);  // Ticket #5203
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
@@ -64,6 +64,7 @@ private:
         TEST_CASE(garbageCode21);
         TEST_CASE(garbageCode22);
         TEST_CASE(garbageCode23);
+        TEST_CASE(garbageCode24);  // Ticket #6361 - crash
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -326,6 +327,17 @@ private:
                   "    else abort s[2]\n"
                   "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageCode24() {
+        // don't crash (example from #6361)
+        checkCode("float buffer[64];\n"
+                  "main (void)\n"
+                  "{\n"
+                  "  char *cptr;\n"
+                  "  cptr = (char *)buffer;\n"
+                  "  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));\n"
+                  "}\n");
     }
 
     void garbageValueFlow() {
