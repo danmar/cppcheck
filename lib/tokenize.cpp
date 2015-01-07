@@ -3877,7 +3877,8 @@ void Tokenizer::printDebugOutput() const
                 _symbolDatabase->printOut("Symbol database");
         }
 
-        list.front()->printAst(_settings->_verbose, _settings->_xml, std::cout);
+        if (_settings->_verbose)
+            list.front()->printAst(_settings->_verbose, _settings->_xml, std::cout);
 
         list.front()->printValueFlow(_settings->_xml, std::cout);
 
