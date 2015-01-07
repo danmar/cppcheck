@@ -127,15 +127,19 @@ private:
 
         // avoid false positives when the address is modified #6415
         check("void f(void *p, int offset)  {\n"
-              "     if (!memcmp(p, p+offset, 42)){}\n"
-              "     if (!memcmp(p+offset, p, 42)){}\n"
+              "     if (!memcmp(p, p + offset, 42)){}\n"
+              "     if (!memcmp(p + offset, p, 42)){}\n"
+              "     if (!memcmp(offset + p, p, 42)){}\n"
+              "     if (!memcmp(p, offset + p, 42)){}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // avoid false positives when the address is modified #6415
         check("void f(char *c, int offset)  {\n"
               "     if (!memcmp(c, c + offset, 42)){}\n"
-              "     if (!memcmp(c+ offset, c , 42)){}\n"
+              "     if (!memcmp(c + offset, c, 42)){}\n"
+              "     if (!memcmp(offset + c, c, 42)){}\n"
+              "     if (!memcmp(c, offset + c, 42)){}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -143,6 +147,8 @@ private:
         check("void f(std::string s, int offset)  {\n"
               "     if (!memcmp(s.c_str(), s.c_str() + offset, 42)){}\n"
               "     if (!memcmp(s.c_str() + offset, s.c_str(), 42)){}\n"
+              "     if (!memcmp(offset + s.c_str(), s.c_str(), 42)){}\n"
+              "     if (!memcmp(s.c_str(), offset + s.c_str(), 42)){}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
