@@ -379,7 +379,7 @@ void CheckNullPointer::nullConstantDereference()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
+        if (scope->function == 0 || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
         const Token *tok = scope->classStart;
@@ -484,7 +484,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->function == 0 || !scope->function->hasBody) // We only look for functions with a body
+        if (scope->function == 0 || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
         // Scan the argument list for default arguments that are pointers and

@@ -397,7 +397,7 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
 {
-    if (!func || !func->hasBody)
+    if (!func || !func->hasBody())
         return No;
 
     // Get return pointer..
@@ -597,7 +597,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     // lock/unlock..
     if (varid == 0) {
         const Function* func = tok->function();
-        if (!func || !func->hasBody)
+        if (!func || !func->hasBody())
             return 0;
 
         Token *ftok = getcode(func->functionScope->classStart->next(), callstack, 0, alloctype, dealloctype, false, 1);
@@ -2317,7 +2317,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         const bool constructor = func->isConstructor();
         const bool destructor = func->isDestructor();
-        if (!func->hasBody) {
+        if (!func->hasBody()) {
             if (destructor) { // implementation for destructor is not seen => assume it deallocates all variables properly
                 deallocInDestructor = true;
                 Dealloc = CheckMemoryLeak::Many;
@@ -2445,7 +2445,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
 
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if ((func->type == Function::eFunction || func->type == Function::eOperatorEqual) &&
-            func->access == Public && func->hasBody) {
+            func->access == Public && func->hasBody()) {
             const Token *tok2 = func->token;
             while (tok2->str() != "{")
                 tok2 = tok2->next();

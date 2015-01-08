@@ -367,7 +367,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
     else if (arrayInfo.num().size() == 1) {
         const Function* const func = ftok.function();
 
-        if (func && func->hasBody) {
+        if (func && func->hasBody()) {
             // Get corresponding parameter..
             const Variable* const parameter = func->getArgumentVar(par-1);
 

@@ -66,7 +66,7 @@ static bool isConstExpression(const Token *tok, const std::set<std::string> &con
     if (tok->isName() && tok->next()->str() == "(") {
         if (!tok->function() && !Token::Match(tok->previous(), ".|::") && constFunctions.find(tok->str()) == constFunctions.end())
             return false;
-        else if (tok->function() && !tok->function()->isConst)
+        else if (tok->function() && !tok->function()->isConst())
             return false;
     }
     if (tok->type() == Token::eIncDecOp)
@@ -96,7 +96,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
     if (tok1->isName() && tok1->next()->str() == "(") {
         if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end() && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
-        else if (tok1->function() && !tok1->function()->isConst && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
+        else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
             return false;
     }
     // templates/casts
@@ -105,7 +105,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
 
         // non-const template function that is not a dynamic_cast => return false
         if (Token::simpleMatch(tok1->next()->link(), "> (") &&
-            !(tok1->function() && tok1->function()->isConst) &&
+            !(tok1->function() && tok1->function()->isConst()) &&
             tok1->str() != "dynamic_cast")
             return false;
 
@@ -700,7 +700,7 @@ void CheckOther::checkRedundantAssignment()
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
                     const Function* const func = tok->function();
-                    if (!func || !func->hasBody) {
+                    if (!func || !func->hasBody()) {
                         varAssignments.clear();
                         memAssignments.clear();
                         continue;
@@ -2252,7 +2252,7 @@ void CheckOther::doubleCloseDirError(const Token *tok, const std::string &varnam
 namespace {
     bool notconst(const Function* func)
     {
-        return !func->isConst;
+        return !func->isConst();
     }
 
     void getConstFunctions(const SymbolDatabase *symbolDatabase, std::list<const Function*> &constFunctions)

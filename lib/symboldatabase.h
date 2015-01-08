@@ -557,6 +557,43 @@ private:
 };
 
 class CPPCHECKLIB Function {
+    /** @brief flags mask used to access specific bit. */
+    enum {
+        fHasBody       = (1 << 0),  /** @brief has implementation */
+        fIsInline      = (1 << 1),  /** @brief implementation in class definition */
+        fIsConst       = (1 << 2),  /** @brief is const */
+        fIsVirtual     = (1 << 3),  /** @brief is virtual */
+        fIsPure        = (1 << 4),  /** @brief is pure virtual */
+        fIsStatic      = (1 << 5),  /** @brief is static */
+        fIsStaticLocal = (1 << 6),  /** @brief is static local */
+        fIsExtern      = (1 << 7),  /** @brief is extern */
+        fIsFriend      = (1 << 8),  /** @brief is friend */
+        fIsExplicit    = (1 << 9),  /** @brief is explicit */
+        fIsDefault     = (1 << 10), /** @brief is default */
+        fIsDelete      = (1 << 11), /** @brief is delete */
+        fIsNoExcept    = (1 << 12), /** @brief is noexcept */
+        fIsThrow       = (1 << 13), /** @brief is throw */
+        fIsOperator    = (1 << 14)  /** @brief is operator */
+    };
+
+    /**
+     * Get specified flag state.
+     * @param flag flag to get state of
+     * @return true if flag set or false in flag not set
+     */
+    bool getFlag(int flag) const {
+        return bool((flags & flag) != 0);
+    }
+
+    /**
+     * Set specified flag state.
+     * @param flag flag to set state
+     * @param state new state of flag
+     */
+    void setFlag(int flag, bool state) {
+        flags = state ? flags | flag : flags & ~flag;
+    }
+
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
@@ -572,21 +609,9 @@ public:
           initArgCount(0),
           type(eFunction),
           access(Public),
-          hasBody(false),
-          isInline(false),
-          isConst(false),
-          isVirtual(false),
-          isPure(false),
-          isStatic(false),
-          isFriend(false),
-          isExplicit(false),
-          isDefault(false),
-          isDelete(false),
-          isNoExcept(false),
-          isThrow(false),
-          isOperator(false),
           noexceptArg(nullptr),
-          throwArg(nullptr) {
+          throwArg(nullptr),
+          flags(0) {
     }
 
     const std::string &name() const {
@@ -638,6 +663,98 @@ public:
         return tokenDef->isDeclspecNothrow();
     }
 
+    bool hasBody() const {
+        return getFlag(fHasBody);
+    }
+    bool isInline() const {
+        return getFlag(fIsInline);
+    }
+    bool isConst() const {
+        return getFlag(fIsConst);
+    }
+    bool isVirtual() const {
+        return getFlag(fIsVirtual);
+    }
+    bool isPure() const {
+        return getFlag(fIsPure);
+    }
+    bool isStatic() const {
+        return getFlag(fIsStatic);
+    }
+    bool isStaticLocal() const {
+        return getFlag(fIsStaticLocal);
+    }
+    bool isExtern() const {
+        return getFlag(fIsExtern);
+    }
+    bool isFriend() const {
+        return getFlag(fIsFriend);
+    }
+    bool isExplicit() const {
+        return getFlag(fIsExplicit);
+    }
+    bool isDefault() const {
+        return getFlag(fIsDefault);
+    }
+    bool isDelete() const {
+        return getFlag(fIsDelete);
+    }
+    bool isNoExcept() const {
+        return getFlag(fIsNoExcept);
+    }
+    bool isThrow() const {
+        return getFlag(fIsThrow);
+    }
+    bool isOperator() const {
+        return getFlag(fIsOperator);
+    }
+
+    void hasBody(bool state) {
+        setFlag(fHasBody, state);
+    }
+    void isInline(bool state) {
+        setFlag(fIsInline, state);
+    }
+    void isConst(bool state) {
+        setFlag(fIsConst, state);
+    }
+    void isVirtual(bool state) {
+        setFlag(fIsVirtual, state);
+    }
+    void isPure(bool state) {
+        setFlag(fIsPure, state);
+    }
+    void isStatic(bool state) {
+        setFlag(fIsStatic, state);
+    }
+    void isStaticLocal(bool state) {
+        setFlag(fIsStaticLocal, state);
+    }
+    void isExtern(bool state) {
+        setFlag(fIsExtern, state);
+    }
+    void isFriend(bool state) {
+        setFlag(fIsFriend, state);
+    }
+    void isExplicit(bool state) {
+        setFlag(fIsExplicit, state);
+    }
+    void isDefault(bool state) {
+        setFlag(fIsDefault, state);
+    }
+    void isDelete(bool state) {
+        setFlag(fIsDelete, state);
+    }
+    void isNoExcept(bool state) {
+        setFlag(fIsNoExcept, state);
+    }
+    void isThrow(bool state) {
+        setFlag(fIsThrow, state);
+    }
+    void isOperator(bool state) {
+        setFlag(fIsOperator, state);
+    }
+
     const Token *tokenDef; // function name token in class definition
     const Token *argDef;   // function argument start '(' in class definition
     const Token *token;    // function name token in implementation
@@ -650,19 +767,6 @@ public:
     unsigned int initArgCount; // number of args with default values
     Type type;             // constructor, destructor, ...
     AccessControl access;  // public/protected/private
-    bool hasBody;          // has implementation
-    bool isInline;         // implementation in class definition
-    bool isConst;          // is const
-    bool isVirtual;        // is virtual
-    bool isPure;           // is pure virtual
-    bool isStatic;         // is static
-    bool isFriend;         // is friend
-    bool isExplicit;       // is explicit
-    bool isDefault;        // is default
-    bool isDelete;         // is delete
-    bool isNoExcept;       // is noexcept
-    bool isThrow;          // is throw
-    bool isOperator;       // is operator
     const Token *noexceptArg;
     const Token *throwArg;
 
@@ -670,6 +774,8 @@ public:
 
 private:
     bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
+
+    unsigned int flags;
 };
 
 class CPPCHECKLIB Scope {

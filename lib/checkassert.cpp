@@ -47,7 +47,7 @@ void CheckAssert::assertWithSideEffects()
             if (tmp->type() == Token::eFunction) {
                 const Function* f = tmp->function();
 
-                if (f->nestedIn->isClassOrStruct() && !f->isStatic && !f->isConst)
+                if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst())
                     sideEffectInAssertError(tmp, f->name()); // Non-const member function called
                 else {
                     const Scope* scope = f->functionScope;

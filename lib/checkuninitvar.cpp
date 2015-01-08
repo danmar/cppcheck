@@ -508,7 +508,7 @@ private:
                 if (tok.next()->str() == ".") {
                     if (Token::Match(&tok, "%var% . %var% (")) {
                         const Function *function = tok.tokAt(2)->function();
-                        if (function && function->isStatic)
+                        if (function && function->isStatic())
                             return &tok;
                     }
                     if (use_dead_pointer(checks, &tok)) {
@@ -1809,7 +1809,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
     if (pointer && Token::Match(vartok, "%var% . %var% (")) {
         const Function *function = vartok->tokAt(2)->function();
-        return (!function || !function->isStatic);
+        return (!function || !function->isStatic());
     }
 
     if (cpp && Token::Match(vartok->next(), "<<|>>")) {
