@@ -65,12 +65,17 @@ private:
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
 
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo();");
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
         Library library;
         library.load(doc);
         ASSERT(library.use.empty());
         ASSERT(library.leakignore.empty());
         ASSERT(library.argumentChecks.empty());
-        ASSERT(library.isnotnoreturn("foo"));
+        ASSERT(library.isnotnoreturn(tokenList.front()));
     }
 
     void function_arg() const {
@@ -128,37 +133,42 @@ private:
         Library library;
         library.load(doc);
 
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo();");
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
         // 1-
-        ASSERT_EQUALS(false, library.isargvalid("foo", 1, -10));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 1, 0));
-        ASSERT_EQUALS(true, library.isargvalid("foo", 1, 1));
-        ASSERT_EQUALS(true, library.isargvalid("foo", 1, 10));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, -10));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, 0));
+        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, 1));
+        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, 10));
 
         // -7-0
-        ASSERT_EQUALS(false, library.isargvalid("foo", 2, -10));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, -7));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, -3));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 2, 0));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 2, 1));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, -10));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, -7));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, -3));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, 0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, 1));
 
         // 1-5,8
-        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 0));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 1));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 3));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 5));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 6));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 7));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 3, 8));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 3, 9));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 0));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 1));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 3));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 5));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 6));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 7));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 8));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 9));
 
         // -1,5
-        ASSERT_EQUALS(false, library.isargvalid("foo", 4, -10));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 4, -1));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, -10));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 4, -1));
 
         // :1,5
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 5, -10));
-        ASSERT_EQUALS(true,  library.isargvalid("foo", 5, 1));
-        ASSERT_EQUALS(false, library.isargvalid("foo", 5, 2));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, -10));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, 1));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 5, 2));
     }
 
     void function_arg_minsize() const {
@@ -175,8 +185,13 @@ private:
         Library library;
         library.load(doc);
 
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo();");
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
         // arg1: type=strlen arg2
-        const std::list<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes("foo",1);
+        const std::list<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(tokenList.front(),1);
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
@@ -186,7 +201,7 @@ private:
         }
 
         // arg2: type=argvalue arg3
-        minsizes = library.argminsizes("foo", 2);
+        minsizes = library.argminsizes(tokenList.front(), 2);
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {

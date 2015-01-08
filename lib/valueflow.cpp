@@ -75,7 +75,7 @@ static bool bailoutFunctionPar(const Token *tok, const ValueFlow::Value &value, 
 
     if (!tok->function()) {
         // if value is 0 and the library says 0 is invalid => do not bailout
-        if (value.intvalue==0 && settings->library.isnullargbad(tok->str(), 1+argnr))
+        if (value.intvalue==0 && settings->library.isnullargbad(tok, 1+argnr))
             return false;
         // addressOf => inconclusive
         if (!addressOf) {

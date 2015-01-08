@@ -25,6 +25,7 @@
 #include "path.h"
 #include "mathlib.h"
 #include "token.h"
+#include "symboldatabase.h"
 
 #include <map>
 #include <set>
@@ -125,13 +126,26 @@ public:
     std::set<std::string> functionpure;
     std::set<std::string> useretval;
 
-    bool isnoreturn(const std::string &name) const {
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
+    // returns true if ftok is not a library function
+    static bool isNotLibraryFunction(const Token *ftok) {
+        return ftok->astParent() ? ftok->astParent()->str() != "(" : false;
+    }
+
+    bool isnoreturn(const Token *ftok) const {
+        if (ftok->function() && ftok->function()->isAttributeNoreturn())
+            return true;
+        if (isNotLibraryFunction(ftok))
+            return false;
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
         return (it != _noreturn.end() && it->second);
     }
 
-    bool isnotnoreturn(const std::string &name) const {
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
+    bool isnotnoreturn(const Token *ftok) const {
+        if (ftok->function() && ftok->function()->isAttributeNoreturn())
+            return false;
+        if (isNotLibraryFunction(ftok))
+            return false;
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
         return (it != _noreturn.end() && !it->second);
     }
 
@@ -213,35 +227,35 @@ public:
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
 
-    bool isboolargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isboolargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notbool;
     }
 
-    bool isnullargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isnullargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notnull;
     }
 
-    bool isuninitargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isuninitargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notuninit;
     }
 
-    bool isargformatstr(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isargformatstr(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->formatstr;
     }
 
-    bool isargstrz(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isargstrz(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->strz;
     }
 
-    bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
+    bool isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const;
 
-    const std::string& validarg(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    const std::string& validarg(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
     }
 
@@ -258,8 +272,8 @@ public:
         return false;
     }
 
-    const std::list<ArgumentChecks::MinSize> *argminsizes(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    const std::list<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
     }
 
@@ -502,7 +516,7 @@ private:
     std::map<std::string, PlatformType> platform_types; // platform independent typedefs
     std::map<std::string, Platform> platforms; // platform dependent typedefs
 
-    const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
+    const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
     static int getid(const std::map<std::string,int> &data, const std::string &name) {
         const std::map<std::string,int>::const_iterator it = data.find(name);

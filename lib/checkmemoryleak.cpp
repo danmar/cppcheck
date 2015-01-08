@@ -578,7 +578,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         return 0;
     }
 
-    if ((_settings->library.isnoreturn(tok->str()) || (tok->function() && tok->function()->isAttributeNoreturn())) && tok->strAt(-1) != "=")
+    if (_settings->library.isnoreturn(tok) && tok->strAt(-1) != "=")
         return "exit";
 
     if (varid > 0 && (getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
@@ -623,7 +623,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             std::string temp;
             if (!_settings->library.isScopeNoReturn(tok->function()->functionScope->classEnd, &temp) && temp.empty())
                 return nullptr;
-        } else if (_settings->library.isnotnoreturn(funcname))
+        } else if (_settings->library.isnotnoreturn(tok))
             return nullptr;
 
         return "callfunc";
@@ -1283,7 +1283,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // just add a "::use"
             // The "::use" means that a member function was probably called but it wasn't analysed further
             else if (classmember) {
-                if (_settings->library.isnoreturn(tok->str()) || (tok->function() && tok->function()->isAttributeNoreturn()))
+                if (_settings->library.isnoreturn(tok))
                     addtoken(&rettail, tok, "exit");
 
                 else if (!test_white_list_with_lib(tok->str(), _settings)) {

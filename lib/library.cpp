@@ -564,9 +564,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     return Error(OK);
 }
 
-bool Library::isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const
+bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
 {
-    const ArgumentChecks *ac = getarg(functionName, argnr);
+    const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
     TokenList tokenList(0);
@@ -591,10 +591,12 @@ bool Library::isargvalid(const std::string &functionName, int argnr, const MathL
     return false;
 }
 
-const Library::ArgumentChecks * Library::getarg(const std::string &functionName, int argnr) const
+const Library::ArgumentChecks * Library::getarg(const Token *ftok, int argnr) const
 {
+    if (isNotLibraryFunction(ftok))
+        return nullptr;
     std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
-    it1 = argumentChecks.find(functionName);
+    it1 = argumentChecks.find(ftok->str());
     if (it1 == argumentChecks.end())
         return nullptr;
     const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
@@ -628,8 +630,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%var% )| (")) {
         if (funcname->str() == "exit")
             return true;
-        if (!isnotnoreturn(funcname->str())) {
-            if (unknownFunc && !(isnoreturn(funcname->str()) || (funcname->function() && funcname->function()->isAttributeNoreturn())))
+        if (!isnotnoreturn(funcname)) {
+            if (unknownFunc && !isnoreturn(funcname))
                 *unknownFunc = funcname->str();
             return true;
         }
