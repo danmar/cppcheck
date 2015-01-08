@@ -12,13 +12,13 @@ resultfile = sys.argv[2]
 
 f = open(project + '/true-positives.txt', 'rt')
 truepositives = f.read()
-f.close();
+f.close()
 
 f = open(project + '/false-positives.txt', 'rt')
 falsepositives = f.read()
-f.close();
+f.close()
 
-fin = open(resultfile,'rt')
+fin = open(resultfile, 'rt')
 results = fin.read()
 fin.close()
 
@@ -36,7 +36,7 @@ for result in results.split('\n'):
     result = result.strip()
 
     res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', result)
-    if res == None:
+    if res is None:
         continue
 
     filename = res.group(1)
@@ -58,7 +58,7 @@ for result in results.split('\n'):
     html += '<td class='+css+'>'+filename+'</td>'
     html += '<td class='+css+'>'+linenr+'</td>'
     html += '<td class='+css+'>'+message+'</td>'
-    if project=='linux-3.11':
+    if project == 'linux-3.11':
         href = 'http://github.com/torvalds/linux/blob/v3.11' + filename[filename.find('/'):] + '#L' + linenr
     if href:
         html += '<td class='+css+'><a href="' + href + '">' + classification + '</a></td>'
@@ -75,7 +75,7 @@ for line in f.readlines():
         continue
 
     res = re.match('\\[('+project+'.+):([0-9]+)\\]:\s+[(][a-z]+[)] (.+)', line)
-    if res == None:
+    if res is None:
         continue
 
     if line in results:
@@ -98,7 +98,7 @@ for line in f.readlines():
 
     out[css] += html
 
-f.close();
+f.close()
 
 project2 = ''
 if project.find('-') > 0:
@@ -106,7 +106,7 @@ if project.find('-') > 0:
 else:
     project2 = project
 
-fout = open('report.html','wt')
+fout = open('report.html', 'wt')
 fout.write('<html><head><title>Cppcheck results for ' + project + '</title><link rel="stylesheet" type="text/css" href="theme1.css"></head><body>\n')
 fout.write('<h1>Cppcheck results for ' + project + '</h1>\n')
 fout.write('<p>Number of false negatives: ' + str(numberOfFalseNegatives) + '</p>\n')
