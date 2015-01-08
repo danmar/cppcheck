@@ -27,25 +27,20 @@
 
 #include "../cli/filelister.h"
 
-static std::string builddir(std::string filename);
-static std::string objfile(std::string cppfile);
-static void getDeps(const std::string &filename, std::vector<std::string> &depfiles);
-
-
-std::string builddir(std::string filename)
+static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
         filename = "$(SRCDIR)" + filename.substr(3);
     return filename;
 }
 
-std::string objfile(std::string cppfile)
+static std::string objfile(std::string cppfile)
 {
     cppfile.erase(cppfile.rfind("."));
     return builddir(cppfile + ".o");
 }
 
-void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
