@@ -1904,7 +1904,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     const std::list<Variable> &varlist = symbolDatabase->scopeList.front().varlist;
     for (std::list<Variable>::const_iterator it = varlist.begin(); it != varlist.end(); ++it) {
         const Variable &var = *it;
-        if (!var.isStatic() && var.isArray() && var.dimensions().size() == 1U)
+        if (!var.isStatic() && var.isArray() && var.dimensions().size() == 1U && var.dimension(0U) > 0U)
             fileInfo->arraySize[var.name()] = var.dimension(0U);
     }
 
