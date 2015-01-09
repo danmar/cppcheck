@@ -1865,30 +1865,17 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
 
             base.name = tok2->str();
 
+            tok2 = tok2->next();
             // add unhandled templates
-            if (tok2->next() && tok2->next()->str() == "<") {
-                tok2 = tok2->next();
-                base.name += tok2->str();
-
-                int level1 = 1;
-                while (tok2->next()) {
-                    base.name += tok2->next()->str();
-
-                    if (tok2->next()->str() == ">") {
-                        level1--;
-                        if (level1 == 0)
-                            break;
-                    } else if (tok2->next()->str() == "<")
-                        level1++;
-
-                    tok2 = tok2->next();
+            if (tok2 && tok2->link() && tok2->str() == "<") {
+                for (const Token* const end = tok2->link()->next(); tok2 != end; tok2 = tok2->next()) {
+                    base.name += tok2->str();
                 }
             }
 
             // save pattern for base class name
             derivedFrom.push_back(base);
-        }
-        if (tok2) // see #4806
+        } else
             tok2 = tok2->next();
     }
 
