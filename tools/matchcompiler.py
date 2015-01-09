@@ -396,7 +396,7 @@ class MatchCompiler:
             if len(res) == 4:
                 varId = res[3]
 
-            res = re.match(r'\s*"([^"]*)"\s*$', raw_pattern)
+            res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
             if res is None:
                 break  # Non-const pattern - bailout
 
@@ -550,7 +550,7 @@ class MatchCompiler:
                 elif varId is None and len(res) == 4:
                     endToken = res[3]
 
-            res = re.match(r'\s*"([^"]*)"\s*$', pattern)
+            res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
                 break  # Non-const pattern - bailout
 
