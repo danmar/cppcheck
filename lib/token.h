@@ -372,12 +372,6 @@ public:
     void isAttributeNothrow(bool value) {
         setFlag(fIsAttributeNothrow, value);
     }
-    bool isDeclspecNothrow() const {
-        return getFlag(fIsDeclspecNothrow);
-    }
-    void isDeclspecNothrow(bool value) {
-        setFlag(fIsDeclspecNothrow, value);
-    }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
@@ -783,10 +777,9 @@ private:
         fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
         fIsAttributePure        = (1 << 10), // __attribute__((pure))
         fIsAttributeConst       = (1 << 11), // __attribute__((const))
-        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)) __declspec(noreturn)
-        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow))
-        fIsDeclspecNothrow      = (1 << 14), // __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 15)  // __attribute__((used))
+        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
+        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 14)  // __attribute__((used))
     };
 
     unsigned int _flags;

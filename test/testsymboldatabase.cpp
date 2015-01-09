@@ -2592,7 +2592,7 @@ private:
             const Function *func = findFunctionByName("func", &db->scopeList.front());
             ASSERT_EQUALS(true, func != nullptr);
             if (func)
-                ASSERT_EQUALS(true, func->isDeclspecNothrow());
+                ASSERT_EQUALS(true, func->isAttributeNothrow());
         }
     }
 

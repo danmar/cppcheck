@@ -659,9 +659,6 @@ public:
     bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }
-    bool isDeclspecNothrow() const {
-        return tokenDef->isDeclspecNothrow();
-    }
 
     bool hasBody() const {
         return getFlag(fHasBody);

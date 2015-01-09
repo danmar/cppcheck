@@ -243,7 +243,7 @@ void CheckExceptionSafety::nothrowThrows()
         if (!function)
             continue;
 
-        // check noexcept functions
+        // check noexcept and noexcept(true) functions
         if (function->isNoExcept() &&
             (!function->noexceptArg || function->noexceptArg->str() == "true")) {
             const Token *throws = functionThrows(function);
@@ -255,21 +255,14 @@ void CheckExceptionSafety::nothrowThrows()
         else if (function->isThrow() && !function->throwArg) {
             const Token *throws = functionThrows(function);
             if (throws)
-                nothrowThrowError(throws);
+                noexceptThrowError(throws);
         }
 
-        // check __attribute__((nothrow)) functions
+        // check __attribute__((nothrow)) or __declspec(nothrow) functions
         else if (function->isAttributeNothrow()) {
             const Token *throws = functionThrows(function);
             if (throws)
-                nothrowAttributeThrowError(throws);
-        }
-
-        // check __declspec(nothrow) functions
-        else if (function->isDeclspecNothrow()) {
-            const Token *throws = functionThrows(function);
-            if (throws)
-                nothrowDeclspecThrowError(throws);
+                noexceptThrowError(throws);
         }
     }
 }

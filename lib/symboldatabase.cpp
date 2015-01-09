@@ -2121,7 +2121,6 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isAttributePure: " << (func->isAttributePure() ? "true" : "false") << std::endl;
             std::cout << "        isAttributeNoreturn: " << (func->isAttributeNoreturn() ? "true" : "false") << std::endl;
             std::cout << "        isAttributeNothrow: " << (func->isAttributeNothrow() ? "true" : "false") << std::endl;
-            std::cout << "        isDeclspecNothrow: " << (func->isDeclspecNothrow() ? "true" : "false") << std::endl;
             std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
             std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;
             std::cout << "        tokenDef: " << func->tokenDef->str() << " " <<_tokenizer->list.fileLine(func->tokenDef) << std::endl;

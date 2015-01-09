@@ -2785,7 +2785,7 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
             // Scan through the arguments to the function call
             for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != endParamToken; tok2 = tok2->nextArgument()) {
                 const Function *pFunc = tok2->function();
-                const bool isNothrow = pFunc && (pFunc->isDeclspecNothrow() || pFunc->isAttributeNothrow());
+                const bool isNothrow = pFunc && pFunc->isAttributeNothrow();
 
                 if (Token::Match(tok2, "shared_ptr|unique_ptr < %var% > ( new %var%")) {
                     pointerType = tok2->str();

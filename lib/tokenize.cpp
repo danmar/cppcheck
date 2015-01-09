@@ -9196,7 +9196,7 @@ void Tokenizer::simplifyDeclspec()
                     if (tok->strAt(2) == "noreturn")
                         tok1->isAttributeNoreturn(true);
                     else
-                        tok1->isDeclspecNothrow(true);
+                        tok1->isAttributeNothrow(true);
                 }
             } else if (tok->strAt(2) == "property")
                 tok->next()->link()->insertToken("__property");

@@ -109,24 +109,8 @@ private:
                     "as a (const) reference which is usually recommended in C++.");
     }
 
-    /** Don't throw exceptions in noexcept functions */
     void noexceptThrowError(const Token * const tok) {
-        reportError(tok, Severity::error, "exceptThrowInNoexecptFunction", "Exception thrown in noexcept function.");
-    }
-
-    /** Don't throw exceptions in throw() functions */
-    void nothrowThrowError(const Token * const tok) {
-        reportError(tok, Severity::error, "exceptThrowInNoThrowFunction", "Exception thrown in throw() function.");
-    }
-
-    /** Don't throw exceptions in __attribute__((nothrow))  functions */
-    void nothrowAttributeThrowError(const Token * const tok) {
-        reportError(tok, Severity::error, "exceptThrowInAttributeNoThrowFunction", "Exception thrown in __attribute__((nothrow)) function.");
-    }
-
-    /** Don't throw exceptions in __declspec(nothrow)  functions */
-    void nothrowDeclspecThrowError(const Token * const tok) {
-        reportError(tok, Severity::error, "exceptThrowInDeclspecNoThrowFunction", "Exception thrown in __declspec(nothrow) function.");
+        reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.");
     }
 
     /** Missing exception specification */
@@ -149,9 +133,6 @@ private:
         c.rethrowCopyError(0, "varname");
         c.catchExceptionByValueError(0);
         c.noexceptThrowError(0);
-        c.nothrowThrowError(0);
-        c.nothrowAttributeThrowError(0);
-        c.nothrowDeclspecThrowError(0);
         c.unhandledExceptionSpecificationError(0, 0, "funcname");
     }
 
@@ -167,10 +148,7 @@ private:
                "- Throwing exception during invalid state\n"
                "- Throwing a copy of a caught exception instead of rethrowing the original exception\n"
                "- Exception caught by value instead of by reference\n"
-               "- Throwing exception in noexcept function\n"
-               "- Throwing exception in nothrow() function\n"
-               "- Throwing exception in __attribute__((nothrow)) function\n"
-               "- Throwing exception in __declspec(nothrow) function\n"
+               "- Throwing exception in noexcept, nothrow(), __attribute__((nothrow)) or __declspec(nothrow) function\n"
                "- Unhandled exception specification when calling function foo()\n";
     }
 };
