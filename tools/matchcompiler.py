@@ -569,9 +569,9 @@ class MatchCompiler:
 
     def _replaceCStrings(self, line):
         while True:
-            match = re.search('str\(\) (==|!=) "', line)
+            match = re.search('str\(\) *(==|!=) *"', line)
             if not match:
-                match = re.search('strAt\(.+?\) (==|!=) "', line)
+                match = re.search('strAt\(.+?\) *(==|!=) *"', line)
             if not match:
                 break
 
