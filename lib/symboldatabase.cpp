@@ -1563,16 +1563,6 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
         if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), "", 0)) {
             function = const_cast<Function *>(i->second);
-            // copy attributes from function prototype to function
-            Token* to = const_cast<Token *>(tok);
-            const Token* from = function->tokenDef;
-            to->isAttributeConstructor(from->isAttributeConstructor());
-            to->isAttributeDestructor(from->isAttributeDestructor());
-            to->isAttributePure(from->isAttributePure());
-            to->isAttributeConst(from->isAttributeConst());
-            to->isAttributeNoreturn(from->isAttributeNoreturn());
-            to->isAttributeNothrow(from->isAttributeNothrow());
-            to->isDeclspecNothrow(from->isDeclspecNothrow());
             break;
         }
     }
