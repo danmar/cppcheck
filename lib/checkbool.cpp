@@ -402,9 +402,13 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 continue;
 
             if (numTok->isNumber()) {
-                if (numTok->str() == "0" && Token::Match(tok, numInRhs ? ">|==|!=" : "<|==|!="))
+                if (numTok->str() == "0" &&
+                    (numInRhs ? Token::Match(tok, ">|==|!=")
+                     : Token::Match(tok, "<|==|!=")))
                     continue;
-                if (numTok->str() == "1" && Token::Match(tok, numInRhs ? "<|==|!=" : ">|==|!="))
+                if (numTok->str() == "1" &&
+                    (numInRhs ? Token::Match(tok, "<|==|!=")
+                     : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
             } else if (isNonBoolStdType(numTok->variable()))
