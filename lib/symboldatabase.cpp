@@ -1994,24 +1994,24 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
-std::string tokenToString(const Token* tok, const Tokenizer* _tokenizer)
+static std::string tokenToString(const Token* tok, const Tokenizer* tokenizer)
 {
     std::ostringstream oss;
     if (tok) {
         oss << tok->str() << " ";
-        oss << _tokenizer->list.fileLine(tok) << " ";
+        oss << tokenizer->list.fileLine(tok) << " ";
     }
     oss << tok;
     return oss.str();
 }
 
-std::string scopeToString(const Scope* scope, const Tokenizer* _tokenizer)
+static std::string scopeToString(const Scope* scope, const Tokenizer* tokenizer)
 {
     std::ostringstream oss;
     if (scope) {
         oss << scope->type << " ";
         if (scope->classDef)
-            oss << _tokenizer->list.fileLine(scope->classDef) << " ";
+            oss << tokenizer->list.fileLine(scope->classDef) << " ";
     }
     oss << scope;
     return oss.str();
