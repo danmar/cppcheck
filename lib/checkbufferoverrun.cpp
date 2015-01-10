@@ -1154,7 +1154,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 }
 
                 /** @todo false negatives: this may be too conservative */
-                if (!var || var->typeEndToken()->str() != "*" || var->typeStartToken()->next() != var->typeEndToken())
+                if (!var || !var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
 
                 // get name of variable

@@ -422,12 +422,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     CppCheck fileChecker(*threadExecutor, false);
     fileChecker.settings() = threadExecutor->_settings;
 
-    LeaveCriticalSection(&threadExecutor->_fileSync);
-
     for (;;) {
-
-        EnterCriticalSection(&threadExecutor->_fileSync);
-
         if (it == threadExecutor->_files.end()) {
             LeaveCriticalSection(&threadExecutor->_fileSync);
             return result;
@@ -457,8 +452,6 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             CppCheckExecutor::reportStatus(threadExecutor->_processedFiles, threadExecutor->_totalFiles, threadExecutor->_processedSize, threadExecutor->_totalFileSize);
             LeaveCriticalSection(&threadExecutor->_reportSync);
         }
-
-        LeaveCriticalSection(&threadExecutor->_fileSync);
     };
 #ifdef _MSC_VER
 #pragma warning(push)
