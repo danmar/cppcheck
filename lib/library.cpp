@@ -398,7 +398,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const inherits = node->Attribute("inherits");
             if (inherits) {
                 std::map<std::string, Container>::const_iterator i = containers.find(inherits);
-                if (inherits)
+                if (i != containers.end())
                     container = i->second; // Take values from parent and overwrite them if necessary
                 else
                     return Error(BAD_ATTRIBUTE_VALUE, inherits);
