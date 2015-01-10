@@ -512,46 +512,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --library
         else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-            Library::Error err = _settings->library.load(argv[0], argv[i]+10);
-            std::string errmsg;
-            switch (err.errorcode) {
-            case Library::OK:
-                break;
-            case Library::FILE_NOT_FOUND:
-                errmsg = "File not found";
-                break;
-            case Library::BAD_XML:
-                errmsg = "Bad XML";
-                break;
-            case Library::BAD_ELEMENT:
-                errmsg = "Unexpected element";
-                break;
-            case Library::MISSING_ATTRIBUTE:
-                errmsg = "Missing attribute";
-                break;
-            case Library::BAD_ATTRIBUTE:
-                errmsg = "Bad attribute";
-                break;
-            case Library::BAD_ATTRIBUTE_VALUE:
-                errmsg = "Bad attribute value";
-                break;
-            case Library::UNSUPPORTED_FORMAT:
-                errmsg = "File is of unsupported format version";
-                break;
-            case Library::DUPLICATE_PLATFORM_TYPE:
-                errmsg = "Duplicate platform type";
-                break;
-            case Library::PLATFORM_TYPE_REDEFINED:
-                errmsg = "Platform type redefined";
-                break;
-            }
-            if (!err.reason.empty())
-                errmsg += " '" + err.reason + "'";
-
-            if (!errmsg.empty()) {
-                PrintMessage("cppcheck: Failed to load library configuration file '" + std::string(argv[i]+10) + "'. " + errmsg);
+            if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
                 return false;
-            }
         }
 
         // Report progress

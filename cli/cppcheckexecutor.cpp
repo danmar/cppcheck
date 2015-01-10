@@ -724,13 +724,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 {
     Settings& settings = cppcheck.settings();
     _settings = &settings;
-    bool std = (settings.library.load(argv[0], "std.cfg").errorcode == Library::OK);
+    bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
     bool posix = true;
     if (settings.standards.posix)
-        posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::OK);
+        posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");
     bool windows = true;
     if (settings.isWindowsPlatform())
-        windows = (settings.library.load(argv[0], "windows.cfg").errorcode == Library::OK);
+        windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
 
     if (!std || !posix || !windows) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
@@ -906,6 +906,50 @@ void CppCheckExecutor::setExceptionOutput(const std::string& fn)
 const std::string& CppCheckExecutor::getExceptionOutput()
 {
     return exceptionOutput;
+}
+
+bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
+{
+    Library::Error err = destination.load(basepath, filename);
+
+    if (err.errorcode == Library::UNKNOWN_ELEMENT)
+        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+    else if (err.errorcode != Library::OK) {
+        std::string errmsg;
+        switch (err.errorcode) {
+        case Library::OK:
+            break;
+        case Library::FILE_NOT_FOUND:
+            errmsg = "File not found";
+            break;
+        case Library::BAD_XML:
+            errmsg = "Bad XML";
+            break;
+        case Library::UNKNOWN_ELEMENT:
+            errmsg = "Unexpected element";
+            break;
+        case Library::MISSING_ATTRIBUTE:
+            errmsg = "Missing attribute";
+            break;
+        case Library::BAD_ATTRIBUTE_VALUE:
+            errmsg = "Bad attribute value";
+            break;
+        case Library::UNSUPPORTED_FORMAT:
+            errmsg = "File is of unsupported format version";
+            break;
+        case Library::DUPLICATE_PLATFORM_TYPE:
+            errmsg = "Duplicate platform type";
+            break;
+        case Library::PLATFORM_TYPE_REDEFINED:
+            errmsg = "Platform type redefined";
+            break;
+        }
+        if (!err.reason.empty())
+            errmsg += " '" + err.reason + "'";
+        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. " << errmsg << std::endl;
+        return false;
+    }
+    return true;
 }
 
 std::string CppCheckExecutor::exceptionOutput;

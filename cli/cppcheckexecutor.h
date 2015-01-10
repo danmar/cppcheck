@@ -26,6 +26,7 @@
 
 class CppCheck;
 class Settings;
+class Library;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -95,6 +96,12 @@ public:
     * @return file name to be used for output from exception handler
     */
     static const std::string& getExceptionOutput();
+
+    /**
+    * Tries to load a library and prints warning/error messages
+    * @return false, if an error occured (except unknown XML elements)
+    */
+    static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
 
 protected:
 

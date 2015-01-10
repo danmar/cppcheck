@@ -107,7 +107,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         return Error(BAD_XML);
 
     if (strcmp(rootnode->Name(),"def") != 0)
-        return Error(BAD_ELEMENT, rootnode->Name());
+        return Error(UNSUPPORTED_FORMAT, rootnode->Name());
 
     const char* format_string = rootnode->Attribute("format");
     int format = 1;
@@ -116,6 +116,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
     if (format > 1)
         return Error(UNSUPPORTED_FORMAT);
+
+    std::set<std::string> unknown_elements;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const std::string nodename = node->Name();
@@ -153,7 +155,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 else if (memorynodename == "use")
                     use.insert(memorynode->GetText());
                 else
-                    return Error(BAD_ELEMENT, memorynodename);
+                    unknown_elements.insert(memorynodename);
             }
         }
 
@@ -273,7 +275,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         }
 
                         else
-                            return Error(BAD_ATTRIBUTE, argnodename);
+                            unknown_elements.insert(argnodename);
                     }
                     argumentChecks[name][nr].notbool   = notbool;
                     argumentChecks[name][nr].notnull   = notnull;
@@ -287,14 +289,16 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
                     _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
                 } else
-                    return Error(BAD_ELEMENT, functionnodename);
+                    unknown_elements.insert(functionnodename);
             }
         }
 
         else if (nodename == "reflection") {
             for (const tinyxml2::XMLElement *reflectionnode = node->FirstChildElement(); reflectionnode; reflectionnode = reflectionnode->NextSiblingElement()) {
-                if (strcmp(reflectionnode->Name(), "call") != 0)
-                    return Error(BAD_ELEMENT, reflectionnode->Name());
+                if (strcmp(reflectionnode->Name(), "call") != 0) {
+                    unknown_elements.insert(reflectionnode->Name());
+                    continue;
+                }
 
                 const char * const argString = reflectionnode->Attribute("arg");
                 if (!argString)
@@ -325,14 +329,16 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 return Error(MISSING_ATTRIBUTE, "name");
                             _keywords[extension].insert(nodeName);
                         } else
-                            return Error(BAD_ELEMENT, librarynode->Name());
+                            unknown_elements.insert(librarynode->Name());
                     }
                 }
 
                 else if (markupnodename == "exported") {
                     for (const tinyxml2::XMLElement *exporter = markupnode->FirstChildElement(); exporter; exporter = exporter->NextSiblingElement()) {
-                        if (strcmp(exporter->Name(), "exporter") != 0)
-                            return Error(BAD_ELEMENT, exporter->Name());
+                        if (strcmp(exporter->Name(), "exporter") != 0) {
+                            unknown_elements.insert(exporter->Name());
+                            continue;
+                        }
 
                         const char * const prefix = exporter->Attribute("prefix");
                         if (!prefix)
@@ -345,7 +351,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             else if (ename == "suffix")
                                 _exporters[prefix].addSuffix(e->GetText());
                             else
-                                return Error(BAD_ELEMENT, ename);
+                                unknown_elements.insert(ename);
                         }
                     }
                 }
@@ -355,7 +361,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (strcmp(librarynode->Name(), "importer") == 0)
                             _importers[extension].insert(librarynode->GetText());
                         else
-                            return Error(BAD_ELEMENT, librarynode->Name());
+                            unknown_elements.insert(librarynode->Name());
                     }
                 }
 
@@ -379,12 +385,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         }
 
                         else
-                            return Error(BAD_ELEMENT, blocknodename);
+                            unknown_elements.insert(blocknodename);
                     }
                 }
 
                 else
-                    return Error(BAD_ELEMENT, markupnodename);
+                    unknown_elements.insert(markupnodename);
             }
         }
 
@@ -415,8 +421,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 const std::string containerNodeName = containerNode->Name();
                 if (containerNodeName == "size" || containerNodeName == "access" || containerNodeName == "other") {
                     for (const tinyxml2::XMLElement *functionNode = containerNode->FirstChildElement(); functionNode; functionNode = functionNode->NextSiblingElement()) {
-                        if (std::string(functionNode->Name()) != "function")
-                            return Error(BAD_ELEMENT, functionNode->Name());
+                        if (std::string(functionNode->Name()) != "function") {
+                            unknown_elements.insert(functionNode->Name());
+                            continue;
+                        }
 
                         const char* const functionName = functionNode->Attribute("name");
                         if (!functionName)
@@ -486,7 +494,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     if (string)
                         container.stdStringLike = std::string(string) == "std-like";
                 } else
-                    return Error(BAD_ELEMENT, containerNodeName);
+                    unknown_elements.insert(containerNodeName);
             }
         }
 
@@ -534,7 +542,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 else if (typenodename == "const_ptr")
                     type._const_ptr = true;
                 else
-                    return Error(BAD_ELEMENT, typenodename);
+                    unknown_elements.insert(typenodename);
             }
             if (platform.empty()) {
                 const PlatformType * const type_ptr = platform_type(type_name, "");
@@ -559,7 +567,16 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         }
 
         else
-            return Error(BAD_ELEMENT, nodename);
+            unknown_elements.insert(nodename);
+    }
+    if (!unknown_elements.empty()) {
+        std::string str;
+        for (std::set<std::string>::const_iterator i = unknown_elements.begin(); i != unknown_elements.end();) {
+            str += *i;
+            if (++i != unknown_elements.end())
+                str += ", ";
+        }
+        return Error(UNKNOWN_ELEMENT, str);
     }
     return Error(OK);
 }
