@@ -428,9 +428,17 @@ private:
      * @brief Load library file
      * @param library  library to use
      * @param filename filename (no path)
-     * @return True if successful
+     * @return error code
      */
     Library::Error LoadLibrary(Library *library, QString filename);
+
+    /**
+    * @brief Tries to load library file, prints message on error
+    * @param library  library to use
+    * @param filename filename (no path)
+    * @return True if no error
+    */
+    bool TryLoadLibrary(Library *library, QString filename);
 
     /**
     * @brief Update project MRU items in File-menu.

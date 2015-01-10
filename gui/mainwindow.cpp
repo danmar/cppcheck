@@ -548,6 +548,49 @@ Library::Error MainWindow::LoadLibrary(Library *library, QString filename)
     return ret;
 }
 
+bool MainWindow::TryLoadLibrary(Library *library, QString filename)
+{
+    const Library::Error error = LoadLibrary(library, filename);
+    if (error.errorcode != Library::ErrorCode::OK) {
+        if (error.errorcode == Library::UNKNOWN_ELEMENT) {
+            QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename).arg(error.reason.c_str()));
+            return true;
+        }
+
+        QString errmsg;
+        switch (error.errorcode) {
+        case Library::ErrorCode::OK:
+            break;
+        case Library::ErrorCode::FILE_NOT_FOUND:
+            errmsg = tr("File not found");
+            break;
+        case Library::ErrorCode::BAD_XML:
+            errmsg = tr("Bad XML");
+            break;
+        case Library::ErrorCode::MISSING_ATTRIBUTE:
+            errmsg = tr("Missing attribute");
+            break;
+        case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
+            errmsg = tr("Bad attribute value");
+            break;
+        case Library::ErrorCode::UNSUPPORTED_FORMAT:
+            errmsg = tr("Unsupported format");
+            break;
+        case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
+            errmsg = tr("Duplicate platform type");
+            break;
+        case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
+            errmsg = tr("Platform type redefined");
+            break;
+        }
+        if (!error.reason.empty())
+            errmsg += " '" + QString::fromStdString(error.reason) + "'";
+        QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename).arg(errmsg));
+        return false;
+    }
+    return true;
+}
+
 Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
@@ -569,44 +612,7 @@ Settings MainWindow::GetCppcheckSettings()
         const QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
             const QString filename = library + ".cfg";
-            const Library::Error error = LoadLibrary(&result.library, filename);
-            if (error.errorcode != Library::ErrorCode::OK) {
-                QString errmsg;
-                switch (error.errorcode) {
-                case Library::ErrorCode::OK:
-                    break;
-                case Library::ErrorCode::FILE_NOT_FOUND:
-                    errmsg = tr("File not found");
-                    break;
-                case Library::ErrorCode::BAD_XML:
-                    errmsg = tr("Bad XML");
-                    break;
-                case Library::ErrorCode::BAD_ELEMENT:
-                    errmsg = tr("Unexpected element");
-                    break;
-                case Library::ErrorCode::MISSING_ATTRIBUTE:
-                    errmsg = tr("Missing attribute");
-                    break;
-                case Library::ErrorCode::BAD_ATTRIBUTE:
-                    errmsg = tr("Bad attribute");
-                    break;
-                case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
-                    errmsg = tr("Bad attribute value");
-                    break;
-                case Library::ErrorCode::UNSUPPORTED_FORMAT:
-                    errmsg = tr("Unsupported format");
-                    break;
-                case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
-                    errmsg = tr("Duplicate platform type");
-                    break;
-                case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
-                    errmsg = tr("Platform type redefined");
-                    break;
-                }
-                if (!error.reason.empty())
-                    errmsg += " '" + QString::fromStdString(error.reason) + "'";
-                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename).arg(errmsg));
-            }
+            TryLoadLibrary(&result.library, filename);
         }
 
         const QStringList suppressions = pfile->GetSuppressions();
@@ -648,13 +654,13 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    const bool std = (LoadLibrary(&result.library, "std.cfg").errorcode == Library::ErrorCode::OK);
+    const bool std = TryLoadLibrary(&result.library, "std.cfg");
     bool posix = true;
     if (result.standards.posix)
-        posix = (LoadLibrary(&result.library, "posix.cfg").errorcode == Library::ErrorCode::OK);
+        posix = TryLoadLibrary(&result.library, "posix.cfg");
     bool windows = true;
     if (result.platformType == Settings::Win32A || result.platformType == Settings::Win32W || result.platformType == Settings::Win64)
-        windows = (LoadLibrary(&result.library, "windows.cfg").errorcode == Library::ErrorCode::OK);
+        windows = TryLoadLibrary(&result.library, "windows.cfg");
 
     if (!std || !posix || !windows)
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));

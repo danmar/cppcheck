@@ -655,15 +655,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unexpected element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Missing attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bad attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -677,6 +669,19 @@ Options:
     </message>
     <message>
         <source>Unsupported format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The library &apos;%1&apos; contains unknown elements:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate platform type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
