@@ -9210,6 +9210,12 @@ void Tokenizer::simplifyDeclspec()
 void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%type% (") && !_settings->library.isNotLibraryFunction(tok)) {
+            if (_settings->library.functionpure.find(tok->str()) != _settings->library.functionpure.end())
+                tok->isAttributePure(true);
+            if (_settings->library.functionconst.find(tok->str()) != _settings->library.functionconst.end())
+                tok->isAttributeConst(true);
+        }
         while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {
             if (Token::Match(tok->tokAt(2), "( constructor|__constructor__")) {
                 // prototype for constructor is: void func(void);

@@ -21,6 +21,7 @@
 #include "checkcondition.h"
 #include "testsuite.h"
 #include <sstream>
+#include <tinyxml2.h>
 
 extern std::ostringstream errout;
 
@@ -319,8 +320,57 @@ private:
               "    else { if (x & 1); }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+
+        check("extern int bar() __attribute__((pure));\n"
+              "void foo(int x)\n"
+              "{\n"
+              "    if ( bar() >1 && b) {}\n"
+              "    else if (bar() >1 && b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
+
+        checkPureFunction("extern int bar();\n"
+                          "void foo(int x)\n"
+                          "{\n"
+                          "    if ( bar() >1 && b) {}\n"
+                          "    else if (bar() >1 && b) {}\n"
+                          "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
     }
 
+    void checkPureFunction(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
+        tinyxml2::XMLDocument xmldoc;
+        xmldoc.Parse(cfg, sizeof(cfg));
+
+        Settings settings;
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.library.load(xmldoc);
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        CheckCondition checkCondition;
+        checkCondition.runChecks(&tokenizer, &settings, this);
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
+        tokenizer.simplifyTokenList2();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
+
+        // Ensure that the test case is not bad.
+        if (str1 != str2) {
+            warnUnsimplified(str1, str2);
+        }
+    }
     void duplicateIf() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
