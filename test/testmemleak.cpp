@@ -4282,7 +4282,7 @@ private:
                             "  char * p = get_current_dir_name();\n" // memory leak
                             "}\n"
                             "void noLeak() {\n"
-                            "  char * p = get_current_dir_name;\n"
+                            "  char * p = get_current_dir_name();\n"
                             "  free(p)\n;"
                             "}";
         check(code, &settings);
