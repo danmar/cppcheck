@@ -31,12 +31,12 @@
 #include <iostream>
 //---------------------------------------------------------------------------
 
-const int DEALLOC = -1;
-const int NOALLOC = 0;
-
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckLeakAutoVar instance;
+
+    const int DEALLOC = -1;
+    const int NOALLOC = 0;
 }
 
 //---------------------------------------------------------------------------
