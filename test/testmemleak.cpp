@@ -369,6 +369,8 @@ private:
         // test that the cfg files are configured correctly
         TEST_CASE(posixcfg);
         TEST_CASE(posixcfg_mmap);
+
+        TEST_CASE(gnucfg);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -4270,6 +4272,21 @@ private:
               "    *pp = calloc(10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void gnucfg() {
+        Settings settings;
+        settings.standards.posix = true;
+        LOAD_LIB_2(settings.library, "gnu.cfg");
+        const char code[] = "void leak() {\n"
+                            "  char * p = get_current_dir_name();\n" // memory leak
+                            "}\n"
+                            "void noLeak() {\n"
+                            "  char * p = get_current_dir_name;\n"
+                            "  free(p)\n;"
+                            "}";
+        check(code, &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     // Test that posix.cfg is configured correctly
