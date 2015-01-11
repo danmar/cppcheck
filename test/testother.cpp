@@ -6233,6 +6233,16 @@ private:
     void checkSleepTimeIntervall() {
         // check usleep(), which is allowed to be called with in a range of [0,999999]
         check("void f(){\n"
+              "usleep(-1);\n"
+              "}",nullptr,false,false,true);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usleep() argument nr 1. The value is -1 but the valid values are '0:999999'.\n", errout.str());
+
+        check("void f(){\n"
+              "usleep(0);\n"
+              "}",nullptr,false,false,true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
               "usleep(10000);\n"
               "}",nullptr,false,false,true);
         ASSERT_EQUALS("", errout.str());
