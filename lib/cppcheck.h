@@ -134,7 +134,7 @@ public:
 
 private:
 
-    /** @brief There has been a internal error => Report information message */
+    /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
 
     /**

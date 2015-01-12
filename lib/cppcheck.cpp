@@ -256,7 +256,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
     const std::string fixedpath = Path::toNativeSeparators(filename);
-    const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was a internal error: " + msg);
+    const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
 
     if (_settings.isEnabled("information")) {
         const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
