@@ -221,6 +221,7 @@ private:
         TEST_CASE(symboldatabase45); // #6125
         TEST_CASE(symboldatabase46); // #6171 (anonymous namespace)
         TEST_CASE(symboldatabase47); // #6308
+        TEST_CASE(symboldatabase48); // #6417
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -2042,6 +2043,26 @@ private:
                       "    delete Example;\n"
                       "}");
         ASSERT(db && !db->functionScopes.empty() && db->functionScopes.front()->function && db->functionScopes.front()->function->functionScope == db->functionScopes.front());
+    }
+
+    void symboldatabase48() { // #6417
+        GET_SYMBOL_DB("namespace NS {\n"
+                      "    class MyClass {\n"
+                      "        MyClass();\n"
+                      "        ~MyClass();\n"
+                      "    };\n"
+                      "}\n"
+                      "using namespace NS;\n"
+                      "MyClass::~MyClass() { }\n"
+                      "MyClass::MyClass() { }\n");
+        ASSERT(db && !db->functionScopes.empty() && db->functionScopes.front()->function && db->functionScopes.front()->function->functionScope == db->functionScopes.front());
+
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "MyClass ( ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3  && f->function()->token->linenr() == 9);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "~ MyClass ( ) ;");
+        f = f->next();
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4  && f->function()->token->linenr() == 8);
     }
 
     void isImplicitlyVirtual() {

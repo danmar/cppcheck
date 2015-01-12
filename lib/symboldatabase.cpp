@@ -3451,10 +3451,13 @@ const Scope * SymbolDatabase::findNamespace(const Token * tok, const Scope * sco
 Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *ns)
 {
     const Function * function = nullptr;
+    const bool destructor = func->strAt(-1) == "~";
 
     for (std::multimap<std::string, const Function *>::const_iterator it = ns->functionMap.find(func->str());
          it != ns->functionMap.end() && it->first == func->str(); ++it) {
-        if (Function::argsMatch(ns, func->tokAt(2), it->second->argDef->next(), "", 0)) {
+
+        if (Function::argsMatch(ns, func->tokAt(2), it->second->argDef->next(), "", 0) &&
+            it->second->isDestructor() == destructor) {
             function = it->second;
             break;
         }

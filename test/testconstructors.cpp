@@ -137,6 +137,7 @@ private:
         TEST_CASE(uninitVar27); // ticket #5170 - rtl::math::setNan(&d)
         TEST_CASE(uninitVar28); // ticket #6258
         TEST_CASE(uninitVar29);
+        TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -2158,6 +2159,22 @@ private:
               "};");
         ASSERT_EQUALS("[test.cpp:18]: (warning) Member variable 'C::i' is not initialized in the constructor.\n"
                       "[test.cpp:25]: (warning) Member variable 'D::i' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar30() { // ticket #6417
+        check("namespace NS {\n"
+              "    class MyClass {\n"
+              "    public:\n"
+              "        MyClass();\n"
+              "        ~MyClass();\n"
+              "    private:\n"
+              "        bool SomeVar;\n"
+              "    };\n"
+              "}\n"
+              "using namespace NS;\n"
+              "MyClass::~MyClass() { }\n"
+              "MyClass::MyClass() : SomeVar(false) { }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarArray1() {
