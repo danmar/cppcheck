@@ -799,7 +799,7 @@ private:
         ASSERT_EQUALS(true, MathLib::isNullValue("0LL"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0LL"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-0LL"));
-        // long long unsigend zero value
+        // long long unsigned zero value
         ASSERT_EQUALS(true, MathLib::isNullValue("0LLU"));
         ASSERT_EQUALS(true, MathLib::isNullValue("+0LLU"));
         ASSERT_EQUALS(true, MathLib::isNullValue("-0LLU"));
