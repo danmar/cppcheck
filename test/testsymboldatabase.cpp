@@ -128,6 +128,7 @@ private:
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
         TEST_CASE(staticMemberVar);
+        TEST_CASE(getVariableFromVarIdBoundsCheck);
 
         TEST_CASE(hasRegularFunction);
         TEST_CASE(hasInlineClassFunction);
@@ -748,6 +749,18 @@ private:
         const Variable* v = db->getVariableFromVarId(1);
         ASSERT(v && db->getVariableListSize() == 2);
         ASSERT(v && v->isStatic() && v->isConst() && v->isPrivate());
+    }
+
+    void getVariableFromVarIdBoundsCheck() {
+        GET_SYMBOL_DB("int x;\n"
+                      "int y;\n");
+
+        const Variable* v = db->getVariableFromVarId(2);
+        // three elements: varId 0 also counts via a fake-entry
+        ASSERT(v && db->getVariableListSize() == 3);
+
+        const Variable* v_must_be_null = db->getVariableFromVarId(3);
+        ASSERT(v_must_be_null == nullptr);
     }
 
     void hasRegularFunction() {

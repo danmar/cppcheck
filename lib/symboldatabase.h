@@ -968,6 +968,9 @@ public:
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {
+        if (varId >= _variableList.size())
+            return nullptr;
+
         return _variableList[varId];
     }
 
