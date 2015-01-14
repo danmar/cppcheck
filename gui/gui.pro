@@ -15,7 +15,7 @@ contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT
 }
-LIBS += -L../externals
+LIBS += -L$$PWD/../externals
 
 DESTDIR = .
 RCC_DIR = temp
@@ -148,4 +148,10 @@ win32 {
 
 contains(QMAKE_CC, gcc) {
     QMAKE_CXXFLAGS += -std=c++0x
+}
+
+macx {
+    contains(QMAKE_CXX, clang++) {
+        QMAKE_CXXFLAGS += -std=c++11
+    }
 }
