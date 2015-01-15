@@ -20,6 +20,7 @@
 #include "testutils.h"
 #include "symboldatabase.h"
 #include <sstream>
+#include <stdexcept>
 
 #define GET_SYMBOL_DB(code) \
     errout.str(""); \
@@ -759,8 +760,7 @@ private:
         // three elements: varId 0 also counts via a fake-entry
         ASSERT(v && db->getVariableListSize() == 3);
 
-        const Variable* v_must_be_null = db->getVariableFromVarId(3);
-        ASSERT(v_must_be_null == nullptr);
+        ASSERT_THROW(db->getVariableFromVarId(3), std::out_of_range);
     }
 
     void hasRegularFunction() {
