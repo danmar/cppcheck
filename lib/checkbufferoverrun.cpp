@@ -1220,12 +1220,12 @@ void CheckBufferOverrun::checkStructVariable()
                     // If struct is declared in a function then check
                     // if scope_func matches
                     if (scope->nestedIn->type == Scope::eFunction &&
-                        scope->nestedIn != &*func_scope) {
+                        scope->nestedIn != func_scope) {
                         continue;
                     }
 
                     // check for member variables
-                    if (func_scope->functionOf == &*scope) {
+                    if (func_scope->functionOf == scope) {
                         // only check non-empty function
                         if (func_scope->classStart->next() != func_scope->classEnd) {
                             // start checking after the {

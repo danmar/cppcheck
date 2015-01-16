@@ -1087,7 +1087,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         // varId, usage {read, write, modified}
         Variables variables;
 
-        checkFunctionVariableUsage_iterateScopes(&*scope, variables, false);
+        checkFunctionVariableUsage_iterateScopes(scope, variables, false);
 
 
         // Check usage of all variables in the current scope..
