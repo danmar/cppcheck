@@ -176,6 +176,8 @@ private:
 
         TEST_CASE(testReturnIgnoredReturnValue);
         TEST_CASE(testReturnIgnoredReturnValuePosix);
+
+        TEST_CASE(ineffectivePointerOp);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -6454,6 +6456,18 @@ private:
               false  // runSimpleChecks
              );
         ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mmap() is not used.\n", errout.str());
+    }
+
+    void ineffectivePointerOp() {
+        check("int *f(int *x) {\n"
+              "    return &*x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Ineffective pointer operation on x - it's already a pointer.\n", errout.str());
+
+        check("int *f(int *y) {\n"
+              "    return &(*y);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Ineffective pointer operation on y - it's already a pointer.\n", errout.str());
     }
 };
 

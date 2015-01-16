@@ -2853,3 +2853,29 @@ void CheckOther::ignoredReturnValueError(const Token* tok, const std::string& fu
     reportError(tok, Severity::warning, "ignoredReturnValue",
                 "Return value of function " + function + "() is not used.", false);
 }
+
+void CheckOther::checkIneffectivePointerOp()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "& (| * %var%")) {
+            const Token *vartok = tok->tokAt(2);
+            if (vartok->str() == "*")
+                vartok = vartok->next();
+            const Variable *var = symbolDatabase->getVariableFromVarId(vartok->varId());
+            if (!var || !var->isPointer())
+                continue;
+
+            ineffectivePointerOpError(vartok, var->name());
+        }
+    }
+}
+
+void CheckOther::ineffectivePointerOpError(const Token* tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "ineffectivePointerOp",
+                "Ineffective pointer operation on " + varname + " - it's already a pointer.", false);
+}
