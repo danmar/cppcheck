@@ -1680,7 +1680,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             addNewFunction(scope, tok);
                             if (*scope) {
                                 (*scope)->functionOf = func->nestedIn;
-                                (*scope)->function = &*func;
+                                (*scope)->function = func;
                                 (*scope)->function->functionScope = *scope;
                             }
                             return;
@@ -1751,7 +1751,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                             addNewFunction(scope, tok);
                             if (*scope) {
                                 (*scope)->functionOf = scope1;
-                                (*scope)->function = &*func;
+                                (*scope)->function = func;
                                 (*scope)->function->functionScope = *scope;
                             }
                             return;

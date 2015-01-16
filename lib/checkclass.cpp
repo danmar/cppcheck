@@ -128,7 +128,7 @@ void CheckClass::constructors()
             clearAllVar(usage);
 
             std::list<const Function *> callstack;
-            initializeVarList(*func, callstack, &(*scope), usage);
+            initializeVarList(*func, callstack, scope, usage);
 
             // Check if any variables are uninitialized
             std::list<Variable>::const_iterator var;
@@ -233,14 +233,14 @@ void CheckClass::copyconstructors()
                 for (const Token* const end = func->functionScope->classStart; tok != end; tok = tok->next()) {
                     if (Token::Match(tok, "%var% ( new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
                         const Variable* var = tok->variable();
-                        if (var && var->isPointer() && var->scope() == &*scope)
+                        if (var && var->isPointer() && var->scope() == scope)
                             allocatedVars[tok->varId()] = tok;
                     }
                 }
                 for (const Token* const end = func->functionScope->classEnd; tok != end; tok = tok->next()) {
                     if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
                         const Variable* var = tok->variable();
-                        if (var && var->isPointer() && var->scope() == &*scope)
+                        if (var && var->isPointer() && var->scope() == scope)
                             allocatedVars[tok->varId()] = tok;
                     }
                 }
@@ -882,7 +882,7 @@ void CheckClass::privateFunctions()
         while (!privateFuncs.empty()) {
             const std::string& funcName = privateFuncs.front()->tokenDef->str();
             // Check that all private functions are used
-            bool used = checkFunctionUsage(funcName, &*scope); // Usage in this class
+            bool used = checkFunctionUsage(funcName, scope); // Usage in this class
             // Check in friend classes
             const std::list<Type::FriendInfo>& friendList = scope->definedType->friendList;
             for (std::list<Type::FriendInfo>::const_iterator it = friendList.begin(); !used && it != friendList.end(); ++it) {
@@ -981,18 +981,18 @@ void CheckClass::checkMemset()
                     typeTok = typeTok->next();
 
                 if (!type) {
-                    const Type* t = symbolDatabase->findVariableType(&(*scope), typeTok);
+                    const Type* t = symbolDatabase->findVariableType(scope, typeTok);
                     if (t)
                         type = t->classScope;
                 }
 
                 if (type) {
                     std::list<const Scope *> parsedTypes;
-                    checkMemsetType(&(*scope), tok, type, false, parsedTypes);
+                    checkMemsetType(scope, tok, type, false, parsedTypes);
                 }
             } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
                 std::list<const Scope *> parsedTypes;
-                checkMemsetType(&(*scope), tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
+                checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
                 if (tok->variable()->typeScope()->numConstructors > 0 && _settings->isEnabled("warning"))
                     mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);
@@ -1163,7 +1163,7 @@ void CheckClass::operatorEqRetRefThis()
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
                 if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
-                    checkReturnPtrThis(&(*scope), &(*func), func->functionScope->classStart, func->functionScope->classEnd);
+                    checkReturnPtrThis(scope, &(*func), func->functionScope->classStart, func->functionScope->classEnd);
                 }
             }
         }
@@ -1281,7 +1281,7 @@ void CheckClass::operatorEqToSelf()
                     const Token *rhs = func->argumentList.begin()->nameToken();
 
                     if (!hasAssignSelf(&(*func), rhs)) {
-                        if (hasAllocation(&(*func), &*scope))
+                        if (hasAllocation(&(*func), scope))
                             operatorEqToSelfError(func->token);
                     }
                 }
@@ -1605,7 +1605,7 @@ void CheckClass::checkConst()
 
                 bool memberAccessed = false;
                 // if nothing non-const was found. write error..
-                if (checkConstFunc(&(*scope), &*func, memberAccessed)) {
+                if (checkConstFunc(scope, &*func, memberAccessed)) {
                     std::string classname = scope->className;
                     const Scope *nest = scope->nestedIn;
                     while (nest && nest->type != Scope::eGlobal) {
