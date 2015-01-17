@@ -74,6 +74,7 @@ public:
         checkOther.checkNanInArithmeticExpression();
         checkOther.checkCommaSeparatedReturn();
         checkOther.checkIgnoredReturnValue();
+        checkOther.checkRedundantPointerOp();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -233,6 +234,9 @@ public:
     /** @brief %Check for ignored return values. */
     void checkIgnoredReturnValue();
 
+    /** @brief %Check for redundant pointer operations */
+    void checkRedundantPointerOp();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -288,6 +292,7 @@ private:
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
+    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -345,6 +350,7 @@ private:
         c.nanInArithmeticExpressionError(0);
         c.commaSeparatedReturnError(0);
         c.ignoredReturnValueError(0, "malloc");
+        c.redundantPointerOpError(0, "varname", false);
     }
 
     static std::string myName() {
@@ -402,7 +408,8 @@ private:
                "- NaN (not a number) value used in arithmetic expression.\n"
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
-               "- identical code in both branches of if/else or ternary operator.\n";
+               "- identical code in both branches of if/else or ternary operator.\n"
+               "- redundant pointer operation on pointer like &*some_ptr.\n";
     }
 };
 /// @}

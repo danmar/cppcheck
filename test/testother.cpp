@@ -176,9 +176,11 @@ private:
 
         TEST_CASE(testReturnIgnoredReturnValue);
         TEST_CASE(testReturnIgnoredReturnValuePosix);
+
+        TEST_CASE(redundantPointerOp);
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -196,6 +198,14 @@ private:
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
         settings->standards.posix = posix;
+
+        // Preprocess file..
+        Preprocessor preprocessor(settings);
+        std::list<std::string> configurations;
+        std::string filedata = "";
+        std::istringstream fin(raw_code);
+        preprocessor.preprocess(fin, filedata, configurations, "", settings->_includePaths);
+        const std::string code = preprocessor.getcode(filedata, "", "");
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -6454,6 +6464,62 @@ private:
               false  // runSimpleChecks
              );
         ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mmap() is not used.\n", errout.str());
+    }
+
+    void redundantPointerOp() {
+        check("int *f(int *x) {\n"
+              "    return &*x;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on x - it's already a pointer.\n", errout.str());
+
+        check("int *f(int *y) {\n"
+              "    return &(*y);\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on y - it's already a pointer.\n", errout.str());
+
+        // no warning for bitwise AND
+        check("void f(int *b) {\n"
+              "    int x = 0x20 & *b;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // No message for double pointers to structs
+        check("void f(struct foo **my_struct) {\n"
+              "    char **pass_to_func = &(*my_struct)->buf;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // another double pointer to struct - with an array
+        check("void f(struct foo **my_struct) {\n"
+              "    char **pass_to_func = &(*my_struct)->buf[10];\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // double pointer to array
+        check("void f(char **ptr) {\n"
+              "    int *x = &(*ptr)[10];\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // function calls
+        check("void f(Mutex *mut) {\n"
+              "    pthread_mutex_lock(&*mut);\n"
+              "}\n", nullptr, false, false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on mut - it's already a pointer.\n", errout.str());
+
+        // make sure we got the AST match for "(" right
+        check("void f(char *ptr) {\n"
+              "    if (&*ptr == NULL)\n"
+              "        return;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on ptr - it's already a pointer.\n", errout.str());
+
+        // no warning for macros
+        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+              "void f(struct mutex *mut) {\n"
+              "    MUTEX_LOCK(*mut);\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

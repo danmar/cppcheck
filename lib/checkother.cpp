@@ -2853,3 +2853,40 @@ void CheckOther::ignoredReturnValueError(const Token* tok, const std::string& fu
     reportError(tok, Severity::warning, "ignoredReturnValue",
                 "Return value of function " + function + "() is not used.", false);
 }
+
+void CheckOther::checkRedundantPointerOp()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "&") {
+            // bail out for logical AND operator
+            if (tok->astOperand2())
+                continue;
+
+            // pointer dereference
+            const Token *astTok = tok->astOperand1();
+            if (!astTok || astTok->str() != "*")
+                continue;
+
+            // variable
+            const Token *varTok = astTok->astOperand1();
+            if (!varTok || varTok->isExpandedMacro() || varTok->varId() == 0)
+                continue;
+
+            const Variable *var = symbolDatabase->getVariableFromVarId(varTok->varId());
+            if (!var || !var->isPointer())
+                continue;
+
+            redundantPointerOpError(tok, var->name(), false);
+        }
+    }
+}
+
+void CheckOther::redundantPointerOpError(const Token* tok, const std::string &varname, bool inconclusive)
+{
+    reportError(tok, Severity::style, "redundantPointerOp",
+                "Redundant pointer operation on " + varname + " - it's already a pointer.", inconclusive);
+}
