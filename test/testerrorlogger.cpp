@@ -53,6 +53,7 @@ private:
 
         // Serialize / Deserialize inconclusive message
         TEST_CASE(SerializeInconclusiveMessage);
+        TEST_CASE(DeserializeInvalidInput);
 
         TEST_CASE(suppressUnmatchedSuppressions);
     }
@@ -258,6 +259,11 @@ private:
         ASSERT_EQUALS(true, msg2._inconclusive);
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
+    }
+
+    void DeserializeInvalidInput() const {
+        ErrorMessage msg;
+        ASSERT_THROW(msg.deserialize("500foobar"), InternalError);
     }
 
     void suppressUnmatchedSuppressions() {

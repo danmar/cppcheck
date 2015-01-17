@@ -148,6 +148,9 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             break;
     }
 
+    if (results.size() != 4)
+        throw InternalError(0, "Internal Error: Deserialization of error message failed");
+
     _id = results[0];
     _severity = Severity::fromString(results[1]);
     _shortMessage = results[2];
