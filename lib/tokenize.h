@@ -195,6 +195,12 @@ public:
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
 
+    /** Remove undefined macro in class definition:
+      * class DLLEXPORT Fred { };
+      * class Fred FINAL : Base { };
+      */
+    void removeMacroInClassDef();
+
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
 

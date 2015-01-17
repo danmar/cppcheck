@@ -3378,6 +3378,11 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
 
+    // remove undefined macro in class definition:
+    // class DLLEXPORT Fred { };
+    // class Fred FINAL : Base { };
+    removeMacroInClassDef();
+
     // remove __attribute__((?))
     simplifyAttribute();
 
@@ -4061,6 +4066,22 @@ void Tokenizer::removeMacrosInGlobalScope()
             tok = tok->link();
     }
 }
+
+//---------------------------------------------------------------------------
+
+void Tokenizer::removeMacroInClassDef()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "class|struct %var% %var% {|:") &&
+            (tok->next()->isUpperCaseName() || tok->tokAt(2)->isUpperCaseName())) {
+            if (tok->next()->isUpperCaseName() && !tok->tokAt(2)->isUpperCaseName())
+                tok->deleteNext();
+            else if (!tok->next()->isUpperCaseName() && tok->tokAt(2)->isUpperCaseName())
+                tok->next()->deleteNext();
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
 
 void Tokenizer::removeMacroInVarDecl()

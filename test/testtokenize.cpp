@@ -472,6 +472,8 @@ private:
         TEST_CASE(astlambda);
 
         TEST_CASE(startOfExecutableScope);
+
+        TEST_CASE(removeMacroInClassDef); // #6058
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8710,6 +8712,11 @@ private:
         ASSERT(isStartOfExecutableScope(2, "foo() : a(1), b(2) { }"));
         ASSERT(isStartOfExecutableScope(2, "foo() : a{1} { }"));
         ASSERT(isStartOfExecutableScope(2, "foo() : a{1}, b{2} { }"));
+    }
+
+    void removeMacroInClassDef() { // #6058
+        ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred { } ;"));
+        ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
     }
 
 };

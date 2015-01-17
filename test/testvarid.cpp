@@ -1889,7 +1889,7 @@ private:
 
         // #6058
         ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: class CPPCHECKLIB Scope { } ;\n",
+                      "1: class Scope { } ;\n",
                       tokenize("class CPPCHECKLIB Scope { };"));
 
         // #6073
