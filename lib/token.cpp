@@ -1250,7 +1250,12 @@ static std::string indent(const unsigned int indent1, const unsigned int indent2
 
 std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
 {
-    std::string ret = _str + "\n";
+    std::string ret;
+
+    if (isExpandedMacro())
+        ret += "$";
+    ret += _str + "\n";
+
     if (_astOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
         if (indent1==indent2 && !_astOperand2)
