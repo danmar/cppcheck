@@ -54,6 +54,7 @@ private:
         // Serialize / Deserialize inconclusive message
         TEST_CASE(SerializeInconclusiveMessage);
         TEST_CASE(DeserializeInvalidInput);
+        TEST_CASE(SerializeSanitize);
 
         TEST_CASE(suppressUnmatchedSuppressions);
     }
@@ -264,6 +265,24 @@ private:
     void DeserializeInvalidInput() const {
         ErrorMessage msg;
         ASSERT_THROW(msg.deserialize("500foobar"), InternalError);
+    }
+
+    void SerializeSanitize() const {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        ErrorMessage msg(locs, Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", false);
+
+        ASSERT_EQUALS(std::string("7 errorId") +
+                      std::string("5 error") +
+                      std::string("33 Illegal character in \"foo\\001bar\"") +
+                      std::string("33 Illegal character in \"foo\\001bar\"") +
+                      std::string("0 "), msg.serialize());
+
+        ErrorMessage msg2;
+        msg2.deserialize(msg.serialize());
+        ASSERT_EQUALS("errorId", msg2._id);
+        ASSERT_EQUALS(Severity::error, msg2._severity);
+        ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
+        ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());
     }
 
     void suppressUnmatchedSuppressions() {
