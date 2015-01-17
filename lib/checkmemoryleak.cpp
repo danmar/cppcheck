@@ -2278,9 +2278,9 @@ void CheckMemoryLeakInClass::check()
                 const Token *tok = var->typeStartToken();
                 if (tok->isStandardType()) {
                     if (var->isPrivate())
-                        checkPublicFunctions(&(*scope), var->nameToken());
+                        checkPublicFunctions(scope, var->nameToken());
 
-                    variable(&(*scope), var->nameToken());
+                    variable(scope, var->nameToken());
                 }
 
                 // known class?
@@ -2288,9 +2288,9 @@ void CheckMemoryLeakInClass::check()
                     // not derived?
                     if (var->type()->derivedFrom.empty()) {
                         if (var->isPrivate())
-                            checkPublicFunctions(&(*scope), var->nameToken());
+                            checkPublicFunctions(scope, var->nameToken());
 
-                        variable(&(*scope), var->nameToken());
+                        variable(scope, var->nameToken());
                     }
                 }
             }
