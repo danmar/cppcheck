@@ -148,7 +148,7 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag_) const {
+    bool getFlag(unsigned int flag_) const {
         return bool((_flags & flag_) != 0);
     }
 
@@ -157,7 +157,7 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(int flag_, bool state_) {
+    void setFlag(unsigned int flag_, bool state_) {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
@@ -541,7 +541,7 @@ private:
     AccessControl _access;  // public/protected/private
 
     /** @brief flags */
-    int _flags;
+    unsigned int _flags;
 
     /** @brief pointer to user defined type info (for known types) */
     const Type *_type;
@@ -581,7 +581,7 @@ class CPPCHECKLIB Function {
      * @param flag flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag) const {
+    bool getFlag(unsigned int flag) const {
         return bool((flags & flag) != 0);
     }
 
@@ -590,7 +590,7 @@ class CPPCHECKLIB Function {
      * @param flag flag to set state
      * @param state new state of flag
      */
-    void setFlag(int flag, bool state) {
+    void setFlag(unsigned int flag, bool state) {
         flags = state ? flags | flag : flags & ~flag;
     }
 
