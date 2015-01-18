@@ -1955,6 +1955,9 @@ void Tokenizer::simplifySQL()
 
 void Tokenizer::simplifyDebugNew()
 {
+    if (!_settings->isWindowsPlatform())
+        return;
+
     // convert Microsoft DEBUG_NEW macro to new
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "DEBUG_NEW")
