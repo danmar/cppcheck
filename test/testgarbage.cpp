@@ -69,6 +69,7 @@ private:
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
+        TEST_CASE(templateSimplifierCrashes);
     }
 
     std::string checkCode(const char code[], const char filename[] = "test.cpp") {
@@ -379,6 +380,77 @@ private:
                   "b[i + 3] = a[i] * {}"); // Don't hang (#5787)
 
         checkCode("START_SECTION([EXTRA](bool isValid(const String &filename)))"); // Don't crash (#5991)
+    }
+
+    void templateSimplifierCrashes() {
+        checkCode( //5950
+            "struct A { \n"
+            "  template <class T> operator T*();\n"
+            "}; \n"
+            "\n"
+            "template <> A::operator char*(){ return 0; } // specialization\n"
+            "\n"
+            "int main() { \n"
+            "  A a;\n"
+            "  int *ip = a.operator int*();\n"
+            "}\n"
+            "\n"
+            "namespace PR5742 {\n"
+            "  template <class T> struct A { };\n"
+            "  struct S {\n"
+            "    template <class T> operator T();\n"
+            "  } s;\n"
+            "  void f() {\n"
+            "    s.operator A<A<int> >();\n"
+            "  }\n"
+            "}\n");
+
+        checkCode( // 6034
+            "template<template<typename...> class T, typename... Args>\n"
+            "struct foo<T<Args...> > {\n"
+            "    const bool value = true;\n"
+            "};\n"
+            "\n"
+            "template<int I>\n"
+            "struct int_\n"
+            "{};\n"
+            "\n"
+            "int main() {\n"
+            "  foo<int_<0> >::value;\n"
+            "}\n"
+        );
+
+        checkCode(" > template < . > struct Y < T > { = } ;\n"); //6108
+
+        checkCode( // 6117
+            "template <typename ...> struct something_like_tuple\n"
+            "{};\n"
+            "template <typename, typename> struct is_last {\n"
+            "  static const bool value = false;\n"
+            "};\n"
+            "template <typename T, template <typename ...> class Tuple, typename ... Head>\n"
+            "struct is_last<T, Tuple<Head ..., T>>\n"
+            "{\n"
+            "  static const bool value = true;\n"
+            "};\n"
+            "\n"
+            "#define SA(X) static_assert (X, #X)\n"
+            "\n"
+            "typedef something_like_tuple<char, int, float> something_like_tuple_t;\n"
+            "SA ((is_last<float, something_like_tuple_t>::value == false));\n"
+            "SA ((is_last<int, something_like_tuple_t>::value == false));\n"
+        );
+
+        checkCode( //6225
+            "template <typename...>\n"
+            "void templ_fun_with_ty_pack() {}\n"
+            " \n"
+            "namespace PR20047 {\n"
+            "        template <typename T>\n"
+            "        struct A {};\n"
+            "        using AliasA = A<T>;\n"
+            "}\n"
+        );
     }
 };
 
