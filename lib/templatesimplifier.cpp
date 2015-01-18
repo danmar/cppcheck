@@ -658,6 +658,11 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 if (indentlevel < 0)
                     break;
             }
+            // something went wrong, don't call eraseTokens()
+            // with a nullptr "end" parameter (=all remaining tokens).
+            if (!tok2)
+                continue;
+
             Token::eraseTokens(eqtok, tok2);
             eqtok->deleteThis();
         }
