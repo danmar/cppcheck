@@ -749,7 +749,7 @@ private:
         ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
-    void isdec(void) {
+    void isdec(void) const {
         // positive testing
         ASSERT_EQUALS(true, MathLib::isDec("1"));
         ASSERT_EQUALS(true, MathLib::isDec("+1"));
@@ -935,7 +935,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
     }
 
-    void incdec() {
+    void incdec() const {
         // increment
         {
             MathLib::biguint num = ~10U;
@@ -956,16 +956,16 @@ private:
         ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
     }
 
-    void sin() {
+    void sin() const {
         ASSERT_EQUALS("0.0"   , MathLib::sin("0"));
     }
-    void cos() {
+    void cos() const {
         ASSERT_EQUALS("1.0"   , MathLib::cos("0"));
     }
-    void tan() {
+    void tan() const {
         ASSERT_EQUALS("0.0"   , MathLib::tan("0"));
     }
-    void abs() {
+    void abs() const {
         ASSERT_EQUALS("0.0"   , MathLib::abs("0"));
         ASSERT_EQUALS("0.0"   , MathLib::abs("+0"));
         ASSERT_EQUALS("0.0"   , MathLib::abs("-0"));
@@ -975,7 +975,7 @@ private:
         ASSERT_EQUALS("1.0"   , MathLib::abs("-1.0"));
     }
 
-    void toString() {
+    void toString() const {
         ASSERT_EQUALS("0.0"   , MathLib::toString(0.0));
         ASSERT_EQUALS("0.0"   , MathLib::toString(+0.0));
         ASSERT_EQUALS("0.0"   , MathLib::toString(-0.0));
