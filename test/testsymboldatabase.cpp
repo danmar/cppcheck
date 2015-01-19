@@ -225,6 +225,7 @@ private:
         TEST_CASE(symboldatabase47); // #6308
         TEST_CASE(symboldatabase48); // #6417
         TEST_CASE(symboldatabase49); // #6424
+        TEST_CASE(symboldatabase50); // #6432
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -2089,6 +2090,29 @@ private:
         ASSERT_EQUALS(true, db && f && f->variable());
         f = Token::findsimplematch(tokenizer.tokens(), "f2");
         ASSERT_EQUALS(true, db && f && f->function());
+    }
+
+    void symboldatabase50() { // #6432
+        GET_SYMBOL_DB("template <bool del, class T>\n"
+                      "class _ConstTessMemberResultCallback_0_0<del, void, T>\n"
+                      "   {\n"
+                      " public:\n"
+                      "  typedef void (T::*MemberSignature)() const;\n"
+                      "\n"
+                      " private:\n"
+                      "  const T* object_;\n"
+                      "  MemberSignature member_;\n"
+                      "\n"
+                      " public:\n"
+                      "  inline _ConstTessMemberResultCallback_0_0(\n"
+                      "      const T* object, MemberSignature member)\n"
+                      "    : object_(object),\n"
+                      "      member_(member) {\n"
+                      "  }\n"
+                      "};");
+        ASSERT(db != nullptr);
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "_ConstTessMemberResultCallback_0_0 (");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->isConstructor());
     }
 
     void isImplicitlyVirtual() {

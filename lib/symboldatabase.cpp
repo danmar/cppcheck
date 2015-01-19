@@ -52,7 +52,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::") &&
+        if (Token::Match(tok, "class|struct|union|namespace ::| %var% {|:|::|<") &&
             tok->strAt(-1) != "friend") {
             const Token *tok2 = tok->tokAt(2);
 
@@ -61,6 +61,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
             while (tok2 && tok2->str() == "::")
                 tok2 = tok2->tokAt(2);
+
+            // skip over template args
+            if (tok2 && tok2->str() == "<" && tok2->link())
+                tok2 = tok2->link()->next();
 
             // make sure we have valid code
             if (!tok2 || !Token::Match(tok2, "{|:")) {
