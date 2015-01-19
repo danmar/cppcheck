@@ -224,6 +224,7 @@ private:
         TEST_CASE(symboldatabase46); // #6171 (anonymous namespace)
         TEST_CASE(symboldatabase47); // #6308
         TEST_CASE(symboldatabase48); // #6417
+        TEST_CASE(symboldatabase49); // #6424
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -2076,6 +2077,18 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "~ MyClass ( ) ;");
         f = f->next();
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4  && f->function()->token->linenr() == 8);
+    }
+
+    void symboldatabase49() { // #6424
+        GET_SYMBOL_DB("namespace Ns { class C; }\n"
+                      "void f1() { char *p; *p = 0; }\n"
+                      "class Ns::C* p;\n"
+                      "void f2() { char *p; *p = 0; }\n");
+        ASSERT(db != nullptr);
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "p ; void f2");
+        ASSERT_EQUALS(true, db && f && f->variable());
+        f = Token::findsimplematch(tokenizer.tokens(), "f2");
+        ASSERT_EQUALS(true, db && f && f->function());
     }
 
     void isImplicitlyVirtual() {

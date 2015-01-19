@@ -74,6 +74,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     else if (Token::Match(tok2->next(), "(|{") &&
                              tok2->next()->link()->strAt(1) == ";")
                         tok = tok2->next()->link()->next();
+                    // skip variable declaration
+                    else if (Token::Match(tok2, "*|&"))
+                        continue;
                     else
                         break; // bail
                     continue;
@@ -2768,7 +2771,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
     // the start of the type tokens does not include the above modifiers
     const Token *typestart = tok;
 
-    if (Token::Match(tok, "struct|union")) {
+    if (Token::Match(tok, "class|struct|union")) {
         tok = tok->next();
     }
 

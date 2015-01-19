@@ -69,6 +69,7 @@ private:
         TEST_CASE(uninitvar2_malloc);    // malloc returns uninitialized data
         TEST_CASE(uninitvar7); // ticket #5971
         TEST_CASE(uninitvar8); // ticket #6230
+        TEST_CASE(uninitvar9); // ticket #6424
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2708,6 +2709,16 @@ private:
                             "}";
         checkUninitVar2(code, "test.cpp");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar9() { // 6424
+        const char code[] = "namespace Ns { class C; }\n"
+                            "void f1() { char *p; *p = 0; }\n"
+                            "class Ns::C* p;\n"
+                            "void f2() { char *p; *p = 0; }";
+        checkUninitVar2(code, "test.cpp");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: p\n"
+                      "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
     }
 
     // Handling of function calls
