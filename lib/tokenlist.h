@@ -126,7 +126,7 @@ public:
     */
     unsigned long long calculateChecksum() const;
 
-    void createAst() const;
+    void createAst();
 
 private:
     /** Disable copy constructor, no implementation */
