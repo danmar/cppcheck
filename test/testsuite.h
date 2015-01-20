@@ -71,7 +71,7 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     void run(const std::string &str);
-    void warn(const char msg[]);
+    void warn(const char msg[]) const;
     void warnUnsimplified(const std::string& unsimplified, const std::string& simplified);
 
     TestFixture(const std::string &_name);

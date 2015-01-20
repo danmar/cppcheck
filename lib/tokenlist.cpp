@@ -963,7 +963,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     return tok;
 }
 
-void TokenList::createAst()
+void TokenList::createAst() const
 {
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
         tok = createAstAtToken(tok, isCPP());

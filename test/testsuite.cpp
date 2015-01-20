@@ -245,7 +245,7 @@ void TestFixture::run(const std::string &str)
         run();
 }
 
-void TestFixture::warn(const char msg[])
+void TestFixture::warn(const char msg[]) const
 {
     warnings << "Warning: " << currentTest << " " << msg << std::endl;
 }
