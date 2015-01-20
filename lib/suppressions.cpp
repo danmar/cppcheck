@@ -265,13 +265,12 @@ bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::stri
     return _suppressions[errorId].isSuppressedLocal(file, line);
 }
 
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, bool unusedFunctionChecking) const
+std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
-    (void)unusedFunctionChecking;
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
-        if (i->first == "unusedFunction")
-            continue;  // unusedFunction is not a "local" suppression
+        if (!unusedFunctionChecking && i->first == "unusedFunction")
+            continue;
 
         std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(file);
         if (f != i->second._files.end()) {
@@ -285,7 +284,7 @@ std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppres
     return r;
 }
 
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions(bool unusedFunctionChecking) const
+std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
     std::list<SuppressionEntry> r;
     for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {

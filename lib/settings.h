@@ -72,6 +72,11 @@ public:
     /** @brief Inconclusive checks */
     bool inconclusive;
 
+    /** @brief Collect unmatched suppressions in one run.
+      * This delays the reporting until all files are checked.
+      * It is needed by checks that analyse the whole code base. */
+    bool jointSuppressionReport;
+
     /**
      * When this flag is false (default) then experimental
      * heuristics and checks are disabled.

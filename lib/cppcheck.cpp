@@ -246,8 +246,11 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         internalError(filename, e.errorMessage);
     }
 
-    if (_settings.isEnabled("information") || _settings.checkConfiguration)
-        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, _settings._jobs == 1 && _settings.isEnabled("unusedFunction")));
+    // In jointSuppressionReport mode, unmatched suppressions are
+    // collected after all files are processed
+    if (!_settings.jointSuppressionReport && (_settings.isEnabled("information") || _settings.checkConfiguration)) {
+        reportUnmatchedSuppressions(_settings.nomsg.getUnmatchedLocalSuppressions(filename, unusedFunctionCheckIsEnabled()));
+    }
 
     _errorList.clear();
     return exitcode;
@@ -677,8 +680,12 @@ void CppCheck::getErrorMessages()
 
 void CppCheck::analyseWholeProgram()
 {
-    // Analyse the tokens..
+    // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         (*it)->analyseWholeProgram(fileInfo, *this);
 }
 
+bool CppCheck::unusedFunctionCheckIsEnabled() const
+{
+    return (_settings._jobs == 1 && _settings.isEnabled("unusedFunction"));
+}

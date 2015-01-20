@@ -28,6 +28,7 @@
 
 #include <string>
 #include <list>
+#include <vector>
 #include <istream>
 
 class Tokenizer;
@@ -131,6 +132,10 @@ public:
 
     /** analyse whole program, run this after all TUs has been scanned. */
     void analyseWholeProgram();
+
+    /** Check if the user wants to check for unused functions
+     * and if it's possible at all */
+    bool unusedFunctionCheckIsEnabled() const;
 
 private:
 
