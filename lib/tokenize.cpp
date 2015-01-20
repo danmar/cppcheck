@@ -2761,7 +2761,7 @@ void Tokenizer::setVarId()
     }
 
     // class members..
-    std::map<std::string, std::map<std::string, unsigned int>> varlist;
+    std::map<std::string, std::map<std::string, unsigned int> > varlist;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "namespace|class|struct %var% {|:")) {
             const std::string &classname(tok->next()->str());
