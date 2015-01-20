@@ -3167,7 +3167,7 @@ private:
         }
     }
 
-    void line2() {
+    void line2() const {
         const char code[] = "#line 8 \"c:\\a.h\"\n"
                             "123\n";
 

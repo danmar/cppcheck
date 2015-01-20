@@ -540,7 +540,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isHex(""));
     }
 
-    void isValidSuffix(void) {
+    void isValidSuffix(void) const {
         // negative testing
         std::string value = "ux";
         ASSERT_EQUALS(false, MathLib::isValidSuffix(value.begin(), value.end()));
