@@ -296,7 +296,6 @@ private:
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
         TEST_CASE(executionPaths3);   // no FP for function parameter
-        TEST_CASE(executionPaths4);   // Ticket #2386 - Segmentation fault in the ExecutionPath handling
         TEST_CASE(executionPaths5);   // Ticket #2920 - False positive when size is unknown
         TEST_CASE(executionPaths6);   // unknown types
 
@@ -3897,15 +3896,6 @@ private:
                 "    }\n"
                 "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void executionPaths4() {
-        // Ticket #2386 - Segmentation fault upon strange syntax
-        ASSERT_THROW(epcheck("void f() {\n"
-                             "    switch ( x ) {\n"
-                             "        case struct Tree : break;\n"
-                             "    }\n"
-                             "}"), InternalError);
     }
 
     void executionPaths5() {

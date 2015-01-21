@@ -80,7 +80,6 @@ private:
         TEST_CASE(nullpointerStdStream);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
-        TEST_CASE(crash1);
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
@@ -2502,13 +2501,6 @@ private:
               "    int var1 = x ? *p : 5;\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
-    }
-
-
-    void crash1() {
-        ASSERT_THROW(check("int f() {\n"
-                           "    return if\n"
-                           "}"), InternalError);
     }
 
     void nullpointer_internal_error() { // ticket #5080

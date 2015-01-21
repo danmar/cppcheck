@@ -178,7 +178,6 @@ private:
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
         TEST_CASE(constructors_crash1);    // ticket #5641
-        TEST_CASE(invalidInitializerList); // ticket #5702
     }
 
 
@@ -3138,14 +3137,6 @@ private:
               "  C(const C&) _STLP_NOTHROW {}\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidInitializerList() {
-        // 5702
-        ASSERT_THROW(check("struct R1 {\n"
-                           "  int a;\n"
-                           "  R1 () : a { }\n"
-                           "};\n"), InternalError);
     }
 };
 

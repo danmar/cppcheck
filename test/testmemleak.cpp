@@ -198,7 +198,6 @@ private:
 
         TEST_CASE(switch2);
         TEST_CASE(switch3);
-        TEST_CASE(switch4);     // #2555 - segfault
 
         TEST_CASE(ret5);        // Bug 2458436 - return use
         TEST_CASE(ret6);
@@ -1415,17 +1414,6 @@ private:
               "    delete [] str;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: str\n", errout.str());
-    }
-
-    void switch4() {
-        // See tickets #2518 #2555 #4171
-        ASSERT_THROW(check("void f() {\n"
-                           "    switch MAKEWORD(1)\n"
-                           "    {\n"
-                           "    case 0:\n"
-                           "        return;\n"
-                           "    }\n"
-                           "}"), InternalError);
     }
 
     void ret5() {

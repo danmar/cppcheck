@@ -65,6 +65,10 @@ private:
         TEST_CASE(garbageCode22);
         TEST_CASE(garbageCode23);
         TEST_CASE(garbageCode24);  // Ticket #6361 - crash
+        TEST_CASE(garbageCode25);
+        TEST_CASE(garbageCode26);
+        TEST_CASE(garbageCode27);
+        TEST_CASE(garbageCode28);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -339,6 +343,40 @@ private:
                   "  cptr = (char *)buffer;\n"
                   "  cptr += (-(long int) buffer & (16 * sizeof (float) - 1));\n"
                   "}\n");
+    }
+
+    void garbageCode25() {
+        // Ticket #2386 - Segmentation fault upon strange syntax
+        ASSERT_THROW(checkCode("void f() {\n"
+                               "    switch ( x ) {\n"
+                               "        case struct Tree : break;\n"
+                               "    }\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode26() {
+        // See tickets #2518 #2555 #4171
+        ASSERT_THROW(checkCode("void f() {\n"
+                               "    switch MAKEWORD(1)\n"
+                               "    {\n"
+                               "    case 0:\n"
+                               "        return;\n"
+                               "    }\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode27() {
+        ASSERT_THROW(checkCode("int f() {\n"
+                               "    return if\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode28() {
+        // 5702
+        ASSERT_THROW(checkCode("struct R1 {\n"
+                               "  int a;\n"
+                               "  R1 () : a { }\n"
+                               "};\n"), InternalError);
     }
 
     void garbageValueFlow() {
