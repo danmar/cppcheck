@@ -3301,6 +3301,51 @@ private:
                         "    int b = ab.b;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
+
+        // STL class member
+        checkUninitVar2("struct A {\n"
+                        "    std::map<int, int> m;\n"
+                        "    int i;\n"
+                        "};\n"
+                        "void foo() {\n"
+                        "    A a;\n"
+                        "    x = a.m;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown type (C++)
+        checkUninitVar2("struct A {\n"
+                        "    C m;\n"
+                        "    int i;\n"
+                        "};\n"
+                        "void foo() {\n"
+                        "    A a;\n"
+                        "    x = a.m;\n"
+                        "}", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown type (C)
+        checkUninitVar2("struct A {\n"
+                        "    C m;\n"
+                        "    int i;\n"
+                        "};\n"
+                        "void foo() {\n"
+                        "    A a;\n"
+                        "    x = a.m;\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:7]: (error) Uninitialized struct member: a.m\n", errout.str());
+
+        // Type with constructor
+        checkUninitVar2("class C { C(); }\n"
+                        "struct A {\n"
+                        "    C m;\n"
+                        "    int i;\n"
+                        "};\n"
+                        "void foo() {\n"
+                        "    A a;\n"
+                        "    x = a.m;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
