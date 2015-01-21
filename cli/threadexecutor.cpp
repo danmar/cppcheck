@@ -425,7 +425,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     for (;;) {
         if (it == threadExecutor->_files.end()) {
             LeaveCriticalSection(&threadExecutor->_fileSync);
-            return result;
+            break;
 
         }
         const std::string &file = it->first;
@@ -452,15 +452,8 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             CppCheckExecutor::reportStatus(threadExecutor->_processedFiles, threadExecutor->_totalFiles, threadExecutor->_processedSize, threadExecutor->_totalFileSize);
             LeaveCriticalSection(&threadExecutor->_reportSync);
         }
-    };
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning( disable : 4702 )
-#endif
+    }
     return result;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 }
 
 void ThreadExecutor::reportOut(const std::string &outmsg)
