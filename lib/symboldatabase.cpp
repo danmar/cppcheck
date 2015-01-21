@@ -897,92 +897,99 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
-    // determine if user defined type needs initialization
-    unsigned int unknowns = 0; // stop checking when there are no unknowns
-    unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason
-
-    do {
-        unknowns = 0;
-
+    if (tokenizer->isC()) {
+        // For C code it is easy, as there are no constructors and no default values
         for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
             scope = &(*it);
-
-            if (!scope->definedType) {
-                _blankTypes.push_back(Type());
-                scope->definedType = &_blankTypes.back();
-            }
-
-            if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
-                // check for default constructor
-                bool hasDefaultConstructor = false;
-
-                std::list<Function>::const_iterator func;
-
-                for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                    if (func->type == Function::eConstructor) {
-                        // check for no arguments: func ( )
-                        if (func->argCount() == 0) {
-                            hasDefaultConstructor = true;
-                            break;
-                        }
-
-                        /** check for arguments with default values */
-                        else if (func->argCount() == func->initializedArgCount()) {
-                            hasDefaultConstructor = true;
-                            break;
-                        }
-                    }
-                }
-
-                // User defined types with user defined default constructor doesn't need initialization.
-                // We assume the default constructor initializes everything.
-                // Another check will figure out if the constructor actually initializes everything.
-                if (hasDefaultConstructor)
-                    scope->definedType->needInitialization = Type::False;
-
-                // check each member variable to see if it needs initialization
-                else {
-                    bool needInitialization = false;
-                    bool unknown = false;
-
-                    std::list<Variable>::const_iterator var;
-                    for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                        if (var->isClass()) {
-                            if (var->type()) {
-                                // does this type need initialization?
-                                if (var->type()->needInitialization == Type::True)
-                                    needInitialization = true;
-                                else if (var->type()->needInitialization == Type::Unknown)
-                                    unknown = true;
-                            }
-                        } else if (!var->hasDefault())
-                            needInitialization = true;
-                    }
-
-                    if (!unknown) {
-                        if (needInitialization)
-                            scope->definedType->needInitialization = Type::True;
-                        else
-                            scope->definedType->needInitialization = Type::False;
-                    }
-
-                    if (scope->definedType->needInitialization == Type::Unknown)
-                        unknowns++;
-                }
-            } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
+            if (scope->definedType)
                 scope->definedType->needInitialization = Type::True;
         }
+    } else {
+        // For C++, it is more difficult: Determine if user defined type needs initialization...
+        unsigned int unknowns = 0; // stop checking when there are no unknowns
+        unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason
 
-        retry++;
-    } while (unknowns && retry < 100);
+        do {
+            unknowns = 0;
 
-    // this shouldn't happen so output a debug warning
-    if (retry == 100 && _settings->debugwarnings) {
-        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            scope = &(*it);
+            for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+                scope = &(*it);
 
-            if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
-                debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
+                if (!scope->definedType) {
+                    _blankTypes.push_back(Type());
+                    scope->definedType = &_blankTypes.back();
+                }
+
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
+                    // check for default constructor
+                    bool hasDefaultConstructor = false;
+
+                    std::list<Function>::const_iterator func;
+
+                    for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+                        if (func->type == Function::eConstructor) {
+                            // check for no arguments: func ( )
+                            if (func->argCount() == 0) {
+                                hasDefaultConstructor = true;
+                                break;
+                            }
+
+                            /** check for arguments with default values */
+                            else if (func->argCount() == func->initializedArgCount()) {
+                                hasDefaultConstructor = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // User defined types with user defined default constructor doesn't need initialization.
+                    // We assume the default constructor initializes everything.
+                    // Another check will figure out if the constructor actually initializes everything.
+                    if (hasDefaultConstructor)
+                        scope->definedType->needInitialization = Type::False;
+
+                    // check each member variable to see if it needs initialization
+                    else {
+                        bool needInitialization = false;
+                        bool unknown = false;
+
+                        std::list<Variable>::const_iterator var;
+                        for (var = scope->varlist.begin(); var != scope->varlist.end() && !needInitialization; ++var) {
+                            if (var->isClass()) {
+                                if (var->type()) {
+                                    // does this type need initialization?
+                                    if (var->type()->needInitialization == Type::True)
+                                        needInitialization = true;
+                                    else if (var->type()->needInitialization == Type::Unknown)
+                                        unknown = true;
+                                }
+                            } else if (!var->hasDefault())
+                                needInitialization = true;
+                        }
+
+                        if (needInitialization)
+                            scope->definedType->needInitialization = Type::True;
+                        else if (!unknown)
+                            scope->definedType->needInitialization = Type::False;
+
+                        if (scope->definedType->needInitialization == Type::Unknown)
+                            unknowns++;
+                    }
+                } else if (scope->type == Scope::eUnion && scope->definedType->needInitialization == Type::Unknown)
+                    scope->definedType->needInitialization = Type::True;
+            }
+
+            retry++;
+        } while (unknowns && retry < 100);
+
+        // this shouldn't happen so output a debug warning
+        if (retry == 100 && _settings->debugwarnings) {
+            for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
+                scope = &(*it);
+
+                if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown)
+                    debugMessage(scope->classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
+            }
         }
     }
 
