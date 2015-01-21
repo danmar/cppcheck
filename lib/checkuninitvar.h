@@ -61,7 +61,7 @@ public:
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, bool alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const bool alloc, const std::string &membervar, const bool suppressErrors);
     void checkRhs(const Token *tok, const Variable &var, bool alloc, const std::string &membervar);
-    static bool isVariableUsage(const Token *vartok, bool ispointer, bool alloc, bool cpp);
+    bool isVariableUsage(const Token *vartok, bool ispointer, bool alloc) const;
     static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
     bool isMemberVariableUsage(const Token *tok, bool isPointer, bool alloc, const std::string &membervar) const;
 
