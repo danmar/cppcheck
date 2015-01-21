@@ -1470,7 +1470,7 @@ private:
                         "    Fred *fred = malloc(sizeof(Fred));\n"
                         "    x(fred->f);\n"
                         "};");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Memory is allocated but not initialized: fred\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVarB("void foo(char *s)\n"
                         "{\n"

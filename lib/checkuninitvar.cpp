@@ -1438,7 +1438,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         }
 
         // bailout on ternary operator. TODO: This can be solved much better. For example, if the variable is not accessed in the branches of the ternary operator, we could just continue.
-        if (Token::Match(tok, "?")) {
+        if (tok->str() == "?") {
             return true;
         }
 
@@ -1705,6 +1705,12 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
             if (parent->str() == "=") {
                 assignment = true;
                 break;
+            }
+            if (alloc && parent->str() == "(") {
+                if (_settings->library.functionpure.find(parent->strAt(-1)) == _settings->library.functionpure.end()) {
+                    assignment = true;
+                    break;
+                }
             }
             parent = parent->astParent();
         }
