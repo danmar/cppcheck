@@ -620,7 +620,7 @@ private:
                         "    a = 1;\n"
                         "    longjmp(env, 1);\n"
                         "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // macro_for..
         checkUninitVarB("int foo()\n"

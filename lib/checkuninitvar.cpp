@@ -1432,8 +1432,8 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             return true;
         }
 
-        // bailout if there is assembler code
-        if (Token::simpleMatch(tok, "asm (")) {
+        // bailout if there is assembler code or setjmp
+        if (Token::Match(tok, "asm|setjmp (")) {
             return true;
         }
 
