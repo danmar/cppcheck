@@ -1495,6 +1495,11 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     *alloc = true;
                 continue;
             }
+            if (var.isPointer() && (_tokenizer->isC() || var.typeStartToken()->isStandardType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::Match(tok->next(), "= new")) {
+                if (alloc)
+                    *alloc = true;
+                continue;
+            }
 
 
             if (!membervar.empty()) {
@@ -1676,7 +1681,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, bool alloc,
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool alloc) const
 {
-    if (!alloc && vartok->previous()->str() == "return" && vartok->strAt(1) != "=")
+    if (!alloc && ((Token::Match(vartok->previous(), "return|delete") && vartok->strAt(1) != "=") || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
         return true;
 
     // Passing variable to typeof/__alignof__
