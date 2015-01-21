@@ -120,7 +120,7 @@ void SettingsDialog::InitTranslationsList()
         item->setText(translation.mName);
         item->setData(LangCodeRole, QVariant(translation.mCode));
         mUI.mListLanguages->addItem(item);
-        if (translation.mCode == current)
+        if (translation.mCode == current || translation.mCode == current.mid(0, 2))
             mUI.mListLanguages->setCurrentItem(item);
     }
 }
