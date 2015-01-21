@@ -92,10 +92,10 @@ private:
         TEST_CASE(stdcfg_wcstombs);
         TEST_CASE(stdcfg_tmpnam);
 
+        TEST_CASE(uninitvar_posix_write);
+
         // dead pointer
         TEST_CASE(deadPointer);
-
-        TEST_CASE(uninitvar_posix_write);
     }
 
     void checkUninitVar(const char code[], const char filename[] = "test.cpp") {
@@ -111,6 +111,34 @@ private:
         // Check code..
         CheckUninitVar check(&tokenizer, &settings, this);
         check.executionPaths();
+    }
+
+
+    /** New checking that doesn't rely on ExecutionPath */
+    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool verify = true, bool debugwarnings = false) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        settings.experimental = true;
+        settings.debugwarnings = debugwarnings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, fname);
+
+        const std::string str1(tokenizer.tokens()->stringifyList(0, true));
+        tokenizer.simplifyTokenList2();
+        const std::string str2(tokenizer.tokens()->stringifyList(0, true));
+        if (verify && str1 != str2)
+            warnUnsimplified(str1, str2);
+
+        // Check for redundant code..
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        checkuninitvar.testrunner = true;
+        checkuninitvar.check();
+
+        settings.debugwarnings = false;
+        settings.experimental = true;
     }
 
     void uninitvar1() {
@@ -2073,35 +2101,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
-    /** New checking that doesn't rely on ExecutionPath */
-    void checkUninitVar2(const char code[], const char fname[] = "test.cpp", bool verify=true, bool debugwarnings=false) {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Tokenize..
-        Settings settings1(settings);
-        settings1.inconclusive = true;
-        settings1.standards.posix = true;
-        settings1.experimental = true;
-        settings1.debugwarnings = debugwarnings;
-        Tokenizer tokenizer(&settings1, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, fname);
-
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-        tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-        if (verify && str1 != str2)
-            warnUnsimplified(str1, str2);
-
-        // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
-        checkuninitvar.testrunner = true;
-        checkuninitvar.check();
-    }
-
     void uninitvar2() {
         // using uninit var
         checkUninitVar2("void f() {\n"
@@ -3933,50 +3932,6 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: ptr\n", "", errout.str());
     }
 
-    void checkDeadPointer(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
-
-        // Check code..
-        CheckUninitVar check(&tokenizer, &settings, this);
-        check.deadPointer();
-    }
-
-    void deadPointer() {
-        checkDeadPointer("void f() {\n"
-                         "  int *p = p1;\n"
-                         "  if (cond) {\n"
-                         "    int x;\n"
-                         "    p = &x;\n"
-                         "  }\n"
-                         "  *p = 0;\n"
-                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'p' is dead if it has been assigned '&x' at line 5.\n", errout.str());
-
-        // FP: don't warn in subfunction
-        checkDeadPointer("void f(struct KEY *key) {\n"
-                         "  key->x = 0;\n"
-                         "}\n"
-                         "\n"
-                         "int main() {\n"
-                         "  struct KEY *tmp = 0;\n"
-                         "  struct KEY k;\n"
-                         "\n"
-                         "  if (condition) {\n"
-                         "    tmp = &k;\n"
-                         "  } else {\n"
-                         "  }\n"
-                         "  f(tmp);\n"
-                         "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void uninitvar_posix_write() { // #6325
         // Load posix library file
         LOAD_LIB_2(settings.library, "posix.cfg");
@@ -4033,6 +3988,50 @@ private:
                         "{\n"
                         "    write(STDOUT_FILENO, buf, nbytes);\n"
                         "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkDeadPointer(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check code..
+        CheckUninitVar check(&tokenizer, &settings, this);
+        check.deadPointer();
+    }
+
+    void deadPointer() {
+        checkDeadPointer("void f() {\n"
+                         "  int *p = p1;\n"
+                         "  if (cond) {\n"
+                         "    int x;\n"
+                         "    p = &x;\n"
+                         "  }\n"
+                         "  *p = 0;\n"
+                         "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'p' is dead if it has been assigned '&x' at line 5.\n", errout.str());
+
+        // FP: don't warn in subfunction
+        checkDeadPointer("void f(struct KEY *key) {\n"
+                         "  key->x = 0;\n"
+                         "}\n"
+                         "\n"
+                         "int main() {\n"
+                         "  struct KEY *tmp = 0;\n"
+                         "  struct KEY k;\n"
+                         "\n"
+                         "  if (condition) {\n"
+                         "    tmp = &k;\n"
+                         "  } else {\n"
+                         "  }\n"
+                         "  f(tmp);\n"
+                         "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
