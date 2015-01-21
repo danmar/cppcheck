@@ -1671,7 +1671,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, bool alloc,
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool alloc) const
 {
-    if (!alloc && vartok->previous()->str() == "return")
+    if (!alloc && vartok->previous()->str() == "return" && vartok->strAt(1) != "=")
         return true;
 
     // Passing variable to typeof/__alignof__
@@ -1690,7 +1690,10 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                 tok2 = tok2->tokAt(2);
             if (Token::Match(tok2, "[,)]"))
                 return false;
+        } else if (pointer && Token::Match(vartok, "%var% . %var% (")) {
+            return true;
         }
+
         bool assignment = false;
         const Token* parent = vartok->astParent();
         while (parent) {
@@ -1750,9 +1753,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
-        if (_tokenizer->isCPP() && vartok->previous()->str() == ">>") {
-            // assume that variable is initialized
-            return false;
+        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
+            if (Token::Match(vartok->previous()->astOperand1(), ">>|<<"))
+                return false; // Looks like stream operator
+            const Variable *var = vartok->tokAt(-2)->variable();
+            return (var && var->typeStartToken()->isStandardType());
         }
 
         // is there something like: ; "*((&var ..expr.. ="  => the variable is assigned
@@ -1808,11 +1813,6 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
         // if this is not a function parameter report this dereference as variable usage
         if (!functionParameter)
             return true;
-    }
-
-    if (pointer && Token::Match(vartok, "%var% . %var% (")) {
-        const Function *function = vartok->tokAt(2)->function();
-        return (!function || !function->isStatic());
     }
 
     if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {

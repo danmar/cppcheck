@@ -340,20 +340,20 @@ private:
 
         // Unknown types
         {
-            checkUninitVar("void a()\n"
-                           "{\n"
-                           "    A ret;\n"
-                           "    return ret;\n"
-                           "}");
+            checkUninitVar2("void a()\n"
+                            "{\n"
+                            "    A ret;\n"
+                            "    return ret;\n"
+                            "}");
             ASSERT_EQUALS("", errout.str());
 
-            checkUninitVar("void a()\n"
-                           "{\n"
-                           "    A ret;\n"
-                           "    return ret;\n"
-                           "}\n",
-                           "test.c");
-            TODO_ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ret\n", "", errout.str());
+            checkUninitVar2("void a()\n"
+                            "{\n"
+                            "    A ret;\n"
+                            "    return ret;\n"
+                            "}\n",
+                            "test.c");
+            ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ret\n", errout.str());
 
             // #3916 - avoid false positive
             checkUninitVar("void f(float x) {\n"
@@ -386,16 +386,6 @@ private:
                        "    char *z = x;\n"
                        "    memset(z, 0, sizeof(x));\n"
                        "    memcpy(y, x, sizeof(x));\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // #5255
-        checkUninitVar("struct Element {\n"
-                       "    static void abcd() {}\n"
-                       "};\n"
-                       "void a() {\n"
-                       "    Element *e;\n"
-                       "    e->abcd();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -1046,16 +1036,15 @@ private:
                         "    }\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
-        checkUninitVar("void f(int x) {\n"
-                       "    const PoolItem* pItem;\n"
-                       "    while (x > 0) {\n"
-                       "        if (*pItem != rPool)\n"
-                       "        { }\n"
-                       "        x--;\n"
-                       "    }\n"
-                       "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n",
-                           "", errout.str());
+        checkUninitVar2("void f(int x) {\n"
+                        "    const PoolItem* pItem;\n"
+                        "    while (x > 0) {\n"
+                        "        if (*pItem != rPool)\n"
+                        "        { }\n"
+                        "        x--;\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: pItem\n", errout.str());
 
         // #2231 - conditional initialization in loop..
         checkUninitVar("int foo(char *a) {\n"
@@ -1830,13 +1819,6 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    int i;\n"
-                       "    x(i+2);\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
-
         checkUninitVar2("void f()\n"
                         "{\n"
                         "    int i;\n"
@@ -1872,14 +1854,6 @@ private:
                        "    x = bar(p->begin());\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
-
-        checkUninitVar("int foo(int x) { return x; }\n"
-                       "void f2()\n"
-                       "{\n"
-                       "    int x;\n"
-                       "    foo(x);\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("int foo(int x) { return x; }\n"
                         "void f2()\n"
@@ -1997,52 +1971,44 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #2775 - uninitialized struct pointer in subfunction
-        checkUninitVar("void a(struct Fred *fred) {\n"
-                       "    fred->x = 0;\n"
-                       "}\n"
-                       "\n"
-                       "void b() {\n"
-                       "    struct Fred *p;\n"
-                       "    a(p);\n"
-                       "}");
-        // TODO: See #2946
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: p\n", "", errout.str());
+        checkUninitVar2("void a(struct Fred *fred) {\n"
+                        "    fred->x = 0;\n"
+                        "}\n"
+                        "\n"
+                        "void b() {\n"
+                        "    struct Fred *p;\n"
+                        "    a(p);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: p\n", errout.str());
 
         // #2946 - FP array is initialized in subfunction
-        checkUninitVar("void a(char *buf) {\n"
-                       "    buf[0] = 0;\n"
-                       "}\n"
-                       "void b() {\n"
-                       "    char buf[10];\n"
-                       "    a(buf);\n"
-                       "    buf[1] = buf[0];\n"
-                       "}");
+        checkUninitVar2("void a(char *buf) {\n"
+                        "    buf[0] = 0;\n"
+                        "}\n"
+                        "void b() {\n"
+                        "    char buf[10];\n"
+                        "    a(buf);\n"
+                        "    buf[1] = buf[0];\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         // #3159 - initialization by function
-        checkUninitVar("static int isnumber(const char *arg) {\n"
-                       "    char *p;\n"
-                       "    return strtod(arg, &p) != 0 || p != arg;\n"
-                       "}");
+        checkUninitVar2("static int isnumber(const char *arg) {\n"
+                        "    char *p;\n"
+                        "    return strtod(arg, &p) != 0 || p != arg;\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("static int isnumber(const char *arg) {\n"
-                       "    char *p;\n"
-                       "    return strtod(&arg) != 0 || p != arg;\n"
-                       "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        checkUninitVar2("static int isnumber(const char *arg) {\n"
+                        "    char *p;\n"
+                        "    return strtod(&arg) != 0 || p != arg;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
     }
 
     // valid and invalid use of 'int a(int x) { return x + x; }'
     void func_uninit_var() {
         const std::string funca("int a(int x) { return x + x; }");
-
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int x;\n"
-                        "    a(x);\n"
-                        "}").c_str());
-        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2((funca +
                          "void b() {\n"
@@ -2065,20 +2031,14 @@ private:
         const std::string funca("void a(int *p) { *p = 0; }");
 
         // ok - initialized pointer
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int buf[10];\n"
-                        "    a(buf);\n"
-                        "}").c_str());
+        checkUninitVar2((funca +
+                         "void b() {\n"
+                         "    int buf[10];\n"
+                         "    a(buf);\n"
+                         "}").c_str());
         ASSERT_EQUALS("", errout.str());
 
         // not ok - uninitialized pointer
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int *p;\n"
-                        "    a(p);\n"
-                        "}").c_str());
-        ASSERT_EQUALS("", errout.str());
         checkUninitVar2((funca +
                          "void b() {\n"
                          "    int *p;\n"
