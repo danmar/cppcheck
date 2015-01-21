@@ -1060,35 +1060,36 @@ void CheckUninitVar::checkScope(const Scope* scope)
         if ((_tokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Type::True) ||
             i->isStatic() || i->isExtern() || i->isConst() || i->isArray() || i->isReference())
             continue;
+
         // don't warn for try/catch exception variable
-        {
-            const Token *start = i->typeStartToken();
-            while (start && start->isName())
-                start = start->previous();
-            if (start && Token::simpleMatch(start->previous(), "catch ("))
-                continue;
-        }
+        if (i->isThrow())
+            continue;
+
         if (i->nameToken()->strAt(1) == "(" || i->nameToken()->strAt(1) == "{")
             continue;
+
+        if (Token::Match(i->nameToken(), "%var% =")) { // Variable is initialized, but Rhs might be not
+            checkRhs(i->nameToken(), *i, false, "");
+            continue;
+        }
+
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();
         for (; tok && tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType())
                 stdtype = true;
         }
+
         while (tok && tok->str() != ";")
             tok = tok->next();
         if (!tok)
             continue;
-        if (Token::Match(i->nameToken(), "%var% =")) {
-            checkRhs(i->nameToken(), *i, false, "");
-            continue;
-        }
+
         if (stdtype || i->isPointer()) {
             bool alloc = false;
             checkScopeForVariable(scope, tok, *i, nullptr, nullptr, &alloc, "");
         }
-        if (Token::Match(i->typeStartToken(), "struct %type% *| %var% ;"))
+        if (i->type())
             checkStruct(scope, tok, *i);
     }
 

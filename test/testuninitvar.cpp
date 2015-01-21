@@ -2967,6 +2967,13 @@ private:
 
         checkUninitVar2("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
+                        "    AB ab;\n"
+                        "    int a = ab.a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+        checkUninitVar2("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    ab.a = ab.a + 1;\n"
                         "}");
