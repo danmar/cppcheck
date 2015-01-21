@@ -3832,7 +3832,7 @@ private:
                         "  FILE *f;\n"
                         "  fgets (s, n, f);\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: f\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: f\n",errout.str());
 
         checkUninitVarB("void f(char * s, int n, FILE *f) {\n"
                         "  fgets (s, n, f);\n"
@@ -3993,7 +3993,7 @@ private:
                         "    int nbytes;\n"
                         "    write(STDOUT_FILENO, buf, nbytes);\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: nbytes\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: nbytes\n", errout.str());
 
         checkUninitVarB("void no_uninitvar(char *buf, int nbytes)\n"
                         "{\n"

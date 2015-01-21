@@ -1437,6 +1437,11 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             return true;
         }
 
+        // bailout on ternary operator. TODO: This can be solved much better. For example, if the variable is not accessed in the branches of the ternary operator, we could just continue.
+        if (Token::Match(tok, "?")) {
+            return true;
+        }
+
         if (Token::Match(tok, "return|break|continue|throw|goto")) {
             if (noreturn)
                 *noreturn = true;
@@ -1729,15 +1734,15 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                 if (arg) {
                     const bool address(vartok->previous()->str() == "&");
                     const Token *argStart = arg->typeStartToken();
-                    while (argStart->previous() && argStart->previous()->isName())
-                        argStart = argStart->previous();
-                    if (!address && Token::Match(argStart, "const| struct| %type% [,)]"))
+                    if (!address && Token::Match(argStart, "struct| %type% [,)]"))
                         return true;
-                    if (!address && Token::Match(argStart, "const| struct| %type% %var% [,)]"))
-                        return true;
-                    if (Token::Match(argStart, "const %type% & %var% [,)]"))
+                    if (!address && Token::Match(argStart, "struct| %type% %var% [,)]"))
                         return true;
                     if (pointer && !address && !alloc && Token::Match(argStart, "struct| %type% * %var% [,)]"))
+                        return true;
+                    while (argStart->previous() && argStart->previous()->isName())
+                        argStart = argStart->previous();
+                    if (Token::Match(argStart, "const %type% & %var% [,)]"))
                         return true;
                     if ((pointer || address) && !alloc && Token::Match(argStart, "const struct| %type% * %var% [,)]"))
                         return true;
@@ -1748,6 +1753,12 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
             } else if (Token::Match(start->previous(), "if|while|for")) {
                 // control-flow statement reading the variable "by value"
                 return !alloc;
+            } else {
+                bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
+                bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
+                if (alloc)
+                    return isnullbad && isuninitbad;
+                return isuninitbad;
             }
         }
     }
