@@ -151,6 +151,8 @@ private:
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
+    void operatorEqShouldBeLeftUnimplementedError(const Token *tok);
+    void operatorEqMissingReturnStatementError(const Token *tok, bool error);
     void operatorEqToSelfError(const Token *tok);
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
@@ -178,6 +180,8 @@ private:
         c.virtualDestructorError(0, "Base", "Derived", false);
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
+        c.operatorEqMissingReturnStatementError(0, true);
+        c.operatorEqShouldBeLeftUnimplementedError(0);
         c.operatorEqToSelfError(0);
         c.checkConstError(0, "class", "function", false);
         c.checkConstError(0, "class", "function", true);
