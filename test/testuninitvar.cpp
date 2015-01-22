@@ -1690,7 +1690,32 @@ private:
                 "  return setvalue(x);\n"
                 "}\n");
             ASSERT_EQUALS("", errout.str());
+        }
 
+        // Ticket #5412 - False negative
+        {
+            checkUninitVarB("void f(bool b)\n"
+                            "{\n"
+                            "    double f;\n"
+                            "    if (b)   {  }\n"
+                            "    else  {\n"
+                            "        f = 0.0;\n"
+                            "    }\n"
+                            "    printf (\"%f\",f);\n"
+                            "}\n");
+            ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: f\n", errout.str());
+
+            // Check for potential FP
+            checkUninitVarB("void f(bool b)\n"
+                            "{\n"
+                            "    double f;\n"
+                            "    if (b)   { f = 1.0 }\n"
+                            "    else  {\n"
+                            "        f = 0.0;\n"
+                            "    }\n"
+                            "    printf (\"%f\",f);\n"
+                            "}\n");
+            ASSERT_EQUALS("", errout.str());
         }
 
         // Ticket #2146 - False negative
