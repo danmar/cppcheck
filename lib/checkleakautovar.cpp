@@ -388,8 +388,17 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // throw
-        // TODO: if the execution leave the function then treat it as return
         else if (tok->str() == "throw") {
+            bool tryFound = false;
+            const Scope* scope = tok->scope();
+            while (scope && scope->isExecutable()) {
+                if (scope->type == Scope::eTry)
+                    tryFound = true;
+                scope = scope->nestedIn;
+            }
+            // If the execution leaves the function then treat it as return
+            if (!tryFound)
+                ret(tok, *varInfo);
             varInfo->clear();
         }
     }

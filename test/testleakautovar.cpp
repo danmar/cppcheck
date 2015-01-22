@@ -661,7 +661,7 @@ private:
               "    char *p = malloc(10);\n"
               "    throw 123;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
 
         check("void f() {\n"
               "    char *p;\n"
