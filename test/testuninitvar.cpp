@@ -70,6 +70,7 @@ private:
         TEST_CASE(uninitvar7); // ticket #5971
         TEST_CASE(uninitvar8); // ticket #6230
         TEST_CASE(uninitvar9); // ticket #6424
+        TEST_CASE(uninitvar_unconditionalTry);
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2743,6 +2744,25 @@ private:
         checkUninitVar2(code, "test.cpp");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: p\n"
                       "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+    }
+
+    void uninitvar_unconditionalTry() {
+        // Unconditional scopes and try{} scopes
+        checkUninitVar2("int f() {\n"
+                        "    int i;\n"
+                        "    {\n"
+                        "        return i;\n"
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar2("int f() {\n"
+                        "    int i;\n"
+                        "    try {\n"
+                        "        return i;\n"
+                        "    } catch(...) {}\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     // Handling of function calls

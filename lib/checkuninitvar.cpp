@@ -1087,10 +1087,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
 
         if (stdtype || i->isPointer()) {
             bool alloc = false;
-            checkScopeForVariable(scope, tok, *i, nullptr, nullptr, &alloc, "");
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");
         }
         if (i->type())
-            checkStruct(scope, tok, *i);
+            checkStruct(tok, *i);
     }
 
     if (scope->function) {
@@ -1102,10 +1102,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
                     if (Token::Match(tok, "[;{}] %varid% = %var% (", arg->declarationId()) &&
                         _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
                         if (arg->typeStartToken()->str() == "struct")
-                            checkStruct(scope, tok, *arg);
+                            checkStruct(tok, *arg);
                         else if (arg->typeStartToken()->isStandardType()) {
                             bool alloc = false;
-                            checkScopeForVariable(scope, tok->next(), *arg, nullptr, nullptr, &alloc, "");
+                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, "");
                         }
                     }
                 }
@@ -1114,7 +1114,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
     }
 }
 
-void CheckUninitVar::checkStruct(const Scope* scope, const Token *tok, const Variable &structvar)
+void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 {
     const Token *typeToken = structvar.typeStartToken();
     if (typeToken->str() == "struct")
@@ -1149,7 +1149,7 @@ void CheckUninitVar::checkStruct(const Scope* scope, const Token *tok, const Var
                     const Token *tok2 = tok;
                     if (tok->str() == "}")
                         tok2 = tok2->next();
-                    checkScopeForVariable(scope, tok2, structvar, nullptr, nullptr, &alloc, var.name());
+                    checkScopeForVariable(tok2, structvar, nullptr, nullptr, &alloc, var.name());
                 }
             }
         }
@@ -1197,7 +1197,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
     }
 }
 
-bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, bool * const alloc, const std::string &membervar)
+bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, bool * const alloc, const std::string &membervar)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
 
@@ -1229,9 +1229,9 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             break;
         }
 
-        // Unconditional inner scope..
-        if (tok->str() == "{" && Token::Match(tok->previous(), "[;{}]")) {
-            if (checkScopeForVariable(scope, tok->next(), var, possibleInit, nullptr, alloc, membervar))
+        // Unconditional inner scope or try..
+        if (tok->str() == "{" && Token::Match(tok->previous(), ";|{|}|try")) {
+            if (checkScopeForVariable(tok->next(), var, possibleInit, noreturn, alloc, membervar))
                 return true;
             tok = tok->link();
             continue;
@@ -1242,7 +1242,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             variableValue[tok->varId()] = NOT_ZERO;
 
         // Inner scope..
-        if (Token::simpleMatch(tok, "if (")) {
+        else if (Token::simpleMatch(tok, "if (")) {
             bool alwaysTrue = false;
             bool alwaysFalse = false;
 
@@ -1272,7 +1272,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             if (tok->str() == "{") {
                 bool possibleInitIf(number_of_if > 0 || suppressErrors);
                 bool noreturnIf = false;
-                const bool initif = !alwaysFalse && checkScopeForVariable(scope, tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar);
+                const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar);
 
                 // bail out for such code:
                 //    if (a) x=0;    // conditional initialization
@@ -1322,7 +1322,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = !alwaysTrue && checkScopeForVariable(scope, tok->next(), var, &possibleInitElse, nullptr, alloc, membervar);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, nullptr, alloc, membervar);
 
                     std::map<unsigned int, int> varValueElse;
                     if (!alwaysTrue && !initelse && !noreturnElse) {
@@ -1354,7 +1354,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
         }
 
         // = { .. }
-        if (Token::simpleMatch(tok, "= {")) {
+        else if (Token::simpleMatch(tok, "= {")) {
             // end token
             const Token *end = tok->next()->link();
 
@@ -1372,7 +1372,7 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             tok = tok->next()->link();
 
         // for/while..
-        if (Token::Match(tok, "for|while (") || Token::simpleMatch(tok, "do {")) {
+        else if (Token::Match(tok, "for|while (") || Token::simpleMatch(tok, "do {")) {
             const bool forwhile = Token::Match(tok, "for|while (");
 
             // is variable initialized in for-head (don't report errors yet)?
@@ -1422,8 +1422,12 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
             }
         }
 
-        // TODO: handle loops, try, etc
-        if (Token::simpleMatch(tok, ") {") || Token::Match(tok, "%var% {")) {
+        // Unknown or unhandled inner scope
+        else if (Token::simpleMatch(tok, ") {") || (Token::Match(tok, "%var% {") && tok->str() != "try")) {
+            if (tok->str() == "struct" || tok->str() == "union") {
+                tok = tok->linkAt(1);
+                continue;
+            }
             return true;
         }
 
