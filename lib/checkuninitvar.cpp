@@ -1783,8 +1783,19 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
         if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
-            if (Token::Match(vartok->previous()->astOperand1(), ">>|<<"))
-                return false; // Looks like stream operator
+            const Token* tok2 = vartok->previous();
+            if (Token::simpleMatch(tok2->astOperand1(), ">>"))
+                return false; // Looks like stream operator, initializes the variable
+            if (Token::simpleMatch(tok2, "<<")) {
+                // Looks like stream operator, but could also initialize the variable. Check lhs.
+                do {
+                    tok2 = tok2->astOperand1();
+                } while (Token::simpleMatch(tok2, "<<"));
+                if (tok2->strAt(-1) == "::")
+                    tok2 = tok2->previous();
+                if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType()))
+                    return true;
+            }
             const Variable *var = vartok->tokAt(-2)->variable();
             return (var && var->typeStartToken()->isStandardType());
         }

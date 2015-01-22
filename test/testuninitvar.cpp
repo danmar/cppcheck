@@ -443,6 +443,19 @@ private:
                             "}");
             ASSERT_EQUALS("", errout.str());
 
+            checkUninitVarB("void f(int b) {\n"
+                            "    int a;\n"
+                            "    std::cin >> b >> a;\n"
+                            "    return a;"
+                            "}");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar2("void f(int i) {\n"
+                            "    int a;\n"
+                            "    i >> a;\n"
+                            "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
             checkUninitVar("int a() {\n"
                            "    int ret;\n"
                            "    int a = value >> ret;\n"
@@ -480,6 +493,31 @@ private:
                             "    return a;\n"
                             "}");
             ASSERT_EQUALS("", errout.str());
+
+            // #4673
+            checkUninitVar2("void f() {\n"
+                            "    int a;\n"
+                            "    std::cout << a;\n"
+                            "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+            checkUninitVar2("void f(std::ostringstream& os) {\n"
+                            "    int a;\n"
+                            "    os << a;\n"
+                            "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+            checkUninitVar2("void f() {\n"
+                            "    int a;\n"
+                            "    std::cout << 1 << a;\n"
+                            "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+            checkUninitVar2("void f(std::ostringstream& os) {\n"
+                            "    int a;\n"
+                            "    os << 1 << a;\n"
+                            "}");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
         }
 
         checkUninitVarB("void a() {\n"   // asm
