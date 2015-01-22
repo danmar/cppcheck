@@ -1495,9 +1495,12 @@ bool CheckUninitVar::checkScopeForVariable(const Scope* scope, const Token *tok,
                     *alloc = true;
                 continue;
             }
-            if (var.isPointer() && (_tokenizer->isC() || var.typeStartToken()->isStandardType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::Match(tok->next(), "= new")) {
-                if (alloc)
+            if (var.isPointer() && (var.typeStartToken()->isStandardType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::Match(tok->next(), "= new")) {
+                if (alloc) {
                     *alloc = true;
+                    if (var.typeScope()->numConstructors > 0)
+                        return false;
+                }
                 continue;
             }
 

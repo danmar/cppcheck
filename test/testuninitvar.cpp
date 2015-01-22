@@ -1455,21 +1455,28 @@ private:
                         "{\n"
                         "    Fred *fred = new Fred;\n"
                         "    fred->foo();\n"
-                        "};");
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVarB("struct Fred { int i; Fred(int, float); };\n"
+                        "void f() {\n"
+                        "    Fred *fred = new Fred(1, 2);\n"
+                        "    fred->foo();\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVarB("void f()\n"
                         "{\n"
                         "    Fred *fred = malloc(sizeof(Fred));\n"
                         "    x(&fred->f);\n"
-                        "};");
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVarB("void f()\n"
                         "{\n"
                         "    Fred *fred = malloc(sizeof(Fred));\n"
                         "    x(fred->f);\n"
-                        "};");
+                        "}");
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVarB("void foo(char *s)\n"
