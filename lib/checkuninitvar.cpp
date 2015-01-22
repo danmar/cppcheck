@@ -1745,12 +1745,12 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
 
         // is this a function call?
         if (start && Token::Match(start->previous(), "%var% (")) {
+            const bool address(vartok->previous()->str() == "&");
             // check how function handle uninitialized data arguments..
             const Function *func = start->previous()->function();
             if (func) {
                 const Variable *arg = func->getArgumentVar(argumentNumber);
                 if (arg) {
-                    const bool address(vartok->previous()->str() == "&");
                     const Token *argStart = arg->typeStartToken();
                     if (!address && Token::Match(argStart, "struct| %type% [,)]"))
                         return true;
@@ -1776,7 +1776,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, bool all
                 bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
                 if (alloc)
                     return isnullbad && isuninitbad;
-                return isuninitbad;
+                return isuninitbad && (!address || isnullbad);
             }
         }
     }

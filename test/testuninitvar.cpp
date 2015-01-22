@@ -2884,6 +2884,24 @@ private:
                         "    return abc.a;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVarB("void write_packet() {\n"
+                        "    time_t now0;\n"
+                        "    time(&now0);\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVarB("void write_packet() {\n"
+                        "    time_t* now0;\n"
+                        "    time(now0);\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: now0\n", errout.str());
+
+        checkUninitVarB("void write_packet() {\n"
+                        "    char now0;\n"
+                        "    strcmp(&now0, sth);\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: now0\n", errout.str());
     }
 
     void uninitvar2_value() {
