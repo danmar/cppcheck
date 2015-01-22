@@ -1,0 +1,18 @@
+version: 1.69.{build}
+
+configuration:
+- Debug
+- Release
+
+platform:
+- Win32
+- x64
+
+build:
+  project: cppcheck.sln
+  parallel: true
+  verbosity: minimal
+
+test_script:
+- if "%CONFIGURATION%" == "Release" bin\testrunner.exe
+- if "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
