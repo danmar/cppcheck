@@ -1671,6 +1671,28 @@ private:
             ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
         }
 
+        // Ticket #6341- False negative
+        {
+            checkUninitVarB("wchar_t f() { int i; return btowc(i); }");
+            ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: i\n", errout.str());
+
+            checkUninitVarB("wchar_t f(int i) { return btowc(i); }");
+            ASSERT_EQUALS("", errout.str());
+
+            // Avoid a potential false positive (#6341)
+            checkUninitVarB(
+                "void setvalue(int &x) {\n"
+                "  x = 0;\n"
+                "  return 123;\n"
+                "}\n"
+                "int f() {\n"
+                "  int x;\n"
+                "  return setvalue(x);\n"
+                "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+        }
+
         // Ticket #2146 - False negative
         checkUninitVar("int f(int x) {\n"
                        "    int y;\n"
