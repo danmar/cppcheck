@@ -48,7 +48,7 @@ public:
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
-        //checkUninitVar.executionPaths();
+        checkUninitVar.executionPaths();
         checkUninitVar.check();
         checkUninitVar.deadPointer();
     }
