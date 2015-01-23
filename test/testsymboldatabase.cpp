@@ -1317,7 +1317,7 @@ private:
         tokenizer.simplifyTokenList2();
 
         // force symbol database creation
-        tokenizer.getSymbolDatabase();
+        tokenizer.createSymbolDatabase();
     }
 
     void functionArgs1() {
