@@ -4223,7 +4223,6 @@ private:
 
         checkUninitVarB("blkcnt_t f() {blkcnt_t b; return b;}");
         ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
-        ;
     }
 };
 
