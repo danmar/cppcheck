@@ -94,6 +94,7 @@ private:
         TEST_CASE(stdcfg_tmpnam);
 
         TEST_CASE(uninitvar_posix_write);
+        TEST_CASE(uninitvar_posix_types);
 
         // dead pointer
         TEST_CASE(deadPointer);
@@ -4214,6 +4215,15 @@ private:
                          "  f(tmp);\n"
                          "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_posix_types() {
+        checkUninitVarB("blkcnt_t* f() {blkcnt_t *b; return b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
+
+        checkUninitVarB("blkcnt_t f() {blkcnt_t b; return b;}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
+        ;
     }
 };
 
