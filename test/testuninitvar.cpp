@@ -1592,6 +1592,46 @@ private:
                         "  memcpy(body, buf, 10);\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6451 - allocation in subscope
+        checkUninitVarB("struct StgStrm {\n"
+                        "    StgIo& rIo;\n"
+                        "    StgStrm(StgIo&);\n"
+                        "    virtual sal_Int32 Write();\n"
+                        "};\n"
+                        "void Tmp2Strm() {\n"
+                        "    StgStrm* pNewStrm;\n"
+                        "    if (someflag)\n"
+                        "        pNewStrm = new StgStrm(rIo);\n"
+                        "    else\n"
+                        "        pNewStrm = new StgStrm(rIo);\n"
+                        "    pNewStrm->Write();\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVarB("struct StgStrm {\n"
+                        "    StgIo& rIo;\n"
+                        "    StgStrm(StgIo&);\n"
+                        "    virtual sal_Int32 Write();\n"
+                        "};\n"
+                        "void Tmp2Strm() {\n"
+                        "    StgStrm* pNewStrm;\n"
+                        "    if (someflag)\n"
+                        "        pNewStrm = new StgStrm(rIo);\n"
+                        "    pNewStrm->Write();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: pNewStrm\n", errout.str());
+
+        // #6450 - calling a member function is allowed if memory was allocated by new
+        checkUninitVarB("struct EMFPFont {\n"
+                        "    bool family;\n"
+                        "    void Initialize();\n"
+                        "};\n"
+                        "void processObjectRecord() {\n"
+                        "    EMFPFont *font = new EMFPFont();\n"
+                        "    font->Initialize();\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..

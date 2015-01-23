@@ -57,13 +57,14 @@ public:
     void check();
     void checkScope(const Scope* scope);
     void checkStruct(const Token *tok, const Variable &structvar);
-    bool checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, bool * const alloc, const std::string &membervar);
-    bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, bool alloc, const std::string &membervar);
-    bool checkLoopBody(const Token *tok, const Variable& var, const bool alloc, const std::string &membervar, const bool suppressErrors);
-    void checkRhs(const Token *tok, const Variable &var, bool alloc, const std::string &membervar);
-    bool isVariableUsage(const Token *vartok, bool ispointer, bool alloc) const;
+    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL };
+    bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar);
+    bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
+    bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
+    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, const std::string &membervar);
+    bool isVariableUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
     static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
-    bool isMemberVariableUsage(const Token *tok, bool isPointer, bool alloc, const std::string &membervar) const;
+    bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
 
     /** ValueFlow-based checking for dead pointer usage */
     void deadPointer();
