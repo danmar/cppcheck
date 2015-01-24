@@ -1180,6 +1180,8 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 {
     bool foundReturn = false;
 
+    const Token* const startTok = tok;
+
     for (; tok && tok != last; tok = tok->next()) {
         // check for return of reference to this
         if (tok->str() == "return") {
@@ -1228,13 +1230,45 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
                 operatorEqRetRefThisError(func->token);
         }
     }
-    if (!foundReturn)
-        operatorEqRetRefThisError(func->token);
+    if (foundReturn) {
+        return;
+    }
+    if (startTok->next() == last) {
+        if (Token::Match(func->argDef, std::string("( const " + scope->className + " &").c_str())) {
+            // Typical wrong way to suppress default assignment operator by declaring it and leaving empty
+            operatorEqMissingReturnStatementError(func->token, func->access == Public);
+        } else {
+            operatorEqMissingReturnStatementError(func->token, true);
+        }
+        return;
+    }
+    if (_settings->library.isScopeNoReturn(last, 0)) {
+        // Typical wrong way to prohibit default assignment operator
+        // by always throwing an exception or calling a noreturn function
+        operatorEqShouldBeLeftUnimplementedError(func->token);
+        return;
+    }
+
+    operatorEqMissingReturnStatementError(func->token, func->access == Public);
 }
 
 void CheckClass::operatorEqRetRefThisError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to 'this' instance.");
+}
+
+void CheckClass::operatorEqShouldBeLeftUnimplementedError(const Token *tok)
+{
+    reportError(tok, Severity::style, "operatorEqShouldBeLeftUnimplemented", "'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.");
+}
+
+void CheckClass::operatorEqMissingReturnStatementError(const Token *tok, bool error)
+{
+    if (error) {
+        reportError(tok, Severity::error, "operatorEqMissingReturnStatement", "No 'return' statement in non-void function causes undefined behavior.");
+    } else {
+        operatorEqRetRefThisError(tok);
+    }
 }
 
 //---------------------------------------------------------------------------

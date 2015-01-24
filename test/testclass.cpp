@@ -812,7 +812,7 @@ private:
             "{\n"
             "  szp &operator =(int *other) {};\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class szp\n"
@@ -820,7 +820,7 @@ private:
             "  szp &operator =(int *other);\n"
             "};\n"
             "szp &szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
     }
 
     void operatorEqRetRefThis3() {
@@ -889,7 +889,41 @@ private:
             "public:\n"
             "    A & operator=(const A &a) { }\n"
             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "protected:\n"
+            "    A & operator=(const A &a) {}\n"
+            "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "private:\n"
+            "    A & operator=(const A &a) {}\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "    A & operator=(const A &a) {\n"
+            "        rand();\n"
+            "        throw std::exception();\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "    A & operator=(const A &a) {\n"
+            "        rand();\n"
+            "        abort();\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n", errout.str());
 
         checkOpertorEqRetRefThis(
             "class A {\n"
@@ -897,7 +931,7 @@ private:
             "    A & operator=(const A &a);\n"
             "};\n"
             "A & A :: operator=(const A &a) { }");
-        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
     }
 
     void operatorEqRetRefThis6() { // ticket #2478 (segmentation fault)
