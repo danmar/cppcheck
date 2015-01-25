@@ -1,16 +1,17 @@
-PROJECT(CppCheck)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+project(CppCheck)
+cmake_minimum_required(VERSION 2.8)
 
-INCLUDE(cmake/versions.cmake REQUIRED)
-INCLUDE(cmake/options.cmake REQUIRED)
-INCLUDE(cmake/findDependencies.cmake REQUIRED)
-INCLUDE(cmake/compileroptions.cmake REQUIRED)
-INCLUDE(cmake/buildFiles.cmake REQUIRED)
+include(cmake/versions.cmake REQUIRED)
+include(cmake/options.cmake REQUIRED)
+include(cmake/findDependencies.cmake REQUIRED)
+include(cmake/compileroptions.cmake REQUIRED)
+include(cmake/buildFiles.cmake REQUIRED)
 
-ADD_SUBDIRECTORY(externals/tinyxml)
-ADD_SUBDIRECTORY(lib)
-ADD_SUBDIRECTORY(cli) # Client application
+add_subdirectory(externals/tinyxml)
+add_subdirectory(lib)   # CppCheck Library 
+add_subdirectory(cli)   # Client application
+add_subdirectory(test)  # Tests
 #ADD_SUBDIRECTORY(utils)
 #ADD_SUBDIRECTORY(utilsTests)
 
-INCLUDE(cmake/printInfo.cmake REQUIRED)
+include(cmake/printInfo.cmake REQUIRED)
