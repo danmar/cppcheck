@@ -11,7 +11,6 @@ add_subdirectory(externals/tinyxml)
 add_subdirectory(lib)   # CppCheck Library 
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
-#ADD_SUBDIRECTORY(utils)
-#ADD_SUBDIRECTORY(utilsTests)
+ADD_SUBDIRECTORY(gui)   # Graphical application
 
 include(cmake/printInfo.cmake REQUIRED)

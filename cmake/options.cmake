@@ -25,7 +25,7 @@ option(WARNINGS_ANSI_ISO    "Issue all the mandatory diagnostics Listed in C sta
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"                                        ON)
 option(BUILD_TESTS          "Build tests"                                                   OFF)
-option(BUILD_QT_APP         "Build the qt application"                                      OFF)
+option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(BUILD_UTILS_TESTS    "Build applications tests using the different modules"          OFF)
 
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
