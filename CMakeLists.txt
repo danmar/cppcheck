@@ -7,9 +7,9 @@ INCLUDE(cmake/findDependencies.cmake REQUIRED)
 INCLUDE(cmake/compileroptions.cmake REQUIRED)
 INCLUDE(cmake/buildFiles.cmake REQUIRED)
 
-#ADD_SUBDIRECTORY(include)
+ADD_SUBDIRECTORY(externals/tinyxml)
 ADD_SUBDIRECTORY(lib)
-#ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(cli) # Client application
 #ADD_SUBDIRECTORY(utils)
 #ADD_SUBDIRECTORY(utilsTests)
 
