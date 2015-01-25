@@ -17,12 +17,23 @@ if (BUILD_GUI)
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
+    file(GLOB tss  "*.ts")
     QT4_WRAP_UI(uis_hdrs ${uis})
     QT4_ADD_RESOURCES(resources "gui.qrc")
+    QT4_ADD_TRANSLATION(translations ${tss})
     
     link_libraries(${PROJECT_NAME} tinyxml ${QT_LIBRARIES})
 
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources})
+    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${translations})
+
+    add_custom_target(copy_qm ALL
+        COMMENT "Copying qm files")
+    add_custom_command(
+        TARGET copy_qm
+        COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/*.qm ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+    add_dependencies(cppcheck-gui copy_qm)
+
 
     set(CMAKE_AUTOMOC OFF)
 
