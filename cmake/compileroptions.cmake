@@ -8,11 +8,11 @@ if (USE_CLANG)
     set (CMAKE_C_COMPILER               "/usr/bin/clang")
     set (CMAKE_CXX_COMPILER             "/usr/bin/clang++")
 
-    set (CMAKE_C_FLAGS                  "-Wall -std=c99")
+    set (CMAKE_C_FLAGS                  "-std=c99")
     set (CMAKE_C_FLAGS_DEBUG            "-g")
     set (CMAKE_C_FLAGS_RELEASE          "-O2")
 
-    set (CMAKE_CXX_FLAGS                "-Wall")
+    set (CMAKE_CXX_FLAGS                "")
     set (CMAKE_CXX_FLAGS_DEBUG          "-g")
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
@@ -50,17 +50,17 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wshadow")                   # whenever a local variable or type declaration shadows another one
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wsign-promo")               # 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror=return-type")        # 
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
 
     if(WARNINGS_ANSI_ISO)
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wstrict-aliasing=3")
+#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror=return-type")        # 
+#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wstrict-aliasing=3")
     else()
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-narrowing")
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-delete-non-virtual-dtor")
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-unnamed-type-template-args")
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-sign-compare")
     endif()
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -91,7 +91,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
 
    if(WARNINGS_ANSI_ISO)
            set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wextra -pedantic")
-           set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wlogical-op")
+#           set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wlogical-op")
            set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long") # Don't warn about long long usage.
    endif()
 
@@ -99,7 +99,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
       set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
    endif()
 
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -std=c++11")
+   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -std=c++11")
 
 endif()
 
