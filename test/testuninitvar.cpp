@@ -4223,6 +4223,13 @@ private:
 
         checkUninitVarB("blkcnt_t f() {blkcnt_t b; return b;}");
         ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
+
+        // dirent
+        checkUninitVarB("char f()  { dirent d; return d.d_name[0]; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: d\n", errout.str());
+
+        checkUninitVarB("ino_t f2() { dirent d; return d.d_ino; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: d\n", errout.str());
     }
 };
 
