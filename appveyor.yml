@@ -8,10 +8,8 @@ platform:
 - Win32
 - x64
 
-build:
-  project: cppcheck.sln
-  parallel: true
-  verbosity: detailed
+build_script:
+- msbuild "cppcheck.sln" /m /verbosity:minimal
 
 test_script:
 - if "%CONFIGURATION%" == "Release" bin\testrunner.exe
