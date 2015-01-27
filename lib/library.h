@@ -127,9 +127,7 @@ public:
     std::set<std::string> useretval;
 
     // returns true if ftok is not a library function
-    static bool isNotLibraryFunction(const Token *ftok) {
-        return ftok->astParent() ? ftok->astParent()->str() != "(" : false;
-    }
+    bool isNotLibraryFunction(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const {
         if (ftok->function() && ftok->function()->isAttributeNoreturn())

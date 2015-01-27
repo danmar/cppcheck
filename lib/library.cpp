@@ -678,3 +678,32 @@ const Library::Container* Library::detectContainer(const Token* typeStart) const
     }
     return nullptr;
 }
+// returns true if ftok is not a library function
+bool Library::isNotLibraryFunction(const Token *ftok) const
+{
+    if (!ftok->astParent())
+        return false;
+    if (ftok->astParent()->str() != "(")
+        return true;
+
+    int callargs = 0;
+    for (const Token *tok = ftok->tokAt(2); tok && tok->str() != ")"; tok = tok->next()) {
+        if (callargs == 0)
+            callargs = 1;
+        if (tok->str() == ",")
+            callargs++;
+        else if (tok->link() && Token::Match(tok, "<|(|["))
+            tok = tok->link();
+    }
+    const std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it = argumentChecks.find(ftok->str());
+    if (it == argumentChecks.end())
+        return (callargs != 0);
+    int args = 0;
+    for (std::map<int, ArgumentChecks>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+        if (it2->first > args)
+            args = it2->first;
+        if (it2->second.formatstr)
+            return args > callargs;
+    }
+    return args != callargs;
+}

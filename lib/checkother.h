@@ -75,6 +75,9 @@ public:
         checkOther.checkCommaSeparatedReturn();
         checkOther.checkIgnoredReturnValue();
         checkOther.checkRedundantPointerOp();
+
+        // --check-library : functions with nonmatching configuration
+        checkOther.checkLibraryMatchFunctions();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -236,6 +239,9 @@ public:
 
     /** @brief %Check for redundant pointer operations */
     void checkRedundantPointerOp();
+
+    /** @brief --check-library: warn for unconfigured function calls */
+    void checkLibraryMatchFunctions();
 
 private:
     // Error messages..

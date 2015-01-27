@@ -2890,3 +2890,23 @@ void CheckOther::redundantPointerOpError(const Token* tok, const std::string &va
     reportError(tok, Severity::style, "redundantPointerOp",
                 "Redundant pointer operation on " + varname + " - it's already a pointer.", inconclusive);
 }
+
+void CheckOther::checkLibraryMatchFunctions()
+{
+    if (!_settings->checkLibrary || !_settings->isEnabled("information"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%var% (") &&
+            !tok->function() &&
+            tok->astParent() == tok->next() &&
+            _settings->library.isNotLibraryFunction(tok)) {
+            reportError(tok,
+                        Severity::information,
+                        "checkLibraryFunction",
+                        "--check-library: There is no matching configuration for function " + tok->str() + "()");
+        }
+    }
+}
+
+

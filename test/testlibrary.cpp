@@ -31,6 +31,7 @@ private:
     void run() {
         TEST_CASE(empty);
         TEST_CASE(function);
+        TEST_CASE(function_match);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(function_arg_valid);
@@ -76,6 +77,26 @@ private:
         ASSERT(library.leakignore.empty());
         ASSERT(library.argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
+    }
+
+    void function_match() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"/>"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo();"); // <- too few arguments, not library function
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
+        Library library;
+        library.load(doc);
+        ASSERT(library.isNotLibraryFunction(tokenList.front()));
     }
 
     void function_arg() const {
@@ -134,7 +155,7 @@ private:
         library.load(doc);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo();");
+        std::istringstream istr("foo(a,b,c,d,e);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -177,6 +198,7 @@ private:
                                "  <function name=\"foo\">\n"
                                "    <arg nr=\"1\"><minsize type=\"strlen\" arg=\"2\"/></arg>\n"
                                "    <arg nr=\"2\"><minsize type=\"argvalue\" arg=\"3\"/></arg>\n"
+                               "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
@@ -186,7 +208,7 @@ private:
         library.load(doc);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo();");
+        std::istringstream istr("foo(a,b,c);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
