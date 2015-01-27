@@ -44,6 +44,8 @@ script:
   - touch /tmp/cppcheck.cppcheck
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
+# check test/cfg
+  - make checkcfg
   - cd ./gui
 # clean rebuild
   - git clean -dfx .

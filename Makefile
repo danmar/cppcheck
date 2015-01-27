@@ -248,6 +248,9 @@ test:	all
 check:	all
 	./testrunner -g -q
 
+checkcfg:	cppcheck
+	./test/cfg/runtests.sh
+
 dmake:	tools/dmake.o cli/filelister.o lib/path.o
 	$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
 	./dmake

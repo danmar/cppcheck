@@ -393,6 +393,8 @@ int main(int argc, char **argv)
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
+    fout << "checkcfg:\tcppcheck\n";
+    fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o lib/path.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)\n";
     fout << "\t./dmake\n\n";
