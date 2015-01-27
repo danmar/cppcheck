@@ -554,6 +554,54 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
+
+        // #6452 - member functions
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    void seek(long offset, Position p);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    seek(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    unknown(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void known(int);\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    known(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void known(int);\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(X::data(), 1, bufferLength, d->file);\n"
+              "    known(writePosition);\n"
+              "    fwrite(X::data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
     }
 
     void seekOnAppendedFile() {

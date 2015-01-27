@@ -222,6 +222,20 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::UNIMPORTANT;
                 } else if (!Token::Match(tok, "if|for|while|catch|switch") && _settings->library.functionpure.find(tok->str()) == _settings->library.functionpure.end()) {
                     const Token* const end2 = tok->linkAt(1);
+                    if (scope->functionOf && scope->functionOf->isClassOrStruct() && !scope->function->isStatic() && ((tok->strAt(-1) != "::" && tok->strAt(-1) != ".") || tok->strAt(-2) == "this")) {
+                        if (!tok->function() || (tok->function()->nestedIn && tok->function()->nestedIn->isClassOrStruct())) {
+                            for (std::map<unsigned int, Filepointer>::iterator i = filepointers.begin(); i != filepointers.end(); ++i) {
+                                const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
+                                if (!var || !(var->isLocal() || var->isGlobal() || var->isStatic())) {
+                                    i->second.mode = UNKNOWN_OM;
+                                    i->second.mode_indent = 0;
+                                    i->second.op_indent = indent;
+                                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                                }
+                            }
+                            continue;
+                        }
+                    }
                     for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
                             fileTok = tok2;
