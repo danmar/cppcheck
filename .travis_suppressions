@@ -5,6 +5,7 @@ uselessAssignmentPtrArg:build/tokenize.cpp
 variableScope:test/testtokenize.cpp
 *:gui/test*
 *:test/test.cxx
+*:test/cfg*
 
 *:democlient*
 *:externals*
