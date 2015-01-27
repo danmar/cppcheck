@@ -926,9 +926,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     if (isWarningEnabled && num >= total_size && _settings->inconclusive) {
                         const Token *tok2 = tok->next()->link()->next();
                         for (; tok2; tok2 = tok2->next()) {
-                            if (tok2->varId() == tok->tokAt(2)->varId()) {
-                                if (!Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok->tokAt(2)->varId())) {
-                                    terminateStrncpyError(tok, tok->strAt(2));
+                            const Token* tok3 = tok->tokAt(2);
+                            if (tok2->varId() == tok3->varId()) {
+                                if (!Token::Match(tok2, "%varid% [ %any% ] = 0 ;", tok3->varId())) {
+                                    terminateStrncpyError(tok, tok3->str());
                                 }
 
                                 break;
