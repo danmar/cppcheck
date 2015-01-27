@@ -39,7 +39,9 @@ void CheckVaarg::va_start_argument()
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "va_start (")) {
+            if (!tok->scope()->isExecutable())
+                tok = tok->scope()->classEnd;
+            else if (Token::simpleMatch(tok, "va_start (")) {
                 const Token* param2 = tok->tokAt(2)->nextArgument();
                 if (!param2)
                     continue;

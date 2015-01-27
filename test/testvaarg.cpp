@@ -90,6 +90,18 @@ private:
               "    va_end(arg_ptr);\n"
               "}"); // Don't crash if less than expected arguments are given.
         ASSERT_EQUALS("", errout.str());
+
+        check("void assertf_fail(const char *assertion, const char *file, int line, const char *func, const char* msg, ...) {\n"
+              "    struct A {\n"
+              "        A(char* buf, int size) {}\n"
+              "            void printf(const char * format, ...) {\n"
+              "                va_list args;\n"
+              "                va_start(args, format);\n"
+              "                va_end(args);\n"
+              "        }\n"
+              "    };\n"
+              "}"); // Inner class (#6453)
+        ASSERT_EQUALS("", errout.str());
     }
 
     void referenceAs_va_start() {
