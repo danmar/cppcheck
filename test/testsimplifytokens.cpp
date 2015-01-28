@@ -260,6 +260,12 @@ private:
         TEST_CASE(removeUnnecessaryQualification8);
         TEST_CASE(removeUnnecessaryQualification9);  // ticket #3151
         TEST_CASE(removeUnnecessaryQualification10); // ticket #3310 segmentation fault
+        TEST_CASE(removeUnnecessaryQualification11);
+        TEST_CASE(removeUnnecessaryQualification12);
+        TEST_CASE(removeUnnecessaryQualification13);
+        TEST_CASE(removeUnnecessaryQualification14);
+        TEST_CASE(removeUnnecessaryQualification15);
+        TEST_CASE(removeUnnecessaryQualification16);
 
         TEST_CASE(simplifyIfNotNull);
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
@@ -3939,7 +3945,7 @@ private:
                             "   };\n"
                             "}\n";
         tok(code, false);
-        ASSERT_EQUALS("[test.cpp:11]: (portability) The extra qualification 'two::c::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void removeUnnecessaryQualification6() {
@@ -3998,6 +4004,62 @@ private:
                             "};\n";
         tok(code, false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification11() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred& Fred::Magic();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification12() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred* Fred::Magic();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+    }
+
+   void removeUnnecessaryQualification13() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred** Fred::Magic();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification14() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred*& Fred::Magic();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification15() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    Fred*& Magic() {\n"
+                            "        Fred::Magic(param);\n"
+                            "    }\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void removeUnnecessaryQualification16() {
+        const char code[] = "class Fred {\n"
+                            "public:\n"
+                            "    void Fred::Magic();\n"
+                            "};\n";
+        tok(code, false);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
     void simplifyIfNotNull() {
