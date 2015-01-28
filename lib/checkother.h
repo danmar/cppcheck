@@ -103,7 +103,6 @@ public:
         checkOther.checkPipeParameterSize();
 
         checkOther.checkInvalidFree();
-        checkOther.checkDoubleFree();
         checkOther.checkRedundantCopy();
         checkOther.checkNegativeBitwiseShift();
         checkOther.checkSuspiciousEqualityComparison();
@@ -209,10 +208,6 @@ public:
     void checkInvalidFree();
     void invalidFreeError(const Token *tok, bool inconclusive);
 
-    /** @brief %Check for double free or double close operations */
-    void checkDoubleFree();
-    void doubleFreeError(const Token *tok, const std::string &varname);
-
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
 
@@ -291,7 +286,6 @@ private:
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerPositiveError(const Token *tok, bool inconclusive);
     void SuspiciousSemicolonError(const Token *tok);
-    void doubleCloseDirError(const Token *tok, const std::string &varname);
     void negativeBitwiseShiftError(const Token *tok);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
@@ -309,7 +303,6 @@ private:
         c.zerodivError(0, false);
         c.zerodivcondError(0,0,false);
         c.misusedScopeObjectError(NULL, "varname");
-        c.doubleFreeError(0, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
@@ -371,7 +364,6 @@ private:
                "- scoped object destroyed immediately after construction\n"
                "- assignment in an assert statement\n"
                "- free() or delete of an invalid memory location\n"
-               "- double free() or double closedir()\n"
                "- bitwise operation with negative right operand\n"
                "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"

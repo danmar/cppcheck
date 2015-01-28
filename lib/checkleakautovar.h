@@ -31,7 +31,13 @@
 
 class CPPCHECKLIB VarInfo {
 public:
-    std::map<unsigned int, int> alloctype;
+    enum AllocStatus { DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
+    struct AllocInfo {
+        AllocStatus status;
+        int type;
+        AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC) : status(status_), type(type_) {}
+    };
+    std::map<unsigned int, AllocInfo> alloctype;
     std::map<unsigned int, std::string> possibleUsage;
     std::set<unsigned int> conditionalAlloc;
     std::set<unsigned int> referenced;
@@ -98,7 +104,10 @@ private:
                     std::set<unsigned int> notzero);
 
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const int dealloc);
+    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation);
+
+    /** parse changes in allocation status */
+    void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);
@@ -110,6 +119,7 @@ private:
     void mismatchError(const Token* tok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
     void deallocReturnError(const Token *tok, const std::string &varname);
+    void doubleFreeError(const Token *tok, const std::string &varname, int type);
 
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
@@ -118,6 +128,7 @@ private:
         CheckLeakAutoVar c(0, settings, errorLogger);
         c.deallocReturnError(0, "p");
         c.configurationInfo(0, "f");  // user configuration is needed to complete analysis
+        c.doubleFreeError(0, "varname", 0);
     }
 
     static std::string myName() {
@@ -125,7 +136,7 @@ private:
     }
 
     std::string classInfo() const {
-        return "Detect when a auto variable is allocated but not deallocated.\n";
+        return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
 };
 /// @}
