@@ -32,6 +32,8 @@ private:
     Settings settings;
 
     void run() {
+        // Load std.cfg library file
+        // TODO: This will be removed. The std.cfg is tested with the cfg testing.
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(nullpointerAfterLoop);
@@ -83,11 +85,7 @@ private:
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
-        TEST_CASE(nullpointerMemchr);
         TEST_CASE(nullpointerPutchar);
-
-        // Test that std.cfg is configured correctly
-        TEST_CASE(stdcfg);
 
         // Load posix library file
         LOAD_LIB_2(settings.library, "posix.cfg");
@@ -1780,31 +1778,6 @@ private:
 
     // Test CheckNullPointer::nullConstantDereference
     void nullConstantDereference() {
-        // Ticket #2090
-        check("void foo() {\n"
-              "  strcpy(0, \"abcd\");\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
-
-        // Ticket #1171
-        check("void foo(void* bar) {\n"
-              "  if(strcmp(0, bar) == 0)\n"
-              "    func();\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
-
-        // Ticket #2413 - it's ok to pass NULL to fflush
-        check("void foo() {\n"
-              "  fflush(NULL);\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #3126 - don't confuse member function with standard function
-        check("void f() {\n"
-              "    image1.fseek(0, SEEK_SET);\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
         check("void f() {\n"
               "    int* p = 0;\n"
               "    return p[4];\n"
@@ -1812,17 +1785,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
 
-        check("void f(int x) {\n" // #4809 - passing "NULL"
-              "    itoa(x,NULL,10);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
-
         check("void f() {\n"
               "    typeof(*NULL) y;\n"
               "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() { freopen(NULL, m, stdin); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2514,114 +2479,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // Test that std.cfg is configured correctly
-    void stdcfg() {
-        const char errp[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n";
-        const char errpq[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n"
-                             "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: q - otherwise it is redundant to check it against null.\n";
-
-        check("void f(FILE *p){ clearerr (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(FILE *p){ feof (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(FILE *p){ fgetc (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(FILE *p){ fclose (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(FILE *p){ ferror (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(FILE *p){ ftell (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char *p){ puts (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p,char * q){ fopen (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,FILE * q){ fputc (*p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,FILE * q){ fputs (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(FILE * p,fpos_t * q){ fgetpos (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(FILE * p,fpos_t * q){ fsetpos (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p){ strchr (p,c);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p){ putchar (*p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p){ strlen (p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p,char * q){ strcpy (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strspn (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strcspn (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strcoll (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strcat (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strcmp (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strncpy (p,q,1);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strncat (p,q,1);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strncmp (p,q,1);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        check("void f(char * p,char * q){ strstr (p,q);if(!p||!q){}}");
-        ASSERT_EQUALS(errpq,errout.str());
-
-        // strtol etc
-        check("void f(char * p,char * q){ strtoul (p,q,0);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p,char * q){ strtoull (p,q,0);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(char * p,char * q){ strtol (p,q,0);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        // #6100 False positive nullPointer - calling mbstowcs(NULL,)
-        check("size_t get (char *value) { return mbstowcs (NULL, value, 0); }");
-        ASSERT_EQUALS("",errout.str());
-        check("size_t get (wchar_t *value) { return wcstombs (NULL, value, 0); }");
-        ASSERT_EQUALS("",errout.str());
-
-        check("void f() { strtok(NULL, 'x');}");
-        ASSERT_EQUALS("",errout.str());
-
-        // #6306 "false positive with strxfrm NULL argument"
-        check("void foo(void) { size_t res = strxfrm(NULL, \"foo\", 0); }");
-        ASSERT_EQUALS("",errout.str());
-        check("void foo(void) { size_t res = strxfrm(NULL, \"foo\", 42); }");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Null pointer dereference\n", "", errout.str());
-
-    }
-
     void nullpointerFputc() {
         check("int main () {\n"
               "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
@@ -2639,24 +2496,6 @@ private:
               "return 0 ;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: nullstring\n", errout.str());
-    }
-
-    void nullpointerMemchr() {
-        check("void f (char *p, char *s) {\n"
-              "  p = memchr (s, 'p', strlen(s));\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f (char *p, char *s) {\n"
-              "  p = memchr (s, 0, strlen(s));\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f (char *p) {\n"
-              "  char *s = 0;\n"
-              "  p = memchr (s, 0, strlen(s));\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: s\n", errout.str());
     }
 
     void nullpointerPutchar() {
