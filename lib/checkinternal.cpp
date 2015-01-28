@@ -81,12 +81,28 @@ void CheckInternal::checkTokenMatchPatterns()
             orInComplexPattern(tok, pattern, funcname);
 
         // Check for signs of complex patterns
-        if (pattern.find_first_of("[|%") != std::string::npos)
+        if (pattern.find_first_of("[|") != std::string::npos)
             continue;
         else if (pattern.find("!!") != std::string::npos)
             continue;
 
-        simplePatternError(tok, pattern, funcname);
+        bool complex = false;
+        size_t index = pattern.find('%');
+        while (index != std::string::npos) {
+            if (pattern.length() <= index + 2) {
+                complex = true;
+                break;
+            }
+            if (pattern[index + 1] == 'o' && pattern[index + 2] == 'r') // %or% or %oror%
+                index = pattern.find('%', index + 1);
+            else {
+                complex = true;
+                break;
+            }
+            index = pattern.find('%', index+1);
+        }
+        if (!complex)
+            simplePatternError(tok, pattern, funcname);
     }
 }
 

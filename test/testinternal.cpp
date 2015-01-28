@@ -78,6 +78,12 @@ private:
 
         check("void f() {\n"
               "    const Token *tok;\n"
+              "    Token::Match(tok, \"%or%\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::Match() call: \"%or%\"\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
               "    Token::findmatch(tok, \";\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::findmatch() call: \";\"\n", errout.str());
