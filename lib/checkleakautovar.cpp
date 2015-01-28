@@ -358,8 +358,29 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             break;
         }
 
+        // return
+        else if (tok->str() == "return") {
+            ret(tok, *varInfo);
+            varInfo->clear();
+        }
+
+        // throw
+        else if (tok->str() == "throw") {
+            bool tryFound = false;
+            const Scope* scope = tok->scope();
+            while (scope && scope->isExecutable()) {
+                if (scope->type == Scope::eTry)
+                    tryFound = true;
+                scope = scope->nestedIn;
+            }
+            // If the execution leaves the function then treat it as return
+            if (!tryFound)
+                ret(tok, *varInfo);
+            varInfo->clear();
+        }
+
         // Function call..
-        else if (Token::Match(tok, "%type% (") && tok->str() != "return" && tok->str() != "throw") {
+        else if (Token::Match(tok, "%type% (")) {
             VarInfo::AllocInfo allocation(_settings->library.dealloc(tok), VarInfo::DEALLOC);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
@@ -397,12 +418,6 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
         }
 
-        // return
-        else if (tok->str() == "return") {
-            ret(tok, *varInfo);
-            varInfo->clear();
-        }
-
         // goto => weird execution path
         else if (tok->str() == "goto") {
             varInfo->clear();
@@ -410,21 +425,6 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // continue/break
         else if (Token::Match(tok, "continue|break ;")) {
-            varInfo->clear();
-        }
-
-        // throw
-        else if (tok->str() == "throw") {
-            bool tryFound = false;
-            const Scope* scope = tok->scope();
-            while (scope && scope->isExecutable()) {
-                if (scope->type == Scope::eTry)
-                    tryFound = true;
-                scope = scope->nestedIn;
-            }
-            // If the execution leaves the function then treat it as return
-            if (!tryFound)
-                ret(tok, *varInfo);
             varInfo->clear();
         }
     }
