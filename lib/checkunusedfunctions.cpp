@@ -196,7 +196,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         if (funcname) {
             FunctionUsage &func = _functions[ funcname->str()];
-            const std::string called_from_file = tokenizer.list.getSourceFilePath();
+            const std::string& called_from_file = tokenizer.list.getSourceFilePath();
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
                 func.usedOtherFile = true;
