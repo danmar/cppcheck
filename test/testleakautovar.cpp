@@ -474,6 +474,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check(
+            "void foo(char **p) {\n"
+            "  delete p[0];\n"
+            "  delete p[1];\n"
+            "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check(
             "void foo(char *p) {\n"
             "  delete p;\n"
             "  getNext(&p);\n"
