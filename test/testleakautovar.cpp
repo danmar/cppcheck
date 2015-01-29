@@ -53,7 +53,7 @@ private:
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
-        TEST_CASE(deallocuse7); // #6467
+        TEST_CASE(deallocuse7); // #6467, #6469, #6473
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -316,7 +316,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void deallocuse7() {  // #6467
+    void deallocuse7() {  // #6467, #6469, #6473
         check("struct Foo { int* ptr; };\n"
               "void f(Foo* foo) {\n"
               "    delete foo->ptr;\n"
@@ -330,6 +330,27 @@ private:
               "    x = *foo->ptr; \n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
+
+        check("void parse() {\n"
+              "    struct Buf {\n"
+              "        Buf(uint32_t len) : m_buf(new uint8_t[len]) {}\n"
+              "        ~Buf() { delete[]m_buf; }\n"
+              "        uint8_t *m_buf;\n"
+              "    };\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n"
+              "    Foo();\n"
+              "    Foo* ptr;\n"
+              "    void func();\n"
+              "};\n"
+              "void bar(Foo* foo) {\n"
+              "    delete foo->ptr;\n"
+              "    foo->ptr = new Foo;\n"
+              "    foo->ptr->func();\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
