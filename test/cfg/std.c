@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <tgmath.h> // frexp
 
 void strcpy_ok(char *a, char *b) {
     strcpy(a,b);
@@ -118,5 +119,6 @@ void nullpointerMemchr3(char *p) {
 }
 
 void nullpointerMemcmp(char *p) {
+  // cppcheck-suppress nullPointer
   memcmp(p, 0, 123);
 }
