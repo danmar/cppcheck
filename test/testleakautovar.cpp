@@ -53,6 +53,7 @@ private:
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
+        TEST_CASE(deallocuse7); // #6467
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -313,6 +314,22 @@ private:
               "    x = p = foo();\n"  // <- p is not dereferenced
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse7() {  // #6467
+        check("struct Foo { int* ptr; };\n"
+              "void f(Foo* foo) {\n"
+              "    delete foo->ptr;\n"
+              "    foo->ptr = new Foo; \n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { int* ptr; };\n"
+              "void f(Foo* foo) {\n"
+              "    delete foo->ptr;\n"
+              "    x = *foo->ptr; \n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
