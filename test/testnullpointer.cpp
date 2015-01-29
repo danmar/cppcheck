@@ -20,6 +20,7 @@
 #include "checknullpointer.h"
 #include "testsuite.h"
 #include <sstream>
+#include <tinyxml2.h>
 
 extern std::ostringstream errout;
 
@@ -32,9 +33,19 @@ private:
     Settings settings;
 
     void run() {
-        // Load std.cfg library file
-        // TODO: This will be removed. The std.cfg is tested with the cfg testing.
-        LOAD_LIB_2(settings.library, "std.cfg");
+        // Load std.cfg configuration
+        {
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <function name=\"strcpy\">\n"
+                                   "    <arg nr=\"1\"><not-null/></arg>\n"
+                                   "    <arg nr=\"2\"><not-null/></arg>\n"
+                                   "  </function>\n"
+                                   "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+            settings.library.load(doc);
+        }
 
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
@@ -49,7 +60,6 @@ private:
         TEST_CASE(nullpointer10);
         TEST_CASE(nullpointer11); // ticket #2812
         TEST_CASE(nullpointer12); // ticket #2470
-        TEST_CASE(nullpointer14);
         TEST_CASE(nullpointer15); // #3560 (fp: return p ? f(*p) : f(0))
         TEST_CASE(nullpointer16); // #3591
         TEST_CASE(nullpointer17); // #3567
@@ -61,7 +71,6 @@ private:
         TEST_CASE(nullpointer24); // #5082 fp: chained assignment
         TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer26); // #3589
-        TEST_CASE(nullpointer27); // #6014
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1154,29 +1163,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer14() {
-        check("void foo()\n"
-              "{\n"
-              "  strcpy(bar, 0);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "  memcmp(bar(xyz()), 0, 123);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
-
-        check("void foo(const char *s)\n"
-              "{\n"
-              "    char *p = malloc(100);\n"
-              "    frexp(1.0, p);\n"
-              "    char *q = 0;\n"
-              "    frexp(1.0, q);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Possible null pointer dereference: q\n", errout.str());
-    }
-
     void nullpointer15() {  // #3560
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -1301,36 +1287,6 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void nullpointer27() { // #6014
-        check("void fgetpos(int x, int y);\n"
-              "void foo() {\n"
-              "    fgetpos(0, x);\n"
-              "    fgetpos(x, 0);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void fgetpos(void* x, int y);\n"
-              "void foo() {\n"
-              "    fgetpos(0, x);\n"
-              "    fgetpos(x, 0);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
-
-        check("void fgetpos(int x, void* y);\n"
-              "void foo() {\n"
-              "    fgetpos(0, x);\n"
-              "    fgetpos(x, 0);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
-
-        check("void foo() {\n"
-              "    fgetpos(0, x);\n"
-              "    fgetpos(x, 0);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n"
-                      "[test.cpp:3]: (error) Null pointer dereference\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

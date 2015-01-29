@@ -56,6 +56,8 @@ void nullpointer(int value){
   // cppcheck-suppress nullPointer
   fgetpos(0,0);
   // cppcheck-suppress nullPointer
+  frexp(1.0,0);
+  // cppcheck-suppress nullPointer
   fsetpos(0,0);
   // cppcheck-suppress nullPointer
   itoa(123,0,10);
@@ -113,4 +115,8 @@ void nullpointerMemchr3(char *p) {
   char *s = 0;
   // cppcheck-suppress nullPointer
   p = memchr (s, 0, strlen(s));
+}
+
+void nullpointerMemcmp(char *p) {
+  memcmp(p, 0, 123);
 }
