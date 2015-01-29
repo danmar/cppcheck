@@ -3,7 +3,12 @@
 <start>
 <element name="def">
   <optional>
-    <attribute name="format"><data type="integer"/></attribute>
+    <attribute name="format">
+      <data type="integer">
+        <param name="minInclusive">1</param>
+        <param name="maxInclusive">20</param>
+      </data>
+    </attribute>
   </optional>
   <zeroOrMore>
     <choice>
@@ -80,7 +85,11 @@
                   <element name="not-bool"><empty/></element>
                   <element name="not-null"><empty/></element>
                   <element name="not-uninit"><empty/></element>
-                  <element name="valid"><text/></element>
+                  <element name="valid">
+                    <data type="string">
+                      <param name="pattern">([-]?[0-9]+[,])*([-]?[0-9]+)?:([-]?[0-9]+)?</param>
+                    </data>
+                  </element>
                   <element name="minsize">
                     <attribute name="type">
                       <ref name="DATA-NAME"/>
