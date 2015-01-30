@@ -95,11 +95,6 @@ private:
         TEST_CASE(nullpointer_internal_error); // #5080
         TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
         TEST_CASE(nullpointerPutchar);
-
-        // Load posix library file
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        // Test that posix.cfg is configured correctly
-        TEST_CASE(posixcfg);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -2469,38 +2464,6 @@ private:
               "  putchar(*0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
-    }
-
-    void posixcfg() {
-        const char errp[] = "[test.cpp:1] -> [test.cpp:1]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n";
-
-        check("void f(FILE *p){ isatty (*p);if(!p){}}");
-        ASSERT_EQUALS(errp,errout.str());
-
-        check("void f(){ isatty (0);}");
-        ASSERT_EQUALS("",errout.str());
-
-        check("void f(char *p){ mkdir (p, 0);}");
-        ASSERT_EQUALS("",errout.str());
-
-        check("void f(char *p){ int i = 0; mkdir (p, i);}");
-        ASSERT_EQUALS("",errout.str());
-
-        check("void f(){ getcwd (0, 0);}");
-        ASSERT_EQUALS("",errout.str());
-
-        check("void f(char *p){ mkdir (p, *0);}");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Null pointer dereference\n",errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "  char const * x = 0;\n"
-              "  strdup(x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
-
-        check("DIR* f(){ DIR *dirp = 0; return readdir (dirp);}");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Possible null pointer dereference: dirp\n",errout.str());
     }
 };
 
