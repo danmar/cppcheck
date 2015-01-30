@@ -1955,7 +1955,7 @@ bool Variable::arrayDimensions(const Library* lib)
 {
     const Library::Container* container = lib->detectContainer(_start);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
-        Dimension dimension;
+        Dimension dimension_;
         const Token* tok = Token::findsimplematch(_start, "<");
         if (tok) {
             tok = tok->next();
@@ -1963,14 +1963,14 @@ bool Variable::arrayDimensions(const Library* lib)
                 tok = tok->nextTemplateArgument();
             }
             if (tok) {
-                dimension.start = tok;
-                dimension.end = Token::findmatch(tok, ",|>");
-                if (dimension.end)
-                    dimension.end = dimension.end->previous();
-                if (dimension.start == dimension.end)
-                    dimension.num = MathLib::toLongNumber(dimension.start->str());
+                dimension_.start = tok;
+                dimension_.end = Token::findmatch(tok, ",|>");
+                if (dimension_.end)
+                    dimension_.end = dimension_.end->previous();
+                if (dimension_.start == dimension_.end)
+                    dimension_.num = MathLib::toLongNumber(dimension_.start->str());
             }
-            _dimensions.push_back(dimension);
+            _dimensions.push_back(dimension_);
             return true;
         }
     }
@@ -1986,21 +1986,21 @@ bool Variable::arrayDimensions(const Library* lib)
     if (dim)
         dim = dim->next();
 
-    bool isArray = false;
+    bool arr = false;
     while (dim && dim->next() && dim->str() == "[") {
-        Dimension dimension;
+        Dimension dimension_;
         // check for empty array dimension []
         if (dim->next()->str() != "]") {
-            dimension.start = dim->next();
-            dimension.end = dim->link()->previous();
-            if (dimension.start == dimension.end && dimension.start->isNumber())
-                dimension.num = MathLib::toLongNumber(dimension.start->str());
+            dimension_.start = dim->next();
+            dimension_.end = dim->link()->previous();
+            if (dimension_.start == dimension_.end && dimension_.start->isNumber())
+                dimension_.num = MathLib::toLongNumber(dimension_.start->str());
         }
-        _dimensions.push_back(dimension);
+        _dimensions.push_back(dimension_);
         dim = dim->link()->next();
-        isArray = true;
+        arr = true;
     }
-    return isArray;
+    return arr;
 }
 
 static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
