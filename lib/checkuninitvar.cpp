@@ -1072,6 +1072,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
             checkRhs(i->nameToken(), *i, NO_ALLOC, "");
             continue;
         }
+        if (Token::Match(i->nameToken(), "%var% ) (") && Token::simpleMatch(i->nameToken()->linkAt(2), ") =")) { // Function pointer is initialized, but Rhs might be not
+            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, "");
+            continue;
+        }
 
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();

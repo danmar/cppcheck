@@ -71,6 +71,7 @@ private:
         TEST_CASE(uninitvar8); // ticket #6230
         TEST_CASE(uninitvar9); // ticket #6424
         TEST_CASE(uninitvar_unconditionalTry);
+        TEST_CASE(uninitvar_funcptr); // #6404
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2825,6 +2826,28 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
     }
 
+    void uninitvar_funcptr() {
+        checkUninitVar2("void getLibraryContainer() {\n"
+                        "    Reference< XStorageBasedLibraryContainer >(*Factory)(const Reference< XComponentContext >&, const Reference< XStorageBasedDocument >&)\n"
+                        "        = &DocumentDialogLibraryContainer::create;\n"
+                        "    rxContainer.set((*Factory)(m_aContext, xDocument));\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar2("void getLibraryContainer() {\n"
+                        "    void* x;\n"
+                        "    Reference< XStorageBasedLibraryContainer >(*Factory)(const Reference< XComponentContext >&, const Reference< XStorageBasedDocument >&)\n"
+                        "        = x;\n"
+                        "    rxContainer.set((*Factory)(m_aContext, xDocument));\n"
+                        "}", "test.cpp", false);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar2("void getLibraryContainer() {\n"
+                        "    Reference< XStorageBasedLibraryContainer >(*Factory)(const Reference< XComponentContext >&, const Reference< XStorageBasedDocument >&);\n"
+                        "    rxContainer.set((*Factory)(m_aContext, xDocument));\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: Factory\n", errout.str());
+    }
     // Handling of function calls
     void uninitvar2_func() {
         // non-pointer variable
