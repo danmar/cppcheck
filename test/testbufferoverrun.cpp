@@ -82,6 +82,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
+        tokenizer.simplifyTokenList2();
 
         // Clear the error buffer..
         errout.str("");
@@ -223,6 +224,7 @@ private:
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
+        TEST_CASE(buffer_overrun_readSizeFromCfg);
 
         TEST_CASE(valueflow_string); // using ValueFlow string values in checking
 
@@ -2733,7 +2735,7 @@ private:
                  "    char* const source = (char*) malloc(sizeof(dest));\n"
                  "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
                  "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         checkstd("void foo() {\n"
                  "    double dest = 23.0;\n"
@@ -2929,6 +2931,61 @@ private:
               "    char * data = alloca(100);\n"
               "    strcpy(data, src);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_readSizeFromCfg() {
+        // Attempt to get size from Cfg files, no false positives if size is not specified
+        checkstd("void f() {\n"
+                 "  uint8_t str[256];\n"
+                 "  str[0] = 0;\n"
+                 "  strcat(str, \"toto\");\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkstd("void f() {\n"
+                 "  uint8_t str[2];\n"
+                 "  str[0] = 0;\n"
+                 "  strcat(str, \"toto\");\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        checkstd("void f() {\n"
+                 "  int_fast8_t str[256];\n"
+                 "  str[0] = 0;\n"
+                 "  strcat(str, \"toto\");\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // The same for structs, where the message comes from a different check
+        checkstd("typedef struct mystruct_s {\n"
+                 "    uint8_t str[256];\n"
+                 "} mystruct_t;\n"
+                 "void f() {\n"
+                 "    mystruct_t ms;\n"
+                 "    ms.str[0] = 0;\n"
+                 "    strcat((char*)ms.str, \"toto\");\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkstd("typedef struct mystruct_s {\n"
+                 "    uint8_t str[2];\n"
+                 "} mystruct_t;\n"
+                 "void f() {\n"
+                 "    mystruct_t ms;\n"
+                 "    ms.str[0] = 0;\n"
+                 "    strcat((char*)ms.str, \"toto\");\n"
+                 "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: ms.str\n", errout.str());
+
+        checkstd("typedef struct mystruct_s {\n"
+                 "    int_fast8_t str[256];\n"
+                 "} mystruct_t;\n"
+                 "void f() {\n"
+                 "    mystruct_t ms;\n"
+                 "    ms.str[0] = 0;\n"
+                 "    strcat((char*)ms.str, \"toto\");\n"
+                 "}");
         ASSERT_EQUALS("", errout.str());
     }
 

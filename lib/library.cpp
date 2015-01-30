@@ -503,7 +503,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (!name)
                 return Error(MISSING_ATTRIBUTE, "name");
             PodType podType = {0};
-            const char * const size = node->Attribute("sizeof");
+            const char * const size = node->Attribute("size");
             if (size)
                 podType.size = atoi(size);
             const char * const sign = node->Attribute("sign");

@@ -301,7 +301,7 @@ private:
     void podtype() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <podtype name=\"s16\" sizeof=\"2\"/>\n"
+                               "  <podtype name=\"s16\" size=\"2\"/>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));

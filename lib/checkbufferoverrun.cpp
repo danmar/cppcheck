@@ -652,71 +652,72 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 checkFunctionParameter(*tok, 2, arrayInfo, callstack);
         }
 
-        // Writing data into array..
-        if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
-            (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
-            const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
-            if (total_size > 0 && len >= (unsigned int)total_size) {
-                bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
-                continue;
-            }
-        } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||
-                   (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
-            const Variable *var = tok->tokAt(4)->variable();
-            if (var && var->isArray() && var->dimensions().size() == 1) {
-                const std::size_t len = (std::size_t)var->dimension(0);
-                if (total_size > 0 && len > (unsigned int)total_size) {
-                    if (_settings->inconclusive)
-                        possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+        if (total_size > 0) {
+            // Writing data into array..
+            if (total_size > 0 && (declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
+                (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
+                const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
+                if (len >= (unsigned int)total_size) {
+                    bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
                     continue;
                 }
-            }
-        }
-
-        // Detect few strcat() calls
-        const std::string strcatPattern = declarationId > 0 ? std::string("strcat ( %varid% , %str% ) ;") : ("strcat ( " + varnames + " , %str% ) ;");
-        if (Token::Match(tok, strcatPattern.c_str(), declarationId)) {
-            std::size_t charactersAppend = 0;
-            const Token *tok2 = tok;
-
-            while (Token::Match(tok2, strcatPattern.c_str(), declarationId)) {
-                charactersAppend += Token::getStrLength(tok2->tokAt(4 + varcount));
-                if (charactersAppend >= static_cast<std::size_t>(total_size)) {
-                    bufferOverrunError(tok2);
-                    break;
+            } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||
+                       (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
+                const Variable *var = tok->tokAt(4)->variable();
+                if (var && var->isArray() && var->dimensions().size() == 1) {
+                    const std::size_t len = (std::size_t)var->dimension(0);
+                    if (len > (unsigned int)total_size) {
+                        if (_settings->inconclusive)
+                            possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+                        continue;
+                    }
                 }
-                tok2 = tok2->tokAt(7 + varcount);
             }
-        }
 
-        // sprintf..
-        // TODO: change total_size to an unsigned value and remove the "&& total_size > 0" check.
-        const std::string sprintfPattern = declarationId > 0 ? std::string("sprintf ( %varid% , %str% [,)]") : ("sprintf ( " + varnames + " , %str% [,)]");
-        if (Token::Match(tok, sprintfPattern.c_str(), declarationId) && total_size > 0) {
-            checkSprintfCall(tok, static_cast<unsigned int>(total_size));
-        }
+            // Detect few strcat() calls
+            const std::string strcatPattern = declarationId > 0 ? std::string("strcat ( %varid% , %str% ) ;") : ("strcat ( " + varnames + " , %str% ) ;");
+            if (Token::Match(tok, strcatPattern.c_str(), declarationId)) {
+                std::size_t charactersAppend = 0;
+                const Token *tok2 = tok;
 
-        // snprintf..
-        const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
-        if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
-            const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varcount));
-            if ((n > total_size) && total_size > 0)
-                outOfBoundsError(tok->tokAt(4 + varcount), "snprintf size", true, n, total_size);
-        }
+                while (Token::Match(tok2, strcatPattern.c_str(), declarationId)) {
+                    charactersAppend += Token::getStrLength(tok2->tokAt(4 + varcount));
+                    if (charactersAppend >= static_cast<std::size_t>(total_size)) {
+                        bufferOverrunError(tok2);
+                        break;
+                    }
+                    tok2 = tok2->tokAt(7 + varcount);
+                }
+            }
 
-        // Check function call..
-        if (Token::Match(tok, "%var% (") && total_size > 0) {
-            // No varid => function calls are not handled
-            if (declarationId == 0)
-                continue;
+            // sprintf..
+            const std::string sprintfPattern = declarationId > 0 ? std::string("sprintf ( %varid% , %str% [,)]") : ("sprintf ( " + varnames + " , %str% [,)]");
+            if (Token::Match(tok, sprintfPattern.c_str(), declarationId)) {
+                checkSprintfCall(tok, static_cast<unsigned int>(total_size));
+            }
 
-            const ArrayInfo arrayInfo1(declarationId, varnames, total_size / size, size);
-            const std::list<const Token *> callstack;
-            checkFunctionCall(tok, arrayInfo1, callstack);
+            // snprintf..
+            const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
+            if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
+                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varcount));
+                if (n > total_size)
+                    outOfBoundsError(tok->tokAt(4 + varcount), "snprintf size", true, n, total_size);
+            }
+
+            // Check function call..
+            if (Token::Match(tok, "%var% (")) {
+                // No varid => function calls are not handled
+                if (declarationId == 0)
+                    continue;
+
+                const ArrayInfo arrayInfo1(declarationId, varnames, total_size / size, size);
+                const std::list<const Token *> callstack;
+                checkFunctionCall(tok, arrayInfo1, callstack);
+            }
         }
 
         // undefined behaviour: result of pointer arithmetic is out of bounds
-        else if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
+        if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
             if (isPortabilityEnabled && index > size)
                 pointerOutOfBoundsError(tok->tokAt(2));
@@ -1093,7 +1094,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 break;
             if (tok->str() == "{")
                 tok = tok->next();
-            const ArrayInfo arrayInfo(var, _tokenizer, i);
+            const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library, i);
             checkScope(tok, arrayInfo);
         }
     }
@@ -1211,7 +1212,7 @@ void CheckBufferOverrun::checkStructVariable()
         for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             if (var->isArray()) {
                 // create ArrayInfo from the array variable
-                ArrayInfo arrayInfo(&*var, _tokenizer);
+                ArrayInfo arrayInfo(&*var, _tokenizer, &_settings->library);
 
                 // find every function
                 const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1416,7 +1417,7 @@ void CheckBufferOverrun::bufferOverrun2()
             if (var->dimension(0) <= 1 && Token::simpleMatch(var->nameToken()->linkAt(1),"] ; }"))
                 continue;
 
-            ArrayInfo arrayInfo(var,_tokenizer);
+            ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
             arrayInfo.varname(varname);
 
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
@@ -1728,7 +1729,7 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo()
 {
 }
 
-CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid)
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const Library *library, const unsigned int forcedeclid)
     : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
     for (std::size_t i = 0; i < var->dimensions().size(); i++)
@@ -1737,8 +1738,14 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const Tokenizer *t
         _element_size = tokenizer->sizeOfType(var->typeEndToken());
     else if (var->typeStartToken()->str() == "struct")
         _element_size = 100;
-    else
+    else {
         _element_size = tokenizer->sizeOfType(var->typeEndToken());
+        if (!_element_size) { // try libary
+            const Library::PodType* podtype = library->podtype(var->typeEndToken()->str());
+            if (podtype)
+                _element_size = podtype->size;
+        }
+    }
 }
 
 /**
