@@ -35,6 +35,7 @@
 class Tokenizer;
 class Settings;
 class ErrorLogger;
+class Library;
 
 class Scope;
 class SymbolDatabase;
@@ -163,16 +164,15 @@ class CPPCHECKLIB Variable {
 
     /**
      * @brief parse and save array dimension information
-     * @param dimensions array dimensions vector
-     * @param tok the first '[' token of array declaration
+     * @param lib Library instance
      * @return true if array, false if not
      */
-    static bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok);
+    bool arrayDimensions(const Library* lib);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, const Type *type_,
-             const Scope *scope_)
+             const Scope *scope_, const Library* lib)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -181,7 +181,7 @@ public:
           _flags(0),
           _type(type_),
           _scope(scope_) {
-        evaluate();
+        evaluate(lib);
     }
 
     /**
@@ -553,7 +553,7 @@ private:
     std::vector<Dimension> _dimensions;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
-    void evaluate();
+    void evaluate(const Library* lib);
 };
 
 class CPPCHECKLIB Function {
@@ -857,14 +857,14 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_) {
+                     const Scope *scope_, const Library* lib) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_,
-                                   type_, scope_));
+                                   type_, scope_, lib));
     }
 
     /** @brief initialize varlist */
-    void getVariableList();
+    void getVariableList(const Library* lib);
 
     const Function *getDestructor() const;
 
@@ -892,9 +892,10 @@ public:
      * @brief check if statement is variable declaration and add it if it is
      * @param tok pointer to start of statement
      * @param varaccess access control of statement
+     * @param lib Library instance
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess);
+    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Library* lib);
 
     /**
      * @brief get variable from name
@@ -988,6 +989,7 @@ public:
 
 private:
     friend class Scope;
+    friend class Function;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

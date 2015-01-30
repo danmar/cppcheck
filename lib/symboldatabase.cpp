@@ -242,7 +242,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
             new_scope->definedType = &typeList.back();
             scope->definedTypes.push_back(&typeList.back());
 
-            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope);
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &settings->library);
 
             const Token *tok2 = tok->next();
 
@@ -800,9 +800,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
                     if (scope->type == Scope::eFor)
-                        scope->checkVariable(tok->tokAt(2), Local); // check for variable declaration and add it to new scope if found
+                        scope->checkVariable(tok->tokAt(2), Local, &settings->library); // check for variable declaration and add it to new scope if found
                     else if (scope->type == Scope::eCatch)
-                        scope->checkVariable(tok->tokAt(2), Throw); // check for variable declaration and add it to new scope if found
+                        scope->checkVariable(tok->tokAt(2), Throw, &settings->library); // check for variable declaration and add it to new scope if found
                     tok = tok1;
                 } else if (tok->str() == "{" && !tok->previous()->varId()) {
                     if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
@@ -856,7 +856,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     // fill in variable info
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         // find variables
-        it->getVariableList();
+        it->getVariableList(&settings->library);
     }
 
     // fill in function arguments
@@ -1342,7 +1342,7 @@ const Token * Variable::declEndToken() const
     return declEnd;
 }
 
-void Variable::evaluate()
+void Variable::evaluate(const Library* lib)
 {
     const Token* tok = _start;
     while (tok && tok->previous() && tok->previous()->isName())
@@ -1380,7 +1380,7 @@ void Variable::evaluate()
         _end = _end->previous();
 
     if (_name)
-        setFlag(fIsArray, arrayDimensions(_dimensions, _name->next()));
+        setFlag(fIsArray, arrayDimensions(lib));
     if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
         setFlag(fIsStlType, Token::simpleMatch(_start, "std ::"));
@@ -1396,7 +1396,7 @@ void Variable::evaluate()
                 tok = tok->link()->previous();
             // add array dimensions if present
             if (tok && tok->next()->str() == "[")
-                setFlag(fIsArray, arrayDimensions(_dimensions, tok->next()));
+                setFlag(fIsArray, arrayDimensions(lib));
         }
         if (!tok)
             return;
@@ -1951,12 +1951,42 @@ bool Type::hasCircularDependencies(std::set<BaseInfo>* anchestors) const
     return false;
 }
 
-bool Variable::arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok)
+bool Variable::arrayDimensions(const Library* lib)
 {
+    const Library::Container* container = lib->detectContainer(_start);
+    if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
+        Dimension dimension;
+        const Token* tok = Token::findsimplematch(_start, "<");
+        if (tok) {
+            tok = tok->next();
+            for (int i = 0; i < container->size_templateArgNo && tok; i++) {
+                tok = tok->nextTemplateArgument();
+            }
+            if (tok) {
+                dimension.start = tok;
+                dimension.end = Token::findmatch(tok, ",|>");
+                if (dimension.end)
+                    dimension.end = dimension.end->previous();
+                if (dimension.start == dimension.end)
+                    dimension.num = MathLib::toLongNumber(dimension.start->str());
+            }
+            _dimensions.push_back(dimension);
+            return true;
+        }
+    }
+
+    const Token *dim = _name;
+    if (!dim) {
+        // Argument without name
+        dim = _end;
+        // back up to start of array dimensions
+        while (dim && dim->str() == "]")
+            dim = dim->link()->previous();
+    }
+    if (dim)
+        dim = dim->next();
+
     bool isArray = false;
-
-    const Token *dim = tok;
-
     while (dim && dim->next() && dim->str() == "[") {
         Dimension dimension;
         // check for empty array dimension []
@@ -1966,7 +1996,7 @@ bool Variable::arrayDimensions(std::vector<Dimension> &dimensions, const Token *
             if (dimension.start == dimension.end && dimension.start->isNumber())
                 dimension.num = MathLib::toLongNumber(dimension.start->str());
         }
-        dimensions.push_back(dimension);
+        _dimensions.push_back(dimension);
         dim = dim->link()->next();
         isArray = true;
     }
@@ -2452,7 +2482,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                 }
             }
 
-            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope));
+            argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
 
             if (tok->str() == ")")
                 break;
@@ -2634,7 +2664,7 @@ AccessControl Scope::defaultAccess() const
 }
 
 // Get variable list..
-void Scope::getVariableList()
+void Scope::getVariableList(const Library* lib)
 {
     const Token *start;
 
@@ -2748,14 +2778,14 @@ void Scope::getVariableList()
             continue;
         }
 
-        tok = checkVariable(tok, varaccess);
+        tok = checkVariable(tok, varaccess, lib);
 
         if (!tok)
             break;
     }
 }
 
-const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
+const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, const Library* lib)
 {
     // Is it a throw..?
     if (Token::Match(tok, "throw %any% (") &&
@@ -2823,7 +2853,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess)
             }
         }
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, lib);
     }
 
     return tok;
