@@ -62,6 +62,7 @@ void nullpointer(int value){
   fsetpos(0,0);
   // cppcheck-suppress nullPointer
   itoa(123,0,10);
+  putchar(0);
   // cppcheck-suppress nullPointer
   strchr(0,0);
   // cppcheck-suppress nullPointer

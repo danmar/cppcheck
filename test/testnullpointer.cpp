@@ -93,8 +93,6 @@ private:
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
-        TEST_CASE(nullpointerFputc);     //  #5645 FP: Null pointer dereference in fputc argument
-        TEST_CASE(nullpointerPutchar);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp", bool verify=true) {
@@ -2428,42 +2426,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void nullpointerFputc() {
-        check("int main () {\n"
-              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
-              "fputc(000, fp);   \n"
-              "fclose(fp);\n"
-              "return 0 ;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int main () {\n"
-              "FILE *fp = fopen(\"file.txt\", \"w+\");\n"
-              "char *nullstring=0;"
-              "fputc(*nullstring, fp);   \n"
-              "fclose(fp);\n"
-              "return 0 ;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: nullstring\n", errout.str());
-    }
-
-    void nullpointerPutchar() {
-        check("void f (char *c) {\n"
-              "  putchar(c);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f () {\n"
-              "  putchar(0);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f () {\n"
-              "  putchar(*0);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
     }
 };
 
