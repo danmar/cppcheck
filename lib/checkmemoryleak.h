@@ -47,10 +47,11 @@ class Variable;
 
 /** @brief Base class for memory leaks checking */
 class CPPCHECKLIB CheckMemoryLeak {
-private:
+protected:
     /** For access to the tokens */
     const Tokenizer * const tokenizer;
 
+private:
     /** ErrorLogger used to report errors */
     ErrorLogger * const errorLogger;
 
@@ -202,8 +203,7 @@ public:
     }
 
     /** @brief Unit testing : testing the white list */
-    static bool test_white_list(const std::string &funcname);
-    static bool test_white_list_with_lib(const std::string &funcname, const Settings *settings);
+    static bool test_white_list(const std::string &funcname, const Settings *settings, bool cpp);
 
     /** @brief Perform checking */
     void check();

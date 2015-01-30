@@ -128,7 +128,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void check(const char code[], const Settings *settings = nullptr) {
+    void check(const char code[], const Settings *settings = nullptr, bool c = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -138,7 +138,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, c?"test.c":"test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check for memory leaks..
@@ -364,6 +364,8 @@ private:
         TEST_CASE(trac1879);
 
         TEST_CASE(ptrptr);
+
+        TEST_CASE(c_code);
 
         // test that the cfg files are configured correctly
         TEST_CASE(posixcfg);
@@ -594,33 +596,39 @@ private:
         ASSERT_EQUALS(";;catch{}", getcode("char *s; catch(err) { }", "s"));
     }
 
+    bool test_white_list(const std::string& str, bool cpp = true) const {
+        return CheckMemoryLeakInFunction::test_white_list(str, &settings1, cpp);
+    }
 
     void call_func() const {
         // whitelist..
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("qsort"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("scanf"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("sscanf"));
+        ASSERT_EQUALS(true, test_white_list("qsort"));
+        ASSERT_EQUALS(true, test_white_list("scanf"));
+        ASSERT_EQUALS(true, test_white_list("sscanf"));
 
         // #1293
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("time"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("asctime"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("asctime_r"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("ctime"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("ctime_r"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gmtime"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gmtime_r"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("localtime"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("localtime_r"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("memcmp"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gets"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vprintf"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vfprintf"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vsprintf"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("snprintf"));
-        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vsnprintf"));
+        ASSERT_EQUALS(true, test_white_list("time"));
+        ASSERT_EQUALS(true, test_white_list("asctime"));
+        ASSERT_EQUALS(true, test_white_list("asctime_r"));
+        ASSERT_EQUALS(true, test_white_list("ctime"));
+        ASSERT_EQUALS(true, test_white_list("ctime_r"));
+        ASSERT_EQUALS(true, test_white_list("gmtime"));
+        ASSERT_EQUALS(true, test_white_list("gmtime_r"));
+        ASSERT_EQUALS(true, test_white_list("localtime"));
+        ASSERT_EQUALS(true, test_white_list("localtime_r"));
+        ASSERT_EQUALS(true, test_white_list("memcmp"));
+        ASSERT_EQUALS(true, test_white_list("gets"));
+        ASSERT_EQUALS(true, test_white_list("vprintf"));
+        ASSERT_EQUALS(true, test_white_list("vfprintf"));
+        ASSERT_EQUALS(true, test_white_list("vsprintf"));
+        ASSERT_EQUALS(true, test_white_list("snprintf"));
+        ASSERT_EQUALS(true, test_white_list("vsnprintf"));
+
+        ASSERT_EQUALS(true, test_white_list("delete", true));
+        ASSERT_EQUALS(false, test_white_list("delete", false));
 
         static const char * const call_func_white_list[] = {
-            "access", "asprintf", "atof", "atoi", "atol", "chdir", "chmod", "clearerr", "chown", "delete"
+            "access", "asprintf", "atof", "atoi", "atol", "chdir", "chmod", "clearerr", "chown"
             , "fchmod", "fcntl", "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
             , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "freopen", "fscanf", "fseek"
             , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
@@ -644,7 +652,7 @@ private:
         };
 
         for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i) {
-            bool ret = CheckMemoryLeakInFunction::test_white_list(call_func_white_list[i]);
+            bool ret = test_white_list(call_func_white_list[i]);
             ASSERT_EQUALS("", ret ? "" : call_func_white_list[i]);
         }
     }
@@ -4260,6 +4268,16 @@ private:
               "    *pp = calloc(10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void c_code() {
+        check("int main(void) {\n"
+              "    struct llist *ll = malloc(sizeof(struct llist));\n"
+              "    free(ll);\n"
+              "    ll = NULL;\n"
+              "    delete(ll, ll->top);\n"
+              "}", nullptr, true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void gnucfg() {

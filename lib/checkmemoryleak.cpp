@@ -64,7 +64,7 @@ static unsigned int countParameters(const Token *tok)
 static const char * const call_func_white_list[] = {
     "_open", "_wopen", "access", "adjtime", "asctime", "asctime_r", "asprintf", "assert"
     , "atof", "atoi", "atol", "chdir", "chmod", "chown"
-    , "clearerr", "creat", "ctime", "ctime_r", "delete", "execl", "execle"
+    , "clearerr", "creat", "ctime", "ctime_r", "execl", "execle"
     , "execlp", "execv", "execve", "fchmod", "fclose", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "fprintf", "fputc", "fputs", "fread", "free"
@@ -239,17 +239,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, unsigned int varid) const
 {
-    if (Token::Match(tok, "delete %varid% ;", varid))
-        return New;
+    if (tokenizer->isCPP()) {
+        if (Token::Match(tok, "delete %varid% ;", varid))
+            return New;
 
-    if (Token::Match(tok, "delete [ ] %varid% ;", varid))
-        return NewArray;
+        if (Token::Match(tok, "delete [ ] %varid% ;", varid))
+            return NewArray;
 
-    if (Token::Match(tok, "delete ( %varid% ) ;", varid))
-        return New;
+        if (Token::Match(tok, "delete ( %varid% ) ;", varid))
+            return New;
 
-    if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
-        return NewArray;
+        if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
+            return NewArray;
+    }
 
     if (tok && tok->str() == "::")
         tok = tok->next();
@@ -283,17 +285,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const std::string &varname) const
 {
-    if (Token::Match(tok, std::string("delete " + varname + " [,;]").c_str()))
-        return New;
+    if (tokenizer->isCPP()) {
+        if (Token::Match(tok, std::string("delete " + varname + " [,;]").c_str()))
+            return New;
 
-    if (Token::Match(tok, std::string("delete [ ] " + varname + " [,;]").c_str()))
-        return NewArray;
+        if (Token::Match(tok, std::string("delete [ ] " + varname + " [,;]").c_str()))
+            return NewArray;
 
-    if (Token::Match(tok, std::string("delete ( " + varname + " ) [,;]").c_str()))
-        return New;
+        if (Token::Match(tok, std::string("delete ( " + varname + " ) [,;]").c_str()))
+            return New;
 
-    if (Token::Match(tok, std::string("delete [ ] ( " + varname + " ) [,;]").c_str()))
-        return NewArray;
+        if (Token::Match(tok, std::string("delete [ ] ( " + varname + " ) [,;]").c_str()))
+            return NewArray;
+    }
 
     if (Token::simpleMatch(tok, std::string("free ( " + varname + " ) ;").c_str()) ||
         Token::simpleMatch(tok, std::string("kfree ( " + varname + " ) ;").c_str()) ||
@@ -523,25 +527,17 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, boo
 
 
 
-bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
+bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
 {
     return (std::binary_search(call_func_white_list,
                                call_func_white_list+sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                               funcname));
-}
-
-
-bool CheckMemoryLeakInFunction::test_white_list_with_lib(const std::string &funcname, const Settings *settings)
-{
-    return (std::binary_search(call_func_white_list,
-                               call_func_white_list+sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                               funcname) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()));
+                               funcname) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()) || (cpp && funcname == "delete"));
 }
 
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz)
 {
-    if (test_white_list_with_lib(tok->str(), _settings)) {
+    if (test_white_list(tok->str(), _settings, tokenizer->isCPP())) {
         if (tok->str() == "asprintf" ||
             tok->str() == "delete" ||
             tok->str() == "fclose" ||
@@ -1024,7 +1020,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             dep = true;
                         } else if (Token::Match(tok2, "! %varid%", varid)) {
                             dep = true;
-                        } else if (Token::Match(tok2, "%var% (") && !test_white_list_with_lib(tok2->str(), _settings)) {
+                        } else if (Token::Match(tok2, "%var% (") && !test_white_list(tok2->str(), _settings, tokenizer->isCPP())) {
                             bool use = false;
                             for (const Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->nextArgument()) {
                                 if (Token::Match(tok3->previous(), "(|, &| %varid% ,|)", varid)) {
@@ -1200,7 +1196,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         if (!Token::Match(tok2->previous(), "&|(") &&
                             tok2->strAt(1) == "[") {
                         } else if (f.empty() ||
-                                   !test_white_list_with_lib(f.top()->str(), _settings) ||
+                                   !test_white_list(f.top()->str(), _settings, tokenizer->isCPP()) ||
                                    getDeallocationType(f.top(),varid)) {
                             use = true;
                         }
@@ -1286,7 +1282,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 if (_settings->library.isnoreturn(tok))
                     addtoken(&rettail, tok, "exit");
 
-                else if (!test_white_list_with_lib(tok->str(), _settings)) {
+                else if (!test_white_list(tok->str(), _settings, tokenizer->isCPP())) {
                     const Token* const end2 = tok->linkAt(1);
                     for (const Token *tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() == varid) {
@@ -2402,7 +2398,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
                 // Function call .. possible deallocation
                 else if (Token::Match(tok->previous(), "[{};] %var% (")) {
-                    if (!CheckMemoryLeakInFunction::test_white_list_with_lib(tok->str(), _settings)) {
+                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str(), _settings, tokenizer->isCPP())) {
                         return;
                     }
                 }
@@ -2717,12 +2713,12 @@ void CheckMemoryLeakNoVar::check()
                             // Is it a function call..
                             if (!Token::Match(tok3->tokAt(-2), "= %var% (")) {
                                 const std::string& functionName = tok3->strAt(-1);
-                                if (functionName == "delete" ||
+                                if ((tokenizer->isCPP() && functionName == "delete") ||
                                     functionName == "free" ||
                                     functionName == "fclose" ||
                                     functionName == "realloc")
                                     break;
-                                if (CheckMemoryLeakInFunction::test_white_list_with_lib(functionName, _settings)) {
+                                if (CheckMemoryLeakInFunction::test_white_list(functionName, _settings, tokenizer->isCPP())) {
                                     functionCallLeak(tok2, tok2->strAt(1), functionName);
                                     break;
                                 }

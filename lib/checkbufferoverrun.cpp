@@ -654,7 +654,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         if (total_size > 0) {
             // Writing data into array..
-            if (total_size > 0 && (declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
+            if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
                 (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
                 const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
                 if (len >= (unsigned int)total_size) {
