@@ -1416,7 +1416,7 @@ const Token *Token::getValueTokenDeadPointer() const
         if (!vartok || !vartok->isName() || !vartok->variable())
             continue;
         const Variable * const var = vartok->variable();
-        if (var->isStatic())
+        if (var->isStatic() || var->isReference())
             continue;
         // variable must be in same function (not in subfunction)
         if (functionscope != getfunctionscope(var->scope()))

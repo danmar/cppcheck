@@ -3944,6 +3944,29 @@ private:
                          "  f(tmp);\n"
                          "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Don't warn about references (#6399)
+        checkDeadPointer("void f() {\n"
+                         "    wxAuiToolBarItem* former_hover = NULL;\n"
+                         "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
+                         "        wxAuiToolBarItem& item = m_items.Item(i);\n"
+                         "        former_hover = &item;\n"
+                         "    }\n"
+                         "    if (former_hover != pitem)\n"
+                         "        dosth();\n"
+                         "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDeadPointer("void f() {\n"
+                         "    wxAuiToolBarItem* former_hover = NULL;\n"
+                         "    for (i = 0, count = m_items.GetCount(); i < count; ++i) {\n"
+                         "        wxAuiToolBarItem item = m_items.Item(i);\n"
+                         "        former_hover = &item;\n"
+                         "    }\n"
+                         "    if (former_hover != pitem)\n"
+                         "        dosth();\n"
+                         "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'former_hover' is dead if it has been assigned '&item' at line 5.\n", errout.str());
     }
 
     void uninitvar_posix_types() {
