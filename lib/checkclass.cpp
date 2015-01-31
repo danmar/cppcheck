@@ -1348,10 +1348,8 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope) const
         // Check for assignment to the deleted pointer (only if its a member of the class)
         if (var && isMemberVar(scope, var)) {
             for (const Token *tok1 = var->next(); tok1 && (tok1 != last); tok1 = tok1->next()) {
-                if (Token::Match(tok1, "%var% =")) {
-                    if (tok1->str() == var->str())
-                        return true;
-                }
+                if (Token::Match(tok1, "%varid% =", var->varId()))
+                    return true;
             }
         }
     }

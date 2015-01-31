@@ -663,7 +663,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 }
             } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||
                        (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
-                const Variable *var = tok->tokAt(4)->variable();
+                const Variable *var = tok->tokAt(varcount + 4)->variable();
                 if (var && var->isArray() && var->dimensions().size() == 1) {
                     const std::size_t len = (std::size_t)var->dimension(0);
                     if (len > (unsigned int)total_size) {
