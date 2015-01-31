@@ -411,7 +411,7 @@ private:
         // Variable declaration..
         if (Token::Match(&tok, "%var% [[;]")) {
             const Variable* var2 = tok.variable();
-            if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isExtern() && !var2->isConst() && !Token::simpleMatch(tok.linkAt(1), "] [")) {
+            if (var2 && var2->nameToken() == &tok && !var2->isStatic() && !var2->isExtern() && !Token::simpleMatch(tok.linkAt(1), "] [")) {
                 if (tok.linkAt(1)) { // array
                     const Token* endtok = tok.next();
                     while (endtok->link())
@@ -1058,7 +1058,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
 {
     for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
         if ((_tokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Type::True) ||
-            i->isStatic() || i->isExtern() || i->isConst() || i->isArray() || i->isReference())
+            i->isStatic() || i->isExtern() || i->isArray() || i->isReference())
             continue;
 
         // don't warn for try/catch exception variable

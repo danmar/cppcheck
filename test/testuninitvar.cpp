@@ -155,6 +155,13 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        // Ticket #6455 - some compilers allow const variables to be uninitialized
+        checkUninitVar("void foo() {\n"
+                       "    const int a;\n"
+                       "    b = c - a;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
         checkUninitVar("void foo() {\n"
                        "    int *p;\n"
                        "    realloc(p,10);\n"
