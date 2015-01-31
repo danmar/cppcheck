@@ -1985,6 +1985,8 @@ bool Variable::arrayDimensions(const Library* lib)
     }
     if (dim)
         dim = dim->next();
+    if (dim && dim->str() == ")")
+        dim = dim->next();
 
     bool arr = false;
     while (dim && dim->next() && dim->str() == "[") {

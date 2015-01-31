@@ -972,16 +972,16 @@ private:
 
         if (db) {
             ASSERT_EQUALS(10, db->getVariableListSize() - 1);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
             ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(3) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
             ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
             ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(6) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(7) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(8) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(9) != nullptr);
-            ASSERT_EQUALS(true, db->getVariableFromVarId(10) != nullptr);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(6) && db->getVariableFromVarId(6)->dimensions().size() == 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(7) && db->getVariableFromVarId(7)->dimensions().size() == 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(8) && db->getVariableFromVarId(8)->dimensions().size() == 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(9) && db->getVariableFromVarId(9)->dimensions().size() == 1);
+            ASSERT_EQUALS(true, db->getVariableFromVarId(10) && db->getVariableFromVarId(10)->dimensions().size() == 1);
             ASSERT_EQUALS("", errout.str());
         }
     }
