@@ -2050,8 +2050,8 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 
 void Tokenizer::arraySize()
 {
-    bool addlength = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool addlength = false;
         if (Token::Match(tok, "%name% [ ] = { %str% } ;")) {
             Token *t = tok->tokAt(3);
             t->deleteNext();
@@ -2061,9 +2061,8 @@ void Tokenizer::arraySize()
 
         if (addlength || Token::Match(tok, "%name% [ ] = %str% ;")) {
             tok = tok->next();
-            std::size_t sz = tok->strAt(3).length() - 1;
+            std::size_t sz = Token::getStrSize(tok->tokAt(3));
             tok->insertToken(MathLib::toString((unsigned int)sz));
-            addlength = false;
             tok = tok->tokAt(5);
         }
 

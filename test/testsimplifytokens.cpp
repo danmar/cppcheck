@@ -717,6 +717,10 @@ private:
         const char code3[] = "char str [ ] = \"\\0\";";
         const char expected3[] = "char str [ 2 ] = \"\\0\" ;";
         ASSERT_EQUALS(expected3, tok(code3));
+
+        const char code4[] = "char str [ ] = \"\\n\\n\";";
+        const char expected4[] = "char str [ 3 ] = \"\\n\\n\" ;";
+        ASSERT_EQUALS(expected4, tok(code4));
     }
 
     void dontRemoveIncrement() {
