@@ -31,7 +31,8 @@ private:
     void run() {
         TEST_CASE(empty);
         TEST_CASE(function);
-        TEST_CASE(function_match);
+        TEST_CASE(function_match_scope);
+        TEST_CASE(function_match_args);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(function_arg_valid);
@@ -79,7 +80,38 @@ private:
         ASSERT(library.isnotnoreturn(tokenList.front()));
     }
 
-    void function_match() const {
+    void function_match_scope() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"/>"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("fred.foo(123);"); // <- wrong scope, not library function
+            tokenList.createTokens(istr);
+
+            Library library;
+            library.load(doc);
+            ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
+        }
+
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("Fred::foo(123);"); // <- wrong scope, not library function
+            tokenList.createTokens(istr);
+
+            Library library;
+            library.load(doc);
+            ASSERT(library.isNotLibraryFunction(tokenList.front()->tokAt(2)));
+        }
+    }
+
+    void function_match_args() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"foo\">\n"

@@ -683,7 +683,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
 {
     // called from tokenizer, ast is not created properly yet
     if (Token::Match(ftok->previous(),"::|."))
-        return false;
+        return true;
 
     int callargs = 0;
     for (const Token *tok = ftok->tokAt(2); tok && tok->str() != ")"; tok = tok->next()) {
