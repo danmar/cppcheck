@@ -86,7 +86,12 @@
                   </element>
                   <element name="minsize">
                     <attribute name="type">
-                      <ref name="DATA-NAME"/>
+                      <choice>
+                        <value>strlen</value>
+                        <value>argvalue</value>
+                        <value>sizeof</value>
+                        <value>mul</value>
+                      </choice>
                     </attribute>
                     <attribute name="arg">
                       <ref name="ARGNO"/>
