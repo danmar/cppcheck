@@ -6503,6 +6503,12 @@ private:
               "    if(!malloc(5)) fail();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not stored.\n", errout.str());
+
+        check("FOO* factory() {\n"
+              "    FOO* foo = new (std::nothrow) FOO;\n"
+              "    return foo;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
