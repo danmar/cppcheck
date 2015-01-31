@@ -4,10 +4,7 @@
 <element name="def">
   <optional>
     <attribute name="format">
-      <data type="integer">
-        <param name="minInclusive">1</param>
-        <param name="maxInclusive">20</param>
-      </data>
+      <value>1</value>
     </attribute>
   </optional>
   <zeroOrMore>
@@ -71,10 +68,7 @@
             <element name="arg">
               <attribute name="nr">
                 <choice>
-                  <data type="integer">
-                    <param name="minInclusive">1</param>
-                    <param name="maxInclusive">20</param>
-                  </data>
+                  <ref name="ARGNO"/>
                   <value>any</value>
                 </choice>
               </attribute>
@@ -95,10 +89,12 @@
                       <ref name="DATA-NAME"/>
                     </attribute>
                     <attribute name="arg">
-                      <text/>
+                      <ref name="ARGNO"/>
                     </attribute>
                     <optional>
-                      <attribute name="arg2"><text/></attribute>
+                      <attribute name="arg2">
+                        <ref name="ARGNO"/>
+                      </attribute>
                     </optional>
                   </element>
                 </choice>
@@ -172,7 +168,7 @@
       <element name="reflection">
         <zeroOrMore>
           <element name="call">
-            <attribute name="arg"><data type="integer"/></attribute>
+            <attribute name="arg"><ref name="ARGNO"/></attribute>
             <ref name="DATA-NAME"/>
           </element>
         </zeroOrMore>
@@ -193,8 +189,10 @@
           <choice>
             <element name="type">
               <choice>
-                <attribute name="templateParameter"><text/></attribute>
-                <attribute name="string"><text/></attribute>
+                <attribute name="templateParameter"><data type="integer"/></attribute>
+                <attribute name="string">
+                  <value>std-like</value>
+                </attribute>
               </choice>
               <empty/>
             </element>
@@ -206,8 +204,27 @@
                 <element name="function">
                   <attribute name="name"><ref name="DATA-NAME"/></attribute>
                   <choice>
-                    <attribute name="action"><text/></attribute>
-                    <attribute name="yields"><text/></attribute>
+                    <attribute name="action">
+                      <choice>
+                        <value>resize</value>
+                        <value>clear</value>
+                        <value>push</value>
+                        <value>pop</value>
+                        <value>find</value>
+                      </choice>
+                    </attribute>
+                    <attribute name="yields">
+                      <choice>
+                        <value>at_index</value>
+                        <value>item</value>
+                        <value>buffer</value>
+                        <value>buffer-nt</value>
+                        <value>start-iterator</value>
+                        <value>end-iterator</value>
+                        <value>size</value>
+                        <value>empty</value>
+                      </choice>
+                    </attribute>
                   </choice>
                   <empty/>
                 </element>
@@ -215,7 +232,9 @@
             </element>
             <element name="access">
               <optional>
-                <attribute name="indexOperator"><text/></attribute>
+                <attribute name="indexOperator">
+                  <value>array-like</value>
+                </attribute>
               </optional>
               <zeroOrMore>
                 <element name="function">
@@ -235,10 +254,22 @@
       <element name="podtype">
         <attribute name="name"><ref name="DATA-NAME"/></attribute>
         <optional>
-          <attribute name="size"><text/></attribute>
+          <attribute name="size">
+            <choice>
+              <value>1</value>
+              <value>2</value>
+              <value>4</value>
+              <value>8</value>
+            </choice>
+          </attribute>
         </optional>
         <optional>
-          <attribute name="sign"><ref name="DATA-NAME"/></attribute>
+          <attribute name="sign">
+            <choice>
+              <value>s</value>
+              <value>u</value>
+            </choice>
+          </attribute>
         </optional>
         <empty/>
       </element>
@@ -265,6 +296,13 @@
   </zeroOrMore>
 </element>
 </start>
+
+  <define name="ARGNO">
+    <data type="integer">
+      <param name="minInclusive">1</param>
+      <param name="maxInclusive">20</param>
+    </data>
+  </define>
 
   <define name="DATA-BOOL">
     <choice>
