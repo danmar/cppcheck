@@ -6448,25 +6448,25 @@ private:
               "{\n"
               "    malloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"
               "    calloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function calloc is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function calloc is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"
               "    strdup(\"Test\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function strdup is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function strdup is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"
               "    (char*) malloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not stored.\n", errout.str());
 
         check("void x()\n"
               "{\n"
@@ -6486,7 +6486,7 @@ private:
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not used.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not stored.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
@@ -6496,7 +6496,13 @@ private:
               "{\n"
               "    f();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Return value of allocation function f is not used.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Return value of allocation function f is not stored.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
+              "    if(!malloc(5)) fail();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function malloc is not stored.\n", errout.str());
     }
 
     void smartPointerFunctionParam() {

@@ -2745,10 +2745,9 @@ void CheckMemoryLeakNoVar::check()
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-        if (Token::Match(tok, "{|}|; %name% (") && tok->strAt(-1) != "=") {
-            tok = tok->next();
-            const int allocationId = _settings->library.alloc(tok);
-            if (allocationId > 0)
+        if (Token::Match(tok, "%name% (") && (!tok->next()->astParent() || tok->next()->astParent()->str() == "!" || tok->next()->astParent()->isComparisonOp())) {
+            const AllocType allocType = getAllocationType(tok, 0);
+            if (allocType != No)
                 returnValueNotUsedError(tok, tok->str());
         }
     }
@@ -2807,7 +2806,7 @@ void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string 
 
 void CheckMemoryLeakNoVar::returnValueNotUsedError(const Token *tok, const std::string &alloc)
 {
-    reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function " + alloc + " is not used.");
+    reportError(tok, Severity::error, "leakReturnValNotUsed", "Return value of allocation function " + alloc + " is not stored.");
 }
 
 void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string& objType)
