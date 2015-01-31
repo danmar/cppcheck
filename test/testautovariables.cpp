@@ -882,8 +882,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
 
+        check("int& operator<<(int out, int path) {\n"
+              "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
         check("std::ostream& operator<<(std::ostream& out, const std::string& path) {\n"
               "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::ostream& operator<<(std::ostream* out, const std::string& path) {\n"
+              "    return *out << path;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

@@ -349,8 +349,15 @@ static bool astHasAutoResult(const Token *tok)
     if (tok->astOperand2() && !astHasAutoResult(tok->astOperand2()))
         return false;
 
-    if (tok->isOp())
+    if (tok->isOp()) {
+        if ((tok->str() == "<<" || tok->str() == ">>") && tok->astOperand1()) {
+            const Token* tok2 = tok->astOperand1();
+            while (tok2 && tok2->str() == "*" && !tok2->astOperand2())
+                tok2 = tok2->astOperand1();
+            return tok2 && tok2->variable() && !tok2->variable()->isClass() && !tok2->variable()->isStlType(); // Class or unknown type on LHS: Assume it is a stream
+        }
         return true;
+    }
 
     if (tok->isLiteral())
         return true;
@@ -359,7 +366,7 @@ static bool astHasAutoResult(const Token *tok)
         // TODO: check function calls, struct members, arrays, etc also
         if (!tok->variable())
             return false;
-        if (tok->variable()->isStlType() && !Token::Match(tok->astParent(), "<<|>>"))
+        if (tok->variable()->isStlType())
             return true;
         if (tok->variable()->isClass() || tok->variable()->isPointer() || tok->variable()->isReference()) // TODO: Properly handle pointers/references to classes in symbol database
             return false;
