@@ -119,7 +119,7 @@ class MatchCompiler:
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
-            return 'tok->varId() != 0'
+            return '(tok->varId() != 0)'
         elif tok == '%varid%':
             return '(tok->isName() && tok->varId()==varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
