@@ -395,7 +395,7 @@ private:
         check("void foo(char* c) {\n"
               "    if(c == '\\0') bar();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
         check("void f() {\n"
               "  struct { struct { char *str; } x; } a;\n"

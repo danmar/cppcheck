@@ -69,6 +69,7 @@ private:
         TEST_CASE(garbageCode26);
         TEST_CASE(garbageCode27);
         TEST_CASE(garbageCode28);
+        TEST_CASE(garbageCode29);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -377,6 +378,11 @@ private:
                                "  int a;\n"
                                "  R1 () : a { }\n"
                                "};\n"), InternalError);
+    }
+
+    void garbageCode29() {
+        // ticket #2601 segmentation fault
+        checkCode("|| #if #define <=");
     }
 
     void garbageValueFlow() {

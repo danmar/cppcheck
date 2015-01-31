@@ -2555,7 +2555,7 @@ private:
         checkUninitVar2("static void f(int x, int y) {\n"
                         "    int a;\n"
                         "    if (x == 0 && (a == 1)) { }\n"
-                        "}");
+                        "}", "test.cpp", false);
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
         checkUninitVarB("void f() {\n"
@@ -3002,7 +3002,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}");
+                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar2("void f() {\n"
@@ -3012,7 +3012,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}");
+                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVarB("void f() {\n"
@@ -3399,7 +3399,7 @@ private:
                         "   struct FRED fred;\n"
                         "   fred.a = do_something();\n"
                         "   if (fred.b == 0) { }\n"
-                        "}\n", "test.c");
+                        "}\n", "test.c", false);
         ASSERT_EQUALS("[test.c:9]: (error) Uninitialized struct member: fred.b\n", errout.str());
 
         checkUninitVar2("struct Fred { int a; };\n"

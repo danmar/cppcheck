@@ -3528,10 +3528,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // simplify bit fields..
     simplifyBitfields();
 
-    // Simplify '(p == 0)' to '(!p)'
-    simplifyIfNot();
-    simplifyIfNotNull();
-
     // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
@@ -6119,15 +6115,15 @@ void Tokenizer::simplifyIfNotNull()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         Token *deleteFrom = nullptr;
 
-        // Remove 'x = (x != 0)'
-        if (Token::simpleMatch(tok, "= (")) {
+        // Remove 'x = x != 0;'
+        if (Token::simpleMatch(tok, "=")) {
             if (Token::Match(tok->tokAt(-2), "[;{}] %name%")) {
                 const std::string& varname(tok->previous()->str());
 
-                if (Token::simpleMatch(tok->tokAt(2), (varname + " != 0 ) ;").c_str()) ||
-                    Token::simpleMatch(tok->tokAt(2), ("0 != " + varname + " ) ;").c_str())) {
+                if (Token::simpleMatch(tok->next(), (varname + " != 0 ;").c_str()) ||
+                    Token::simpleMatch(tok->next(), ("0 != " + varname + " ;").c_str())) {
                     tok = tok->tokAt(-2);
-                    tok->deleteNext(8);
+                    tok->deleteNext(6);
                 }
             }
             continue;

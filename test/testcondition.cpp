@@ -793,7 +793,7 @@ private:
     void incorrectLogicOperator4() {
         check("void f(int x) {\n"
               "  if (x && x != $0) {}\n"
-              "}");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 

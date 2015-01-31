@@ -1927,7 +1927,7 @@ private:
               "        }\n"
               "        a[i - 1] = 0;\n"
               "    }\n"
-              "}");
+              "}", true, "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
