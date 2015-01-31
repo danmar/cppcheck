@@ -1603,6 +1603,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // Set value in function scope..
             const unsigned int varid2 = arg->declarationId();
+            if (!varid2)
+                continue;
             for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%varid% !!=", varid2)) {
                     for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)

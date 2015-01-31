@@ -1395,6 +1395,12 @@ private:
                "  dostuff(x+1);\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
+
+        code = "void leaveNotifyEvent(const XCrossingEvent * const) { }\n"
+               "void motionNotifyEvent() {\n"
+               "    leaveNotifyEvent(0);\n"
+               "}";
+        testValueOfX(code, 2U, 2); // No complaint about Token::Match called with varid 0. (#6443)
     }
 
     void valueFlowFunctionReturn() {
