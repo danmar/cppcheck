@@ -86,12 +86,12 @@ static bool checkRvalueExpression(const Token * const vartok)
     if (var == nullptr)
         return false;
 
-    if (Token::Match(vartok->previous(), "& %var% [") && var->isPointer())
+    if (Token::Match(vartok->previous(), "& %name% [") && var->isPointer())
         return false;
 
     const Token * const next = vartok->next();
     // &a.b[0]
-    if (Token::Match(vartok, "%var% . %var% [") && !var->isPointer()) {
+    if (Token::Match(vartok, "%name% . %var% [") && !var->isPointer()) {
         const Variable *var2 = next->next()->variable();
         return var2 && !var2->isPointer();
     }
@@ -421,7 +421,7 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // return reference to temporary..
-                else if (Token::Match(tok2, "return %var% (") &&
+                else if (Token::Match(tok2, "return %name% (") &&
                          Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..

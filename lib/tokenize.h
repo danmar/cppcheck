@@ -139,8 +139,8 @@ public:
     static void eraseDeadCode(Token *begin, const Token *end);
 
     /**
-     * Simplify '* & ( %var% ) =' or any combination of '* &' and '()'
-     * parentheses around '%var%' to '%var% ='
+     * Simplify '* & ( %name% ) =' or any combination of '* &' and '()'
+     * parentheses around '%name%' to '%name% ='
      */
     void simplifyMulAndParens();
 
@@ -386,7 +386,7 @@ public:
      */
     bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
 
-    /** Simplify useless C++ empty namespaces, like: 'namespace %var% { }'*/
+    /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
 
     /** Simplify redundant code placed after control flow statements :

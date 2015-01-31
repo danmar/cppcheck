@@ -237,7 +237,7 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo|%type|bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::Match() call: \"foo|%type|bar\"\n"
+        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::Match() call: \"foo|%type|bar\"\n"
                       "[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n"
                       , errout.str());
 
@@ -336,7 +336,7 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \";|%type%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::Match() call: \";|%type%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::Match() call: \";|%type%\"\n", errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -344,9 +344,9 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n" // The %var%|%num% works..
+        check("void f() {\n" // The %name%|%num% works..
               "    const Token *tok;\n"
-              "    Token::Match(tok, \"%var%|%num%\");\n"
+              "    Token::Match(tok, \"%name%|%num%\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

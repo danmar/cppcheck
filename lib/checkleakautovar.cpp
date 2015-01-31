@@ -157,14 +157,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (tok->varId() > 0) {
             const std::map<unsigned int, VarInfo::AllocInfo>::iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
-                if (var->second.status == VarInfo::DEALLOC && (!Token::Match(tok, "%var% =") || tok->strAt(-1) == "*")) {
+                if (var->second.status == VarInfo::DEALLOC && (!Token::Match(tok, "%name% =") || tok->strAt(-1) == "*")) {
                     deallocUseError(tok, tok->str());
                 } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
                     varInfo->erase(tok->varId());
                 } else if (tok->strAt(-1) == "=") {
                     varInfo->erase(tok->varId());
                 }
-            } else if (Token::Match(tok->previous(), "& %var% = %var% ;")) {
+            } else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {
                 varInfo->referenced.insert(tok->tokAt(2)->varId());
             }
         }
@@ -185,11 +185,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             break;
 
         // parse statement, skip to last member
-        while (Token::Match(tok, "%var% ::|. %var% !!("))
+        while (Token::Match(tok, "%name% ::|. %name% !!("))
             tok = tok->tokAt(2);
 
         // assignment..
-        if (tok->varId() && Token::Match(tok, "%var% =")) {
+        if (Token::Match(tok, "%var% =")) {
             // taking address of another variable..
             if (Token::Match(tok->next(), "= %var% [+;]")) {
                 if (tok->tokAt(2)->varId() != tok->varId()) {
@@ -290,7 +290,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         varInfo2.clear();
                 } else if (Token::Match(tok->next(), "( ! %var% )|&&")) {
                     varInfo1.erase(tok->tokAt(3)->varId());
-                } else if (Token::Match(tok->next(), "( %var% ( ! %var% ) )|&&")) {
+                } else if (Token::Match(tok->next(), "( %name% ( ! %var% ) )|&&")) {
                     varInfo1.erase(tok->tokAt(5)->varId());
                 } else if (Token::Match(tok->next(), "( %var% < 0 )|&&")) {
                     varInfo1.erase(tok->tokAt(2)->varId());
@@ -415,7 +415,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->tokAt(3);
             else
                 tok = tok->next();
-            while (Token::Match(tok, "%var% ::|."))
+            while (Token::Match(tok, "%name% ::|."))
                 tok = tok->tokAt(2);
             if (tok->varId() && tok->strAt(1) != "[") {
                 VarInfo::AllocInfo allocation(-1, VarInfo::DEALLOC);
@@ -473,8 +473,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
         if (arg->str() == "new")
             arg = arg->next();
 
-        if ((Token::Match(arg, "%var% [-,)]") && arg->varId() > 0) ||
-            (Token::Match(arg, "& %var%") && arg->next()->varId() > 0)) {
+        if (Token::Match(arg, "%var% [-,)]") || Token::Match(arg, "& %var%")) {
 
             // goto variable
             if (arg->str() == "&")
@@ -482,7 +481,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
 
             // Is variable allocated?
             changeAllocStatus(varInfo, allocation, tok, arg);
-        } else if (Token::Match(arg, "%var% (")) {
+        } else if (Token::Match(arg, "%name% (")) {
             functionCall(arg, varInfo, allocation);
         }
     }
@@ -532,7 +531,7 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
                     used = true;
                     break;
                 }
-                if (Token::Match(tok2, "return|(|, & %varid% . %var% [);,]", varid)) {
+                if (Token::Match(tok2, "return|(|, & %varid% . %name% [);,]", varid)) {
                     used = true;
                     break;
                 }

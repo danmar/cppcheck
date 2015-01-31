@@ -148,13 +148,14 @@ public:
      *
      * Possible patterns
      * - "%any%" any token
-     * - "%var%" any token which is a name or type e.g. "hello" or "int"
+     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
      * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false
      * - "%char%" Any token enclosed in &apos;-character.
      * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%str%" Any token starting with &quot;-character (C-string).
+     * - "%var%" Match with token with varId > 0
      * - "%varid%" Match with parameter varid
      * - "%op%" Any token such that isOp() returns true.
      * - "%cop%" Any token such that isConstOp() returns true.

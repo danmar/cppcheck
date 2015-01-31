@@ -76,12 +76,10 @@ void CheckSizeof::checkSizeofForArrayParameter()
                 if (varTok->str() == "(") {
                     varTok = varTok->next();
                 }
-                if (varTok->varId() > 0) {
-                    const Variable *var = varTok->variable();
-                    if (var && var->isArray() && var->isArgument()) {
-                        sizeofForArrayParameterError(tok);
-                    }
-                }
+
+                const Variable *var = varTok->variable();
+                if (var && var->isArray() && var->isArgument())
+                    sizeofForArrayParameterError(tok);
             }
         }
     }
@@ -311,8 +309,8 @@ void CheckSizeof::sizeofVoid()
                    (Token::Match(tok->tokAt(3)->variable()->typeStartToken(), "void * !!*")) &&
                    (!tok->tokAt(3)->variable()->isArray())) { // sizeof(*p) where p is of type "void*"
             sizeofDereferencedVoidPointerError(tok, tok->strAt(3));
-        } else if (Token::Match(tok, "%var% +|-|++|--") ||
-                   Token::Match(tok, "+|-|++|-- %var%")) { // Arithmetic operations on variable of type "void*"
+        } else if (Token::Match(tok, "%name% +|-|++|--") ||
+                   Token::Match(tok, "+|-|++|-- %name%")) { // Arithmetic operations on variable of type "void*"
             const int index = (tok->isName()) ? 0 : 1;
             const Variable* var = tok->tokAt(index)->variable();
             if (var && !var->isArray() && Token::Match(var->typeStartToken(), "void * !!*")) {
@@ -338,7 +336,7 @@ void CheckSizeof::sizeofVoid()
                     }
                 }
                 // Check for cast on operations with '+|-'
-                if (Token::Match(tok, "%var% +|-")) {
+                if (Token::Match(tok, "%name% +|-")) {
                     // Check for cast expression
                     if (Token::simpleMatch(tok2->previous(), ")") && !Token::Match(tok2->previous()->link(), "( const| void *"))
                         continue;

@@ -53,7 +53,7 @@ private:
         TEST_CASE(redundant_plus);
         TEST_CASE(redundant_plus_numbers);
         TEST_CASE(parentheses1);
-        TEST_CASE(parenthesesVar);      // Remove redundant parentheses around variable .. "( %var% )"
+        TEST_CASE(parenthesesVar);      // Remove redundant parentheses around variable .. "( %name% )"
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);

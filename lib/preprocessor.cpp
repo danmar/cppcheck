@@ -1336,8 +1336,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // translate A==1 condition to A=1 configuration
             if (def.find("==") != std::string::npos) {
-                // Check if condition match pattern "%var% == %num%"
-                // %var%
+                // Check if condition match pattern "%name% == %num%"
+                // %name%
                 std::string::size_type pos = 0;
                 if (std::isalpha((unsigned char)def[pos]) || def[pos] == '_') {
                     ++pos;
@@ -1362,7 +1362,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                             ++pos;
                     }
 
-                    // Does the condition match the pattern "%var% == %num%"?
+                    // Does the condition match the pattern "%name% == %num%"?
                     if (pos == def.size()) {
                         def.erase(def.find("=="),1);
                     }
@@ -1508,13 +1508,13 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             const Token *tok = tokenizer.tokens();
             std::set<std::string> varList;
             while (tok) {
-                if (Token::Match(tok, "defined ( %var% )")) {
+                if (Token::Match(tok, "defined ( %name% )")) {
                     varList.insert(tok->strAt(2));
                     tok = tok->tokAt(4);
                     if (tok && tok->str() == "&&") {
                         tok = tok->next();
                     }
-                } else if (Token::Match(tok, "%var% ;")) {
+                } else if (Token::Match(tok, "%name% ;")) {
                     varList.insert(tok->str());
                     tok = tok->tokAt(2);
                 } else {
@@ -1603,7 +1603,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         return;
     }
 
-    if (Token::Match(tokenizer.tokens(), "( %var% )")) {
+    if (Token::Match(tokenizer.tokens(), "( %name% )")) {
         std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(1));
         if (var != cfg.end()) {
             const std::string &value = (*var).second;
@@ -1613,7 +1613,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         return;
     }
 
-    if (Token::Match(tokenizer.tokens(), "( ! %var% )")) {
+    if (Token::Match(tokenizer.tokens(), "( ! %name% )")) {
         std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(2));
 
         if (var == cfg.end())
@@ -1630,7 +1630,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
         if (!tok->isName())
             continue;
 
-        if (Token::Match(tok, "defined ( %var% )")) {
+        if (Token::Match(tok, "defined ( %name% )")) {
             if (cfg.find(tok->strAt(2)) != cfg.end())
                 tok->str("1");
             else if (match)
@@ -1641,7 +1641,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
             continue;
         }
 
-        if (Token::Match(tok, "defined %var%")) {
+        if (Token::Match(tok, "defined %name%")) {
             if (cfg.find(tok->strAt(1)) != cfg.end())
                 tok->str("1");
             else if (match)
@@ -1799,7 +1799,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                 line.erase(0, sizeof("#pragma endasm"));
                 std::istringstream tempIstr(line);
                 tokenizer.tokenize(tempIstr, "", "", true);
-                if (Token::Match(tokenizer.tokens(), "( %var% = %any% )")) {
+                if (Token::Match(tokenizer.tokens(), "( %name% = %any% )")) {
                     ret << "asm(" << tokenizer.tokens()->strAt(1) << ");";
                 }
             }
@@ -2558,12 +2558,12 @@ private:
         // Is there an inner macro..
         {
             const Token *tok = Token::findsimplematch(tokens(), ")");
-            if (!Token::Match(tok, ") %var% ("))
+            if (!Token::Match(tok, ") %name% ("))
                 return params1;
             innerMacroName = tok->strAt(1);
             tok = tok->tokAt(3);
             unsigned int par = 0;
-            while (Token::Match(tok, "%var% ,|)")) {
+            while (Token::Match(tok, "%name% ,|)")) {
                 tok = tok->tokAt(2);
                 par++;
             }
@@ -2627,7 +2627,7 @@ public:
         std::string::size_type pos = macro.find_first_of(" (");
         if (pos != std::string::npos && macro[pos] == '(') {
             // Extract macro parameters
-            if (Token::Match(tokens(), "%var% ( %var%")) {
+            if (Token::Match(tokens(), "%name% ( %name%")) {
                 for (const Token *tok = tokens()->tokAt(2); tok; tok = tok->next()) {
                     if (tok->str() == ")")
                         break;
@@ -2642,10 +2642,10 @@ public:
                 }
             }
 
-            else if (Token::Match(tokens(), "%var% ( . . . )"))
+            else if (Token::Match(tokens(), "%name% ( . . . )"))
                 _variadic = true;
 
-            else if (Token::Match(tokens(), "%var% ( )"))
+            else if (Token::Match(tokens(), "%name% ( )"))
                 _nopar = true;
         }
     }
@@ -2795,9 +2795,9 @@ public:
                     }
                     optcomma = false;
                     macrocode += str;
-                    if (Token::Match(tok, "%var% %var%") ||
-                        Token::Match(tok, "%var% %num%") ||
-                        Token::Match(tok, "%num% %var%") ||
+                    if (Token::Match(tok, "%name% %name%") ||
+                        Token::Match(tok, "%name% %num%") ||
+                        Token::Match(tok, "%num% %name%") ||
                         Token::simpleMatch(tok, "> >"))
                         macrocode += " ";
                 }

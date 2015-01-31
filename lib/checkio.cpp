@@ -147,7 +147,7 @@ void CheckIO::checkFileUsage()
                     i->second.op_indent = 0;
                     i->second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
-            } else if (tok->varId() && Token::Match(tok, "%var% =") &&
+            } else if (Token::Match(tok, "%var% =") &&
                        (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile" &&
                         (windows ? (tok->str() != "_wfopen" && tok->str() != "_wfreopen") : true))) {
                 std::map<unsigned int, Filepointer>::iterator i = filepointers.find(tok->varId());
@@ -155,7 +155,7 @@ void CheckIO::checkFileUsage()
                     i->second.mode = UNKNOWN_OM;
                     i->second.lastOperation = Filepointer::UNKNOWN_OP;
                 }
-            } else if (Token::Match(tok, "%var% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
+            } else if (Token::Match(tok, "%name% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
                 std::string mode;
                 const Token* fileTok = 0;
                 Filepointer::Operation operation = Filepointer::NONE;
@@ -171,7 +171,7 @@ void CheckIO::checkFileUsage()
                         mode = "wb+";
                     fileTok = tok->tokAt(-2);
                     operation = Filepointer::OPEN;
-                } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %var%")) {
+                } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
                     if (modeTok && modeTok->type() == Token::eString)
                         mode = modeTok->strValue();
@@ -245,7 +245,7 @@ void CheckIO::checkFileUsage()
                     }
                 }
 
-                while (Token::Match(fileTok, "%var% ."))
+                while (Token::Match(fileTok, "%name% ."))
                     fileTok = fileTok->tokAt(2);
 
                 if (!fileTok || !fileTok->varId())
@@ -479,21 +479,21 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
         *formatStringTok = argTok;
         return true;
     } else if (Token::Match(argTok, "%var% [,)]") &&
-               (argTok->variable() &&
-                Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
-                (argTok->variable()->isPointer() ||
-                 (argTok->variable()->dimensions().size() == 1 &&
-                  argTok->variable()->dimensionKnown(0) &&
-                  argTok->variable()->dimension(0) != 0)))) {
+               argTok->variable() &&
+               Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
+               (argTok->variable()->isPointer() ||
+                (argTok->variable()->dimensions().size() == 1 &&
+                 argTok->variable()->dimensionKnown(0) &&
+                 argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
         *formatStringTok = nullptr;
         if (argTok->variable()) {
             const Token *varTok = argTok->variable()->nameToken();
-            if (Token::Match(varTok, "%var% ; %var% = %str% ;") &&
+            if (Token::Match(varTok, "%name% ; %name% = %str% ;") &&
                 varTok->str() == varTok->strAt(2) &&
                 Token::Match(varTok->tokAt(-4), "const char|wchar_t * const")) {
                 *formatStringTok = varTok->tokAt(4);
-            } else if (Token::Match(varTok, "%var% [ %num% ] = %str% ;") &&
+            } else if (Token::Match(varTok, "%name% [ %num% ] = %str% ;") &&
                        Token::Match(varTok->tokAt(-2), "const char|wchar_t")) {
                 *formatStringTok = varTok->tokAt(5);
             }
@@ -1442,7 +1442,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
 
                 // check for some common well known functions
                 else if ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
-                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && Token::Match(tok1->previous()->link()->previous(), "%var%") && isStdContainer(tok1->previous()->link()->previous()))) {
+                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous()))) {
                     tempToken = new Token(0);
                     tempToken->fileIndex(tok1->fileIndex());
                     tempToken->linenr(tok1->linenr());

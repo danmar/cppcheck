@@ -46,7 +46,7 @@ void CheckBool::checkIncrementBoolean()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->variable() && Token::Match(tok, "%var% ++")) {
+            if (Token::Match(tok, "%var% ++")) {
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->str() == "bool")
                     incrementBooleanError(tok);
@@ -202,7 +202,7 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 static bool tokenIsFunctionReturningBool(const Token* tok)
 {
     const Function* func = tok->function();
-    if (func && Token::Match(tok, "%var% (")) {
+    if (func && Token::Match(tok, "%name% (")) {
         if (func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
             return true;
         }

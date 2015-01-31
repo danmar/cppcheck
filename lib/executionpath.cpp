@@ -139,7 +139,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
     for (; tok; tok = tok->next()) {
         // might be a noreturn function..
         if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
-            Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
+            Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %name% (") &&
             tok->linkAt(-2)->previous()->varId() == 0) {
             ExecutionPath::bailOut(checks);
             return;
@@ -268,7 +268,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
                         // End } for the if block
                         const Token *tok4 = tok3->link();
-                        if (Token::Match(tok3, "{ %var% =") &&
+                        if (Token::Match(tok3, "{ %name% =") &&
                             Token::simpleMatch(tok4, "} }") &&
                             Token::simpleMatch(tok4->tokAt(-2), "break ;")) {
                             // Is there a assignment and then a break?
@@ -311,7 +311,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // bailout used variables in '; FOREACH ( .. ) { .. }'
-        else if (tok->str() != "if" && Token::Match(tok->previous(), "[;{}] %var% (")) {
+        else if (tok->str() != "if" && Token::Match(tok->previous(), "[;{}] %name% (")) {
             // goto {
             const Token *tok2 = tok->next()->link()->next();
             if (tok2 && tok2->str() == "{") {
@@ -353,7 +353,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
         if (Token::simpleMatch(tok, "= {")) {
             // GCC struct initialization.. bail out
-            if (Token::Match(tok->tokAt(2), ". %var% =")) {
+            if (Token::Match(tok->tokAt(2), ". %name% =")) {
                 ExecutionPath::bailOut(checks);
                 return;
             }

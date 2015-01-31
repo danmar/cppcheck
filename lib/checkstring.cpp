@@ -45,13 +45,13 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
                 const std::string &str2 = tok->strAt(4);
                 alwaysTrueFalseStringCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% , %var% ,|)")) {
+            } else if (Token::Match(tok->tokAt(2), "%name% , %name% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var% . c_str ( ) ,|)")) {
+            } else if (Token::Match(tok->tokAt(2), "%name% . c_str ( ) , %name% . c_str ( ) ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(8);
                 if (str1 == str2)
@@ -218,7 +218,7 @@ void CheckString::checkIncorrectStringCompare()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
             if (tok->str().size() >= 6U && (tok->str().find("assert") == tok->str().size() - 6U || tok->str().find("ASSERT") == tok->str().size() - 6U) &&
-                Token::Match(tok, "%var% (") &&
+                Token::Match(tok, "%name% (") &&
                 (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
                 tok = tok->next()->link();
 
@@ -281,10 +281,10 @@ void CheckString::sprintfOverlappingData()
             if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% ,"))
                 varid = tok->tokAt(2)->varId();
 
-            else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% . %var% ,"))
+            else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %name% . %var% ,"))
                 varid = tok->tokAt(4)->varId();
 
-            if (varid == 0)
+            else
                 continue;
 
             // goto next argument

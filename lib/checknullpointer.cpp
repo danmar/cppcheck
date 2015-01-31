@@ -46,14 +46,14 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  */
 void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library, unsigned char value)
 {
-    if (Token::Match(&tok, "%var% ( )") || !tok.tokAt(2))
+    if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
 
     const Token* firstParam = tok.tokAt(2);
     const Token* secondParam = firstParam->nextArgument();
 
     // 1st parameter..
-    if ((Token::Match(firstParam, "%var% ,|)") && firstParam->varId() > 0) ||
+    if (Token::Match(firstParam, "%var% ,|)") ||
         (value == 0 && Token::Match(firstParam, "0|NULL ,|)"))) {
         if (value == 0 && Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
             var.push_back(firstParam);
@@ -117,7 +117,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
                         continue;
 
                     if ((*i == 'n' || *i == 's' || scan) && (!scan || value == 0)) {
-                        if ((value == 0 && argListTok->str() == "0") || (argListTok->varId() > 0 && Token::Match(argListTok,"%var% [,)]"))) {
+                        if ((value == 0 && argListTok->str() == "0") || Token::Match(argListTok, "%var% [,)]")) {
                             var.push_back(argListTok);
                         }
                     }
@@ -186,18 +186,17 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
         return false;
     }
 
-    if (Token::Match(tok, "%var% ("))
+    if (Token::Match(tok, "%name% ("))
         return true;
 
     if (Token::Match(tok, "%var% = %var% .") &&
-        tok->varId() > 0 &&
         tok->varId() == tok->tokAt(2)->varId())
         return true;
 
     // std::string dereferences nullpointers
     if (Token::Match(parent->tokAt(-3), "std :: string|wstring (") && tok->strAt(1) == ")")
         return true;
-    if (Token::Match(parent->previous(), "%var% (") && tok->strAt(1) == ")") {
+    if (Token::Match(parent->previous(), "%name% (") && tok->strAt(1) == ")") {
         const Variable* var = tok->tokAt(-2)->variable();
         if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
             return true;
@@ -257,7 +256,7 @@ void CheckNullPointer::nullPointerLinkedList()
         const Token* end2 = tok1->linkAt(1);
         for (const Token *tok2 = tok1->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
             // Dereferencing a variable inside the "for" parentheses..
-            if (Token::Match(tok2, "%var% . %var%")) {
+            if (Token::Match(tok2, "%var% . %name%")) {
                 // Is this variable a pointer?
                 const Variable *var = tok2->variable();
                 if (!var || !var->isPointer())
@@ -265,10 +264,6 @@ void CheckNullPointer::nullPointerLinkedList()
 
                 // Variable id for dereferenced variable
                 const unsigned int varid(tok2->varId());
-
-                // We don't support variables without a varid
-                if (varid == 0)
-                    continue;
 
                 if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
                     continue;
@@ -319,7 +314,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             continue;
 
         // Is pointer used as function parameter?
-        if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+        if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
             const Token *ftok = tok->previous();
             while (ftok && ftok->str() != "(") {
                 if (ftok->str() == ")")
@@ -400,7 +395,7 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->next()->link()->next(), "[.(]")))
                 nullPointerError(tok);
 
-            else if (Token::Match(tok->previous(), "!!. %var% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
+            else if (Token::Match(tok->previous(), "!!. %name% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
                 if (Token::simpleMatch(tok->tokAt(2), "0 )") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
@@ -457,7 +452,7 @@ void CheckNullPointer::nullConstantDereference()
 void CheckNullPointer::removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs)
 {
     // If a pointer's address is passed into a function, stop considering it
-    if (Token::Match(tok->previous(), "[;{}] %var% (")) {
+    if (Token::Match(tok->previous(), "[;{}] %name% (")) {
         const Token* endParen = tok->next()->link();
         for (const Token* tok2 = tok->next(); tok2 != endParen; tok2 = tok2->next()) {
             if (tok2->isName() && tok2->varId() > 0
@@ -491,7 +486,7 @@ void CheckNullPointer::nullPointerDefaultArgument()
         std::set<unsigned int> pointerArgs;
         for (const Token *tok = scope->function->arg; tok != scope->function->arg->link(); tok = tok->next()) {
 
-            if (Token::Match(tok, "%var% = 0 ,|)") && tok->varId() != 0) {
+            if (Token::Match(tok, "%var% = 0 ,|)")) {
                 const Variable *var = tok->variable();
                 if (var && var->isPointer())
                     pointerArgs.insert(tok->varId());
@@ -531,10 +526,10 @@ void CheckNullPointer::nullPointerDefaultArgument()
                         Token::findmatch(startOfIfBlock, "exit|return|throw", endOfIf) != nullptr;
 
                     if (Token::Match(tok, "if ( %var% == 0 )")) {
-                        const unsigned int var = tok->tokAt(2)->varId();
-                        if (var > 0 && pointerArgs.count(var) > 0) {
+                        const unsigned int varid = tok->tokAt(2)->varId();
+                        if (pointerArgs.count(varid) > 0) {
                             if (isExitOrReturn)
-                                pointerArgs.erase(var);
+                                pointerArgs.erase(varid);
                             else
                                 dependsOnPointer = true;
                         }

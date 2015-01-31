@@ -338,13 +338,9 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
             return 1;
         break;
     case 'v':
-        // TODO: %var% should match only for
-        // variables that have varId != 0, but that needs a lot of
-        // work, before that change can be made.
-        // Any symbolname..
         if (haystack[3] == '%') { // %var%
             haystack += 4;
-            if (tok->isName())
+            if (tok->varId() != 0)
                 return 1;
         } else { // %varid%
             if (varid == 0) {
@@ -372,11 +368,17 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
         return 1;
     }
     case 'n':
-        // Number (%num%)
+        // Number (%num%) or name (%name%)
     {
-        haystack += 4;
-        if (tok->isNumber())
-            return 1;
+        if (haystack[4] == '%') { // %name%
+            haystack += 5;
+            if (tok->isName())
+                return 1;
+        } else {
+            haystack += 4;
+            if (tok->isNumber())
+                return 1;
+        }
     }
     break;
     case 'c': {
@@ -1178,7 +1180,7 @@ std::string Token::expressionString() const
     std::string ret;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         ret += tok->str();
-        if (Token::Match(tok, "%var%|%num% %var%|%num%"))
+        if (Token::Match(tok, "%name%|%num% %name%|%num%"))
             ret += " ";
     }
     return ret + end->str();

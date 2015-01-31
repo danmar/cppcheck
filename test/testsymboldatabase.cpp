@@ -2272,7 +2272,7 @@ private:
                 unsigned int linenrs[] = { 2, 1 };
                 unsigned int index = 0;
                 for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
-                    if (Token::Match(tok, "%var% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
+                    if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
                         const Function * function = db->findFunction(tok);
                         ASSERT(function != nullptr);
                         if (function) {

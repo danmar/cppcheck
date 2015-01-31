@@ -635,16 +635,16 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 
     const Token *funcname = end->linkAt(-2)->previous();
     const Token *start = funcname;
-    if (funcname && Token::Match(funcname->tokAt(-3),"( * %var% )")) {
+    if (funcname && Token::Match(funcname->tokAt(-3),"( * %name% )")) {
         funcname = funcname->previous();
         start = funcname->tokAt(-3);
     } else if (funcname->isName()) {
-        while (Token::Match(start, "%var%|.|::"))
+        while (Token::Match(start, "%name%|.|::"))
             start = start->previous();
     } else {
         return false;
     }
-    if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%var% )| (")) {
+    if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%name% )| (")) {
         if (funcname->str() == "exit")
             return true;
         if (!isnotnoreturn(funcname)) {

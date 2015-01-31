@@ -124,7 +124,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             ret = true;
         if (ret && tok2->str() == ";")
             return false;
-        if (!islocal && Token::Match(tok2, "%var% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
+        if (!islocal && Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->next()->link(), ") {"))
             return true;
         if (Token::Match(tok2, "if|while (")) {
             if (!islocal && tok2->str() == "while")
@@ -415,23 +415,23 @@ void CheckCondition::oppositeInnerCondition()
                 break;
             else if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
                      (!tok->varId() && nonlocal)) {
-                if (Token::Match(tok, "%var% ++|--|="))
+                if (Token::Match(tok, "%name% ++|--|="))
                     break;
-                if (Token::Match(tok, "%var% [")) {
+                if (Token::Match(tok, "%name% [")) {
                     const Token *tok2 = tok->linkAt(1);
                     while (Token::simpleMatch(tok2, "] ["))
                         tok2 = tok2->linkAt(1);
                     if (Token::simpleMatch(tok2, "] ="))
                         break;
                 }
-                if (Token::Match(tok->previous(), "++|--|& %var%"))
+                if (Token::Match(tok->previous(), "++|--|& %name%"))
                     break;
                 if (tok->variable() &&
-                    Token::Match(tok, "%var% . %var% (") &&
+                    Token::Match(tok, "%name% . %name% (") &&
                     !tok->variable()->isConst() &&
                     !(tok->tokAt(2)->function() && tok->tokAt(2)->function()->isConst()))
                     break;
-                if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+                if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
                     // is variable unchanged? default is false..
                     bool unchanged = false;
 
@@ -773,7 +773,7 @@ void CheckCondition::clarifyCondition()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "( %var% [=&|^]")) {
+            if (Token::Match(tok, "( %name% [=&|^]")) {
                 for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         tok2 = tok2->link();
@@ -819,9 +819,9 @@ void CheckCondition::clarifyCondition()
                         continue;
 
                     // #3609 - CWinTraits<WS_CHILD|WS_VISIBLE>::..
-                    if (!isC && Token::Match(tok->previous(), "%var% <")) {
+                    if (!isC && Token::Match(tok->previous(), "%name% <")) {
                         const Token *tok3 = tok2;
-                        while (Token::Match(tok3, "[&|^] %var%"))
+                        while (Token::Match(tok3, "[&|^] %name%"))
                             tok3 = tok3->tokAt(2);
                         if (Token::Match(tok3, ",|>"))
                             continue;

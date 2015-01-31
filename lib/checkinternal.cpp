@@ -69,7 +69,7 @@ void CheckInternal::checkTokenMatchPatterns()
                                    std::strncmp(s+1,"%op%",4)!=0 &&
                                    std::strncmp(s+1,"%or%",4)!=0 &&
                                    std::strncmp(s+1,"%cop%",5)!=0 &&
-                                   std::strncmp(s+1,"%var%",5)!=0 &&
+                                   std::strncmp(s+1,"%name%",5)!=0 &&
                                    std::strncmp(s+1,"%oror%",6)!=0) {
                             multiComparePatternError(tok, pattern, funcname);
                         }
@@ -186,7 +186,7 @@ void CheckInternal::checkMissingPercentCharacter()
         magics.insert("%oror%");
         magics.insert("%str%");
         magics.insert("%type%");
-        magics.insert("%var%");
+        magics.insert("%name%");
         magics.insert("%varid%");
     }
 
@@ -235,6 +235,7 @@ void CheckInternal::checkUnknownPattern()
         knownPatterns.insert("%bool%");
         knownPatterns.insert("%char%");
         knownPatterns.insert("%comp%");
+        knownPatterns.insert("%name%");
         knownPatterns.insert("%num%");
         knownPatterns.insert("%op%");
         knownPatterns.insert("%cop%");
@@ -328,7 +329,7 @@ void CheckInternal::checkExtraWhitespace()
 void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "multiComparePatternError",
-                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
+                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
                );
 }
 
