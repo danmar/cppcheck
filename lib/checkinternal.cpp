@@ -50,33 +50,6 @@ void CheckInternal::checkTokenMatchPatterns()
             continue;
         }
 
-        const char *p = pattern.c_str();
-        while (*p) {
-            while (*p && std::isspace(*p))
-                p++;
-            const char *start = p;
-            while (*p && !std::isspace(*p))
-                p++;
-            const char *end = p - 1;
-            if (start < end && !(*start == '[' && *end == ']')) {
-                bool cmd = (*start=='%' && std::isalpha(*(start+1)));
-                // check multicompare pattern..
-                for (const char *s = start; s != end; s++) {
-                    if (*s == '|') {
-                        if (!(*(s+1) == '%' && std::isalpha(*(s+2)))) {
-                            cmd = false;
-                        } else if (!cmd &&
-                                   std::strncmp(s+1,"%op%",4)!=0 &&
-                                   std::strncmp(s+1,"%or%",4)!=0 &&
-                                   std::strncmp(s+1,"%cop%",5)!=0 &&
-                                   std::strncmp(s+1,"%name%",5)!=0 &&
-                                   std::strncmp(s+1,"%oror%",6)!=0) {
-                            multiComparePatternError(tok, pattern, funcname);
-                        }
-                    }
-                }
-            }
-        }
         if (pattern.find("||") != std::string::npos || pattern.find(" | ") != std::string::npos || pattern[0] == '|' || (pattern[pattern.length() - 1] == '|' && pattern[pattern.length() - 2] == ' '))
             orInComplexPattern(tok, pattern, funcname);
 
