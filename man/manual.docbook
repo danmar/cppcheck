@@ -690,9 +690,11 @@ Checking uninit.c...
       <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="CopyMemory"&gt;
+    &lt;arg nr="1"/&gt;
     &lt;arg nr="2"&gt;
       &lt;not-uninit/&gt;
     &lt;/arg&gt;
+    &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting></para>
     </section>
@@ -730,6 +732,8 @@ Checking null.c...
     &lt;arg nr="1"&gt;
       &lt;not-null/&gt;
     &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+    &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
     </section>
@@ -789,7 +793,7 @@ Checking valuerange.c...</programlisting>
 &lt;def&gt;
   &lt;function name="do_something"&gt;
     &lt;arg nr="1"&gt;
-      &lt;valid&gt;0-1023&lt;/valid&gt;
+      &lt;valid&gt;0:1023&lt;/valid&gt;
     &lt;/arg&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
@@ -797,6 +801,14 @@ Checking valuerange.c...</programlisting>
       <programlisting>cppcheck --library=test.cfg range.c 
 Checking range.c...
 [range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
+
+      <para>Some example expressions you can use in the valid element:</para>
+
+      <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
+-10:20  =&gt;  all values between -10 and 20 are valid
+:0  =&gt;  all values that are less or equal to 0 are valid
+0:  =&gt;  all values that are greater or equal to 0 are valid
+0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
     </section>
 
     <section>
@@ -849,7 +861,8 @@ Checking noreturn.c...
     <section>
       <title>use-retval</title>
 
-      <para>As long as nothing else is specified, cppcheck assumes that ignoring the return value of a function is ok:</para>
+      <para>As long as nothing else is specified, cppcheck assumes that
+      ignoring the return value of a function is ok:</para>
 
       <programlisting>bool test(const char* a, const char* b)
 {
@@ -857,7 +870,9 @@ Checking noreturn.c...
     return true;
 }</programlisting>
 
-      <para>In case <literal>strcmp</literal> has side effects, such as assigning the result to one of the parameters passed to it, nothing bad would happen:</para>
+      <para>In case <literal>strcmp</literal> has side effects, such as
+      assigning the result to one of the parameters passed to it, nothing bad
+      would happen:</para>
 
       <programlisting># cppcheck useretval.c 
 Checking useretval.c...</programlisting>
@@ -882,20 +897,25 @@ Checking useretval.c...
     <section>
       <title>define</title>
 
-      <para>Libraries can be used to define preprocessor macros as well. For example:</para>
+      <para>Libraries can be used to define preprocessor macros as well. For
+      example:</para>
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;define name="NULL_VALUE" value="0"/&gt;
 &lt;/def&gt;</programlisting>
 
-      <para>Each occurence of "NULL_VALUE" in the code would then be replaced by "0" at preprocessor stage.</para>
+      <para>Each occurence of "NULL_VALUE" in the code would then be replaced
+      by "0" at preprocessor stage.</para>
     </section>
 
     <section>
       <title>podtype</title>
 
-      <para>Lots of code relies on typedefs providing platform independant types. "podtype"-tags can be used to provide necessary information to cppcheck to support them. Without further information, cppcheck does not understand the type "uint16_t" in the following example:</para>
+      <para>Lots of code relies on typedefs providing platform independant
+      types. "podtype"-tags can be used to provide necessary information to
+      cppcheck to support them. Without further information, cppcheck does not
+      understand the type "uint16_t" in the following example:</para>
 
       <programlisting>void test() {
     uint16_t a;
@@ -906,14 +926,17 @@ Checking useretval.c...
       <programlisting># cppcheck --enable=style unusedvar.cpp 
 Checking unusedvar.cpp...</programlisting>
 
-      <para>If uint16_t is defined in a library as follows, the result improves:</para>
+      <para>If uint16_t is defined in a library as follows, the result
+      improves:</para>
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;podtype name="uint16_t" sign="u" size="2"/&gt;
 &lt;/def&gt;</programlisting>
 
-      <para>The size of the type is specified in bytes. Possible values for the "sign" attribute are "s" (signed) and "u" (unsigned). Both attributes are optional. Using this library, cppcheck prints:</para>
+      <para>The size of the type is specified in bytes. Possible values for
+      the "sign" attribute are "s" (signed) and "u" (unsigned). Both
+      attributes are optional. Using this library, cppcheck prints:</para>
 
       <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
 Checking unusedvar.cpp...
@@ -923,11 +946,21 @@ Checking unusedvar.cpp...
     <section>
       <title>container</title>
 
-      <para>A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.</para>
+      <para>A lot of C++ libraries, among those the STL itself, provide
+      containers with very similar functionality. Libraries can be used to
+      tell cppcheck about their behaviour. Each container needs a unique ID.
+      It can optionally have a startPattern, which must be a valid
+      Token::Match pattern and an endPattern that is compared to the linked
+      token of the first token with such a link. The optional attribute
+      "inherits" takes an ID from a previously defined container.</para>
 
-      <para>Inside the &lt;container&gt; tag, functions can be defined inside of the tags &lt;size&gt;, &lt;access&gt; and &lt;other&gt; (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".</para>
+      <para>Inside the &lt;container&gt; tag, functions can be defined inside
+      of the tags &lt;size&gt;, &lt;access&gt; and &lt;other&gt; (on your
+      choice). Each of them can specify an action like "resize" and/or the
+      result it yields, for example "end-iterator".</para>
 
-      <para>The following example provides a definition for std::vector, based on the definition of "stdContainer" (not shown):</para>
+      <para>The following example provides a definition for std::vector, based
+      on the definition of "stdContainer" (not shown):</para>
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
@@ -943,7 +976,6 @@ Checking unusedvar.cpp...
     &lt;/access&gt;
   &lt;/container&gt;
 &lt;/def&gt;</programlisting>
-
     </section>
 
     <section>
@@ -961,6 +993,7 @@ Checking unusedvar.cpp...
     &lt;arg nr="2"&gt;
       &lt;not-null/&gt;
       &lt;not-uninit/&gt;
+      &lt;strz/&gt;
     &lt;/arg&gt;
   &lt;/function&gt;</programlisting>
 
@@ -978,7 +1011,8 @@ Checking unusedvar.cpp...
       <para>The second argument the function takes is a pointer. It must not
       be null. And it must point at initialized data. Using
       <literal>&lt;not-null&gt;</literal> and
-      <literal>&lt;not-uninit&gt;</literal> is correct.</para>
+      <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
+      at a zero-terminated string so &lt;strz&gt; is also used.</para>
     </section>
 
     <section>
@@ -1016,7 +1050,8 @@ Checking unusedvar.cpp...
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
 
-    <para>CDATA can be used to include characters in a pattern that might interfere with XML:</para>
+    <para>CDATA can be used to include characters in a pattern that might
+    interfere with XML:</para>
 
     <programlisting>&lt;![CDATA[some&lt;strange&gt;pattern]]&gt;</programlisting>
 
