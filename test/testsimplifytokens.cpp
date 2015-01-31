@@ -2111,10 +2111,10 @@ private:
         ASSERT_EQUALS("void f ( ) { return ; }", tokWithStdLib(code1));
 
         const char code2[] = "void f() {\n"
-                             "  exit();\n"
+                             "  exit(0);\n"
                              "  y();\n"
                              "}";
-        ASSERT_EQUALS("void f ( ) { exit ( ) ; }", tokWithStdLib(code2));
+        ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib(code2));
 
         const char code3[] = "void f() {\n"
                              "  x.abort();\n"
