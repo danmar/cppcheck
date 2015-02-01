@@ -635,7 +635,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 
     const Token *funcname = end->linkAt(-2)->previous();
     const Token *start = funcname;
-    if (funcname && Token::Match(funcname->tokAt(-3),"( * %name% )")) {
+    if (Token::Match(funcname->tokAt(-3),"( * %name% )")) {
         funcname = funcname->previous();
         start = funcname->tokAt(-3);
     } else if (funcname->isName()) {
