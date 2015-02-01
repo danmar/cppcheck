@@ -457,6 +457,12 @@ private:
               "  else if (x == 0) {}\n"
               "}",false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x & 15) {}\n"
+              "  else if (x == 40) {}\n"
+              "}",false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
     void invalidMissingSemicolon() {
