@@ -757,6 +757,15 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
+            // Set values in condition
+            for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
+                if (tok3->varId() == varid) {
+                    for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it)
+                        setTokenValue(tok3, *it);
+                    break;
+                }
+            }
+
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
@@ -1560,6 +1569,20 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
     }
 }
 
+static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, const Variable* arg, const Scope* functionScope, const std::list<ValueFlow::Value>& argvalues)
+{
+    // Is argument passed by value or const reference, and is it a known non-class type?
+    if (arg->isReference() && !arg->isConst() && !arg->isClass())
+        return;
+
+    // Set value in function scope..
+    const unsigned int varid2 = arg->declarationId();
+    if (!varid2)
+        return;
+
+    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, true, tokenlist, errorLogger, settings);
+}
+
 static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -1603,23 +1626,27 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                     continue;
                 }
             }
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, arg, functionScope, argvalues);
+        }
+    }
+}
 
-            // Is argument passed by value?
-            if (!Token::Match(arg->typeStartToken(), "%type% %var% ,|)") &&
-                !Token::Match(arg->typeStartToken(), "const| struct| %type% * %var% ,|)"))
-                continue;
+static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    if (!tokenlist->isCPP())
+        return;
 
-            // Set value in function scope..
-            const unsigned int varid2 = arg->declarationId();
-            for (const Token *tok2 = functionScope->classStart->next(); tok2 != functionScope->classEnd; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%varid% !!=", varid2)) {
-                    for (std::list<ValueFlow::Value>::const_iterator val = argvalues.begin(); val != argvalues.end(); ++val)
-                        setTokenValue(const_cast<Token*>(tok2), *val);
-                } else if (Token::Match(tok2, "%oror%|&&|{|?")) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "parameter " + arg->name() + ", at '" + tok2->str() + "'");
-                    break;
-                }
+    const std::size_t functions = symboldatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope* scope = symboldatabase->functionScopes[i];
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+        for (std::size_t arg = function->minArgCount(); arg < function->argCount(); arg++) {
+            const Variable* var = function->getArgumentVar(arg);
+            if (var && var->hasDefault() && Token::Match(var->nameToken(), "%var% = %num%|%str% [,)]")) {
+                const_cast<Token*>(var->nameToken()->tokAt(2))->values.front().defaultArg = true;
+                valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, var->nameToken()->tokAt(2)->values);
             }
         }
     }
@@ -1704,4 +1731,5 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
+    valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
 }

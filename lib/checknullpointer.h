@@ -86,9 +86,8 @@ public:
     void nullConstantDereference();
 
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
-    void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive=false);
+    void nullPointerError(const Token *tok, const std::string &varname, bool inconclusive = false, bool defaultArg = false);
     void nullPointerError(const Token *tok, const std::string &varname, const Token* nullcheck, bool inconclusive = false);
-    void nullPointerDefaultArgError(const Token *tok, const std::string &varname);
 private:
 
     /** Get error messages. Used by --errorlist */
@@ -119,26 +118,6 @@ private:
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * -# initialize pointer to 0
-     * -# conditionally assign pointer
-     * -# dereference pointer
-     */
-    void nullPointerConditionalAssignment();
-
-    /**
-     * @brief Does one part of the check for nullPointer().
-     * -# default argument that sets a pointer to 0
-     * -# dereference pointer
-     */
-    void nullPointerDefaultArgument();
-
-    /**
-     * @brief Removes any variable that may be assigned from pointerArgs.
-     */
-    static void removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs);
 };
 /// @}
 //---------------------------------------------------------------------------

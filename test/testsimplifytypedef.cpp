@@ -1103,7 +1103,7 @@ private:
                       "[test.cpp:20] -> [test.cpp:1]: (style, inconclusive) The function parameter 'A' hides a typedef with the same name.\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style, inconclusive) The variable 'A' hides a typedef with the same name.\n"
                       "[test.cpp:24] -> [test.cpp:1]: (style, inconclusive) The typedef 'A' hides a typedef with the same name.\n"
-                      "[test.cpp:24]: (debug) ValueFlow bailout: parameter a, at '{'\n", errout.str());
+                      "[test.cpp:21]: (debug) ValueFlow bailout: increment/decrement of a\n", errout.str());
     }
 
     void simplifyTypedef36() {

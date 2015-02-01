@@ -2306,8 +2306,8 @@ private:
         check("void f(int *p = 0) {\n"
               "    if (a != 0)\n"
               "      *p = 0;\n"
-              "}", false, "test.cpp", false);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+              "}", true, "test.cpp", false);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
 
         check("void f(int *p = 0) {\n"
               "    p = a;\n"
@@ -2376,8 +2376,8 @@ private:
         check("void f(int *p = 0) {\n"
               "    printf(\"%d\", p);\n"
               "    *p = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
 
         // The init() function may or may not initialize p, but since the address
         // of p is passed in, it's a good bet that p may be modified and
@@ -2414,7 +2414,7 @@ private:
         check("void foo(int *p = 0) {\n"
               "    int var1 = x ? *p : 5;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
     }
 
     void nullpointer_internal_error() { // ticket #5080

@@ -1120,7 +1120,7 @@ private:
                "    if (x && \n"
                "        x->str() != y) {}\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
         // return

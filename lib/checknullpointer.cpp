@@ -327,7 +327,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             parseFunctionCall(*ftok->previous(), varlist, &_settings->library, 0);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str());
+                    nullPointerError(tok, tok->str(), false, value->defaultArg);
                 else if (_settings->isEnabled("warning"))
                     nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
             }
@@ -339,7 +339,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!isPointerDeRef(tok,unknown)) {
             if (_settings->inconclusive && unknown) {
                 if (value->condition == nullptr)
-                    nullPointerError(tok, tok->str(), true);
+                    nullPointerError(tok, tok->str(), true, value->defaultArg);
                 else
                     nullPointerError(tok, tok->str(), value->condition, true);
             }
@@ -347,7 +347,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         }
 
         if (value->condition == nullptr)
-            nullPointerError(tok, tok->str(), value->inconclusive);
+            nullPointerError(tok, tok->str(), value->inconclusive, value->defaultArg);
         else if (_settings->isEnabled("warning"))
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
@@ -357,7 +357,6 @@ void CheckNullPointer::nullPointer()
 {
     nullPointerLinkedList();
     nullPointerByDeRefAndChec();
-    nullPointerDefaultArgument();
 }
 
 /** Dereferencing null constant (simplified token list) */
@@ -444,159 +443,18 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
-/**
-* @brief If tok is a function call that passes in a pointer such that
-*         the pointer may be modified, this function will remove that
-*         pointer from pointerArgs.
-*/
-void CheckNullPointer::removeAssignedVarFromSet(const Token* tok, std::set<unsigned int>& pointerArgs)
-{
-    // If a pointer's address is passed into a function, stop considering it
-    if (Token::Match(tok->previous(), "[;{}] %name% (")) {
-        const Token* endParen = tok->next()->link();
-        for (const Token* tok2 = tok->next(); tok2 != endParen; tok2 = tok2->next()) {
-            if (tok2->isName() && tok2->varId() > 0
-                // Common functions that are known NOT to modify their pointer argument
-                && !Token::Match(tok, "printf|sprintf|fprintf|vprintf")) {
-                pointerArgs.erase(tok2->varId());
-            }
-        }
-    }
-}
-
-/**
-* @brief Does one part of the check for nullPointer().
-* -# default argument that sets a pointer to 0
-* -# dereference pointer
-*/
-void CheckNullPointer::nullPointerDefaultArgument()
-{
-    if (!_settings->isEnabled("warning"))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->function == 0 || !scope->function->hasBody()) // We only look for functions with a body
-            continue;
-
-        // Scan the argument list for default arguments that are pointers and
-        // which default to a NULL pointer if no argument is specified.
-        std::set<unsigned int> pointerArgs;
-        for (const Token *tok = scope->function->arg; tok != scope->function->arg->link(); tok = tok->next()) {
-
-            if (Token::Match(tok, "%var% = 0 ,|)")) {
-                const Variable *var = tok->variable();
-                if (var && var->isPointer())
-                    pointerArgs.insert(tok->varId());
-            }
-        }
-
-        // Report an error if any of the default-NULL arguments are dereferenced
-        if (!pointerArgs.empty()) {
-            for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-
-                // If we encounter a possible NULL-pointer check, skip over its body
-                if (tok->str() == "?") { // TODO: Skip this if the condition is unrelated to the variables
-                    // Find end of statement
-                    tok = tok->astOperand2();
-                    while (tok && !Token::Match(tok, ")|;")) {
-                        if (tok->link() && Token::Match(tok, "(|[|<|{"))
-                            tok = tok->link();
-                        tok = tok->next();
-                    }
-                    if (!tok)
-                        break;
-                } else if (Token::simpleMatch(tok, "if ("))  {
-                    bool dependsOnPointer = false;
-                    const Token *endOfCondition = tok->next()->link();
-                    if (!endOfCondition)
-                        continue;
-
-                    const Token *startOfIfBlock =
-                        Token::simpleMatch(endOfCondition, ") {") ? endOfCondition->next() : nullptr;
-                    if (!startOfIfBlock)
-                        continue;
-
-                    // If this if() statement may return, it may be a null
-                    // pointer check for the pointers referenced in its condition
-                    const Token *endOfIf = startOfIfBlock->link();
-                    bool isExitOrReturn =
-                        Token::findmatch(startOfIfBlock, "exit|return|throw", endOfIf) != nullptr;
-
-                    if (Token::Match(tok, "if ( %var% == 0 )")) {
-                        const unsigned int varid = tok->tokAt(2)->varId();
-                        if (pointerArgs.count(varid) > 0) {
-                            if (isExitOrReturn)
-                                pointerArgs.erase(varid);
-                            else
-                                dependsOnPointer = true;
-                        }
-                    } else {
-                        for (const Token *tok2 = tok->next(); tok2 != endOfCondition; tok2 = tok2->next()) {
-                            if (tok2->isName() && tok2->varId() > 0 &&
-                                pointerArgs.count(tok2->varId()) > 0) {
-
-                                // If the if() depends on a pointer and may return, stop
-                                // considering that pointer because it may be a NULL-pointer
-                                // check that returns if the pointer is NULL.
-                                if (isExitOrReturn)
-                                    pointerArgs.erase(tok2->varId());
-                                else
-                                    dependsOnPointer = true;
-                            }
-                        }
-                    }
-
-                    if (dependsOnPointer && endOfIf) {
-                        for (; tok != endOfIf; tok = tok->next()) {
-                            // If a pointer is assigned a new value, stop considering it.
-                            if (Token::Match(tok, "%var% ="))
-                                pointerArgs.erase(tok->varId());
-                            else
-                                removeAssignedVarFromSet(tok, pointerArgs);
-                        }
-                        continue;
-                    }
-                }
-
-                // If there is a noreturn function (e.g. exit()), stop considering the rest of
-                // this function.
-                bool unknown = false;
-                if (Token::Match(tok, "return|throw|exit") ||
-                    (_tokenizer->IsScopeNoReturn(tok, &unknown) && !unknown))
-                    break;
-
-                removeAssignedVarFromSet(tok, pointerArgs);
-
-                if (tok->varId() == 0 || pointerArgs.count(tok->varId()) == 0)
-                    continue;
-
-                // If a pointer is assigned a new value, stop considering it.
-                if (Token::Match(tok, "%var% ="))
-                    pointerArgs.erase(tok->varId());
-
-                // If a pointer dereference is preceded by an && or ||,
-                // they serve as a sequence point so the dereference
-                // may not be executed.
-                if (isPointerDeRef(tok, unknown) && !unknown &&
-                    tok->strAt(-1) != "&&" && tok->strAt(-1) != "||" &&
-                    tok->strAt(-2) != "&&" && tok->strAt(-2) != "||")
-                    nullPointerDefaultArgError(tok, tok->str());
-            }
-        }
-    }
-}
-
 void CheckNullPointer::nullPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "nullPointer", "Null pointer dereference");
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive)
+void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, bool inconclusive, bool defaultArg)
 {
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, inconclusive);
+    if (defaultArg) {
+        if (_settings->isEnabled("warning"))
+            reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname, inconclusive);
+    } else
+        reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, inconclusive);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const Token* nullCheck, bool inconclusive)
@@ -606,9 +464,4 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(nullCheck);
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
     reportError(callstack, Severity::warning, "nullPointer", errmsg, inconclusive);
-}
-
-void CheckNullPointer::nullPointerDefaultArgError(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname);
 }

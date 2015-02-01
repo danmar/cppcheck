@@ -30,8 +30,8 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false) {}
-        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false) {}
+        Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
+        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
 
         /** int value */
         long long intvalue;
@@ -53,6 +53,9 @@ namespace ValueFlow {
 
         /** Is this value inconclusive? */
         bool inconclusive;
+
+        /** Is this value inconclusive? */
+        bool defaultArg;
     };
 
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
