@@ -23,6 +23,7 @@
 
 class Token;
 class TokenList;
+class SymbolDatabase;
 class ErrorLogger;
 class Settings;
 
@@ -54,7 +55,7 @@ namespace ValueFlow {
         bool inconclusive;
     };
 
-    void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
+    void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 }
 
 #endif // valueflowH

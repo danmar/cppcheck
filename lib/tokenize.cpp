@@ -1638,7 +1638,7 @@ bool Tokenizer::tokenize(std::istream &code,
             }
 
             list.createAst();
-            ValueFlow::setValues(&list, _errorLogger, _settings);
+            ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
 
         return true;
@@ -3854,7 +3854,7 @@ bool Tokenizer::simplifyTokenList2()
 
     list.createAst();
 
-    ValueFlow::setValues(&list, _errorLogger, _settings);
+    ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 
     if (_settings->terminated())
         return false;
