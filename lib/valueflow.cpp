@@ -1636,15 +1636,6 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand1()->function())
             continue;
 
-        // Get scope and args of function
-        const Function * const function = tok->astOperand1()->function();
-        const Scope * const functionScope = function->functionScope;
-        if (!functionScope || !Token::simpleMatch(functionScope->classStart, "{ return")) {
-            if (functionScope && settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
-            continue;
-        }
-
         // Arguments..
         std::vector<MathLib::bigint> parvalues;
         {
@@ -1661,6 +1652,15 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
             }
             if (partok != tok)
                 continue;
+        }
+
+        // Get scope and args of function
+        const Function * const function = tok->astOperand1()->function();
+        const Scope * const functionScope = function->functionScope;
+        if (!functionScope || !Token::simpleMatch(functionScope->classStart, "{ return")) {
+            if (functionScope && settings->debugwarnings)
+                bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
+            continue;
         }
 
         std::map<unsigned int, MathLib::bigint> programMemory;
