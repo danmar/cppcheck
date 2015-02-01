@@ -54,7 +54,7 @@ namespace ValueFlow {
         /** Is this value inconclusive? */
         bool inconclusive;
 
-        /** Is this value inconclusive? */
+        /** Is this value passed as default parameter to the function? */
         bool defaultArg;
     };
 
