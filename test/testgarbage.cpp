@@ -400,6 +400,9 @@ private:
         // 6122 survive garbage code
         code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
         checkCode(code);
+
+        code = "void f1() { for (int n = 0 n < 10 n++); }";
+        checkCode(code);
     }
 
     void garbageSymbolDatabase() {
