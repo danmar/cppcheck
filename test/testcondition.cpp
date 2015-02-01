@@ -451,6 +451,12 @@ private:
               "  else if (dynamic_cast<LABEL*>(widget)){}\n"
               "}",false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n" // #6482
+              "  if (x & 1) {}\n"
+              "  else if (x == 0) {}\n"
+              "}",false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidMissingSemicolon() {
