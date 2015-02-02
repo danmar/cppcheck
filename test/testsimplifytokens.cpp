@@ -4036,7 +4036,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
     }
 
-   void removeUnnecessaryQualification13() {
+    void removeUnnecessaryQualification13() {
         const char code[] = "class Fred {\n"
                             "public:\n"
                             "    Fred** Fred::Magic();\n"
