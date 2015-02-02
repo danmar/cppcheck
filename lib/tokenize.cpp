@@ -10250,7 +10250,30 @@ void Tokenizer::removeUnnecessaryQualification()
                 } else if (tok->strAt(2) == "~")
                     tok1 = tok1->next();
 
-                if (tok1 && Token::Match(tok1->link(), ") const| {|;|:")) {
+                if (!tok1 || !Token::Match(tok1->link(), ") const| {|;|:")) {
+                    continue;
+                }
+
+                const bool isConstructorOrDestructor =
+                    Token::Match(tok, "%type% :: ~| %type%") && (tok->strAt(2) == tok->str() || (tok->strAt(2) == "~" && tok->strAt(3) == tok->str()));
+                if (!isConstructorOrDestructor) {
+                    bool isPrependedByType = Token::Match(tok->previous(), "%type%");
+                    if (!isPrependedByType) {
+                        const Token* tok2 = tok->tokAt(-2);
+                        isPrependedByType = Token::Match(tok2, "%type% *|&");
+                    }
+                    if (!isPrependedByType) {
+                        const Token* tok3 = tok->tokAt(-3);
+                        isPrependedByType = Token::Match(tok3, "%type% * *|&");
+                    }
+                    if (!isPrependedByType) {
+                        // It's not a constructor declaration and it's not a function declaration so
+                        // this is a function call which can have all the qualifiers just fine - skip.
+                        continue;
+                    }
+                }
+
+                {
                     std::string qualification;
                     if (portabilityEnabled)
                         qualification = tok->str() + "::";
