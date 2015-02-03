@@ -3,9 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.67 dev</title>
+    <title>Cppcheck 1.69 dev</title>
 
-    <date>2013-12-23</date>
+    <date>2015-01-03</date>
   </bookinfo>
 
   <chapter>
@@ -609,8 +609,10 @@ Checking test.c...
     <section>
       <title>Using your own custom .cfg file</title>
 
-      <para>You can create and use your own .cfg files for your
-      projects.</para>
+      <para>You can create and use your own .cfg files for your projects. Use
+      <literal>--check-library</literal> and
+      <literal>--enable=information</literal> to get hints about what you
+      should configure.</para>
 
       <para>The command line cppcheck will try to load custom .cfg files from
       the working path - execute cppcheck from the path where the .cfg files
@@ -625,37 +627,89 @@ Checking test.c...
     <section>
       <title>Memory/resource leaks</title>
 
-      <para>Here is an example program:</para>
+      <para>Cppcheck has configurable checking for leaks.</para>
 
-      <para><programlisting>void test()
+      <section>
+        <title>alloc and dealloc</title>
+
+        <para>Here is an example program:</para>
+
+        <para><programlisting>void test()
 {
     HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
 }</programlisting></para>
 
-      <para>The code example above has a resource leak -
-      <literal>CreatePen()</literal> is a windows function that creates a pen.
-      However Cppcheck doesn't assume that return values from functions must
-      be freed. There is no error message:</para>
+        <para>The code example above has a resource leak -
+        <literal>CreatePen()</literal> is a windows function that creates a
+        pen. However Cppcheck doesn't assume that return values from functions
+        must be freed. There is no error message:</para>
 
-      <programlisting># cppcheck pen1.c
+        <programlisting># cppcheck pen1.c
 Checking pen1.c...</programlisting>
 
-      <para>If you provide a windows configuration file then
-      <literal>Cppcheck</literal> detects the bug:</para>
+        <para>If you provide a windows configuration file then
+        <literal>Cppcheck</literal> detects the bug:</para>
 
-      <programlisting># cppcheck --library=windows.cfg pen1.c
+        <programlisting># cppcheck --library=windows.cfg pen1.c
 Checking pen1.c...
 [pen1.c:3]: (error) Resource leak: pen</programlisting>
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+        <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;resource&gt;
     &lt;alloc&gt;CreatePen&lt;/alloc&gt;
     &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>leak-ignore and use</title>
+
+        <para>Often the allocated pointer is passed to functions.
+        Example:</para>
+
+        <programlisting>void test()
+{
+    char *p = malloc(100);
+    dostuff(p);
+}</programlisting>
+
+        <para>If Cppcheck doesn't know what <literal>dostuff</literal> does,
+        without configuration it will assume that <literal>dostuff</literal>
+        takes care of the memory so there is no memory leak.</para>
+
+        <para>To specify that <literal>dostuff</literal> doesn't take care of
+        the memory in any way, use <literal>leak-ignore</literal>:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="dostuff"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>If instead <literal>dostuff</literal> takes care of the memory
+        then this can be configured with:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc&gt;malloc&lt;/alloc&gt;
+    &lt;dealloc&gt;free&lt;/dealloc&gt;
+    &lt;use&gt;dostuff&lt;/use&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>The <literal><literal>&lt;use&gt;</literal></literal>
+        configuration has no logical purpose. You will get the same warnings
+        without it. Use it to silence <literal>--check-library</literal>
+        information messages.</para>
+      </section>
     </section>
 
     <section>
@@ -690,9 +744,11 @@ Checking uninit.c...
       <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="CopyMemory"&gt;
+    &lt;arg nr="1"/&gt;
     &lt;arg nr="2"&gt;
       &lt;not-uninit/&gt;
     &lt;/arg&gt;
+    &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting></para>
     </section>
@@ -730,6 +786,8 @@ Checking null.c...
     &lt;arg nr="1"&gt;
       &lt;not-null/&gt;
     &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+    &lt;arg nr="3"/&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>
     </section>
@@ -756,6 +814,7 @@ Checking formatstring.c...</programlisting>
       <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="do_something"&gt;
+    &lt;formatstr type="printf"/&gt;
     &lt;arg nr="1"&gt;
       &lt;formatstr/&gt;
     &lt;/arg&gt;
@@ -765,6 +824,18 @@ Checking formatstring.c...</programlisting>
       <programlisting>cppcheck --library=test.cfg formatstring.c 
 Checking formatstring.c...
 [formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
+
+      <para>The <literal>type</literal> attribute can be either:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>printf - format string follows the printf rules</para>
+        </listitem>
+
+        <listitem>
+          <para>scanf - format string follows the scanf rules</para>
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section>
@@ -789,7 +860,7 @@ Checking valuerange.c...</programlisting>
 &lt;def&gt;
   &lt;function name="do_something"&gt;
     &lt;arg nr="1"&gt;
-      &lt;valid&gt;0-1023&lt;/valid&gt;
+      &lt;valid&gt;0:1023&lt;/valid&gt;
     &lt;/arg&gt;
   &lt;/function&gt;
 &lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
@@ -797,6 +868,95 @@ Checking valuerange.c...</programlisting>
       <programlisting>cppcheck --library=test.cfg range.c 
 Checking range.c...
 [range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
+
+      <para>Some example expressions you can use in the valid element:</para>
+
+      <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
+-10:20  =&gt;  all values between -10 and 20 are valid
+:0  =&gt;  all values that are less or equal to 0 are valid
+0:  =&gt;  all values that are greater or equal to 0 are valid
+0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: minsize</title>
+
+      <para>Some function arguments take a buffer. With minsize you can
+      configure the min size of the buffer (in bytes, not elements).
+      Imagine:</para>
+
+      <programlisting>void test()
+{
+    char str[5];
+    do_something(str,"12345");
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck minsize.c 
+Checking minsize.c...</programlisting>
+
+      <para>A configuration file can for instance be created that says that
+      the size of the buffer in argument 1 must be larger than the strlen of
+      argument 2.For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;minsize type="strlen" arg="2"/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report this error:</para>
+
+      <programlisting>cppcheck --library=1.cfg minsize.c
+Checking minsize.c...
+[minsize.c:4]: (error) Buffer is accessed out of bounds: str
+</programlisting>
+
+      <para>There are different types of minsizes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>strlen</term>
+
+          <listitem>
+            <para>buffer size must be larger than other arguments string
+            length. Example: see strcpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>argvalue</term>
+
+          <listitem>
+            <para>buffer size must be larger than value in other argument.
+            Example: see memset configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>sizeof</term>
+
+          <listitem>
+            <para>buffer size must be larger than other argument buffer size.
+            Example: see strncpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>mul</term>
+
+          <listitem>
+            <para>buffer size must be larger than multiplication result when
+            multiplying values given in two other arguments. Typically one
+            argument defines the element size and another element defines the
+            number of elements. Example: see fread configuration in
+            std.cfg</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </section>
 
     <section>
@@ -847,6 +1007,126 @@ Checking noreturn.c...
     </section>
 
     <section>
+      <title>use-retval</title>
+
+      <para>As long as nothing else is specified, cppcheck assumes that
+      ignoring the return value of a function is ok:</para>
+
+      <programlisting>bool test(const char* a, const char* b)
+{
+    strcmp(a, b);  // &lt;- bug: The call of strcmp does not have side-effects, but the return value is ignored.
+    return true;
+}</programlisting>
+
+      <para>In case <literal>strcmp</literal> has side effects, such as
+      assigning the result to one of the parameters passed to it, nothing bad
+      would happen:</para>
+
+      <programlisting># cppcheck useretval.c 
+Checking useretval.c...</programlisting>
+
+      <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
+      detected:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+Checking useretval.c...
+[noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
+
+      <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="strcmp"&gt;
+    &lt;use-retval/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>define</title>
+
+      <para>Libraries can be used to define preprocessor macros as well. For
+      example:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;define name="NULL_VALUE" value="0"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Each occurence of "NULL_VALUE" in the code would then be replaced
+      by "0" at preprocessor stage.</para>
+    </section>
+
+    <section>
+      <title>podtype</title>
+
+      <para>Lots of code relies on typedefs providing platform independant
+      types. "podtype"-tags can be used to provide necessary information to
+      cppcheck to support them. Without further information, cppcheck does not
+      understand the type "uint16_t" in the following example:</para>
+
+      <programlisting>void test() {
+    uint16_t a;
+}</programlisting>
+
+      <para>No message about variable 'a' being unused is printed:</para>
+
+      <programlisting># cppcheck --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...</programlisting>
+
+      <para>If uint16_t is defined in a library as follows, the result
+      improves:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;podtype name="uint16_t" sign="u" size="2"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>The size of the type is specified in bytes. Possible values for
+      the "sign" attribute are "s" (signed) and "u" (unsigned). Both
+      attributes are optional. Using this library, cppcheck prints:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...
+[unusedvar.cpp:2]: (style) Unused variable: a</programlisting>
+    </section>
+
+    <section>
+      <title>container</title>
+
+      <para>A lot of C++ libraries, among those the STL itself, provide
+      containers with very similar functionality. Libraries can be used to
+      tell cppcheck about their behaviour. Each container needs a unique ID.
+      It can optionally have a startPattern, which must be a valid
+      Token::Match pattern and an endPattern that is compared to the linked
+      token of the first token with such a link. The optional attribute
+      "inherits" takes an ID from a previously defined container.</para>
+
+      <para>Inside the &lt;container&gt; tag, functions can be defined inside
+      of the tags &lt;size&gt;, &lt;access&gt; and &lt;other&gt; (on your
+      choice). Each of them can specify an action like "resize" and/or the
+      result it yields, for example "end-iterator".</para>
+
+      <para>The following example provides a definition for std::vector, based
+      on the definition of "stdContainer" (not shown):</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;container id="stdVector" startPattern="std :: vector &amp;lt;" inherits="stdContainer"&gt;
+    &lt;size&gt;
+      &lt;function name="push_back" action="push"/&gt;
+      &lt;function name="pop_back" action="pop"/&gt;
+    &lt;/size&gt;
+    &lt;access indexOperator="array-like"&gt;
+      &lt;function name="at" yields="at_index"/&gt;
+      &lt;function name="front" yields="item"/&gt;
+      &lt;function name="back" yields="item"/&gt;
+    &lt;/access&gt;
+  &lt;/container&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
       <title>Example configuration for strcpy()</title>
 
       <para>The proper configuration for the standard strcpy() function would
@@ -861,6 +1141,7 @@ Checking noreturn.c...
     &lt;arg nr="2"&gt;
       &lt;not-null/&gt;
       &lt;not-uninit/&gt;
+      &lt;strz/&gt;
     &lt;/arg&gt;
   &lt;/function&gt;</programlisting>
 
@@ -878,7 +1159,8 @@ Checking noreturn.c...
       <para>The second argument the function takes is a pointer. It must not
       be null. And it must point at initialized data. Using
       <literal>&lt;not-null&gt;</literal> and
-      <literal>&lt;not-uninit&gt;</literal> is correct.</para>
+      <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
+      at a zero-terminated string so &lt;strz&gt; is also used.</para>
     </section>
 
     <section>
@@ -915,6 +1197,11 @@ Checking noreturn.c...
     &lt;summary&gt;SUMMARY&lt;/summary&gt;
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
+
+    <para>CDATA can be used to include characters in a pattern that might
+    interfere with XML:</para>
+
+    <programlisting>&lt;![CDATA[some&lt;strange&gt;pattern]]&gt;</programlisting>
 
     <section>
       <title>&lt;tokenlist&gt;</title>

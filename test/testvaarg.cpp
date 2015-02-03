@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,6 +90,18 @@ private:
               "    va_end(arg_ptr);\n"
               "}"); // Don't crash if less than expected arguments are given.
         ASSERT_EQUALS("", errout.str());
+
+        check("void assertf_fail(const char *assertion, const char *file, int line, const char *func, const char* msg, ...) {\n"
+              "    struct A {\n"
+              "        A(char* buf, int size) {}\n"
+              "            void printf(const char * format, ...) {\n"
+              "                va_list args;\n"
+              "                va_start(args, format);\n"
+              "                va_end(args);\n"
+              "        }\n"
+              "    };\n"
+              "}"); // Inner class (#6453)
+        ASSERT_EQUALS("", errout.str());
     }
 
     void referenceAs_va_start() {
@@ -113,6 +125,18 @@ private:
               "    va_list arg_ptr;\n"
               "    va_start(arg_ptr, szBuffer);\n"
               "    va_end(arg_ptr);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6186
+        check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
+              "    va_list arg_ptr;\n"
+              "    va_start(arg_ptr, szBuffer);\n"
+              "    try {\n"
+              "        throw sth;\n"
+              "    } catch(...) {\n"
+              "        va_end(arg_ptr);\n"
+              "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

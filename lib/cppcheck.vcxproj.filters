@@ -38,7 +38,7 @@
     <ClCompile Include="checknullpointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkobsoletefunctions.cpp">
+    <ClCompile Include="checkobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkother.cpp">
@@ -140,6 +140,9 @@
     <ClCompile Include="checkcondition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checktype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -160,7 +163,7 @@
     <ClInclude Include="checknullpointer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checkobsoletefunctions.h">
+    <ClInclude Include="checkobsolescentfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">
@@ -275,6 +278,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkcondition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checktype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

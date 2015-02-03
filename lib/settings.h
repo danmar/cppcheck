@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,11 @@ public:
 
     /** @brief Inconclusive checks */
     bool inconclusive;
+
+    /** @brief Collect unmatched suppressions in one run.
+      * This delays the reporting until all files are checked.
+      * It is needed by checks that analyse the whole code base. */
+    bool jointSuppressionReport;
 
     /**
      * When this flag is false (default) then experimental
@@ -164,6 +169,13 @@ public:
      * @return error message. empty upon success
      */
     std::string addEnabled(const std::string &str);
+
+    /**
+     * @brief Disables all severities, except from error.
+     */
+    void clearEnabled() {
+        _enabled.clear();
+    }
 
     enum Language {
         None, C, CPP

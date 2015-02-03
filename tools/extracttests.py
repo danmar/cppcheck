@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2014 Daniel Marjamaeki and Cppcheck team.
+# Copyright (C) 2007-2015 Daniel Marjamaeki and Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -230,7 +230,7 @@ if filename is not None:
         functionNames = []
         for node in e.nodes:
             functionname = trimname(node['functionName'])
-            if not functionname in functionNames:
+            if functionname not in functionNames:
                 functionNames.append(functionname)
         functionNames.sort()
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,8 +139,8 @@ public:
     static void eraseDeadCode(Token *begin, const Token *end);
 
     /**
-     * Simplify '* & ( %var% ) =' or any combination of '* &' and '()'
-     * parentheses around '%var%' to '%var% ='
+     * Simplify '* & ( %name% ) =' or any combination of '* &' and '()'
+     * parentheses around '%name%' to '%name% ='
      */
     void simplifyMulAndParens();
 
@@ -194,6 +194,12 @@ public:
 
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
+
+    /** Remove undefined macro in class definition:
+      * class DLLEXPORT Fred { };
+      * class Fred FINAL : Base { };
+      */
+    void removeMacroInClassDef();
 
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
@@ -380,7 +386,7 @@ public:
      */
     bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
 
-    /** Simplify useless C++ empty namespaces, like: 'namespace %var% { }'*/
+    /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
 
     /** Simplify redundant code placed after control flow statements :
@@ -499,9 +505,8 @@ public:
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
-     * @return true if simplifcations performed and false otherwise.
      */
-    bool simplifyMathFunctions();
+    void simplifyMathFunctions();
 
     /**
      * Simplify e.g. 'sin(0)' into '0'
@@ -585,7 +590,7 @@ public:
 
     /**
      * assert that tokens are ok - used during debugging for example
-     * to catch problems in simplifyTokenList.
+     * to catch problems in simplifyTokenList1/2.
      */
     void validate() const;
 
@@ -763,22 +768,22 @@ public:
     static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
-    * Helper function to check wether number is zero (0 or 0.0 or 0E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
+    * @param s the string to check
     * @return true in case is is zero and false otherwise.
     */
     static bool isZeroNumber(const std::string &s);
 
     /**
-    * Helper function to check wether number is one (1 or 0.1E+1 or 1E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
+    * @param s the string to check
     * @return true in case is is one and false otherwise.
     */
     static bool isOneNumber(const std::string &s);
 
     /**
-    * Helper function to check wether number is one (2 or 0.2E+1 or 2E+0) or not?
-    * @param s --> a string to check
+    * Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
+    * @param s the string to check
     * @return true in case is is two and false otherwise.
     */
     static bool isTwoNumber(const std::string &s);

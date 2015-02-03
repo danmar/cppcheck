@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@
 #include <iomanip>
 #include <sstream>
 #include <vector>
+
+static std::string fixInvalidChars(const std::string& raw);
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
@@ -107,8 +109,12 @@ std::string ErrorLogger::ErrorMessage::serialize() const
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
     }
-    oss << _shortMessage.length() << " " << _shortMessage;
-    oss << _verboseMessage.length() << " " << _verboseMessage;
+
+    const std::string saneShortMessage = fixInvalidChars(_shortMessage);
+    const std::string saneVerboseMessage = fixInvalidChars(_verboseMessage);
+
+    oss << saneShortMessage.length() << " " << saneShortMessage;
+    oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
     oss << _callStack.size() << " ";
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok) {
@@ -147,6 +153,9 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         if (results.size() == 4)
             break;
     }
+
+    if (results.size() != 4)
+        throw InternalError(0, "Internal Error: Deserialization of error message failed");
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
@@ -283,7 +292,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     std::string::size_type index = 0;
     while ((index = source.find(searchFor, index)) != std::string::npos) {
         source.replace(index, searchFor.length(), replaceWith);
-        index += replaceWith.length() - searchFor.length() + 1;
+        index = (std::string::difference_type)index + (std::string::difference_type)replaceWith.length() - (std::string::difference_type)searchFor.length() + 1;
     }
 }
 

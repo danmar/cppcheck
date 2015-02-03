@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,8 +62,6 @@ private:
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
         TEST_CASE(valueFlowFunctionReturn);
-
-        TEST_CASE(garbage);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -405,6 +403,12 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 37));
 
+        code = "void f(int x) {\n"
+               "  a = x;\n"
+               "  for (; x!=1; x++) { }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 1));
+
         code = "void f(menu *x) {\n"
                "  a = x->parent;\n"
                "  for (i=0;(i<10) && (x!=0); i++) { x = x->next; }\n"
@@ -734,6 +738,14 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 32));
 
         code = "void f() {\n"
+               "    int x = 33;\n"
+               "    if (x==33) goto fail;\n"
+               "    a[x]=0;\n"
+               "fail:\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 33));
+
+        code = "void f() {\n"
                "    int x = 32;\n"
                "    if (a==1) { z=x+12; }\n"
                "    if (a==2) { z=x+32; }\n"
@@ -788,6 +800,34 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n" // #6118 - FP
+               "    int x = 0;\n"
+               "    x = x & 0x1;\n"
+               "    if (x == 0) { x = 2; }\n"
+               "    y = 42 / x;\n" // <- x can't be 0
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
+        code = "void f() {\n" // #6118 - FN
+               "    int x = 0;\n"
+               "    x = x & 0x1;\n"
+               "    if (x == 0) { x += 2; }\n"
+               "    y = 42 / x;\n" // <- x can be 2
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
+
+        code = "void f(int mode) {\n"
+               "    struct ABC *x;\n"
+               "\n"
+               "    if (mode) { x = &y; }\n"
+               "    else { x = NULL; }\n"
+               "\n"
+               "    if (!x) exit(1);\n"
+               "\n"
+               "    a = x->a;\n" // <- x can't be 0
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"
@@ -819,6 +859,27 @@ private:
                "  a = x;\n"  // <- x is not 3
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
+
+        // pointer/reference to x
+        code = "int f(void) {\n"
+               "  int x = 2;\n"
+               "  int *px = &x;\n"
+               "  for (int i = 0; i < 1; i++) {\n"
+               "    *px = 1;\n"
+               "  }\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 2));
+
+        code = "int f(void) {\n"
+               "  int x = 5;\n"
+               "  int &rx = x;\n"
+               "  for (int i = 0; i < 1; i++) {\n"
+               "    rx = 1;\n"
+               "  }\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 5));
 
         // break
         code = "void f() {\n"
@@ -855,6 +916,51 @@ private:
                "  }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 34));
+
+        // while/for
+        code = "void f() {\n" // #6138
+               "  ENTRY *x = 0;\n"
+               "  while (x = get()) {\n"
+               "    set(x->value);\n"  // <- x is not 0
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can be 0
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      ;\n" // <- no break
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x cant be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x cant be 0 at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  while (++i < 10) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can be 0
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
     }
 
     void valueFlowAfterCondition() {
@@ -961,11 +1067,11 @@ private:
         code = "void f(int x) {\n"
                "  if (x == 2) {}\n"
                "  if (x > 0)\n"
-               "    a = x;\n"
+               "    a = x;\n"  // <- TODO, x can be 2
                "  else\n"
                "    b = x;\n"
                "}";
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 2));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 2));
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 2));
 
         // condition with 2nd variable
@@ -976,6 +1082,16 @@ private:
                "    a = x;\n" // <- x can not be 7 here
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 7));
+
+        code = "void f(struct X *x) {\n"
+               "  bool b = TRUE;\n"
+               "  if(x) { }\n"
+               "  else\n"
+               "    b = FALSE;\n"
+               "  if (b)\n"
+               "    abc(x->value);\n" // <- x is not 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
 
         // In condition, after && and ||
         code = "void f(int x) {\n"
@@ -996,7 +1112,7 @@ private:
                "    for (; x && \n"
                "         x->str() != y; x = x->next()) {}\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
         code = "void f(const Token* x) {\n"
@@ -1004,7 +1120,7 @@ private:
                "    if (x && \n"
                "        x->str() != y) {}\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
         // return
@@ -1047,12 +1163,22 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 10));
 
         code = "void f() {\n"
-               "    for (int x = 2; x < 1; x++)\n"
+               "    int x;\n"
+               "    for (x = 2; x < 1; x++)\n"
                "        a[x] = 0;\n" // <- not 2
-               "    b = x;\n" // <- TODO: this is 2
+               "    b = x;\n" // 2
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3U, 2));
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
+
+        code = "void f() {\n"
+               "    int x;\n"
+               "    for (x = 2; x < 1; ++x)\n"
+               "        a[x] = 0;\n" // <- not 2
+               "    b = x;\n" // 2
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 2));
 
         code = "void f(int a) {\n"
                "    for (int x = a; x < 10; x++)\n"
@@ -1089,6 +1215,14 @@ private:
                "        0 : a[x];\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n" // #5223
+               "    for (int x = 0; x < 300 && x < 18; x++)\n"
+               "        x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 17));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 299));
 
         code = "void f() {\n"
                "    int x;\n"
@@ -1167,6 +1301,25 @@ private:
                "}\n";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 20));
 
+        code = "void f() {\n"
+               "  int x;\n"
+               "  for (x = 0; x < 5; x++) {}\n"
+               "  if (x == 5) {\n"
+               "    panic();\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 5
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 5));
+
+        code = "void f() {\n"
+               "  int x;\n"
+               "  for (x = 0; x < 5; x++) {}\n"
+               "  if (x < 5) {}\n"
+               "  else return;\n"
+               "  a = x;\n" // <- x can't be 5
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 5));
+
         // hang
         code = "void f() {\n"
                "  for(int i = 0; i < 20; i++)\n"
@@ -1218,6 +1371,14 @@ private:
         ASSERT_EQUALS(true,  testValueOfX(code, 2U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code = "void f1(int *x) {\n"
+               "  if (x &&\n"
+               "      *x) {}\n"
+               "}\n"
+               "void f2() { f1(0); }";
+        ASSERT_EQUALS(true,  testValueOfX(code, 2U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         // #5861 - fp with float
         code = "void f1(float x) {\n"
                "  return 1.0 / x;\n"
@@ -1234,6 +1395,12 @@ private:
                "  dostuff(x+1);\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
+
+        code = "void leaveNotifyEvent(const XCrossingEvent * const) { }\n"
+               "void motionNotifyEvent() {\n"
+               "    leaveNotifyEvent(0);\n"
+               "}";
+        testValueOfX(code, 2U, 2); // No complaint about Token::Match called with varid 0. (#6443)
     }
 
     void valueFlowFunctionReturn() {
@@ -1254,19 +1421,6 @@ private:
                "    x = 1 * add(10+1,4);\n"
                "}";
         ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
-    }
-
-    void garbage() {
-        // #6089
-        const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
-                           "{\n"
-                           "    (foo(s, , 2, , , 5, , 7)) abort()\n"
-                           "}\n";
-        ASSERT_THROW(valueOfTok(code, "*"), InternalError);
-
-        // #6106
-        code = " f { int i ; b2 , [ ] ( for ( i = 0 ; ; ) ) }";
-        valueOfTok(code, "*");
     }
 };
 

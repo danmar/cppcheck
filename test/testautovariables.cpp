@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,10 +57,7 @@ private:
             tokenizer.simplifyTokenList2();
             const std::string str2(tokenizer.tokens()->stringifyList(0,true));
             if (str1 != str2)
-                warn(("Unsimplified code in test case. It looks like this test "
-                      "should either be cleaned up or moved to TestTokenizer or "
-                      "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
-
+                warnUnsimplified(str1, str2);
 
             // Check auto variables
             checkAutoVariables.autoVariables();
@@ -82,6 +79,7 @@ private:
         TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar12); // ticket #5024 - crash
         TEST_CASE(testautovar13); // ticket #5537 - crash
+        TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -379,6 +377,17 @@ private:
               "    delete &UniqueRealDirs;\n"
               "   }\n"
               "};\n");
+    }
+
+    void testautovar14() { // Ticket #4776
+        check("void f(int x) {\n"
+              "label:"
+              "  if (x>0) {\n"
+              "    x = x >> 1;\n"
+              "    goto label;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1() {
@@ -873,8 +882,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
 
+        check("int& operator<<(int out, int path) {\n"
+              "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
         check("std::ostream& operator<<(std::ostream& out, const std::string& path) {\n"
               "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::ostream& operator<<(std::ostream* out, const std::string& path) {\n"
+              "    return *out << path;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

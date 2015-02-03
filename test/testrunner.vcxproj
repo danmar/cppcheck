@@ -42,10 +42,10 @@
     <ClCompile Include="testcondition.cpp" />
     <ClCompile Include="testconstructors.cpp" />
     <ClCompile Include="testcppcheck.cpp" />
-    <ClCompile Include="testdivision.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />
+    <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
     <ClCompile Include="testinternal.cpp" />
     <ClCompile Include="testio.cpp" />
@@ -55,7 +55,7 @@
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testnonreentrantfunctions.cpp" />
     <ClCompile Include="testnullpointer.cpp" />
-    <ClCompile Include="testobsoletefunctions.cpp" />
+    <ClCompile Include="testobsolescentfunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
@@ -64,7 +64,9 @@
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsamples.cpp" />
+    <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
+    <ClCompile Include="testsimplifytypedef.cpp" />
     <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
@@ -80,12 +82,14 @@
     <ClCompile Include="testtimer.cpp" />
     <ClCompile Include="testtoken.cpp" />
     <ClCompile Include="testtokenize.cpp" />
+    <ClCompile Include="testtype.cpp" />
     <ClCompile Include="testuninitvar.cpp" />
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />
     <ClCompile Include="testvaarg.cpp" />
     <ClCompile Include="testvalueflow.cpp" />
+    <ClCompile Include="testvarid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\cli\cmdlineparser.h" />
@@ -184,6 +188,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -242,6 +247,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

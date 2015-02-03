@@ -76,7 +76,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </author>
     </authorgroup>
     <copyright>
-      <year>2009 - 2014</year>
+      <year>2009 - 2015</year>
       <holder>&dhusername;</holder>
     </copyright>
     <legalnotice>
@@ -117,7 +117,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg>
-      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg> 
+      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>--include=&lt;file&gt;</option></arg>
       <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
       <arg choice="opt"><option>--inconclusive</option></arg>
@@ -316,7 +316,7 @@ First given path is searched for contained header files first. If paths are rela
       <varlistentry>
         <term><option>--config-exclude=&lt;dir&gt;</option></term>
         <listitem>
-          <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers 
+          <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers
 (but not sources) matching the prefix will not be considered for evaluation of configuration alternatives.</para>
         </listitem>
       </varlistentry>
@@ -329,7 +329,7 @@ First given path is searched for contained header files first. If paths are rela
       <varlistentry>
         <term><option>--include=&lt;file&gt;</option></term>
         <listitem>
-          <para>Force inclusion of a file before the checked file. Can be used for example when checking the Linux kernel, 
+          <para>Force inclusion of a file before the checked file. Can be used for example when checking the Linux kernel,
 where autoconf.h needs to be included for every file compiled. Works the same way as the GCC -include option.</para>
         </listitem>
       </varlistentry>

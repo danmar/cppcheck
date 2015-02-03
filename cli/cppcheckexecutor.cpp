@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,13 +33,25 @@
 #include <iostream>
 #include <sstream>
 
-#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__OS2__)
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
-#include <signal.h>
 #include <cstdio>
+#include <signal.h>
+#include <unistd.h>
+#if defined(__APPLE__)
+#   define _XOPEN_SOURCE // ucontext.h APIs can only be used on Mac OSX >= 10.7 if _XOPEN_SOURCE is defined
+#   include <ucontext.h>
+#   undef _XOPEN_SOURCE
+#else
+#   include <ucontext.h>
+#endif
+#ifdef __linux__
+#include <sys/syscall.h>
+#include <sys/types.h>
+#endif
 #endif
 
-#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(USE_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__SVR4)
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(USE_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
 #define USE_UNIX_BACKTRACE_SUPPORT
 #include <cxxabi.h>
 #include <execinfo.h>
@@ -158,12 +170,11 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         return false;
     }
 
-    if (!_files.empty()) {
-        return true;
-    } else {
+    if (_files.empty()) {
         std::cout << "cppcheck: error: no files to check - all paths ignored." << std::endl;
         return false;
     }
+    return true;
 }
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
@@ -297,9 +308,21 @@ static void print_stacktrace(FILE* f, bool demangling)
 
 /*
  * Entry pointer for signal handlers
+ * It uses functions which are not safe to be called from a signal handler,
+ * but when ending up here something went terribly wrong anyway.
+ * And all which is left is just printing some information and terminate.
  */
-static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*/)
+static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
+    int type = -1;
+    pid_t killid = getpid();
+    const ucontext_t* uc = reinterpret_cast<const ucontext_t*>(context);
+#if defined(__linux__) && defined(REG_ERR)
+    killid = (pid_t) syscall(SYS_gettid);
+    if (uc) {
+        type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
+    }
+#endif
     const char * const signame = signal_name(signo);
     const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
@@ -312,22 +335,22 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGBUS:
         switch (info->si_code) {
         case BUS_ADRALN: // invalid address alignment
-            fprintf(f, " - BUS_ADRALN");
+            fputs(" - BUS_ADRALN", f);
             break;
         case BUS_ADRERR: // nonexistent physical address
-            fprintf(f, " - BUS_ADRERR");
+            fputs(" - BUS_ADRERR", f);
             break;
         case BUS_OBJERR: // object-specific hardware error
-            fprintf(f, " - BUS_OBJERR");
+            fputs(" - BUS_OBJERR", f);
             break;
 #ifdef BUS_MCEERR_AR
         case BUS_MCEERR_AR: // Hardware memory error consumed on a machine check;
-            fprintf(f, " - BUS_MCEERR_AR");
+            fputs(" - BUS_MCEERR_AR", f);
             break;
 #endif
 #ifdef BUS_MCEERR_AO
         case BUS_MCEERR_AO: // Hardware memory error detected in process but not consumed
-            fprintf(f, " - BUS_MCEERR_AO");
+            fputs(" - BUS_MCEERR_AO", f);
             break;
 #endif
         default:
@@ -339,28 +362,28 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGFPE:
         switch (info->si_code) {
         case FPE_INTDIV: //     integer divide by zero
-            fprintf(f, " - FPE_INTDIV");
+            fputs(" - FPE_INTDIV", f);
             break;
         case FPE_INTOVF: //     integer overflow
-            fprintf(f, " - FPE_INTOVF");
+            fputs(" - FPE_INTOVF", f);
             break;
         case FPE_FLTDIV: //     floating-point divide by zero
-            fprintf(f, " - FPE_FLTDIV");
+            fputs(" - FPE_FLTDIV", f);
             break;
         case FPE_FLTOVF: //     floating-point overflow
-            fprintf(f, " - FPE_FLTOVF");
+            fputs(" - FPE_FLTOVF", f);
             break;
         case FPE_FLTUND: //     floating-point underflow
-            fprintf(f, " - FPE_FLTUND");
+            fputs(" - FPE_FLTUND", f);
             break;
         case FPE_FLTRES: //     floating-point inexact result
-            fprintf(f, " - FPE_FLTRES");
+            fputs(" - FPE_FLTRES", f);
             break;
         case FPE_FLTINV: //     floating-point invalid operation
-            fprintf(f, " - FPE_FLTINV");
+            fputs(" - FPE_FLTINV", f);
             break;
         case FPE_FLTSUB: //     subscript out of range
-            fprintf(f, " - FPE_FLTSUB");
+            fputs(" - FPE_FLTSUB", f);
             break;
         default:
             break;
@@ -371,28 +394,28 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
     case SIGILL:
         switch (info->si_code) {
         case ILL_ILLOPC: //     illegal opcode
-            fprintf(f, " - ILL_ILLOPC");
+            fputs(" - ILL_ILLOPC", f);
             break;
         case ILL_ILLOPN: //    illegal operand
-            fprintf(f, " - ILL_ILLOPN");
+            fputs(" - ILL_ILLOPN", f);
             break;
         case ILL_ILLADR: //    illegal addressing mode
-            fprintf(f, " - ILL_ILLADR");
+            fputs(" - ILL_ILLADR", f);
             break;
         case ILL_ILLTRP: //    illegal trap
-            fprintf(f, " - ILL_ILLTRP");
+            fputs(" - ILL_ILLTRP", f);
             break;
         case ILL_PRVOPC: //    privileged opcode
-            fprintf(f, " - ILL_PRVOPC");
+            fputs(" - ILL_PRVOPC", f);
             break;
         case ILL_PRVREG: //    privileged register
-            fprintf(f, " - ILL_PRVREG");
+            fputs(" - ILL_PRVREG", f);
             break;
         case ILL_COPROC: //    coprocessor error
-            fprintf(f, " - ILL_COPROC");
+            fputs(" - ILL_COPROC", f);
             break;
         case ILL_BADSTK: //    internal stack error
-            fprintf(f, " - ILL_BADSTK");
+            fputs(" - ILL_BADSTK", f);
             break;
         default:
             break;
@@ -402,20 +425,22 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         break;
     case SIGINT:
         bPrintCallstack=false;
-        fprintf(f, ".\n");
+        fputs(".\n", f);
         break;
     case SIGSEGV:
         switch (info->si_code) {
         case SEGV_MAPERR: //    address not mapped to object
-            fprintf(f, " - SEGV_MAPERR");
+            fputs(" - SEGV_MAPERR", f);
             break;
         case SEGV_ACCERR: //    invalid permissions for mapped object
-            fprintf(f, " - SEGV_ACCERR");
+            fputs(" - SEGV_ACCERR", f);
             break;
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).\n",
+        fprintf(f, " (%sat 0x%p).\n",
+                (type==-1)? "" :
+                (type==0) ? "reading " : "writing ",
                 info->si_addr);
         break;
     default:
@@ -426,7 +451,10 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * /*context*
         print_stacktrace(f, true);
         fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
-    abort();
+
+    // now let the system proceed, shutdown and hopefully dump core for post-mortem analysis
+    signal(signo, SIG_DFL);
+    kill(killid, signo);
 }
 #endif
 
@@ -696,14 +724,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 {
     Settings& settings = cppcheck.settings();
     _settings = &settings;
-    bool std = (settings.library.load(argv[0], "std.cfg").errorcode == Library::OK);
+    bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
     bool posix = true;
     if (settings.standards.posix)
-        posix = (settings.library.load(argv[0], "posix.cfg").errorcode == Library::OK);
+        posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");
+    bool windows = true;
+    if (settings.isWindowsPlatform())
+        windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
 
-    if (!std || !posix) {
+    if (!std || !posix || !windows) {
         const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : "posix.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
 #ifdef CFGDIR
         const std::string details("The Cppcheck binary was compiled with CFGDIR set to \"" +
                                   std::string(CFGDIR) + "\" and will therefore search for "
@@ -729,6 +760,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     unsigned int returnValue = 0;
     if (settings._jobs == 1) {
         // Single process
+        settings.jointSuppressionReport = true;
 
         std::size_t totalfilesize = 0;
         for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
@@ -759,8 +791,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 c++;
             }
         }
-
-        cppcheck.checkFunctionUsage();
+        cppcheck.analyseWholeProgram();
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
@@ -769,8 +800,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
-    if (settings.isEnabled("information") || settings.checkConfiguration)
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions());
+    if (settings.isEnabled("information") || settings.checkConfiguration) {
+        const bool enableUnusedFunctionCheck = cppcheck.unusedFunctionCheckIsEnabled();
+
+        if (settings.jointSuppressionReport) {
+            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+                reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
+            }
+        }
+
+        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(enableUnusedFunctionCheck));
+    }
 
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);
@@ -876,6 +916,50 @@ void CppCheckExecutor::setExceptionOutput(const std::string& fn)
 const std::string& CppCheckExecutor::getExceptionOutput()
 {
     return exceptionOutput;
+}
+
+bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
+{
+    Library::Error err = destination.load(basepath, filename);
+
+    if (err.errorcode == Library::UNKNOWN_ELEMENT)
+        std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
+    else if (err.errorcode != Library::OK) {
+        std::string errmsg;
+        switch (err.errorcode) {
+        case Library::OK:
+            break;
+        case Library::FILE_NOT_FOUND:
+            errmsg = "File not found";
+            break;
+        case Library::BAD_XML:
+            errmsg = "Bad XML";
+            break;
+        case Library::UNKNOWN_ELEMENT:
+            errmsg = "Unexpected element";
+            break;
+        case Library::MISSING_ATTRIBUTE:
+            errmsg = "Missing attribute";
+            break;
+        case Library::BAD_ATTRIBUTE_VALUE:
+            errmsg = "Bad attribute value";
+            break;
+        case Library::UNSUPPORTED_FORMAT:
+            errmsg = "File is of unsupported format version";
+            break;
+        case Library::DUPLICATE_PLATFORM_TYPE:
+            errmsg = "Duplicate platform type";
+            break;
+        case Library::PLATFORM_TYPE_REDEFINED:
+            errmsg = "Platform type redefined";
+            break;
+        }
+        if (!err.reason.empty())
+            errmsg += " '" + err.reason + "'";
+        std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. " << errmsg << std::endl;
+        return false;
+    }
+    return true;
 }
 
 std::string CppCheckExecutor::exceptionOutput;

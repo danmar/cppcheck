@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "path.h"
 #include "mathlib.h"
 #include "token.h"
+#include "symboldatabase.h"
 
 #include <map>
 #include <set>
@@ -46,7 +47,7 @@ class CPPCHECKLIB Library {
 public:
     Library();
 
-    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, BAD_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE, BAD_ATTRIBUTE_VALUE };
+    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
     class Error {
     public:
@@ -123,18 +124,75 @@ public:
     std::set<std::string> leakignore;
     std::set<std::string> functionconst;
     std::set<std::string> functionpure;
+    std::set<std::string> useretval;
 
-    bool isnoreturn(const std::string &name) const {
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
+    // returns true if ftok is not a library function
+    bool isNotLibraryFunction(const Token *ftok) const;
+
+    bool isnoreturn(const Token *ftok) const {
+        if (ftok->function() && ftok->function()->isAttributeNoreturn())
+            return true;
+        if (isNotLibraryFunction(ftok))
+            return false;
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
         return (it != _noreturn.end() && it->second);
     }
 
-    bool isnotnoreturn(const std::string &name) const {
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(name);
+    bool isnotnoreturn(const Token *ftok) const {
+        if (ftok->function() && ftok->function()->isAttributeNoreturn())
+            return false;
+        if (isNotLibraryFunction(ftok))
+            return false;
+        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
         return (it != _noreturn.end() && !it->second);
     }
 
     bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
+
+    class Container {
+    public:
+        Container() :
+            type_templateArgNo(-1),
+            size_templateArgNo(-1),
+            arrayLike_indexOp(false),
+            stdStringLike(false) {
+        }
+
+        enum Action {
+            RESIZE, CLEAR, PUSH, POP, FIND,
+            NO_ACTION
+        };
+        enum Yield {
+            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, SIZE, EMPTY,
+            NO_YIELD
+        };
+        struct Function {
+            Action action;
+            Yield yield;
+        };
+        std::string startPattern, endPattern;
+        std::map<std::string, Function> functions;
+        int type_templateArgNo;
+        int size_templateArgNo;
+        bool arrayLike_indexOp;
+        bool stdStringLike;
+
+        Action getAction(const std::string& function) const {
+            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            if (i != functions.end())
+                return i->second.action;
+            return NO_ACTION;
+        }
+
+        Yield getYield(const std::string& function) const {
+            std::map<std::string, Function>::const_iterator i = functions.find(function);
+            if (i != functions.end())
+                return i->second.yield;
+            return NO_YIELD;
+        }
+    };
+    std::map<std::string, Container> containers;
+    const Container* detectContainer(const Token* typeStart) const;
 
     class ArgumentChecks {
     public:
@@ -167,35 +225,35 @@ public:
     // function name, argument nr => argument data
     std::map<std::string, std::map<int, ArgumentChecks> > argumentChecks;
 
-    bool isboolargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isboolargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notbool;
     }
 
-    bool isnullargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isnullargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notnull;
     }
 
-    bool isuninitargbad(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isuninitargbad(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notuninit;
     }
 
-    bool isargformatstr(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isargformatstr(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->formatstr;
     }
 
-    bool isargstrz(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    bool isargstrz(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->strz;
     }
 
-    bool isargvalid(const std::string &functionName, int argnr, const MathLib::bigint argvalue) const;
+    bool isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const;
 
-    const std::string& validarg(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    const std::string& validarg(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
     }
 
@@ -212,8 +270,8 @@ public:
         return false;
     }
 
-    const std::list<ArgumentChecks::MinSize> *argminsizes(const std::string &functionName, int argnr) const {
-        const ArgumentChecks *arg = getarg(functionName, argnr);
+    const std::list<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
     }
 
@@ -329,6 +387,59 @@ public:
         return (it != podtypes.end()) ? &(it->second) : nullptr;
     }
 
+    struct PlatformType {
+        PlatformType()
+            : _signed(false)
+            , _unsigned(false)
+            , _long(false)
+            , _pointer(false)
+            , _ptr_ptr(false)
+            , _const_ptr(false) {
+        }
+        bool operator == (const PlatformType & type) const {
+            return (_type == type._type &&
+                    _signed == type._signed &&
+                    _unsigned == type._unsigned &&
+                    _long == type._long &&
+                    _pointer == type._pointer &&
+                    _ptr_ptr == type._ptr_ptr &&
+                    _const_ptr == type._const_ptr);
+        }
+        bool operator != (const PlatformType & type) const {
+            return !(*this == type);
+        }
+        std::string _type;
+        bool _signed;
+        bool _unsigned;
+        bool _long;
+        bool _pointer;
+        bool _ptr_ptr;
+        bool _const_ptr;
+    };
+
+    struct Platform {
+        const PlatformType *platform_type(const std::string &name) const {
+            const std::map<std::string, struct PlatformType>::const_iterator it = _platform_types.find(name);
+            return (it != _platform_types.end()) ? &(it->second) : nullptr;
+        }
+        std::map<std::string, PlatformType> _platform_types;
+    };
+
+    const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
+        const std::map<std::string, Platform>::const_iterator it = platforms.find(platform);
+
+        if (it != platforms.end()) {
+            const PlatformType * const type = it->second.platform_type(name);
+
+            if (type)
+                return type;
+        }
+
+        const std::map<std::string, PlatformType>::const_iterator it2 = platform_types.find(name);
+
+        return (it2 != platform_types.end()) ? &(it2->second) : nullptr;
+    }
+
 private:
     class ExportedFunctions {
     public:
@@ -385,6 +496,7 @@ private:
         std::set<std::string> _blocks;
     };
     int allocid;
+    std::set<std::string> _files;
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
@@ -399,8 +511,10 @@ private:
     std::map<std::string,int> _reflection; // invocation of reflection
     std::map<std::string, std::pair<bool, bool> > _formatstr; // Parameters for format string checking
     std::map<std::string, struct PodType> podtypes; // pod types
+    std::map<std::string, PlatformType> platform_types; // platform independent typedefs
+    std::map<std::string, Platform> platforms; // platform dependent typedefs
 
-    const ArgumentChecks * getarg(const std::string &functionName, int argnr) const;
+    const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
     static int getid(const std::map<std::string,int> &data, const std::string &name) {
         const std::map<std::string,int>::const_iterator it = data.find(name);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <map>
 
 #include "config.h"
 #include "token.h"
@@ -34,6 +35,7 @@
 class Tokenizer;
 class Settings;
 class ErrorLogger;
+class Library;
 
 class Scope;
 class SymbolDatabase;
@@ -137,8 +139,9 @@ class CPPCHECKLIB Variable {
         fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
         fHasDefault  = (1 << 9), /** @brief function argument with default value */
         fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
-        fIsIntType   = (1 << 11), /** @brief Integral type */
-        fIsFloatType = (1 << 12)  /** @brief Floating point type */
+        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
+        fIsIntType   = (1 << 12), /** @brief Integral type */
+        fIsFloatType = (1 << 13)  /** @brief Floating point type */
     };
 
     /**
@@ -146,7 +149,7 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(int flag_) const {
+    bool getFlag(unsigned int flag_) const {
         return bool((_flags & flag_) != 0);
     }
 
@@ -155,22 +158,21 @@ class CPPCHECKLIB Variable {
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(int flag_, bool state_) {
+    void setFlag(unsigned int flag_, bool state_) {
         _flags = state_ ? _flags | flag_ : _flags & ~flag_;
     }
 
     /**
      * @brief parse and save array dimension information
-     * @param dimensions array dimensions vector
-     * @param tok the first '[' token of array declaration
+     * @param lib Library instance
      * @return true if array, false if not
      */
-    static bool arrayDimensions(std::vector<Dimension> &dimensions, const Token *tok);
+    bool arrayDimensions(const Library* lib);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, const Type *type_,
-             const Scope *scope_)
+             const Scope *scope_, const Library* lib)
         : _name(name_),
           _start(start_),
           _end(end_),
@@ -179,7 +181,7 @@ public:
           _flags(0),
           _type(type_),
           _scope(scope_) {
-        evaluate();
+        evaluate(lib);
     }
 
     /**
@@ -213,6 +215,15 @@ public:
     const Token *typeEndToken() const {
         return _end;
     }
+
+    /**
+     * Get end token of variable declaration
+     * E.g.
+     * int i[2][3] = ...
+     *   end token ^
+     * @return variable declaration end token
+     */
+    const Token *declEndToken() const;
 
     /**
      * Get name string.
@@ -447,6 +458,18 @@ public:
     }
 
     /**
+    * Checks if the variable is an STL type ('std::')
+    * E.g.:
+    *   std::string s;
+    *   ...
+    *   sVar->isStlType() == true
+    * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+    */
+    bool isStlType() const {
+        return getFlag(fIsStlType);
+    }
+
+    /**
      * Checks if the variable is an STL type ('std::')
      * E.g.:
      *   std::string s;
@@ -454,8 +477,8 @@ public:
      *   sVar->isStlType() == true
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
-    bool isStlType() const {
-        return getFlag(fIsStlType);
+    bool isStlStringType() const {
+        return getFlag(fIsStlString);
     }
 
     /**
@@ -518,7 +541,7 @@ private:
     AccessControl _access;  // public/protected/private
 
     /** @brief flags */
-    int _flags;
+    unsigned int _flags;
 
     /** @brief pointer to user defined type info (for known types) */
     const Type *_type;
@@ -530,10 +553,47 @@ private:
     std::vector<Dimension> _dimensions;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
-    void evaluate();
+    void evaluate(const Library* lib);
 };
 
 class CPPCHECKLIB Function {
+    /** @brief flags mask used to access specific bit. */
+    enum {
+        fHasBody       = (1 << 0),  /** @brief has implementation */
+        fIsInline      = (1 << 1),  /** @brief implementation in class definition */
+        fIsConst       = (1 << 2),  /** @brief is const */
+        fIsVirtual     = (1 << 3),  /** @brief is virtual */
+        fIsPure        = (1 << 4),  /** @brief is pure virtual */
+        fIsStatic      = (1 << 5),  /** @brief is static */
+        fIsStaticLocal = (1 << 6),  /** @brief is static local */
+        fIsExtern      = (1 << 7),  /** @brief is extern */
+        fIsFriend      = (1 << 8),  /** @brief is friend */
+        fIsExplicit    = (1 << 9),  /** @brief is explicit */
+        fIsDefault     = (1 << 10), /** @brief is default */
+        fIsDelete      = (1 << 11), /** @brief is delete */
+        fIsNoExcept    = (1 << 12), /** @brief is noexcept */
+        fIsThrow       = (1 << 13), /** @brief is throw */
+        fIsOperator    = (1 << 14)  /** @brief is operator */
+    };
+
+    /**
+     * Get specified flag state.
+     * @param flag flag to get state of
+     * @return true if flag set or false in flag not set
+     */
+    bool getFlag(unsigned int flag) const {
+        return bool((flags & flag) != 0);
+    }
+
+    /**
+     * Set specified flag state.
+     * @param flag flag to set state
+     * @param state new state of flag
+     */
+    void setFlag(unsigned int flag, bool state) {
+        flags = state ? flags | flag : flags & ~flag;
+    }
+
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
@@ -549,21 +609,9 @@ public:
           initArgCount(0),
           type(eFunction),
           access(Public),
-          hasBody(false),
-          isInline(false),
-          isConst(false),
-          isVirtual(false),
-          isPure(false),
-          isStatic(false),
-          isFriend(false),
-          isExplicit(false),
-          isDefault(false),
-          isDelete(false),
-          isNoExcept(false),
-          isThrow(false),
-          isOperator(false),
           noexceptArg(nullptr),
-          throwArg(nullptr) {
+          throwArg(nullptr),
+          flags(0) {
     }
 
     const std::string &name() const {
@@ -605,11 +653,103 @@ public:
     bool isAttributeConst() const {
         return tokenDef->isAttributeConst();
     }
+    bool isAttributeNoreturn() const {
+        return tokenDef->isAttributeNoreturn();
+    }
     bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }
-    bool isDeclspecNothrow() const {
-        return tokenDef->isDeclspecNothrow();
+
+    bool hasBody() const {
+        return getFlag(fHasBody);
+    }
+    bool isInline() const {
+        return getFlag(fIsInline);
+    }
+    bool isConst() const {
+        return getFlag(fIsConst);
+    }
+    bool isVirtual() const {
+        return getFlag(fIsVirtual);
+    }
+    bool isPure() const {
+        return getFlag(fIsPure);
+    }
+    bool isStatic() const {
+        return getFlag(fIsStatic);
+    }
+    bool isStaticLocal() const {
+        return getFlag(fIsStaticLocal);
+    }
+    bool isExtern() const {
+        return getFlag(fIsExtern);
+    }
+    bool isFriend() const {
+        return getFlag(fIsFriend);
+    }
+    bool isExplicit() const {
+        return getFlag(fIsExplicit);
+    }
+    bool isDefault() const {
+        return getFlag(fIsDefault);
+    }
+    bool isDelete() const {
+        return getFlag(fIsDelete);
+    }
+    bool isNoExcept() const {
+        return getFlag(fIsNoExcept);
+    }
+    bool isThrow() const {
+        return getFlag(fIsThrow);
+    }
+    bool isOperator() const {
+        return getFlag(fIsOperator);
+    }
+
+    void hasBody(bool state) {
+        setFlag(fHasBody, state);
+    }
+    void isInline(bool state) {
+        setFlag(fIsInline, state);
+    }
+    void isConst(bool state) {
+        setFlag(fIsConst, state);
+    }
+    void isVirtual(bool state) {
+        setFlag(fIsVirtual, state);
+    }
+    void isPure(bool state) {
+        setFlag(fIsPure, state);
+    }
+    void isStatic(bool state) {
+        setFlag(fIsStatic, state);
+    }
+    void isStaticLocal(bool state) {
+        setFlag(fIsStaticLocal, state);
+    }
+    void isExtern(bool state) {
+        setFlag(fIsExtern, state);
+    }
+    void isFriend(bool state) {
+        setFlag(fIsFriend, state);
+    }
+    void isExplicit(bool state) {
+        setFlag(fIsExplicit, state);
+    }
+    void isDefault(bool state) {
+        setFlag(fIsDefault, state);
+    }
+    void isDelete(bool state) {
+        setFlag(fIsDelete, state);
+    }
+    void isNoExcept(bool state) {
+        setFlag(fIsNoExcept, state);
+    }
+    void isThrow(bool state) {
+        setFlag(fIsThrow, state);
+    }
+    void isOperator(bool state) {
+        setFlag(fIsOperator, state);
     }
 
     const Token *tokenDef; // function name token in class definition
@@ -624,19 +764,6 @@ public:
     unsigned int initArgCount; // number of args with default values
     Type type;             // constructor, destructor, ...
     AccessControl access;  // public/protected/private
-    bool hasBody;          // has implementation
-    bool isInline;         // implementation in class definition
-    bool isConst;          // is const
-    bool isVirtual;        // is virtual
-    bool isPure;           // is pure virtual
-    bool isStatic;         // is static
-    bool isFriend;         // is friend
-    bool isExplicit;       // is explicit
-    bool isDefault;        // is default
-    bool isDelete;         // is delete
-    bool isNoExcept;       // is noexcept
-    bool isThrow;          // is throw
-    bool isOperator;       // is operator
     const Token *noexceptArg;
     const Token *throwArg;
 
@@ -644,6 +771,8 @@ public:
 
 private:
     bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
+
+    unsigned int flags;
 };
 
 class CPPCHECKLIB Scope {
@@ -667,6 +796,7 @@ public:
     const Token *classStart; // '{' token
     const Token *classEnd;   // '}' token
     std::list<Function> functionList;
+    std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
     const Scope *nestedIn;
     std::list<Scope *> nestedList;
@@ -727,16 +857,24 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_) {
+                     const Scope *scope_, const Library* lib) {
         varlist.push_back(Variable(token_, start_, end_, varlist.size(),
                                    access_,
-                                   type_, scope_));
+                                   type_, scope_, lib));
     }
 
     /** @brief initialize varlist */
-    void getVariableList();
+    void getVariableList(const Library* lib);
 
     const Function *getDestructor() const;
+
+    void addFunction(const Function & func) {
+        functionList.push_back(func);
+
+        const Function * back = &functionList.back();
+
+        functionMap.insert(make_pair(back->tokenDef->str(), back));
+    }
 
     /**
      * @brief get the number of nested scopes that are not functions
@@ -754,9 +892,10 @@ public:
      * @brief check if statement is variable declaration and add it if it is
      * @param tok pointer to start of statement
      * @param varaccess access control of statement
+     * @param lib Library instance
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess);
+    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Library* lib);
 
     /**
      * @brief get variable from name
@@ -774,11 +913,14 @@ private:
      * @return true if tok points to a variable declaration, false otherwise
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
+
+    void findFunctionInBase(const std::string & name, size_t args, std::vector<const Function *> & matches) const;
 };
 
 class CPPCHECKLIB SymbolDatabase {
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
     std::list<Scope> scopeList;
@@ -827,7 +969,7 @@ public:
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {
-        return _variableList[varId];
+        return _variableList.at(varId);
     }
 
     std::size_t getVariableListSize() const {
@@ -847,6 +989,7 @@ public:
 
 private:
     friend class Scope;
+    friend class Function;
 
     void addClassFunction(Scope **info, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

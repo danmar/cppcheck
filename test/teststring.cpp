@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,60 @@ private:
     }
 
     void alwaysTrueFalseStringCompare() {
+        check("void f() {\n"
+              "  if (strcmp(\"A\",\"A\")){}\n"
+              "  if (strncmp(\"A\",\"A\",1)){}\n"
+              "  if (strcasecmp(\"A\",\"A\")){}\n"
+              "  if (strncasecmp(\"A\",\"A\",1)){}\n"
+              "  if (memcmp(\"A\",\"A\",1)){}\n"
+              "  if (strverscmp(\"A\",\"A\")){}\n"
+              "  if (bcmp(\"A\",\"A\",1)){}\n"
+              "  if (wcsncasecmp(L\"A\",L\"A\",1)){}\n"
+              "  if (wcsncmp(L\"A\",L\"A\",1)){}\n"
+              "  if (wmemcmp(L\"A\",L\"A\",1)){}\n"
+              "  if (wcscmp(L\"A\",L\"A\")){}\n"
+              "  if (wcscasecmp(L\"A\",L\"A\")){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:3]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:4]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:5]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:6]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:7]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:8]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:9]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:10]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:11]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:12]: (warning) Unnecessary comparison of static strings.\n"
+                      "[test.cpp:13]: (warning) Unnecessary comparison of static strings.\n", errout.str());
+
+        // avoid false positives when the address is modified #6415
+        check("void f(void *p, int offset)  {\n"
+              "     if (!memcmp(p, p + offset, 42)){}\n"
+              "     if (!memcmp(p + offset, p, 42)){}\n"
+              "     if (!memcmp(offset + p, p, 42)){}\n"
+              "     if (!memcmp(p, offset + p, 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positives when the address is modified #6415
+        check("void f(char *c, int offset)  {\n"
+              "     if (!memcmp(c, c + offset, 42)){}\n"
+              "     if (!memcmp(c + offset, c, 42)){}\n"
+              "     if (!memcmp(offset + c, c, 42)){}\n"
+              "     if (!memcmp(c, offset + c, 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // avoid false positives when the address is modified #6415
+        check("void f(std::string s, int offset)  {\n"
+              "     if (!memcmp(s.c_str(), s.c_str() + offset, 42)){}\n"
+              "     if (!memcmp(s.c_str() + offset, s.c_str(), 42)){}\n"
+              "     if (!memcmp(offset + s.c_str(), s.c_str(), 42)){}\n"
+              "     if (!memcmp(s.c_str(), offset + s.c_str(), 42)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check_preprocess_suppress(
             "#define MACRO \"00FF00\"\n"
             "int main()\n"
@@ -341,7 +395,7 @@ private:
         check("void foo(char* c) {\n"
               "    if(c == '\\0') bar();\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
         check("void f() {\n"
               "  struct { struct { char *str; } x; } a;\n"

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,14 +130,14 @@ private:
 
     std::string classInfo() const {
         return "Boolean type checks\n"
-
-               "* using increment on boolean\n"
-               "* comparison of a boolean with a non-zero integer\n"
-               "* comparison of a boolean expression with an integer other than 0 or 1\n"
-               "* comparison of a function returning boolean value using relational operator\n"
-               "* comparison of a boolean value with boolean value using relational operator\n"
-               "* using bool in bitwise expression\n"
-               "* pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n";
+               "- using increment on boolean\n"
+               "- comparison of a boolean with a non-zero integer\n"
+               "- comparison of a boolean expression with an integer other than 0 or 1\n"
+               "- comparison of a function returning boolean value using relational operator\n"
+               "- comparison of a boolean value with boolean value using relational operator\n"
+               "- using bool in bitwise expression\n"
+               "- pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n"
+               "- Assigning bool value to pointer or float\n";
     }
 };
 /// @}

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,13 +120,13 @@ private:
 
     std::string classInfo() const {
         return "sizeof() usage checks\n"
-               "* sizeof for array given as function argument\n"
-               "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) instead of the size of pointed data\n"
-               "* look for 'sizeof sizeof ..'\n"
-               "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n"
-               "* using 'sizeof(void)' which is undefined\n";
+               "- sizeof for array given as function argument\n"
+               "- sizeof for numeric given as function argument\n"
+               "- using sizeof(pointer) instead of the size of pointed data\n"
+               "- look for 'sizeof sizeof ..'\n"
+               "- look for calculations inside sizeof()\n"
+               "- look for suspicious calculations with sizeof()\n"
+               "- using 'sizeof(void)' which is undefined\n";
     }
 };
 /// @}

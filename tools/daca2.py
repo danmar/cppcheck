@@ -121,7 +121,7 @@ def removeLargeFiles(path):
                 os.remove(g)
 
 
-def scanarchive(filepath):
+def scanarchive(filepath, jobs):
     # remove all files/folders except results.txt
     removeAllExceptResults()
 
@@ -144,7 +144,16 @@ def scanarchive(filepath):
     elif filename[-4:] == '.bz2':
         subprocess.call(['tar', 'xjvf', filename])
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:6] == 'iceowl' or filename[:7] == 'insight':
+#
+# List of skipped packages - which trigger known yet unresolved problems with cppcheck.
+# The issues on trac (http://trac.cppcheck.net) are given for reference 
+# boost #3654 (?)
+# flite #5975
+# insight#5184
+# valgrind #6151
+#
+
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
@@ -160,7 +169,7 @@ def scanarchive(filepath):
          '-D__GCC__',
          '--enable=style',
          '--error-exitcode=0',
-         '--suppressions-list=../suppressions.txt',
+         jobs,
          '.'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -175,10 +184,13 @@ def scanarchive(filepath):
     results.close()
 
 FOLDER = None
+JOBS = '-j1'
 REV = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--rev=':
         REV = arg[6:]
+    elif arg[:2] == '-j':
+        JOBS = arg
     else:
         FOLDER = arg
 
@@ -196,12 +208,6 @@ time.sleep(10)
 
 workdir = os.path.expanduser('~/daca2/')
 
-print('~/daca2/suppressions.txt')
-if not os.path.isfile(workdir + 'suppressions.txt'):
-    suppressions = open(workdir + 'suppressions.txt', 'wt')
-    suppressions.write('\n')
-    suppressions.close()
-
 print('~/daca2/' + FOLDER)
 if not os.path.isdir(workdir + FOLDER):
     os.makedirs(workdir + FOLDER)
@@ -216,7 +222,7 @@ try:
     results.close()
 
     for archive in archives:
-        scanarchive(archive)
+        scanarchive(archive, JOBS)
 
     results = open('results.txt', 'at')
     results.write('DATE ' + str(datetime.date.today()) + '\n')

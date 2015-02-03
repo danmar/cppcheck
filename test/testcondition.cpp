@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "checkcondition.h"
 #include "testsuite.h"
 #include <sstream>
+#include <tinyxml2.h>
 
 extern std::ostringstream errout;
 
@@ -84,9 +85,7 @@ private:
 
         // Ensure that the test case is not bad.
         if (validate && str1 != str2) {
-            warn(("Unsimplified code in test case. It looks like this test "
-                  "should either be cleaned up or moved to TestTokenizer or "
-                  "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
+            warnUnsimplified(str1, str2);
         }
     }
 
@@ -321,8 +320,57 @@ private:
               "    else { if (x & 1); }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+
+        check("extern int bar() __attribute__((pure));\n"
+              "void foo(int x)\n"
+              "{\n"
+              "    if ( bar() >1 && b) {}\n"
+              "    else if (bar() >1 && b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
+
+        checkPureFunction("extern int bar();\n"
+                          "void foo(int x)\n"
+                          "{\n"
+                          "    if ( bar() >1 && b) {}\n"
+                          "    else if (bar() >1 && b) {}\n"
+                          "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
     }
 
+    void checkPureFunction(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
+        tinyxml2::XMLDocument xmldoc;
+        xmldoc.Parse(cfg, sizeof(cfg));
+
+        Settings settings;
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.library.load(xmldoc);
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        CheckCondition checkCondition;
+        checkCondition.runChecks(&tokenizer, &settings, this);
+        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
+        tokenizer.simplifyTokenList2();
+        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
+        checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
+
+        // Ensure that the test case is not bad.
+        if (str1 != str2) {
+            warnUnsimplified(str1, str2);
+        }
+    }
     void duplicateIf() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
@@ -403,6 +451,18 @@ private:
               "  else if (dynamic_cast<LABEL*>(widget)){}\n"
               "}",false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n" // #6482
+              "  if (x & 1) {}\n"
+              "  else if (x == 0) {}\n"
+              "}",false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x & 15) {}\n"
+              "  else if (x == 40) {}\n"
+              "}",false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
     void invalidMissingSemicolon() {
@@ -745,7 +805,7 @@ private:
     void incorrectLogicOperator4() {
         check("void f(int x) {\n"
               "  if (x && x != $0) {}\n"
-              "}");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1063,6 +1123,49 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            // #6095 - calling member function that might change the state
+            check("void f() {\n"
+                  "  const Fred fred;\n" // <- fred is const, warn
+                  "  if (fred.isValid()) {\n"
+                  "    fred.dostuff();\n"
+                  "    if (!fred.isValid()) {}\n"
+                  "  }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+            check("class Fred { public: void dostuff() const; };\n"
+                  "void f() {\n"
+                  "  Fred fred;\n"
+                  "  if (fred.isValid()) {\n"
+                  "    fred.dostuff();\n" // <- dostuff() is const, warn
+                  "    if (!fred.isValid()) {}\n"
+                  "  }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite conditions in nested 'if' blocks lead to a dead code block.\n", errout.str());
+
+            check("void f() {\n"
+                  "  Fred fred;\n"
+                  "  if (fred.isValid()) {\n"
+                  "    fred.dostuff();\n"
+                  "    if (!fred.isValid()) {}\n"
+                  "  }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            // #6385 "crash in Variable::getFlag()"
+            check("class TranslationHandler {\n"
+                  "QTranslator *mTranslator;\n"
+                  "void SetLanguage() {\n"
+                  "   if (mTranslator) {\n"
+                  "             qApp->removeTranslator(mTranslator);\n"
+                  "        }\n"
+                  "   }\n"
+                  "};");
+            ASSERT_EQUALS("", errout.str()); // just don't crash...
+
+        }
 
         // #5731 - fp when undeclared variable is used
         check("void f() {\n"

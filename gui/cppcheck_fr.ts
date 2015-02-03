@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2014 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2015 Daniel Marjamäki and cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -655,15 +655,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unexpected element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Missing attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bad attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -673,6 +665,23 @@ Options:
     <message>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsupported format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The library &apos;%1&apos; contains unknown elements:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate platform type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

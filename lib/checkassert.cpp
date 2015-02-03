@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ void CheckAssert::assertWithSideEffects()
             if (tmp->type() == Token::eFunction) {
                 const Function* f = tmp->function();
 
-                if (f->nestedIn->isClassOrStruct() && !f->isStatic && !f->isConst)
+                if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst())
                     sideEffectInAssertError(tmp, f->name()); // Non-const member function called
                 else {
                     const Scope* scope = f->functionScope;

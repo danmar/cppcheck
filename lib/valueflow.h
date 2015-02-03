@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,15 @@
 
 class Token;
 class TokenList;
+class SymbolDatabase;
 class ErrorLogger;
 class Settings;
 
 namespace ValueFlow {
     class Value {
     public:
-        Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false) {}
-        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false) {}
+        Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
+        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
 
         /** int value */
         long long intvalue;
@@ -52,9 +53,12 @@ namespace ValueFlow {
 
         /** Is this value inconclusive? */
         bool inconclusive;
+
+        /** Is this value inconclusive? */
+        bool defaultArg;
     };
 
-    void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
+    void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 }
 
 #endif // valueflowH

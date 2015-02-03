@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@
 #include "translationhandler.h"
 
 
-void ShowUsage();
-void ShowVersion();
-bool CheckArgs(const QStringList &args);
+static void ShowUsage();
+static void ShowVersion();
+static bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
 {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
 // Check only arguments needing action before GUI is shown.
 // Rest of the arguments are handled in MainWindow::HandleCLIParams()
-bool CheckArgs(const QStringList &args)
+static bool CheckArgs(const QStringList &args)
 {
     if (args.contains("-h") || args.contains("--help")) {
         ShowUsage();
@@ -95,7 +95,7 @@ bool CheckArgs(const QStringList &args)
     return true;
 }
 
-void ShowUsage()
+static void ShowUsage()
 {
     QString helpMessage = MainWindow::tr(
                               "Cppcheck GUI.\n\n"
@@ -120,7 +120,7 @@ void ShowUsage()
 #endif
 }
 
-void ShowVersion()
+static void ShowVersion()
 {
 #if defined(_WIN32)
     AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), 0);

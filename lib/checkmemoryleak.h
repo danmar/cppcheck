@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,10 +47,11 @@ class Variable;
 
 /** @brief Base class for memory leaks checking */
 class CPPCHECKLIB CheckMemoryLeak {
-private:
+protected:
     /** For access to the tokens */
     const Tokenizer * const tokenizer;
 
+private:
     /** ErrorLogger used to report errors */
     ErrorLogger * const errorLogger;
 
@@ -202,8 +203,7 @@ public:
     }
 
     /** @brief Unit testing : testing the white list */
-    static bool test_white_list(const std::string &funcname);
-    static bool test_white_list_with_lib(const std::string &funcname, const Settings *settings);
+    static bool test_white_list(const std::string &funcname, const Settings *settings, bool cpp);
 
     /** @brief Perform checking */
     void check();
@@ -296,9 +296,6 @@ public:
      */
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
-    /** parse tokens to see what functions are "noreturn" */
-    void parse_noreturn();
-
 private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
@@ -330,12 +327,6 @@ private:
     std::string classInfo() const {
         return "Is there any allocated memory when a function goes out of scope\n";
     }
-
-    /** Function names for functions that are "noreturn" */
-    std::set<std::string> noreturn;
-
-    /** Function names for functions that are not "noreturn" */
-    std::set<std::string> notnoreturn;
 
     const SymbolDatabase *symbolDatabase;
 };
@@ -455,14 +446,22 @@ private:
      */
     void checkForUnusedReturnValue(const Scope *scope);
 
+    /**
+     * @brief %Check if an exception could cause a leak in an argument constructed with shared_ptr/unique_ptr.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnsafeArgAlloc(const Scope *scope);
+
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
     void returnValueNotUsedError(const Token* tok, const std::string &alloc);
+    void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
         c.returnValueNotUsedError(0, "funcName");
+        c.unsafeArgAllocError(0, "funcName", "shared_ptr", "int");
     }
 
     static std::string myName() {

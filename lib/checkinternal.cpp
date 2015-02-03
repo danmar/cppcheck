@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,43 +50,32 @@ void CheckInternal::checkTokenMatchPatterns()
             continue;
         }
 
-        const char *p = pattern.c_str();
-        while (*p) {
-            while (*p && std::isspace(*p))
-                p++;
-            const char *start = p;
-            while (*p && !std::isspace(*p))
-                p++;
-            const char *end = p - 1;
-            if (start < end && !(*start == '[' && *end == ']')) {
-                bool cmd = (*start=='%' && std::isalpha(*(start+1)));
-                // check multicompare pattern..
-                for (const char *s = start; s != end; s++) {
-                    if (*s == '|') {
-                        if (!(*(s+1) == '%' && std::isalpha(*(s+2)))) {
-                            cmd = false;
-                        } else if (!cmd &&
-                                   std::strncmp(s+1,"%op%",4)!=0 &&
-                                   std::strncmp(s+1,"%or%",4)!=0 &&
-                                   std::strncmp(s+1,"%cop%",5)!=0 &&
-                                   std::strncmp(s+1,"%var%",5)!=0 &&
-                                   std::strncmp(s+1,"%oror%",6)!=0) {
-                            multiComparePatternError(tok, pattern, funcname);
-                        }
-                    }
-                }
-            }
-        }
         if (pattern.find("||") != std::string::npos || pattern.find(" | ") != std::string::npos || pattern[0] == '|' || (pattern[pattern.length() - 1] == '|' && pattern[pattern.length() - 2] == ' '))
             orInComplexPattern(tok, pattern, funcname);
 
         // Check for signs of complex patterns
-        if (pattern.find_first_of("[|%") != std::string::npos)
+        if (pattern.find_first_of("[|") != std::string::npos)
             continue;
         else if (pattern.find("!!") != std::string::npos)
             continue;
 
-        simplePatternError(tok, pattern, funcname);
+        bool complex = false;
+        size_t index = pattern.find('%');
+        while (index != std::string::npos) {
+            if (pattern.length() <= index + 2) {
+                complex = true;
+                break;
+            }
+            if (pattern[index + 1] == 'o' && pattern[index + 2] == 'r') // %or% or %oror%
+                index = pattern.find('%', index + 1);
+            else {
+                complex = true;
+                break;
+            }
+            index = pattern.find('%', index+1);
+        }
+        if (!complex)
+            simplePatternError(tok, pattern, funcname);
     }
 }
 
@@ -170,7 +159,7 @@ void CheckInternal::checkMissingPercentCharacter()
         magics.insert("%oror%");
         magics.insert("%str%");
         magics.insert("%type%");
-        magics.insert("%var%");
+        magics.insert("%name%");
         magics.insert("%varid%");
     }
 
@@ -219,6 +208,7 @@ void CheckInternal::checkUnknownPattern()
         knownPatterns.insert("%bool%");
         knownPatterns.insert("%char%");
         knownPatterns.insert("%comp%");
+        knownPatterns.insert("%name%");
         knownPatterns.insert("%num%");
         knownPatterns.insert("%op%");
         knownPatterns.insert("%cop%");
@@ -283,10 +273,36 @@ void CheckInternal::checkRedundantNextPrevious()
     }
 }
 
+void CheckInternal::checkExtraWhitespace()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "Token :: simpleMatch (") &&
+            !Token::simpleMatch(tok, "Token :: findsimplematch (") &&
+            !Token::simpleMatch(tok, "Token :: Match (") &&
+            !Token::simpleMatch(tok, "Token :: findmatch ("))
+            continue;
+
+        const std::string& funcname = tok->strAt(2);
+
+        // Get pattern string
+        const Token *pattern_tok = tok->tokAt(4)->nextArgument();
+        if (!pattern_tok || pattern_tok->type() != Token::eString)
+            continue;
+
+        const std::string pattern = pattern_tok->strValue();
+        if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
+            extraWhitespaceError(tok, pattern, funcname);
+
+        // two whitespaces or more
+        if (pattern.find("  ") != std::string::npos)
+            extraWhitespaceError(tok, pattern, funcname);
+    }
+}
+
 void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "multiComparePatternError",
-                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%var%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
+                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
                );
 }
 
@@ -327,6 +343,13 @@ void CheckInternal::orInComplexPattern(const Token* tok, const std::string& patt
 {
     reportError(tok, Severity::error, "orInComplexPattern",
                 "Token::" + funcname + "() pattern \"" + pattern + "\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".");
+}
+
+void CheckInternal::extraWhitespaceError(const Token* tok, const std::string& pattern, const std::string &funcname)
+{
+    reportError(tok, Severity::warning, "extraWhitespaceError",
+                "Found extra whitespace inside Token::" + funcname + "() call: \"" + pattern + "\""
+               );
 }
 
 #endif // #ifdef CHECK_INTERNAL

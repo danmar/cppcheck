@@ -15,7 +15,7 @@
             <location file="test.cxx" line="32"/>
             <location file="test.cxx" line="16"/>
         </error>
-        <error id="obsoleteFunctionsgets" severity="style" msg="Found obsolete function &amp;#039;gets&amp;#039;. It is recommended to use the function &amp;#039;fgets&amp;#039; instead" verbose="Found obsolete function &amp;#039;gets&amp;#039;. With gets you&amp;#039;ll get buffer overruns if the input data too big for the buffer. It is recommended to use the function &amp;#039;fgets&amp;#039; instead.">
+        <error id="obsoleteFunctionsgets" severity="style" msg="Found obsolescent function &amp;#039;gets&amp;#039;. It is recommended to use the function &amp;#039;fgets&amp;#039; instead" verbose="Found obsolescent function &amp;#039;gets&amp;#039;. With gets you&amp;#039;ll get buffer overruns if the input data too big for the buffer. It is recommended to use the function &amp;#039;fgets&amp;#039; instead.">
             <location file="test.cxx" line="31"/>
         </error>
         <error id="postfixOperator" severity="performance" msg="Prefer prefix ++/-- operators for non-primitive types." verbose="Prefix ++/-- operators should be preferred for non-primitive types. Pre-increment/decrement can be more efficient than post-increment/decrement. Post-increment/decrement usually involves keeping a copy of the previous value around and adds a little extra code.">

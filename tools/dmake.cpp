@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,25 +27,20 @@
 
 #include "../cli/filelister.h"
 
-static std::string builddir(std::string filename);
-static std::string objfile(std::string cppfile);
-static void getDeps(const std::string &filename, std::vector<std::string> &depfiles);
-
-
-std::string builddir(std::string filename)
+static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
         filename = "$(SRCDIR)" + filename.substr(3);
     return filename;
 }
 
-std::string objfile(std::string cppfile)
+static std::string objfile(std::string cppfile)
 {
     cppfile.erase(cppfile.rfind("."));
     return builddir(cppfile + ".o");
 }
 
-void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
@@ -398,6 +393,8 @@ int main(int argc, char **argv)
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
+    fout << "checkcfg:\tcppcheck\n";
+    fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o lib/path.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)\n";
     fout << "\t./dmake\n\n";
@@ -415,8 +412,8 @@ int main(int argc, char **argv)
     fout << "\tinstall cppcheck ${BIN}\n";
     fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
     fout << "ifdef CFGDIR \n";
-    fout << "\tinstall -d ${CFGDIR}\n";
-    fout << "\tinstall -m 644 cfg/* ${CFGDIR}\n";
+    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
+    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
     fout << "endif\n\n";
 
     fout << "\n###### Build\n\n";

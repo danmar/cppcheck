@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ public:
 
     public:
         ArrayInfo();
-        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const unsigned int forcedeclid = 0);
+        ArrayInfo(const Variable *var, const Tokenizer *tokenizer, const Library *library, const unsigned int forcedeclid = 0);
 
         /**
          * Create array info with specified data
@@ -194,7 +194,7 @@ public:
 
     /**
      * Helper function that checks if the array is used and if so calls the checkFunctionCall
-     * @param tok token that matches "%var% ("
+     * @param tok token that matches "%name% ("
      * @param arrayInfo the array information
      * \param callstack call stack. This is used to prevent recursion and to provide better error messages. Pass a empty list from checkScope etc.
      */
@@ -202,6 +202,28 @@ public:
 
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index);
+
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct ArrayUsage {
+            MathLib::bigint   index;
+            std::string       fileName;
+            unsigned int      linenr;
+        };
+
+        /* key:arrayName */
+        std::map<std::string, struct ArrayUsage> arrayUsage;
+
+        /* key:arrayName, data:arraySize */
+        std::map<std::string, MathLib::bigint>  arraySize;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+
+    /** @brief Analyse all file infos for all TU */
+    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, ErrorLogger &errorLogger);
 
 private:
 
@@ -218,7 +240,7 @@ private:
     void negativeIndexError(const Token *tok, MathLib::bigint index);
     void negativeIndexError(const Token *tok, const ValueFlow::Value &index);
     void cmdLineArgsError(const Token *tok);
-    void pointerOutOfBoundsError(const Token *tok, const std::string &object);  // UB when result of calculation is out of bounds
+    void pointerOutOfBoundsError(const Token *tok, const Token *index=nullptr, const MathLib::bigint indexvalue=0);
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
     void possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat);
     void possibleReadlinkBufferOverrunError(const Token *tok, const std::string &funcname, const std::string &varname);
@@ -241,7 +263,7 @@ public:
         c.bufferNotZeroTerminatedError(0, "buffer", "strncpy");
         c.negativeIndexError(0, -1);
         c.cmdLineArgsError(0);
-        c.pointerOutOfBoundsError(0, "array");
+        c.pointerOutOfBoundsError(nullptr, nullptr, 0);
         c.arrayIndexThenCheckError(0, "index");
         c.possibleBufferOverrunError(0, "source", "destination", false);
         c.possibleReadlinkBufferOverrunError(0, "readlink", "buffer");
@@ -258,16 +280,16 @@ private:
 
     std::string classInfo() const {
         return "Out of bounds checking:\n"
-               "* Array index out of bounds detection by value flow analysis\n"
-               "* Dangerous usage of strncat()\n"
-               "* char constant passed as size to function like memset()\n"
-               "* strncpy() leaving string unterminated\n"
-               "* Accessing array with negative index\n"
-               "* Unsafe usage of main(argv, argc) arguments\n"
-               "* Accessing array with index variable before checking its value\n"
-               "* Check for large enough arrays being passed to functions\n"
-               "* Writing beyond bounds of a buffer\n"
-               "* Allocating memory with a negative size\n";
+               "- Array index out of bounds detection by value flow analysis\n"
+               "- Dangerous usage of strncat()\n"
+               "- char constant passed as size to function like memset()\n"
+               "- strncpy() leaving string unterminated\n"
+               "- Accessing array with negative index\n"
+               "- Unsafe usage of main(argv, argc) arguments\n"
+               "- Accessing array with index variable before checking its value\n"
+               "- Check for large enough arrays being passed to functions\n"
+               "- Writing beyond bounds of a buffer\n"
+               "- Allocating memory with a negative size\n";
     }
 };
 /// @}

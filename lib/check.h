@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,30 +53,7 @@ public:
     }
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
-    static std::list<Check *> &instances() {
-        static std::list<Check *> _instances;
-        return _instances;
-    }
-
-    /**
-     * analyse code - must be thread safe
-     * @param tokens The tokens to analyse
-     * @param result container where results are stored
-     */
-    virtual void analyse(const Token *tokens, std::set<std::string> &result) const {
-        // suppress compiler warnings
-        (void)tokens;
-        (void)result;
-    }
-
-    /**
-     * Save analysis data - the caller ensures thread safety
-     * @param data The data where the results are saved
-     */
-    virtual void saveAnalysisData(const std::set<std::string> &data) const {
-        // suppress compiler warnings
-        (void)data;
-    }
+    static std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
@@ -105,6 +82,24 @@ public:
 
     bool inconclusiveFlag() const {
         return _settings && _settings->inconclusive;
+    }
+
+    /** Base class used for whole-program analysis */
+    class FileInfo {
+    public:
+        FileInfo() {}
+        virtual ~FileInfo() {}
+    };
+
+    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
+        (void)tokenizer;
+        (void)settings;
+        return nullptr;
+    }
+
+    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, ErrorLogger &errorLogger) {
+        (void)fileInfo;
+        (void)errorLogger;
     }
 
 protected:

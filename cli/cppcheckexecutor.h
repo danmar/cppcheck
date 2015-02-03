@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 class CppCheck;
 class Settings;
+class Library;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -96,6 +97,12 @@ public:
     */
     static const std::string& getExceptionOutput();
 
+    /**
+    * Tries to load a library and prints warning/error messages
+    * @return false, if an error occured (except unknown XML elements)
+    */
+    static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
+
 protected:
 
     /**
@@ -140,6 +147,7 @@ private:
     *         If no errors are found, 0 is returned.
     */
     int check_internal(CppCheck& cppcheck, int argc, const char* const argv[]);
+
     /**
      * Pointer to current settings; set while check() is running.
      */

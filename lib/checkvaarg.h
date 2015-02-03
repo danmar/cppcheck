@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,16 +67,16 @@ private:
     }
 
     static std::string myName() {
-        return "CheckVaarg";
+        return "Vaarg";
     }
 
     std::string classInfo() const {
         return "Check for misusage of variable argument lists:\n"
-               "* Wrong parameter passed to va_start()\n"
-               "* Reference passed to va_start()\n"
-               "* Missing va_end()\n"
-               "* Using va_list before it is opened\n"
-               "* Subsequent calls to va_start/va_copy()\n";
+               "- Wrong parameter passed to va_start()\n"
+               "- Reference passed to va_start()\n"
+               "- Missing va_end()\n"
+               "- Using va_list before it is opened\n"
+               "- Subsequent calls to va_start/va_copy()\n";
     }
 };
 

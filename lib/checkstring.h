@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,13 +105,12 @@ private:
 
     std::string classInfo() const {
         return "Detect misusage of C-style strings:\n"
-
-               "* overlapping buffers passed to sprintf as source and destination\n"
-               "* incorrect length arguments for 'substr' and 'strncmp'\n"
-               "* suspicious condition (runtime comparison of string literals)\n"
-               "* suspicious condition (string literals as boolean)\n"
-               "* suspicious comparison of a string literal with a char* variable\n"
-               "* suspicious comparison of '\\0' with a char* variable\n";
+               "- overlapping buffers passed to sprintf as source and destination\n"
+               "- incorrect length arguments for 'substr' and 'strncmp'\n"
+               "- suspicious condition (runtime comparison of string literals)\n"
+               "- suspicious condition (string literals as boolean)\n"
+               "- suspicious comparison of a string literal with a char* variable\n"
+               "- suspicious comparison of '\\0' with a char* variable\n";
     }
 };
 /// @}

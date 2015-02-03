@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ private:
     Tokenizer _tokenizer;
 
 public:
-    givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
+    explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
         : _tokenizer(&_settings, 0) {
         std::istringstream iss(sample);
         if (createOnly)

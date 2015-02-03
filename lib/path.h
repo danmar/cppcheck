@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,6 +103,13 @@ public:
       * @return relative path, if possible. Otherwise absolutePath is returned unchanged
       */
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
+
+    /**
+      * @brief Get an absolute file path from a relative one.
+      * @param filePath File path to be made absolute.
+      * @return absolute path, if possible. Otherwise an empty path is returned
+      */
+    static std::string getAbsoluteFilePath(const std::string& filePath);
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.

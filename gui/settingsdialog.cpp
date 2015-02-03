@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ void SettingsDialog::InitTranslationsList()
         item->setText(translation.mName);
         item->setData(LangCodeRole, QVariant(translation.mCode));
         mUI.mListLanguages->addItem(item);
-        if (translation.mCode == current)
+        if (translation.mCode == current || translation.mCode == current.mid(0, 2))
             mUI.mListLanguages->setCurrentItem(item);
     }
 }

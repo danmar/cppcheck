@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,6 +119,12 @@ public:
      * @return location for given token
      */
     std::string fileLine(const Token *tok) const;
+
+    /**
+    * Calculates a 64-bit checksum of the token list used to compare
+    * multiple token lists with each other as quickly as possible.
+    */
+    unsigned long long calculateChecksum() const;
 
     void createAst();
 

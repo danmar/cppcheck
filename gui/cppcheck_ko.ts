@@ -34,8 +34,8 @@ of the GNU General Public License version 3</source>
         <translation type="obsolete">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?}</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2014 Daniel Marjamäki and cppcheck team.</source>
-        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2014 ?}</translation>
+        <source>Copyright © 2007-2015 Daniel Marjamäki and cppcheck team.</source>
+        <translation type="unfinished">Copyright © 2007-2012 Daniel Marjamäki and cppcheck team. {2007-2013 ?} {2007-2015 ?}</translation>
     </message>
 </context>
 <context>
@@ -703,15 +703,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unexpected element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Missing attribute</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bad attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -721,6 +713,23 @@ Options:
     <message>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsupported format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The library &apos;%1&apos; contains unknown elements:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate platform type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

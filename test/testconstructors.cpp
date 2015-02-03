@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ private:
         TEST_CASE(simple8);
         TEST_CASE(simple9); // ticket #4574
         TEST_CASE(simple10); // ticket #4388
-        TEST_CASE(simple11); // ticket #4536
+        TEST_CASE(simple11); // ticket #4536, #6214
         TEST_CASE(simple12); // ticket #4620
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
 
@@ -135,6 +135,9 @@ private:
         TEST_CASE(uninitVar25); // ticket #4789
         TEST_CASE(uninitVar26);
         TEST_CASE(uninitVar27); // ticket #5170 - rtl::math::setNan(&d)
+        TEST_CASE(uninitVar28); // ticket #6258
+        TEST_CASE(uninitVar29);
+        TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -175,7 +178,6 @@ private:
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
         TEST_CASE(constructors_crash1);    // ticket #5641
-        TEST_CASE(invalidInitializerList); // ticket #5702
     }
 
 
@@ -377,14 +379,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simple11() { // ticket #4536
+    void simple11() { // ticket #4536, #6214
         check("class Fred {\n"
               "public:\n"
               "    Fred() {}\n"
               "private:\n"
               "    int x = 0;\n"
+              "    int y = f();\n"
+              "    int z{0};\n"
+              "    int (*pf[2])(){nullptr, nullptr};\n"
+              "    int a[2][3] = {{1,2,3},{4,5,6}};\n"
+              "    int b{1}, c{2};\n"
+              "    int d, e{3};\n"
+              "    int f{4}, g;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::d' is not initialized in the constructor.\n"
+                      "[test.cpp:3]: (warning) Member variable 'Fred::g' is not initialized in the constructor.\n", errout.str());
     }
 
     void simple12() { // ticket #4620
@@ -2102,6 +2112,70 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitVar28() {
+        check("class Fred {\n"
+              "    int i;\n"
+              "    float f;\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        foo(1);\n"
+              "        foo(1.0f);\n"
+              "    }\n"
+              "    void foo(int a) { i = a; }\n"
+              "    void foo(float a) { f = a; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar29() {
+        check("class A {\n"
+              "    int i;\n"
+              "public:\n"
+              "    A() { foo(); }\n"
+              "    void foo() const { };\n"
+              "    void foo() { i = 0; }\n"
+              "};\n"
+              "class B {\n"
+              "    int i;\n"
+              "public:\n"
+              "    B() { foo(); }\n"
+              "    void foo() { i = 0; }\n"
+              "    void foo() const { }\n"
+              "};\n"
+              "class C {\n"
+              "    int i;\n"
+              "public:\n"
+              "    C() { foo(); }\n"
+              "    void foo() const { i = 0; }\n"
+              "    void foo() { }\n"
+              "};\n"
+              "class D {\n"
+              "    int i;\n"
+              "public:\n"
+              "    D() { foo(); }\n"
+              "	void foo() { }\n"
+              "	void foo() const { i = 0; }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:18]: (warning) Member variable 'C::i' is not initialized in the constructor.\n"
+                      "[test.cpp:25]: (warning) Member variable 'D::i' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar30() { // ticket #6417
+        check("namespace NS {\n"
+              "    class MyClass {\n"
+              "    public:\n"
+              "        MyClass();\n"
+              "        ~MyClass();\n"
+              "    private:\n"
+              "        bool SomeVar;\n"
+              "    };\n"
+              "}\n"
+              "using namespace NS;\n"
+              "MyClass::~MyClass() { }\n"
+              "MyClass::MyClass() : SomeVar(false) { }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitVarArray1() {
         check("class John\n"
               "{\n"
@@ -2166,6 +2240,17 @@ private:
               "{\n"
               "public:\n"
               "    John() { *name = 0; }\n"
+              "\n"
+              "private:\n"
+              "    char name[255];\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5754
+        check("class John\n"
+              "{\n"
+              "public:\n"
+              "    John() {*this->name = '\\0';}\n"
               "\n"
               "private:\n"
               "    char name[255];\n"
@@ -2398,6 +2483,22 @@ private:
               "    int x;\n"
               "    int y;\n"
               "    POINT() :x(0), y(0) { }\n"
+              "};\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "    POINT p;\n"
+              "public:\n"
+              "    Fred()\n"
+              "    { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // non static data-member initialization
+        check("struct POINT\n"
+              "{\n"
+              "    int x=0;\n"
+              "    int y=0;\n"
               "};\n"
               "class Fred\n"
               "{\n"
@@ -3036,14 +3137,6 @@ private:
               "  C(const C&) _STLP_NOTHROW {}\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidInitializerList() {
-        // 5702
-        ASSERT_THROW(check("struct R1 {\n"
-                           "  int a;\n"
-                           "  R1 () : a { }\n"
-                           "};\n"), InternalError);
     }
 };
 

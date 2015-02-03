@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,8 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     void run(const std::string &str);
-    void warn(const char msg[]);
+    void warn(const char msg[]) const;
+    void warnUnsimplified(const std::string& unsimplified, const std::string& simplified);
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }

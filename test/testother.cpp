@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,13 @@ public:
     }
 
 private:
-
+    Settings settings_std;
+    Settings settings_posix;
 
     void run() {
+        LOAD_LIB_2(settings_std.library, "std.cfg");
+        LOAD_LIB_2(settings_posix.library, "posix.cfg");
+
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -75,6 +79,7 @@ private:
         TEST_CASE(varScope20);      // Ticket #5103
         TEST_CASE(varScope21);      // Ticket #5382
         TEST_CASE(varScope22);      // Ticket #5684
+        TEST_CASE(varScope23);      // Ticket #6154
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -88,6 +93,7 @@ private:
         TEST_CASE(mathfunctionCall_asin);
         TEST_CASE(mathfunctionCall_pow);
         TEST_CASE(mathfunctionCall_atan2);
+        TEST_CASE(mathfunctionCall_precision);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -134,6 +140,7 @@ private:
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
+        TEST_CASE(duplicateExpressionTernary); // #6391
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -141,7 +148,6 @@ private:
         TEST_CASE(checkForSuspiciousSemicolon1);
         TEST_CASE(checkForSuspiciousSemicolon2);
 
-        TEST_CASE(checkDoubleFree);
         TEST_CASE(checkInvalidFree);
 
         TEST_CASE(checkRedundantCopy);
@@ -165,16 +171,24 @@ private:
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
 
-        TEST_CASE(integerOverflow) // #5895
+        TEST_CASE(integerOverflow); // #5895
+
+        TEST_CASE(testReturnIgnoredReturnValue);
+        TEST_CASE(testReturnIgnoredReturnValuePosix);
+
+        TEST_CASE(redundantPointerOp);
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool posix = false, bool runSimpleChecks=true, Settings* settings = 0, bool verify = true) {
         // Clear the error buffer..
         errout.str("");
 
         if (!settings) {
             static Settings _settings;
             settings = &_settings;
+        }
+        if (posix) {
+            settings = &settings_posix;
         }
         settings->addEnabled("style");
         settings->addEnabled("warning");
@@ -184,15 +198,13 @@ private:
         settings->experimental = experimental;
         settings->standards.posix = posix;
 
-        if (posix) {
-            const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                               "<def>\n"
-                               "  <function name=\"usleep\"> <arg nr=\"1\"><valid>0:999999</valid></arg> </function>\n"
-                               "</def>";
-            tinyxml2::XMLDocument xmldoc;
-            xmldoc.Parse(cfg, sizeof(cfg));
-            settings->library.load(xmldoc);
-        }
+        // Preprocess file..
+        Preprocessor preprocessor(settings);
+        std::list<std::string> configurations;
+        std::string filedata = "";
+        std::istringstream fin(raw_code);
+        preprocessor.preprocess(fin, filedata, configurations, "", settings->_includePaths);
+        const std::string code = preprocessor.getcode(filedata, "", "");
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -207,8 +219,8 @@ private:
             const std::string str1(tokenizer.tokens()->stringifyList(0,true));
             tokenizer.simplifyTokenList2();
             const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-            if (str1 != str2)
-                warn(("Unsimplified code in test case\nstr1="+str1+"\nstr2="+str2).c_str());
+            if (verify && str1 != str2)
+                warnUnsimplified(str1, str2);
             checkOther.runSimplifiedChecks(&tokenizer, settings, this);
         }
     }
@@ -244,7 +256,7 @@ private:
         CheckOther checkOther(&tokenizer, &settings, &logger);
         checkOther.checkSwitchCaseFallThrough();
 
-        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename));
+        logger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(filename, false));
     }
 
 
@@ -406,13 +418,13 @@ private:
         check("void f(int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x == 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is useless or there is division by zero at line 2.\n", errout.str());
 
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x != 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
 
         // function call
@@ -429,7 +441,7 @@ private:
               "  int y = 17 / x;\n"
               "  x = some+calculation;\n"
               "  if (x != 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
 
         {
@@ -440,7 +452,7 @@ private:
                   "  int y = 17 / x;\n"
                   "  do_something();\n"
                   "  if (x != 0) {}\n"
-                  "}");
+                  "}", nullptr, false, true, false, true, nullptr, false);
             ASSERT_EQUALS("", errout.str());
 
             // function is called. but don't care, variable is local
@@ -450,7 +462,7 @@ private:
                   "  int y = 17 / x;\n"
                   "  do_something();\n"
                   "  if (x != 0) {}\n"
-                  "}");
+                  "}", nullptr, false, true, false, true, nullptr, false);
             ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
         }
 
@@ -465,7 +477,7 @@ private:
               "void f() {\n"
               "  int y = 17 / x;\n"
               "  while (y || x == 0) { x--; }\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
 
         // ticket 5033 segmentation fault (valid code) in CheckOther::checkZeroDivisionOrUselessCondition
@@ -488,19 +500,19 @@ private:
         check("int f(int d) {\n"
               "  int r = (a?b:c) / d;\n"
               "  if (d == 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is useless or there is division by zero at line 2.\n", errout.str());
 
         check("int f(int a) {\n"
               "  int r = a ? 1 / a : 0;\n"
               "  if (a == 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
 
         check("int f(int a) {\n"
               "  int r = (a == 0) ? 0 : 1 / a;\n"
               "  if (a == 0) {}\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -576,7 +588,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         invalidFunctionUsage("int f() { memset(a,b,sizeof(a)!=0); }");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         invalidFunctionUsage("int f() { strtol(a,b,sizeof(a)!=12); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (comparison result) but the valid values are '0,2:36'.\n", errout.str());
@@ -1059,6 +1071,16 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n", errout.str());
     }
 
+    void varScope23() { // #6154: Don't suggest to reduce scope if inner scope is a lambda
+        varScope("int main() {\n"
+                 "   size_t myCounter = 0;\n"
+                 "   Test myTest([&](size_t aX){\n"
+                 "       std::cout << myCounter += aX << std::endl;\n"
+                 "   });\n"
+                 "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkOldStylePointerCast(const char code[]) {
         // Clear the error buffer..
         errout.str("");
@@ -1095,6 +1117,41 @@ private:
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base * const) derived;\n"
                                  "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
@@ -1161,9 +1218,18 @@ private:
                                  "class MS : public M\n"
                                  "{ virtual void addController(C*) override {} };");
         ASSERT_EQUALS("", errout.str());
+
+        // #6164
+        checkOldStylePointerCast("class Base {};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void testCC() {\n"
+                                 "  std::vector<Base*> v;\n"
+                                 "  v.push_back((Base*)new Derived);\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) C-style pointer casting\n", errout.str());
     }
 
-    void checkInvalidPointerCast(const char code[], bool portability = false, bool inconclusive = false) {
+    void checkInvalidPointerCast(const char code[], bool portability = true, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1189,36 +1255,34 @@ private:
                                 "    delete [] (double*)f;\n"
                                 "    delete [] (long double const*)(new float[10]);\n"
                                 "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n"
-                           "[test.cpp:4]: (warning) Casting between float* and long double* which have an incompatible binary data representation.\n",
-                           "[test.cpp:3]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n"
-                           "[test.cpp:4]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:4]: (portability) Casting between float* and long double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(const float* f) {\n"
                                 "    double *d = (double*)f;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(double* d1) {\n"
                                 "    long double *ld = (long double*)d1;\n"
                                 "    double *d2 = (double*)ld;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and long double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:3]: (warning) Casting between long double* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between double* and long double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:3]: (portability) Casting between long double* and double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("char* test(int* i) {\n"
                                 "    long double *d = (long double*)(i);\n"
                                 "    double *d = (double*)(i);\n"
                                 "    float *f = reinterpret_cast<float*>(i);\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and long double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:3]: (warning) Casting between integer* and double* which have an incompatible binary data representation.\n"
-                      "[test.cpp:4]: (warning) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and long double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:3]: (portability) Casting between integer* and double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:4]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between integer* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("float* test(unsigned int* i) {\n"
                                 "    return (float*)i[0];\n"
@@ -1228,7 +1292,7 @@ private:
         checkInvalidPointerCast("float* test(double& d) {\n"
                                 "    return (float*)&d;\n"
                                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Casting between double* and float* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Casting between double* and float* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
@@ -1317,6 +1381,15 @@ private:
         testPassedByValue("void log(const std::string& file, int line, const std::string& function, const std::string str, ...) {}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5534
+        testPassedByValue("struct float3 { };\n"
+                          "typedef float3 vec;\n"
+                          "class Plane {\n"
+                          "    vec Refract(vec &vec) const;\n"
+                          "    bool IntersectLinePlane(const vec &planeNormal);\n"
+                          "}; ");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void mathfunctionCall_sqrt() {
@@ -1327,9 +1400,18 @@ private:
               "    std::cout <<  sqrtf(-1) << std::endl;\n"
               "    std::cout <<  sqrtl(-1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1 to sqrtf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1 to sqrtl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1 to sqrt() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -1 to sqrtf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -1 to sqrtl() leads to implementation-defined result.\n", errout.str());
+
+        // implementation-defined behaviour for "finite values of x<0" only:
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  sqrt(-0.) << std::endl;\n"
+              "    std::cout <<  sqrtf(-0.) << std::endl;\n"
+              "    std::cout <<  sqrtl(-0.) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1348,9 +1430,9 @@ private:
               "    std::cout <<  logf(-2) << std::endl;\n"
               "    std::cout <<  logl(-2) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -2 to log() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -2 to logf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -2 to logl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -2 to log() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -2 to logf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -2 to logl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1358,9 +1440,9 @@ private:
               "    std::cout <<  logf(-1) << std::endl;\n"
               "    std::cout <<  logl(-1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to log() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1 to logf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1 to logl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1 to log() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -1 to logf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -1 to logl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1368,9 +1450,9 @@ private:
               "    std::cout <<  logf(-1.0) << std::endl;\n"
               "    std::cout <<  logl(-1.0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1.0 to logf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1.0 to logl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.0 to log() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -1.0 to logf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -1.0 to logl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1378,9 +1460,9 @@ private:
               "    std::cout <<  logf(-0.1) << std::endl;\n"
               "    std::cout <<  logl(-0.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -0.1 to log() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -0.1 to logf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -0.1 to logl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -0.1 to log() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -0.1 to logf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -0.1 to logl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1388,9 +1470,9 @@ private:
               "    std::cout <<  logf(0.) << std::endl;\n"
               "    std::cout <<  logl(0.0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 to log() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value 0. to logf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value 0.0 to logl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 0 to log() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value 0. to logf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value 0.0 to logl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1467,9 +1549,9 @@ private:
               "    std::cout <<  acosf(1.1) << std::endl;\n"
               "    std::cout <<  acosl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to acos() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value 1.1 to acosf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value 1.1 to acosl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 1.1 to acos() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value 1.1 to acosf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value 1.1 to acosl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1477,9 +1559,9 @@ private:
               "    std::cout <<  acosf(-1.1) << std::endl;\n"
               "    std::cout <<  acosl(-1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to acos() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1.1 to acosf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1.1 to acosl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.1 to acos() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -1.1 to acosf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -1.1 to acosl() leads to implementation-defined result.\n", errout.str());
     }
 
     void mathfunctionCall_asin() {
@@ -1528,9 +1610,9 @@ private:
               "    std::cout <<  asinf(1.1) << std::endl;\n"
               "    std::cout <<  asinl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to asin() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value 1.1 to asinf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value 1.1 to asinl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 1.1 to asin() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value 1.1 to asinf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value 1.1 to asinl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1538,9 +1620,9 @@ private:
               "    std::cout <<  asinf(-1.1) << std::endl;\n"
               "    std::cout <<  asinl(-1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to asin() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing value -1.1 to asinf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing value -1.1 to asinl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.1 to asin() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing value -1.1 to asinf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing value -1.1 to asinl() leads to implementation-defined result.\n", errout.str());
     }
 
     void mathfunctionCall_pow() {
@@ -1551,9 +1633,9 @@ private:
               "    std::cout <<  powf(0,-10) << std::endl;\n"
               "    std::cout <<  powl(0,-10) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and -10 to pow() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing values 0 and -10 to powf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing values 0 and -10 to powl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing values 0 and -10 to pow() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing values 0 and -10 to powf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing values 0 and -10 to powl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1610,9 +1692,9 @@ private:
               "    std::cout <<  atan2f(0,0) << std::endl;\n"
               "    std::cout <<  atan2l(0,0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 0 and 0 to atan2() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing values 0 and 0 to atan2f() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing values 0 and 0 to atan2l() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing values 0 and 0 to atan2() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing values 0 and 0 to atan2f() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing values 0 and 0 to atan2l() leads to implementation-defined result.\n", errout.str());
     }
 
     void mathfunctionCall_fmod() {
@@ -1623,15 +1705,50 @@ private:
               "    std::cout <<  fmodf(1.0,0) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing values 1.0 and 0 to fmod() leads to undefined result.\n"
-                      "[test.cpp:4]: (error) Passing values 1.0 and 0 to fmodf() leads to undefined result.\n"
-                      "[test.cpp:5]: (error) Passing values 1.0 and 0 to fmodl() leads to undefined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing values 1.0 and 0 to fmod() leads to implementation-defined result.\n"
+                      "[test.cpp:4]: (warning) Passing values 1.0 and 0 to fmodf() leads to implementation-defined result.\n"
+                      "[test.cpp:5]: (warning) Passing values 1.0 and 0 to fmodl() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  fmod(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodf(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void mathfunctionCall_precision() {
+        check("void foo() {\n"
+              "    print(exp(x) - 1);\n"
+              "    print(log(1 + x));\n"
+              "    print(1 - erf(x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(exp(x) - 1.0);\n"
+              "    print(log(1.0 + x));\n"
+              "    print(1.0 - erf(x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(exp(3 + x*f(a)) - 1);\n"
+              "    print(log(x*4 + 1));\n"
+              "    print(1 - erf(34*x + f(x) - c));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression 'exp(x) - 1' can be replaced by 'expm1(x)' to avoid loss of precision.\n"
+                      "[test.cpp:3]: (style) Expression 'log(1 + x)' can be replaced by 'log1p(x)' to avoid loss of precision.\n"
+                      "[test.cpp:4]: (style) Expression '1 - erf(x)' can be replaced by 'erfc(x)' to avoid loss of precision.\n", errout.str());
+
+        check("void foo() {\n"
+              "    print(2*exp(x) - 1);\n"
+              "    print(1 - erf(x)/2.0);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1892,6 +2009,17 @@ private:
               "    s->dyn_ltree[0].fc.freq++;\n"
               "}\n", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6132 "crash: daca: kvirc CheckOther::checkRedundantAssignment()"
+        check("void HttpFileTransfer :: transferTerminated ( bool bSuccess@1 ) {\n"
+              "if ( m_szCompletionCallback . isNull ( ) ) {\n"
+              "KVS_TRIGGER_EVENT ( KviEvent_OnHTTPGetTerminated , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams )\n"
+              "} else {\n"
+              "KviKvsScript :: run ( m_szCompletionCallback , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams ) ;\n"
+              "}\n"
+              "}\n", 0, false, false, false, true);
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void switchRedundantOperationTest() {
@@ -2736,6 +2864,7 @@ private:
 
         Settings settings;
         settings.library.setnoreturn("exit", true);
+        settings.library.argumentChecks["exit"][1] = Library::ArgumentChecks();
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"
@@ -2844,6 +2973,27 @@ private:
               "    foo();\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+
+        check("int foo(int unused) {\n"
+              "    return 0;\n"
+              "    (void)unused;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int unused1, int unused2) {\n"
+              "    return 0;\n"
+              "    (void)unused1;\n"
+              "    (void)unused2;\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int unused1, int unused2) {\n"
+              "    return 0;\n"
+              "    (void)unused1;\n"
+              "    (void)unused2;\n"
+              "    foo();\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
 
         check("int foo() {\n"
               "    if(bar)\n"
@@ -2965,6 +3115,30 @@ private:
               "     }));\n"
               "}", 0, false, false, false, false);
         ASSERT_EQUALS("", errout.str());
+
+        // #6008
+        check("static std::function< int ( int, int ) > GetFunctor() {\n"
+              "    return [](int a_, int b_) -> int {\n"
+              "        int sum = a_ + b_;\n"
+              "        return sum;\n"
+              "    };\n"
+              "}", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // #5789
+        check("struct per_state_info {\n"
+              "    uint64_t enter, exit;\n"
+              "    uint64_t events;\n"
+              "    per_state_info() : enter(0), exit(0), events(0) {}\n"
+              "};", 0, false, false, false, false);
+        ASSERT_EQUALS("", errout.str());
+
+        // Garbage code - don't crash
+        check("namespace pr16989 {\n"
+              "    class C {\n"
+              "        C tpl_mem(T *) { return }\n"
+              "    };\n"
+              "}");
     }
 
 
@@ -3035,7 +3209,7 @@ private:
               "    for (i == 0; i < 10; i ++) {\n"
               "        c ++;\n"
               "    }\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
         check("void foo(int c) {\n"
@@ -3092,7 +3266,7 @@ private:
               "    for (int i = (x == 0) ? 0 : 5; i < 10; i ++) {\n"
               "        x++;\n"
               "    }\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int x) {\n"
@@ -3174,7 +3348,7 @@ private:
         check("void f(int x) {\n"
               "    x = (x != 0);"
               "    func(x);\n"
-              "}");
+              "}", nullptr, false, true, false, true, nullptr, false);
         ASSERT_EQUALS("", errout.str());
 
         // ticket #3001 - false positive
@@ -3208,6 +3382,27 @@ private:
               "    this->var = var;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6406 - false positive for struct with designated initializer
+        check("struct callbacks {\n"
+              "    void (*something)(void);\n"
+              "};\n"
+              "void something(void) {}\n"
+              "void f() {\n"
+              "    struct callbacks ops = { .something = something };\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", errout.str());
+
+        // #6406 - designated initializer doing bogus self assignment
+        check("struct callbacks {\n"
+              "    void (*something)(void);\n"
+              "};\n"
+              "void something(void) {}\n"
+              "void f() {\n"
+              "    struct callbacks ops = { .something = ops.something };\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", "", errout.str());
+
     }
 
     void trac1132() {
@@ -3534,32 +3729,32 @@ private:
     }
 
     void redundantGetAndSetUserId() {
-        check("seteuid(geteuid());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(geteuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setuid(getuid());\n", nullptr, false , false, true);
+        check("void foo() { setuid(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setgid(getgid());\n", nullptr, false , false, true);
+        check("void foo() { setgid(getgid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        check("setegid(getegid());\n", nullptr, false , false, true);
+        check("void foo() { setegid(getegid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
 
-        check("seteuid(getuid());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("seteuid(foo());\n", nullptr, false , false, true);
+        check("void foo() { seteuid(foo()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
-        check("foo(getuid());\n", nullptr, false , false, true);
+        check("void foo() { foo(getuid()); }", nullptr, false , false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyCalculation() {
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
-              "}");
+              "}", nullptr, false, false, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
-              "}");
+              "}", nullptr, false, false, false, true, nullptr, false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         check("void f() {\n"
@@ -3587,6 +3782,11 @@ private:
               "    int ab = a - b ? 2 : 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '-' and '?'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int ab = a | b ? 2 : 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '|' and '?'.\n", errout.str());
 
         // ticket #195
         check("int f(int x, int y) {\n"
@@ -3750,6 +3950,16 @@ private:
               "    frac = front/((front-back));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        // No message about empty branches (#5354)
+        check("void f()\n"
+              "{\n"
+              "  if (front < 0)\n"
+              "  {}\n"
+              "  else\n"
+              "  {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateBranch2() {
@@ -3944,6 +4154,38 @@ private:
               "        a++;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    if (Four == 4) {}"
+              "}", nullptr, false, true, false, false);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    static_assert(Four == 4, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
+              "    static_assert(4 == Four, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum { FourInEnumOne = 4 };\n"
+              "    enum { FourInEnumTwo = 4 };\n"
+              "    if (FourInEnumOne == FourInEnumTwo) {}\n"
+              "}", nullptr, false, true, false, false);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("void f() {\n"
+              "    enum { FourInEnumOne = 4 };\n"
+              "    enum { FourInEnumTwo = 4 };\n"
+              "    static_assert(FourInEnumOne == FourInEnumTwo, "");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
@@ -4020,14 +4262,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        {
-            Settings settings;
-            LOAD_LIB_2(settings.library, "std.cfg");
-            check("void foo() {\n"
-                  "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
-                  "}", "test.cpp", false, false, false, true, &settings);
-            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
-        }
+        check("void foo() {\n"
+              "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
+              "}", "test.cpp", false, false, false, true, &settings_std, false);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"
               "void foo() {\n"
@@ -4113,6 +4351,23 @@ private:
         check("float IsNan(float value) { return !(value == value); }\n"
               "double IsNan(double value) { return !(value == value); }\n"
               "long double IsNan(long double value) { return !(value == value); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionTernary() { // #6391
+        check("void f() {\n"
+              "    return A ? x : x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression in both branches of ternary operator.\n", errout.str());
+
+        check("void f() {\n"
+              "    if( a ? (b ? false:false): false ) ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression in both branches of ternary operator.\n", errout.str());
+
+        check("void f() {\n"
+              "    return A ? x : z;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4388,6 +4643,34 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y < 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y <= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y > 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(int* x, int* y) {\n"
+            "  if (x - y >= 0)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
             "  if (0 <= x)"
             "    bar();\n"
@@ -4410,6 +4693,20 @@ private:
 
         check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
+            "  if (0 <= x->y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x, Bar* y) {\n"
+            "  if (0 <= x->y - y->y )"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
             "  if (0 > x)"
             "    bar();\n"
             "}");
@@ -4425,6 +4722,13 @@ private:
         check_signOfUnsignedVariable(
             "bool foo(Bar* x) {\n"
             "  if (0 > x.y)"
+            "    bar();\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "bool foo(Bar* x) {\n"
+            "  if (0 > x->y)"
             "    bar();\n"
             "}");
         ASSERT_EQUALS("", errout.str());
@@ -4537,415 +4841,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkDoubleFree() {
-        check(
-            "void foo(char *p) {\n"
-            "  free(p);\n"
-            "  free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p, char *r) {\n"
-            "  free(p);\n"
-            "  free(r);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo() {\n"
-            "  free(p);\n"
-            "  free(r);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  if (x < 3) free(p);\n"
-            "  else { if (x > 9) free(p); }\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  free(p);\n"
-            "  getNext(&p);\n"
-            "  free(p);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  free(p);\n"
-            "  bar();\n"
-            "  free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  free(p);\n"
-            "  printf(\"Freed memory at location %x\", p);\n"
-            "  free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(DIR *p) {\n"
-            "  closedir(p);\n"
-            "  closedir(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Directory handle 'p' closed twice.\n", errout.str());
-
-        check(
-            "void foo(DIR *p, DIR *r) {\n"
-            "  closedir(p);\n"
-            "  closedir(r);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(DIR *p) {\n"
-            "  if (x < 3) closedir(p);\n"
-            "  else { if (x > 9) closedir(p); }\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(DIR *p) {\n"
-            "  closedir(p);\n"
-            "  gethandle(&p);\n"
-            "  closedir(p);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(DIR *p) {\n"
-            "  closedir(p);\n"
-            "  gethandle();\n"
-            "  closedir(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Directory handle 'p' closed twice.\n", errout.str());
-
-        check(
-            "void foo(Data* p) {\n"
-            "  free(p->a);\n"
-            "  free(p->b);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void f() {\n"
-            "    char *p; p = malloc(100);\n"
-            "    if (x) {\n"
-            "        free(p);\n"
-            "        exit();\n"
-            "    }\n"
-            "    free(p);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void f() {\n"
-            "    char *p; p = malloc(100);\n"
-            "    if (x) {\n"
-            "        free(p);\n"
-            "        x = 0;\n"
-            "    }\n"
-            "    free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void f() {\n"
-            "    char *p; p = do_something();\n"
-            "    free(p);\n"
-            "    p = do_something();\n"
-            "    free(p);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  g_free(p);\n"
-            "  g_free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p, char *r) {\n"
-            "  g_free(p);\n"
-            "  g_free(r);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  g_free(p);\n"
-            "  getNext(&p);\n"
-            "  g_free(p);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  g_free(p);\n"
-            "  bar();\n"
-            "  g_free(p);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete p;\n"
-            "  delete p;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p, char *r) {\n"
-            "  delete p;\n"
-            "  delete r;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete p;\n"
-            "  getNext(&p);\n"
-            "  delete p;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete p;\n"
-            "  bar();\n"
-            "  delete p;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete[] p;\n"
-            "  delete[] p;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(char *p, char *r) {\n"
-            "  delete[] p;\n"
-            "  delete[] r;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete[] p;\n"
-            "  getNext(&p);\n"
-            "  delete[] p;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(char *p) {\n"
-            "  delete[] p;\n"
-            "  bar();\n"
-            "  delete[] p;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
-
-        check(
-            "~LineMarker() {\n"
-            "  delete pxpm;\n"
-            "}\n"
-            "LineMarker &operator=(const LineMarker &) {\n"
-            "  delete pxpm;\n"
-            "  pxpm = NULL;\n"
-            "  return *this;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo()\n"
-            "{\n"
-            "  int* ptr; ptr = NULL;\n"
-            "  try\n"
-            "    {\n"
-            "      ptr = new int(4);\n"
-            "    }\n"
-            "  catch(...)\n"
-            "    {\n"
-            "      delete ptr;\n"
-            "      throw;\n"
-            "    }\n"
-            "  delete ptr;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "int foo()\n"
-            "{\n"
-            "   int* a; a = new int;\n"
-            "   bool doDelete; doDelete = true;\n"
-            "   if (a != 0)\n"
-            "   {\n"
-            "       doDelete = false;\n"
-            "       delete a;\n"
-            "   }\n"
-            "   if(doDelete)\n"
-            "       delete a;\n"
-            "   return 0;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    while(true) {\n"
-            "        x = new char[100];\n"
-            "        if (y++ > 100)\n"
-            "            break;\n"
-            "        delete[] x;\n"
-            "    }\n"
-            "    delete[] x;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    for (int i = 0; i < 10000; i++) {\n"
-            "        x = new char[100];\n"
-            "        delete[] x;\n"
-            "    }\n"
-            "    delete[] x;\n"
-            "}"
-        );
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    while (isRunning()) {\n"
-            "        x = new char[100];\n"
-            "        delete[] x;\n"
-            "    }\n"
-            "    delete[] x;\n"
-            "}"
-        );
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    while (isRunning()) {\n"
-            "        x = malloc(100);\n"
-            "        free(x);\n"
-            "    }\n"
-            "    free(x);\n"
-            "}"
-        );
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'x' is freed twice.\n", "", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    for (;;) {\n"
-            "        x = new char[100];\n"
-            "        if (y++ > 100)\n"
-            "            break;\n"
-            "        delete[] x;\n"
-            "    }\n"
-            "    delete[] x;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void foo(int y)\n"
-            "{\n"
-            "    char * x; x = NULL;\n"
-            "    do {\n"
-            "        x = new char[100];\n"
-            "        if (y++ > 100)\n"
-            "            break;\n"
-            "        delete[] x;\n"
-            "    } while (true);\n"
-            "    delete[] x;\n"
-            "}"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void f()\n"
-            "{\n"
-            "    char *p; p = 0;\n"
-            "    if (x < 100) {\n"
-            "        p = malloc(10);\n"
-            "        free(p);\n"
-            "    }\n"
-            "    free(p);\n"
-            "}"
-        );
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory pointed to by 'p' is freed twice.\n", "", errout.str());
-
-        check(
-            "void MyFunction()\n"
-            "{\n"
-            "    char* data; data = new char[100];\n"
-            "    try\n"
-            "    {\n"
-            "    }\n"
-            "    catch(err)\n"
-            "    {\n"
-            "        delete[] data;\n"
-            "        MyThrow(err);\n"
-            "    }\n"
-            "    delete[] data;\n"
-            "}\n"
-
-            "void MyThrow(err)\n"
-            "{\n"
-            "    throw(err);\n"
-            "}\n"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-        check(
-            "void MyFunction()\n"
-            "{\n"
-            "    char* data; data = new char[100];\n"
-            "    try\n"
-            "    {\n"
-            "    }\n"
-            "    catch(err)\n"
-            "    {\n"
-            "        delete[] data;\n"
-            "        MyExit(err);\n"
-            "    }\n"
-            "    delete[] data;\n"
-            "}\n"
-
-            "void MyExit(err)\n"
-            "{\n"
-            "    exit(err);\n"
-            "}\n"
-        );
-        ASSERT_EQUALS("", errout.str());
-
-
-    }
-
 
     void checkInvalidFree() {
         check(
@@ -5037,12 +4932,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void check_redundant_copy(const char code[]) {
+    void check_redundant_copy(const char code[], bool inconclusive = true) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("performance");
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -5138,17 +5034,20 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #5618
-        check_redundant_copy("class Token {\n"
-                             "public:\n"
-                             "    const std::string& str();\n"
-                             "};\n"
-                             "void simplifyArrayAccessSyntax() {\n"
-                             "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
-                             "        const std::string temp = tok->str();\n"
-                             "        tok->str(tok->strAt(2));\n"
-                             "    }\n"
-                             "}\n");
+        const char* code5618 = "class Token {\n"
+                               "public:\n"
+                               "    const std::string& str();\n"
+                               "};\n"
+                               "void simplifyArrayAccessSyntax() {\n"
+                               "    for (Token *tok = list.front(); tok; tok = tok->next()) {\n"
+                               "        const std::string temp = tok->str();\n"
+                               "        tok->str(tok->strAt(2));\n"
+                               "    }\n"
+                               "}";
+        check_redundant_copy(code5618);
         TODO_ASSERT_EQUALS("", "[test.cpp:7]: (performance, inconclusive) Use const reference for 'temp' to avoid unnecessary data copying.\n", errout.str());
+        check_redundant_copy(code5618, false);
+        ASSERT_EQUALS("", errout.str());
 
         // #5890 - crash: wesnoth desktop_util.cpp / unicode.hpp
         check_redundant_copy("typedef std::vector<char> X;\n"
@@ -5198,6 +5097,9 @@ private:
               "{\n"
               "   std::cout << 3 << -1 ;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("x = y ? z << $-1 : 0;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5539,6 +5441,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #5964
+        check("void func(char *buffer, const char *format, int precision, unsigned value) {\n"
+              "    (precision < 0) ? sprintf(buffer, format, value) : sprintf(buffer, format, precision, value);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // don't crash
         check("struct data {\n"
               "  struct { int i; } fc;\n"
@@ -5729,37 +5637,37 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo {\n"
+        check("void foo() {\n"
               "  int *cp;\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // test with unknown variable
-        check("void foo {\n"
+        check("void foo() {\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo {\n"
+        check("void foo() {\n"
               "  int *cp;\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // test with unknown variable
-        check("void foo {\n"
+        check("void foo() {\n"
               "  if ( pipe (cp) == -1 ) {\n"
               "     return;\n"
               "  }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
     }
@@ -6043,6 +5951,151 @@ private:
         check("void f(unsigned long long ull) {\n"
               "    if (ull == 0x89504e470d0a1a0a || ull == 0x8a4d4e470d0a1a0a) ;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnIgnoredReturnValue() {
+        check("void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+
+        check("bool strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition, but it returns a value. Assume it is the one specified in the library.
+              "void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+
+        check("void strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition which returns void!
+              "void foo() {\n"
+              "    strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    class strcmp { strcmp() {} };\n" // strcmp is a constructor definition here
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    return strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if(strcmp(a, b));\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    bool b = strcmp(a, b);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        // #6194
+        check("void foo() {\n"
+              "    std::ofstream log(logfile.c_str(), std::ios::out);\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        // #6197
+        check("void foo() {\n"
+              "    DebugLog::getInstance().log(systemInfo.getSystemInfo());\n"
+              "}", "test.cpp", false, false, false, true, &settings_std);
+        ASSERT_EQUALS("", errout.str());
+
+        // #6233
+        check("int main() {\n"
+              "    auto lambda = [](double value) {\n"
+              "        double rounded = floor(value + 0.5);\n"
+              "        printf(\"Rounded value = %f\\n\", rounded);\n"
+              "    };\n"
+              "    lambda(13.3);\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testReturnIgnoredReturnValuePosix() {
+        check("void f() {\n"
+              "    strdupa(\"test\");\n"
+              "}",
+              "test.cpp",
+              false, // experimental
+              false, // inconclusive
+              true,  // posix
+              false  // runSimpleChecks
+             );
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strdupa() is not used.\n", errout.str());
+
+        // mmap(): error about unused return address since fixed_addr is just a hint
+        check("void f(int fd) {\n"
+              "    void *fixed_addr = 123;\n"
+              "    mmap(fixed_addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
+              "    munmap(fixed_addr, 255);\n"
+              "}",
+              "test.cpp",
+              false, // experimental
+              false, // inconclusive
+              true,  // posix
+              false  // runSimpleChecks
+             );
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mmap() is not used.\n", errout.str());
+    }
+
+    void redundantPointerOp() {
+        check("int *f(int *x) {\n"
+              "    return &*x;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on x - it's already a pointer.\n", errout.str());
+
+        check("int *f(int *y) {\n"
+              "    return &(*y);\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on y - it's already a pointer.\n", errout.str());
+
+        // no warning for bitwise AND
+        check("void f(int *b) {\n"
+              "    int x = 0x20 & *b;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // No message for double pointers to structs
+        check("void f(struct foo **my_struct) {\n"
+              "    char **pass_to_func = &(*my_struct)->buf;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // another double pointer to struct - with an array
+        check("void f(struct foo **my_struct) {\n"
+              "    char **pass_to_func = &(*my_struct)->buf[10];\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // double pointer to array
+        check("void f(char **ptr) {\n"
+              "    int *x = &(*ptr)[10];\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        // function calls
+        check("void f(Mutex *mut) {\n"
+              "    pthread_mutex_lock(&*mut);\n"
+              "}\n", nullptr, false, false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on mut - it's already a pointer.\n", errout.str());
+
+        // make sure we got the AST match for "(" right
+        check("void f(char *ptr) {\n"
+              "    if (&*ptr == NULL)\n"
+              "        return;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on ptr - it's already a pointer.\n", errout.str());
+
+        // no warning for macros
+        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+              "void f(struct mutex *mut) {\n"
+              "    MUTEX_LOCK(*mut);\n"
+              "}\n", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
     }
 };

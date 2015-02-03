@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ private:
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
         TEST_CASE(initializer_list);
         TEST_CASE(member_function_ternary);
+        TEST_CASE(boost);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -120,34 +121,51 @@ private:
     }
 
     void functionpointer() {
+        check("void foo() { }\n"
+              "int main() {\n"
+              "    f(&foo);\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { }\n"
+              "int main() {\n"
+              "    f(&::foo);\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("namespace abc {\n"
-              "void foo() { }\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
               "    f(&abc::foo);\n"
               "    return 0\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace abc {\n"
-              "void foo() { }\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
               "    f = &abc::foo;\n"
               "    return 0\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("namespace abc {\n"  // #3875
-              "void foo() { }\n"
+        check("namespace abc {\n"
+              "    void foo() { }\n"
               "};\n"
-              "\n"
-              "int main()\n"
-              "{\n"
+              "int main() {\n"
+              "    f = &::abc::foo;\n"
+              "    return 0\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace abc {\n"  // #3875
+              "    void foo() { }\n"
+              "};\n"
+              "int main() {\n"
               "    f(abc::foo);\n"
               "    return 0\n"
               "}");
@@ -310,6 +328,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void boost() {
+        check("static void _xy(const char *b, const char *e)\n"
+              "{}\n"
+              "parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void multipleFiles() {
         CheckUnusedFunctions c;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,12 +47,9 @@ void CheckBool::checkIncrementBoolean()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% ++")) {
-                if (tok->varId()) {
-                    const Variable *var = tok->variable();
-
-                    if (var && var->typeEndToken()->str() == "bool")
-                        incrementBooleanError(tok);
-                }
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "bool")
+                    incrementBooleanError(tok);
             }
         }
     }
@@ -204,9 +201,9 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 
 static bool tokenIsFunctionReturningBool(const Token* tok)
 {
-    if (Token::Match(tok, "%var% (") && !Token::Match(tok->previous(), "::|.")) {
-        const Function* func = tok->function();
-        if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+    const Function* func = tok->function();
+    if (func && Token::Match(tok, "%name% (")) {
+        if (func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
             return true;
         }
     }
@@ -293,26 +290,26 @@ void CheckBool::checkComparisonOfBoolWithBool()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            bool first_token_bool = false;
+            bool firstTokenBool = false;
 
-            const Token *first_token = tok->previous();
-            if (first_token->varId()) {
-                if (isBool(first_token->variable())) {
-                    first_token_bool = true;
+            const Token *firstToken = tok->previous();
+            if (firstToken->varId()) {
+                if (isBool(firstToken->variable())) {
+                    firstTokenBool = true;
                 }
             }
-            if (!first_token_bool)
+            if (!firstTokenBool)
                 continue;
 
-            bool second_token_bool = false;
-            const Token *second_token = tok->next();
-            if (second_token->varId()) {
-                if (isBool(second_token->variable())) {
-                    second_token_bool = true;
+            bool secondTokenBool = false;
+            const Token *secondToken = tok->next();
+            if (secondToken->varId()) {
+                if (isBool(secondToken->variable())) {
+                    secondTokenBool = true;
                 }
             }
-            if (second_token_bool) {
-                comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
+            if (secondTokenBool) {
+                comparisonOfBoolWithBoolError(firstToken->next(), secondToken->str());
             }
         }
     }
@@ -405,9 +402,13 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 continue;
 
             if (numTok->isNumber()) {
-                if (numTok->str() == "0" && Token::Match(tok, numInRhs ? ">|==|!=" : "<|==|!="))
+                if (numTok->str() == "0" &&
+                    (numInRhs ? Token::Match(tok, ">|==|!=")
+                     : Token::Match(tok, "<|==|!=")))
                     continue;
-                if (numTok->str() == "1" && Token::Match(tok, numInRhs ? "<|==|!=" : ">|==|!="))
+                if (numTok->str() == "1" &&
+                    (numInRhs ? Token::Match(tok, "<|==|!=")
+                     : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
             } else if (isNonBoolStdType(numTok->variable()))
@@ -483,7 +484,7 @@ void CheckBool::checkAssignBoolToFloat()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% =")) {
-                const Variable * const var = symbolDatabase->getVariableFromVarId(tok->varId());
+                const Variable * const var = tok->variable();
                 if (var && var->isFloatingType() && !var->isArrayOrPointer() && astIsBool(tok->next()->astOperand2()))
                     assignBoolToFloatError(tok->next());
             }

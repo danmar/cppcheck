@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,13 +86,12 @@ static bool checkRvalueExpression(const Token * const vartok)
     if (var == nullptr)
         return false;
 
-    const Token * const next = vartok->next();
-
-    if (Token::Match(vartok->previous(), "& %var% [") && var->isPointer())
+    if (Token::Match(vartok->previous(), "& %name% [") && var->isPointer())
         return false;
 
+    const Token * const next = vartok->next();
     // &a.b[0]
-    if (Token::Match(vartok, "%var% . %var% [") && !var->isPointer()) {
+    if (Token::Match(vartok, "%name% . %var% [") && !var->isPointer()) {
         const Variable *var2 = next->next()->variable();
         return var2 && !var2->isPointer();
     }
@@ -131,7 +130,8 @@ void CheckAutoVariables::assignFunctionArg()
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %var% =|++|--") &&
                 isNonReferenceArg(tok->next()) &&
-                !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope)) {
+                !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope) &&
+                !Token::findsimplematch(tok, "goto", scope->classEnd)) {
                 if (tok->next()->variable()->isPointer() && warning)
                     errorUselessAssignmentPtrArg(tok->next());
                 else if (style)
@@ -349,8 +349,15 @@ static bool astHasAutoResult(const Token *tok)
     if (tok->astOperand2() && !astHasAutoResult(tok->astOperand2()))
         return false;
 
-    if (tok->isOp())
+    if (tok->isOp()) {
+        if ((tok->str() == "<<" || tok->str() == ">>") && tok->astOperand1()) {
+            const Token* tok2 = tok->astOperand1();
+            while (tok2 && tok2->str() == "*" && !tok2->astOperand2())
+                tok2 = tok2->astOperand1();
+            return tok2 && tok2->variable() && !tok2->variable()->isClass() && !tok2->variable()->isStlType(); // Class or unknown type on LHS: Assume it is a stream
+        }
         return true;
+    }
 
     if (tok->isLiteral())
         return true;
@@ -359,7 +366,7 @@ static bool astHasAutoResult(const Token *tok)
         // TODO: check function calls, struct members, arrays, etc also
         if (!tok->variable())
             return false;
-        if (tok->variable()->isStlType() && !Token::Match(tok->astParent(), "<<|>>"))
+        if (tok->variable()->isStlType())
             return true;
         if (tok->variable()->isClass() || tok->variable()->isPointer() || tok->variable()->isReference()) // TODO: Properly handle pointers/references to classes in symbol database
             return false;
@@ -372,6 +379,9 @@ static bool astHasAutoResult(const Token *tok)
 
 void CheckAutoVariables::returnReference()
 {
+    if (_tokenizer->isC())
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -411,7 +421,7 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // return reference to temporary..
-                else if (Token::Match(tok2, "return %var% (") &&
+                else if (Token::Match(tok2, "return %name% (") &&
                          Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 /* Emulate certain features of C++11 in a C++98-compatible way. */
 
 #ifdef __cplusplus
-#if __cplusplus < 201103L
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 6 && !defined(__clang__)) || __cplusplus < 201103L
 
 // Null pointer literal
 // Source: SC22/WG21/N2431 = J16/07-0301

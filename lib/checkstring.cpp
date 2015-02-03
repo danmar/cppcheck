@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,19 +39,19 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
         return;
 
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "strncmp|strcmp|stricmp|strcmpi|strcasecmp|wcscmp|wcsncmp (")) {
-            if (Token::Match(tok->tokAt(2), "%str% , %str%")) {
+        if (Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|strncasecmp_l|strcasecmp_l|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcscasecmp_l|wcsncasecmp_l|wcsncmp|_mbscmp|_memicmp|_memicmp_l|_stricmp|_wcsicmp|_mbsicmp|_stricmp_l|_wcsicmp_l|_mbsicmp_l (")) {
+            if (Token::Match(tok->tokAt(2), "%str% , %str% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
                 alwaysTrueFalseStringCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% , %var%")) {
+            } else if (Token::Match(tok->tokAt(2), "%name% , %name% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(4);
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok->tokAt(2), "%var% . c_str ( ) , %var%  . c_str ( )")) {
+            } else if (Token::Match(tok->tokAt(2), "%name% . c_str ( ) , %name% . c_str ( ) ,|)")) {
                 const std::string &str1 = tok->strAt(2);
                 const std::string &str2 = tok->strAt(8);
                 if (str1 == str2)
@@ -217,9 +217,9 @@ void CheckString::checkIncorrectStringCompare()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
-            if (Token::Match(tok, "%var% (") &&
-                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")) &&
-                (tok->str().find("assert") + 6U == tok->str().size() || tok->str().find("ASSERT") + 6U == tok->str().size()))
+            if (tok->str().size() >= 6U && (tok->str().find("assert") == tok->str().size() - 6U || tok->str().find("ASSERT") == tok->str().size() - 6U) &&
+                Token::Match(tok, "%name% (") &&
+                (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
                 tok = tok->next()->link();
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
@@ -270,35 +270,40 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 //---------------------------------------------------------------------------
 void CheckString::sprintfOverlappingData()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        // Get variable id of target buffer..
-        unsigned int varid = 0;
+    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // Get variable id of target buffer..
+            unsigned int varid = 0;
 
-        if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% ,"))
-            varid = tok->tokAt(2)->varId();
+            if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% ,"))
+                varid = tok->tokAt(2)->varId();
 
-        else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %var% . %var% ,"))
-            varid = tok->tokAt(4)->varId();
+            else if (Token::Match(tok, "sprintf|snprintf|swprintf ( %name% . %var% ,"))
+                varid = tok->tokAt(4)->varId();
 
-        if (varid == 0)
-            continue;
-
-        // goto next argument
-        const Token *tok2 = tok->tokAt(2)->nextArgument();
-
-        if (tok->str() == "snprintf" || tok->str() == "swprintf") { // Jump over second parameter for snprintf and swprintf
-            tok2 = tok2->nextArgument();
-            if (!tok2)
+            else
                 continue;
-        }
 
-        // is any source buffer overlapping the target buffer?
-        do {
-            if (Token::Match(tok2, "%varid% [,)]", varid)) {
-                sprintfOverlappingDataError(tok2, tok2->str());
-                break;
+            // goto next argument
+            const Token *tok2 = tok->tokAt(2)->nextArgument();
+
+            if (tok->str() == "snprintf" || tok->str() == "swprintf") { // Jump over second parameter for snprintf and swprintf
+                tok2 = tok2->nextArgument();
+                if (!tok2)
+                    continue;
             }
-        } while (nullptr != (tok2 = tok2->nextArgument()));
+
+            // is any source buffer overlapping the target buffer?
+            do {
+                if (Token::Match(tok2, "%varid% [,)]", varid)) {
+                    sprintfOverlappingDataError(tok2, tok2->str());
+                    break;
+                }
+            } while (nullptr != (tok2 = tok2->nextArgument()));
+        }
     }
 }
 

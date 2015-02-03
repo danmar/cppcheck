@@ -53,11 +53,12 @@
     <ClCompile Include="checkmemoryleak.cpp" />
     <ClCompile Include="checknonreentrantfunctions.cpp" />
     <ClCompile Include="checknullpointer.cpp" />
-    <ClCompile Include="checkobsoletefunctions.cpp" />
+    <ClCompile Include="checkobsolescentfunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
     <ClCompile Include="checkstl.cpp" />
+    <ClCompile Include="checktype.cpp" />
     <ClCompile Include="checkuninitvar.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
     <ClCompile Include="checkunusedvar.cpp" />
@@ -98,11 +99,12 @@
     <ClInclude Include="checkmemoryleak.h" />
     <ClInclude Include="checknonreentrantfunctions.h" />
     <ClInclude Include="checknullpointer.h" />
-    <ClInclude Include="checkobsoletefunctions.h" />
+    <ClInclude Include="checkobsolescentfunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />
     <ClInclude Include="checkstl.h" />
+    <ClInclude Include="checktype.h" />
     <ClInclude Include="checkuninitvar.h" />
     <ClInclude Include="checkunusedfunctions.h" />
     <ClInclude Include="checkunusedvar.h" />
@@ -263,6 +265,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
@@ -284,6 +287,7 @@
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
@@ -354,6 +358,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
@@ -384,6 +389,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>

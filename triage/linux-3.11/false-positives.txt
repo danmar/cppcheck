@@ -1,0 +1,239 @@
+[linux-3.11/arch/arm/mach-tegra/sleep.h:97]: (error) syntax error
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: day
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: hour
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: min
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: mon
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: sec
+[linux-3.11/arch/frv/kernel/time.c:93]: (error) Uninitialized variable: year
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:1144]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:649]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/powerpc/kvm/book3s_32_mmu.c:274]: (error) Array 'pteg[16]' accessed at index 17, which is out of bounds.
+[linux-3.11/arch/powerpc/kvm/book3s_32_mmu.c:277]: (error) Array 'pteg[16]' accessed at index 17, which is out of bounds.
+[linux-3.11/arch/powerpc/kvm/book3s_64_mmu.c:281]: (error) Array 'pteg[16]' accessed at index 17, which is out of bounds.
+[linux-3.11/arch/powerpc/kvm/book3s_64_mmu.c:285]: (error) Array 'pteg[16]' accessed at index 17, which is out of bounds.
+[linux-3.11/arch/powerpc/kvm/e500_mmu.c:361]: (error) Array 'vcpu_e500.gtlb_params[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/arch/powerpc/kvm/e500_mmu.c:364]: (error) Array 'vcpu_e500.gtlb_nv[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/arch/powerpc/platforms/powermac/low_i2c.c:1387]: (error) Array 'inst.buffer[64]' accessed at index 9998, which is out of bounds.
+[linux-3.11/arch/s390/kernel/ptrace.c:99]: (error) Memory leak: new.control
+[linux-3.11/arch/sh/drivers/push-switch.c:27]: (error) syntax error
+[linux-3.11/arch/sparc/kernel/pcic.c:694]: (error) Uninitialized variable: irq
+[linux-3.11/arch/x86/kernel/machine_kexec_32.c:115]: (error) Possible null pointer dereference: pmd
+[linux-3.11/drivers/block/rbd.c:1616]: (error) Possible null pointer dereference: rbd_dev
+[linux-3.11/drivers/crypto/nx/nx-842.c:1030]: (error) Possible null pointer dereference: node
+[linux-3.11/drivers/dma/mmp_pdma.c:461]: (error) Possible null pointer dereference: prev
+[linux-3.11/drivers/edac/i7core_edac.c:1427]: (error) Memory leak: i7core_dev
+[linux-3.11/drivers/edac/sb_edac.c:1198]: (error) Memory leak: sbridge_dev
+[linux-3.11/drivers/gpio/gpio-mcp23s08.c:616]: (error) Uninitialized variable: pdata
+[linux-3.11/drivers/gpu/drm/drm_ioc32.c:359]: (error) Uninitialized variable: s32
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:116]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:132]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:1918]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3037]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3248]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/i915_irq.c:3487]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_ddi.c:983]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_ddi.c:989]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_display.c:9903]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:2459]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:2461]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/i915/intel_pm.c:4423]: (error) Uninitialized variable: pipe
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:186]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:189]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/omapdrm/omap_dmm_tiler.c:190]: (error) Possible null pointer dereference: engine
+[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2910]: (error) Uninitialized variable: args
+[linux-3.11/drivers/gpu/drm/radeon/radeon_atombios.c:2919]: (error) Uninitialized variable: args
+[linux-3.11/drivers/hid/hid-wiimote-debug.c:147]: (error) Array 'wiidebug_drmmap[13]' accessed at index 63, which is out of bounds.
+[linux-3.11/drivers/infiniband/hw/cxgb4/mem.c:532]: (error) Memory leak: page_list
+[linux-3.11/drivers/iommu/dmar.c:1019]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:1002]: (error) Uninitialized variable: val
+[linux-3.11/drivers/iommu/intel-iommu.c:1226]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:1243]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel-iommu.c:984]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/intel_irq_remapping.c:419]: (error) Uninitialized variable: sts
+[linux-3.11/drivers/iommu/omap-iommu.c:669]: (error) Possible null pointer dereference: fn
+[linux-3.11/drivers/isdn/gigaset/ev-layer.c:475]: (error) Array index -1 is out of bounds.
+[linux-3.11/drivers/isdn/i4l/isdn_ttyfax.c:329]: (error) Uninitialized variable: c
+[linux-3.11/drivers/isdn/icn/icn.c:1579]: (error) Memory leak: card
+[linux-3.11/drivers/isdn/isdnloop/isdnloop.c:1490]: (error) Memory leak: card
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:540]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:553]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm121.c:557]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:294]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:295]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:296]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:297]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:300]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:301]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:302]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/macintosh/windfarm_pm81.c:305]: (error) Possible null pointer dereference: param
+[linux-3.11/drivers/md/dm-mpath.c:1590]: (error) Possible null pointer dereference: bdev
+[linux-3.11/drivers/md/dm-thin-metadata.c:1021]: (error) Memory leak: td
+[linux-3.11/drivers/md/dm-thin-metadata.c:1103]: (error) Memory leak: td
+[linux-3.11/drivers/md/dm-thin-metadata.c:988]: (error) Memory leak: td
+[linux-3.11/drivers/media/i2c/ir-kbd-i2c.c:219]: (error) Uninitialized variable: key
+[linux-3.11/drivers/media/platform/exynos4-is/fimc-capture.c:1224]: (error) Possible null pointer dereference: si
+[linux-3.11/drivers/media/platform/vino.c:3745]: (error) Array 'vino_indycam_v4l2_controls[9]' accessed at index 9, which is out of bounds.
+[linux-3.11/drivers/media/platform/vino.c:3766]: (error) Array 'vino_saa7191_v4l2_controls[9]' accessed at index 9, which is out of bounds.
+[linux-3.11/drivers/media/usb/gspca/gspca.c:1608]: (error) Possible null pointer dereference: frame
+[linux-3.11/drivers/misc/fsa9480.c:254]: (error) syntax error
+[linux-3.11/drivers/misc/sgi-xp/xpc_partition.c:426]: (error) Memory leak: remote_rp_base
+[linux-3.11/drivers/mmc/host/rtsx_pci_sdmmc.c:753]: (error) Uninitialized variable: width
+[linux-3.11/drivers/net/bonding/bond_main.c:4618]: (error) Array 'arp_ip_target[16]' accessed at index 9998, which is out of bounds.
+[linux-3.11/drivers/net/bonding/bond_main.c:4619]: (error) Array 'arp_ip_target[16]' accessed at index 9998, which is out of bounds.
+[linux-3.11/drivers/net/can/sja1000/peak_pci.c:690]: (error) Possible null pointer dereference: chan
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:683]: (error) Memory leak: diff.hi
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:683]: (error) Memory leak: diff.lo
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:903]: (error) Memory leak: diff.hi
+[linux-3.11/drivers/net/ethernet/broadcom/bnx2x/bnx2x_stats.c:903]: (error) Memory leak: diff.lo
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5011]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5012]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5013]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5014]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/dec/tulip/de4x5.c:5015]: (error) Array 'lp.phy[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/emulex/benet/be_cmds.c:363]: (error) Uninitialized variable: compl
+[linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5617]: (error) Uninitialized variable: phy_data
+[linux-3.11/drivers/net/ethernet/intel/e1000/e1000_hw.c:5664]: (error) Uninitialized variable: phy_data
+[linux-3.11/drivers/net/ethernet/marvell/sky2.c:1173]: (error) Uninitialized variable: re
+[linux-3.11/drivers/net/wireless/airo.c:7646]: (error) syntax error
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:132]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:212]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/net/wireless/ath/ath10k/core.c:391]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/net/wireless/ath/ath10k/pci.c:816]: (error) Memory leak: compl
+[linux-3.11/drivers/net/wireless/hostap/hostap_ap.c:3221]: (error) Memory leak: sta
+[linux-3.11/drivers/net/wireless/orinoco/fw.c:144]: (error) Possible null pointer dereference: fw_entry
+[linux-3.11/drivers/net/wireless/orinoco/fw.c:303]: (error) Possible null pointer dereference: fw_entry
+[linux-3.11/drivers/net/wireless/orinoco/fw.c:304]: (error) Possible null pointer dereference: fw_entry
+[linux-3.11/drivers/net/wireless/orinoco/fw.c:322]: (error) Possible null pointer dereference: fw_entry
+[linux-3.11/drivers/net/wireless/orinoco/fw.c:323]: (error) Possible null pointer dereference: fw_entry
+[linux-3.11/drivers/net/wireless/ti/wl18xx/debugfs.c:118]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/net/wireless/ti/wl18xx/debugfs.c:142]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/net/wireless/ti/wl18xx/debugfs.c:144]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/net/wireless/ti/wl18xx/debugfs.c:165]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/s390/block/scm_blk.c:85]: (error) Memory leak: aobrq
+[linux-3.11/drivers/sbus/char/envctrl.c:385]: (error) Array 'pchild.chnl_array[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/sbus/char/envctrl.c:388]: (error) Array 'pchild.tblprop_array[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/sbus/char/envctrl.c:390]: (error) Array 'pchild.tblprop_array[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/sbus/char/envctrl.c:391]: (error) Array 'pchild.tblprop_array[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/scsi/aic7xxx/aicasm/aicasm_symbol.c:649]: (error) Possible null pointer dereference: tab_str
+[linux-3.11/drivers/scsi/aic7xxx/aicasm/aicasm_symbol.c:649]: (error) Possible null pointer dereference: tab_str2
+[linux-3.11/drivers/scsi/be2iscsi/be_cmds.c:412]: (error) Uninitialized variable: compl
+[linux-3.11/drivers/scsi/device_handler/scsi_dh.c:417]: (error) Possible null pointer dereference: scsi_dh
+[linux-3.11/drivers/scsi/FlashPoint.c:5464]: (error) Array 'FPT_BL_Card[8]' accessed at index 9, which is out of bounds.
+[linux-3.11/drivers/scsi/gdth.c:730]: (error) Array 'irq[16]' accessed at index 16, which is out of bounds.
+[linux-3.11/drivers/scsi/gdth.c:731]: (error) Array 'irq[16]' accessed at index 16, which is out of bounds.
+[linux-3.11/drivers/scsi/libsas/sas_init.c:317]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/libsas/sas_init.c:346]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/libsas/sas_init.c:385]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/lpfc/lpfc_bsg.c:3157]: (error) Possible null pointer dereference: rsp
+[linux-3.11/drivers/scsi/lpfc/lpfc_els.c:3455]: (error) Possible null pointer dereference: buf_ptr
+[linux-3.11/drivers/scsi/lpfc/lpfc_init.c:1103]: (error) Possible null pointer dereference: buf_ptr
+[linux-3.11/drivers/scsi/lpfc/lpfc_init.c:3036]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_init.c:3037]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_scsi.c:1261]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_scsi.c:1262]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_scsi.c:1263]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_scsi.c:1265]: (error) Possible null pointer dereference: psb
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:1129]: (error) Possible null pointer dereference: piocb
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:12094]: (error) Possible null pointer dereference: dmabuf
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:16245]: (error) Possible null pointer dereference: mb
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:1894]: (error) Possible null pointer dereference: hbq_buffer
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:9016]: (error) Possible null pointer dereference: pmb
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:9017]: (error) Possible null pointer dereference: pmb
+[linux-3.11/drivers/scsi/lpfc/lpfc_sli.c:9155]: (error) Possible null pointer dereference: buf_ptr
+[linux-3.11/drivers/scsi/mpt2sas/mpt2sas_ctl.c:1045]: (error) Buffer is accessed out of bounds.
+[linux-3.11/drivers/scsi/mpt2sas/mpt2sas_ctl.c:1046]: (error) Buffer is accessed out of bounds.
+[linux-3.11/drivers/scsi/mpt3sas/mpt3sas_ctl.c:1038]: (error) Buffer is accessed out of bounds.
+[linux-3.11/drivers/scsi/mpt3sas/mpt3sas_ctl.c:1039]: (error) Buffer is accessed out of bounds.
+[linux-3.11/drivers/spi/spi-s3c24xx.c:338]: (error) Possible null pointer dereference: code
+[linux-3.11/drivers/staging/bcm/PHSModule.c:904]: (error) Array 'psServiceFlowTable.stSFList[17]' accessed at index 17, which is out of bounds.
+[linux-3.11/drivers/staging/bcm/PHSModule.c:909]: (error) Array 'psServiceFlowTable.stSFList[17]' accessed at index 17, which is out of bounds.
+[linux-3.11/drivers/staging/bcm/PHSModule.c:910]: (error) Array 'psServiceFlowTable.stSFList[17]' accessed at index 17, which is out of bounds.
+[linux-3.11/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c:2256]: (error) Possible null pointer dereference: net
+[linux-3.11/drivers/staging/lustre/lnet/klnds/o2iblnd/o2iblnd_cb.c:2269]: (error) Possible null pointer dereference: net
+[linux-3.11/drivers/staging/lustre/lustre/fld/fld_index.c:357]: (error) Possible null pointer dereference: dt_obj
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/cl_lock.c:2171]: (error) Possible null pointer dereference: lock
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/cl_lock.c:603]: (error) Possible null pointer dereference: lock
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/cl_lock.c:758]: (error) Possible null pointer dereference: lock
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/cl_lock.c:854]: (error) Possible null pointer dereference: lock
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/cl_lock.c:873]: (error) Possible null pointer dereference: lock
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/llog_cat.c:204]: (error) Possible null pointer dereference: loghandle
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/llog_cat.c:205]: (error) Possible null pointer dereference: loghandle
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/llog_cat.c:206]: (error) Possible null pointer dereference: loghandle
+[linux-3.11/drivers/staging/lustre/lustre/obdclass/llog_cat.c:207]: (error) Possible null pointer dereference: loghandle
+[linux-3.11/drivers/tty/isicom.c:1581]: (error) Possible null pointer dereference: board
+[linux-3.11/drivers/tty/isicom.c:1582]: (error) Possible null pointer dereference: board
+[linux-3.11/drivers/tty/isicom.c:1583]: (error) Possible null pointer dereference: board
+[linux-3.11/drivers/tty/tty_io.c:1450]: (error) Possible null pointer dereference: driver
+[linux-3.11/drivers/usb/core/file.c:213]: (error) Array 'usb_minors[256]' accessed at index 256, which is out of bounds.
+[linux-3.11/drivers/usb/gadget/dummy_hcd.c:277]: (error) Uninitialized variable: ep
+[linux-3.11/drivers/usb/gadget/ether.c:376]: (error) Uninitialized variable: net
+[linux-3.11/drivers/usb/gadget/ether.c:377]: (error) Uninitialized variable: net
+[linux-3.11/drivers/usb/gadget/f_fs.c:1937]: (error) Memory leak: d
+[linux-3.11/drivers/usb/gadget/fsl_udc_core.c:855]: (error) Possible null pointer dereference: last_dtd
+[linux-3.11/drivers/usb/gadget/fsl_udc_core.c:856]: (error) Possible null pointer dereference: last_dtd
+[linux-3.11/drivers/usb/gadget/lpc32xx_udc.c:557]: (error) Uninitialized variable: ep
+[linux-3.11/drivers/usb/gadget/mv_udc_core.c:434]: (error) Possible null pointer dereference: last_dtd
+[linux-3.11/drivers/usb/gadget/mv_udc_core.c:435]: (error) Possible null pointer dereference: last_dtd
+[linux-3.11/drivers/usb/gadget/omap_udc.c:1359]: (error) Uninitialized variable: ep
+[linux-3.11/drivers/usb/gadget/u_serial.c:1135]: (error) Array 'ports[4]' accessed at index 4, which is out of bounds.
+[linux-3.11/drivers/usb/gadget/u_serial.c:1136]: (error) Array 'ports[4]' accessed at index 4, which is out of bounds.
+[linux-3.11/drivers/usb/host/isp1362.h:932]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:1048]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:1057]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:1071]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:1102]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:1124]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:435]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:441]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:698]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:706]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/host/isp1362-hcd.c:714]: (error) Uninitialized variable: __v
+[linux-3.11/drivers/usb/musb/cppi_dma.c:852]: (error) Possible null pointer dereference: tail
+[linux-3.11/drivers/usb/musb/cppi_dma.c:853]: (error) Possible null pointer dereference: tail
+[linux-3.11/drivers/usb/serial/mos7840.c:1472]: (error) Array 'mos7840_port.busy[16]' accessed at index 16, which is out of bounds.
+[linux-3.11/drivers/video/matrox/matroxfb_maven.c:159]: (error) Uninitialized variable: dst
+[linux-3.11/drivers/video/sm501fb.c:1768]: (error) Possible null pointer dereference: pd
+[linux-3.11/fs/adfs/dir.c:181]: (error) Deallocation of an auto-variable results in undefined behaviour.
+[linux-3.11/fs/adfs/dir.c:63]: (error) Deallocation of an auto-variable results in undefined behaviour.
+[linux-3.11/fs/adfs/dir.c:97]: (error) Deallocation of an auto-variable results in undefined behaviour.
+[linux-3.11/fs/bio.c:147]: (error) Possible null pointer dereference: bslab
+[linux-3.11/fs/btrfs/send.c:1586]: (error) Uninitialized struct member: found_key.objectid
+[linux-3.11/fs/btrfs/send.c:1587]: (error) Uninitialized struct member: found_key.type
+[linux-3.11/fs/cifs/connect.c:3420]: (error) Uninitialized variable: tcon
+[linux-3.11/fs/cifs/connect.c:3422]: (error) Uninitialized variable: ses
+[linux-3.11/fs/cifs/connect.c:3425]: (error) Uninitialized variable: xid
+[linux-3.11/fs/exofs/ore.c:199]: (error) Memory leak: extra_part
+[linux-3.11/fs/exofs/super.c:570]: (error) Memory leak: aoded
+[linux-3.11/fs/nfsd/nfs4recover.c:1079]: (error) Null pointer dereference
+[linux-3.11/fs/nfsd/nfs4recover.c:1108]: (error) Null pointer dereference
+[linux-3.11/fs/ntfs/compress.c:228]: (error) Uninitialized variable: completed_pages
+[linux-3.11/fs/ocfs2/dlm/dlmrecovery.c:1820]: (error) Possible null pointer dereference: lock
+[linux-3.11/fs/ubifs/key.h:542]: (error) Signed integer overflow for expression '536870912)*4096'
+[linux-3.11/fs/xfs/xfs_btree.c:3297]: (error) Array 'cur.bc_ptrs[8]' accessed at index 9998, which is out of bounds.
+[linux-3.11/fs/xfs/xfs_dir2_node.c:1502]: (error) Possible null pointer dereference: bp
+[linux-3.11/kernel/cgroup.c:4908]: (error) Uninitialized variable: ss
+[linux-3.11/kernel/cgroup.c:4933]: (error) Uninitialized variable: ss
+[linux-3.11/kernel/cgroup.c:5340]: (error) Uninitialized variable: ss
+[linux-3.11/kernel/sched/rt.c:607]: (error) Uninitialized variable: iter
+[linux-3.11/kernel/sched/rt.c:688]: (error) Uninitialized variable: iter
+[linux-3.11/kernel/trace/ftrace.c:184]: (error) Boolean value assigned to pointer.
+[linux-3.11/kernel/trace/ftrace.c:4313]: (error) Boolean value assigned to pointer.
+[linux-3.11/kernel/trace/ftrace.c:4346]: (error) Boolean value assigned to pointer.
+[linux-3.11/mm/frontswap.c:335]: (error) Possible null pointer dereference: si
+[linux-3.11/mm/frontswap.c:353]: (error) Possible null pointer dereference: si
+[linux-3.11/mm/mlock.c:500]: (error) Possible null pointer dereference: prev
+[linux-3.11/mm/slab.c:2709]: (error) Uninitialized variable: slabp
+[linux-3.11/net/ax25/ax25_dev.c:141]: (error) Uninitialized variable: ax25_dev
+[linux-3.11/net/ax25/ax25_dev.c:37]: (error) Uninitialized variable: ax25_dev
+[linux-3.11/net/ceph/mon_client.c:65]: (error) Possible null pointer dereference: m
+[linux-3.11/net/core/skbuff.c:2832]: (error) Possible null pointer dereference: tail
+[linux-3.11/net/ipv4/devinet.c:1983]: (error) Uninitialized variable: ifindex
+[linux-3.11/net/ipv4/ipconfig.c:276]: (error) syntax error
+[linux-3.11/net/sctp/sm_make_chunk.c:1447]: (error) Possible null pointer dereference: data
+[linux-3.11/scripts/kconfig/confdata.c:970]: (error) Resource leak: tristate
+[linux-3.11/sound/pci/pcxhr/pcxhr.c:729]: (error) Uninitialized struct member: pipe.first_audio
+[linux-3.11/tools/hv/hv_kvp_daemon.c:292]: (error) Common realloc mistake: 'record' nulled but not freed upon failure
+[linux-3.11/tools/hv/hv_kvp_daemon.c:395]: (error) Common realloc mistake: 'record' nulled but not freed upon failure
+[linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized struct member: map.unmap_ip
+[linux-3.11/tools/perf/builtin-kmem.c:370]: (error) Uninitialized variable: map
+[linux-3.11/virt/kvm/kvm_main.c:2305]: (error) Possible null pointer dereference: ops

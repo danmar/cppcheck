@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,9 @@ void CheckVaarg::va_start_argument()
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "va_start (")) {
+            if (!tok->scope()->isExecutable())
+                tok = tok->scope()->classEnd;
+            else if (Token::simpleMatch(tok, "va_start (")) {
                 const Token* param2 = tok->tokAt(2)->nextArgument();
                 if (!param2)
                     continue;
@@ -114,7 +116,10 @@ void CheckVaarg::va_list_usage()
                 tok = tok->linkAt(1);
             } else if (Token::Match(tok, "throw|return"))
                 exitOnEndOfStatement = true;
-            else if (!open && tok->varId() == var->declarationId())
+            else if (_tokenizer->isCPP() && tok->str() == "try") {
+                open = false;
+                break;
+            } else if (!open && tok->varId() == var->declarationId())
                 va_list_usedBeforeStartedError(tok, var->name());
             else if (exitOnEndOfStatement && tok->str() == ";")
                 break;

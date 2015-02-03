@@ -12,7 +12,7 @@
 		39E60EBB1270DE3A00AC0D02 /* checkclass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E911270DE3A00AC0D02 /* checkclass.cpp */; };
 		39E60EBC1270DE3A00AC0D02 /* checkexceptionsafety.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E931270DE3A00AC0D02 /* checkexceptionsafety.cpp */; };
 		39E60EBD1270DE3A00AC0D02 /* checkmemoryleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E951270DE3A00AC0D02 /* checkmemoryleak.cpp */; };
-		39E60EBE1270DE3A00AC0D02 /* checkobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E971270DE3A00AC0D02 /* checkobsoletefunctions.cpp */; };
+		39E60EBE1270DE3A00AC0D02 /* checkobsolescentfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E971270DE3A00AC0D02 /* checkobsolescentfunctions.cpp */; };
 		39E60EBF1270DE3A00AC0D02 /* checkother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E991270DE3A00AC0D02 /* checkother.cpp */; };
 		39E60EC01270DE3A00AC0D02 /* checkpostfixoperator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9B1270DE3A00AC0D02 /* checkpostfixoperator.cpp */; };
 		39E60EC11270DE3A00AC0D02 /* checkstl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9D1270DE3A00AC0D02 /* checkstl.cpp */; };
@@ -81,7 +81,7 @@
 		F4C348821825692B00521683 /* testmemleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9E17AB8511006C06AF /* testmemleak.cpp */; };
 		F4C348831825692B00521683 /* testnonreentrantfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDD9F17AB8511006C06AF /* testnonreentrantfunctions.cpp */; };
 		F4C348841825692B00521683 /* testnullpointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA017AB8511006C06AF /* testnullpointer.cpp */; };
-		F4C348851825692B00521683 /* testobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA117AB8511006C06AF /* testobsoletefunctions.cpp */; };
+		F4C348851825692B00521683 /* testobsolescentfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA117AB8511006C06AF /* testobsolescentfunctions.cpp */; };
 		F4C348861825692B00521683 /* testoptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA217AB8511006C06AF /* testoptions.cpp */; };
 		F4C348871825692B00521683 /* testother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA317AB8511006C06AF /* testother.cpp */; };
 		F4C348881825692B00521683 /* testpath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDA417AB8511006C06AF /* testpath.cpp */; };
@@ -118,7 +118,7 @@
 		F4C348A718256A4500521683 /* checkmemoryleak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E951270DE3A00AC0D02 /* checkmemoryleak.cpp */; };
 		F4C348A818256A4500521683 /* checknonreentrantfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC3177F093300CD5A40 /* checknonreentrantfunctions.cpp */; };
 		F4C348A918256A4500521683 /* checknullpointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC5177F093300CD5A40 /* checknullpointer.cpp */; };
-		F4C348AA18256A4500521683 /* checkobsoletefunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E971270DE3A00AC0D02 /* checkobsoletefunctions.cpp */; };
+		F4C348AA18256A4500521683 /* checkobsolescentfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E971270DE3A00AC0D02 /* checkobsolescentfunctions.cpp */; };
 		F4C348AB18256A4500521683 /* checkother.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E991270DE3A00AC0D02 /* checkother.cpp */; };
 		F4C348AC18256A4500521683 /* checkpostfixoperator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E9B1270DE3A00AC0D02 /* checkpostfixoperator.cpp */; };
 		F4C348AD18256A4500521683 /* checksizeof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DC7177F093300CD5A40 /* checksizeof.cpp */; };
@@ -180,8 +180,8 @@
 		39E60E941270DE3A00AC0D02 /* checkexceptionsafety.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkexceptionsafety.h; path = lib/checkexceptionsafety.h; sourceTree = "<group>"; };
 		39E60E951270DE3A00AC0D02 /* checkmemoryleak.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkmemoryleak.cpp; path = lib/checkmemoryleak.cpp; sourceTree = "<group>"; };
 		39E60E961270DE3A00AC0D02 /* checkmemoryleak.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkmemoryleak.h; path = lib/checkmemoryleak.h; sourceTree = "<group>"; };
-		39E60E971270DE3A00AC0D02 /* checkobsoletefunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkobsoletefunctions.cpp; path = lib/checkobsoletefunctions.cpp; sourceTree = "<group>"; };
-		39E60E981270DE3A00AC0D02 /* checkobsoletefunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkobsoletefunctions.h; path = lib/checkobsoletefunctions.h; sourceTree = "<group>"; };
+		39E60E971270DE3A00AC0D02 /* checkobsolescentfunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkobsolescentfunctions.cpp; path = lib/checkobsolescentfunctions.cpp; sourceTree = "<group>"; };
+		39E60E981270DE3A00AC0D02 /* checkobsolescentfunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkobsolescentfunctions.h; path = lib/checkobsolescentfunctions.h; sourceTree = "<group>"; };
 		39E60E991270DE3A00AC0D02 /* checkother.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkother.cpp; path = lib/checkother.cpp; sourceTree = "<group>"; };
 		39E60E9A1270DE3A00AC0D02 /* checkother.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkother.h; path = lib/checkother.h; sourceTree = "<group>"; };
 		39E60E9B1270DE3A00AC0D02 /* checkpostfixoperator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkpostfixoperator.cpp; path = lib/checkpostfixoperator.cpp; sourceTree = "<group>"; };
@@ -287,7 +287,7 @@
 		F45BDD9E17AB8511006C06AF /* testmemleak.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testmemleak.cpp; path = test/testmemleak.cpp; sourceTree = "<group>"; };
 		F45BDD9F17AB8511006C06AF /* testnonreentrantfunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testnonreentrantfunctions.cpp; path = test/testnonreentrantfunctions.cpp; sourceTree = "<group>"; };
 		F45BDDA017AB8511006C06AF /* testnullpointer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testnullpointer.cpp; path = test/testnullpointer.cpp; sourceTree = "<group>"; };
-		F45BDDA117AB8511006C06AF /* testobsoletefunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testobsoletefunctions.cpp; path = test/testobsoletefunctions.cpp; sourceTree = "<group>"; };
+		F45BDDA117AB8511006C06AF /* testobsolescentfunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testobsolescentfunctions.cpp; path = test/testobsolescentfunctions.cpp; sourceTree = "<group>"; };
 		F45BDDA217AB8511006C06AF /* testoptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testoptions.cpp; path = test/testoptions.cpp; sourceTree = "<group>"; };
 		F45BDDA317AB8511006C06AF /* testother.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testother.cpp; path = test/testother.cpp; sourceTree = "<group>"; };
 		F45BDDA417AB8511006C06AF /* testpath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testpath.cpp; path = test/testpath.cpp; sourceTree = "<group>"; };
@@ -426,8 +426,8 @@
 				F4043DC4177F093300CD5A40 /* checknonreentrantfunctions.h */,
 				F4043DC5177F093300CD5A40 /* checknullpointer.cpp */,
 				F4043DC6177F093300CD5A40 /* checknullpointer.h */,
-				39E60E971270DE3A00AC0D02 /* checkobsoletefunctions.cpp */,
-				39E60E981270DE3A00AC0D02 /* checkobsoletefunctions.h */,
+				39E60E971270DE3A00AC0D02 /* checkobsolescentfunctions.cpp */,
+				39E60E981270DE3A00AC0D02 /* checkobsolescentfunctions.h */,
 				39E60E991270DE3A00AC0D02 /* checkother.cpp */,
 				39E60E9A1270DE3A00AC0D02 /* checkother.h */,
 				39E60E9B1270DE3A00AC0D02 /* checkpostfixoperator.cpp */,
@@ -515,7 +515,7 @@
 				F45BDD9E17AB8511006C06AF /* testmemleak.cpp */,
 				F45BDD9F17AB8511006C06AF /* testnonreentrantfunctions.cpp */,
 				F45BDDA017AB8511006C06AF /* testnullpointer.cpp */,
-				F45BDDA117AB8511006C06AF /* testobsoletefunctions.cpp */,
+				F45BDDA117AB8511006C06AF /* testobsolescentfunctions.cpp */,
 				F45BDDA217AB8511006C06AF /* testoptions.cpp */,
 				F45BDDA317AB8511006C06AF /* testother.cpp */,
 				F45BDDA417AB8511006C06AF /* testpath.cpp */,
@@ -649,7 +649,7 @@
 				F4CDD6981880888F006CF685 /* valueflow.cpp in Sources */,
 				39E60EBC1270DE3A00AC0D02 /* checkexceptionsafety.cpp in Sources */,
 				39E60EBD1270DE3A00AC0D02 /* checkmemoryleak.cpp in Sources */,
-				39E60EBE1270DE3A00AC0D02 /* checkobsoletefunctions.cpp in Sources */,
+				39E60EBE1270DE3A00AC0D02 /* checkobsolescentfunctions.cpp in Sources */,
 				39E60EBF1270DE3A00AC0D02 /* checkother.cpp in Sources */,
 				39E60EC01270DE3A00AC0D02 /* checkpostfixoperator.cpp in Sources */,
 				39E60EC11270DE3A00AC0D02 /* checkstl.cpp in Sources */,
@@ -715,7 +715,7 @@
 				F4C348A718256A4500521683 /* checkmemoryleak.cpp in Sources */,
 				F4C348A818256A4500521683 /* checknonreentrantfunctions.cpp in Sources */,
 				F4C348A918256A4500521683 /* checknullpointer.cpp in Sources */,
-				F4C348AA18256A4500521683 /* checkobsoletefunctions.cpp in Sources */,
+				F4C348AA18256A4500521683 /* checkobsolescentfunctions.cpp in Sources */,
 				F4C348AB18256A4500521683 /* checkother.cpp in Sources */,
 				F4C348AC18256A4500521683 /* checkpostfixoperator.cpp in Sources */,
 				F4C348AD18256A4500521683 /* checksizeof.cpp in Sources */,
@@ -761,7 +761,7 @@
 				F4C348821825692B00521683 /* testmemleak.cpp in Sources */,
 				F4C348831825692B00521683 /* testnonreentrantfunctions.cpp in Sources */,
 				F4C348841825692B00521683 /* testnullpointer.cpp in Sources */,
-				F4C348851825692B00521683 /* testobsoletefunctions.cpp in Sources */,
+				F4C348851825692B00521683 /* testobsolescentfunctions.cpp in Sources */,
 				F4C348861825692B00521683 /* testoptions.cpp in Sources */,
 				F4C348871825692B00521683 /* testother.cpp in Sources */,
 				F4C348881825692B00521683 /* testpath.cpp in Sources */,

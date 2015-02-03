@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -245,9 +245,16 @@ void TestFixture::run(const std::string &str)
         run();
 }
 
-void TestFixture::warn(const char msg[])
+void TestFixture::warn(const char msg[]) const
 {
     warnings << "Warning: " << currentTest << " " << msg << std::endl;
+}
+
+void TestFixture::warnUnsimplified(const std::string& unsimplified, const std::string& simplified)
+{
+    warn(("Unsimplified code in test case. It looks like this test "
+          "should either be cleaned up or moved to TestTokenizer or "
+          "TestSimplifyTokens instead.\nactual=" + unsimplified + "\nexpected=" + simplified).c_str());
 }
 
 void TestFixture::processOptions(const options& args)

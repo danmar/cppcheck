@@ -1,0 +1,324 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<start>
+<element name="def">
+  <optional>
+    <attribute name="format">
+      <value>1</value>
+    </attribute>
+  </optional>
+  <zeroOrMore>
+    <choice>
+      <element name="define">
+        <attribute name="name"><text/></attribute>
+        <attribute name="value"><text/></attribute>
+      </element>
+
+      <element name="memory">
+        <zeroOrMore>
+          <choice>
+            <element name="dealloc"><ref name="DATA-NAME"/></element>
+            <element name="alloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="use"><ref name="DATA-NAME"/></element>
+          </choice>
+        </zeroOrMore>
+      </element>
+
+      <element name="resource">
+        <zeroOrMore>
+          <choice>
+            <element name="dealloc"><ref name="DATA-NAME"/></element>
+            <element name="alloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="use"><ref name="DATA-NAME"/></element>
+          </choice>
+        </zeroOrMore>
+      </element>
+
+      <element name="function">
+        <attribute name="name">
+          <ref name="DATA-NAME"/>
+        </attribute>
+
+        <zeroOrMore>
+          <choice>
+            <element name="noreturn"><ref name="DATA-BOOL"/></element>
+            <element name="pure"><empty/></element>
+            <element name="ignorefunction"><ref name="DATA-BOOL"/></element>
+            <element name="leak-ignore"><empty/></element>
+            <element name="use-retval"><empty/></element>
+            <element name="formatstr">
+              <optional>
+                <attribute name="scan"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="secure"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <empty/>
+            </element>
+            <element name="arg">
+              <attribute name="nr">
+                <choice>
+                  <ref name="ARGNO"/>
+                  <value>any</value>
+                </choice>
+              </attribute>
+              <zeroOrMore>
+                <choice>
+                  <element name="formatstr"><empty/></element>
+                  <element name="strz"><empty/></element>
+                  <element name="not-bool"><empty/></element>
+                  <element name="not-null"><empty/></element>
+                  <element name="not-uninit"><empty/></element>
+                  <element name="valid">
+                    <data type="string">
+                      <param name="pattern">([-]?[0-9]+[,])*([-]?[0-9]+)?:([-]?[0-9]+)?</param>
+                    </data>
+                  </element>
+                  <element name="minsize">
+                    <attribute name="type">
+                      <choice>
+                        <value>strlen</value>
+                        <value>argvalue</value>
+                        <value>sizeof</value>
+                        <value>mul</value>
+                      </choice>
+                    </attribute>
+                    <attribute name="arg">
+                      <ref name="ARGNO"/>
+                    </attribute>
+                    <optional>
+                      <attribute name="arg2">
+                        <ref name="ARGNO"/>
+                      </attribute>
+                    </optional>
+                  </element>
+                </choice>
+              </zeroOrMore>
+            </element>
+          </choice>
+        </zeroOrMore>
+      </element>
+
+      <element name="markup">
+        <attribute name="ext">
+          <data type="string">
+            <param name="pattern">[.][a-z]+</param>
+          </data>
+        </attribute>
+        <attribute name="aftercode"><ref name="DATA-BOOL"/></attribute>
+        <attribute name="reporterrors"><ref name="DATA-BOOL"/></attribute>
+
+        <optional>
+          <element name="keywords">
+            <zeroOrMore>
+              <element name="keyword">
+                <attribute name="name"><ref name="DATA-NAME"/></attribute>
+              </element>
+            </zeroOrMore>
+          </element>
+        </optional>
+
+        <zeroOrMore>
+          <element name="codeblocks">
+            <zeroOrMore>
+              <element name="block">
+                <attribute name="name"><ref name="DATA-NAME"/></attribute>
+              </element>
+            </zeroOrMore>
+            <optional>
+              <element name="structure">
+                <attribute name="offset"><data type="integer"/></attribute>
+                <attribute name="start"><text/></attribute>
+                <attribute name="end"><text/></attribute>
+              </element>
+            </optional>
+          </element>
+        </zeroOrMore>
+
+        <optional>
+          <element name="exported">
+            <zeroOrMore>
+              <element name="exporter">
+                <attribute name="prefix"><ref name="DATA-NAME"/></attribute>
+                <zeroOrMore>
+                  <choice>
+                    <element name="prefix"><ref name="DATA-NAME"/></element>
+                    <element name="suffix"><ref name="DATA-NAME"/></element>
+                  </choice>
+                </zeroOrMore>
+              </element>
+            </zeroOrMore>
+          </element>
+        </optional>
+
+        <optional>
+          <element name="imported">
+            <zeroOrMore>
+              <element name="importer"><ref name="DATA-NAME"/></element>
+            </zeroOrMore>
+          </element>
+        </optional>
+      </element>
+
+      <element name="reflection">
+        <zeroOrMore>
+          <element name="call">
+            <attribute name="arg"><ref name="ARGNO"/></attribute>
+            <ref name="DATA-NAME"/>
+          </element>
+        </zeroOrMore>
+      </element>
+
+      <element name="container">
+        <attribute name="id"><text/></attribute>
+        <optional>
+          <attribute name="endPattern"><text/></attribute>
+        </optional>
+        <optional>
+          <attribute name="startPattern"><text/></attribute>
+        </optional>
+        <optional>
+          <attribute name="inherits"><text/></attribute>
+        </optional>
+        <zeroOrMore>
+          <choice>
+            <element name="type">
+              <choice>
+                <attribute name="templateParameter"><data type="integer"/></attribute>
+                <attribute name="string">
+                  <value>std-like</value>
+                </attribute>
+              </choice>
+              <empty/>
+            </element>
+            <element name="size">
+              <optional>
+                <attribute name="templateParameter"><data type="integer"/></attribute>
+              </optional>
+              <zeroOrMore>
+                <element name="function">
+                  <attribute name="name"><ref name="DATA-NAME"/></attribute>
+                  <choice>
+                    <attribute name="action">
+                      <choice>
+                        <value>resize</value>
+                        <value>clear</value>
+                        <value>push</value>
+                        <value>pop</value>
+                        <value>find</value>
+                      </choice>
+                    </attribute>
+                    <attribute name="yields">
+                      <choice>
+                        <value>at_index</value>
+                        <value>item</value>
+                        <value>buffer</value>
+                        <value>buffer-nt</value>
+                        <value>start-iterator</value>
+                        <value>end-iterator</value>
+                        <value>size</value>
+                        <value>empty</value>
+                      </choice>
+                    </attribute>
+                  </choice>
+                  <empty/>
+                </element>
+              </zeroOrMore>
+            </element>
+            <element name="access">
+              <optional>
+                <attribute name="indexOperator">
+                  <value>array-like</value>
+                </attribute>
+              </optional>
+              <zeroOrMore>
+                <element name="function">
+                  <attribute name="name"><ref name="DATA-NAME"/></attribute>
+                  <choice>
+                    <attribute name="action"><text/></attribute>
+                    <attribute name="yields"><text/></attribute>
+                  </choice>
+                  <empty/>
+                </element>
+              </zeroOrMore>
+            </element>
+          </choice>
+        </zeroOrMore>
+      </element>
+
+      <element name="podtype">
+        <attribute name="name"><ref name="DATA-NAME"/></attribute>
+        <optional>
+          <attribute name="size">
+            <choice>
+              <value>1</value>
+              <value>2</value>
+              <value>4</value>
+              <value>8</value>
+            </choice>
+          </attribute>
+        </optional>
+        <optional>
+          <attribute name="sign">
+            <choice>
+              <value>s</value>
+              <value>u</value>
+            </choice>
+          </attribute>
+        </optional>
+        <empty/>
+      </element>
+
+      <element name="platformtype">
+        <attribute name="name"><ref name="DATA-NAME"/></attribute>
+        <attribute name="value"><ref name="DATA-NAME"/></attribute>
+        <oneOrMore>
+          <choice>
+            <element name="unsigned"><empty/></element>
+            <element name="long"><empty/></element>
+            <element name="pointer"><empty/></element>
+            <element name="const_ptr"><empty/></element>
+            <element name="ptr_ptr"><empty/></element>
+            <element name="platform">
+              <attribute name="type"><ref name="DATA-NAME"/></attribute>
+              <empty/>
+            </element>
+          </choice>
+        </oneOrMore>
+      </element>
+
+    </choice>
+  </zeroOrMore>
+</element>
+</start>
+
+  <define name="ARGNO">
+    <data type="integer">
+      <param name="minInclusive">1</param>
+      <param name="maxInclusive">20</param>
+    </data>
+  </define>
+
+  <define name="DATA-BOOL">
+    <choice>
+      <value>true</value>
+      <value>false</value>
+    </choice>
+  </define>
+
+  <define name="DATA-NAME">
+    <data type="string">
+      <param name="pattern">[a-zA-Z_][a-zA-Z_0-9]*</param>
+    </data>
+  </define>
+</grammar>

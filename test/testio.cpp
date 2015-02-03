@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,12 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "windows.cfg");
+
         TEST_CASE(coutCerrMisusage);
 
         TEST_CASE(wrongMode_simple);
@@ -54,21 +58,22 @@ private:
         TEST_CASE(testMicrosoftCStringFormatArguments); // ticket #4920
         TEST_CASE(testMicrosoftSecurePrintfArgument);
         TEST_CASE(testMicrosoftSecureScanfArgument);
+
+        TEST_CASE(testTernary); // ticket #6182
+        TEST_CASE(testUnsignedConst); // ticket #6132
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
+        settings.clearEnabled();
         settings.addEnabled("warning");
         settings.addEnabled("style");
         if (portability)
             settings.addEnabled("portability");
         settings.inconclusive = inconclusive;
         settings.platform(platform);
-
-        settings.library = _lib;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -549,6 +554,54 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
+
+        // #6452 - member functions
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    void seek(long offset, Position p);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    seek(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    unknown(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void known(int);\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(aboutToOverwrite.data(), 1, bufferLength, d->file);\n"
+              "    known(writePosition);\n"
+              "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
+
+        check("class FileStream {\n"
+              "    void insert(const ByteVector &data, ulong start);\n"
+              "    FileStreamPrivate *d;\n"
+              "};\n"
+              "void known(int);\n"
+              "void FileStream::insert(const ByteVector &data, ulong start) {\n"
+              "    int bytesRead = fread(X::data(), 1, bufferLength, d->file);\n"
+              "    known(writePosition);\n"
+              "    fwrite(X::data(), sizeof(char), buffer.size(), d->file);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout.str());
     }
 
     void seekOnAppendedFile() {
@@ -581,13 +634,30 @@ private:
         check("void foo()\n"
               "{\n"
               "    fflush(stdin);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) fflush() called on input stream 'stdin' results in undefined behaviour.\n", errout.str());
+              "}", false, true);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) fflush() called on input stream 'stdin' may result in undefined behaviour on non-linux systems.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    fflush(stdout);\n"
-              "}");
+              "}", false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(path, \"r\");\n"
+              "    fflush(f);\n"
+              "}", false, true);
+        ASSERT_EQUALS("[test.cpp:3]: (portability) fflush() called on input stream 'f' may result in undefined behaviour on non-linux systems.\n", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    f = fopen(path, \"w\");\n"
+              "    fflush(f);\n"
+              "}", false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(FILE*& f) {\n"
+              "    fflush(f);\n"
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -595,8 +665,6 @@ private:
 
 
     void testScanf1() {
-        LOAD_LIB("std.cfg");
-
         check("void foo() {\n"
               "    int a, b;\n"
               "    FILE *file = fopen(\"test\", \"r\");\n"
@@ -615,8 +683,6 @@ private:
     }
 
     void testScanf2() {
-        LOAD_LIB("std.cfg");
-
         check("void foo() {\n"
               "    scanf(\"%5s\", bar);\n" // Width specifier given
               "    scanf(\"%5[^~]\", bar);\n" // Width specifier given
@@ -643,8 +709,6 @@ private:
     }
 
     void testScanf4() { // ticket #2553
-        LOAD_LIB("std.cfg");
-
         check("void f()\n"
               "{\n"
               "  char str [8];\n"
@@ -657,8 +721,6 @@ private:
 
 
     void testScanfArgument() {
-        LOAD_LIB("std.cfg");
-
         check("void foo() {\n"
               "    scanf(\"%1d\", &foo);\n"
               "    sscanf(bar, \"%1d\", &foo);\n"
@@ -2259,7 +2321,6 @@ private:
     }
 
     void testPrintfArgument() {
-        LOAD_LIB("std.cfg");
         check("void foo() {\n"
               "    printf(\"%u\");\n"
               "    printf(\"%u%s\", 123);\n"
@@ -3088,11 +3149,22 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'std::string'.\n"
                       "[test.cpp:4]: (warning) %s in format string (no. 2) requires 'char *' but the argument type is 'int'.\n", errout.str());
 
+        check("template <class T, size_t S>\n"
+              "struct Array {\n"
+              "    T data[S];\n"
+              "    T & operator [] (size_t i) { return data[i]; }\n"
+              "};\n"
+              "void foo() {\n"
+              "    Array<int, 10> array1;\n"
+              "    Array<float, 10> array2;\n"
+              "    printf(\"%u %u\", array1[0], array2[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.\n"
+                      "[test.cpp:9]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'float'.\n", errout.str());
+
     }
 
     void testPosixPrintfScanfParameterPosition() { // #4900  - No support for parameters in format strings
-        LOAD_LIB("std.cfg");
-
         check("void foo() {"
               "  int bar;"
               "  printf(\"%1$d\", 1);"
@@ -3117,9 +3189,6 @@ private:
 
 
     void testMicrosoftPrintfArgument() {
-        LOAD_LIB("std.cfg");
-        LOAD_LIB("windows.cfg");
-
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -3206,12 +3275,21 @@ private:
               "}\n", false, false, Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(UINT32 a, ::UINT32 b, Fred::UINT32 c) {\n"
+              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "};\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
+                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout.str());
+
+        check("void foo(LPCVOID a, ::LPCVOID b, Fred::LPCVOID c) {\n"
+              "    printf(\"%d %d %d\n\", a, b, c);\n"
+              "};\n", false, false, Settings::Win32A);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
+                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout.str());
+
     }
 
     void testMicrosoftScanfArgument() {
-        LOAD_LIB("std.cfg");
-        LOAD_LIB("windows.cfg");
-
         check("void foo() {\n"
               "    size_t s;\n"
               "    ptrdiff_t p;\n"
@@ -3316,9 +3394,6 @@ private:
     }
 
     void testMicrosoftSecurePrintfArgument() {
-        LOAD_LIB("std.cfg");
-        LOAD_LIB("windows.cfg");
-
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -3509,8 +3584,6 @@ private:
     }
 
     void testMicrosoftSecureScanfArgument() {
-        LOAD_LIB("windows.cfg");
-
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
@@ -3641,6 +3714,22 @@ private:
               "}\n", false, false, Settings::Win32W);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void testTernary() {  // ticket #6182
+        check("void test(const std::string &val) {\n"
+              "    printf(\"%s\n\", val.empty() ? \"I like to eat bananas\" : val.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testUnsignedConst() {  // ticket #6321
+        check("void test() {\n"
+              "    unsigned const x = 5;\n"
+              "    printf(\"%u\", x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestIO)

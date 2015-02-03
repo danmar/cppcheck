@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,8 +139,14 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
     for (; tok; tok = tok->next()) {
         // might be a noreturn function..
         if (Token::simpleMatch(tok->tokAt(-2), ") ; }") &&
-            Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %var% (") &&
+            Token::Match(tok->linkAt(-2)->tokAt(-2), "[;{}] %name% (") &&
             tok->linkAt(-2)->previous()->varId() == 0) {
+            ExecutionPath::bailOut(checks);
+            return;
+        }
+
+        // ({ is not handled well
+        if (Token::simpleMatch(tok, "( {")) {
             ExecutionPath::bailOut(checks);
             return;
         }
@@ -262,7 +268,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
                         // End } for the if block
                         const Token *tok4 = tok3->link();
-                        if (Token::Match(tok3, "{ %var% =") &&
+                        if (Token::Match(tok3, "{ %name% =") &&
                             Token::simpleMatch(tok4, "} }") &&
                             Token::simpleMatch(tok4->tokAt(-2), "break ;")) {
                             // Is there a assignment and then a break?
@@ -305,7 +311,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // bailout used variables in '; FOREACH ( .. ) { .. }'
-        else if (tok->str() != "if" && Token::Match(tok->previous(), "[;{}] %var% (")) {
+        else if (tok->str() != "if" && Token::Match(tok->previous(), "[;{}] %name% (")) {
             // goto {
             const Token *tok2 = tok->next()->link()->next();
             if (tok2 && tok2->str() == "{") {
@@ -347,7 +353,7 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
 
         if (Token::simpleMatch(tok, "= {")) {
             // GCC struct initialization.. bail out
-            if (Token::Match(tok->tokAt(2), ". %var% =")) {
+            if (Token::Match(tok->tokAt(2), ". %name% =")) {
                 ExecutionPath::bailOut(checks);
                 return;
             }
@@ -366,13 +372,13 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
         }
 
         // ; { ... }
-        if (tok && Token::Match(tok->previous(), "[;{}:] {")) {
+        if (Token::Match(tok->previous(), "[;{}:] {")) {
             ExecutionPath::checkScope(tok->next(), checks);
             tok = tok->link();
             continue;
         }
 
-        if (tok && tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
+        if (tok->str() == "if" && tok->next() && tok->next()->str() == "(") {
             // what variable ids should the numberOfIf be counted for?
             std::set<unsigned int> countif;
 
@@ -449,15 +455,9 @@ void ExecutionPath::checkScope(const Token *tok, std::list<ExecutionPath *> &che
             }
         }
 
-
-        {
-            tok = check->parse(*tok, checks);
-            if (checks.empty())
-                return;
-        }
-
-        if (!tok)
-            break;
+        tok = check->parse(*tok, checks);
+        if (!tok || checks.empty())
+            return;
 
         // return/throw ends all execution paths
         if (tok->str() == "return" ||

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ bool MathLib::isFloat(const std::string &s)
     if (s.empty())
         return false;
     enum State {
-        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F
+        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F, L
     } state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -210,6 +210,10 @@ bool MathLib::isFloat(const std::string &s)
         case TRAILING_DECIMAL:
             if (*it=='e' || *it=='E')
                 state=E;
+            else if (*it=='f' || *it=='F')
+                state=F;
+            else if (*it=='l' || *it=='L')
+                state=L;
             else if (std::isdigit(*it))
                 state=BASE_DIGITS2;
             else
@@ -220,6 +224,8 @@ bool MathLib::isFloat(const std::string &s)
                 state=E;
             else if (*it=='f' || *it=='F')
                 state=F;
+            else if (*it=='l' || *it=='L')
+                state=L;
             else if (!std::isdigit(*it))
                 return false;
             break;
@@ -240,14 +246,18 @@ bool MathLib::isFloat(const std::string &s)
         case MANTISSA_DIGITS:
             if (*it=='f' || *it=='F')
                 state=F;
+            else if (*it=='l' || *it=='L')
+                state=L;
             else if (!std::isdigit(*it))
                 return false;
             break;
         case F:
             return false;
+        case L:
+            return false;
         }
     }
-    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==F);
+    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==F || state==L);
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -358,9 +368,7 @@ bool MathLib::isHex(const std::string& s)
 
 bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_iterator end)
 {
-    enum Status {
-        START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU
-    } state = START;
+    enum {START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64} state = START;
     for (; it != end; ++it) {
         switch (state) {
         case START:
@@ -368,6 +376,8 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
                 state = SUFFIX_U;
             else if (*it == 'l' || *it == 'L')
                 state = SUFFIX_L;
+            else if (*it == 'i')
+                state = SUFFIX_I;
             else
                 return false;
             break;
@@ -399,13 +409,30 @@ bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_i
             else
                 return false;
             break;
+        case SUFFIX_I:
+            if (*it == '6')
+                state = SUFFIX_I6;
+            else
+                return false;
+            break;
+        case SUFFIX_I6:
+            if (*it == '4')
+                state = SUFFIX_I64;
+            else
+                return false;
+            break;
         default:
             return false;
         }
     }
-    return (state == SUFFIX_U)  || (state == SUFFIX_L)
-           || (state == SUFFIX_UL) || (state == SUFFIX_LU)   || (state == SUFFIX_LL)
-           || (state == SUFFIX_ULL) || (state == SUFFIX_LLU);
+    return ((state == SUFFIX_U)   ||
+            (state == SUFFIX_L)   ||
+            (state == SUFFIX_UL)  ||
+            (state == SUFFIX_LU)  ||
+            (state == SUFFIX_LL)  ||
+            (state == SUFFIX_ULL) ||
+            (state == SUFFIX_LLU) ||
+            (state == SUFFIX_I64));
 }
 
 /*! \brief Does the string represent a binary number?
@@ -464,7 +491,7 @@ bool MathLib::isBin(const std::string& s)
 bool MathLib::isDec(const std::string & s)
 {
     enum Status {
-        START, PLUSMINUS, DIGIT, SUFFIX
+        START, PLUSMINUS, DIGIT
     } state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -488,8 +515,6 @@ bool MathLib::isDec(const std::string & s)
             else
                 return isValidSuffix(it,s.end());
             break;
-        case SUFFIX:
-            break;
         }
     }
     return state == DIGIT;
@@ -497,7 +522,7 @@ bool MathLib::isDec(const std::string & s)
 
 bool MathLib::isInt(const std::string & s)
 {
-    return isDec(s) || isHex(s) || isOct(s);
+    return isDec(s) || isHex(s) || isOct(s) || isBin(s);
 }
 
 std::string MathLib::add(const std::string & first, const std::string & second)

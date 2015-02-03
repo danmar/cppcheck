@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,12 +288,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_relativePaths = true;
             if (argv[i][argv[i][3]=='='?4:17] != 0) {
                 std::string paths = argv[i]+(argv[i][3]=='='?4:17);
-                std::string::size_type pos;
-                do {
-                    pos = paths.find(';');
-                    _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                    paths.erase(0, pos+1);
-                } while (pos != std::string::npos);
+                for (;;) {
+                    std::string::size_type pos = paths.find(';');
+                    if (pos == std::string::npos) {
+                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths));
+                        break;
+                    } else {
+                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        paths.erase(0, pos + 1);
+                    }
+                }
             } else {
                 PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
                 return false;
@@ -508,37 +512,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --library
         else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-            Library::Error err = _settings->library.load(argv[0], argv[i]+10);
-            std::string errmsg;
-            switch (err.errorcode) {
-            case Library::OK:
-                break;
-            case Library::FILE_NOT_FOUND:
-                errmsg = "File not found";
-                break;
-            case Library::BAD_XML:
-                errmsg = "Bad XML";
-                break;
-            case Library::BAD_ELEMENT:
-                errmsg = "Unexpected element";
-                break;
-            case Library::MISSING_ATTRIBUTE:
-                errmsg = "Missing attribute";
-                break;
-            case Library::BAD_ATTRIBUTE:
-                errmsg = "Bad attribute";
-                break;
-            case Library::BAD_ATTRIBUTE_VALUE:
-                errmsg = "Bad attribute value";
-                break;
-            }
-            if (!err.reason.empty())
-                errmsg += " '" + err.reason + "'";
-
-            if (!errmsg.empty()) {
-                PrintMessage("cppcheck: Failed to load library configuration file '" + std::string(argv[i]+10) + "'. " + errmsg);
+            if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
                 return false;
-            }
         }
 
         // Report progress
@@ -654,7 +629,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const std::string& name((*it)->name());
                 const std::string info((*it)->classInfo());
                 if (!name.empty() && !info.empty())
-                    doc << "===" << name << "===\n"
+                    doc << "## " << name << " ##\n"
                         << info << "\n";
             }
 
@@ -677,7 +652,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else {
                 std::string message("cppcheck: error: unrecognized showtime mode: \"");
                 message += showtimeMode;
-                message +=  "\".";
+                message +=  "\". Supported modes: file, summary, top5.";
                 PrintMessage(message);
                 return false;
             }

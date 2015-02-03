@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,6 +93,11 @@ public:
     void deleteNext(unsigned long index = 1);
 
     /**
+     * Swap the contents of this token with the next token.
+     */
+    void swapWithNext();
+
+    /**
      * @return token in given index, related to this token.
      * For example index 1 would return next token, and 2
      * would return next from that one.
@@ -143,13 +148,14 @@ public:
      *
      * Possible patterns
      * - "%any%" any token
-     * - "%var%" any token which is a name or type e.g. "hello" or "int"
+     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
      * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false
      * - "%char%" Any token enclosed in &apos;-character.
      * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%str%" Any token starting with &quot;-character (C-string).
+     * - "%var%" Match with token with varId > 0
      * - "%varid%" Match with parameter varid
      * - "%op%" Any token such that isOp() returns true.
      * - "%cop%" Any token such that isConstOp() returns true.
@@ -313,6 +319,12 @@ public:
     void isExpandedMacro(bool m) {
         setFlag(fIsExpandedMacro, m);
     }
+    bool isCast() const {
+        return getFlag(fIsCast);
+    }
+    void isCast(bool c) {
+        setFlag(fIsCast, c);
+    }
     bool isAttributeConstructor() const {
         return getFlag(fIsAttributeConstructor);
     }
@@ -349,17 +361,17 @@ public:
     void isAttributeConst(bool value) {
         setFlag(fIsAttributeConst, value);
     }
+    bool isAttributeNoreturn() const {
+        return getFlag(fIsAttributeNoreturn);
+    }
+    void isAttributeNoreturn(bool value) {
+        setFlag(fIsAttributeNoreturn, value);
+    }
     bool isAttributeNothrow() const {
         return getFlag(fIsAttributeNothrow);
     }
     void isAttributeNothrow(bool value) {
         setFlag(fIsAttributeNothrow, value);
-    }
-    bool isDeclspecNothrow() const {
-        return getFlag(fIsDeclspecNothrow);
-    }
-    void isDeclspecNothrow(bool value) {
-        setFlag(fIsDeclspecNothrow, value);
     }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
@@ -388,6 +400,7 @@ public:
      *
      * @param needle Current token
      * @param haystack e.g. "one|two" or "|one|two"
+     * @param varid optional varid of token
      * @return 1 if needle is found from the haystack
      *         0 if needle was empty string
      *        -1 if needle was not found
@@ -481,8 +494,9 @@ public:
      * @param os The result is shifted into that output stream
      * @param varid Print varids. (Style: "varname@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
+     * @param macro Prints $ in front of the token if it was expanded from a macro.
      */
-    void stringify(std::ostream& os, bool varid, bool attributes) const;
+    void stringify(std::ostream& os, bool varid, bool attributes, bool macro) const;
 
     /**
      * Stringify a list of token, from current instance on.
@@ -631,6 +645,13 @@ public:
     Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
+    * @return the first token of the next template argument. Does only work on template argument
+    * lists. Requires that Tokenizer::createLinks2() has been called before.
+    * Returns 0, if there is no next argument.
+    */
+    Token* nextTemplateArgument() const;
+
+    /**
      * Returns the closing bracket of opening '<'. Should only be used if link()
      * is unavailable.
      * @return closing '>', ')', ']' or '}'. if no closing bracket is found, NULL is returned
@@ -751,14 +772,15 @@ private:
         fIsLong                 = (1 << 3),
         fIsStandardType         = (1 << 4),
         fIsExpandedMacro        = (1 << 5),
-        fIsAttributeConstructor = (1 << 6),  // __attribute__((constructor)) __attribute__((constructor(priority)))
-        fIsAttributeDestructor  = (1 << 7),  // __attribute__((destructor))  __attribute__((destructor(priority)))
-        fIsAttributeUnused      = (1 << 8),  // __attribute__((unused))
-        fIsAttributePure        = (1 << 9),  // __attribute__((pure))
-        fIsAttributeConst       = (1 << 10), // __attribute__((const))
-        fIsAttributeNothrow     = (1 << 11), // __attribute__((nothrow))
-        fIsDeclspecNothrow      = (1 << 12), // __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 13)  // __attribute__((used))
+        fIsCast                 = (1 << 6),
+        fIsAttributeConstructor = (1 << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
+        fIsAttributeDestructor  = (1 << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
+        fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
+        fIsAttributePure        = (1 << 10), // __attribute__((pure))
+        fIsAttributeConst       = (1 << 11), // __attribute__((const))
+        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
+        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 14)  // __attribute__((used))
     };
 
     unsigned int _flags;

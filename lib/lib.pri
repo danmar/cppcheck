@@ -22,12 +22,13 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkmemoryleak.h \
            $${BASEPATH}checknonreentrantfunctions.h \
            $${BASEPATH}checknullpointer.h \
-           $${BASEPATH}checkobsoletefunctions.h \
+           $${BASEPATH}checkobsolescentfunctions.h \
            $${BASEPATH}checkother.h \
            $${BASEPATH}checkpostfixoperator.h \
            $${BASEPATH}checksizeof.h \
            $${BASEPATH}checkstl.h \
            $${BASEPATH}checkstring.h \
+           $${BASEPATH}checktype.h \
            $${BASEPATH}checkuninitvar.h \
            $${BASEPATH}checkunusedfunctions.h \
            $${BASEPATH}checkunusedvar.h \
@@ -66,12 +67,13 @@ SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}checkmemoryleak.cpp \
            $${BASEPATH}checknonreentrantfunctions.cpp \
            $${BASEPATH}checknullpointer.cpp \
-           $${BASEPATH}checkobsoletefunctions.cpp \
+           $${BASEPATH}checkobsolescentfunctions.cpp \
            $${BASEPATH}checkother.cpp \
            $${BASEPATH}checkpostfixoperator.cpp \
            $${BASEPATH}checksizeof.cpp \
            $${BASEPATH}checkstl.cpp \
            $${BASEPATH}checkstring.cpp \
+           $${BASEPATH}checktype.cpp \
            $${BASEPATH}checkuninitvar.cpp \
            $${BASEPATH}checkunusedfunctions.cpp \
            $${BASEPATH}checkunusedvar.cpp \

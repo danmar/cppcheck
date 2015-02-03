@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,4 +41,17 @@ Check::Check(const std::string &aname)
 void Check::reportError(const ErrorLogger::ErrorMessage &errmsg)
 {
     std::cout << errmsg.toXML(true, 1) << std::endl;
+}
+
+std::list<Check *> &Check::instances()
+{
+#ifdef __SVR4
+    // Under Solaris, destructors are called in wrong order which causes a segmentation fault.
+    // This fix ensures pointer remains valid and reachable until program terminates.
+    static std::list<Check *> *_instances= new std::list<Check *>;
+    return *_instances;
+#else
+    static std::list<Check *> _instances;
+    return _instances;
+#endif
 }
