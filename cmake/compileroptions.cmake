@@ -99,7 +99,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
       set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
    endif()
 
-   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -std=c++11")
+   set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -std=c++0x")
 
 endif()
 
