@@ -28,6 +28,8 @@ option(BUILD_TESTS          "Build tests"                                       
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(BUILD_UTILS_TESTS    "Build applications tests using the different modules"          OFF)
 
+option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
+
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")
 
