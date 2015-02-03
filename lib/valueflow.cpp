@@ -1645,8 +1645,9 @@ static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDataba
         for (std::size_t arg = function->minArgCount(); arg < function->argCount(); arg++) {
             const Variable* var = function->getArgumentVar(arg);
             if (var && var->hasDefault() && Token::Match(var->nameToken(), "%var% = %num%|%str% [,)]")) {
-                const_cast<Token*>(var->nameToken()->tokAt(2))->values.front().defaultArg = true;
-                valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, var->nameToken()->tokAt(2)->values);
+                const Token* valueTok = var->nameToken()->tokAt(2);
+                const_cast<Token*>(valueTok)->values.front().defaultArg = true;
+                valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, valueTok->values);
             }
         }
     }
