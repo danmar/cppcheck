@@ -609,8 +609,10 @@ Checking test.c...
     <section>
       <title>Using your own custom .cfg file</title>
 
-      <para>You can create and use your own .cfg files for your
-      projects.</para>
+      <para>You can create and use your own .cfg files for your projects. Use
+      <literal>--check-library</literal> and
+      <literal>--enable=information</literal> to get hints about what you
+      should configure.</para>
 
       <para>The command line cppcheck will try to load custom .cfg files from
       the working path - execute cppcheck from the path where the .cfg files
@@ -625,37 +627,89 @@ Checking test.c...
     <section>
       <title>Memory/resource leaks</title>
 
-      <para>Here is an example program:</para>
+      <para>Cppcheck has configurable checking for leaks.</para>
 
-      <para><programlisting>void test()
+      <section>
+        <title>alloc and dealloc</title>
+
+        <para>Here is an example program:</para>
+
+        <para><programlisting>void test()
 {
     HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
 }</programlisting></para>
 
-      <para>The code example above has a resource leak -
-      <literal>CreatePen()</literal> is a windows function that creates a pen.
-      However Cppcheck doesn't assume that return values from functions must
-      be freed. There is no error message:</para>
+        <para>The code example above has a resource leak -
+        <literal>CreatePen()</literal> is a windows function that creates a
+        pen. However Cppcheck doesn't assume that return values from functions
+        must be freed. There is no error message:</para>
 
-      <programlisting># cppcheck pen1.c
+        <programlisting># cppcheck pen1.c
 Checking pen1.c...</programlisting>
 
-      <para>If you provide a windows configuration file then
-      <literal>Cppcheck</literal> detects the bug:</para>
+        <para>If you provide a windows configuration file then
+        <literal>Cppcheck</literal> detects the bug:</para>
 
-      <programlisting># cppcheck --library=windows.cfg pen1.c
+        <programlisting># cppcheck --library=windows.cfg pen1.c
 Checking pen1.c...
 [pen1.c:3]: (error) Resource leak: pen</programlisting>
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+        <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
+        <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;resource&gt;
     &lt;alloc&gt;CreatePen&lt;/alloc&gt;
     &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
   &lt;/resource&gt;
 &lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>leak-ignore and use</title>
+
+        <para>Often the allocated pointer is passed to functions.
+        Example:</para>
+
+        <programlisting>void test()
+{
+    char *p = malloc(100);
+    dostuff(p);
+}</programlisting>
+
+        <para>If Cppcheck doesn't know what <literal>dostuff</literal> does,
+        without configuration it will assume that <literal>dostuff</literal>
+        takes care of the memory so there is no memory leak.</para>
+
+        <para>To specify that <literal>dostuff</literal> doesn't take care of
+        the memory in any way, use <literal>leak-ignore</literal>:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="dostuff"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>If instead <literal>dostuff</literal> takes care of the memory
+        then this can be configured with:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc&gt;malloc&lt;/alloc&gt;
+    &lt;dealloc&gt;free&lt;/dealloc&gt;
+    &lt;use&gt;dostuff&lt;/use&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>The <literal><literal>&lt;use&gt;</literal></literal>
+        configuration has no logical purpose. You will get the same warnings
+        without it. Use it to silence <literal>--check-library</literal>
+        information messages.</para>
+      </section>
     </section>
 
     <section>
@@ -760,6 +814,7 @@ Checking formatstring.c...</programlisting>
       <para><programlisting>&lt;?xml version="1.0"?&gt;
 &lt;def&gt;
   &lt;function name="do_something"&gt;
+    &lt;formatstr type="printf"/&gt;
     &lt;arg nr="1"&gt;
       &lt;formatstr/&gt;
     &lt;/arg&gt;
@@ -769,6 +824,18 @@ Checking formatstring.c...</programlisting>
       <programlisting>cppcheck --library=test.cfg formatstring.c 
 Checking formatstring.c...
 [formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
+
+      <para>The <literal>type</literal> attribute can be either:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>printf - format string follows the printf rules</para>
+        </listitem>
+
+        <listitem>
+          <para>scanf - format string follows the scanf rules</para>
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section>
@@ -809,6 +876,87 @@ Checking range.c...
 :0  =&gt;  all values that are less or equal to 0 are valid
 0:  =&gt;  all values that are greater or equal to 0 are valid
 0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: minsize</title>
+
+      <para>Some function arguments take a buffer. With minsize you can
+      configure the min size of the buffer (in bytes, not elements).
+      Imagine:</para>
+
+      <programlisting>void test()
+{
+    char str[5];
+    do_something(str,"12345");
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck minsize.c 
+Checking minsize.c...</programlisting>
+
+      <para>A configuration file can for instance be created that says that
+      the size of the buffer in argument 1 must be larger than the strlen of
+      argument 2.For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;minsize type="strlen" arg="2"/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report this error:</para>
+
+      <programlisting>cppcheck --library=1.cfg minsize.c
+Checking minsize.c...
+[minsize.c:4]: (error) Buffer is accessed out of bounds: str
+</programlisting>
+
+      <para>There are different types of minsizes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>strlen</term>
+
+          <listitem>
+            <para>buffer size must be larger than other arguments string
+            length. Example: see strcpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>argvalue</term>
+
+          <listitem>
+            <para>buffer size must be larger than value in other argument.
+            Example: see memset configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>sizeof</term>
+
+          <listitem>
+            <para>buffer size must be larger than other argument buffer size.
+            Example: see strncpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>mul</term>
+
+          <listitem>
+            <para>buffer size must be larger than multiplication result when
+            multiplying values given in two other arguments. Typically one
+            argument defines the element size and another element defines the
+            number of elements. Example: see fread configuration in
+            std.cfg</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </section>
 
     <section>
