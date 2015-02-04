@@ -2085,7 +2085,8 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "_type: ";
     if (var->type()) {
         std::cout << var->type()->name();
-        std::cout << " " << var->type();
+        std::cout << " " << _tokenizer->list.fileLine(var->type()->classDef);
+        std::cout << " " << var->type() << std::endl;
     } else
         std::cout << "none" << std::endl;
 
