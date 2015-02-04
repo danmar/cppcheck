@@ -13,3 +13,5 @@ add_library(cli_lib OBJECT ${hdrs} ${srcs})
 add_executable(cppcheck main.cpp 
     $<TARGET_OBJECTS:cli_lib>
 )
+
+install(TARGETS cppcheck RUNTIME DESTINATION bin COMPONENT applications)
