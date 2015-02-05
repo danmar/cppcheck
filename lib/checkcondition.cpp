@@ -781,7 +781,8 @@ void CheckCondition::clarifyCondition()
                         // This might be a template
                         if (!isC && tok2->link())
                             break;
-
+                        if (Token::simpleMatch(tok2->astParent(), "?"))
+                            break;
                         clarifyConditionError(tok, tok->strAt(2) == "=", false);
                         break;
                     } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
