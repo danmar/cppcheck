@@ -2300,9 +2300,6 @@ void Tokenizer::simplifyTemplates()
 static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::string,unsigned int> &variableId, bool executableScope, bool cpp, bool c)
 {
     const Token *tok2 = *tok;
-
-    bool ref = false;
-
     if (!tok2->isName())
         return false;
 
@@ -2310,6 +2307,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     unsigned int singleNameCount = 0;
     bool hasstruct = false;   // Is there a "struct" or "class"?
     bool bracket = false;
+    bool ref = false;
     while (tok2) {
         if (tok2->isName()) {
             if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
@@ -2363,7 +2361,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
     // Check if array declaration is valid (#2638)
     // invalid declaration: AAA a[4] = 0;
-    if (typeCount >= 2 && tok2 && tok2->str() == "[" && executableScope) {
+    if (typeCount >= 2 && executableScope && tok2 && tok2->str() == "[") {
         const Token *tok3 = tok2;
         while (tok3 && tok3->str() == "[") {
             tok3 = tok3->link()->next();
