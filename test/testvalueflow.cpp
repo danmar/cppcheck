@@ -862,6 +862,17 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
 
+        code = "int f(int *x) {\n" // #5980
+               "  if (!x) {\n"
+               "    switch (i) {\n"
+               "      default:\n"
+               "        throw std::runtime_error(msg);\n"
+               "    };\n"
+               "  }\n"
+               "  return *x;\n"  // <- x is not 0
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
         // pointer/reference to x
         code = "int f(void) {\n"
                "  int x = 2;\n"

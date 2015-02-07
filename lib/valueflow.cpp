@@ -236,17 +236,28 @@ static bool bailoutSelfAssignment(const Token * const tok)
 static bool isReturn(const Token *tok)
 {
     const Token *prev = tok ? tok->previous() : nullptr;
-    if (Token::simpleMatch(prev, "}") && Token::simpleMatch(prev->link()->tokAt(-2),"} else {"))
-        return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
+    if (Token::Match(prev ? prev->previous() : nullptr, "} ;"))
+        prev = prev->previous();
+
+    if (Token::simpleMatch(prev, "}")) {
+        if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
+            return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
+        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
+            !Token::findsimplematch(prev->link(), "break", prev)) {
+            return true;
+        }
+    }
+
     if (Token::simpleMatch(prev, ";")) {
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev,"[;{}]"))
+        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw"))
             prev = prev->previous();
-        return Token::Match(prev, "[;{}] return|goto");
+        return prev && prev->isName();
     }
     return false;
 }
