@@ -374,11 +374,28 @@ static void valueFlowNumber(TokenList *tokenlist)
 
 static void valueFlowString(TokenList *tokenlist)
 {
+    std::map<unsigned int, const Token *> constantStrings;
+
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->type() == Token::eString) {
             ValueFlow::Value strvalue;
             strvalue.tokvalue = tok;
             setTokenValue(tok, strvalue);
+        }
+
+        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
+            const Token *vartok = tok->tokAt(2);
+            const Token *strtok = tok->linkAt(3)->tokAt(2);
+            constantStrings[vartok->varId()] = strtok;
+        }
+
+        if (tok->varId() > 0U) {
+            const std::map<unsigned int, const Token *>::const_iterator it = constantStrings.find(tok->varId());
+            if (it != constantStrings.end()) {
+                ValueFlow::Value strvalue;
+                strvalue.tokvalue = it->second;
+                setTokenValue(tok, strvalue);
+            }
         }
     }
 }
@@ -1335,6 +1352,27 @@ static void execute(const Token *expr,
     else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), programMemory, result, error);
         execute(expr->astOperand2(), programMemory, result, error);
+    }
+
+    else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
+        if (expr->astOperand1()->values.size() != 1U) {
+            *error = true;
+            return;
+        }
+        const ValueFlow::Value val = expr->astOperand1()->values.front();
+        if (!val.tokvalue || !val.tokvalue->isLiteral()) {
+            *error = true;
+            return;
+        }
+        const std::string strValue = val.tokvalue->strValue();
+        MathLib::bigint index = 0;
+        execute(expr->astOperand2(), programMemory, &index, error);
+        if (index >= 0 && index < (int)strValue.size())
+            *result = strValue[index];
+        else if (index == (int)strValue.size())
+            *result = 0;
+        else
+            *error = true;
     }
 
     else

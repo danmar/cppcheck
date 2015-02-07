@@ -1244,6 +1244,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    const char abc[] = \"abc\";\n"
+               "    int x;\n"
+               "    for (x = 0; abc[x] != '\\0'; x++) {}\n"
+               "    a[x] = 0;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 3));
+
         code = "void f() {\n" // #5939
                "    int x;\n"
                "    for (int x = 0; (x = do_something()) != 0;)\n"
