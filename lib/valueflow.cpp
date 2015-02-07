@@ -387,6 +387,7 @@ static void valueFlowString(TokenList *tokenlist)
             const Token *vartok = tok->tokAt(2);
             const Token *strtok = tok->linkAt(3)->tokAt(2);
             constantStrings[vartok->varId()] = strtok;
+            tok = tok->tokAt(3);
         }
 
         if (tok->varId() > 0U) {
