@@ -236,7 +236,7 @@ static bool bailoutSelfAssignment(const Token * const tok)
 static bool isReturn(const Token *tok)
 {
     const Token *prev = tok ? tok->previous() : nullptr;
-    if (Token::Match(prev ? prev->previous() : nullptr, "} ;"))
+    if (Token::simpleMatch(prev ? prev->previous() : nullptr, "} ;"))
         prev = prev->previous();
 
     if (Token::simpleMatch(prev, "}")) {
