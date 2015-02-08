@@ -3215,7 +3215,7 @@ bool Tokenizer::simplifySizeof()
                 if (Token::Match(decltok,"%name% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
                     const Token *tok2 = decltok->linkAt(1);
                     while (Token::Match(tok2, "] [ %num% ]")) {
-                        sz = sz * MathLib::toLongNumber(tok2->strAt(2));
+						sz = sz * static_cast<unsigned long>( MathLib::toLongNumber(tok2->strAt(2)) );
                         tok2 = tok2->linkAt(3);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
