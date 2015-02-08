@@ -92,7 +92,7 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &fu
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
-                    "--check-library: Function " + functionName + "() should have <use>/<ignore> configuration");
+                    "--check-library: Function " + functionName + "() should have <use>/<leak-ignore> configuration");
     }
 }
 

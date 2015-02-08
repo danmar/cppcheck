@@ -1213,6 +1213,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    if (x = b < 0 ? 1 : 2) {}\n" // don't simplify and verify this code
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     // clarify conditions with bitwise operator and comparison

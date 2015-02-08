@@ -1742,9 +1742,10 @@ void CheckOther::checkIncompleteStatement()
             // bailout if there is a "? :" in this statement
             bool bailout = false;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "?")
+                if (tok2->str() == "?") {
                     bailout = true;
-                else if (tok2->str() == ";")
+                    break;
+                } else if (tok2->str() == ";")
                     break;
             }
             if (bailout)

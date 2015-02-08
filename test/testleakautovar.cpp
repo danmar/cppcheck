@@ -233,7 +233,7 @@ private:
               "    char *p = malloc(10);\n"
               "    x = a(b(p));\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function b() should have <use>/<ignore> configuration\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function b() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void assign12() { // #4236: FP. bar(&x)
@@ -809,7 +809,7 @@ private:
               "    fatal_error();\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<ignore> configuration\n",
+                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
     }
 
@@ -1090,7 +1090,7 @@ private:
               "    x(p);\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<ignore> configuration\n",
+                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
     }
 
@@ -1102,7 +1102,7 @@ private:
               "    x(&p);\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<ignore> configuration\n",
+                      "[test.c:4]: (information) --check-library: Function x() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
     }
 
@@ -1111,14 +1111,14 @@ private:
               "    char *p = malloc(10);\n"
               "    if (set_data(p)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
 
         check("void f() {\n"
               "    char *p = malloc(10);\n"
               "    if (set_data(p)) { return; }\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n"
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
+                      "[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n"
                       , errout.str());
     }
 
@@ -1128,7 +1128,7 @@ private:
               "    int ret = set_data(p);\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<ignore> configuration\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void ptrptr() {
@@ -1143,7 +1143,7 @@ private:
               "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
               "    m_dsmccQueue.enqueue(new DSMCCPacket(dataCopy));\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function DSMCCPacket() should have <use>/<ignore> configuration\n", errout.str());
+        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function DSMCCPacket() should have <use>/<leak-ignore> configuration\n", errout.str());
 
         check("void QueueDSMCCPacket(unsigned char *data, int length) {\n"
               "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
