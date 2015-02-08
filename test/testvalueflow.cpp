@@ -766,6 +766,13 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
 
+        code = "void f(int y) {\n" // alias
+               "  int x = y;\n"
+               "  if (y == 54) {}\n"
+               "  else { a = x; }\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 54));
+
         code = "void f () {\n"
                "    ST * x =  g_pST;\n"
                "    if (x->y == 0) {\n"

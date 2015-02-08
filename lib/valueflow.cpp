@@ -142,6 +142,8 @@ static std::map<unsigned int, MathLib::bigint> getProgramMemory(const Token *tok
 {
     std::map<unsigned int, MathLib::bigint> programMemory;
     programMemory[varid] = value.intvalue;
+    if (value.varId)
+        programMemory[value.varId] = value.varvalue;
     const std::map<unsigned int, MathLib::bigint> programMemory1(programMemory);
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
