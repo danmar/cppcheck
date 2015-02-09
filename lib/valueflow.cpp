@@ -387,9 +387,9 @@ static void valueFlowString(TokenList *tokenlist)
 
         if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
             const Token *vartok = tok->tokAt(2);
-            const Token *strtok = tok->linkAt(3)->tokAt(2);
+            const Token *strtok = vartok->next()->link()->tokAt(2);
             constantStrings[vartok->varId()] = strtok;
-            tok = tok->tokAt(3);
+            tok = vartok->next();
         }
 
         if (tok->varId() > 0U) {
