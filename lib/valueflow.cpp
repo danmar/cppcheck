@@ -237,8 +237,11 @@ static bool bailoutSelfAssignment(const Token * const tok)
 
 static bool isReturn(const Token *tok)
 {
-    const Token *prev = tok ? tok->previous() : nullptr;
-    if (Token::simpleMatch(prev ? prev->previous() : nullptr, "} ;"))
+    if (!tok)
+        return false;
+
+    const Token *prev = tok->previous();
+    if (prev && Token::simpleMatch(prev->previous(), "} ;"))
         prev = prev->previous();
 
     if (Token::simpleMatch(prev, "}")) {
@@ -249,9 +252,7 @@ static bool isReturn(const Token *tok)
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-    }
-
-    if (Token::simpleMatch(prev, ";")) {
+    } else if (Token::simpleMatch(prev, ";")) {
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
             return true;
