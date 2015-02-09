@@ -22,12 +22,23 @@ void strcpy_bad() {
 }
 
 
+void strncpy_ok() {
+    char a[5];
+    strncpy(a,"hello world!",5);
+}
+
+void strncpy_bad() {
+  char a[5];
+  // cppcheck-suppress bufferAccessOutOfBounds
+  strncpy(a, "hello world!",10);
+}
+
 // null pointer
 
 void nullpointer(int value){
   int res = 0;
   FILE *fp;
-    
+
   // cppcheck-suppress nullPointer
   clearerr(0);
   // cppcheck-suppress nullPointer
@@ -184,7 +195,7 @@ void uninit_fgetpos(void) {
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
     fgetpos(fp,ppos);
-    fclose(fp);    
+    fclose(fp);
 }
 
 void uninit_fsetpos(void) {
@@ -197,7 +208,7 @@ void uninit_fsetpos(void) {
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
     fsetpos(fp,ppos);
-    fclose(fp);    
+    fclose(fp);
 }
 
 void uninit_fgets(void) {

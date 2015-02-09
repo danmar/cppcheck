@@ -21,6 +21,7 @@
 #include "checkbufferoverrun.h"
 #include "testsuite.h"
 
+#include <tinyxml2.h>
 #include <sstream>
 #include <climits>
 
@@ -70,15 +71,7 @@ private:
         checkBufferOverrun.writeOutsideBufferSize();
     }
 
-    void checkstd(const char code[], const char filename[] = "test.cpp") {
-        static bool init;
-        static Settings settings;
-        if (!init) {
-            init = true;
-            LOAD_LIB_2(settings.library, "std.cfg");
-            settings.addEnabled("warning");
-        }
-
+    void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
@@ -93,6 +86,17 @@ private:
         checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.writeOutsideBufferSize();
+    }
+
+    void checkstd(const char code[], const char filename[] = "test.cpp") {
+        static bool init;
+        static Settings settings;
+        if (!init) {
+            init = true;
+            LOAD_LIB_2(settings.library, "std.cfg");
+            settings.addEnabled("warning");
+        }
+        check(code, settings, filename);
     }
 
     void checkposix(const char code[], const char filename[] = "test.cpp") {
@@ -283,7 +287,7 @@ private:
         TEST_CASE(memset1);
         TEST_CASE(memset2);
         TEST_CASE(counter_test);
-        TEST_CASE(strncpy1);
+        TEST_CASE(minsize_sizeof);
         TEST_CASE(unknownType);
 
         TEST_CASE(terminateStrncpy1);
@@ -3740,35 +3744,52 @@ private:
 
     }
 
-    void strncpy1() {
-        checkstd("void f() {\n"
-                 "    char c[7];\n"
-                 "    strncpy(c, \"hello\", 7);\n"
-                 "}");
+    void minsize_sizeof() {
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"strncpy\">\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\">\n"
+                               "      <minsize type=\"sizeof\" arg=\"2\"/>\n"
+                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "    <arg nr=\"3\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
+
+        check("void f() {\n"
+              "    char c[7];\n"
+              "    strncpy(c, \"hello\", 7);\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        checkstd("void f() {\n"
-                 " char c[6];\n"
-                 " strncpy(c,\"hello\",6);\n"
-                 "}");
+        check("void f() {\n"
+              " char c[6];\n"
+              " strncpy(c,\"hello\",6);\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        checkstd("void f() {\n"
-                 " char c[5];\n"
-                 " strncpy(c,\"hello\",6);\n"
-                 "}");
+        check("void f() {\n"
+              " char c[5];\n"
+              " strncpy(c,\"hello\",6);\n"
+              "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
-        checkstd("void f() {\n"
-                 "    char c[6];\n"
-                 "    strncpy(c,\"hello!\",7);\n"
-                 "}");
+        check("void f() {\n"
+              "    char c[6];\n"
+              "    strncpy(c,\"hello!\",7);\n"
+              "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
-        checkstd("struct AB { char a[10]; };\n"
-                 "void foo(AB *ab) {\n"
-                 "    strncpy(x, ab->a, 100);\n"
-                 "}");
+        check("struct AB { char a[10]; };\n"
+              "void foo(AB *ab) {\n"
+              "    strncpy(x, ab->a, 100);\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
     }
 
