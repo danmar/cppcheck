@@ -1141,10 +1141,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 if (parent->astOperand1() == tok &&
                     ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                      (op == "||" && Token::Match(tok, "%name%|!=")))) {
-                    bool assign = false;
-                    for (; !assign && parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
+                    for (; parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
                         std::stack<Token *> tokens;
                         tokens.push(const_cast<Token*>(parent->astOperand2()));
+                        bool assign = false;
                         while (!tokens.empty()) {
                             Token *rhstok = tokens.top();
                             tokens.pop();
@@ -1159,6 +1159,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 break;
                             }
                         }
+                        if (assign)
+                            break;
                         while (parent->astParent() && parent == parent->astParent()->astOperand2())
                             parent = const_cast<Token*>(parent->astParent());
                     }
