@@ -1,6 +1,9 @@
 find_package(Qt4 4.6.1 COMPONENTS QtCore QtGui)
 if (HAVE_RULES)
-    #TODO - check existence of pcre
+    find_library(PCRE pcre)
+    if (NOT PCRE)
+        message(FATAL_ERROR "pcre dependency for RULES has not been found")
+    endif()
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
