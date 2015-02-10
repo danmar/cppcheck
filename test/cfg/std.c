@@ -11,26 +11,18 @@
 #include <stdio.h>
 #include <tgmath.h> // frexp
 
-void strcpy_ok(char *a, char *b) {
-    strcpy(a,b);
-}
-
-void strcpy_bad() {
-  char a[10];
-  // cppcheck-suppress bufferAccessOutOfBounds
-  strcpy(a, "hello world!");
-}
-
-
-void strncpy_ok() {
-    char a[5];
-    strncpy(a,"hello world!",5);
-}
-
-void strncpy_bad() {
+void bufferAccessOutOf(void) {
   char a[5];
+  fgets(a,5,stdin);
   // cppcheck-suppress bufferAccessOutOfBounds
-  strncpy(a, "hello world!",10);
+  fgets(a,6,stdin);
+  strcpy(a,"abcd");
+  // cppcheck-suppress bufferAccessOutOfBounds
+  strcpy(a, "abcde");
+  strncpy(a,"abcde",5);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  strncpy(a,"abcde",6);
+
 }
 
 // null pointer

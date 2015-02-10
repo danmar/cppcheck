@@ -287,6 +287,7 @@ private:
         TEST_CASE(memset1);
         TEST_CASE(memset2);
         TEST_CASE(counter_test);
+        TEST_CASE(minsize_argvalue);
         TEST_CASE(minsize_sizeof);
         TEST_CASE(unknownType);
 
@@ -758,14 +759,6 @@ private:
               "    foo(p+1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        // #3168
-        checkstd("void a(char *p) { memset(p,0,100); }\n"
-                 "void b() {\n"
-                 "    char buf[10];\n"
-                 "    a(buf);"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
     }
 
 
@@ -2232,24 +2225,6 @@ private:
     }
 
     void buffer_overrun_1_standard_functions() {
-        check("void f()\n"
-              "{\n"
-              "    char str[3];\n"
-              "    strcpy(str, \"abc\");\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char str[3];\n"
-                 "    fgets(str, 3, stdin);\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char str[3];\n"
-                 "    fgets(str, 4, stdin);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         // fread
         checkstd("void f(FILE* fd) {\n"
@@ -3744,6 +3719,36 @@ private:
 
     }
 
+    void minsize_argvalue() {
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"memset\">\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\">\n"
+                               "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "    <arg nr=\"3\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
+
+        check("void f() {\n"
+              "    char c[10];\n"
+              "    memset(c, 0, 10);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char c[10];\n"
+              "    memset(c, 0, 11);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
+    }
+
     void minsize_sizeof() {
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -3791,6 +3796,14 @@ private:
               "    strncpy(x, ab->a, 100);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
+
+        // #3168
+        check("void a(char *p) { strncpy(p,\"hello world!\",10); }\n"
+              "void b() {\n"
+              "    char buf[5];\n"
+              "    a(buf);"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
     }
 
     void unknownType() {
