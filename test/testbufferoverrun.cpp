@@ -210,7 +210,6 @@ private:
         TEST_CASE(buffer_overrun_10);
         TEST_CASE(buffer_overrun_11);
         TEST_CASE(buffer_overrun_12);
-        TEST_CASE(buffer_overrun_13);
         TEST_CASE(buffer_overrun_14);
         TEST_CASE(buffer_overrun_15); // ticket #1787
         TEST_CASE(buffer_overrun_16);
@@ -2473,21 +2472,6 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
-    void buffer_overrun_13() {
-        // ticket #836
-        checkstd("void f() {\n"
-                 "  char a[10];\n"
-                 "  memset(a+5, 0, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "  char a[10];\n"
-                 "  memmove(a, a+5, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
-    }
-
     void buffer_overrun_14() {
         checkstd("void f(char *a) {\n"
                  "  char *b = new char[strlen(a)];\n"
@@ -3722,6 +3706,13 @@ private:
               "    memset(c, 0, 11);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
+
+        // ticket #836
+        check("void f() {\n"
+              "  char a[10];\n"
+              "  memset(a+5, 0, 10);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
     }
 
     void minsize_sizeof() {
