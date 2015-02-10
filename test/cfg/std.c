@@ -11,23 +11,31 @@
 #include <stdio.h>
 #include <tgmath.h> // frexp
 
-void strcpy_ok(char *a, char *b) {
-    strcpy(a,b);
-}
-
-void strcpy_bad() {
-  char a[10];
+void bufferAccessOutOf(void) {
+  char a[5];
+  fgets(a,5,stdin);
   // cppcheck-suppress bufferAccessOutOfBounds
-  strcpy(a, "hello world!");
+  fgets(a,6,stdin);
+  strcpy(a,"abcd");
+  // cppcheck-suppress bufferAccessOutOfBounds
+  strcpy(a, "abcde");
+  strncpy(a,"abcde",5);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  strncpy(a,"abcde",6);
+  fread(a,1,5,stdin);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  fread(a,1,6,stdin);
+  fwrite(a,1,5,stdout);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  fread(a,1,6,stdout);
 }
-
 
 // null pointer
 
 void nullpointer(int value){
   int res = 0;
   FILE *fp;
-    
+
   // cppcheck-suppress nullPointer
   clearerr(0);
   // cppcheck-suppress nullPointer
@@ -184,7 +192,7 @@ void uninit_fgetpos(void) {
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
     fgetpos(fp,ppos);
-    fclose(fp);    
+    fclose(fp);
 }
 
 void uninit_fsetpos(void) {
@@ -197,7 +205,7 @@ void uninit_fsetpos(void) {
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
     fsetpos(fp,ppos);
-    fclose(fp);    
+    fclose(fp);
 }
 
 void uninit_fgets(void) {

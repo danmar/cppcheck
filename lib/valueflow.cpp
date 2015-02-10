@@ -142,6 +142,8 @@ static std::map<unsigned int, MathLib::bigint> getProgramMemory(const Token *tok
 {
     std::map<unsigned int, MathLib::bigint> programMemory;
     programMemory[varid] = value.intvalue;
+    if (value.varId)
+        programMemory[value.varId] = value.varvalue;
     const std::map<unsigned int, MathLib::bigint> programMemory1(programMemory);
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
@@ -235,18 +237,30 @@ static bool bailoutSelfAssignment(const Token * const tok)
 
 static bool isReturn(const Token *tok)
 {
-    const Token *prev = tok ? tok->previous() : nullptr;
-    if (Token::simpleMatch(prev, "}") && Token::simpleMatch(prev->link()->tokAt(-2),"} else {"))
-        return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
-    if (Token::simpleMatch(prev, ";")) {
+    if (!tok)
+        return false;
+
+    const Token *prev = tok->previous();
+    if (prev && Token::simpleMatch(prev->previous(), "} ;"))
+        prev = prev->previous();
+
+    if (Token::simpleMatch(prev, "}")) {
+        if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
+            return isReturn(prev) && isReturn(prev->link()->tokAt(-2));
+        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
+            !Token::findsimplematch(prev->link(), "break", prev)) {
+            return true;
+        }
+    } else if (Token::simpleMatch(prev, ";")) {
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev,"[;{}]"))
+        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw"))
             prev = prev->previous();
-        return Token::Match(prev, "[;{}] return|goto");
+        return prev && prev->isName();
     }
     return false;
 }
@@ -363,11 +377,29 @@ static void valueFlowNumber(TokenList *tokenlist)
 
 static void valueFlowString(TokenList *tokenlist)
 {
+    std::map<unsigned int, const Token *> constantStrings;
+
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->type() == Token::eString) {
             ValueFlow::Value strvalue;
             strvalue.tokvalue = tok;
             setTokenValue(tok, strvalue);
+        }
+
+        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
+            const Token *vartok = tok->tokAt(2);
+            const Token *strtok = vartok->next()->link()->tokAt(2);
+            constantStrings[vartok->varId()] = strtok;
+            tok = vartok->next();
+        }
+
+        if (tok->varId() > 0U) {
+            const std::map<unsigned int, const Token *>::const_iterator it = constantStrings.find(tok->varId());
+            if (it != constantStrings.end()) {
+                ValueFlow::Value strvalue;
+                strvalue.tokvalue = it->second;
+                setTokenValue(tok, strvalue);
+            }
         }
     }
 }
@@ -1109,10 +1141,10 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 if (parent->astOperand1() == tok &&
                     ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                      (op == "||" && Token::Match(tok, "%name%|!=")))) {
-                    bool assign = false;
-                    for (; !assign && parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
+                    for (; parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
                         std::stack<Token *> tokens;
                         tokens.push(const_cast<Token*>(parent->astOperand2()));
+                        bool assign = false;
                         while (!tokens.empty()) {
                             Token *rhstok = tokens.top();
                             tokens.pop();
@@ -1127,6 +1159,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 break;
                             }
                         }
+                        if (assign)
+                            break;
                         while (parent->astParent() && parent == parent->astParent()->astOperand2())
                             parent = const_cast<Token*>(parent->astParent());
                     }
@@ -1324,6 +1358,27 @@ static void execute(const Token *expr,
     else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), programMemory, result, error);
         execute(expr->astOperand2(), programMemory, result, error);
+    }
+
+    else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
+        if (expr->astOperand1()->values.size() != 1U) {
+            *error = true;
+            return;
+        }
+        const ValueFlow::Value val = expr->astOperand1()->values.front();
+        if (!val.tokvalue || !val.tokvalue->isLiteral()) {
+            *error = true;
+            return;
+        }
+        const std::string strValue = val.tokvalue->strValue();
+        MathLib::bigint index = 0;
+        execute(expr->astOperand2(), programMemory, &index, error);
+        if (index >= 0 && index < (int)strValue.size())
+            *result = strValue[index];
+        else if (index == (int)strValue.size())
+            *result = 0;
+        else
+            *error = true;
     }
 
     else
@@ -1646,6 +1701,8 @@ static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDataba
             const Variable* var = function->getArgumentVar(arg);
             if (var && var->hasDefault() && Token::Match(var->nameToken(), "%var% = %num%|%str% [,)]")) {
                 const Token* valueTok = var->nameToken()->tokAt(2);
+                if (valueTok->values.empty())
+                    continue;
                 const_cast<Token*>(valueTok)->values.front().defaultArg = true;
                 valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, valueTok->values);
             }
