@@ -14,4 +14,10 @@ add_executable(cppcheck main.cpp
     $<TARGET_OBJECTS:cli_lib>
 )
 
-install(TARGETS cppcheck RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS cppcheck
+    RUNTIME DESTINATION bin
+    COMPONENT applications)
+
+install(FILES ${cfgs}
+   DESTINATION share/${PROJECT_NAME}/
+   COMPONENT headers)
