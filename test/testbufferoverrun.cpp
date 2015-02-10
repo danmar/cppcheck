@@ -40,7 +40,6 @@ private:
 
         Settings settings;
         settings.inconclusive = true;
-        settings.standards.posix = true;
         settings.experimental = experimental;
         settings.addEnabled("warning");
         settings.addEnabled("style");
@@ -68,7 +67,6 @@ private:
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.writeOutsideBufferSize();
     }
 
     void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -85,7 +83,6 @@ private:
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.writeOutsideBufferSize();
     }
 
     void checkstd(const char code[], const char filename[] = "test.cpp") {
@@ -98,31 +95,6 @@ private:
         }
         check(code, settings, filename);
     }
-
-    void checkposix(const char code[], const char filename[] = "test.cpp") {
-        static bool init;
-        static Settings settings;
-        if (!init) {
-            init = true;
-            LOAD_LIB_2(settings.library, "posix.cfg");
-            settings.addEnabled("warning");
-        }
-
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.bufferOverrun2();
-        checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.writeOutsideBufferSize();
-    }
-
 
     void run() {
         TEST_CASE(noerr1);
@@ -197,8 +169,6 @@ private:
         TEST_CASE(array_index_valueflow);
         TEST_CASE(array_index_function_parameter);
 
-        TEST_CASE(buffer_overrun_1_standard_functions);
-        TEST_CASE(buffer_overrun_1_posix_functions);
         TEST_CASE(buffer_overrun_2_struct);
         TEST_CASE(buffer_overrun_3);
         TEST_CASE(buffer_overrun_4);
@@ -318,10 +288,6 @@ private:
         TEST_CASE(arrayIndexThenCheck);
 
         TEST_CASE(bufferNotZeroTerminated);
-        TEST_CASE(readlink);
-        TEST_CASE(readlinkat);
-
-        TEST_CASE(writeOutsideBufferSize)
 
         TEST_CASE(negativeMemoryAllocationSizeError) // #389
 
@@ -2159,95 +2125,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void buffer_overrun_1_posix_functions() {
-        checkposix("void f(int fd)\n"
-                   "{\n"
-                   "    char str[3];\n"
-                   "    read(fd, str, 3);\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(int fd)\n"
-                   "{\n"
-                   "    char str[3];\n"
-                   "    read(fd, str, 4);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkposix("void f(int fd)\n"
-                   "{\n"
-                   "    char str[3];\n"
-                   "    write(fd, str, 3);\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(int fd)\n"
-                   "{\n"
-                   "    char str[3];\n"
-                   "    write(fd, str, 4);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkposix("void f()\n"
-                   "{\n"
-                   "    long bb[2];\n"
-                   "    write(stdin, bb, sizeof(bb));\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f()\n"
-                   "{\n"
-                   "char str[3];\n"
-                   "recv(s, str, 4, 0);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkposix("void f()\n"
-                   "{\n"
-                   "char str[3];\n"
-                   "recvfrom(s, str, 4, 0, 0x0, 0x0);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkposix("void f()\n"
-                   "{\n"
-                   "char str[3];\n"
-                   "send(s, str, 4, 0);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkposix("void f()\n"
-                   "{\n"
-                   "char str[3];\n"
-                   "sendto(s, str, 4, 0, 0x0, 0x0);\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-    }
-
-    void buffer_overrun_1_standard_functions() {
-
-        // #4968 - not standard function
-        checkstd("void f() {\n"
-                 "    char str[3];\n"
-                 "    foo.memset(str, 0, 100);\n"
-                 "    foo::memset(str, 0, 100);\n"
-                 "    std::memset(str, 0, 100);\n"
-                 "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", "", errout.str());
-
-        // #5257 - check strings
-        checkstd("void f() {\n"
-                 "  memcpy(temp, \"hello world\", 20);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "  memcpy(temp, \"abc\", 4);\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
     void buffer_overrun_2_struct() {
         check("struct ABC\n"
               "{\n"
@@ -3713,6 +3590,26 @@ private:
               "  memset(a+5, 0, 10);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+
+        // #4968 - not standard function
+        check("void f() {\n"
+              "    char str[3];\n"
+              "    foo.memset(str, 0, 100);\n"
+              "    foo::memset(str, 0, 100);\n"
+              "    std::memset(str, 0, 100);\n"
+              "}", settings);
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", "", errout.str());
+
+        // #5257 - check strings
+        check("void f() {\n"
+              "  memset(\"abc\", 0, 20);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "  memset(temp, \"abc\", 4);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void minsize_sizeof() {
@@ -4231,150 +4128,6 @@ private:
               "    memmove(c,\"hello!\",6);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'c' is not null-terminated after the call to memmove().\n", errout.str());
-    }
-
-    void readlink() {
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlink(path, buf, 254);\n"
-              "    printf(\"%s\n\", buf);\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", "", errout.str());
-
-        // C only: Primitive pointer simplification
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlink(path, &buf[0], 254);\n"
-              "    printf(\"%s\n\", buf);\n"
-              "}\n", true, "test.c");
-        TODO_ASSERT_EQUALS("[test.c:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlink().\n", "", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlink(path, buf, 254);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char buf[10];\n"
-              "    ssize_t len = readlink(path, buf, 255);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) readlink() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlink(path, buf, 255);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) readlink() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlink(path, buf, 254);\n"
-              "    if (len == -1) {\n"
-              "        return;\n"
-              "    }\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255] = {0};\n"
-              "    readlink(path, buf, 254);\n"  // <- doesn't write whole buf
-              "    puts(buf);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void readlinkat() {
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
-              "    printf(\"%s\n\", buf);\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to readlinkat().\n", "", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    char buf[10];\n"
-              "    ssize_t len = readlinkat(42, path, buf, 255);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) readlinkat() buf size is out of bounds: Supplied size 255 is larger than actual size 10.\n", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlinkat(42, path, buf, 255);\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) readlinkat() might return the full size of 'buf'. Lower the supplied size by one.\n", errout.str());
-
-        check("void f() {\n"
-              "    char buf[255];\n"
-              "    ssize_t len = readlinkat(42, path, buf, 254);\n"
-              "    if (len == -1) {\n"
-              "        return;\n"
-              "    }\n"
-              "    buf[len] = 0;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void writeOutsideBufferSize() {
-        check("void f(void){\n"
-              "write(1, \"Dump string \\n\", 100);\n"
-              "}");                       // ^ number of bytes too big
-        ASSERT_EQUALS("[test.cpp:2]: (error) Writing 86 bytes outside buffer size.\n", errout.str());
-
-        check("void f(void){\n"
-              "write(1, \"Dump string \\n\", 10);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // #4706 avoid crashing when a struct member is used as first argument
-        check("static struct {\n"
-              "    int i[2];\n"
-              "} p;\n"
-              "void foo()\n"
-              "{\n"
-              "    write(p.i[1], \"\", 1);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("static struct {\n"
-              "    int i[2];\n"
-              "} p;\n"
-              "void foo()\n"
-              "{\n"
-              "    write(p.i[1], \"\", 2);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Writing 1 bytes outside buffer size.\n", errout.str());
-        // #4969
-        check("void foo()\n"
-              "{\n"
-              "    write(1, \"\\0\", 1);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-        // that is documented to be ok
-        check("void foo()\n"
-              "{\n"
-              "    write(1, 0, 0);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-        // ... that is not ok
-        check("void foo()\n"
-              "{\n"
-              "    write(1, 0, 1);\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Writing 1 bytes outside buffer size.\n", "", errout.str());
     }
 
     void negativeMemoryAllocationSizeError() { // #389

@@ -142,15 +142,6 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
                     "The source buffer is larger than the destination buffer so there is the potential for overflowing the destination buffer.");
 }
 
-void CheckBufferOverrun::possibleReadlinkBufferOverrunError(const Token* tok, const std::string &funcname, const std::string &varname)
-{
-    const std::string errmsg = funcname + "() might return the full size of '" + varname + "'. Lower the supplied size by one.\n" +
-                               funcname + "() might return the full size of '" + varname + "'. "
-                               "If a " + varname + "[len] = '\\0'; statement follows, it will overrun the buffer. Lower the supplied size by one.";
-
-    reportError(tok, Severity::warning, "possibleReadlinkBufferOverrun", errmsg, true);
-}
-
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
 {
     if (_settings && !_settings->isEnabled("warning"))
@@ -989,11 +980,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 if (n > total_size)
                     outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
             }
-
-            // readlink() / readlinkat() buffer usage
-            if (_settings->standards.posix && Token::Match(tok, "readlink|readlinkat ("))
-                checkReadlinkBufferUsage(tok, scope_begin, declarationId, total_size);
-
         }
     }
 }
@@ -1019,44 +1005,6 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
         }
     }
     return false;
-}
-
-void CheckBufferOverrun::checkReadlinkBufferUsage(const Token* ftok, const Token *scope_begin, const unsigned int varid, const MathLib::bigint total_size)
-{
-    const std::string& funcname = ftok->str();
-
-    const Token* bufParam = ftok->tokAt(2)->nextArgument();
-    if (funcname == "readlinkat")
-        bufParam = bufParam ? bufParam->nextArgument() : nullptr;
-    if (!Token::Match(bufParam, "%varid% , %num% )", varid))
-        return;
-
-    const MathLib::bigint n = MathLib::toLongNumber(bufParam->strAt(2));
-    if (total_size > 0 && n > total_size)
-        outOfBoundsError(bufParam, funcname + "() buf size", true, n, total_size);
-
-    if (!_settings->inconclusive)
-        return;
-
-    // only writing a part of the buffer
-    if (n < total_size)
-        return;
-
-    // readlink()/readlinkat() never terminates the buffer, check the end of the scope for buffer termination.
-    bool found_termination = false;
-    const Token *scope_end = scope_begin->link();
-    for (const Token *tok2 = bufParam->tokAt(4); tok2 && tok2 != scope_end; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "%varid% [ %any% ] = 0 ;", bufParam->varId())) {
-            found_termination = true;
-            break;
-        }
-    }
-
-    if (!found_termination) {
-        bufferNotZeroTerminatedError(ftok, bufParam->str(), funcname);
-    } else if (n == total_size) {
-        possibleReadlinkBufferOverrunError(ftok, funcname, bufParam->str());
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -1824,53 +1772,6 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
                 "not be accessed if the index is out of limits.");
-}
-
-// -------------------------------------------------------------------------------------
-// Check the second and the third parameter of the POSIX function write and validate
-// their values.
-// The parameters have the following meaning:
-// - 1.parameter: file descripter (not required for this check)
-// - 2.parameter: is a null terminated character string of the content to write.
-// - 3.parameter: the number of bytes to write.
-//
-// This check is triggered if the size of the string ( 2. parameter) is lower than
-// the number of bytes provided at the 3. parameter.
-//
-// References:
-//  - http://pubs.opengroup.org/onlinepubs/9699919799/functions/write.html
-//  - http://gd.tuwien.ac.at/languages/c/programming-bbrown/c_075.htm
-//  - http://codewiki.wikidot.com/c:system-calls:write
-// -------------------------------------------------------------------------------------
-void CheckBufferOverrun::writeOutsideBufferSize()
-{
-    if (!_settings->standards.posix)
-        return;
-
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * const scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "pwrite|write (") && Token::Match(tok->tokAt(2)->nextArgument(), "%str% , %num%")) {
-                const std::string & functionName(tok->str());
-                tok = tok->tokAt(2)->nextArgument(); // set tokenptr to %str% parameter
-                const std::size_t stringLength = Token::getStrLength(tok)+1; // zero-terminated string!
-                tok = tok->tokAt(2); // set tokenptr to %num% parameter
-                const MathLib::bigint writeLength = MathLib::toLongNumber(tok->str());
-                if (static_cast<std::size_t>(writeLength) > stringLength)
-                    writeOutsideBufferSizeError(tok, stringLength, writeLength, functionName);
-            }
-        }
-    }
-}
-
-void CheckBufferOverrun::writeOutsideBufferSizeError(const Token *tok, const std::size_t stringLength, const MathLib::bigint writeLength, const std::string &strFunctionName)
-{
-    reportError(tok, Severity::error, "writeOutsideBufferSize",
-                "Writing " + MathLib::toString(writeLength-stringLength) + " bytes outside buffer size.\n"
-                "The number of bytes to write (" + MathLib::toString(writeLength) + " bytes) are bigger than the source buffer (" +MathLib::toString(stringLength)+ " bytes)."
-                " Please check the second and the third parameter of the function '"+strFunctionName+"'.");
 }
 
 Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
