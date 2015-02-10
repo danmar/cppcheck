@@ -22,7 +22,12 @@ void bufferAccessOutOf(void) {
   strncpy(a,"abcde",5);
   // cppcheck-suppress bufferAccessOutOfBounds
   strncpy(a,"abcde",6);
-
+  fread(a,1,5,stdin);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  fread(a,1,6,stdin);
+  fwrite(a,1,5,stdout);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  fread(a,1,6,stdout);
 }
 
 // null pointer
