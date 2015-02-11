@@ -475,22 +475,18 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
 
     const unsigned int declarationId = arrayInfo.declarationId();
 
-    const Token *tok2 = tok->tokAt(2);
-    // 1st parameter..
-    if (Token::Match(tok2, "%varid% ,|)", declarationId))
-        checkFunctionParameter(*tok, 1, arrayInfo, callstack);
-    else if (Token::Match(tok2, "%varid% + %num% ,|)", declarationId)) {
-        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(2))));
-        checkFunctionParameter(*tok, 1, ai, callstack);
-    }
-
-    // goto 2nd parameter and check it..
-    tok2 = tok2->nextArgument();
-    if (Token::Match(tok2, "%varid% ,|)", declarationId))
-        checkFunctionParameter(*tok, 2, arrayInfo, callstack);
-    else if (Token::Match(tok2, "%varid% + %num% ,|)", declarationId)) {
-        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(2))));
-        checkFunctionParameter(*tok, 2, ai, callstack);
+    const Token *argtok = tok->tokAt(2);
+    unsigned int argnr = 1U;
+    while (argtok) {
+        if (Token::Match(argtok, "%varid% ,|)", declarationId))
+            checkFunctionParameter(*tok, argnr, arrayInfo, callstack);
+        else if (Token::Match(argtok, "%varid% + %num% ,|)", declarationId)) {
+            const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(argtok->strAt(2))));
+            checkFunctionParameter(*tok, argnr, ai, callstack);
+        }
+        // goto next parameter..
+        argtok = argtok->nextArgument();
+        argnr++;
     }
 }
 
