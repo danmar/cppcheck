@@ -22,6 +22,7 @@
 #include "checkclass.h"
 #include "testsuite.h"
 #include <sstream>
+#include <tinyxml2.h>
 
 extern std::ostringstream errout;
 
@@ -2072,17 +2073,16 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
-    void checkNoMemset(const char code[], bool load_std_cfg = false, bool portability = false) {
-        // Clear the error log
-        errout.str("");
-
+    void checkNoMemset(const char code[]) {
         Settings settings;
         settings.addEnabled("warning");
-        if (portability)
-            settings.addEnabled("portability");
-        if (load_std_cfg) {
-            LOAD_LIB_2(settings.library, "std.cfg");
-        }
+        settings.addEnabled("portability");
+        checkNoMemset(code,settings);
+    }
+
+    void checkNoMemset(const char code[], const Settings &settings) {
+        // Clear the error log
+        errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2512,6 +2512,17 @@ private:
                       "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+    }
+
+    void memsetOnStdPodType() { // Ticket #5901
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"
@@ -2519,11 +2530,9 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
-                      "}", true);
+                      "}");
         ASSERT_EQUALS("", errout.str()); // std::array is POD (#5481)
-    }
 
-    void memsetOnStdPodType() { // Ticket #5901
         checkNoMemset("struct st {\n"
                       "  std::uint8_t a;\n"
                       "  std::uint8_t b;\n"
@@ -2533,7 +2542,7 @@ private:
                       "void f() {\n"
                       "  st s;\n"
                       "  std::memset(&s, 0, sizeof(st));\n"
-                      "}", true);
+                      "}", settings);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2544,7 +2553,7 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
-                      "}", false, true);
+                      "}");
         ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
 
         checkNoMemset("struct A {\n"
@@ -2553,7 +2562,7 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
-                      "}", false, true);
+                      "}");
         ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
 
         checkNoMemset("struct A {\n"
@@ -2562,7 +2571,7 @@ private:
                       "void f(const A& b) {\n"
                       "    A a;\n"
                       "    memcpy(&a, &b, sizeof(A));\n"
-                      "}", false, true);
+                      "}");
         ASSERT_EQUALS("", errout.str());
 
         checkNoMemset("struct A {\n"
@@ -2571,16 +2580,7 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
-                      "}", false, true);
-        ASSERT_EQUALS("", errout.str());
-
-        checkNoMemset("struct A {\n"
-                      "    float f;\n"
-                      "};\n"
-                      "void f() {\n"
-                      "    A a;\n"
-                      "    memset(&a, 0, sizeof(A));\n"
-                      "}", false, false);
+                      "}");
         ASSERT_EQUALS("", errout.str());
     }
 
