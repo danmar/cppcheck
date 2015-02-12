@@ -3412,7 +3412,7 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"memset\">\n"
+                               "  <function name=\"mymemset\">\n"
                                "    <noreturn>false</noreturn>\n"
                                "    <arg nr=\"1\">\n"
                                "      <minsize type=\"argvalue\" arg=\"3\"/>\n"
@@ -3427,40 +3427,40 @@ private:
 
         check("void f() {\n"
               "    char c[10];\n"
-              "    memset(c, 0, 10);\n"
+              "    mymemset(c, 0, 10);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    char c[10];\n"
-              "    memset(c, 0, 11);\n"
+              "    mymemset(c, 0, 11);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
         // ticket #836
         check("void f() {\n"
               "  char a[10];\n"
-              "  memset(a+5, 0, 10);\n"
+              "  mymemset(a+5, 0, 10);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
 
         // #4968 - not standard function
         check("void f() {\n"
               "    char str[3];\n"
-              "    foo.memset(str, 0, 100);\n"
-              "    foo::memset(str, 0, 100);\n"
-              "    std::memset(str, 0, 100);\n"
+              "    foo.mymemset(str, 0, 100);\n"
+              "    foo::mymemset(str, 0, 100);\n"
+              "    std::mymemset(str, 0, 100);\n"
               "}", settings);
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", "", errout.str());
 
         // #5257 - check strings
         check("void f() {\n"
-              "  memset(\"abc\", 0, 20);\n"
+              "  mymemset(\"abc\", 0, 20);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         check("void f() {\n"
-              "  memset(temp, \"abc\", 4);\n"
+              "  mymemset(temp, \"abc\", 4);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
     }
@@ -3469,7 +3469,7 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"strncpy\">\n"
+                               "  <function name=\"mystrncpy\">\n"
                                "    <noreturn>false</noreturn>\n"
                                "    <arg nr=\"1\">\n"
                                "      <minsize type=\"sizeof\" arg=\"2\"/>\n"
@@ -3483,44 +3483,44 @@ private:
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
 
-        // strncpy...
         check("void f() {\n"
               "    char c[7];\n"
-              "    strncpy(c, \"hello\", 7);\n"
+              "    mystrncpy(c, \"hello\", 7);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               " char c[6];\n"
-              " strncpy(c,\"hello\",6);\n"
+              " mystrncpy(c,\"hello\",6);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               " char c[5];\n"
-              " strncpy(c,\"hello\",6);\n"
+              " mystrncpy(c,\"hello\",6);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
         check("void f() {\n"
               "    char c[6];\n"
-              "    strncpy(c,\"hello!\",7);\n"
+              "    mystrncpy(c,\"hello!\",7);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
         check("struct AB { char a[10]; };\n"
               "void foo(AB *ab) {\n"
-              "    strncpy(x, ab->a, 100);\n"
+              "    mystrncpy(x, ab->a, 100);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        check("void a(char *p) { strncpy(p,\"hello world!\",10); }\n" // #3168
+        check("void a(char *p) { mystrncpy(p,\"hello world!\",10); }\n" // #3168
               "void b() {\n"
               "    char buf[5];\n"
               "    a(buf);"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
     }
+
     void minsize_strlen() {
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -3612,7 +3612,7 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"fread\">\n"
+                               "  <function name=\"myfread\">\n"
                                "    <arg nr=\"1\">\n"
                                "      <minsize type=\"mul\" arg=\"2\" arg2=\"3\"/>\n"
                                "    </arg>\n"
@@ -3627,13 +3627,13 @@ private:
 
         check("void f() {\n"
               "    char c[5];\n"
-              "    fread(c, 1, 5, stdin);\n"
+              "    myfread(c, 1, 5, stdin);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    char c[5];\n"
-              "    fread(c, 1, 6, stdin);\n"
+              "    myfread(c, 1, 6, stdin);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
     }
