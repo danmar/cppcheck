@@ -82,14 +82,6 @@ public:
      */
     static MathLib::bigint countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
-    /**
-     * @brief %Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
-     * and report found errors.
-     * @param tok The "sprintf" token.
-     * @param size The size of the buffer where sprintf is writing.
-     */
-    void checkSprintfCall(const Token *tok, const MathLib::bigint size);
-
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void checkStructVariable();
 

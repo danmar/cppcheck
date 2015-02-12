@@ -281,7 +281,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const std::size_t arraySize, const Token **charSizeToken)
+static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const std::size_t arraySize, const Token **charSizeToken, const Settings * const settings)
 {
     if (charSizeToken)
         *charSizeToken = nullptr;
@@ -318,9 +318,24 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
             }
             break;
         case Library::ArgumentChecks::MinSize::STRLEN: {
-            const Token *strtoken = argtok->getValueTokenMaxStrLength();
-            if (strtoken && Token::getStrLength(strtoken) >= arraySize)
-                error = true;
+            if (settings->library.isargformatstr(ftok,minsize->arg)) {
+                std::list<const Token *> parameters;
+                const std::string &formatstr(argtok->str());
+                const Token *argtok2 = argtok;
+                while ((argtok2 = argtok2->nextArgument()) != nullptr) {
+                    if (Token::Match(argtok2, "%num%|%str% [,)]"))
+                        parameters.push_back(argtok2);
+                    else
+                        parameters.push_back(nullptr);
+                }
+                const MathLib::bigint len = CheckBufferOverrun::countSprintfLength(formatstr, parameters);
+                if (len > arraySize + 2U)
+                    error = true;
+            } else {
+                const Token *strtoken = argtok->getValueTokenMaxStrLength();
+                if (strtoken && Token::getStrLength(strtoken) >= arraySize)
+                    error = true;
+            }
         }
         break;
         case Library::ArgumentChecks::MinSize::SIZEOF:
@@ -347,7 +362,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
             arraySize *= arrayInfo.num(i);
 
         const Token *charSizeToken = nullptr;
-        if (checkMinSizes(*minsizes, &ftok, (std::size_t)arraySize, &charSizeToken))
+        if (checkMinSizes(*minsizes, &ftok, (std::size_t)arraySize, &charSizeToken, _settings))
             bufferOverrunError(callstack, arrayInfo.varname());
         if (charSizeToken)
             sizeArgumentAsCharError(charSizeToken);
@@ -677,12 +692,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 }
             }
 
-            // sprintf..
-            const std::string sprintfPattern = declarationId > 0 ? std::string("sprintf ( %varid% , %str% [,)]") : ("sprintf ( " + varnames + " , %str% [,)]");
-            if (Token::Match(tok, sprintfPattern.c_str(), declarationId)) {
-                checkSprintfCall(tok, static_cast<unsigned int>(total_size));
-            }
-
             // snprintf..
             const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
             if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
@@ -963,11 +972,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     }
                     tok2 = tok2->tokAt(7);
                 }
-            }
-
-
-            if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", declarationId)) {
-                checkSprintfCall(tok, total_size);
             }
 
             // snprintf..
@@ -1471,35 +1475,6 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
     return (MathLib::bigint)input_string_size;
 }
 
-void CheckBufferOverrun::checkSprintfCall(const Token *tok, const MathLib::bigint size)
-{
-    if (size == 0)
-        return;
-
-    std::list<const Token*> parameters;
-    const Token* vaArg = tok->tokAt(2)->nextArgument()->nextArgument();
-    while (vaArg) {
-        if (Token::Match(vaArg->next(), "[,)]")) {
-            if (vaArg->type() == Token::eString)
-                parameters.push_back(vaArg);
-
-            else if (vaArg->isNumber())
-                parameters.push_back(vaArg);
-
-            else
-                parameters.push_back(nullptr);
-        } else // Parameter is more complex than just a value or variable. Ignore it for now and skip to next token.
-            parameters.push_back(nullptr);
-
-        vaArg = vaArg->nextArgument();
-    }
-
-    MathLib::bigint len = countSprintfLength(tok->tokAt(2)->nextArgument()->strValue(), parameters);
-    if (len > size) {
-        bufferOverrunError(tok);
-    }
-}
-
 
 
 //---------------------------------------------------------------------------
@@ -1547,10 +1522,6 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                 if (Token::Match(tok, "strcpy ( %varid% , %var% )", dstVarId) &&
                     tok->tokAt(4)->varId() == srcVarId) {
                     bufferOverrunError(tok);
-                } else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
-                           tok->tokAt(6)->varId() == srcVarId &&
-                           tok->strAt(4).find("%s") != std::string::npos) {
-                    bufferOverrunError(tok);
                 }
             }
             if (!tok)
@@ -1582,7 +1553,7 @@ void CheckBufferOverrun::checkStringArgument()
                 const std::list<Library::ArgumentChecks::MinSize> *minsizes = _settings->library.argminsizes(tok, argnr);
                 if (!minsizes)
                     continue;
-                if (checkMinSizes(*minsizes, tok, Token::getStrSize(strtoken), nullptr))
+                if (checkMinSizes(*minsizes, tok, Token::getStrSize(strtoken), nullptr, _settings))
                     bufferOverrunError(argtok);
             }
         }
@@ -1633,14 +1604,6 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 // e.g. strcpy(buffer, argv[0])
                 if (Token::Match(tok, "strcpy|strcat ( %name% , * %varid%", varid) ||
                     Token::Match(tok, "strcpy|strcat ( %name% , %varid% [", varid)) {
-                    cmdLineArgsError(tok);
-                    tok = tok->linkAt(1);
-                } else if (Token::Match(tok, "sprintf ( %name% , %str% , %varid% [", varid) &&
-                           tok->strAt(4).find("%s") != std::string::npos) {
-                    cmdLineArgsError(tok);
-                    tok = tok->linkAt(1);
-                } else if (Token::Match(tok, "sprintf ( %name% , %str% , * %varid%", varid) &&
-                           tok->strAt(4).find("%s") != std::string::npos) {
                     cmdLineArgsError(tok);
                     tok = tok->linkAt(1);
                 }
