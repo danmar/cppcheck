@@ -16,6 +16,12 @@ void bufferAccessOutOf(void) {
   fgets(a,5,stdin);
   // cppcheck-suppress bufferAccessOutOfBounds
   fgets(a,6,stdin);
+  sprintf(a, "ab%s", "cd");
+  // cppcheck-suppress bufferAccessOutOfBounds
+  sprintf(a, "ab%s", "cde");
+  snprintf(a, 5, "abcde%i", 1);
+  // cppcheck-suppress bufferAccessOutOfBounds
+  snprintf(a, 6, "abcde%i", 1);
   strcpy(a,"abcd");
   // cppcheck-suppress bufferAccessOutOfBounds
   strcpy(a, "abcde");

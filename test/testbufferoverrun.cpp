@@ -209,13 +209,6 @@ private:
         TEST_CASE(pointer_out_of_bounds_2);
         TEST_CASE(pointer_out_of_bounds_sub);
 
-        TEST_CASE(snprintf1);
-        TEST_CASE(snprintf2);
-        TEST_CASE(snprintf4);
-        TEST_CASE(snprintf5);
-        TEST_CASE(snprintf6);
-        TEST_CASE(snprintf7);
-
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
         TEST_CASE(strncat3);
@@ -2891,91 +2884,6 @@ private:
               "    dostuff(x-i);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is -20 the pointer arithmetic 'x-i' is out of bounds.\n", errout.str());
-    }
-
-    void snprintf1() {
-        check("void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    snprintf(str, 10, \"%s\", \"abc\");\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds: Supplied size 10 is larger than actual size 5.\n", errout.str());
-    }
-
-    void snprintf2() {
-        check("void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    snprintf(str, 5, \"%s\", \"abc\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void snprintf4() {
-        check("void f(int x)\n"
-              "{\n"
-              "    char str[5];\n"
-              "    snprintf(str, 8 - x, \"abcdefghijkl\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void snprintf5() {
-        check("struct Foo { char a[1]; };\n"
-              "void f()\n"
-              "{\n"
-              "  struct Foo x;\n"
-              "  snprintf(x.a, 2, \"aa\");\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds: Supplied size 2 is larger than actual size 1.\n", errout.str());
-
-        // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
-        check("struct Foo { char a[1]; };\n"
-              "void f()\n"
-              "{\n"
-              "  struct Foo *x = malloc(sizeof(Foo));\n"
-              "  snprintf(x.a, 2, \"aa\");\n"
-              "  free(x);\n"
-              "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
-
-        check("struct Foo { char a[1]; };\n"
-              "void f()\n"
-              "{\n"
-              "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
-              "  snprintf(x.a, 2, \"aa\");\n"
-              "  free(x);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void snprintf6() {
-        check("struct Foo { char a[3]; };\n"
-              "void f()\n"
-              "{\n"
-              "  struct Foo x;\n"
-              "  snprintf(x.a, 2, \"aa\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void snprintf7() {
-        check("void x() {\n"
-              "    sal_Char pString[1024];\n"
-              "    snprintf(pString, 1024, \"ab\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // #6141 FP: Unknown type is assumed to have size 0
-        check("typedef struct {\n"
-              "    CHAR s[42];\n"
-              "} sct_t;\n"
-              "void foo() {\n"
-              "    sct_t p;\n"
-              "    snprintf(p.s, 42, \"abcdef\");\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
     }
 
     void strncat1() {

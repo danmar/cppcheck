@@ -692,14 +692,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 }
             }
 
-            // snprintf..
-            const std::string snprintfPattern = declarationId > 0 ? std::string("snprintf ( %varid% , %num% ,") : ("snprintf ( " + varnames + " , %num% ,");
-            if (Token::Match(tok, snprintfPattern.c_str(), declarationId)) {
-                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4 + varcount));
-                if (n > total_size)
-                    outOfBoundsError(tok->tokAt(4 + varcount), "snprintf size", true, n, total_size);
-            }
-
             // Check function call..
             if (Token::Match(tok, "%name% (")) {
                 // No varid => function calls are not handled
@@ -972,13 +964,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     }
                     tok2 = tok2->tokAt(7);
                 }
-            }
-
-            // snprintf..
-            if (total_size > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", declarationId)) {
-                const MathLib::bigint n = MathLib::toLongNumber(tok->strAt(4));
-                if (n > total_size)
-                    outOfBoundsError(tok->tokAt(4), "snprintf size", true, n, total_size);
             }
         }
     }
