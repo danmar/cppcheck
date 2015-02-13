@@ -643,13 +643,16 @@ void CheckOther::checkRedundantAssignment()
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                             if (tok2->str() == ";")
                                 break;
-                            else if (tok2->varId() == tok->varId())
+                            else if (tok2->varId() == tok->varId()) {
                                 error = false;
-                            else if (Token::Match(tok2, "%name% (") && nonLocal(tok->variable())) { // Called function might use the variable
+                                break;
+                            } else if (Token::Match(tok2, "%name% (") && nonLocal(tok->variable())) { // Called function might use the variable
                                 const Function* const func = tok2->function();
                                 const Variable* const var = tok->variable();
-                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) // Global variable, or member function
+                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) {// Global variable, or member function
                                     error = false;
+                                    break;
+                                }
                             }
                         }
                         if (error) {
