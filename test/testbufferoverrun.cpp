@@ -218,10 +218,6 @@ private:
         TEST_CASE(strcat2);
         TEST_CASE(strcat3);
 
-        TEST_CASE(memfunc1);  // memchr/memset/memcpy
-        TEST_CASE(memfunc2);
-        TEST_CASE(memfunc3);  // ticket #1659
-
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);  // ticket #4764
@@ -2949,84 +2945,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    // memchr/memset/memcpy/etc
-    void memfunc1() {
-        checkstd("struct S {\n"
-                 "    char a[5];\n"
-                 "};\n"
-                 "void f() {\n"
-                 "    S s;\n"
-                 "    memset(s.a, 0, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: s.a\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char str[5];\n"
-                 "    memset(str, 0, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char a[5], b[50];\n"
-                 "    memcpy(a, b, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char a[5], b[50];\n"
-                 "    memmove(a, b, 10);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
-
-        // Ticket #909
-        checkstd("void f() {\n"
-                 "    char * pch;\n"
-                 "    char str[] = \"Example string\";\n"
-                 "    pch = memchr (str, 'p', 16);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-    }
-
-    // ticket #2121 - buffer access out of bounds when using uint32_t
-    void memfunc2() {
-        checkstd("void f() {\n"
-                 "    unknown_type_t buf[4];\n"
-                 "    memset(buf, 0, 100);\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    // ticket #1659 - overflowing variable when using memcpy
-    void memfunc3() {
-        checkstd("void f() { \n"
-                 "  char str1[]=\"Sample string\";\n"
-                 "  char str2;\n"
-                 "  memcpy (&str2,str1,13);\n" // <-- strlen(str1)+1 = 13
-                 "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n","", errout.str());
-
-        checkstd("void f() {\n"
-                 "    char a[10];\n"
-                 "    char str1[] = \"abcdef\";\n"
-                 "    memset(a, 0, 11);\n" // <-- strlen(str1) + 5 = 11
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: a\n", errout.str());
-
-        checkstd("void f() { \n"
-                 "char str1[]=\"Sample string\";\n"
-                 "char str2;\n"
-                 "memcpy (&str2,str1,15);\n" // <-- strlen(str1) + 1 = 15
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str1\n", errout.str());
-
-        checkstd("void f() { \n"
-                 "  char str[5];\n"
-                 "  memcpy (str, \"\\0\\0\\0\\0\\0\", 5);\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void varid1() {
         check("void foo()\n"
               "{\n"
@@ -3345,12 +3263,42 @@ private:
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout.str());
 
+        check("struct S {\n"
+              "    char a[5];\n"
+              "};\n"
+              "void f() {\n"
+              "    S s;\n"
+              "    mymemset(s.a, 0, 10);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: s.a\n", errout.str());
+
         // ticket #836
-        check("void f() {\n"
+        check("void f(void) {\n"
               "  char a[10];\n"
               "  mymemset(a+5, 0, 10);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout.str());
+
+        // Ticket #909
+        check("void f(void) {\n"
+              "    char str[] = \"abcd\";\n"
+              "    mymemset(str, 0, 10);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        // ticket #1659 - overflowing variable when using memcpy
+        checkstd("void f(void) { \n"
+                 "  char c;\n"
+                 "  mymemset(&c, 0, 4);\n"
+                 "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", "", errout.str());
+
+        // ticket #2121 - buffer access out of bounds when using uint32_t
+        check("void f(void) {\n"
+              "    unknown_type_t buf[4];\n"
+              "    mymemset(buf, 0, 100);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
 
         // #4968 - not standard function
         check("void f() {\n"
