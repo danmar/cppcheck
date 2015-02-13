@@ -100,7 +100,7 @@ std::string Path::simplifyPath(std::string originalPath)
         } else if (i > 0 && pathParts[i] == ".") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i));
             i = 0;
-        // Don't touch leading "//" which means a UNC path
+            // Don't touch leading "//" which means a UNC path
         } else if (i > 1 && pathParts[i] == "/" && pathParts[i-1] == "/") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
             i = 0;
