@@ -60,10 +60,17 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    // Skip ./ at the beginning
+    // Remove ./, .//, ./// etc. at the beginning
     if (originalPath.size() > 2 && originalPath[0] == '.' &&
         originalPath[1] == '/') {
-        originalPath = originalPath.erase(0, 2);
+        size_t toErase = 2;
+        for (std::size_t i = 2; i < originalPath.size(); i++) {
+            if (originalPath[i] == '/')
+                toErase++;
+            else
+                break;
+        }
+        originalPath = originalPath.erase(0, toErase);
     }
 
     std::string subPath = "";
@@ -93,7 +100,8 @@ std::string Path::simplifyPath(std::string originalPath)
         } else if (i > 0 && pathParts[i] == ".") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i));
             i = 0;
-        } else if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
+        // Don't touch leading "//" which means a UNC path
+        } else if (i > 1 && pathParts[i] == "/" && pathParts[i-1] == "/") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
             i = 0;
         }
