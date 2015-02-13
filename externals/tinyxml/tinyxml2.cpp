@@ -670,8 +670,9 @@ void XMLNode::DeleteChild( XMLNode* node )
 XMLNode* XMLNode::InsertEndChild( XMLNode* addThis )
 {
     TIXMLASSERT( addThis );
-    if ( addThis->_document != _document ) {
-        TIXMLASSERT( false );
+	bool isOtherDocument = (addThis->_document != _document);
+    if ( isOtherDocument ) {
+		TIXMLASSERT( !isOtherDocument ); //assure a false ASSERT
         return 0;
     }
 
@@ -704,8 +705,9 @@ XMLNode* XMLNode::InsertEndChild( XMLNode* addThis )
 XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
 {
     TIXMLASSERT( addThis );
-    if ( addThis->_document != _document ) {
-        TIXMLASSERT( false );
+	bool isOtherDocument = (addThis->_document != _document);
+	if (isOtherDocument) {
+		TIXMLASSERT(!isOtherDocument); //assure a false ASSERT
         return 0;
     }
 
@@ -739,15 +741,16 @@ XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
 XMLNode* XMLNode::InsertAfterChild( XMLNode* afterThis, XMLNode* addThis )
 {
     TIXMLASSERT( addThis );
-    if ( addThis->_document != _document ) {
-        TIXMLASSERT( false );
+	bool isOtherDocument = (addThis->_document != _document);
+	if (isOtherDocument) {
+		TIXMLASSERT(!isOtherDocument); //assure a false ASSERT
         return 0;
     }
 
     TIXMLASSERT( afterThis );
-
-    if ( afterThis->_parent != this ) {
-        TIXMLASSERT( false );
+	isOtherDocument = (afterThis->_parent != this );
+	if (isOtherDocument) {
+		TIXMLASSERT(!isOtherDocument); //assure a false ASSERT
         return 0;
     }
 
