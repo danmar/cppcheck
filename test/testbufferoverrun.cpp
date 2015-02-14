@@ -185,7 +185,6 @@ private:
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
         TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_21);
-        TEST_CASE(buffer_overrun_22); // #3124
         TEST_CASE(buffer_overrun_23); // #3153
         TEST_CASE(buffer_overrun_24); // index variable is changed in for-loop
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
@@ -2403,28 +2402,6 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Array 'dst[4]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
-    void buffer_overrun_22() { // ticket #3124
-        checkstd("class A {\n"
-                 "public:\n"
-                 "    char b[5][6];\n"
-                 "};\n"
-                 "int main() {\n"
-                 "    A a;\n"
-                 "    memset(a.b, 0, 5 * 6);\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkstd("class A {\n"
-                 "public:\n"
-                 "    char b[5][6];\n"
-                 "};\n"
-                 "int main() {\n"
-                 "    A a;\n"
-                 "    memset(a.b, 0, 6 * 6);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: a.b\n", errout.str());
-    }
-
     void buffer_overrun_23() { // ticket #3153
         checkstd("void foo() {\n"
                  "    double dest = 23.0;\n"
@@ -3189,6 +3166,19 @@ private:
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
+        // #3124 - multidimension array
+        check("int main() {\n"
+              "    char b[5][6];\n"
+              "    mymemset(b, 0, 5 * 6);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main() {\n"
+              "    char b[5][6];\n"
+              "    mymemset(b, 0, 6 * 6);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: b\n", errout.str());
+
         // #4968 - not standard function
         check("void f() {\n"
               "    char str[3];\n"
@@ -3740,7 +3730,7 @@ private:
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a) + 1);\n"
               "  strcpy(b, a);\n"
-             "}");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char *a, char *c) {\n"
