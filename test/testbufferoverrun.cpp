@@ -230,8 +230,6 @@ private:
         TEST_CASE(alloc4);    // Buffer allocated with alloca
         TEST_CASE(malloc_memset);  // using memset on buffer allocated with malloc
 
-        TEST_CASE(memset1);
-        TEST_CASE(memset2);
         TEST_CASE(counter_test);
         TEST_CASE(minsize_argvalue);
         TEST_CASE(minsize_sizeof);
@@ -3128,33 +3126,6 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
-    void memset1() {
-        checkstd("void foo()\n"
-                 "{\n"
-                 "    char s[10];\n"
-                 "    memset(s, 5, '*');\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The size argument is given as a char constant.\n", errout.str());
-
-        checkstd("void foo()\n"
-                 "{\n"
-                 "    int* x[5];\n"
-                 "    memset(x, 0, sizeof(x));\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void memset2() {
-        check("class X {\n"
-              "    char* array[2];\n"
-              "    X();\n"
-              "};\n"
-              "X::X() {\n"
-              "    memset(array, 0, sizeof(array));\n"
-              "}",false,"test.cpp",false);
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void counter_test() const {
         std::list<const Token*> unknownParameter;
         unknownParameter.push_back(0);
@@ -3250,6 +3221,7 @@ private:
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
+        settings.addEnabled("warning");
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -3271,6 +3243,12 @@ private:
               "    mymemset(s.a, 0, 10);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: s.a\n", errout.str());
+
+        check("void foo() {\n"
+              "    char s[10];\n"
+              "    mymemset(s, 0, '*');\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The size argument is given as a char constant.\n", errout.str());
 
         // ticket #836
         check("void f(void) {\n"
