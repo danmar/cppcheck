@@ -230,7 +230,7 @@ private:
         TEST_CASE(alloc4);    // Buffer allocated with alloca
         TEST_CASE(malloc_memset);  // using memset on buffer allocated with malloc
 
-        TEST_CASE(counter_test);
+        TEST_CASE(countSprintfLength);
         TEST_CASE(minsize_argvalue);
         TEST_CASE(minsize_sizeof);
         TEST_CASE(minsize_strlen);
@@ -3126,7 +3126,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
-    void counter_test() const {
+    void countSprintfLength() const {
         std::list<const Token*> unknownParameter;
         unknownParameter.push_back(0);
 
