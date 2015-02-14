@@ -1,7 +1,18 @@
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
 
-file(GLOB_RECURSE hdrs "*.h")
-file(GLOB_RECURSE srcs "*.cpp")
+if (${CMAKE_BUILD_TYPE} STREQUAL Release)
+    # Process input files with the matchcompiler tool
+    execute_process(
+        COMMAND python tools/matchcompiler.py --build-directory ${PROJECT_BINARY_DIR}/libMatchCompiler
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+    SET(SOURCES_PATH ${PROJECT_BINARY_DIR}/libMatchCompiler/)
+else()
+    SET(SOURCES_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+file(GLOB_RECURSE hdrs "${SOURCES_PATH}/*.h")
+file(GLOB_RECURSE srcs "${SOURCES_PATH}/*.cpp")
 
 add_library(${PROJECT_NAME} ${srcs} ${hdrs})
 

@@ -637,18 +637,11 @@ class MatchCompiler:
 
 def main():
     # Main program
-    build_dir = 'build'
 
     # Check if we are invoked from the right place
     if not os.path.exists('lib') and not os.path.exists('samples'):
         print('Please invoke from the top level cppcheck source dir. Example: tools/matchcompiler.py')
         sys.exit(-1)
-
-    # Create build directory if needed
-    if not os.path.exists(build_dir):
-        os.makedirs(build_dir)
-    if not os.path.isdir(build_dir):
-        raise Exception(build_dir + ' is not a directory')
 
     # Argument handling
     parser = argparse.ArgumentParser(
@@ -657,15 +650,23 @@ def main():
                         help='verify compiled matches against on-the-fly parser. Slow!')
     parser.add_argument('--show-skipped', action='store_true', default=False,
                         help='show skipped (non-static) patterns')
+    parser.add_argument('--build-directory', default='build',
+                        help='Directory where output files will be placed')
     args = parser.parse_args()
+
+    # Create build directory if needed
+    if not os.path.exists(args.build_directory):
+        os.makedirs(args.build_directory)
+    if not os.path.isdir(args.build_directory):
+        raise Exception(args.build_directory + ' is not a directory')
 
     mc = MatchCompiler(verify_mode=args.verify,
                        show_skipped=args.show_skipped)
 
     # convert all lib/*.cpp files
     for f in glob.glob('lib/*.cpp'):
-        print (f + ' => ' + build_dir + '/' + f[4:])
-        mc.convertFile(f, build_dir + '/' + f[4:])
+        print (f + ' => ' + args.build_directory + '/' + f[4:])
+        mc.convertFile(f, args.build_directory + '/' + f[4:])
 
 if __name__ == '__main__':
     main()
