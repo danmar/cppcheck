@@ -85,17 +85,6 @@ private:
         checkBufferOverrun.arrayIndexThenCheck();
     }
 
-    void checkstd(const char code[], const char filename[] = "test.cpp") {
-        static bool init;
-        static Settings settings;
-        if (!init) {
-            init = true;
-            LOAD_LIB_2(settings.library, "std.cfg");
-            settings.addEnabled("warning");
-        }
-        check(code, settings, filename);
-    }
-
     void run() {
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
@@ -208,15 +197,13 @@ private:
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
         TEST_CASE(strncat3);
-        TEST_CASE(strncat4);
 
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
         TEST_CASE(strcat3);
 
         TEST_CASE(varid1);
-        TEST_CASE(varid2);
-        TEST_CASE(varid3);  // ticket #4764
+        TEST_CASE(varid2);  // ticket #4764
 
         TEST_CASE(assign1);
 
@@ -224,7 +211,6 @@ private:
         TEST_CASE(alloc_malloc);   // Buffer allocated with malloc
         TEST_CASE(alloc_string);   // statically allocated buffer
         TEST_CASE(alloc_alloca);   // Buffer allocated with alloca
-        TEST_CASE(malloc_memset);  // using memset on buffer allocated with malloc
 
         TEST_CASE(countSprintfLength);
         TEST_CASE(minsize_argvalue);
@@ -2727,65 +2713,56 @@ private:
     }
 
     void strncat1() {
-        checkstd("void f(char *a, char *b) {\n"
-                 "    char str[16];\n"
-                 "    strncpy(str, a, 10);\n"
-                 "    strncat(str, b, 10);\n"
-                 "}");
+        check("void f(char *a, char *b) {\n"
+              "    char str[16];\n"
+              "    strncpy(str, a, 10);\n"
+              "    strncat(str, b, 10);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
     void strncat2() {
-        checkstd("void f(char *a) {\n"
-                 "    char str[5];\n"
-                 "    strncat(str, a, 5);\n"
-                 "}");
+        check("void f(char *a) {\n"
+              "    char str[5];\n"
+              "    strncat(str, a, 5);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
     void strncat3() {
-        checkstd("struct Foo { char a[4]; };\n"
-                 "void f(char *a) {\n"
-                 "  struct Foo x;\n"
-                 "  strncat(x.a, a, 5);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: x.a\n", errout.str());
-    }
-
-    void strncat4() {
-        checkstd("void f(char *a) {\n"
-                 "    char str[5];\n"
-                 "    strncat(str, \"foobar\", 5);\n"
-                 "}");
+        check("void f(char *a) {\n"
+              "    char str[5];\n"
+              "    strncat(str, \"foobar\", 5);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
     }
 
 
     void strcat1() {
-        checkstd("struct Foo { char a[4]; };\n"
-                 "void f() {\n"
-                 "  struct Foo x;\n"
-                 "  strcat(x.a, \"aa\");\n"
-                 "  strcat(x.a, \"aa\");\n"
-                 "}");
+        check("struct Foo { char a[4]; };\n"
+              "void f() {\n"
+              "  struct Foo x;\n"
+              "  strcat(x.a, \"aa\");\n"
+              "  strcat(x.a, \"aa\");\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void strcat2() {
-        checkstd("struct Foo { char a[5]; };\n"
-                 "void f() {\n"
-                 "  struct Foo x;\n"
-                 "  strcat(x.a, \"aa\");\n"
-                 "  strcat(x.a, \"aa\");\n"
-                 "}");
+        check("struct Foo { char a[5]; };\n"
+              "void f() {\n"
+              "  struct Foo x;\n"
+              "  strcat(x.a, \"aa\");\n"
+              "  strcat(x.a, \"aa\");\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void strcat3() {
-        checkstd("void f() {\n"
-                 "  INT str[10];\n"
-                 "  strcat(str, \"aa\");\n"
-                 "}");
+        check("void f() {\n"
+              "  INT str[10];\n"
+              "  strcat(str, \"aa\");\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2802,21 +2779,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void varid2() {
-        checkstd("void foo()\n"
-                 "{\n"
-                 "    char str[10];\n"
-                 "    if (str[0])\n"
-                 "    {\n"
-                 "        char str[50];\n"
-                 "        memset(str,0,50);\n"
-                 "    }\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void varid3() { // #4764
+    void varid2() { // #4764
         check("struct foo {\n"
               "  void bar() { return; }\n"
               "  type<> member[1];\n"
@@ -2960,14 +2923,6 @@ private:
               "    s[10] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
-    }
-
-    void malloc_memset() {
-        checkstd("void f() {\n"
-                 "    char *p = malloc(10);\n"
-                 "    memset(p,0,100);\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
     }
 
     void countSprintfLength() const {
