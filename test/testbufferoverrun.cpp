@@ -3265,10 +3265,10 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         // ticket #1659 - overflowing variable when using memcpy
-        checkstd("void f(void) { \n"
-                 "  char c;\n"
-                 "  mymemset(&c, 0, 4);\n"
-                 "}");
+        check("void f(void) { \n"
+              "  char c;\n"
+              "  mymemset(&c, 0, 4);\n"
+              "}", settings);
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", "", errout.str());
 
         // ticket #2121 - buffer access out of bounds when using uint32_t
