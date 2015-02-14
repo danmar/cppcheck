@@ -185,7 +185,6 @@ private:
         TEST_CASE(buffer_overrun_19); // #2597 - class member with unknown type
         TEST_CASE(buffer_overrun_20); // #2986 (segmentation fault)
         TEST_CASE(buffer_overrun_21);
-        TEST_CASE(buffer_overrun_23); // #3153
         TEST_CASE(buffer_overrun_24); // index variable is changed in for-loop
         TEST_CASE(buffer_overrun_26); // #4432 (segmentation fault)
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
@@ -2401,23 +2400,6 @@ private:
               "} } }\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Array 'dst[4]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
-
-    void buffer_overrun_23() { // ticket #3153
-        checkstd("void foo() {\n"
-                 "    double dest = 23.0;\n"
-                 "    char* const source = (char*) malloc(sizeof(dest));\n"
-                 "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
-
-        checkstd("void foo() {\n"
-                 "    double dest = 23.0;\n"
-                 "    char* const source = (char*) malloc(2 * sizeof(dest));\n"
-                 "    memcpy(&dest, source + sizeof(double), sizeof(dest));\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
 
     void buffer_overrun_24() { // index variable is changed in for-loop
         // ticket #4106
