@@ -2590,76 +2590,50 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
+                               "  <function name=\"mystrcpy\">\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\">\n"
+                               "      <minsize type=\"strlen\" arg=\"2\"/>\n"
+                               "    </arg>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
+
         // Attempt to get size from Cfg files, no false positives if size is not specified
-        checkstd("void f() {\n"
-                 "  uint8_t str[256];\n"
-                 "  str[0] = 0;\n"
-                 "  strcat(str, \"toto\");\n"
-                 "}");
+        check("void f() {\n"
+              "  u8 str[256];\n"
+              "  mystrcpy(str, \"abcd\");\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        checkstd("void f() {\n"
-                 "  uint8_t str[2];\n"
-                 "  str[0] = 0;\n"
-                 "  strcat(str, \"toto\");\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: str\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "  int_fast8_t str[256];\n"
-                 "  str[0] = 0;\n"
-                 "  strcat(str, \"toto\");\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "  u8 str[2];\n"
+              "  mystrcpy(str, \"abcd\");\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
 
         // The same for structs, where the message comes from a different check
-        checkstd("typedef struct mystruct_s {\n"
-                 "    uint8_t str[256];\n"
-                 "} mystruct_t;\n"
-                 "void f() {\n"
-                 "    mystruct_t ms;\n"
-                 "    ms.str[0] = 0;\n"
-                 "    strcat((char*)ms.str, \"toto\");\n"
-                 "}");
+        check("void f() {\n"
+              "    struct { u8 str[256]; } ms;\n"
+              "    mystrcpy(ms.str, \"abcd\");\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        checkstd("typedef struct mystruct_s {\n"
-                 "    uint8_t str[2];\n"
-                 "} mystruct_t;\n"
-                 "void f() {\n"
-                 "    mystruct_t ms;\n"
-                 "    ms.str[0] = 0;\n"
-                 "    strcat((char*)ms.str, \"toto\");\n"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer is accessed out of bounds: ms.str\n", errout.str());
-
-        checkstd("typedef struct mystruct_s {\n"
-                 "    int_fast8_t str[256];\n"
-                 "} mystruct_t;\n"
-                 "void f() {\n"
-                 "    mystruct_t ms;\n"
-                 "    ms.str[0] = 0;\n"
-                 "    strcat((char*)ms.str, \"toto\");\n"
-                 "}");
-        ASSERT_EQUALS("", errout.str());
+        check("void f() {\n"
+              "    struct { u8 str[2]; } ms;\n"
+              "    mystrcpy(ms.str, \"abcd\");\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: ms.str\n", errout.str());
     }
 
     void valueflow_string() { // using ValueFlow string values in checking
-        checkstd("void f() {\n"
-                 "  char buf[3];\n"
-                 "  const char *x = s;\n"
-                 "  if (cond) x = \"abcde\";\n"
-                 "  strcpy(buf,x);\n" // <- buffer overflow when x is "abcde"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
-
-        checkstd("void f() {\n"
-                 "  const char *x = s;\n"
-                 "  if (cond) x = \"abcde\";\n"
-                 "  memcpy(buf,x,20);\n" // <- buffer overflow when x is "abcde"
-                 "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds.\n", errout.str());
-
         check("char f() {\n"
               "  const char *x = s;\n"
               "  if (cond) x = \"abcde\";\n"
