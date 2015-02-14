@@ -827,7 +827,7 @@ private:
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
-        tokenizeAndStringify(code, true);
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
     void tokenize34() { // #6121
@@ -5222,11 +5222,31 @@ private:
                            tokenizeAndStringify(code));
     }
 
-    void cpp0xtemplate4() { // #6181
-        tokenizeAndStringify("class A; "
-                             "template <class T> class Disposer; "
-                             "template <typename T, class D = Disposer<T>> class Shim {}; "
-                             "class B : public Shim<A> {};");
+    void cpp0xtemplate4() { // #6181, #6354, #6414
+        ASSERT_THROW(tokenizeAndStringify("class A; "
+                                          "template <class T> class Disposer; "
+                                          "template <typename T, class D = Disposer<T>> class Shim {}; "
+                                          "class B : public Shim<A> {};"), InternalError);
+        tokenizeAndStringify("template <class ELFT> class ELFObjectImage {}; "
+                             "ObjectImage *createObjectImage() { "
+                             "  return new ELFObjectImage<ELFType<little>>(Obj); "
+                             "} "
+                             "void resolveX86_64Relocation() { "
+                             "  reinterpret_cast<int>(0); "
+                             "}");
+        tokenizeAndStringify("template<typename value_type, typename function_type> "
+                             "value_type Base(const value_type x, const value_type dx, function_type func, int type_deriv) { "
+                             "   return 0.0; "
+                             "}; "
+                             "namespace { "
+                             "  template<class DC> class C { "
+                             "    void Fun(int G, const double x); "
+                             "  }; "
+                             "  template<class DC> void C<DC>::Fun(int G, const double x) {"
+                             "    Base<double, CDFFunctor<DC>>(2, 2, f, 0); "
+                             "  }; "
+                             "  template<class DC> class C2 {}; "
+                             "}");
     }
 
     std::string arraySize_(const std::string &code) {
