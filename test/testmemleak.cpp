@@ -325,7 +325,6 @@ private:
         TEST_CASE(exit6);
         TEST_CASE(exit7);
         TEST_CASE(noreturn);
-        TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
         TEST_CASE(tmpfile_function);
@@ -3814,24 +3813,11 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
-
-
-    void stdstring() {
-        check("void f(std::string foo)\n"
-              "{\n"
-              "    char *out = new char[11];\n"
-              "    memset(&(out[0]), 0, 1);\n"
-              "}");
-
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out\n", errout.str());
-    }
-
     void strndup_function() {
-        check("void f()\n"
-              "{\n"
+        check("void f() {\n"
               "    char *out = strndup(\"text\", 3);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: out\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: out\n", errout.str());
     }
 
     void tmpfile_function() {

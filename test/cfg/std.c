@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <tgmath.h> // frexp
 
 void bufferAccessOutOf(void) {
@@ -34,6 +35,14 @@ void bufferAccessOutOf(void) {
   fwrite(a,1,5,stdout);
   // cppcheck-suppress bufferAccessOutOfBounds
   fread(a,1,6,stdout);
+}
+
+// memory leak
+
+void ignoreleak(void) {
+    char *p = (char *)malloc(10);
+    memset(&(p[0]), 0, 10);
+    // cppcheck-suppress memleak
 }
 
 // null pointer
@@ -109,8 +118,8 @@ void nullpointer(int value){
   strtol(0,0,0);
 
   // #6100 False positive nullPointer - calling mbstowcs(NULL,)
-  res += mbstowcs(0,value,0);
-  res += wcstombs(0,value,0);
+  res += mbstowcs(0,"",0);
+  res += wcstombs(0,L"",0);
 
   strtok(NULL,"xyz");
 
