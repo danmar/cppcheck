@@ -60,6 +60,8 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
+    const bool isUnc = originalPath.size() > 2 && originalPath[0] == '/' && originalPath[1] == '/';
+
     // Remove ./, .//, ./// etc. at the beginning
     if (originalPath.size() > 2 && originalPath[0] == '.' &&
         originalPath[1] == '/') {
@@ -90,6 +92,14 @@ std::string Path::simplifyPath(std::string originalPath)
     if (subPath.length() > 0)
         pathParts.push_back(subPath);
 
+    // First filter out all double slashes
+    for (unsigned int i = 1; i < pathParts.size(); ++i) {
+        if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
+            --i;
+        }
+    }
+
     for (unsigned int i = 1; i < pathParts.size(); ++i) {
         if (i > 1 && pathParts[i-2] != ".." && pathParts[i] == ".." && pathParts.size() > i + 1) {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) + 1);
@@ -100,11 +110,15 @@ std::string Path::simplifyPath(std::string originalPath)
         } else if (i > 0 && pathParts[i] == ".") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i));
             i = 0;
-            // Don't touch leading "//" which means a UNC path
-        } else if (i > 1 && pathParts[i] == "/" && pathParts[i-1] == "/") {
+        } else if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
             pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
             i = 0;
         }
+    }
+
+    if (isUnc) {
+        // Restore the leading double slash
+        pathParts.insert(pathParts.begin(), "/");
     }
 
     std::ostringstream oss;
