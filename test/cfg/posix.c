@@ -84,3 +84,25 @@ void noleak(int x, int y, int z) {
     fclose(f);
 */
 }
+
+
+// unused return value
+
+void ignoredReturnValue(void *addr, int fd) {
+    // cppcheck-suppress leakReturnValNotUsed
+    mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
+    // cppcheck-suppress ignoredReturnValue
+    strdupa("ab");
+}
+
+
+// valid range
+
+void invalidFunctionArg() {
+    // cppcheck-suppress invalidFunctionArg
+    usleep(-1);
+    usleep(0);
+    usleep(999999);
+    // cppcheck-suppress invalidFunctionArg
+    usleep(1000000);
+}
