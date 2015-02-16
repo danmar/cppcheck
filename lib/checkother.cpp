@@ -1643,16 +1643,16 @@ void CheckOther::checkCharVariable()
             }
 
             else if (Token::Match(tok, "[&|^]")) {
+                // Don't care about address-of operator
+                if (!tok->astOperand2())
+                    continue;
+
                 const Token *tok2;
                 if (tok->astOperand1() && astIsSignedChar(tok->astOperand1()))
                     tok2 = tok->astOperand2();
-                else if (tok->astOperand2() && astIsSignedChar(tok->astOperand2()))
+                else if (astIsSignedChar(tok->astOperand2()))
                     tok2 = tok->astOperand1();
                 else
-                    continue;
-
-                // Don't care about address-of operator
-                if (!tok->astOperand2())
                     continue;
 
                 // it's ok with a bitwise and where the other operand is 0xff or less..
