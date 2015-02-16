@@ -54,7 +54,7 @@ private:
         ASSERT_EQUALS("../../src/test.cpp", Path::simplifyPath("../../src/test.cpp"));
         ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
         ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
-        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
+        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".///src/test.cpp"));
 
         // Handling of UNC paths on Windows
         ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("//src/test.cpp"));
