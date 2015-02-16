@@ -124,8 +124,6 @@ private:
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
 
-        TEST_CASE(redundantGetAndSetUserId);
-
         TEST_CASE(clarifyCalculation);
         TEST_CASE(clarifyStatement);
 
@@ -3730,24 +3728,6 @@ private:
               "    memset(is, 1.0f + i, 40);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
-    }
-
-    void redundantGetAndSetUserId() {
-        checkposix("void foo() { seteuid(geteuid()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        checkposix("void foo() { setuid(getuid()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        checkposix("void foo() { setgid(getgid()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-        checkposix("void foo() { setegid(getegid()); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant get and set of user id.\n", errout.str());
-
-        check("void foo() { seteuid(getuid()); }");
-        ASSERT_EQUALS("", errout.str());
-        check("void foo() { seteuid(foo()); }");
-        ASSERT_EQUALS("", errout.str());
-        check("void foo() { foo(getuid()); }");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void clarifyCalculation() {

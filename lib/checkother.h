@@ -95,7 +95,6 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
 
-        checkOther.redundantGetAndSetUserId();
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkMemsetInvalid2ndParam();
@@ -158,9 +157,6 @@ public:
 
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
-
-    /** @brief % Check for seteuid(geteuid()) or setuid(getuid())*/
-    void redundantGetAndSetUserId();
 
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();

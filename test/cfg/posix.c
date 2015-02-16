@@ -2,7 +2,7 @@
 // Test library configuration for posix.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=posix --enable=information --error-exitcode=1 --inline-suppr cfg/test/posix.c
+// $ cppcheck --check-library --library=posix --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/posix.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -35,6 +35,7 @@ void bufferAccessOutOfBounds(int fd) {
   sendto(fd,a,5,0,0x0,0x0);
   // cppcheck-suppress bufferAccessOutOfBounds
   sendto(fd,a,6,0,0x0,0x0);
+  // cppcheck-suppress constStatement
   0;
 }
 
@@ -46,7 +47,8 @@ void nullPointer(char *p) {
     readdir (0);
 }
 
-void memleak_mmap(int fd) {    
+void memleak_mmap(int fd) {
+    // cppcheck-suppress unreadVariable
     void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak
 }
@@ -59,16 +61,19 @@ void resourceLeak_fdopen(int fd) {
 */
 
 void resourceLeak_fdopendir(int fd) {
+    // cppcheck-suppress unreadVariable
     DIR* leak1 = fdopendir(fd);
     // cppcheck-suppress resourceLeak
 }
 
 void resourceLeak_opendir(void) {
+    // cppcheck-suppress unreadVariable
     DIR* leak1 = opendir("abc");
     // cppcheck-suppress resourceLeak
 }
 
 void resourceLeak_socket(void) {
+    // cppcheck-suppress unreadVariable
     int s = socket(AF_INET, SOCK_STREAM, 0);
     // cppcheck-suppress resourceLeak
 }
@@ -89,10 +94,13 @@ void noleak(int x, int y, int z) {
 // unused return value
 
 void ignoredReturnValue(void *addr, int fd) {
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress ignoredReturnValue
-    strdupa("ab");
+    setuid(42);
+    // cppcheck-suppress ignoredReturnValue
+    getuid();
 }
 
 

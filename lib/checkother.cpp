@@ -2320,42 +2320,6 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
                 "for both parameters leads to a statement which is always " + strResult + ".");
 }
 
-//-----------------------------------------------------------------------------
-// Check for code like:
-// seteuid(geteuid()) or setuid(getuid()), which first gets and then sets the
-// (effective) user id to itself. Very often this indicates a copy and paste
-// error.
-//-----------------------------------------------------------------------------
-void CheckOther::redundantGetAndSetUserId()
-{
-    if (!_settings->standards.posix || !_settings->isEnabled("warning"))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        // check all the code in the function
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "setuid ( getuid ( ) )")
-                || Token::simpleMatch(tok, "seteuid ( geteuid ( ) )")
-                || Token::simpleMatch(tok, "setgid ( getgid ( ) )")
-                || Token::simpleMatch(tok, "setegid ( getegid ( ) )")) {
-                redundantGetAndSetUserIdError(tok);
-            }
-        }
-    }
-}
-void CheckOther::redundantGetAndSetUserIdError(const Token *tok)
-{
-    reportError(tok, Severity::warning,
-                "redundantGetAndSetUserId", "Redundant get and set of user id.\n"
-                "Redundant statement without any effect. First the user id is retrieved"
-                "by get(e)uid() and then set with set(e)uid().", false);
-}
-
-
 //---------------------------------------------------------------------------
 // Check testing sign of unsigned variables and pointers.
 //---------------------------------------------------------------------------
