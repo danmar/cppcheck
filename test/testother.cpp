@@ -33,11 +33,7 @@ public:
     }
 
 private:
-    Settings settings_std;
-
     void run() {
-        LOAD_LIB_2(settings_std.library, "std.cfg");
-
         TEST_CASE(emptyBrackets);
 
         TEST_CASE(zeroDiv1);
@@ -167,7 +163,7 @@ private:
 
         TEST_CASE(integerOverflow); // #5895
 
-        TEST_CASE(testReturnIgnoredReturnValue);
+        TEST_CASE(checkIgnoredReturnValue);
 
         TEST_CASE(redundantPointerOp);
     }
@@ -4200,6 +4196,19 @@ private:
     }
 
     void duplicateExpression3() {
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"mystrcmp\">\n"
+                               "    <pure/>\n"
+                               "    <arg nr=\"1\"/>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
+
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
               "}");
@@ -4246,8 +4255,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    if ((strcmp(a, b) == 0) || (strcmp(a, b) == 0)) {}\n"
-              "}", "test.cpp", false, false, true, &settings_std, false);
+              "    if ((mystrcmp(a, b) == 0) || (mystrcmp(a, b) == 0)) {}\n"
+              "}", "test.cpp", false, false, true, &settings, false);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"
@@ -5914,54 +5923,67 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testReturnIgnoredReturnValue() {
-        check("void foo() {\n"
-              "    strcmp(a, b);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+    void checkIgnoredReturnValue() {
+        Settings settings;
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"mystrcmp\">\n"
+                               "    <use-retval/>\n"
+                               "    <arg nr=\"1\"/>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settings.library.load(doc);
 
-        check("bool strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition, but it returns a value. Assume it is the one specified in the library.
+        check("void foo() {\n"
+              "  mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
+
+        check("bool mystrcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition, but it returns a value. Assume it is the one specified in the library.
               "void foo() {\n"
-              "    strcmp(a, b);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function strcmp() is not used.\n", errout.str());
+              "    mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
-        check("void strcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition which returns void!
+        check("void mystrcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition which returns void!
               "void foo() {\n"
-              "    strcmp(a, b);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    class strcmp { strcmp() {} };\n" // strcmp is a constructor definition here
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    class mystrcmp { mystrcmp() {} };\n" // strcmp is a constructor definition here
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    return strcmp(a, b);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    return mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    if(strcmp(a, b));\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    if(mystrcmp(a, b));\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    bool b = strcmp(a, b);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    bool b = mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         // #6194
         check("void foo() {\n"
-              "    std::ofstream log(logfile.c_str(), std::ios::out);\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    MyStrCmp mystrcmp(x, y);\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         // #6197
         check("void foo() {\n"
-              "    DebugLog::getInstance().log(systemInfo.getSystemInfo());\n"
-              "}", "test.cpp", false, false, true, &settings_std);
+              "    abc::def.mystrcmp(a,b);\n"
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 
         // #6233
