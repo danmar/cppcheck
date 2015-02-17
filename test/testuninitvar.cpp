@@ -75,7 +75,6 @@ private:
 
         TEST_CASE(syntax_error); // Ticket #5073
 
-        TEST_CASE(uninitvar_posix_write);
         TEST_CASE(uninitvar_posix_types);
 
         // dead pointer
