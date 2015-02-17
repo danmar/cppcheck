@@ -127,11 +127,12 @@ void uninitvar(int fd) {
 }
 
 void uninitvar_types(void) {
+    // cppcheck-suppress unassignedVariable
     blkcnt_t b;
     // cppcheck-suppress uninitvar
-    return b;
+    b + 1;
 
-    dirent d;
+    struct dirent d;
     // cppcheck-suppress uninitvar
-    return d.d_ino;
+    d.d_ino + 1;
 }
