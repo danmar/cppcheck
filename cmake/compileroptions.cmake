@@ -38,6 +38,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -include ${PROJECT_SOURCE_DIR}/lib/cxx11emu.h")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -pedantic -Wall")
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -std=c++0x")
 
     if(WARNINGS_ANSI_ISO)
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wextra")
@@ -47,17 +48,13 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
     endif()
 
-    #set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -pedantic -Wall -std=c++0x")
-    # I think that the c++0x should be here
-
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-    # TODO - set here the minimum version supported
-#    if (NOT (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7))
-#        message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.7 or greater.")
-#    endif ()
+    if (NOT (GCC_VERSION VERSION_GREATER 4.4 OR GCC_VERSION VERSION_EQUAL 4.4))
+        message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.4 or greater.")
+    endif ()
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wabi")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wcast-qual")                # Cast for removing type qualifiers
@@ -68,7 +65,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-declarations")     # If a global function is defined without a previous declaration
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wmissing-format-attribute") # 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long") # Don't warn about long long usage.
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long")             # Don't warn about long long usage.
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Woverloaded-virtual")       # when a function declaration hides virtual functions from a base class
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wpacked")                   # 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
@@ -98,13 +95,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "c++-analyzer")
    if(NOT EXISTS ${CMAKE_CXX_COMPILER})
       MESSAGE( FATAL_ERROR "c++-analyzer not found. " )
    endif()
-
-endif()
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
-    ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -std=c++0x")
 
 endif()
 
