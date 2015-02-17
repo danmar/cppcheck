@@ -114,3 +114,14 @@ void invalidFunctionArg() {
     // cppcheck-suppress invalidFunctionArg
     usleep(1000000);
 }
+
+void uninitvar(int fd) {
+    int x;
+    char buf[2];
+    // cppcheck-suppress uninitvar
+    write(x,"ab",2);
+    // cppcheck-suppress uninitvar
+    write(fd,buf,2);
+    // cppcheck-suppress uninitvar
+    write(fd,"ab",x);
+}
