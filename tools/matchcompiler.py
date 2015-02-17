@@ -18,10 +18,9 @@
 
 import os
 import sys
-import re
 import glob
 import argparse
-
+import re
 
 class MatchCompiler:
 
@@ -650,7 +649,9 @@ def main():
                         help='verify compiled matches against on-the-fly parser. Slow!')
     parser.add_argument('--show-skipped', action='store_true', default=False,
                         help='show skipped (non-static) patterns')
-    parser.add_argument('--build-directory', default='build',
+    parser.add_argument('-i', '--input',
+                        help='Process only this input file instead of all the lib/*.cpp')
+    parser.add_argument('-b', '--build-directory', default='build',
                         help='Directory where output files will be placed')
     args = parser.parse_args()
 
@@ -664,9 +665,13 @@ def main():
                        show_skipped=args.show_skipped)
 
     # convert all lib/*.cpp files
-    for f in glob.glob('lib/*.cpp'):
-        print (f + ' => ' + args.build_directory + '/' + f[4:])
-        mc.convertFile(f, args.build_directory + '/' + f[4:])
+    if args.input:
+        f = args.input
+        mc.convertFile(f, args.build_directory + '/' + os.path.basename(f))
+    else:
+        for f in glob.glob('lib/*.cpp'):
+            print (f + ' => ' + args.build_directory + '/' + f[4:])
+            mc.convertFile(f, args.build_directory + '/' + f[4:])
 
 if __name__ == '__main__':
     main()

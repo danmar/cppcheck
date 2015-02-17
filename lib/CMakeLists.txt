@@ -1,18 +1,26 @@
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL Release)
-    # Process input files with the matchcompiler tool
-    execute_process(
-        COMMAND python tools/matchcompiler.py --build-directory ${PROJECT_BINARY_DIR}/libMatchCompiler
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    )
-    SET(SOURCES_PATH ${PROJECT_BINARY_DIR}/libMatchCompiler/)
+    file(GLOB originalSrcs *.cpp)
+
+    # Process each file (individually) with matchcompiler script. Detects changes in files to run
+    # again the script.
+    foreach(file_in ${originalSrcs})
+        get_filename_component(file_out ${file_in} NAME)
+        set(file_out "${PROJECT_BINARY_DIR}/lib/${file_out}")
+        add_custom_command(OUTPUT ${file_out}
+            COMMAND python tools/matchcompiler_singlefile.py -i ${file_in} -b ${PROJECT_BINARY_DIR}/lib
+            DEPENDS ${file_in}
+            COMMENT "Updating file ${file_in} with matchcompiler script"
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        set(srcs ${srcs} ${file_out})
+    endforeach(file_in)
+
 else()
-    SET(SOURCES_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+    file(GLOB srcs *.cpp)
 endif()
 
-file(GLOB_RECURSE hdrs "${SOURCES_PATH}/*.h")
-file(GLOB_RECURSE srcs "${SOURCES_PATH}/*.cpp")
+file(GLOB hdrs *.h)
 
 add_library(${PROJECT_NAME} ${srcs} ${hdrs})
 
@@ -28,3 +36,4 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${hdrs}
    DESTINATION include/${PROJECT_NAME}/
    COMPONENT headers)
+
