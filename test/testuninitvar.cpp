@@ -75,8 +75,6 @@ private:
 
         TEST_CASE(syntax_error); // Ticket #5073
 
-        TEST_CASE(uninitvar_posix_types);
-
         // dead pointer
         TEST_CASE(deadPointer);
     }
@@ -3914,21 +3912,6 @@ private:
                          "        dosth();\n"
                          "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'former_hover' is dead if it has been assigned '&item' at line 5.\n", errout.str());
-    }
-
-    void uninitvar_posix_types() {
-        checkUninitVarB("blkcnt_t* f() {blkcnt_t *b; return b;}");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
-
-        checkUninitVarB("blkcnt_t f() {blkcnt_t b; return b;}");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: b\n", errout.str());
-
-        // dirent
-        checkUninitVarB("char f()  { dirent d; return d.d_name[0]; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: d\n", errout.str());
-
-        checkUninitVarB("ino_t f2() { dirent d; return d.d_ino; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: d\n", errout.str());
     }
 };
 

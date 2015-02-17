@@ -125,3 +125,13 @@ void uninitvar(int fd) {
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
 }
+
+void uninitvar_types(void) {
+    blkcnt_t b;
+    // cppcheck-suppress uninitvar
+    return b;
+
+    dirent d;
+    // cppcheck-suppress uninitvar
+    return d.d_ino;
+}
