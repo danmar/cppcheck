@@ -80,7 +80,7 @@ public:
      * @param parameters given parameters to sprintf
      * @return minimum length of resulting string
      */
-    static MathLib::bigint countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
+    static MathLib::biguint countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void checkStructVariable();

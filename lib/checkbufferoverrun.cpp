@@ -328,7 +328,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
                     else
                         parameters.push_back(nullptr);
                 }
-                const MathLib::bigint len = CheckBufferOverrun::countSprintfLength(formatstr, parameters);
+                const MathLib::biguint len = CheckBufferOverrun::countSprintfLength(formatstr, parameters);
                 if (len > arraySize + 2U)
                     error = true;
             } else {
@@ -1359,12 +1359,12 @@ void CheckBufferOverrun::bufferOverrun2()
 }
 //---------------------------------------------------------------------------
 
-MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
+MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
 {
     bool percentCharFound = false;
     std::size_t input_string_size = 1;
     bool handleNextParameter = false;
-    std::string digits_string = "";
+    std::string digits_string;
     bool i_d_x_f_found = false;
     std::list<const Token*>::const_iterator paramIter = parameters.begin();
     std::size_t parameterLength = 0;
@@ -1457,7 +1457,7 @@ MathLib::bigint CheckBufferOverrun::countSprintfLength(const std::string &input_
         }
     }
 
-    return (MathLib::bigint)input_string_size;
+    return (MathLib::biguint)input_string_size;
 }
 
 
@@ -1521,7 +1521,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 void CheckBufferOverrun::checkStringArgument()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
         const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
         for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
@@ -1560,7 +1560,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    std::size_t functions = symbolDatabase->functionScopes.size();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Function * function = symbolDatabase->functionScopes[i]->function;
         if (function) {
@@ -1653,7 +1653,7 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &nam
 
 CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigint value) const
 {
-    MathLib::bigint uvalue = std::max(MathLib::bigint(0), value);
+    const MathLib::bigint uvalue = std::max(MathLib::bigint(0), value);
     MathLib::bigint n = 1;
     for (std::size_t i = 0; i < _num.size(); ++i)
         n *= _num[i];
@@ -1677,7 +1677,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
             if (Token::Match(tok, "%name% [ %var% ]")) {
                 tok = tok->tokAt(2);
 
-                unsigned int indexID = tok->varId();
+                const unsigned int indexID = tok->varId();
                 const std::string& indexName(tok->str());
 
                 // skip array index..
