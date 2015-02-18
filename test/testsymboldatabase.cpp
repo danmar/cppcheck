@@ -24,7 +24,6 @@
 
 #define GET_SYMBOL_DB(code) \
     errout.str(""); \
-    Settings settings; \
     Tokenizer tokenizer(&settings, this); \
     std::istringstream istr(code); \
     tokenizer.tokenize(istr, "test.cpp"); \
@@ -32,7 +31,6 @@
 
 #define GET_SYMBOL_DB_C(code) \
     errout.str(""); \
-    Settings settings; \
     Tokenizer tokenizer(&settings, this); \
     std::istringstream istr(code); \
     tokenizer.tokenize(istr, "test.c"); \
