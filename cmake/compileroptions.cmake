@@ -1,6 +1,6 @@
 set(EXTRA_C_FLAGS "")
 set(EXTRA_C_FLAGS_RELEASE "")
-set(EXTRA_C_FLAGS_DEBUG "-DDEBUG -O0")
+set(EXTRA_C_FLAGS_DEBUG "")
 
 if (USE_CLANG)
     set (CMAKE_C_COMPILER_ID            "Clang")
@@ -39,6 +39,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -include ${PROJECT_SOURCE_DIR}/lib/cxx11emu.h")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -pedantic -Wall")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -std=c++0x")
+    set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG} -DDEBUG -O0")
 
     if(WARNINGS_ANSI_ISO)
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wextra")
