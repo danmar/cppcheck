@@ -521,6 +521,9 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (tok->str() == "return") {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
+        } else if (Token::Match(tok, "sizeof !!(")) {
+            compileUnaryOp(tok, state, compileExpression);
+            state.op.pop();
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             while (tok->next() && tok->next()->isName())
                 tok = tok->next();

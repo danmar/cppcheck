@@ -8443,6 +8443,9 @@ private:
         ASSERT_EQUALS("a-1+", testAst("-a+1"));
         ASSERT_EQUALS("ab++-c-", testAst("a-b++-c"));
 
+        // sizeof
+        ASSERT_EQUALS("ab.sizeof", testAst("sizeof a.b"));
+
         // assignment operators
         ASSERT_EQUALS("ab>>=", testAst("a>>=b;"));
         ASSERT_EQUALS("ab<<=", testAst("a<<=b;"));
