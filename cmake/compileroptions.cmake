@@ -20,34 +20,7 @@ if (USE_CLANG)
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
 
-if (USE_ANALYZE)
-    set (CMAKE_C_COMPILER_ID            "ccc-analyzer")
-    set (CMAKE_CXX_COMPILER_ID          "c++-analyzer")
-    set (CMAKE_C_COMPILER               "/usr/share/clang/scan-build/ccc-analyzer")
-    set (CMAKE_CXX_COMPILER             "/usr/share/clang/scan-build/c++-analyzer")
-
-    set (CMAKE_C_FLAGS                  "-Wall -std=c99")
-    set (CMAKE_C_FLAGS_DEBUG            "-g")
-    set (CMAKE_C_FLAGS_RELEASE          "-O2")
-
-    set (CMAKE_CXX_FLAGS                "-Wall")
-    set (CMAKE_CXX_FLAGS_DEBUG          "-g")
-    set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
-endif()
-
-#if(MSVC)
-#  string(REGEX REPLACE "^  *| * $" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-#  string(REGEX REPLACE "^  *| * $" "" CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT}")
-#  if(CMAKE_CXX_FLAGS STREQUAL CMAKE_CXX_FLAGS_INIT)
-#    # override cmake default exception handling option
-#    string(REPLACE "/EHsc" "/EHa" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}"  CACHE STRING "Flags used by the compiler during all build types." FORCE)
-#  endif()
-#endif()
-
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
-    ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR
-    ${CMAKE_CXX_COMPILER_ID} STREQUAL "c++-analyzer" )
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -include ${PROJECT_SOURCE_DIR}/lib/cxx11emu.h")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -pedantic -Wall")
@@ -146,4 +119,3 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_C_FLAGS_DEBUG}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_EXE_LINKER_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${EXTRA_EXE_LINKER_FLAGS_RELEASE}")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LINKER_FLAGS_DEBUG}")
-
