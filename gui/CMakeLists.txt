@@ -24,7 +24,7 @@ if (BUILD_GUI)
     
     link_libraries(CppCheckLib tinyxml ${QT_LIBRARIES})
 
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
+    add_executable(cppcheck-gui WIN32 ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION bin COMPONENT applications)
     install(FILES ${qms} DESTINATION bin COMPONENT applications)
