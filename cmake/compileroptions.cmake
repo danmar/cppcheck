@@ -106,23 +106,17 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 
-    if (COMPILE_PARALLEL)
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /MP") #Number of simultaneous cl processes for a target
-    endif()
-
-#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_SECURE_NO_DEPRECATE")
-#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_NONSTDC_NO_DEPRECATE")
-#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS")
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /MP") #Number of simultaneous cl processes for a target
 
     # Remove unreferenced functions: function level linking
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /Gy")
-#    if(NOT MSVC_VERSION LESS 1400)
-#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /bigobj")
-#    endif()
+    if(NOT MSVC_VERSION LESS 1400)
+        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /bigobj")
+    endif()
 
-#    if(WARNINGS_ARE_ERRORS)
-#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /WX")
-#    endif()
+    if(WARNINGS_ARE_ERRORS)
+        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /WX")
+    endif()
 
    set(EXTRA_EXE_LINKER_FLAGS "${EXTRA_EXE_LINKER_FLAGS} /VERBOSE:LIB")
 
