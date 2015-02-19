@@ -17,7 +17,7 @@ option(USE_CLANG            "Use Clang compiler"                                
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
 option(WARNINGS_ANSI_ISO    "Issue all the mandatory diagnostics Listed in C standard"      ON)
 
-option(BUILD_SHARED_LIBS    "Build shared libraries"                                        ON)
+option(BUILD_SHARED_LIBS    "Build shared libraries"                                        OFF)
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 

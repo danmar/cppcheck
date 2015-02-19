@@ -1,6 +1,9 @@
 set(EXTRA_C_FLAGS "")
 set(EXTRA_C_FLAGS_RELEASE "")
 set(EXTRA_C_FLAGS_DEBUG "")
+set(EXTRA_EXE_LINKER_FLAGS "")
+set(EXTRA_EXE_LINKER_FLAGS_RELEASE "")
+set(EXTRA_EXE_LINKER_FLAGS_DEBUG "")
 
 if (USE_CLANG)
     set (CMAKE_C_COMPILER_ID            "Clang")
@@ -31,6 +34,16 @@ if (USE_ANALYZE)
     set (CMAKE_CXX_FLAGS_DEBUG          "-g")
     set (CMAKE_CXX_FLAGS_RELEASE        "-O2")
 endif()
+
+#if(MSVC)
+#  string(REGEX REPLACE "^  *| * $" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+#  string(REGEX REPLACE "^  *| * $" "" CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT}")
+#  if(CMAKE_CXX_FLAGS STREQUAL CMAKE_CXX_FLAGS_INIT)
+#    # override cmake default exception handling option
+#    string(REPLACE "/EHsc" "/EHa" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}"  CACHE STRING "Flags used by the compiler during all build types." FORCE)
+#  endif()
+#endif()
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
     ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR
@@ -91,11 +104,27 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
       MESSAGE( FATAL_ERROR "Clang++ not found. " )
    endif()
 
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "c++-analyzer")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 
-   if(NOT EXISTS ${CMAKE_CXX_COMPILER})
-      MESSAGE( FATAL_ERROR "c++-analyzer not found. " )
-   endif()
+    if (COMPILE_PARALLEL)
+        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /MP") #Number of simultaneous cl processes for a target
+    endif()
+
+#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_SECURE_NO_DEPRECATE")
+#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_NONSTDC_NO_DEPRECATE")
+#    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS")
+
+    # Remove unreferenced functions: function level linking
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /Gy")
+#    if(NOT MSVC_VERSION LESS 1400)
+#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /bigobj")
+#    endif()
+
+#    if(WARNINGS_ARE_ERRORS)
+#        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} /WX")
+#    endif()
+
+   set(EXTRA_EXE_LINKER_FLAGS "${EXTRA_EXE_LINKER_FLAGS} /VERBOSE:LIB")
 
 endif()
 
@@ -106,6 +135,9 @@ include(cmake/dynamic_analyzer_options.cmake    REQUIRED)
 set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS}" CACHE INTERNAL "Extra compiler options")
 set(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE}" CACHE INTERNAL "Extra compiler options for Release build")
 set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG}" CACHE INTERNAL "Extra compiler options for Debug build")
+set(EXTRA_EXE_LINKER_FLAGS "${EXTRA_EXE_LINKER_FLAGS}" CACHE INTERNAL "Extra linker flags")
+set(EXTRA_EXE_LINKER_FLAGS_RELEASE "${EXTRA_EXE_LINKER_FLAGS_RELEASE}" CACHE INTERNAL "Extra linker flags for Release build")
+set(EXTRA_EXE_LINKER_FLAGS_DEBUG "${EXTRA_EXE_LINKER_FLAGS_DEBUG}" CACHE INTERNAL "Extra linker flags for Debug build")
 
 #combine all "extra" options
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
@@ -115,3 +147,8 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${EXTRA_C_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_C_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  ${EXTRA_C_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_C_FLAGS_DEBUG}")
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_EXE_LINKER_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${EXTRA_EXE_LINKER_FLAGS_RELEASE}")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LINKER_FLAGS_DEBUG}")
+

@@ -6,8 +6,10 @@ file(GLOB srcs "*.cpp")
 file(GLOB mainfile "main.cpp")
 list(REMOVE_ITEM srcs ${mainfile})
 
-link_libraries(${PROJECT_NAME} tinyxml)
+link_libraries(CppCheckLib tinyxml Shlwapi)
 
+# TODO - Probably we should move this library to other place since it's used by the tests and the
+# application
 add_library(cli_lib OBJECT ${hdrs} ${srcs})
 
 add_executable(cppcheck main.cpp 
@@ -19,5 +21,5 @@ install(TARGETS cppcheck
     COMPONENT applications)
 
 install(FILES ${cfgs}
-   DESTINATION share/${PROJECT_NAME}/
+   DESTINATION share/cppcheck/
    COMPONENT headers)
