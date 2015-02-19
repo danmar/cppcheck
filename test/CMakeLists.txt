@@ -9,7 +9,7 @@ if (BUILD_TESTS)
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
 
-    link_libraries(CppCheckLib tinyxml)
+    link_libraries(CppCheckLib tinyxml Shlwapi)
 
     add_executable(testrunner ${hdrs} ${srcs} 
         $<TARGET_OBJECTS:cli_lib>
