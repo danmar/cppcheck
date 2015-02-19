@@ -25,7 +25,7 @@ file(GLOB hdrs *.h)
 add_library(CppCheckLib ${srcs} ${hdrs})
 
 if (HAVE_RULES)
-    target_link_libraries(CppCheckLib pcre)
+    target_link_libraries(CppCheckLib ${PCRE})
 endif()
 
 install(TARGETS CppCheckLib
