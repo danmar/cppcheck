@@ -22,7 +22,7 @@ if (BUILD_GUI)
     QT4_ADD_RESOURCES(resources "gui.qrc")
     QT4_ADD_TRANSLATION(qms ${tss})
     
-    link_libraries(${PROJECT_NAME} tinyxml ${QT_LIBRARIES})
+    link_libraries(CppCheckLib tinyxml ${QT_LIBRARIES})
 
     add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
 
