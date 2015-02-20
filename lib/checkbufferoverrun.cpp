@@ -834,10 +834,8 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
 
 void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
 {
+    assert(tok->previous() != nullptr);
     const MathLib::bigint total_size = arrayInfo.num(0) * arrayInfo.element_size();
-
-    const Token *scope_begin = tok->previous();
-    assert(scope_begin != 0);
 
     const unsigned int declarationId = arrayInfo.declarationId();
 
