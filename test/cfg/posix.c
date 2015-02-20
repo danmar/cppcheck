@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <unistd.h>
-
+#include <regex.h>
 
 void bufferAccessOutOfBounds(int fd) {
   char a[5];
@@ -124,6 +124,20 @@ void uninitvar(int fd) {
     write(fd,buf,2);
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
+    
+    
+    /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */
+    regex_t reg;
+    const char * pattern;
+    int cflags;
+    // cppcheck-suppress uninitvar
+    regcomp(&reg, pattern, cflags);
+    pattern="";
+    // cppcheck-suppress uninitvar
+    regcomp(&reg, pattern, cflags);
+    cflags=42;
+    // cppcheck-suppress uninitvar
+    regcomp(&reg, pattern, cflags);
 }
 
 void uninitvar_types(void) {
