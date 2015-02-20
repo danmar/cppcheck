@@ -569,6 +569,27 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
     hLibDbgHelp=0;
 }
 
+static void writeMemoryErrorDetails(FILE* f, PEXCEPTION_POINTERS ex, const char* description)
+{
+    fputs(description, f);
+    switch (ex->ExceptionRecord->ExceptionInformation[0]) {
+    case 0:
+        fprintf(f, " reading from 0x%x",
+                ex->ExceptionRecord->ExceptionInformation[1]);
+        break;
+    case 1:
+        fprintf(f, " writing at 0x%x",
+                ex->ExceptionRecord->ExceptionInformation[1]);
+        break;
+    case 8:
+        fprintf(f, " data execution prevention at 0x%x",
+                ex->ExceptionRecord->ExceptionInformation[1]);
+        break;
+    default:
+        break;
+    }
+}
+
 /*
  * Any evaluation of the information about the exception needs to be done here!
  */
@@ -578,23 +599,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
     fputs("Internal error: ", f);
     switch (ex->ExceptionRecord->ExceptionCode) {
     case EXCEPTION_ACCESS_VIOLATION:
-        fputs("Access violation", f);
-        switch (ex->ExceptionRecord->ExceptionInformation[0]) {
-        case 0:
-            fprintf(f, " reading from 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        case 1:
-            fprintf(f, " writing at 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        case 8:
-            fprintf(f, " data execution prevention at 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        default:
-            break;
-        }
+        writeMemoryErrorDetails(f, ex, "Access violation");
         break;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
         fputs("Out of array bounds", f);
@@ -633,23 +638,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
         fputs("Illegal instruction", f);
         break;
     case EXCEPTION_IN_PAGE_ERROR:
-        fputs("Invalid page access", f);
-        switch (ex->ExceptionRecord->ExceptionInformation[0]) {
-        case 0:
-            fprintf(f, " reading from 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        case 1:
-            fprintf(f, " writing at 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        case 8:
-            fprintf(f, " data execution prevention at 0x%x",
-                    ex->ExceptionRecord->ExceptionInformation[1]);
-            break;
-        default:
-            break;
-        }
+        writeMemoryErrorDetails(f, ex, "Invalid page access");
         break;
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
         fputs("Integer divide-by-zero", f);
