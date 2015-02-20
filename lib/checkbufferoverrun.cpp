@@ -144,9 +144,6 @@ void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std:
 
 void CheckBufferOverrun::strncatUsageError(const Token *tok)
 {
-    if (_settings && !_settings->isEnabled("warning"))
-        return;
-
     reportError(tok, Severity::warning, "strncatUsage",
                 "Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n"
                 "At most, strncat appends the 3rd parameter's amount of characters and adds a terminating null byte.\n"
@@ -926,14 +923,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 }
 
                 // Dangerous usage of strncat..
-                else if (tok->str() == "strncat") {
+                else if (isWarningEnabled && tok->str() == "strncat") {
                     const MathLib::bigint n = MathLib::toLongNumber(param3->str());
                     if (n >= total_size)
                         strncatUsageError(tok);
                 }
 
                 // Dangerous usage of strncpy + strncat..
-                if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
+                if (isWarningEnabled && Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
                     const MathLib::bigint n = MathLib::toLongNumber(param3->str()) + MathLib::toLongNumber(param3->linkAt(4)->strAt(-1));
                     if (n > total_size)
                         strncatUsageError(param3->tokAt(3));
