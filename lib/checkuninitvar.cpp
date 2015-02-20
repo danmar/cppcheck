@@ -1498,16 +1498,13 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 Token::Match(tok->next(), "= %name% (") &&
                 Token::simpleMatch(tok->linkAt(3), ") ;") &&
                 _settings->library.returnuninitdata.count(tok->strAt(2)) > 0U) {
-                if (alloc)
-                    *alloc = NO_CTOR_CALL;
+                *alloc = NO_CTOR_CALL;
                 continue;
             }
             if (var.isPointer() && (var.typeStartToken()->isStandardType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
-                if (alloc) {
-                    *alloc = CTOR_CALL;
-                    if (var.typeScope() && var.typeScope()->numConstructors > 0)
-                        return true;
-                }
+                *alloc = CTOR_CALL;
+                if (var.typeScope() && var.typeScope()->numConstructors > 0)
+                    return true;
                 continue;
             }
 

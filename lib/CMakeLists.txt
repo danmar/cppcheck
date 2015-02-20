@@ -9,7 +9,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Release)
         get_filename_component(file_out ${file_in} NAME)
         set(file_out "${PROJECT_BINARY_DIR}/lib/${file_out}")
         add_custom_command(OUTPUT ${file_out}
-            COMMAND python tools/matchcompiler_singlefile.py -i ${file_in} -b ${PROJECT_BINARY_DIR}/lib
+            COMMAND python tools/matchcompiler.py -i ${file_in} -b ${PROJECT_BINARY_DIR}/lib
             DEPENDS ${file_in}
             COMMENT "Updating file ${file_in} with matchcompiler script"
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})

@@ -40,18 +40,45 @@ private:
         // Path::simplifyPath()
         ASSERT_EQUALS("index.h", Path::simplifyPath("index.h"));
         ASSERT_EQUALS("index.h", Path::simplifyPath("./index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath(".//index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath(".///index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/index.h"));
         ASSERT_EQUALS("/path/", Path::simplifyPath("/path/"));
         ASSERT_EQUALS("/", Path::simplifyPath("/"));
+        ASSERT_EQUALS("/", Path::simplifyPath("/."));
+        ASSERT_EQUALS("/", Path::simplifyPath("/./"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/./index.h"));
+        ASSERT_EQUALS("/", Path::simplifyPath("/.//"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/.//index.h"));
         ASSERT_EQUALS("../index.h", Path::simplifyPath("../index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("./path/../index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("path/../index.h"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path//../index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("./path//../index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("path//../index.h"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/..//index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("./path/..//index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("path/..//index.h"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path//..//index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("./path//..//index.h"));
+        ASSERT_EQUALS("index.h", Path::simplifyPath("path//..//index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other/../index.h"));
         ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other///././../index.h"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other/././..///index.h"));
+        ASSERT_EQUALS("/index.h", Path::simplifyPath("/path/../other///././..///index.h"));
         ASSERT_EQUALS("../path/index.h", Path::simplifyPath("../path/other/../index.h"));
         ASSERT_EQUALS("a/index.h", Path::simplifyPath("a/../a/index.h"));
         ASSERT_EQUALS("a/..", Path::simplifyPath("a/.."));
+        ASSERT_EQUALS("a/..", Path::simplifyPath("./a/.."));
         ASSERT_EQUALS("../../src/test.cpp", Path::simplifyPath("../../src/test.cpp"));
         ASSERT_EQUALS("../../../src/test.cpp", Path::simplifyPath("../../../src/test.cpp"));
+        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".//src/test.cpp"));
+        ASSERT_EQUALS("src/test.cpp", Path::simplifyPath(".///src/test.cpp"));
+
+        // Handling of UNC paths on Windows
+        ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("//src/test.cpp"));
+        ASSERT_EQUALS("//src/test.cpp", Path::simplifyPath("///src/test.cpp"));
 
         // Path::removeQuotationMarks()
         ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("index.cpp"));

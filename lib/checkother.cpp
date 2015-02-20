@@ -643,13 +643,16 @@ void CheckOther::checkRedundantAssignment()
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
                             if (tok2->str() == ";")
                                 break;
-                            else if (tok2->varId() == tok->varId())
+                            else if (tok2->varId() == tok->varId()) {
                                 error = false;
-                            else if (Token::Match(tok2, "%name% (") && nonLocal(tok->variable())) { // Called function might use the variable
+                                break;
+                            } else if (Token::Match(tok2, "%name% (") && nonLocal(tok->variable())) { // Called function might use the variable
                                 const Function* const func = tok2->function();
                                 const Variable* const var = tok->variable();
-                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) // Global variable, or member function
+                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && tok2->strAt(-1) != ".")) {// Global variable, or member function
                                     error = false;
+                                    break;
+                                }
                             }
                         }
                         if (error) {
@@ -1640,16 +1643,16 @@ void CheckOther::checkCharVariable()
             }
 
             else if (Token::Match(tok, "[&|^]")) {
+                // Don't care about address-of operator
+                if (!tok->astOperand2())
+                    continue;
+
                 const Token *tok2;
                 if (tok->astOperand1() && astIsSignedChar(tok->astOperand1()))
                     tok2 = tok->astOperand2();
-                else if (tok->astOperand2() && astIsSignedChar(tok->astOperand2()))
+                else if (astIsSignedChar(tok->astOperand2()))
                     tok2 = tok->astOperand1();
                 else
-                    continue;
-
-                // Don't care about address-of operator
-                if (!tok->astOperand2())
                     continue;
 
                 // it's ok with a bitwise and where the other operand is 0xff or less..
@@ -2206,7 +2209,7 @@ void CheckOther::checkDuplicateExpression()
                         if (assignment)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
                         else {
-                            if (_settings->CPP && _settings->standards.CPP11 && tok->str() == "==") {
+                            if (_tokenizer->isCPP() && _settings->standards.CPP11 && tok->str() == "==") {
                                 const Token* parent = tok->astParent();
                                 while (parent && parent->astParent()) {
                                     parent = parent->astParent();
@@ -2316,42 +2319,6 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
                 "The function " + functionName + " is designed to compare two variables. Calling this function with one variable (" + varName + ") "
                 "for both parameters leads to a statement which is always " + strResult + ".");
 }
-
-//-----------------------------------------------------------------------------
-// Check for code like:
-// seteuid(geteuid()) or setuid(getuid()), which first gets and then sets the
-// (effective) user id to itself. Very often this indicates a copy and paste
-// error.
-//-----------------------------------------------------------------------------
-void CheckOther::redundantGetAndSetUserId()
-{
-    if (!_settings->standards.posix || !_settings->isEnabled("warning"))
-        return;
-
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        // check all the code in the function
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "setuid ( getuid ( ) )")
-                || Token::simpleMatch(tok, "seteuid ( geteuid ( ) )")
-                || Token::simpleMatch(tok, "setgid ( getgid ( ) )")
-                || Token::simpleMatch(tok, "setegid ( getegid ( ) )")) {
-                redundantGetAndSetUserIdError(tok);
-            }
-        }
-    }
-}
-void CheckOther::redundantGetAndSetUserIdError(const Token *tok)
-{
-    reportError(tok, Severity::warning,
-                "redundantGetAndSetUserId", "Redundant get and set of user id.\n"
-                "Redundant statement without any effect. First the user id is retrieved"
-                "by get(e)uid() and then set with set(e)uid().", false);
-}
-
 
 //---------------------------------------------------------------------------
 // Check testing sign of unsigned variables and pointers.

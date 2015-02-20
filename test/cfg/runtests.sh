@@ -11,8 +11,12 @@ fi
 
 # posix.c
 gcc -fsyntax-only ${DIR}posix.c
-${CPPCHECK} --check-library --library=posix --enable=information --error-exitcode=1 --inline-suppr ${DIR}posix.c
+${CPPCHECK} --check-library --library=posix --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}posix.c
+
+# gnu.c
+gcc -fsyntax-only -D_GNU_SOURCE ${DIR}gnu.c
+${CPPCHECK} --check-library --library=gnu --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}gnu.c
 
 # std.c
 gcc -fsyntax-only ${DIR}std.c
-${CPPCHECK} --check-library --enable=information --error-exitcode=1 --inline-suppr ${DIR}std.c
+${CPPCHECK} --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}std.c

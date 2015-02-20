@@ -1469,8 +1469,8 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->nextArgument();
             if (second)
                 second = second->tokAt(-2);
-            if (!first || !second) { // End of argument list (first or second)
-                return !first && !second;
+            if (!second) { // End of argument list (second)
+                return false;
             }
         }
 

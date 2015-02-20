@@ -9,11 +9,15 @@ if (BUILD_TESTS)
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
 
-    link_libraries(CppCheckLib tinyxml Shlwapi)
+    link_libraries(CppCheckLib tinyxml)
 
     add_executable(testrunner ${hdrs} ${srcs} 
         $<TARGET_OBJECTS:cli_lib>
     )
+
+    if (WIN32)
+        target_link_libraries(testrunner Shlwapi) 
+    endif()
 
     add_custom_target(copy_cfg ALL
         COMMENT "Copying cfg files")

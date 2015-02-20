@@ -100,7 +100,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.standards.posix = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -325,13 +324,11 @@ private:
         TEST_CASE(exit6);
         TEST_CASE(exit7);
         TEST_CASE(noreturn);
-        TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
         TEST_CASE(tmpfile_function);
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
-        TEST_CASE(posix_rewinddir);
         TEST_CASE(getc_function);
 
         TEST_CASE(open_function);
@@ -366,10 +363,6 @@ private:
         TEST_CASE(ptrptr);
 
         TEST_CASE(c_code);
-
-        // test that the cfg files are configured correctly
-        TEST_CASE(posixcfg);
-        TEST_CASE(posixcfg_mmap);
 
         TEST_CASE(gnucfg);
     }
@@ -3701,19 +3694,10 @@ private:
         Settings settings;
         settings.standards.posix = true;
 
-        check("void f()\n"
-              "{\n"
+        check("void f() {\n"
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
               "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void posix_rewinddir() {
-        Settings settings;
-        settings.standards.posix = true;
-
-        check("void f(DIR *p) { rewinddir(p); }", &settings);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3814,24 +3798,11 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
     }
 
-
-
-    void stdstring() {
-        check("void f(std::string foo)\n"
-              "{\n"
-              "    char *out = new char[11];\n"
-              "    memset(&(out[0]), 0, 1);\n"
-              "}");
-
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out\n", errout.str());
-    }
-
     void strndup_function() {
-        check("void f()\n"
-              "{\n"
+        check("void f() {\n"
               "    char *out = strndup(\"text\", 3);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: out\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: out\n", errout.str());
     }
 
     void tmpfile_function() {
@@ -4293,114 +4264,6 @@ private:
                             "}";
         check(code, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
-    }
-
-    // Test that posix.cfg is configured correctly
-    void posixcfg() {
-        Settings settings;
-        settings.standards.posix = true;
-        LOAD_LIB_2(settings.library, "posix.cfg");
-
-        const char code[] = "void leaks() {\n"
-                            "    void* leak1 = fdopendir();\n"
-                            "    void* leak2 = opendir();\n"
-                            "    void* leak3 = socket();\n"
-                            "}\n"
-                            "void noleaks() {\n"
-                            "    void *p1 = fdopendir(); closedir(p1);\n"
-                            "    void *p2 = opendir(); closedir(p2);\n"
-                            "    void *p3 = socket(); close(p3);\n"
-                            "}";
-        check(code, &settings);
-        ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: leak1\n"
-                      "[test.cpp:5]: (error) Resource leak: leak2\n"
-                      "[test.cpp:5]: (error) Resource leak: leak3\n", errout.str());
-
-        const char code2[] = "int main() {\n"
-                             "  int fileDescriptor = socket(AF_INET, SOCK_STREAM, 0);\n"
-                             "  close(fileDescriptor);\n"
-                             "}";
-        check(code2, &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #2830
-        check("void f(const char *path) {\n"
-              "    int fd = open(path, O_RDONLY);\n"
-              "    FILE *f = fdopen(fd, x);\n"
-              "    fclose(f);\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #1416
-        check("void f(void) {\n"
-              "    FILE *f = fdopen(0, \"r\");\n"
-              "}", &settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: f\n", errout.str());
-
-        // strdupa allocates on the stack, no free() needed
-        check("void x()\n"
-              "{\n"
-              "    char *s = strdupa(\"Test\");\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        LOAD_LIB_2(settings.library, "gtk.cfg");
-
-        check("void f(char *a) {\n"
-              "    char *s = g_strdup(a);\n"
-              "    mkstemp(s);\n"
-              "    mkdtemp(s);\n"
-              "    mktemp(s);\n"
-              "}", &settings);
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
-    }
-
-    void posixcfg_mmap() {
-        Settings settings;
-        settings.standards.posix = true;
-        LOAD_LIB_2(settings.library, "posix.cfg");
-
-        // normal mmap
-        check("void f(int fd) {\n"
-              "    char *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "    munmap(addr, 255);\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        // mmap64 - large file support
-        check("void f(int fd) {\n"
-              "    char *addr = mmap64(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "    munmap(addr, 255);\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        // pass in fixed address
-        check("void f(int fd) {\n"
-              "    void *fixed_addr = 123;\n"
-              "    void *mapped_addr = mmap(fixed_addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "    munmap(mapped_addr, 255);\n"
-              "}", &settings);
-        ASSERT_EQUALS("", errout.str());
-
-        // no munmap()
-        check("void f(int fd) {\n"
-              "    void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "}", &settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: addr\n", errout.str());
-
-        // wrong deallocator
-        check("void f(int fd) {\n"
-              "    void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "    free(addr);\n"
-              "}", &settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: addr\n", errout.str());
-
-        // wrong deallocator for mmap64
-        check("void f(int fd) {\n"
-              "    void *addr = mmap64(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);\n"
-              "    free(addr);\n"
-              "}", &settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: addr\n", errout.str());
     }
 };
 
@@ -6327,7 +6190,6 @@ private:
     }
 
     void run() {
-        settings.standards.posix = true;
         settings.inconclusive = true;
         settings.addEnabled("warning");
 
