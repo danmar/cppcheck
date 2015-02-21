@@ -2750,7 +2750,9 @@ void CheckOther::checkLibraryMatchFunctions()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% (") &&
+            !Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return") &&
             !tok->function() &&
+            !tok->varId() &&
             tok->astParent() == tok->next() &&
             _settings->library.isNotLibraryFunction(tok)) {
             reportError(tok,
