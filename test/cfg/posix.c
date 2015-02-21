@@ -12,6 +12,7 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <unistd.h>
 #include <regex.h>
 
@@ -45,6 +46,13 @@ void nullPointer(char *p) {
     getcwd (0, 0);
     // cppcheck-suppress nullPointer
     readdir (0);
+}
+
+void memleak_getaddrinfo() {
+  //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
+  struct addrinfo * res=NULL;
+  getaddrinfo("node", NULL, NULL, &res);
+  freeaddrinfo(res);
 }
 
 void memleak_mmap(int fd) {
