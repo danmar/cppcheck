@@ -70,6 +70,7 @@ private:
         TEST_CASE(garbageCode27);
         TEST_CASE(garbageCode28);
         TEST_CASE(garbageCode29);
+        TEST_CASE(garbageCode30); // #5867
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -383,6 +384,13 @@ private:
     void garbageCode29() {
         // ticket #2601 segmentation fault
         checkCode("|| #if #define <=");
+    }
+
+    void garbageCode30() {
+        // simply survive - a syntax error would be even better (#5867)
+        checkCode("void f(int x) {\n"
+                  " x = 42\n"
+                  "}");
     }
 
     void garbageValueFlow() {

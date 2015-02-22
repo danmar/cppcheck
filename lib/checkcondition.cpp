@@ -196,6 +196,32 @@ static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchil
         getnumchildren(tok->astOperand2(), numchildren);
 }
 
+void CheckCondition::checkBadBitmaskCheck()
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "|" && tok->astOperand1() && tok->astOperand2() && tok->astParent()) {
+            bool isBoolean = Token::Match(tok->astParent(), "&&|%oror%") ||
+                             (tok->astParent()->str() == "?" && tok->astParent()->astOperand1() == tok) ||
+                             (tok->astParent()->str() == "=" && tok->astParent()->astOperand2() == tok && tok->astParent()->astOperand1()->variable() && tok->astParent()->astOperand1()->variable()->typeStartToken()->str() == "bool") ||
+                             (tok->astParent()->str() == "(" && Token::Match(tok->astParent()->astOperand1(), "if|while"));
+
+            bool isTrue = (tok->astOperand1()->values.size() == 1 && tok->astOperand1()->values.front().intvalue != 0 && !tok->astOperand1()->values.front().conditional) ||
+                          (tok->astOperand2()->values.size() == 1 && tok->astOperand2()->values.front().intvalue != 0 && !tok->astOperand2()->values.front().conditional);
+
+            if (isBoolean && isTrue)
+                badBitmaskCheckError(tok);
+        }
+    }
+}
+
+void CheckCondition::badBitmaskCheckError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?");
+}
+
 void CheckCondition::comparison()
 {
     if (!_settings->isEnabled("style"))

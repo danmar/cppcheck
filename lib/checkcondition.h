@@ -54,6 +54,7 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.assignIf();
+        checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
@@ -70,6 +71,9 @@ public:
                             const bool islocal,
                             const char bitop,
                             const MathLib::bigint num);
+
+    /** check bitmask using | instead of & */
+    void checkBadBitmaskCheck();
 
     /** mismatching lhs and rhs in comparison */
     void comparison();
@@ -93,6 +97,7 @@ private:
 
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
+    void badBitmaskCheckError(const Token *tok);
     void comparisonError(const Token *tok,
                          const std::string &bitop,
                          MathLib::bigint value1,
@@ -114,6 +119,7 @@ private:
         CheckCondition c(0, settings, errorLogger);
 
         c.assignIfError(0, 0, "", false);
+        c.badBitmaskCheckError(0);
         c.comparisonError(0, "&", 6, "==", 1, false);
         c.multiConditionError(0,1);
         c.mismatchingBitAndError(0, 0xf0, 0, 1);
@@ -132,6 +138,7 @@ private:
         return "Match conditions with assignments and other conditions:\n"
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"
+               "- Detect usage of | where & should be used\n"
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"

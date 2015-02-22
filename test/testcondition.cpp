@@ -39,7 +39,8 @@ private:
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
         TEST_CASE(multicompare);       // mismatching comparisons
         TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
-        TEST_CASE(invalidMissingSemicolon); // crash as of #5867
+
+        TEST_CASE(checkBadBitmaskCheck);
 
         TEST_CASE(incorrectLogicOperator1);
         TEST_CASE(incorrectLogicOperator2);
@@ -465,11 +466,68 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
-    void invalidMissingSemicolon() {
-        // simply survive - a syntax error would be even better
-        check("void f(int x) {\n"
-              " x = 42\n"
-              "}\n");
+    void checkBadBitmaskCheck() {
+        check("bool f(int x) {\n"
+              "    bool b = x | 0x02;\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("bool f(int x) {\n"
+              "    bool b = 0x02 | x;\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    int b = x | 0x02;\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    bool b = x & 0x02;\n"
+              "    return b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    if(x | 0x02)\n"
+              "        return b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("bool f(int x) {\n"
+              "    int y = 0x1;\n"
+              "    if(b) y = 0;\n"
+              "    if(x | y)\n"
+              "        return b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    foo(a && (x | 0x02));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    return (x | 0x02) ? 0 : 5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    return x ? (x | 0x02) : 5;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    return x | 0x02;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", "", errout.str());
+
+        check("int f(int x) {\n"
+              "    return x | 0x02;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
