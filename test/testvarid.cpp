@@ -1655,6 +1655,18 @@ private:
                       "3: int x@2 ;\n"
                       "4: } ;\n",
                       tokenize(code6));
+
+        // #6520
+        const char code7[] = "class A {\n"
+                             "  A(int x) : y(a?0:1), x(x) {}\n"
+                             "  int x, y;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: A ( int x@1 ) : y@3 ( a ? 0 : 1 ) , x@2 ( x@1 ) { }\n"
+                      "3: int x@2 ; int y@3 ;\n"
+                      "4: } ;\n",
+                      tokenize(code7));
     }
 
     void varid_operator() {

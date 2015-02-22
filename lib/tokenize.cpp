@@ -2491,7 +2491,7 @@ static void setVarIdClassDeclaration(Token * const startToken,
                     setVarIdStructMembers(&tok, structMembers, _varId);
                 }
             }
-        } else if (indentlevel == 0 && tok->str() == ":")
+        } else if (indentlevel == 0 && tok->str() == ":" && !initListEndToken)
             initListEndToken = findInitListEndToken(tok->previous());
     }
 }
