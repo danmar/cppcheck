@@ -614,7 +614,7 @@ void CheckOther::checkRedundantAssignment()
                 memAssignments.clear();
             } else if (Token::Match(tok, "for|if|while (")) {
                 tok = tok->linkAt(1);
-            } else if (Token::Match(tok, "break|return|continue|throw|goto")) {
+            } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
                 varAssignments.clear();
                 memAssignments.clear();
             } else if (tok->type() == Token::eVariable && !Token::Match(tok, "%name% (")) {

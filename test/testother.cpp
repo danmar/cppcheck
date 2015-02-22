@@ -5450,6 +5450,14 @@ private:
               "  s->foo[s->x++] = 2;\n"
               "  s->d[1].fc.i++;\n"
               "}");
+
+        // #6525 - inline assembly
+        check("void f(int i) {\n"
+              "    i = 1;\n"
+              "    asm(\"foo\");\n"
+              "    i = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
