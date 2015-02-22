@@ -2964,33 +2964,21 @@ void Tokenizer::createLinks2()
 void Tokenizer::sizeofAddParentheses()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof %name%")) {
-            Token *tempToken = tok->next();
-            while (Token::Match(tempToken, "%name%")) {
-                while (tempToken && tempToken->next() && tempToken->next()->str() == "[")
-                    tempToken = tempToken->next()->link();
-                if (!tempToken || !tempToken->next())
-                    break;
+        if (Token::Match(tok, "sizeof %name%|%num%|%str%")) {
+            Token *endToken = tok->next();
+            while (Token::Match(endToken, "%name%|%num%|%str%|[|(|.|::|++|--|!|~")) {
+                if (endToken->str() == "[" || endToken->str() == "(")
+                    endToken = endToken->link();
+                endToken = endToken->next();
+                if (Token::simpleMatch(endToken, "- >"))
+                    endToken = endToken->tokAt(2);
+            }
 
-                if (Token::Match(tempToken->next(), ". %name%")) {
-                    // We are checking a class or struct, search next varname
-                    tempToken = tempToken->tokAt(2);
-                    continue;
-                } else if (tempToken->next()->type() == Token::eIncDecOp) {
-                    // We have variable++ or variable--, the sizeof argument
-                    // ends after the op
-                    tempToken = tempToken->next();
-                } else if (Token::Match(tempToken->next(), "[),;}]")) {
-                    ;
-                } else {
-                    break;
-                }
-
-                // Ok. Add ( after sizeof and ) after tempToken
+            if (endToken) {
+                // Ok. Add ( after sizeof and ) before endToken
                 tok->insertToken("(");
-                tempToken->insertToken(")");
-                Token::createMutualLinks(tok->next(), tempToken->next());
-                break;
+                endToken->previous()->insertToken(")");
+                Token::createMutualLinks(tok->next(), endToken->previous());
             }
         }
     }

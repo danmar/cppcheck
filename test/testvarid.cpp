@@ -1829,7 +1829,7 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: void which_test ( ) {\n"
                       "2: const char * argv@1 [ 2 ] = { \"./test_runner\" , \"TestClass\" } ;\n"
-                      "3: options args@2 ( sizeof argv@1 / sizeof ( argv@1 [ 0 ] ) , argv@1 ) ;\n"
+                      "3: options args@2 ( sizeof ( argv@1 ) / sizeof ( argv@1 [ 0 ] ) , argv@1 ) ;\n"
                       "4: args@2 . which_test ( ) ;\n"
                       "5: }\n",
                       tokenize("void which_test() {\n"

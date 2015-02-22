@@ -1441,7 +1441,7 @@ private:
                             "{\n"
                             "    sizeof sizeof 1;\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof sizeof ( 1 ) ; }", tok(code));
+        ASSERT_EQUALS("void f ( ) { sizeof ( sizeof ( 1 ) ) ; }", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
