@@ -1097,8 +1097,10 @@ void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfu
 void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 {
     reportError(tok, Severity::portability, "memsetClassFloat", "Using memset() on " + type + " which contains a floating point number.\n"
-                "Using memset() on " + type + " which contains a floating point number. This is not portable because memset() sets each byte of a block of memory to a specific value and"
-                " the actual representation of a floating-point value is implementation defined.");
+                "Using memset() on " + type + " which contains a floating point number."
+                " This is not portable because memset() sets each byte of a block of memory to a specific value and"
+                " the actual representation of a floating-point value is implementation defined."
+                " Note: In case of an IEEE754-1985 compatible implementation setting all bits to zero results in the value 0.0.");
 }
 
 
