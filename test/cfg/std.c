@@ -21,8 +21,7 @@ void bufferAccessOutOf(void) {
   // cppcheck-suppress bufferAccessOutOfBounds
   sprintf(a, "ab%s", "cde");
   snprintf(a, 5, "abcde%i", 1);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  snprintf(a, 6, "abcde%i", 1);
+  snprintf(a, 6, "abcde%i", 1);   //TODO: cppcheck-suppress bufferAccessOutOfBounds
   strcpy(a,"abcd");
   // cppcheck-suppress bufferAccessOutOfBounds
   strcpy(a, "abcde");
@@ -126,6 +125,10 @@ void nullpointer(int value){
   strxfrm(0,"foo",0);
   // TODO: error message
   strxfrm(0,"foo",42);
+  
+  snprintf(NULL, 0, "someformatstring"); // legal
+  // cppcheck-suppress nullPointer
+  snprintf(NULL, 42, "someformatstring"); // not legal
 }
 
 void nullpointerMemchr1(char *p, char *s) {

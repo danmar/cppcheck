@@ -143,9 +143,6 @@ void uninitvar(int fd) {
     pattern="";
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
-    cflags=42;
-    // cppcheck-suppress uninitvar
-    regcomp(&reg, pattern, cflags);
 }
 
 void uninitvar_types(void) {
