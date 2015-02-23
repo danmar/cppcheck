@@ -87,8 +87,14 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         tok1 = tok1->astOperand2();
     if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
         tok2 = tok2->astOperand2();
-    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str())
+    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str()) {
+        if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
+            (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
+            return isSameExpression(tok1->astOperand1(), tok2->astOperand2(), constFunctions) &&
+                   isSameExpression(tok1->astOperand2(), tok2->astOperand1(), constFunctions);
+        }
         return false;
+    }
     if (tok1->str() == "." && tok1->originalName() != tok2->originalName())
         return false;
     if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
