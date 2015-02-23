@@ -420,11 +420,11 @@ private:
 
         ASSERT_THROW(checkCode("class Foo {}; class Bar : public Foo"), InternalError);
 
-        checkCode("YY_DECL { switch (yy_act) {\n"
-                  "    case 65: YY_BREAK\n"
-                  "    case YY_STATE_EOF(block):\n"
-                  "        yyterminate(); \n"
-                  "} }"); // #5663
+        ASSERT_THROW(checkCode("YY_DECL { switch (yy_act) {\n"
+                               "    case 65: YY_BREAK\n"
+                               "    case YY_STATE_EOF(block):\n"
+                               "        yyterminate(); \n"
+                               "} }"), InternalError); // #5663
     }
 
     void garbageAST() {
