@@ -529,6 +529,15 @@ private:
               "    return x | 0x02;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void create_rop_masks_4( rop_mask_bits *bits) {\n"
+              "DWORD mask_offset;\n"
+              "BYTE *and_bits = bits->and;\n"
+              "rop_mask *rop_mask;\n"
+              "and_bits[mask_offset] |= (rop_mask->and & 0x0f);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 
@@ -1254,7 +1263,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // clarify conditions with = and comparison
+// clarify conditions with = and comparison
     void clarifyCondition1() {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n" // don't simplify and verify this code
@@ -1277,7 +1286,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // clarify conditions with bitwise operator and comparison
+// clarify conditions with bitwise operator and comparison
     void clarifyCondition2() {
         check("void f() {\n"
               "    if (x & 3 == 2) {}\n"
@@ -1290,7 +1299,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n", errout.str());
     }
 
-    // clarify condition that uses ! operator and then bitwise operator
+// clarify condition that uses ! operator and then bitwise operator
     void clarifyCondition3() {
         check("void f(int w) {\n"
               "    if(!w & 0x8000) {}\n"
