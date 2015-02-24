@@ -667,8 +667,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                        (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
                 const Variable *var = tok->tokAt(varcount + 4)->variable();
                 if (var && var->isArray() && var->dimensions().size() == 1) {
-                    const std::size_t len = (std::size_t)var->dimension(0);
-                    if (len > (unsigned int)total_size) {
+                    const MathLib::bigint len = var->dimension(0);
+                    if (len > total_size) {
                         if (_settings->inconclusive)
                             possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
                         continue;
@@ -895,8 +895,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
             if (_settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
                 if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
-                    const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
-                    if ((unsigned int)total_size == num)
+                    const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(6));
+                    if (total_size == num)
                         bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
                 }
             }
@@ -907,7 +907,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 // check for strncpy which is not terminated
                 if (tok->str() == "strncpy") {
                     // strncpy takes entire variable length as input size
-                    unsigned int num = (unsigned int)MathLib::toLongNumber(param3->str());
+                    const MathLib::bigint num = MathLib::toLongNumber(param3->str());
 
                     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
                     if (isWarningEnabled && num >= total_size && _settings->inconclusive) {
