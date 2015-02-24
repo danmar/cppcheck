@@ -80,6 +80,7 @@ private:
         TEST_CASE(testautovar12); // ticket #5024 - crash
         TEST_CASE(testautovar13); // ticket #5537 - crash
         TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
+        TEST_CASE(testautovar15); // ticket #6538
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_return1);
@@ -387,6 +388,19 @@ private:
               "    goto label;\n"
               "  }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar15() { // Ticket #6538
+        check("static const float4  darkOutline(0.05f, 0.05f, 0.05f, 0.95f);\n"
+              "static const float darkLuminosity = 0.05 +\n"
+              "                                    0.0722f * math::powf(darkOutline[2], 2.2);\n"
+              "const float4* ChooseOutlineColor(const float4& textColor)  {\n"
+              "    const float lumdiff = something;\n"
+              "    if (lumdiff > 5.0f)\n"
+              "        return &darkOutline;\n"
+              "    return 0;\n"
+              "}", false, false);
         ASSERT_EQUALS("", errout.str());
     }
 

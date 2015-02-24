@@ -228,6 +228,7 @@ private:
         TEST_CASE(symboldatabase48); // #6417
         TEST_CASE(symboldatabase49); // #6424
         TEST_CASE(symboldatabase50); // #6432
+        TEST_CASE(symboldatabase51); // #6538
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -2126,6 +2127,24 @@ private:
         ASSERT(db != nullptr);
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "_ConstTessMemberResultCallback_0_0 (");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->isConstructor());
+    }
+
+    void symboldatabase51() { // #6538
+        GET_SYMBOL_DB("static const float f1 = 2 * foo1(a, b);\n"
+                      "static const float f2 = 2 * ::foo2(a, b);\n"
+                      "static const float f3 = 2 * std::foo3(a, b);\n"
+                      "static const float f4 = c * foo4(a, b);\n"
+                      "static const int i1 = 2 & foo5(a, b);\n"
+                      "static const bool b1 = 2 > foo6(a, b);\n");
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT(findFunctionByName("foo1", &db->scopeList.front()) == nullptr);
+            ASSERT(findFunctionByName("foo2", &db->scopeList.front()) == nullptr);
+            ASSERT(findFunctionByName("foo3", &db->scopeList.front()) == nullptr);
+            ASSERT(findFunctionByName("foo4", &db->scopeList.front()) == nullptr);
+            ASSERT(findFunctionByName("foo5", &db->scopeList.front()) == nullptr);
+            ASSERT(findFunctionByName("foo6", &db->scopeList.front()) == nullptr);
+        }
     }
 
     void isImplicitlyVirtual() {

@@ -418,7 +418,7 @@ private:
               "class A\n"
               "{\n"
               "public:\n"
-              "    A()\n"
+              "    A();\n"
               "    void a();\n"
               "private:\n"
               "    void b();\n"
