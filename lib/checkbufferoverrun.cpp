@@ -893,7 +893,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             // Check function call..
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
-            if (_settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
+            if (isWarningEnabled && _settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
                 if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
                     const unsigned int num = (unsigned int)MathLib::toLongNumber(tok->strAt(6));
                     if ((unsigned int)total_size == num)
@@ -901,7 +901,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 }
             }
 
-            if ((Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )"))) {
+            if (isWarningEnabled && Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
                 const Token* param3 = tok->linkAt(1)->previous();
 
                 // check for strncpy which is not terminated
@@ -910,7 +910,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     unsigned int num = (unsigned int)MathLib::toLongNumber(param3->str());
 
                     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                    if (isWarningEnabled && num >= total_size && _settings->inconclusive) {
+                    if (num >= total_size && _settings->inconclusive) {
                         const Token *tok2 = tok->next()->link()->next();
                         for (; tok2; tok2 = tok2->next()) {
                             const Token* tok3 = tok->tokAt(2);
