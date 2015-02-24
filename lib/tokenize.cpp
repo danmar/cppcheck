@@ -184,7 +184,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 if (end->next()->str() == "(")
                     end = end->linkAt(1);
 
-                end = end->next();
+                end = (end)?end->next():nullptr;
             }
             if (end)
                 end = end->next();
