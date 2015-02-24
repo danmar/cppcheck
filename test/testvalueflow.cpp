@@ -37,6 +37,7 @@ private:
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowPointerAlias);
+        TEST_CASE(valueFlowArrayElement);
 
         TEST_CASE(valueFlowBitAnd);
 
@@ -196,6 +197,24 @@ private:
                 "  *x = 0;\n"  // <- x can point at i
                 "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "& i"));
+    }
+
+    void valueFlowArrayElement() {
+        const char *code;
+
+        code  = "void f() {\n"
+                "    const int a[] = {43,23,12};\n"
+                "    int x = a[0];\n"
+                "    return x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 43));
+
+        code  = "void f() {\n"
+                "    const char abcd[] = \"abcd\";\n"
+                "    int x = abcd[2];\n"
+                "    return x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 'c'));
     }
 
     void valueFlowCalculations() {
