@@ -1643,7 +1643,9 @@ void CheckOther::checkCharVariable()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [") && astIsSignedChar(tok->next()->astOperand2())) {
                 const Variable* arrayvar = tok->variable();
-                const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
+                if (!arrayvar || !arrayvar->isArray())
+                    continue;
+                const MathLib::bigint arraysize = arrayvar->dimension(0U);
                 if (arraysize > 0x80)
                     charArrayIndexError(tok);
             }
