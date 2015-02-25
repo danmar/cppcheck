@@ -19,14 +19,21 @@ void bufferAccessOutOf(void) {
   fgets(a,6,stdin);
   sprintf(a, "ab%s", "cd");
   // cppcheck-suppress bufferAccessOutOfBounds
+  // cppcheck-suppress redundantCopy
   sprintf(a, "ab%s", "cde");
+  // cppcheck-suppress redundantCopy
   snprintf(a, 5, "abcde%i", 1);
+  // cppcheck-suppress redundantCopy
   snprintf(a, 6, "abcde%i", 1);   //TODO: cppcheck-suppress bufferAccessOutOfBounds
+  // cppcheck-suppress redundantCopy
   strcpy(a,"abcd");
   // cppcheck-suppress bufferAccessOutOfBounds
+  // cppcheck-suppress redundantCopy
   strcpy(a, "abcde");
+  // cppcheck-suppress redundantCopy
   strncpy(a,"abcde",5);
   // cppcheck-suppress bufferAccessOutOfBounds
+  // cppcheck-suppress redundantCopy
   strncpy(a,"abcde",6);
   fread(a,1,5,stdin);
   // cppcheck-suppress bufferAccessOutOfBounds
@@ -52,12 +59,14 @@ void nullpointer(int value){
 
   // cppcheck-suppress nullPointer
   clearerr(0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   feof(0);
   // cppcheck-suppress nullPointer
   fgetc(0);
   // cppcheck-suppress nullPointer
   fclose(0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   ferror(0);
   // cppcheck-suppress nullPointer
@@ -70,6 +79,7 @@ void nullpointer(int value){
   // No FP
   fflush(0);
   // No FP
+  // cppcheck-suppress redundantAssignment
   fp = freopen(0,"abc",stdin);
   fclose(fp); fp = 0;
   // cppcheck-suppress nullPointer
@@ -85,39 +95,51 @@ void nullpointer(int value){
   // cppcheck-suppress nullPointer
   itoa(123,0,10);
   putchar(0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strchr(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strlen(0);
   // cppcheck-suppress nullPointer
   strcpy(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strspn(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strcspn(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strcoll(0,0);
   // cppcheck-suppress nullPointer
   strcat(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strcmp(0,0);
   // cppcheck-suppress nullPointer
   strncpy(0,0,1);
   // cppcheck-suppress nullPointer
   strncat(0,0,1);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strncmp(0,0,1);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strstr(0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtoul(0,0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtoull(0,0,0);
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtol(0,0,0);
 
   // #6100 False positive nullPointer - calling mbstowcs(NULL,)
   res += mbstowcs(0,"",0);
+  // cppcheck-suppress unreadVariable
   res += wcstombs(0,L"",0);
 
   strtok(NULL,"xyz");
@@ -132,20 +154,24 @@ void nullpointer(int value){
 }
 
 void nullpointerMemchr1(char *p, char *s) {
+  // cppcheck-suppress uselessAssignmentPtrArg
   p = memchr (s, 'p', strlen(s));
 }
 
 void nullpointerMemchr2(char *p, char *s) {
+  // cppcheck-suppress uselessAssignmentPtrArg
   p = memchr (s, 0, strlen(s));
 }
 
 void nullpointerMemchr3(char *p) {
   char *s = 0;
   // cppcheck-suppress nullPointer
+  // cppcheck-suppress uselessAssignmentPtrArg
   p = memchr (s, 0, strlen(s));
 }
 
 void nullpointerMemcmp(char *p) {
+  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   memcmp(p, 0, 123);
 }
@@ -178,12 +204,14 @@ void uninit_fopen(void) {
 
 void uninit_feof(void) {
     FILE *fp;
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress uninitvar
     feof(fp);
 }
 
 void uninit_ferror(void) {
     FILE *fp;
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress uninitvar
     ferror(fp);
 }
@@ -282,4 +310,10 @@ void uninit_putchar(void) {
     char c;
     // cppcheck-suppress uninitvar
     putchar(c);
+}
+
+void ignoreretrn(void) {
+  char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
+  char * pEnd;
+  strtol (szNumbers,&pEnd,10);
 }

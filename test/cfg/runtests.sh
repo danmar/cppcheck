@@ -19,4 +19,4 @@ ${CPPCHECK} --check-library --library=gnu --enable=information --enable=style --
 
 # std.c
 gcc -fsyntax-only ${DIR}std.c
-${CPPCHECK} --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}std.c
+${CPPCHECK} --check-library --enable=information --error-exitcode=1 --enable=style --suppress=missingIncludeSystem --inline-suppr ${DIR}std.c
