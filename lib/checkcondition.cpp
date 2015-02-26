@@ -203,10 +203,11 @@ void CheckCondition::checkBadBitmaskCheck()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() == "|" && tok->astOperand1() && tok->astOperand2() && tok->astParent()) {
-            const bool isBoolean = Token::Match(tok->astParent(), "&&|%oror%") ||
-                                   (tok->astParent()->str() == "?" && tok->astParent()->astOperand1() == tok) ||
-                                   (tok->astParent()->str() == "=" && tok->astParent()->astOperand2() == tok && tok->astParent()->astOperand1() && tok->astParent()->astOperand1()->variable() && tok->astParent()->astOperand1()->variable()->typeStartToken()->str() == "bool") ||
-                                   (tok->astParent()->str() == "(" && Token::Match(tok->astParent()->astOperand1(), "if|while"));
+            const Token* parent = tok->astParent();
+            const bool isBoolean = Token::Match(parent, "&&|%oror%") ||
+                                   (parent->str() == "?" && parent->astOperand1() == tok) ||
+                                   (parent->str() == "=" && parent->astOperand2() == tok && parent->astOperand1() && parent->astOperand1()->variable() && parent->astOperand1()->variable()->typeStartToken()->str() == "bool") ||
+                                   (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while"));
 
             const bool isTrue = (tok->astOperand1()->values.size() == 1 && tok->astOperand1()->values.front().intvalue != 0 && !tok->astOperand1()->values.front().conditional) ||
                                 (tok->astOperand2()->values.size() == 1 && tok->astOperand2()->values.front().intvalue != 0 && !tok->astOperand2()->values.front().conditional);
@@ -449,9 +450,11 @@ void CheckCondition::oppositeInnerCondition()
                     break;
                 if (tok->variable() &&
                     Token::Match(tok, "%name% . %name% (") &&
-                    !tok->variable()->isConst() &&
-                    !(tok->tokAt(2)->function() && tok->tokAt(2)->function()->isConst()))
-                    break;
+                    !tok->variable()->isConst()) {
+                    const Function* function = tok->tokAt(2)->function();
+                    if (!function || !function->isConst())
+                        break;
+                }
                 if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
                     // is variable unchanged? default is false..
                     bool unchanged = false;
