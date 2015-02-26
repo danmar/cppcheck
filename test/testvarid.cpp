@@ -88,6 +88,7 @@ private:
         TEST_CASE(varid53); // #4172 - Template instantiation: T<&functionName> list[4];
         TEST_CASE(varid54); // hang
         TEST_CASE(varid55); // #5868: Function::addArgument with varid 0 for argument named the same as a typedef
+        TEST_CASE(varid56); // function with a throw()
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -967,6 +968,15 @@ private:
                                 "void baz2 ( struct foo & foo@4 ) { } "
                                 "void bar3 ( struct foo * foo@5 ) { } "
                                 "void baz3 ( struct foo * foo@6 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
+    }
+
+    void varid56() { // Ticket #6548 - function with a throw()
+        const char code[] =     "void fred(int x) throw() {}"
+                                "void wilma() { x++; }";
+        const char expected[] = "\n\n##file 0\n1: "
+                                "void fred ( int x@1 ) throw ( ) { } "
+                                "void wilma ( ) { x ++ ; }\n";
         ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
     }
 

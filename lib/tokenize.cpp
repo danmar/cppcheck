@@ -2562,7 +2562,11 @@ void Tokenizer::setVarId()
         // scope info to handle shadow variables..
         bool newScope = false;
         if (!initListEndToken && tok->str() == "(") {
-            if (Token::simpleMatch(tok->link(), ") {") || Token::Match(tok->link(), ") %type% {"))
+            if (Token::simpleMatch(tok->tokAt(-2), ") throw ( ) {")) {
+                tok = tok->next();
+                continue;
+            }
+            if (Token::Match(tok->link(), ") %name%| {") || Token::simpleMatch(tok->link(), ") throw ( ) {"))
                 newScope = true;
             else {
                 initListEndToken = findInitListEndToken(tok->link());
