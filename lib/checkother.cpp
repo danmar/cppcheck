@@ -1884,16 +1884,17 @@ void CheckOther::checkMathFunctions()
                 continue;
             if (tok->strAt(-1) != "."
                 && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
-                bool isNegative = MathLib::isNegative(tok->strAt(2));
-                bool isInt = MathLib::isInt(tok->strAt(2));
-                bool isFloat = MathLib::isFloat(tok->strAt(2));
-                if (isNegative && isInt && MathLib::toLongNumber(tok->strAt(2)) <= 0) {
+                const std::string& number = tok->strAt(2);
+                bool isNegative = MathLib::isNegative(number);
+                bool isInt = MathLib::isInt(number);
+                bool isFloat = MathLib::isFloat(number);
+                if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
                     mathfunctionCallWarning(tok); // case log(-2)
-                } else if (isNegative && isFloat && MathLib::toDoubleNumber(tok->strAt(2)) <= 0.) {
+                } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
                     mathfunctionCallWarning(tok); // case log(-2.0)
-                } else if (!isNegative && isFloat && MathLib::toDoubleNumber(tok->strAt(2)) <= 0.) {
+                } else if (!isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
                     mathfunctionCallWarning(tok); // case log(0.0)
-                } else if (!isNegative && isInt && MathLib::toLongNumber(tok->strAt(2)) <= 0) {
+                } else if (!isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
                     mathfunctionCallWarning(tok); // case log(0)
                 }
             }
