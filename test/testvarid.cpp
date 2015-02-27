@@ -972,12 +972,19 @@ private:
     }
 
     void varid56() { // Ticket #6548 - function with a throw()
-        const char code[] =     "void fred(int x) throw() {}"
-                                "void wilma() { x++; }";
-        const char expected[] = "\n\n##file 0\n1: "
-                                "void fred ( int x@1 ) throw ( ) { } "
-                                "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
+        const char code1[] = "void fred(int x) throw() {}"
+                             "void wilma() { x++; }";
+        const char expected1[] = "\n\n##file 0\n1: "
+                                 "void fred ( int x@1 ) throw ( ) { } "
+                                 "void wilma ( ) { x ++ ; }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+
+        const char code2[] = "void fred(int x) const throw(EXCEPT) {}"
+                             "void wilma() { x++; }";
+        const char expected2[] = "\n\n##file 0\n1: "
+                                 "void fred ( int x@1 ) const throw ( EXCEPT ) { } "
+                                 "void wilma ( ) { x ++ ; }\n";
+        ASSERT_EQUALS(expected2, tokenize(code2, false, "test.cpp"));
     }
 
     void varid_cpp_keywords_in_c_code() {

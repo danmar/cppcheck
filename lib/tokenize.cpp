@@ -36,6 +36,33 @@
 
 //---------------------------------------------------------------------------
 
+/**
+ * is token pointing at function head? 
+ * @param tok         A '(' or ')' token in a possible function head
+ * @param endsWith    string after function head
+ * @return true if syntax seems to be a function head
+ */
+static bool isFunctionHead(const Token *tok, const std::string &endsWith)
+{
+    if (tok->str() == "(")
+        tok = tok->link();
+    if (Token::Match(tok, ") const| [;{]")) {
+        tok = tok->next();
+        if (tok->isName())
+            tok = tok->next();
+        return endsWith.find(tok->str()) != std::string::npos;
+    }
+    if (Token::Match(tok, ") const| throw (")) {
+        tok = tok->next();
+        while (tok->isName())
+            tok = tok->next();
+        tok = tok->link()->next();
+        return endsWith.find(tok->str()) != std::string::npos;
+    }
+    return false;
+}
+//---------------------------------------------------------------------------
+
 Tokenizer::Tokenizer() :
     list(0),
     _settings(0),
@@ -775,7 +802,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // function
-                else if (Token::Match(tokOffset->link(), ") const| ;|,")) {
+                else if (isFunctionHead(tokOffset->link(), ";,")) {
                     function = true;
                     if (tokOffset->link()->next()->str() == "const") {
                         specStart = tokOffset->link()->next();
@@ -2562,11 +2589,11 @@ void Tokenizer::setVarId()
         // scope info to handle shadow variables..
         bool newScope = false;
         if (!initListEndToken && tok->str() == "(") {
-            if (Token::simpleMatch(tok->tokAt(-2), ") throw ( ) {")) {
-                tok = tok->next();
+            if (Token::Match(tok->tokAt(-2), ")|const throw (") && Token::simpleMatch(tok->link(), ") {")) {
+                tok = tok->link();
                 continue;
             }
-            if (Token::Match(tok->link(), ") %name%| {") || Token::simpleMatch(tok->link(), ") throw ( ) {"))
+            if (isFunctionHead(tok, "{"))
                 newScope = true;
             else {
                 initListEndToken = findInitListEndToken(tok->link());
@@ -2578,9 +2605,9 @@ void Tokenizer::setVarId()
             scopeInfo.push(variableId);
 
             // function declarations
-        } else if (!executableScope.top() && tok->str() == "(" && Token::Match(tok->link(), ") const| ;")) {
+        } else if (!executableScope.top() && tok->str() == "(" && isFunctionHead(tok, ";")) {
             scopeInfo.push(variableId);
-        } else if (!executableScope.top() && Token::Match(tok, ") const| ;")) {
+        } else if (!executableScope.top() && tok->str() == ")" && isFunctionHead(tok, ";")) {
             variableId.swap(scopeInfo.top());
             scopeInfo.pop();
 
@@ -4029,7 +4056,7 @@ void Tokenizer::removeMacrosInGlobalScope()
             }
 
             // replace unknown macros before foo(
-            if (Token::Match(tok2, "%type% (") && Token::Match(tok2->next()->link(), ") const| {")) {
+            if (Token::Match(tok2, "%type% (") && isFunctionHead(tok2->next(), "{")) {
                 std::string typeName;
                 for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
                     typeName += tok3->str();
