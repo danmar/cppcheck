@@ -1320,8 +1320,11 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             return false;
 
         // skip over return type
-        if (Token::Match(tok1, "%name%"))
+        if (Token::Match(tok1, "%name%")) {
+            if (tok1->str() == "return")
+                return false;
             tok1 = tok1->previous();
+        }
 
         // skip over qualification
         while (Token::simpleMatch(tok1, "::")) {
