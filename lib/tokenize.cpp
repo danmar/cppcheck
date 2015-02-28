@@ -37,7 +37,7 @@
 //---------------------------------------------------------------------------
 
 /**
- * is token pointing at function head? 
+ * is token pointing at function head?
  * @param tok         A '(' or ')' token in a possible function head
  * @param endsWith    string after function head
  * @return true if syntax seems to be a function head
@@ -57,7 +57,9 @@ static bool isFunctionHead(const Token *tok, const std::string &endsWith)
         while (tok->isName())
             tok = tok->next();
         tok = tok->link()->next();
-        return endsWith.find(tok->str()) != std::string::npos;
+        while (tok && tok->isName())
+            tok = tok->next();
+        return tok && endsWith.find(tok->str()) != std::string::npos;
     }
     return false;
 }
@@ -4077,8 +4079,14 @@ void Tokenizer::removeMacrosInGlobalScope()
             }
         }
 
-        if (tok->str() == "{")
-            tok = tok->link();
+        // Skip executable scopes
+        if (tok->str() == "{") {
+            const Token *prev = tok->previous();
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (prev && prev->str() == ")")
+                tok = tok->link();
+        }
     }
 }
 

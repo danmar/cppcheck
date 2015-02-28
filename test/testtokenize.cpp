@@ -5826,7 +5826,7 @@ private:
         static const char expected14[] = "class C {\n"
                                          "void search ( ) { }\n"
                                          "void search ( ) const { }\n"
-                                         "void search ( ) THROW_MACRO { }\n"
+                                         "void search ( ) { }\n"
                                          "} ;";
         ASSERT_EQUALS(expected14, tokenizeAndStringify(code14, false));
     }
