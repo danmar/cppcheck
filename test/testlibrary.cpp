@@ -33,6 +33,7 @@ private:
         TEST_CASE(function);
         TEST_CASE(function_match_scope);
         TEST_CASE(function_match_args);
+        TEST_CASE(function_match_var);
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(function_arg_valid);
@@ -129,6 +130,27 @@ private:
         Library library;
         library.load(doc);
         ASSERT(library.isNotLibraryFunction(tokenList.front()));
+    }
+
+    void function_match_var() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"foo\">\n"
+                               "    <arg nr=\"1\"/>"
+                               "  </function>\n"
+                               "</def>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+
+        TokenList tokenList(nullptr);
+        std::istringstream istr("Fred foo(123);"); // <- Variable declaration, not library function
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+        tokenList.front()->next()->varId(1);
+
+        Library library;
+        library.load(doc);
+        ASSERT(library.isNotLibraryFunction(tokenList.front()->next()));
     }
 
     void function_arg() const {

@@ -685,6 +685,10 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
     if (Token::Match(ftok->previous(),"::|."))
         return true;
 
+    // variables are not library functions.
+    if (ftok->varId())
+        return true;
+
     int callargs = 0;
     for (const Token *tok = ftok->tokAt(2); tok && tok->str() != ")"; tok = tok->next()) {
         if (callargs == 0)
