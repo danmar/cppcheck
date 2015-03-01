@@ -143,6 +143,12 @@ void uninitvar(int fd) {
     pattern="";
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
+    int decimal, sign;  
+    double d;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress unreadVariable
+    char *buffer = ecvt(d, 11, &decimal, &sign);
+    gcvt(3.141, 2, NULL);
 }
 
 void uninitvar_types(void) {
