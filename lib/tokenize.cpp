@@ -6550,38 +6550,6 @@ bool Tokenizer::simplifyKnownVariables()
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
             }
 
-            else if (Token::Match(tok2, "( %name% == %num% ) {")) {
-                const unsigned int varid = tok2->next()->varId();
-                if (varid == 0)
-                    continue;
-
-                const std::string structname;
-
-                const Token *valueToken = tok2->tokAt(3);
-                std::string value(tok2->strAt(3)), savedValue = value;
-                const unsigned int valueVarId = 0;
-                const bool valueIsPointer = false;
-
-                // Insert a "%name% = %num% ;" at the beginning of the scope as simplifyKnownVariablesSimplify might compute an updated value
-                Token *scopeStart = tok2->tokAt(5);
-                scopeStart->insertToken(tok2->strAt(1));
-                scopeStart = scopeStart->next();
-                Token* artificialAssignment = scopeStart;
-                scopeStart->insertToken("=");
-                scopeStart = scopeStart->next();
-                scopeStart->insertToken(valueToken->str());
-                scopeStart = scopeStart->next();
-                scopeStart->insertToken(";");
-                scopeStart = scopeStart->next();
-
-                ret |= simplifyKnownVariablesSimplify(&artificialAssignment, tok2->tokAt(6), varid, structname, value, valueIsPointer, valueVarId, valueToken, -1);
-
-                // Remove the artificial assignment if no modification was done
-                if (artificialAssignment->strAt(2) == savedValue) {
-                    Token::eraseTokens(tok2->tokAt(5), scopeStart->next());
-                }
-            }
-
             else if (Token::Match(tok2, "strcpy|sprintf ( %name% , %str% ) ;")) {
                 const unsigned int varid(tok2->tokAt(2)->varId());
                 if (varid == 0)

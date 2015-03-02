@@ -187,9 +187,6 @@ private:
         TEST_CASE(simplifyKnownVariables57);    // ticket #4724
         TEST_CASE(simplifyKnownVariables58);    // ticket #5268
         TEST_CASE(simplifyKnownVariables59);    // skip for header
-        TEST_CASE(simplifyKnownVariablesIfEq1); // if (a==5) => a is 5 in the block
-        TEST_CASE(simplifyKnownVariablesIfEq2); // if (a==5) { buf[a++] = 0; }
-        TEST_CASE(simplifyKnownVariablesIfEq3); // #4708 - if (a==5) { buf[--a] = 0; }
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -2747,56 +2744,6 @@ private:
                       "a [ i ] = 0 ;\n"
                       "}\n"
                       "}", tokenizeAndStringify(code, true));
-    }
-
-    void simplifyKnownVariablesIfEq1() {
-        const char code[] = "void f(int x) {\n"
-                            "    if (x==5) {\n"
-                            "        return x;\n"
-                            "    }\n"
-                            "}";
-        const char expected[] = "void f ( int x ) {\n"
-                                "if ( x == 5 ) {\n"
-                                "return 5 ;\n"
-                                "}\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
-    }
-
-    void simplifyKnownVariablesIfEq2() {
-        const char code[] = "void f(int x) {\n"
-                            "    if (x==5) {\n"
-                            "        buf[x++] = 0;\n"
-                            "        buf[x--] = 0;\n"
-                            "    }\n"
-                            "}";
-        // Increment and decrements should be computed
-        const char expected[] = "void f ( int x ) {\n"
-                                "if ( x == 5 ) {\n"
-                                "buf [ 5 ] = 0 ;\n"
-                                "buf [ 6 ] = 0 ;\n"
-                                "}\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
-    }
-
-    void simplifyKnownVariablesIfEq3() {
-        const char code[] = "void f(int x) {\n"
-                            "    if (x==5) {\n"
-                            "        buf[++x] = 0;\n"
-                            "        buf[++x] = 0;\n"
-                            "        buf[--x] = 0;\n"
-                            "    }\n"
-                            "}";
-        const char expected[] = "void f ( int x ) {\n"
-                                "if ( x == 5 ) { "
-                                "x = 6 ;\n"
-                                "buf [ 6 ] = 0 ;\n"
-                                "buf [ 7 ] = 0 ;\n"
-                                "buf [ 6 ] = 0 ;\n"
-                                "}\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Unspecified, "test.c"));
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
