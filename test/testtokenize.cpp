@@ -97,6 +97,7 @@ private:
         TEST_CASE(removeCast14);
         TEST_CASE(removeCast15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
         TEST_CASE(removeCast16); // #6278
+        TEST_CASE(removeCast17); // #6110 - don't remove any parentheses in 'a(b)(c)'
 
         TEST_CASE(simplifyFloatCasts); // float casting a integer
 
@@ -960,7 +961,7 @@ private:
     void removeCast4() {
         // ticket #970
         const char code[] = "if (a >= (unsigned)(b)) {}";
-        const char expected[] = "if ( a >= ( unsigned int ) b ) { }";
+        const char expected[] = "if ( a >= ( unsigned int ) ( b ) ) { }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
@@ -984,7 +985,7 @@ private:
 
     void removeCast9() {
         ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
-        ASSERT_EQUALS("int v1 ; f ( ( double ) v1 * v2 )", tokenizeAndStringify("int v1; f((double)(v1)*v2)", true));
+        ASSERT_EQUALS("int v1 ; f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("int v1; f((double)(v1)*v2)", true));
         ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tokenizeAndStringify("f((A)(B)&x)", true)); // #4439
     }
 
@@ -1037,6 +1038,11 @@ private:
     void removeCast16() { // #6278
         ASSERT_EQUALS("Get ( pArray ) ;",
                       tokenizeAndStringify("Get((CObject*&)pArray);", true));
+    }
+
+    void removeCast17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
+        ASSERT_EQUALS("if ( a ( b ) ( c ) >= 3 )",
+                      tokenizeAndStringify("if (a(b)(c) >= 3)", true));
     }
 
     void simplifyFloatCasts() { // float casting integers

@@ -997,14 +997,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
              (Token::Match(tok->next(), "( %name% ) %cop%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&+-]")))) &&
             !tok->isName() &&
             tok->str() != ">" &&
-            tok->str() != "]" &&
-            tok->strAt(-1) != "operator" &&
-            !Token::simpleMatch(tok->previous(), "* )") &&
-            !Token::simpleMatch(tok->previous(), ") )") &&
-            !Token::Match(tok->tokAt(-2), "* %name% )") &&
-            !Token::Match(tok->tokAt(-2), "%type% ( ) ( %name%") &&
-            !Token::Match(tok, ") ( %name% ) ;")
-           ) {
+            tok->str() != ")" &&
+            tok->str() != "]") {
             tok->deleteNext();
             tok = tok->next();
             tok->deleteNext();
