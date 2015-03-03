@@ -265,11 +265,11 @@ private:
     }
 
 
-    void zeroDiv1() {
+    void zeroDiv1() { // floating point division by zero => no error
         check("void foo() {\n"
               "    cout << 1. / 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDiv2() {
