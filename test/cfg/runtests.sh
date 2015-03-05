@@ -17,6 +17,10 @@ ${CPPCHECK} --check-library --library=posix --enable=information --enable=style 
 gcc -fsyntax-only -D_GNU_SOURCE ${DIR}gnu.c
 ${CPPCHECK} --check-library --library=gnu --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}gnu.c
 
+# windows.cpp
+#g++ -fsyntax-only ${DIR}windows.cpp
+${CPPCHECK} --check-library --library=windows --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}windows.cpp
+
 # std.c
 gcc -fsyntax-only ${DIR}std.c
 ${CPPCHECK} --check-library --enable=information --error-exitcode=1 --enable=style --suppress=missingIncludeSystem --inline-suppr ${DIR}std.c

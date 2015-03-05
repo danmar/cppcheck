@@ -87,10 +87,11 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
     }
 }
 
-static void getCppFiles(std::vector<std::string> &files, const std::string &path)
+static void getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
     std::map<std::string,size_t> filemap;
-    FileLister::recursiveAddFiles(filemap, path);
+    const std::set<std::string> extra;
+    FileLister::addFiles(filemap, path, extra, recursive);
 
     // add *.cpp files to the "files" vector..
     for (std::map<std::string,size_t>::const_iterator it = filemap.begin(); it != filemap.end(); ++it) {
@@ -153,16 +154,16 @@ int main(int argc, char **argv)
 
     // Get files..
     std::vector<std::string> libfiles;
-    getCppFiles(libfiles, "lib/");
+    getCppFiles(libfiles, "lib/", false);
 
     std::vector<std::string> clifiles;
-    getCppFiles(clifiles, "cli/");
+    getCppFiles(clifiles, "cli/", false);
 
     std::vector<std::string> testfiles;
-    getCppFiles(testfiles, "test/");
+    getCppFiles(testfiles, "test/", false);
 
     std::vector<std::string> toolsfiles;
-    getCppFiles(toolsfiles, "tools/");
+    getCppFiles(toolsfiles, "tools/", false);
 
     if (libfiles.empty() && clifiles.empty() && testfiles.empty()) {
         std::cerr << "No files found. Are you in the correct directory?" << std::endl;
@@ -170,7 +171,7 @@ int main(int argc, char **argv)
     }
 
     std::vector<std::string> externalfiles;
-    getCppFiles(externalfiles, "externals/");
+    getCppFiles(externalfiles, "externals/", true);
 
 
     // QMAKE - lib/lib.pri
