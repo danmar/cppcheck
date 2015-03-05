@@ -706,8 +706,8 @@ private:
                             "    foo[1].x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Settings localsettings;
+        Tokenizer tokenizer(&localsettings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -726,8 +726,8 @@ private:
                             "    foo[1][2].x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Settings localsettings;
+        Tokenizer tokenizer(&localsettings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -746,8 +746,8 @@ private:
                             "    (foo[1]).x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Settings localsettings;
+        Tokenizer tokenizer(&localsettings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -1321,11 +1321,11 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.debugwarnings = debug;
+        Settings localsettings;
+        localsettings.debugwarnings = debug;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&localsettings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
