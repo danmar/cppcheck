@@ -8089,10 +8089,27 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     if (unknown)
         *unknown = !unknownFunc.empty();
     if (!unknownFunc.empty() && _settings->checkLibrary && _settings->isEnabled("information")) {
-        reportError(endScopeToken->previous(),
-                    Severity::information,
-                    "checkLibraryNoReturn",
-                    "--check-library: Function " + unknownFunc + "() should have <noreturn> configuration");
+        // Is function global?
+        bool globalFunction = true;
+        if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
+            const Token * const ftok = endScopeToken->linkAt(-2)->previous();
+            if (ftok &&
+                ftok->isName() &&
+                ftok->function() &&
+                ftok->function()->nestedIn &&
+                ftok->function()->nestedIn->type != Scope::eGlobal) {
+                globalFunction = false;
+            }
+        }
+
+        // don't warn for nonglobal functions (class methods, functions hidden in namespaces) since they cant be configured yet
+        // FIXME: when methods and namespaces can be configured properly, remove the "globalFunction" check
+        if (globalFunction) {
+            reportError(endScopeToken->previous(),
+                        Severity::information,
+                        "checkLibraryNoReturn",
+                        "--check-library: Function " + unknownFunc + "() should have <noreturn> configuration");
+        }
     }
     return ret;
 }
