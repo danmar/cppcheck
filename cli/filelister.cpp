@@ -189,10 +189,12 @@ std::string FileLister::getAbsolutePath(const std::string& path)
     return absolute_path;
 }
 
-void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
-                                    std::map<std::string, std::size_t> &files,
-                                    const std::string &path,
-                                    const std::set<std::string> &extra)
+void FileLister::addFiles2(std::set<std::string> &seen_paths,
+                           std::map<std::string, std::size_t> &files,
+                           const std::string &path,
+                           const std::set<std::string> &extra,
+                           bool recursive
+                          )
 {
     std::ostringstream oss;
     oss << path;
@@ -228,11 +230,11 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
                 } else
                     files[filename] = 0;
             }
-        } else {
+        } else if (recursive) {
             // Directory
 
             seen_paths.insert(absolute_path);
-            recursiveAddFiles2(seen_paths, files, filename, extra);
+            addFiles2(seen_paths, files, filename, extra, recursive);
         }
     }
     globfree(&glob_results);
@@ -242,7 +244,13 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
 void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra)
 {
     std::set<std::string> seen_paths;
-    recursiveAddFiles2(seen_paths, files, path, extra);
+    addFiles2(seen_paths, files, path, extra, true);
+}
+
+void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive)
+{
+    std::set<std::string> seen_paths;
+    addFiles2(seen_paths, files, path, extra, recursive);
 }
 
 bool FileLister::isDirectory(const std::string &path)
