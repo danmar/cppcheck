@@ -19,7 +19,7 @@ ${CPPCHECK} --check-library --library=gnu --enable=information --enable=style --
 
 # windows.cpp
 #g++ -fsyntax-only ${DIR}windows.cpp
-${CPPCHECK} --check-library --library=windows --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}windows.cpp
+${CPPCHECK} --check-library --library=windows --enable=information --enable=style --error-exitcode=1 --inline-suppr ${DIR}windows.cpp
 
 # std.c
 gcc -fsyntax-only ${DIR}std.c
