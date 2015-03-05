@@ -433,8 +433,11 @@ if __name__ == '__main__':
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
-            sys.stderr.write("ERROR: Source file '%s' not found.\n" %
-                             source_filename)
+            if (error['id'] == 'unmatchedSuppression'):
+                continue; # file not found, bail out
+            else:
+                sys.stderr.write("ERROR: Source file '%s' not found.\n" %
+                                source_filename)
             continue
         except UnicodeDecodeError:
             sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
@@ -522,9 +525,15 @@ if __name__ == '__main__':
                 output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
                 output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
-                output_file.write(
-                "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
-                (data['htmlfile'], filename))
+                if filename.endswith('*'): # assume unmatched suppression
+                    output_file.write(
+                        "\n       <tr><td colspan='4'>%s</td></tr>" %
+                        (filename))
+                else:
+                    output_file.write(
+                        "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                        (data['htmlfile'], filename))
+
                 for error in sorted(data['errors'], key=lambda k: k['line']):
                     error_class = ''
                     try:
@@ -540,6 +549,11 @@ if __name__ == '__main__':
                         output_file.write(
                             '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
                             (error['id'], error['severity'], error['msg']))
+                    elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
+                        output_file.write(
+                            "\n         <tr><td></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                            (error['id'], error['severity'], error_class,
+                             error['msg']))
                     else:
                         output_file.write(
                             "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
