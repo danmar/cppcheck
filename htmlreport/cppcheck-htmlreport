@@ -384,6 +384,8 @@ if __name__ == '__main__':
         if not os.path.exists(options.file):
             parser.error('cppcheck xml file: %s not found.' % options.file)
         input_file = io.open(options.file, 'r')
+    else:
+        parser.error('No cppcheck xml file specified. (--file=)')
 
     # Parse the xml file and produce a simple list of errors.
     print('Parsing xml report.')
