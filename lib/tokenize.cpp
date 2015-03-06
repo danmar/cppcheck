@@ -5637,7 +5637,16 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                     tok2 = tok2->next();
                 if (tok2 && tok2->str() != ",")
                     tok2 = nullptr;
-            } else
+            }
+
+            // parenthesis, functions can't be declared like:
+            // int f1(a,b), f2(c,d);
+            // so if there is a comma assume this is a variable declaration
+            else if (Token::Match(varName, "%name% (") && Token::simpleMatch(varName->linkAt(1), ") ,")) {
+                tok2 = varName->linkAt(1)->next();
+            }
+
+            else
                 tok2 = nullptr;
         } else {
             tok2 = nullptr;

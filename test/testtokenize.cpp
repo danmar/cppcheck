@@ -294,7 +294,8 @@ private:
         TEST_CASE(vardecl_template_2);
         TEST_CASE(vardecl_union);
         TEST_CASE(vardecl_par);     // #2743 - set links if variable type contains parentheses
-        TEST_CASE(vardecl_par2)     // #3912 - set correct links
+        TEST_CASE(vardecl_par2);    // #3912 - set correct links
+        TEST_CASE(vardecl_par3);    // #6556 - Fred x1(a), x2(b);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
         TEST_CASE(syntax_error_templates_1);
@@ -3814,6 +3815,12 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.validate();
+    }
+
+    void vardecl_par3() {
+        // ticket #6556- Fred x1(a), x2(b);
+        const char code[] = "Fred x1(a), x2(b);";
+        ASSERT_EQUALS("Fred x1 ( a ) ; Fred x2 ( b ) ;", tokenizeAndStringify(code));
     }
 
     void vardec_static() {
