@@ -565,8 +565,6 @@ static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, co
         const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
         if (!var || nonLocal(var)) {
             container.erase(i++);
-            if (i == container.end())
-                break;
         } else
             ++i;
     }
