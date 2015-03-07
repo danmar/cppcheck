@@ -95,6 +95,8 @@ private:
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
         TEST_CASE(templateParameters1);  // #4169 - segmentation fault
+
+        TEST_CASE(templateNamePosition);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
@@ -1109,6 +1111,43 @@ private:
         const char code[] = "volatile true , test < test < #ifdef __ppc__ true ,";
         // do not crash on invalid code
         ASSERT_EQUALS(0, templateParameters(code));
+    }
+
+    // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
+    int templateNamePositionHelper(const char code[], unsigned offset = 0) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp", "", true);
+
+        const Token *tok = tokenizer.tokens();
+        for (unsigned i = 0 ; i < offset ; ++i)
+            tok = tok->next();
+        return TemplateSimplifier::getTemplateNamePosition(tok);
+    }
+
+    void templateNamePosition() {
+        // Template class
+        ASSERT_EQUALS(2, templateNamePositionHelper("template<class T> class A {};", 4));
+        ASSERT_EQUALS(2, templateNamePositionHelper("template<class T> struct A {};", 4));
+        ASSERT_EQUALS(2, templateNamePositionHelper("template<class T> class A : B {};", 4));
+        ASSERT_EQUALS(2, templateNamePositionHelper("template<class T> struct A : B {};", 4));
+        // Template function definitions
+        ASSERT_EQUALS(2, templateNamePositionHelper("template<class T> unsigned foo() { return 0; }", 4));
+        ASSERT_EQUALS(3, templateNamePositionHelper("template<class T> unsigned* foo() { return 0; }", 4));
+        ASSERT_EQUALS(3, templateNamePositionHelper("template<class T> const unsigned foo() { return 0; }", 4));
+        ASSERT_EQUALS(4, templateNamePositionHelper("template<class T> const unsigned& foo() { return 0; }", 4));
+        // Class template members
+        ASSERT_EQUALS(4, templateNamePositionHelper("class A { template<class T> unsigned foo(); }; "
+                      "template<class T> unsigned A::foo() { return 0; }", 19));
+        ASSERT_EQUALS(5, templateNamePositionHelper("class A { template<class T> const unsigned foo(); }; "
+                      "template<class T> const unsigned A::foo() { return 0; }", 20));
+        TODO_ASSERT_EQUALS(7, -1, templateNamePositionHelper("class A { class B { template<class T> const unsigned foo(); }; } ; "
+                           "template<class T> const unsigned A::B::foo() { return 0; }", 25));
+        // Template class member
+        TODO_ASSERT_EQUALS(7, -1, templateNamePositionHelper("template<class T> class A { unsigned foo(); }; "
+                           "template<class T> unsigned A<T>::foo() { return 0; }", 19));
     }
 };
 

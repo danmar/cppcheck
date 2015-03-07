@@ -699,18 +699,24 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::stri
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
-    int namepos = 0;
+    int namepos = 0, starAmpPossiblePosition = 0;
     if (Token::Match(tok, "> class|struct %type% {|:"))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;
     else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
         namepos = 3;
-    else {
+    else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
+        namepos = 4;
+        starAmpPossiblePosition = 2;
+    } else if (Token::Match(tok, "> %type% %type% *|&| %type% :: %type% (")) {
+        namepos = 5;
+        starAmpPossiblePosition = 3;
+    } else {
         // Name not found
         return -1;
     }
-    if ((tok->strAt(namepos) == "*" || tok->strAt(namepos) == "&"))
+    if (Token::Match(tok->tokAt(starAmpPossiblePosition ? starAmpPossiblePosition : namepos), "*|&"))
         ++namepos;
 
     return namepos;
