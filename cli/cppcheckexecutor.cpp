@@ -254,16 +254,21 @@ static const char *signal_name(int signo)
  * That is very sensitive to the operating system, hardware, compiler and runtime!
  * The code is not meant for production environment, it's using functions not whitelisted for usage in a signal handler function.
  */
-static void print_stacktrace(FILE* f, bool demangling)
+static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
 {
 #if defined(USE_UNIX_BACKTRACE_SUPPORT)
     void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
+    const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
+    if (maxdepth<0)
+        maxdepth=depth+offset;
+    else
+        maxdepth+=offset;
+    printf("maxdepth=%d\n", maxdepth);
     char **symbolstrings = backtrace_symbols(array, depth);
     if (symbolstrings) {
         fputs("Callstack:\n", f);
-        const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
-        for (int i = offset; i < depth; ++i) {
+        for (int i = offset; i < maxdepth; ++i) {
             const char * const symbol = symbolstrings[i];
             char * realname = nullptr;
             const char * const firstBracketName = strchr(symbol, '(');
@@ -307,6 +312,22 @@ static void print_stacktrace(FILE* f, bool demangling)
 }
 
 /*
+ * Neither conclusive, nor portable
+ * Though one might to make it work beyond Linux x64
+ * \return true if address is supposed to be on stack (contrary to heap or elswhere).
+ * If unknown better retun false.
+ */
+static bool isAddressOnStack(const void* ptr)
+{
+#if defined(__linux) && defined(__amd64)
+    char a;
+    return ptr > &a;
+#else
+    return false;
+#endif
+}
+
+/*
  * Entry pointer for signal handlers
  * It uses functions which are not safe to be called from a signal handler,
  * but when ending up here something went terribly wrong anyway.
@@ -326,6 +347,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     const char * const signame = signal_name(signo);
     const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
+    const bool isaddressonstack = isAddressOnStack(info->si_addr);
     FILE* f=CppCheckExecutor::getExceptionOutput()=="stderr" ? stderr : stdout;
     fputs("Internal error: cppcheck received signal ", f);
     fputs(signame, f);
@@ -420,8 +442,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).\n",
-                info->si_addr);
+        fprintf(f, " (at 0x%p).%s\n",
+                info->si_addr,
+                (isaddressonstack)?" Stackoverflow?":"");
         break;
     case SIGINT:
         bPrintCallstack=false;
@@ -438,17 +461,19 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (%sat 0x%p).\n",
+        fprintf(f, " (%sat 0x%p).%s\n",
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
-                info->si_addr);
+                info->si_addr,
+                (isaddressonstack)?" Stackoverflow?":""
+               );
         break;
     default:
         fputs(".\n", f);
         break;
     }
     if (bPrintCallstack) {
-        print_stacktrace(f, true);
+        print_stacktrace(f, true, -1 /*(isaddressonstack)?8:-1*/);
         fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
 
@@ -681,6 +706,10 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
  * TODO Check for multi-threading issues!
  *
  */
+#if defined(USE_UNIX_SIGNAL_HANDLING)
+const size_t MYSTACKSIZE = 64*1024+SIGSTKSZ;
+char mytstack[MYSTACKSIZE];
+#endif
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
@@ -693,9 +722,15 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
         return -1;
     }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
+    stack_t segv_stack;
+    segv_stack.ss_sp = mytstack;
+    segv_stack.ss_flags = 0;
+    segv_stack.ss_size = MYSTACKSIZE;
+    sigaltstack(&segv_stack, NULL);
+
     struct sigaction act;
     memset(&act, 0, sizeof(act));
-    act.sa_flags=SA_SIGINFO;
+    act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
     for (std::size_t s=0; s<GetArrayLength(listofsignals); ++s) {
         sigaction(listofsignals[s].signalnumber, &act, NULL);
