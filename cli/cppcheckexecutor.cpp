@@ -311,20 +311,21 @@ static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
 #endif
 }
 
+static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ;
+static char mytstack[MYSTACKSIZE]; // alternative stack for signal handler
+static bool bStackBelowHeap=false;
+
 /*
- * Neither conclusive, nor portable
- * Though one might to make it work beyond Linux x64
- * \return true if address is supposed to be on stack (contrary to heap or elswhere).
- * If unknown better retun false.
+ * \return true if address is supposed to be on stack (contrary to heap or elsewhere).
+ * If unknown better return false.
  */
 static bool isAddressOnStack(const void* ptr)
 {
-#if defined(__linux) && defined(__amd64)
     char a;
-    return ptr > &a;
-#else
-    return false;
-#endif
+    if (bStackBelowHeap)
+        return ptr < &a;
+    else
+        return ptr > &a;
 }
 
 /*
@@ -706,10 +707,6 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
  * TODO Check for multi-threading issues!
  *
  */
-#if defined(USE_UNIX_SIGNAL_HANDLING)
-const size_t MYSTACKSIZE = 64*1024+SIGSTKSZ;
-char mytstack[MYSTACKSIZE];
-#endif
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
@@ -722,12 +719,20 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
         return -1;
     }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
+    // determine stack vs. heap
+    char stackVariable;
+    char *heapVariable=(char*)malloc(1);
+    bStackBelowHeap = &stackVariable < heapVariable;
+    free(heapVariable);
+
+    // set up alternative stack for signal handler
     stack_t segv_stack;
     segv_stack.ss_sp = mytstack;
     segv_stack.ss_flags = 0;
     segv_stack.ss_size = MYSTACKSIZE;
     sigaltstack(&segv_stack, NULL);
 
+    // install signal handler
     struct sigaction act;
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
@@ -944,7 +949,7 @@ const std::string& CppCheckExecutor::getExceptionOutput()
 
 bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
 {
-    Library::Error err = destination.load(basepath, filename);
+    const Library::Error err = destination.load(basepath, filename);
 
     if (err.errorcode == Library::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
