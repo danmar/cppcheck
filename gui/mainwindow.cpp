@@ -876,7 +876,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->accept();
     } else {
         const QString text(tr("Checking is running.\n\n" \
-                              "Do you want to stop the checking and exit Cppcheck?."));
+                              "Do you want to stop the checking and exit Cppcheck?"));
 
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),

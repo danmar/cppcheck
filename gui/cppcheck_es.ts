@@ -639,10 +639,10 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>El proceso de comprobación está en curso.
 
-¿Quieres parar la comprobación y salir del Cppcheck?.</translation>
+¿Quieres parar la comprobación y salir del Cppcheck?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="924"/>

@@ -731,10 +731,10 @@ Een nieuw XML-bestand openen zal de huidige resultaten wissen Wilt u verder gaan
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>Het controleren loopt.
 
-Wil je het controleren stoppen en Cppcheck sluiten?.</translation>
+Wil je het controleren stoppen en Cppcheck sluiten?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="948"/>

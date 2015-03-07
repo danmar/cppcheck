@@ -746,7 +746,7 @@ När en ny XML fil öppnas så tas alla nuvarande resultat bort. Vill du fortsä
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>Cppcheck kör.
 
 Vill du stoppa analysen och avsluta Cppcheck?</translation>

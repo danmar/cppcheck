@@ -731,7 +731,7 @@ L&apos;apertura di un nuovo file XML ripulirà i risultati correnti. Vuoi proced
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>La scansione è in esecuzione.
 
 Vuoi fermare la scansione ed uscire da Cppcheck?</translation>

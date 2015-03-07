@@ -691,7 +691,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="unfinished">解析中です.
 
 解析を停止してCppcheckを終了しますか？.</translation>

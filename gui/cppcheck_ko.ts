@@ -492,10 +492,10 @@ Do you want to proceed checking without using any of these project files?</sourc
     <message>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>검사 중.
 
-검사를 중지하고 Cppcheck을 종료하시겠습니까?.</translation>
+검사를 중지하고 Cppcheck을 종료하시겠습니까?</translation>
     </message>
     <message>
         <source>License</source>

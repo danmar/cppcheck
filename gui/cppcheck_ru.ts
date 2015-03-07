@@ -732,7 +732,7 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <location filename="mainwindow.cpp" line="878"/>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation>Идет проверка.
 
 Вы хотите завершить проверку и выйти?</translation>
