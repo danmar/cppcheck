@@ -217,6 +217,52 @@ void CheckClass::constructors()
     }
 }
 
+void CheckClass::checkExplicitConstructors()
+{
+    if (!_settings->isEnabled("performance"))
+        return;
+
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+
+        // Do not perform check, if the class/struct has not any constructors
+        if (scope->numConstructors == 0)
+            continue;
+
+        // Is class abstract? Maybe this test is over-simplification, but it will suffice for simple cases,
+        // and it will avoid false positives.
+        bool isAbstractClass = false;
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (func->isPure()) {
+                isAbstractClass = true;
+                break;
+            }
+        }
+
+        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+
+            // We are looking for constructors, which are meeting following criteria:
+            //	1) Constructor is declared with a single parameter
+            //  2) Constructor is not declared as explicit
+            //  3) It is not a copy/move constructor of non-abstract class
+            //  4) Constructor is not marked as delete (programmer can mark the default constructor as deleted, which is ok)
+            if (!func->isConstructor() || func->isDelete())
+                continue;
+
+            if (!func->isExplicit() && func->argCount() == 1) {
+                // We must decide, if it is not a copy/move constructor, or it is a copy/move constructor of abstract class.
+                if (func->type != Function::eCopyConstructor && func->type != Function::eMoveConstructor) {
+                    noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
+                }
+                else if (isAbstractClass) {
+                    noExplicitCopyMoveConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
+                }
+            }
+        }
+    }
+}
+
 void CheckClass::copyconstructors()
 {
     if (!_settings->isEnabled("style"))
@@ -721,6 +767,16 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
                 "' does not have a constructor although it has private member variables. "
                 "Member variables of builtin types are left uninitialized when the class is "
                 "instantiated. That may cause bugs or undefined behavior.");
+}
+
+void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+{
+    reportError(tok, Severity::performance, "noExplicitConstructor", "The constructor of " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' should be marked as explicit. ");
+}
+
+void CheckClass::noExplicitCopyMoveConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+{
+    reportError(tok, Severity::performance, "noExplicitCopyMoveConstructor", "The copy/move constructor of abstract " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' should be marked as explicit. ");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
