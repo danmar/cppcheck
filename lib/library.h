@@ -71,12 +71,12 @@ public:
 
     /** get allocation id for function */
     int alloc(const Token *tok) const {
-        return tok->function() ? 0 : getid(_alloc, tok->str());
+        return isNotLibraryFunction(tok) && argumentChecks.find(tok->str()) != argumentChecks.end() ? 0 : getid(_alloc, tok->str());
     }
 
     /** get deallocation id for function */
     int dealloc(const Token *tok) const {
-        return tok->function() ? 0 : getid(_dealloc, tok->str());
+        return isNotLibraryFunction(tok) && argumentChecks.find(tok->str()) != argumentChecks.end() ? 0 : getid(_dealloc, tok->str());
     }
 
     /** get deallocation id for function by name */
