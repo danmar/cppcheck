@@ -2315,6 +2315,14 @@ void Tokenizer::simplifyTemplates()
             tok3->deleteNext(4);
             tok3->insertToken(MathLib::toString(sizeOfResult));
         }
+        // Ticket #6181: normalize C++11 template parameter list closing syntax
+        if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok)) {
+            Token *endTok = tok->findClosingBracket();
+            if (endTok && endTok->str() == ">>") {
+                endTok->str(">");
+                endTok->insertToken(">");
+            }
+        }
     }
 
     TemplateSimplifier::simplifyTemplates(

@@ -1009,12 +1009,14 @@ private:
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
         {
-            const char code[] = "template<class T, class T2 = A<T>> class B {};\n"
-                                "template<class B = A, typename C = C<B>> class C {};\n"
-                                "template<class B, typename C> class D { };\n";
-            ASSERT_EQUALS("template < class T , class T2 > class B { } ; "
-                          "template < class B , typename C > class C { } ; "
-                          "template < class B , typename C > class D { } ;", tok(code));
+            const char code[] = "class A { }; "
+                                "template<class T> class B { }; "
+                                "template<class T1, class T2 = B<T1>> class C { }; "
+                                "template<class T1 = A, typename T2 = B<A>> class D { };";
+            ASSERT_EQUALS("class A { } ; "
+                          "template < class T > class B { } ; "
+                          "template < class T1 , class T2 > class C { } ; "
+                          "template < class T1 , typename T2 > class D { } ;", tok(code));
         }
     }
 

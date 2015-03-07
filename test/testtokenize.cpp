@@ -828,7 +828,7 @@ private:
                             "void z() {\n"
                             "    vector<int> VI;\n"
                             "}\n";
-        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+        tokenizeAndStringify(code, true);
     }
 
     void tokenize34() { // #6121
@@ -5185,10 +5185,10 @@ private:
     }
 
     void cpp0xtemplate4() { // #6181, #6354, #6414
-        ASSERT_THROW(tokenizeAndStringify("class A; "
-                                          "template <class T> class Disposer; "
-                                          "template <typename T, class D = Disposer<T>> class Shim {}; "
-                                          "class B : public Shim<A> {};"), InternalError);
+        tokenizeAndStringify("class A; "
+                             "template <class T> class Disposer; "
+                             "template <typename T, class D = Disposer<T>> class Shim {}; "
+                             "class B : public Shim<A> {};");
         tokenizeAndStringify("template <class ELFT> class ELFObjectImage {}; "
                              "ObjectImage *createObjectImage() { "
                              "  return new ELFObjectImage<ELFType<little>>(Obj); "
