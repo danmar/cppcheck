@@ -32,7 +32,7 @@
 class LogView : public QWidget {
     Q_OBJECT
 public:
-    LogView(QWidget *parent = 0);
+    explicit LogView(QWidget *parent = 0);
     ~LogView();
 
     /**

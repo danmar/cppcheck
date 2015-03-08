@@ -43,7 +43,7 @@ class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
-    ResultsView(QWidget * parent = 0);
+    explicit ResultsView(QWidget * parent = 0);
     void Initialize(QSettings *settings, ApplicationList *list);
     virtual ~ResultsView();
 
