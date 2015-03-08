@@ -46,6 +46,8 @@ void nullPointer(char *p) {
     getcwd (0, 0);
     // cppcheck-suppress nullPointer
     readdir (0);
+    // cppcheck-suppress nullPointer
+    utime(NULL, NULL);
 }
 
 void memleak_getaddrinfo() {
