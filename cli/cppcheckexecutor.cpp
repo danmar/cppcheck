@@ -245,10 +245,6 @@ static const char *signal_name(int signo)
     return "";
 }
 
-
-// 32 vs. 64bit
-#define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
-
 /*
  * Try to print the callstack.
  * That is very sensitive to the operating system, hardware, compiler and runtime!
@@ -257,6 +253,8 @@ static const char *signal_name(int signo)
 static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
 {
 #if defined(USE_UNIX_BACKTRACE_SUPPORT)
+// 32 vs. 64bit
+#define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     void *array[32]= {0}; // the less resources the better...
     const int depth = backtrace(array, (int)GetArrayLength(array));
     const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
@@ -264,7 +262,6 @@ static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
         maxdepth=depth+offset;
     else
         maxdepth+=offset;
-    printf("maxdepth=%d\n", maxdepth);
     char **symbolstrings = backtrace_symbols(array, depth);
     if (symbolstrings) {
         fputs("Callstack:\n", f);
@@ -308,6 +305,7 @@ static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
     } else {
         fputs("Callstack could not be obtained\n", f);
     }
+#undef ADDRESSDISPLAYLENGTH
 #endif
 }
 
@@ -617,7 +615,7 @@ static void writeMemoryErrorDetails(FILE* f, PEXCEPTION_POINTERS ex, const char*
 }
 
 /*
- * Any evaluation of the information about the exception needs to be done here!
+ * Any evaluation of the exception needs to be done here!
  */
 static int filterException(int code, PEXCEPTION_POINTERS ex)
 {
@@ -714,7 +712,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     __try {
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
-        // reporting to stdout may not be helpful within a GUI application..
+        // reporting to stdout may not be helpful within a GUI application...
         fputs("Please report this to the cppcheck developers!\n", f);
         return -1;
     }
