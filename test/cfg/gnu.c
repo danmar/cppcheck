@@ -18,4 +18,7 @@ void leakReturnValNotUsed() {
    char* ptr2 = (char*)strndupa("test", 1);
    // cppcheck-suppress ignoredReturnValue
    strndupa("test", 1);
+   // cppcheck-suppress ignoredReturnValue
+   // cppcheck-suppress nullPointer
+   strcasestr("test", NULL);
 }
