@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <stdlib.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
 #include <sys/mman.h>
@@ -126,6 +127,8 @@ void invalidFunctionArg() {
 void uninitvar(int fd) {
     int x;
     char buf[2];
+    int decimal, sign;  
+    double d;
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
     // cppcheck-suppress uninitvar
@@ -143,8 +146,6 @@ void uninitvar(int fd) {
     pattern="";
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
-    int decimal, sign;  
-    double d;
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
     char *buffer = ecvt(d, 11, &decimal, &sign);
