@@ -114,6 +114,12 @@ div.verbose div.content {
     z-index: 1;
 }
 
+#filename  {
+    margin-left: 10px;
+    font: 12px;
+    z-index: 1;
+}
+
 .highlighttable {
     background-color:white;
     z-index: 10;
@@ -216,8 +222,7 @@ HTML_HEAD = """
         <h1>Cppcheck report - %s: %s </h1>
       </div>
       <div id="menu" dir="rtl">
-       <a href="index.html">Defect list</a>
-       <br>
+       <p id="filename"><a href="index.html">Defects:</a> %s</p>
 """
 
 HTML_HEAD_END = """
@@ -460,7 +465,8 @@ if __name__ == '__main__':
                               (options.title,
                                htmlFormatter.get_style_defs('.highlight'),
                                options.title,
-                               filename))
+                               filename,
+                               filename.split('/')[-1]))
 
             for error in sorted(errors, key=lambda k: k['line']):
                 output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
@@ -516,7 +522,7 @@ if __name__ == '__main__':
             for _id in [k for k, v in sorted(Counter(stats).items()) if v == occurrences]:
                 stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
-        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defect list", "Defect summary", 1) % (options.title, '', options.title, ''))
+        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
         output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '       </p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
