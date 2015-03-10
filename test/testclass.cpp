@@ -188,7 +188,7 @@ private:
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("performance");
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -235,21 +235,21 @@ private:
                                   "{ \n"
                                   "    Class(int i) { } \n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) The constructor of class 'Class' should be marked as explicit. \n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n", errout.str());
 
         checkExplicitConstructors("class Class \n"
                                   "{ \n"
                                   "    Class(const Class& other) { } \n"
                                   "    virtual int i() = 0; \n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) The copy/move constructor of abstract class 'Class' should be marked as explicit. \n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
 
         checkExplicitConstructors("class Class \n"
                                   "{ \n"
                                   "    Class(Class&& other) { } \n"
                                   "    virtual int i() = 0; \n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) The copy/move constructor of abstract class 'Class' should be marked as explicit. \n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {

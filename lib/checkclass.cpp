@@ -219,7 +219,7 @@ void CheckClass::constructors()
 
 void CheckClass::checkExplicitConstructors()
 {
-    if (!_settings->isEnabled("performance"))
+    if (!_settings->isEnabled("style"))
         return;
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
@@ -771,12 +771,16 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
 
 void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
-    reportError(tok, Severity::performance, "noExplicitConstructor", "The constructor of " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' should be marked as explicit. ");
+    const std::string message(std::string(isStruct ? "Struct" : "Class") + " '" + classname + "' has a constructor with 1 argument that is not explicit.");
+    const std::string verbose(message + " Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided.");
+    reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose);
 }
 
 void CheckClass::noExplicitCopyMoveConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
-    reportError(tok, Severity::performance, "noExplicitCopyMoveConstructor", "The copy/move constructor of abstract " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' should be marked as explicit. ");
+    const std::string message(std::string(isStruct ? "Abstract struct" : "Abstract class") + " '" + classname + "' has a copy/move constructor that is not explicit.");
+    const std::string verbose(message + " For abstract classes, even copy/move constructors may be declared explicit, as, by definition, abstract classes cannot be instantiated, and so objects of such type should never be passed by value.");
+    reportError(tok, Severity::style, "noExplicitCopyMoveConstructor", message + "\n" + verbose);
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
