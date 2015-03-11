@@ -3912,6 +3912,17 @@ private:
                          "        dosth();\n"
                          "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dead pointer usage. Pointer 'former_hover' is dead if it has been assigned '&item' at line 5.\n", errout.str());
+
+        // #6575
+        checkDeadPointer("void trp_deliver_signal()  {\n"
+                         "    union {\n"
+                         "        Uint32 theData[25];\n"
+                         "        EventReport repData;\n"
+                         "    };\n"
+                         "    EventReport * rep = &repData;\n"
+                         "    rep->setEventType(NDB_LE_Connected);\n"
+                         "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
