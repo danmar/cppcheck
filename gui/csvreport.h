@@ -35,7 +35,7 @@
 */
 class CsvReport : public Report {
 public:
-    CsvReport(const QString &filename);
+    explicit CsvReport(const QString &filename);
     virtual ~CsvReport();
 
     /**

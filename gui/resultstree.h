@@ -47,7 +47,7 @@ class QItemSelectionModel;
 class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
-    ResultsTree(QWidget * parent = 0);
+    explicit ResultsTree(QWidget * parent = 0);
     virtual ~ResultsTree();
     void Initialize(QSettings *settings, ApplicationList *list);
 

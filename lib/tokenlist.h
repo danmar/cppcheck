@@ -33,7 +33,7 @@ class Settings;
 
 class CPPCHECKLIB TokenList {
 public:
-    TokenList(const Settings* settings);
+    explicit TokenList(const Settings* settings);
     ~TokenList();
 
     void setSettings(const Settings *settings) {

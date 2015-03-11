@@ -35,7 +35,7 @@
 */
 class XmlReportV1 : public XmlReport {
 public:
-    XmlReportV1(const QString &filename);
+    explicit XmlReportV1(const QString &filename);
     virtual ~XmlReportV1();
 
     /**

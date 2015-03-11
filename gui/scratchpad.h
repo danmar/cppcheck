@@ -33,7 +33,7 @@ class MainWindow;
 class ScratchPad : public QDialog {
     Q_OBJECT
 public:
-    ScratchPad(MainWindow& mainWindow);
+    explicit ScratchPad(MainWindow& mainWindow);
 
 private slots:
     /**

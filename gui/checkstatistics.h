@@ -30,7 +30,7 @@
  */
 class CheckStatistics : public QObject {
 public:
-    CheckStatistics(QObject *parent = NULL);
+    explicit CheckStatistics(QObject *parent = NULL);
 
     /**
     * @brief Add new checked item to statistics.

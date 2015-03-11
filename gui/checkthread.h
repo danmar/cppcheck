@@ -36,7 +36,7 @@ class Settings;
 class CheckThread : public QThread {
     Q_OBJECT
 public:
-    CheckThread(ThreadResult &result);
+    explicit CheckThread(ThreadResult &result);
     virtual ~CheckThread();
 
     /**

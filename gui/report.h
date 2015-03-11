@@ -40,7 +40,7 @@ public:
         CSV,
     };
 
-    Report(const QString &filename);
+    explicit Report(const QString &filename);
     virtual ~Report();
 
     /**

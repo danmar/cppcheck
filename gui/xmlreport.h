@@ -35,7 +35,7 @@ class QObject;
 */
 class XmlReport : public Report {
 public:
-    XmlReport(const QString &filename);
+    explicit XmlReport(const QString &filename);
 
     /**
      * @brief Read contents of the report file.
