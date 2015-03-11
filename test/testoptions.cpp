@@ -16,9 +16,7 @@
 
 #include "options.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestOptions: public TestFixture {
 public:

@@ -22,10 +22,6 @@
 #include "settings.h"
 #include "templatesimplifier.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
-
 
 class TestSimplifyTemplate : public TestFixture {
 public:

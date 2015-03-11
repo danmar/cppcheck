@@ -16,17 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "checkmemoryleak.h"
 #include "testsuite.h"
 #include "symboldatabase.h"
 #include "preprocessor.h"
-#include <sstream>
-
-extern std::ostringstream errout;
 
 
 class TestMemleak : private TestFixture {

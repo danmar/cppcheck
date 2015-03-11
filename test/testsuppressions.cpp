@@ -24,9 +24,7 @@
 
 #include <string>
 #include <map>
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestSuppressions : public TestFixture {
 public:

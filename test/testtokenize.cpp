@@ -24,8 +24,6 @@
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include <cstring>
 
-extern std::ostringstream errout;
-
 
 class TestTokenizer : public TestFixture {
 public:

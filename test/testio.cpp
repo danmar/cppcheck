@@ -19,9 +19,7 @@
 #include "checkio.h"
 #include "testsuite.h"
 #include "tokenize.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestIO : public TestFixture {
 public:

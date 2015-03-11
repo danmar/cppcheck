@@ -19,10 +19,8 @@
 #include "tokenize.h"
 #include "checknullpointer.h"
 #include "testsuite.h"
-#include <sstream>
 #include <tinyxml2.h>
 
-extern std::ostringstream errout;
 
 class TestNullPointer : public TestFixture {
 public:

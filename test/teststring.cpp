@@ -22,9 +22,7 @@
 #include "testsuite.h"
 #include "preprocessor.h"
 #include "testutils.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestString : public TestFixture {
 public:

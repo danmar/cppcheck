@@ -19,9 +19,7 @@
 #include "tokenize.h"
 #include "checkuninitvar.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestUninitVar : public TestFixture {
 public:

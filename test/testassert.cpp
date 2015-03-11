@@ -19,9 +19,7 @@
 #include "tokenize.h"
 #include "checkassert.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestAssert : public TestFixture {
 public:

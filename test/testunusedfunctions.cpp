@@ -20,9 +20,7 @@
 #include "tokenize.h"
 #include "testsuite.h"
 #include "checkunusedfunctions.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestUnusedFunctions : public TestFixture {
 public:
@@ -30,7 +28,6 @@ public:
     }
 
 private:
-
 
     void run() {
         TEST_CASE(incondition);

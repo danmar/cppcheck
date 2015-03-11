@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "testsuite.h"
@@ -27,8 +26,6 @@
 #include <list>
 #include <string>
 
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 class TestCppcheck : public TestFixture {
 public:

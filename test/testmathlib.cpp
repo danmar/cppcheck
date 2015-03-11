@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "mathlib.h"
 #include "testsuite.h"
+
 
 class TestMathLib : public TestFixture {
 public:

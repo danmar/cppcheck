@@ -19,9 +19,7 @@
 #include "testsuite.h"
 #include "checkvaarg.h"
 #include "tokenize.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestVaarg : public TestFixture {
 public:

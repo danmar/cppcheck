@@ -21,6 +21,7 @@
 #include "testsuite.h"
 #include "pathmatch.h"
 
+
 class TestPathMatch : public TestFixture {
 public:
     TestPathMatch()

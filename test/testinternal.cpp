@@ -21,9 +21,7 @@
 #include "tokenize.h"
 #include "checkinternal.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestInternal : public TestFixture {
 public:

@@ -22,8 +22,6 @@
 #include "settings.h"
 #include "check.h"
 
-extern std::ostringstream errout;
-
 
 class TestGarbage : public TestFixture {
 public:

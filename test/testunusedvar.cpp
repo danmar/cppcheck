@@ -16,16 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-// Check for unused variables..
-
 #include "testsuite.h"
 #include "tokenize.h"
 #include "checkunusedvar.h"
 
-#include <sstream>
-extern std::ostringstream errout;
 
 class TestUnusedVar : public TestFixture {
 public:

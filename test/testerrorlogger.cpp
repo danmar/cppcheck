@@ -21,6 +21,7 @@
 #include "testsuite.h"
 #include "errorlogger.h"
 
+
 class TestErrorLogger : public TestFixture {
 public:
     TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5), barCpp8("bar.cpp", 8) {

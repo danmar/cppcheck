@@ -16,14 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tokenize.h"
 #include "checkautovariables.h"
 #include "testsuite.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
 
 class TestAutoVariables : public TestFixture {
 public:

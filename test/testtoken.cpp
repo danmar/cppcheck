@@ -24,7 +24,7 @@
 #include <vector>
 #include <string>
 
-extern std::ostringstream errout;
+
 class TestToken : public TestFixture {
 public:
     TestToken() : TestFixture("TestToken") {

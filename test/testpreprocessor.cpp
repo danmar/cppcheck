@@ -29,11 +29,8 @@
 
 #include <map>
 #include <string>
-#include <sstream>
 #include <set>
 
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 #ifdef _MSC_VER
 // Visual Studio complains about truncated values for '(char)0xff' and '(char)0xfe'

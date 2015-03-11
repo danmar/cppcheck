@@ -21,9 +21,6 @@
 #include "checkclass.h"
 #include "testsuite.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:

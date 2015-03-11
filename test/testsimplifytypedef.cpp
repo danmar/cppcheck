@@ -21,10 +21,6 @@
 #include "token.h"
 #include "settings.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
-
 
 class TestSimplifyTypedef : public TestFixture {
 public:

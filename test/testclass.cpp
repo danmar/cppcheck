@@ -16,15 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "tokenize.h"
 #include "checkclass.h"
 #include "testsuite.h"
-#include <sstream>
 #include <tinyxml2.h>
 
-extern std::ostringstream errout;
 
 class TestClass : public TestFixture {
 public:

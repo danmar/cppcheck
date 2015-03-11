@@ -16,16 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tokenize.h"
 #include "checkbufferoverrun.h"
 #include "testsuite.h"
 
 #include <tinyxml2.h>
-#include <sstream>
 #include <climits>
 
-extern std::ostringstream errout;
 
 class TestBufferOverrun : public TestFixture {
 public:

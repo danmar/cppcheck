@@ -22,10 +22,8 @@
 #include "checktype.h"
 #include "testsuite.h"
 #include "testutils.h"
-#include <sstream>
 #include <tinyxml2.h>
 
-extern std::ostringstream errout;
 
 class TestType : public TestFixture {
 public:

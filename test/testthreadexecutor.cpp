@@ -25,8 +25,6 @@
 #include <map>
 #include <string>
 
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 class TestThreadExecutor : public TestFixture {
 public:

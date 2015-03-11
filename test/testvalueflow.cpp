@@ -25,7 +25,7 @@
 #include <vector>
 #include <string>
 
-extern std::ostringstream errout;
+
 class TestValueFlow : public TestFixture {
 public:
     TestValueFlow() : TestFixture("TestValueFlow") {
