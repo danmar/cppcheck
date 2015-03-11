@@ -14,8 +14,9 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <unistd.h>
 #include <regex.h>
+#include <time.h>
+#include <unistd.h>
 
 void bufferAccessOutOfBounds(int fd) {
   char a[5];
@@ -172,4 +173,10 @@ void uninitvar_types(void) {
     struct dirent d;
     // cppcheck-suppress uninitvar
     d.d_ino + 1;
+}
+
+void timet_h() {
+  struct timespec* ptp;
+  // cppcheck-suppress uninitvar
+  clock_settime(CLOCK_REALTIME, ptp);
 }
