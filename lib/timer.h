@@ -25,7 +25,7 @@
 #include <ctime>
 #include "config.h"
 
-enum  SHOWTIME_MODES {
+enum SHOWTIME_MODES {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,

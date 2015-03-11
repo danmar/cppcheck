@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "path.h"
 #include "mathlib.h"
 #include "token.h"
 
@@ -259,69 +258,28 @@ public:
         return arg ? &arg->minsizes : nullptr;
     }
 
-    bool markupFile(const std::string &path) const {
-        return _markupExtensions.find(Path::getFilenameExtensionInLowerCase(path)) != _markupExtensions.end();
-    }
+    bool markupFile(const std::string &path) const;
 
-    bool processMarkupAfterCode(const std::string &path) const {
-        const std::map<std::string, bool>::const_iterator it = _processAfterCode.find(Path::getFilenameExtensionInLowerCase(path));
-        return (it == _processAfterCode.end() || it->second);
-    }
+    bool processMarkupAfterCode(const std::string &path) const;
 
     const std::set<std::string> &markupExtensions() const {
         return _markupExtensions;
     }
 
-    bool reportErrors(const std::string &path) const {
-        const std::map<std::string, bool>::const_iterator it = _reporterrors.find(Path::getFilenameExtensionInLowerCase(path));
-        return (it == _reporterrors.end() || it->second);
-    }
+    bool reportErrors(const std::string &path) const;
 
     bool ignorefunction(const std::string &function) const {
         return (_ignorefunction.find(function) != _ignorefunction.end());
     }
 
-    bool isexecutableblock(const std::string &file, const std::string &token) const {
-        const std::map<std::string, CodeBlock>::const_iterator it = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
-        return (it != _executableblocks.end() && it->second.isBlock(token));
-    }
+    bool isexecutableblock(const std::string &file, const std::string &token) const;
 
-    int blockstartoffset(const std::string &file) const {
-        int offset = -1;
-        const std::map<std::string, CodeBlock>::const_iterator map_it
-            = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
+    int blockstartoffset(const std::string &file) const;
 
-        if (map_it != _executableblocks.end()) {
-            offset = map_it->second.offset();
-        }
-        return offset;
-    }
+    const std::string& blockstart(const std::string &file) const;
+    const std::string& blockend(const std::string &file) const;
 
-    const std::string& blockstart(const std::string &file) const {
-        const std::map<std::string, CodeBlock>::const_iterator map_it
-            = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
-
-        if (map_it != _executableblocks.end()) {
-            return map_it->second.start();
-        }
-        return emptyString;
-    }
-
-    const std::string& blockend(const std::string &file) const {
-        const std::map<std::string, CodeBlock>::const_iterator map_it
-            = _executableblocks.find(Path::getFilenameExtensionInLowerCase(file));
-
-        if (map_it != _executableblocks.end()) {
-            return map_it->second.end();
-        }
-        return emptyString;
-    }
-
-    bool iskeyword(const std::string &file, const std::string &keyword) const {
-        const std::map<std::string, std::set<std::string> >::const_iterator it =
-            _keywords.find(Path::getFilenameExtensionInLowerCase(file));
-        return (it != _keywords.end() && it->second.count(keyword));
-    }
+    bool iskeyword(const std::string &file, const std::string &keyword) const;
 
     bool isexporter(const std::string &prefix) const {
         return _exporters.find(prefix) != _exporters.end();
@@ -337,11 +295,7 @@ public:
         return (it != _exporters.end() && it->second.isSuffix(token));
     }
 
-    bool isimporter(const std::string& file, const std::string &importer) const {
-        const std::map<std::string, std::set<std::string> >::const_iterator it =
-            _importers.find(Path::getFilenameExtensionInLowerCase(file));
-        return (it != _importers.end() && it->second.count(importer) > 0);
-    }
+    bool isimporter(const std::string& file, const std::string &importer) const;
 
     bool isreflection(const std::string &token) const {
         const std::map<std::string,int>::const_iterator it
