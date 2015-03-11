@@ -713,3 +713,23 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
     }
     return args != callargs;
 }
+
+bool Library::isnoreturn(const Token *ftok) const
+{
+    if (ftok->function() && ftok->function()->isAttributeNoreturn())
+        return true;
+    if (isNotLibraryFunction(ftok))
+        return false;
+    std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
+    return (it != _noreturn.end() && it->second);
+}
+
+bool Library::isnotnoreturn(const Token *ftok) const
+{
+    if (ftok->function() && ftok->function()->isAttributeNoreturn())
+        return false;
+    if (isNotLibraryFunction(ftok))
+        return false;
+    std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
+    return (it != _noreturn.end() && !it->second);
+}

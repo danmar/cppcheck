@@ -25,7 +25,6 @@
 #include "path.h"
 #include "mathlib.h"
 #include "token.h"
-#include "symboldatabase.h"
 
 #include <map>
 #include <set>
@@ -129,23 +128,8 @@ public:
     // returns true if ftok is not a library function
     bool isNotLibraryFunction(const Token *ftok) const;
 
-    bool isnoreturn(const Token *ftok) const {
-        if (ftok->function() && ftok->function()->isAttributeNoreturn())
-            return true;
-        if (isNotLibraryFunction(ftok))
-            return false;
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
-        return (it != _noreturn.end() && it->second);
-    }
-
-    bool isnotnoreturn(const Token *ftok) const {
-        if (ftok->function() && ftok->function()->isAttributeNoreturn())
-            return false;
-        if (isNotLibraryFunction(ftok))
-            return false;
-        std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
-        return (it != _noreturn.end() && !it->second);
-    }
+    bool isnoreturn(const Token *ftok) const;
+    bool isnotnoreturn(const Token *ftok) const;
 
     bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
 

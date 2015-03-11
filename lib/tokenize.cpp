@@ -6572,7 +6572,6 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
-                const std::string structname;
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
@@ -6584,7 +6583,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const unsigned int valueVarId(0);
                 const bool valueIsPointer(false);
                 Token *tok3 = tok2->tokAt(6);
-                ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);
+                ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, emptyString, value, valueVarId, valueIsPointer, valueToken, indentlevel);
 
                 // there could be a hang here if tok2 was moved back by the function call above for some reason
                 if (_settings->terminated())
@@ -8508,8 +8507,8 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 void Tokenizer::simplifyMathFunctions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        bool simplifcationMade = false;
         if (tok->isName() && tok->strAt(1) == "(") { // precondition for function
+            bool simplifcationMade = false;
             if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
                 if (tok->previous() &&
                     Token::simpleMatch(tok->tokAt(-2), "std ::")) {
@@ -8739,11 +8738,11 @@ void Tokenizer::simplifyMathFunctions()
                     }
                 }
             }
-        }
-        // Jump back to begin of statement if a simplification was performed
-        if (simplifcationMade) {
-            while (tok->previous() && tok->str() != ";") {
-                tok = tok->previous();
+            // Jump back to begin of statement if a simplification was performed
+            if (simplifcationMade) {
+                while (tok->previous() && tok->str() != ";") {
+                    tok = tok->previous();
+                }
             }
         }
     }
