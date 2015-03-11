@@ -42,7 +42,7 @@ class Settings;
 class ThreadHandler : public QObject {
     Q_OBJECT
 public:
-    ThreadHandler(QObject *parent = 0);
+    explicit ThreadHandler(QObject *parent = 0);
     virtual ~ThreadHandler();
 
     /**

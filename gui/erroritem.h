@@ -57,7 +57,7 @@ public:
 class ErrorItem {
 public:
     ErrorItem();
-    ErrorItem(const ErrorLine &line);
+    explicit ErrorItem(const ErrorLine &line);
 
     /**
     * @brief Convert error item to string.

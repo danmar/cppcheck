@@ -1567,7 +1567,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
-            const std::map<unsigned int, MathLib::bigint> programMemory(getProgramMemory(tok2->astTop(), varid, value));
+            const std::map<unsigned int, MathLib::bigint> programMemory(getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)));
             if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), programMemory)) ||
                 (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), programMemory))) {
                 // Skip second expression..
@@ -1584,8 +1584,8 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
             }
 
         }
-        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, value))) ||
-            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, value))))
+        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)))) ||
+            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)))))
             break;
 
         else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
@@ -1630,7 +1630,7 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
         endToken = fortok->scope()->classEnd;
 
     std::list<ValueFlow::Value> values;
-    values.push_back(num);
+    values.push_back(ValueFlow::Value(num));
 
     valueFlowForward(fortok->linkAt(1)->linkAt(1)->next(),
                      endToken,

@@ -36,7 +36,7 @@ class Project : public QObject {
     Q_OBJECT
 
 public:
-    Project(QWidget *parent = 0);
+    explicit Project(QWidget *parent = 0);
     Project(const QString &filename, QWidget *parent = 0);
     ~Project();
 

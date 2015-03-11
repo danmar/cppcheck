@@ -180,6 +180,76 @@ private:
         TEST_CASE(pureVirtualFunctionCallPrevented);
 
         TEST_CASE(duplInheritedMembers);
+        TEST_CASE(explicitConstructors);
+    }
+
+
+    void checkExplicitConstructors(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("style");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkExplicitConstructors();
+    }
+
+    void explicitConstructors() {
+        checkExplicitConstructors("class Class \n"
+                                  "{ \n"
+                                  "    Class() = delete; \n"
+                                  "    Class(const Class& other) { } \n"
+                                  "    Class(Class&& other) { } \n"
+                                  "    explicit Class(int i) { } \n"
+                                  "    explicit Class(const std::string&) { } \n"
+                                  "    Class(int a, int b) { } \n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Class \n"
+                                  "{ \n"
+                                  "    Class() = delete; \n"
+                                  "    explicit Class(const Class& other) { } \n"
+                                  "    explicit Class(Class&& other) { } \n"
+                                  "    virtual int i() = 0; \n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Class \n"
+                                 "{ \n"
+                                 "    Class() = delete; \n"
+                                 "    Class(const Class& other) = delete; \n"
+                                 "    Class(Class&& other) = delete; \n"
+                                 "    virtual int i() = 0; \n"
+                                 "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Class \n"
+                                  "{ \n"
+                                  "    Class(int i) { } \n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("class Class \n"
+                                  "{ \n"
+                                  "    Class(const Class& other) { } \n"
+                                  "    virtual int i() = 0; \n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("class Class \n"
+                                  "{ \n"
+                                  "    Class(Class&& other) { } \n"
+                                  "    virtual int i() = 0; \n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
