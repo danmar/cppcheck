@@ -770,7 +770,7 @@ public:
     static bool argsMatch(const Scope *info, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
 private:
-    bool isImplicitlyVirtual_rec(const ::Type* type, bool& safe) const;
+    bool isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const;
 
     unsigned int flags;
 };

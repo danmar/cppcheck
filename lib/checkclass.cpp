@@ -243,7 +243,7 @@ void CheckClass::checkExplicitConstructors()
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
 
             // We are looking for constructors, which are meeting following criteria:
-            //	1) Constructor is declared with a single parameter
+            //  1) Constructor is declared with a single parameter
             //  2) Constructor is not declared as explicit
             //  3) It is not a copy/move constructor of non-abstract class
             //  4) Constructor is not marked as delete (programmer can mark the default constructor as deleted, which is ok)
@@ -254,8 +254,7 @@ void CheckClass::checkExplicitConstructors()
                 // We must decide, if it is not a copy/move constructor, or it is a copy/move constructor of abstract class.
                 if (func->type != Function::eCopyConstructor && func->type != Function::eMoveConstructor) {
                     noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
-                }
-                else if (isAbstractClass) {
+                } else if (isAbstractClass) {
                     noExplicitCopyMoveConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
                 }
             }

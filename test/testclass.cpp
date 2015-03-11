@@ -223,12 +223,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkExplicitConstructors("class Class \n"
-                                 "{ \n"
-                                 "    Class() = delete; \n"
-                                 "    Class(const Class& other) = delete; \n"
-                                 "    Class(Class&& other) = delete; \n"
-                                 "    virtual int i() = 0; \n"
-                                 "};");
+                                  "{ \n"
+                                  "    Class() = delete; \n"
+                                  "    Class(const Class& other) = delete; \n"
+                                  "    Class(Class&& other) = delete; \n"
+                                  "    virtual int i() = 0; \n"
+                                  "};");
         ASSERT_EQUALS("", errout.str());
 
         checkExplicitConstructors("class Class \n"
