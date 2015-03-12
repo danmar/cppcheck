@@ -46,12 +46,14 @@ public:
 
     class OurPreprocessor : public Preprocessor {
     public:
-        static std::string replaceIfDefined(const std::string &str) {
+        static std::string replaceIfDefined(const char str[]) {
             Preprocessor p;
-            return p.replaceIfDefined(str);
+            std::string ret(str);
+            p.replaceIfDefined(ret);
+            return ret;
         }
 
-        static std::string expandMacros(const std::string& code, ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
             return Preprocessor::expandMacros(code, "file.cpp", "", errorLogger);
         }
 

@@ -147,9 +147,8 @@ public:
      * Replace "#if defined" with "#ifdef" where possible
      *
      * @param str The string to be converted
-     * @return The replaced string
      */
-    std::string replaceIfDefined(const std::string &str) const;
+    void replaceIfDefined(std::string &str) const;
 
     /**
      * expand macros in code. ifdefs etc are ignored so the code must be a single configuration

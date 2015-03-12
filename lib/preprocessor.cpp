@@ -877,11 +877,12 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
 {
     std::string tmp;
-    char prev = 0;
+    char prev = '\n'; // treat start of file as newline
     for (std::size_t i = 0; i < str.size(); i++) {
         if (str[i] == ' ' &&
-            ((i > 0 && prev == '\n') ||
-             (i + 1 < str.size() && str[i+1] == '\n')
+            (prev == '\n' ||
+             i + 1 >= str.size() || // treat end of file as newline
+             str[i+1] == '\n'
             )
            ) {
             // Ignore space that has new line in either side of it
@@ -894,69 +895,60 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
     return tmp;
 }
 
-std::string Preprocessor::replaceIfDefined(const std::string &str) const
+void Preprocessor::replaceIfDefined(std::string &str) const
 {
-    std::string ret(str);
-    std::string::size_type pos;
-
-    pos = 0;
-    while ((pos = ret.find("#if defined(", pos)) != std::string::npos) {
-        std::string::size_type pos2 = ret.find(")", pos + 9);
-        if (pos2 > ret.length() - 1)
+    std::string::size_type pos = 0;
+    while ((pos = str.find("#if defined(", pos)) != std::string::npos) {
+        std::string::size_type pos2 = str.find(")", pos + 9);
+        if (pos2 > str.length() - 1)
             break;
-        if (ret[pos2+1] == '\n') {
-            ret.erase(pos2, 1);
-            ret.erase(pos + 3, 9);
-            ret.insert(pos + 3, "def ");
+        if (str[pos2+1] == '\n') {
+            str.erase(pos2, 1);
+            str.erase(pos + 3, 9);
+            str.insert(pos + 3, "def ");
         }
         ++pos;
 
         if (_settings && _settings->terminated())
-            return "";
+            return;
     }
 
     pos = 0;
-    while ((pos = ret.find("#if !defined(", pos)) != std::string::npos) {
-        std::string::size_type pos2 = ret.find(")", pos + 9);
-        if (pos2 > ret.length() - 1)
+    while ((pos = str.find("#if !defined(", pos)) != std::string::npos) {
+        std::string::size_type pos2 = str.find(")", pos + 9);
+        if (pos2 > str.length() - 1)
             break;
-        if (ret[pos2+1] == '\n') {
-            ret.erase(pos2, 1);
-            ret.erase(pos + 3, 10);
-            ret.insert(pos + 3, "ndef ");
+        if (str[pos2+1] == '\n') {
+            str.erase(pos2, 1);
+            str.erase(pos + 3, 10);
+            str.insert(pos + 3, "ndef ");
         }
         ++pos;
 
         if (_settings && _settings->terminated())
-            return "";
+            return;
     }
 
     pos = 0;
-    while ((pos = ret.find("#elif defined(", pos)) != std::string::npos) {
-        std::string::size_type pos2 = ret.find(")", pos + 9);
-        if (pos2 > ret.length() - 1)
+    while ((pos = str.find("#elif defined(", pos)) != std::string::npos) {
+        std::string::size_type pos2 = str.find(")", pos + 9);
+        if (pos2 > str.length() - 1)
             break;
-        if (ret[pos2+1] == '\n') {
-            ret.erase(pos2, 1);
-            ret.erase(pos + 6, 8);
+        if (str[pos2+1] == '\n') {
+            str.erase(pos2, 1);
+            str.erase(pos + 6, 8);
         }
         ++pos;
 
         if (_settings && _settings->terminated())
-            return "";
+            return;
     }
-
-    return ret;
 }
 
 void Preprocessor::preprocessWhitespaces(std::string &processedFile)
 {
     // Replace all tabs with spaces..
     std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
-
-    // Remove all indentation..
-    if (!processedFile.empty() && processedFile[0] == ' ')
-        processedFile.erase(0, processedFile.find_first_not_of(" "));
 
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
@@ -1057,7 +1049,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     } else {
         handleIncludes(processedFile, filename, includePaths);
 
-        processedFile = replaceIfDefined(processedFile);
+        replaceIfDefined(processedFile);
 
         // Get all possible configurations..
         resultConfigurations = getcfgs(processedFile, filename, defs);
