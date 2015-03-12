@@ -923,7 +923,27 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
 
         check("void f(char *p) {\n"
+              "    do {} while (p+1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+
+        check("void f(char *p) {\n"
+              "    while (p-1) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+
+        check("void f(char *p) {\n"
+              "    for (int i = 0; p+1; i++) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+
+        check("void f(char *p) {\n"
               "    if (p && p+1){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+
+        check("void f(char *p) {\n"
+              "    if (p+2 || p) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
     }

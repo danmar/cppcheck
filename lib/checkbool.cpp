@@ -130,41 +130,42 @@ void CheckBool::checkComparisonOfBoolWithInt()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if ((!Token::Match(tok->previous(), "%cop%")) && Token::Match(tok->next(), "%comp%") && (!Token::Match(tok->tokAt(3), "%cop%"))) {
-                const Token* const right = tok->tokAt(2);
-                if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
-                    const Token* varTok = tok;
+            const Token* const left = tok->astOperand1();
+            const Token* const right = tok->astOperand2();
+            if (left && right && tok->isComparisonOp()) {
+                if ((left->varId() && right->isNumber()) || (left->isNumber() && right->varId())) { // Comparing variable with number
+                    const Token* varTok = left;
                     const Token* numTok = right;
-                    if (tok->isNumber() && right->varId()) // num with var
+                    if (left->isNumber() && right->varId()) // num with var
                         std::swap(varTok, numTok);
                     if (isBool(varTok->variable()) && // Variable has to be a boolean
-                        ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
+                        ((tok->str() != "==" && tok->str() != "!=") ||
                          (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
-                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->strAt(1) == "==" || tok->strAt(1) == "!=");
+                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->str() == "==" || tok->str() == "!=");
                     }
-                } else if (tok->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                } else if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
                     if (isNonBoolStdType(right->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(right, tok->str(), false);
-                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                        comparisonOfBoolWithIntError(right, left->str(), false);
+                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (tok->varId() && right->isBoolean()) { // Comparing variable with boolean constant
-                    if (isNonBoolStdType(tok->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(tok, right->str(), false);
-                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
+                    if (isNonBoolStdType(left->variable())) { // Variable has to be of non-boolean standard type
+                        comparisonOfBoolWithIntError(left, right->str(), false);
+                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (tok->isNumber() && right->isBoolean()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(tok, right->str(), false);
-                } else if (tok->isBoolean() && right->isNumber()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(tok, tok->str(), false);
-                } else if (tok->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
+                } else if (left->isNumber() && right->isBoolean()) { // number constant with boolean constant
+                    comparisonOfBoolWithIntError(left, right->str(), false);
+                } else if (left->isBoolean() && right->isNumber()) { // number constant with boolean constant
+                    comparisonOfBoolWithIntError(left, left->str(), false);
+                } else if (left->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
                     const Variable* var1 = right->variable();
-                    const Variable* var2 = tok->variable();
+                    const Variable* var2 = left->variable();
                     if (isBool(var1) && isNonBoolStdType(var2)) // Comparing boolean with non-bool standard type
-                        comparisonOfBoolWithIntError(tok, var1->name(), false);
+                        comparisonOfBoolWithIntError(left, var1->name(), false);
                     else if (isNonBoolStdType(var1) && isBool(var2)) // Comparing non-bool standard type with boolean
-                        comparisonOfBoolWithIntError(tok, var2->name(), false);
+                        comparisonOfBoolWithIntError(left, var2->name(), false);
                 }
             }
         }
@@ -368,12 +369,6 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (!tok->isComparisonOp())
                 continue;
 
-            // Skip template parameters
-            if (tok->link() && tok->str() == "<") {
-                tok = tok->link();
-                continue;
-            }
-
             const Token* numTok = 0;
             const Token* boolExpr = 0;
             bool numInRhs;
@@ -432,14 +427,20 @@ void CheckBool::pointerArithBool()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "if|while (")) {
-                pointerArithBoolCond(tok->next()->astOperand2());
-            }
-        }
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->type != Scope::eIf && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eFor)
+            continue;
+        const Token* tok = scope->classDef->next()->astOperand2();
+        if (scope->type == Scope::eFor) {
+            tok = Token::findsimplematch(scope->classDef->tokAt(2), ";");
+            if (tok)
+                tok = tok->astOperand2();
+            if (tok)
+                tok = tok->astOperand1();
+        } else if (scope->type == Scope::eDo)
+            tok = scope->classEnd->tokAt(2)->astOperand2();
+
+        pointerArithBoolCond(tok);
     }
 }
 
@@ -452,7 +453,7 @@ void CheckBool::pointerArithBoolCond(const Token *tok)
         pointerArithBoolCond(tok->astOperand2());
         return;
     }
-    if (tok->str() != "+")
+    if (tok->str() != "+" && tok->str() != "-")
         return;
 
     if (tok->astOperand1() &&
