@@ -582,6 +582,12 @@ bool MainWindow::TryLoadLibrary(Library *library, QString filename)
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             errmsg = tr("Platform type redefined");
             break;
+        case Library::DUPLICATE_PLATFORM_TYPE:
+            errmsg = tr("Duplicate Platform Type");
+         break ;
+         case Library::PLATFORM_TYPE_REDEFINED:
+            errmsg = tr("Platform Type Redefined");
+         break ;
         }
         if (!error.reason.empty())
             errmsg += " '" + QString::fromStdString(error.reason) + "'";
