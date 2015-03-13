@@ -43,6 +43,7 @@ void bufferAccessOutOfBounds(int fd) {
 }
 
 void nullPointer(char *p) {
+    // cppcheck-suppress ignoredReturnValue
     isatty (0);
     mkdir (p, 0);
     getcwd (0, 0);
