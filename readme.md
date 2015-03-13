@@ -25,7 +25,8 @@ To build the GUI, you need Qt.
 When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
 There are multiple compilation choices:
-* qmake - cross platform build tool
+* qmake - cross platform build tool provided by Qt
+* CMake - cross platform build tool
 * Windows: Visual Studio (VS 2010 and above) or Qt Creator or MinGW
 * gnu make
 * g++ 4.4 (and above)
@@ -40,6 +41,22 @@ cd gui
 qmake
 make
 ```
+
+### CMake
+
+The normal procedure for configuring a project with CMake (both in Linux and Windows) is:
+mkdir build && cd build
+cmake ..
+
+Depending on the platform and the CMake generator used (it can be specified with the -G option) it
+will generate a Makefile, Visual Studio Solution, Ninja file, or other project files for other IDEs.
+By default it is only enabled the compilation of the internal libraries and the console application.
+If you want to build the tests, the GUI application or use more advanced options you should enabled
+the specific CMake variables provided. For that purpose, the cmake GUI application (cmake-gui) could
+be very useful.
+
+This CMake configuration provides a install target that will install the cppcheck libraries and
+applications in the installation path (specified by the CMake variable CMAKE_PREFIX_INSTALL).
 
 ### Visual Studio
 

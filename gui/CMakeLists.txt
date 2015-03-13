@@ -22,9 +22,9 @@ if (BUILD_GUI)
     QT4_ADD_RESOURCES(resources "gui.qrc")
     QT4_ADD_TRANSLATION(qms ${tss})
     
-    link_libraries(${PROJECT_NAME} tinyxml ${QT_LIBRARIES})
+    link_libraries(CppCheckLib tinyxml ${QT_LIBRARIES})
 
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
+    add_executable(cppcheck-gui WIN32 ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION bin COMPONENT applications)
     install(FILES ${qms} DESTINATION bin COMPONENT applications)

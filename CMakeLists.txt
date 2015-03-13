@@ -1,4 +1,4 @@
-project(CppCheck)
+project(CppCheckProject)
 cmake_minimum_required(VERSION 2.8)
 
 include(cmake/versions.cmake REQUIRED)
