@@ -2368,7 +2368,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                    Token::simpleMatch(tok2, "< >") /* Ticket #4764 */) {
             tok2 = tok2->findClosingBracket();
-            if (!Token::Match(tok2, ">|>>"))
+            if (tok2->str() != ">")
                 break;
             singleNameCount = 1;
         } else if (Token::Match(tok2, "&|&&")) {
@@ -2964,14 +2964,10 @@ void Tokenizer::createLinks2()
                 type.pop();
         else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId())
             type.push(token);
-        else if (Token::Match(token, ">|>>")) {
+        else if (token->str() == ">") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
-            if (token->next() && !Token::Match(token->next(), "%name%|>|>>|&|*|::|,|(|)|{|;|["))
-                continue;
-
-            // Check type of open link
-            if (token->str() == ">>" && type.size() < 2)
+            if (token->next() && !Token::Match(token->next(), "%name%|>|&|*|::|,|(|)|{|;|["))
                 continue;
 
             // if > is followed by [ .. "new a<b>[" is expected
@@ -2987,15 +2983,6 @@ void Tokenizer::createLinks2()
 
             Token* top = type.top();
             type.pop();
-            if (token->str() == ">>" && type.top()->str() != "<") {
-                type.push(top);
-                continue;
-            }
-
-            if (token->str() == ">>") { // C++11 right angle bracket
-                token->str(">");
-                token->insertToken(">");
-            }
 
             Token::createMutualLinks(top, token);
         }
