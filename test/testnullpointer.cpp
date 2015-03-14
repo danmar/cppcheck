@@ -2196,7 +2196,7 @@ private:
     void functioncalllibrary() {
         Settings settings1;
         Tokenizer tokenizer(&settings1,this);
-        std::istringstream code("void f() { int a,b; x(a,b); }");
+        std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
         tokenizer.tokenize(code,"test.c");
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
@@ -2206,6 +2206,7 @@ private:
             Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
+            library.argumentChecks["x"][3] = arg;
 
             std::list<const Token *> null, uninit;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
@@ -2220,6 +2221,7 @@ private:
             Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
+            library.argumentChecks["x"][3] = arg;
             library.argumentChecks["x"][1].notnull = true;
 
             std::list<const Token *> null,uninit;
@@ -2236,6 +2238,7 @@ private:
             Library::ArgumentChecks arg;
             library.argumentChecks["x"][1] = arg;
             library.argumentChecks["x"][2] = arg;
+            library.argumentChecks["x"][3] = arg;
             library.argumentChecks["x"][2].notuninit = true;
 
             std::list<const Token *> null,uninit;
@@ -2244,6 +2247,23 @@ private:
             ASSERT_EQUALS(0U, null.size());
             ASSERT_EQUALS(1U, uninit.size());
             ASSERT_EQUALS("b", uninit.front()->str());
+        }
+
+        // for 3rd parameter uninit data is not ok..
+        {
+            Library library;
+            Library::ArgumentChecks arg;
+            library.argumentChecks["x"][1] = arg;
+            library.argumentChecks["x"][2] = arg;
+            library.argumentChecks["x"][3] = arg;
+            library.argumentChecks["x"][3].notuninit = true;
+
+            std::list<const Token *> null,uninit;
+            CheckNullPointer::parseFunctionCall(*xtok, null, &library, 0U);
+            CheckNullPointer::parseFunctionCall(*xtok, uninit, &library, 1U);
+            ASSERT_EQUALS(0U, null.size());
+            ASSERT_EQUALS(1U, uninit.size());
+            ASSERT_EQUALS("c", uninit.front()->str());
         }
     }
 
