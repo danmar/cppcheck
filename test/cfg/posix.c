@@ -153,7 +153,7 @@ void uninitvar(int fd) {
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
     char *buffer = ecvt(d, 11, &decimal, &sign);
-    gcvt(3.141, 2, NULL);
+    gcvt(3.141, 2, buf);
     
     char *filename;
     struct utimbuf *times;
