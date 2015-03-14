@@ -1090,7 +1090,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (!var || !var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
 
-                // get name of variable
+                // get type of variable
                 type = var->typeStartToken()->str();
 
                 // malloc() gets count of bytes and not count of
