@@ -1052,8 +1052,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=([,] 0 [+|]") ||
                            Token::Match(tok->previous(), "return|case 0 [+|]")) {
-                    tok->deleteNext();
-                    tok->deleteThis();
+                    tok = tok->previous();
+                    tok->deleteNext(2);
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 0 * %name% ,|]|)|;|=|%cop%") ||
                            Token::Match(tok->previous(), "[=[(,] 0 * %num% ,|]|)|;|%op%") ||
@@ -1232,7 +1232,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 break;
             }
         }
-
         Token * const tok2 = *iter2;
         if (tok2->str() != name)
             continue;
