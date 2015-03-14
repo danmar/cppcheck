@@ -150,6 +150,7 @@ void uninitvar(int fd) {
     pattern="";
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags);
+    regerror (0, &reg, 0, 0);
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
     char *buffer = ecvt(d, 11, &decimal, &sign);
