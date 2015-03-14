@@ -35,7 +35,6 @@
 		F4043DB2177F08A800CD5A40 /* pathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAF177F08A800CD5A40 /* pathmatch.cpp */; };
 		F4043DD7177F093300CD5A40 /* check64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB3177F093300CD5A40 /* check64bit.cpp */; };
 		F4043DD8177F093300CD5A40 /* checkassert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB5177F093300CD5A40 /* checkassert.cpp */; };
-		F4043DD9177F093300CD5A40 /* checkassignif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB7177F093300CD5A40 /* checkassignif.cpp */; };
 		F4043DDA177F093300CD5A40 /* checkbool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB9177F093300CD5A40 /* checkbool.cpp */; };
 		F4043DDB177F093300CD5A40 /* checkboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBB177F093300CD5A40 /* checkboost.cpp */; };
 		F4043DDC177F093300CD5A40 /* checkinternal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBD177F093300CD5A40 /* checkinternal.cpp */; };
@@ -51,6 +50,11 @@
 		F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD2177F093300CD5A40 /* templatesimplifier.cpp */; };
 		F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DD4177F093300CD5A40 /* tokenlist.cpp */; };
 		F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47E508117896AEB00C684DC /* tinyxml2.cpp */; };
+		F497C28C1AB41D5C003B96CF /* check.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497C2831AB41D5C003B96CF /* check.cpp */; };
+		F497C28D1AB41D5C003B96CF /* checkcondition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497C2841AB41D5C003B96CF /* checkcondition.cpp */; };
+		F497C28E1AB41D5C003B96CF /* checkstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497C2861AB41D5C003B96CF /* checkstring.cpp */; };
+		F497C28F1AB41D5C003B96CF /* checktype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497C2881AB41D5C003B96CF /* checktype.cpp */; };
+		F497C2901AB41D5C003B96CF /* checkvaarg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497C2891AB41D5C003B96CF /* checkvaarg.cpp */; };
 		F4C348661825679E00521683 /* cmdlineparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ECF1270DE5000AC0D02 /* cmdlineparser.cpp */; };
 		F4C348671825679F00521683 /* cppcheckexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED11270DE5000AC0D02 /* cppcheckexecutor.cpp */; };
 		F4C348681825679F00521683 /* filelister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAD177F08A800CD5A40 /* filelister.cpp */; };
@@ -105,7 +109,6 @@
 		F4C3489A1825692B00521683 /* testunusedvar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BDDB617AB8511006C06AF /* testunusedvar.cpp */; };
 		F4C3489B18256A4500521683 /* check64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB3177F093300CD5A40 /* check64bit.cpp */; };
 		F4C3489C18256A4500521683 /* checkassert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB5177F093300CD5A40 /* checkassert.cpp */; };
-		F4C3489D18256A4500521683 /* checkassignif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB7177F093300CD5A40 /* checkassignif.cpp */; };
 		F4C3489E18256A4500521683 /* checkautovariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60E8D1270DE3A00AC0D02 /* checkautovariables.cpp */; };
 		F4C3489F18256A4500521683 /* checkbool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB9177F093300CD5A40 /* checkbool.cpp */; };
 		F4C348A018256A4500521683 /* checkboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DBB177F093300CD5A40 /* checkboost.cpp */; };
@@ -226,8 +229,6 @@
 		F4043DB4177F093300CD5A40 /* check64bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = check64bit.h; path = lib/check64bit.h; sourceTree = "<group>"; };
 		F4043DB5177F093300CD5A40 /* checkassert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkassert.cpp; path = lib/checkassert.cpp; sourceTree = "<group>"; };
 		F4043DB6177F093300CD5A40 /* checkassert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkassert.h; path = lib/checkassert.h; sourceTree = "<group>"; };
-		F4043DB7177F093300CD5A40 /* checkassignif.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkassignif.cpp; path = lib/checkassignif.cpp; sourceTree = "<group>"; };
-		F4043DB8177F093300CD5A40 /* checkassignif.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkassignif.h; path = lib/checkassignif.h; sourceTree = "<group>"; };
 		F4043DB9177F093300CD5A40 /* checkbool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkbool.cpp; path = lib/checkbool.cpp; sourceTree = "<group>"; };
 		F4043DBA177F093300CD5A40 /* checkbool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkbool.h; path = lib/checkbool.h; sourceTree = "<group>"; };
 		F4043DBB177F093300CD5A40 /* checkboost.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkboost.cpp; path = lib/checkboost.cpp; sourceTree = "<group>"; };
@@ -311,6 +312,15 @@
 		F45BDDB617AB8511006C06AF /* testunusedvar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = testunusedvar.cpp; path = test/testunusedvar.cpp; sourceTree = "<group>"; };
 		F47E508117896AEB00C684DC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = externals/tinyxml/tinyxml2.cpp; sourceTree = "<group>"; };
 		F47E508217896AEB00C684DC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = externals/tinyxml/tinyxml2.h; sourceTree = "<group>"; };
+		F497C2831AB41D5C003B96CF /* check.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = check.cpp; path = lib/check.cpp; sourceTree = "<group>"; };
+		F497C2841AB41D5C003B96CF /* checkcondition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkcondition.cpp; path = lib/checkcondition.cpp; sourceTree = "<group>"; };
+		F497C2851AB41D5C003B96CF /* checkcondition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkcondition.h; path = lib/checkcondition.h; sourceTree = "<group>"; };
+		F497C2861AB41D5C003B96CF /* checkstring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkstring.cpp; path = lib/checkstring.cpp; sourceTree = "<group>"; };
+		F497C2871AB41D5C003B96CF /* checkstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkstring.h; path = lib/checkstring.h; sourceTree = "<group>"; };
+		F497C2881AB41D5C003B96CF /* checktype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checktype.cpp; path = lib/checktype.cpp; sourceTree = "<group>"; };
+		F497C2891AB41D5C003B96CF /* checkvaarg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkvaarg.cpp; path = lib/checkvaarg.cpp; sourceTree = "<group>"; };
+		F497C28A1AB41D5C003B96CF /* checkvaarg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checkvaarg.h; path = lib/checkvaarg.h; sourceTree = "<group>"; };
+		F497C28B1AB41D5C003B96CF /* cxx11emu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cxx11emu.h; path = lib/cxx11emu.h; sourceTree = "<group>"; };
 		F4C34860182566E800521683 /* testrunner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testrunner; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4CDD6961880888F006CF685 /* valueflow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = valueflow.cpp; path = lib/valueflow.cpp; sourceTree = "<group>"; };
 		F4CDD6971880888F006CF685 /* valueflow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = valueflow.h; path = lib/valueflow.h; sourceTree = "<group>"; };
@@ -390,6 +400,15 @@
 		2C21A45D1178BB0B00D35009 /* Library */ = {
 			isa = PBXGroup;
 			children = (
+				F497C2831AB41D5C003B96CF /* check.cpp */,
+				F497C2841AB41D5C003B96CF /* checkcondition.cpp */,
+				F497C2851AB41D5C003B96CF /* checkcondition.h */,
+				F497C2861AB41D5C003B96CF /* checkstring.cpp */,
+				F497C2871AB41D5C003B96CF /* checkstring.h */,
+				F497C2881AB41D5C003B96CF /* checktype.cpp */,
+				F497C2891AB41D5C003B96CF /* checkvaarg.cpp */,
+				F497C28A1AB41D5C003B96CF /* checkvaarg.h */,
+				F497C28B1AB41D5C003B96CF /* cxx11emu.h */,
 				F4CDD6961880888F006CF685 /* valueflow.cpp */,
 				F4CDD6971880888F006CF685 /* valueflow.h */,
 				F4CF847A17B6504000522F24 /* config.h */,
@@ -400,8 +419,6 @@
 				F4043DB4177F093300CD5A40 /* check64bit.h */,
 				F4043DB5177F093300CD5A40 /* checkassert.cpp */,
 				F4043DB6177F093300CD5A40 /* checkassert.h */,
-				F4043DB7177F093300CD5A40 /* checkassignif.cpp */,
-				F4043DB8177F093300CD5A40 /* checkassignif.h */,
 				39E60E8D1270DE3A00AC0D02 /* checkautovariables.cpp */,
 				39E60E8E1270DE3A00AC0D02 /* checkautovariables.h */,
 				F4043DB9177F093300CD5A40 /* checkbool.cpp */,
@@ -616,7 +633,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0620;
 			};
 			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "Cppcheck" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -648,6 +665,7 @@
 				39E60EBB1270DE3A00AC0D02 /* checkclass.cpp in Sources */,
 				F4CDD6981880888F006CF685 /* valueflow.cpp in Sources */,
 				39E60EBC1270DE3A00AC0D02 /* checkexceptionsafety.cpp in Sources */,
+				F497C28E1AB41D5C003B96CF /* checkstring.cpp in Sources */,
 				39E60EBD1270DE3A00AC0D02 /* checkmemoryleak.cpp in Sources */,
 				39E60EBE1270DE3A00AC0D02 /* checkobsolescentfunctions.cpp in Sources */,
 				39E60EBF1270DE3A00AC0D02 /* checkother.cpp in Sources */,
@@ -657,6 +675,8 @@
 				39E60EC31270DE3A00AC0D02 /* cppcheck.cpp in Sources */,
 				39E60EC41270DE3A00AC0D02 /* errorlogger.cpp in Sources */,
 				39E60EC51270DE3A00AC0D02 /* executionpath.cpp in Sources */,
+				F497C28C1AB41D5C003B96CF /* check.cpp in Sources */,
+				F497C28D1AB41D5C003B96CF /* checkcondition.cpp in Sources */,
 				39E60EC81270DE3A00AC0D02 /* mathlib.cpp in Sources */,
 				39E60EC91270DE3A00AC0D02 /* path.cpp in Sources */,
 				39E60ECA1270DE3A00AC0D02 /* preprocessor.cpp in Sources */,
@@ -672,7 +692,7 @@
 				F4043DB2177F08A800CD5A40 /* pathmatch.cpp in Sources */,
 				F4043DD7177F093300CD5A40 /* check64bit.cpp in Sources */,
 				F4043DD8177F093300CD5A40 /* checkassert.cpp in Sources */,
-				F4043DD9177F093300CD5A40 /* checkassignif.cpp in Sources */,
+				F497C2901AB41D5C003B96CF /* checkvaarg.cpp in Sources */,
 				F4043DDA177F093300CD5A40 /* checkbool.cpp in Sources */,
 				F4043DDB177F093300CD5A40 /* checkboost.cpp in Sources */,
 				F4043DDC177F093300CD5A40 /* checkinternal.cpp in Sources */,
@@ -685,6 +705,7 @@
 				F4043DE3177F093300CD5A40 /* checkunusedvar.cpp in Sources */,
 				F4043DE4177F093300CD5A40 /* suppressions.cpp in Sources */,
 				F4043DE5177F093300CD5A40 /* symboldatabase.cpp in Sources */,
+				F497C28F1AB41D5C003B96CF /* checktype.cpp in Sources */,
 				F4043DE6177F093300CD5A40 /* templatesimplifier.cpp in Sources */,
 				F4043DE7177F093300CD5A40 /* tokenlist.cpp in Sources */,
 				F47E508317896AEB00C684DC /* tinyxml2.cpp in Sources */,
@@ -702,7 +723,6 @@
 				F4C348C018256A8700521683 /* library.cpp in Sources */,
 				F4C3489B18256A4500521683 /* check64bit.cpp in Sources */,
 				F4C3489C18256A4500521683 /* checkassert.cpp in Sources */,
-				F4C3489D18256A4500521683 /* checkassignif.cpp in Sources */,
 				F4C3489E18256A4500521683 /* checkautovariables.cpp in Sources */,
 				F4C3489F18256A4500521683 /* checkbool.cpp in Sources */,
 				F4C348A018256A4500521683 /* checkboost.cpp in Sources */,
@@ -827,10 +847,10 @@
 		1DEB923608733DC60010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -841,7 +861,7 @@
 		1DEB923708733DC60010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
