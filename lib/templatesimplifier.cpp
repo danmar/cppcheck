@@ -429,13 +429,13 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
                     ostr << " ";
                 ostr << tok3->str();
             }
-            if (!Token::simpleMatch(tok3, "> ("))
+            if (!Token::Match(tok3, "> (|{"))
                 continue;
             s = ostr.str();
         }
 
         // save search pattern..
-        const std::string pattern(s + " > (");
+        const std::string pattern(s + " >");
 
         // remove spaces to create new name
         s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
@@ -443,7 +443,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         expandedtemplates.insert(name);
 
         // Rename template..
-        Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
+        Token::eraseTokens(tok2, Token::findsimplematch(tok2, "<")->findClosingBracket()->next());
         tok2->str(name);
 
         // delete the "template < >"
@@ -452,7 +452,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
 
         // Use this special template in the code..
         while (nullptr != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
-            Token::eraseTokens(tok2, Token::findsimplematch(tok2, "("));
+            Token::eraseTokens(tok2, Token::findsimplematch(tok2, "<")->findClosingBracket()->next());
             tok2->str(name);
         }
     }
@@ -700,7 +700,7 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
     int namepos = 0, starAmpPossiblePosition = 0;
-    if (Token::Match(tok, "> class|struct %type% {|:"))
+    if (Token::Match(tok, "> class|struct %type% {|:|<"))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;

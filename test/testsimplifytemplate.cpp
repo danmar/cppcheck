@@ -83,6 +83,7 @@ private:
         TEST_CASE(template50);  // #4272 - simple partial specialization
         TEST_CASE(template51);  // #6172 - crash upon valid code
         TEST_CASE(template52);  // #6437 - crash upon valid code
+        TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -96,11 +97,12 @@ private:
         TEST_CASE(templateNamePosition);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified) {
+    std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Unspecified) {
         errout.str("");
 
         Settings settings;
         settings.addEnabled("portability");
+        settings.debugwarnings = debugwarnings;
         settings.platform(type);
         Tokenizer tokenizer(&settings, this);
 
@@ -936,6 +938,17 @@ private:
             "  return sum<x - y>(); "
             "} "
             "int value = calculate_value<1,1>();");
+    }
+
+    void template53() { // #4335
+        tok("template<int N> struct Factorial { "
+            "  enum { value = N * Factorial<N - 1>::value }; "
+            "};"
+            "template <> struct Factorial<0> { "
+            "  enum { value = 1 }; "
+            "};"
+            "const int x = Factorial<4>::value;", /*simplify=*/true, /*debugwarnings=*/true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_default_parameter() {
