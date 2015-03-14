@@ -7586,9 +7586,9 @@ void Tokenizer::simplifyEnum()
             className = tok->next()->str();
             classLevel = 0;
         } else if (tok->str() == "}") {
-            --classLevel;
-            if (classLevel < 0)
+            if (classLevel == 0)
                 className = "";
+            --classLevel;
         } else if (tok->str() == "{") {
             ++classLevel;
         } else if (tok->str() == "enum") {
@@ -7679,79 +7679,81 @@ void Tokenizer::simplifyEnum()
                 Token * enumValueStart = 0;
                 Token * enumValueEnd = 0;
 
-                if (Token::Match(tok1->previous(), ",|{ %type% ,|}")) {
-                    // no value specified
-                    enumName = tok1;
-                    ++lastValue;
-                    tok1->insertToken("=");
-                    tok1 = tok1->next();
-
-                    if (lastEnumValueStart && lastEnumValueEnd) {
-                        // previous value was an expression
-                        Token *valueStart = tok1;
-                        tok1 = copyTokens(tok1, lastEnumValueStart, lastEnumValueEnd);
-
-                        // value is previous expression + 1
-                        tok1->insertToken("+");
+                if (Token::Match(tok1->previous(), ",|{ %type%")) {
+                    if (Token::Match(tok1->next(), ",|}")) {
+                        // no value specified
+                        enumName = tok1;
+                        ++lastValue;
+                        tok1->insertToken("=");
                         tok1 = tok1->next();
-                        tok1->insertToken("1");
-                        enumValue = 0;
-                        enumValueStart = valueStart->next();
-                        enumValueEnd = tok1->next();
-                    } else {
-                        // value is previous numeric value + 1
-                        tok1->insertToken(MathLib::toString(lastValue));
-                        enumValue = tok1->next();
-                    }
-                } else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}")) {
-                    // value is specified numeric value
-                    enumName = tok1;
-                    lastValue = MathLib::toLongNumber(tok1->strAt(2));
-                    enumValue = tok1->tokAt(2);
-                    lastEnumValueStart = 0;
-                    lastEnumValueEnd = 0;
-                } else if (Token::Match(tok1->previous(), ",|{ %type% =")) {
-                    // value is specified expression
-                    enumName = tok1;
-                    lastValue = 0;
-                    tok1 = tok1->tokAt(2);
-                    if (Token::Match(tok1, ",|{|}")) {
-                        syntaxError(tok1);
-                        break;
-                    }
 
-                    enumValueStart = tok1;
-                    enumValueEnd = tok1;
-                    while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]"))) {
-                        if (Token::Match(enumValueEnd, "(|[")) {
-                            enumValueEnd = enumValueEnd->link();
-                            continue;
-                        } else if (Token::Match(enumValueEnd, "%type% <") && isCPP() && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
-                            Token *endtoken = enumValueEnd->next();
-                            do {
-                                endtoken = endtoken->next();
-                                if (Token::Match(endtoken, "*|,|::|typename"))
-                                    endtoken = endtoken->next();
-                                if (endtoken->str() == "<" && TemplateSimplifier::templateParameters(endtoken))
-                                    endtoken = endtoken->findClosingBracket();
-                            } while (Token::Match(endtoken, "%name%|%num% *| [,>]") || Token::Match(endtoken, "%name%|%num% ::|< %any%"));
-                            if (endtoken->str() == ">") {
-                                enumValueEnd = endtoken;
-                                if (Token::simpleMatch(endtoken, "> ( )"))
-                                    enumValueEnd = enumValueEnd->next();
-                            } else {
-                                syntaxError(enumValueEnd);
-                                return;
-                            }
+                        if (lastEnumValueStart && lastEnumValueEnd) {
+                            // previous value was an expression
+                            Token *valueStart = tok1;
+                            tok1 = copyTokens(tok1, lastEnumValueStart, lastEnumValueEnd);
+
+                            // value is previous expression + 1
+                            tok1->insertToken("+");
+                            tok1 = tok1->next();
+                            tok1->insertToken("1");
+                            enumValue = 0;
+                            enumValueStart = valueStart->next();
+                            enumValueEnd = tok1->next();
+                        } else {
+                            // value is previous numeric value + 1
+                            tok1->insertToken(MathLib::toString(lastValue));
+                            enumValue = tok1->next();
+                        }
+                    } else if (Token::Match(tok1->next(), "= %num% ,|}")) {
+                        // value is specified numeric value
+                        enumName = tok1;
+                        lastValue = MathLib::toLongNumber(tok1->strAt(2));
+                        enumValue = tok1->tokAt(2);
+                        lastEnumValueStart = 0;
+                        lastEnumValueEnd = 0;
+                    } else if (tok1->strAt(1) == "=") {
+                        // value is specified expression
+                        enumName = tok1;
+                        lastValue = 0;
+                        tok1 = tok1->tokAt(2);
+                        if (Token::Match(tok1, ",|{|}")) {
+                            syntaxError(tok1);
+                            break;
                         }
 
-                        enumValueEnd = enumValueEnd->next();
+                        enumValueStart = tok1;
+                        enumValueEnd = tok1;
+                        while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]"))) {
+                            if (Token::Match(enumValueEnd, "(|[")) {
+                                enumValueEnd = enumValueEnd->link();
+                                continue;
+                            } else if (isCPP() && Token::Match(enumValueEnd, "%type% <") && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
+                                Token *endtoken = enumValueEnd->next();
+                                do {
+                                    endtoken = endtoken->next();
+                                    if (Token::Match(endtoken, "*|,|::|typename"))
+                                        endtoken = endtoken->next();
+                                    if (endtoken->str() == "<" && TemplateSimplifier::templateParameters(endtoken))
+                                        endtoken = endtoken->findClosingBracket();
+                                } while (Token::Match(endtoken, "%name%|%num% *| [,>]") || Token::Match(endtoken, "%name%|%num% ::|< %any%"));
+                                if (endtoken->str() == ">") {
+                                    enumValueEnd = endtoken;
+                                    if (Token::simpleMatch(endtoken, "> ( )"))
+                                        enumValueEnd = enumValueEnd->next();
+                                } else {
+                                    syntaxError(enumValueEnd);
+                                    return;
+                                }
+                            }
+
+                            enumValueEnd = enumValueEnd->next();
+                        }
+                        // remember this expression in case it needs to be incremented
+                        lastEnumValueStart = enumValueStart;
+                        lastEnumValueEnd = enumValueEnd;
+                        // skip over expression
+                        tok1 = enumValueEnd;
                     }
-                    // remember this expression in case it needs to be incremented
-                    lastEnumValueStart = enumValueStart;
-                    lastEnumValueEnd = enumValueEnd;
-                    // skip over expression
-                    tok1 = enumValueEnd;
                 }
 
                 // add enumerator constant..
@@ -7814,15 +7816,11 @@ void Tokenizer::simplifyEnum()
                             // Not a duplicate enum..
                             ++level;
 
-                            // Create a copy of the shadow ids for the inner scope
-                            if (!shadowId.empty())
-                                shadowId.push(shadowId.top());
-
+                            std::set<std::string> shadowVars = shadowId.empty() ? std::set<std::string>() : shadowId.top();
                             // are there shadow arguments?
                             if (Token::simpleMatch(tok2->previous(), ") {") || Token::simpleMatch(tok2->tokAt(-2), ") const {")) {
-                                std::set<std::string> shadowArg;
-                                for (const Token* arg = tok2; arg && arg->str() != "("; arg = arg->previous()) {
-                                    if (Token::Match(arg->previous(), "%type%|*|& %type% [,)]") &&
+                                for (const Token* arg = tok2->previous(); arg && arg->str() != "("; arg = arg->previous()) {
+                                    if (Token::Match(arg->previous(), "%type%|*|& %type% [,)=]") &&
                                         enumValues.find(arg->str()) != enumValues.end()) {
                                         // is this a variable declaration
                                         const Token *prev = arg;
@@ -7832,23 +7830,16 @@ void Tokenizer::simplifyEnum()
                                             continue;
                                         if (prev->str() == "(" && (!Token::Match(prev->tokAt(-2), "%type%|::|*|& %type% (") || prev->strAt(-2) == "else"))
                                             continue;
-                                        shadowArg.insert(arg->str());
+                                        shadowVars.insert(arg->str());
                                         if (inScope && _settings->isEnabled("style")) {
-                                            const EnumValue enumValue = enumValues.find(arg->str())->second;
+                                            const EnumValue& enumValue = enumValues.find(arg->str())->second;
                                             duplicateEnumError(arg, enumValue.name, "Function argument");
                                         }
                                     }
                                 }
-                                if (!shadowArg.empty()) {
-                                    if (shadowId.empty())
-                                        shadowId.push(shadowArg);
-                                    else
-                                        shadowId.top().insert(shadowArg.begin(), shadowArg.end());
-                                }
                             }
 
                             // are there shadow variables in the scope?
-                            std::set<std::string> shadowVars;
                             for (const Token *tok3 = tok2->next(); tok3 && tok3->str() != "}"; tok3 = tok3->next()) {
                                 if (tok3->str() == "{") {
                                     tok3 = tok3->link(); // skip inner scopes
@@ -7861,18 +7852,14 @@ void Tokenizer::simplifyEnum()
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
                                         if (inScope && _settings->isEnabled("style")) {
-                                            const EnumValue enumValue = enumValues.find(tok3->str())->second;
+                                            const EnumValue& enumValue = enumValues.find(tok3->str())->second;
                                             duplicateEnumError(tok3, enumValue.name, "Variable");
                                         }
                                     }
                                 }
                             }
-                            if (!shadowVars.empty()) {
-                                if (shadowId.empty())
-                                    shadowId.push(shadowVars);
-                                else
-                                    shadowId.top().insert(shadowVars.begin(), shadowVars.end());
-                            }
+
+                            shadowId.push(shadowVars);
                         }
 
                         // Function head
@@ -7891,9 +7878,10 @@ void Tokenizer::simplifyEnum()
                         const Token* tok3 = tok2;
                         while (tok3->strAt(1) == "::")
                             tok3 = tok3->tokAt(2);
-                        if (enumValues.find(tok3->str()) != enumValues.end()) {
+                        std::map<std::string, EnumValue>::iterator it = enumValues.find(tok3->str());
+                        if (it != enumValues.end()) {
                             simplify = true;
-                            ev = &(enumValues.find(tok3->str())->second);
+                            ev = &(it->second);
                         }
                     } else if (inScope &&    // enum is in scope
                                (shadowId.empty() || shadowId.top().find(tok2->str()) == shadowId.top().end()) &&   // no shadow enum/var/etc of enum
@@ -7928,13 +7916,13 @@ void Tokenizer::simplifyEnum()
                             tok2 = tok2->previous();
                             tok2->deleteNext();
                             bool hasOp = false;
-                            int indentlevel = 0;
                             for (const Token *enumtok = ev->start; enumtok != ev->end; enumtok = enumtok->next()) {
-                                if (enumtok->str() == "(")
-                                    ++indentlevel;
-                                else if (enumtok->str() == ")")
-                                    --indentlevel;
-                                if (indentlevel == 0 && enumtok->isOp()) {
+                                if (enumtok->str() == "(") {
+                                    enumtok = enumtok->link();
+                                    if (enumtok == ev->end)
+                                        break;
+                                }
+                                if (enumtok->isOp()) {
                                     hasOp = true;
                                     break;
                                 }
@@ -8023,16 +8011,8 @@ void Tokenizer::simplifyEnum()
                         if (typeTokenStart == 0)
                             tok2->str("int");
                         else {
-                            Token *tok3 = typeTokenStart;
-
-                            tok2->str(tok3->str());
-
-                            while (tok3 != typeTokenEnd) {
-                                tok3 = tok3->next();
-
-                                tok2->insertToken(tok3->str());
-                                tok2 = tok2->next();
-                            }
+                            tok2->str(typeTokenStart->str());
+                            copyTokens(tok2, typeTokenStart->next(), typeTokenEnd);
                         }
 
                         if (hasClass) {
