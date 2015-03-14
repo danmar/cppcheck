@@ -82,6 +82,7 @@ private:
         TEST_CASE(template49);  // #6237 - template instantiation
         TEST_CASE(template50);  // #4272 - simple partial specialization
         TEST_CASE(template51);  // #6172 - crash upon valid code
+        TEST_CASE(template52);  // #6437 - crash upon valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -925,6 +926,16 @@ private:
             "void bar() { "
             "  A<0>::foo(); "
             "}");
+    }
+
+    void template52() { // #6437
+        tok("template <int value> int sum() { "
+            "  return value + sum<value/2>(); "
+            "} "
+            "template<int x, int y> int calculate_value() { "
+            "  return sum<x - y>(); "
+            "} "
+            "int value = calculate_value<1,1>();");
     }
 
     void template_default_parameter() {
