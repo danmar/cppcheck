@@ -2112,6 +2112,16 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVarB("int foo(int a) {\n" // #4880
+                        "    int x;\n"
+                        "    if (a==1)\n"
+                        "        g(1);\n"    // might be a noreturn function
+                        "    if (a==17)\n"
+                        "        g(2);\n"    // might be a noreturn function
+                        "    return x;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: x\n", errout.str());
+
         checkUninitVarB("void (*init)(char *str);\n"
                         "\n"
                         "char x() {\n"

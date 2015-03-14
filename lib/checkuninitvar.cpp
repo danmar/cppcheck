@@ -1226,7 +1226,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (_tokenizer->IsScopeNoReturn(tok)) {
                 if (noreturn)
                     *noreturn = true;
-                return true;
+                return false;
             }
 
             break;
