@@ -27,6 +27,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <list>
 #include <ctime>
 
@@ -696,7 +697,7 @@ public:
      */
     void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct) const;
+    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const;
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type) const;
 
     /**

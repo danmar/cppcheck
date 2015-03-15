@@ -194,7 +194,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
 }
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, bool undefinedStruct) const
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef, const std::set<std::string>& structs) const
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
@@ -287,7 +287,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 // declaration after forward declaration
                                 return true;
                             } else if (tok->next()->str() == "{") {
-                                if (!undefinedStruct)
+                                if (structs.find(name->strAt(-1)) == structs.end())
                                     duplicateTypedefError(*tokPtr, name, "struct");
                                 return true;
                             } else if (Token::Match(tok->next(), ")|*")) {
@@ -533,6 +533,13 @@ static Token *processFunc(Token *tok2, bool inOperator)
 
 void Tokenizer::simplifyTypedef()
 {
+    // Collect all structs for later detection of undefined structs
+    std::set<std::string> structs;
+    for (const Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "struct %type% {|:"))
+            structs.insert(tok->strAt(1));
+    }
+
     std::vector<Space> spaceInfo;
     bool isNamespace = false;
     std::string className;
@@ -583,8 +590,7 @@ void Tokenizer::simplifyTypedef()
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
-        if (Token::Match(tok->next(), "const| struct|enum|union|class %type% {") ||
-            Token::Match(tok->next(), "const| struct|enum|union|class {")) {
+        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {")) {
             Token *tok1 = splitDefinitionFromTypedef(tok);
             if (!tok1)
                 continue;
@@ -602,22 +608,14 @@ void Tokenizer::simplifyTypedef()
         }
 
         /** @todo add support for union */
-        bool undefinedStruct = false;
-        if (Token::Match(tok, "typedef enum|struct %type% %type% ;") && tok->strAt(2) == tok->strAt(3)) {
-            if (tok->next()->str() == "enum") {
-                tok->deleteNext(3);
+        if (Token::Match(tok->next(), "enum %type% %type% ;") && tok->strAt(2) == tok->strAt(3)) {
+            tok->deleteNext(3);
+            tok->deleteThis();
+            if (tok->next())
                 tok->deleteThis();
-                if (tok->next())
-                    tok->deleteThis();
-                //now the next token to process is 'tok', not 'tok->next()';
-                goback = true;
-                continue;
-            } else {
-                const std::string pattern("struct " + tok->strAt(2) + " {|:");
-                const Token *tok2 = Token::findmatch(list.front(), pattern.c_str(), tok);
-                if (!tok2)
-                    undefinedStruct = true;
-            }
+            //now the next token to process is 'tok', not 'tok->next()';
+            goback = true;
+            continue;
         }
 
         Token *typeName;
@@ -667,8 +665,9 @@ void Tokenizer::simplifyTypedef()
         } else if (Token::Match(tokOffset, "%type% ::")) {
             typeStart = tokOffset;
 
-            while (Token::Match(tokOffset, "%type% ::"))
+            do {
                 tokOffset = tokOffset->tokAt(2);
+            } while (Token::Match(tokOffset, "%type% ::"));
 
             typeEnd = tokOffset;
 
@@ -712,7 +711,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for template
-        if (tokOffset->str() == "<") {
+        if (!isC() && tokOffset->str() == "<") {
             typeEnd = tokOffset->findClosingBracket();
 
             while (typeEnd && Token::Match(typeEnd->next(), ":: %type%"))
@@ -848,15 +847,15 @@ void Tokenizer::simplifyTypedef()
         // function: typedef ... ( ... type )( ... );
         //           typedef ... (( ... type )( ... ));
         //           typedef ... ( * ( ... type )( ... ));
-        else if ((tokOffset->str() == "(" &&
-                  Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
-                  Token::Match(tokOffset->link()->next()->link(), ") const|volatile|;")) ||
-                 (Token::simpleMatch(tokOffset, "( (") &&
-                  Token::Match(tokOffset->next()->link()->previous(), "%type% ) (") &&
-                  Token::Match(tokOffset->next()->link()->next()->link(), ") const|volatile| ) ;|,")) ||
-                 (Token::simpleMatch(tokOffset, "( * (") &&
-                  Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
-                  Token::Match(tokOffset->linkAt(2)->next()->link(), ") const|volatile| ) ;|,"))) {
+        else if (tokOffset->str() == "(" && (
+                     (Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
+                      Token::Match(tokOffset->link()->next()->link(), ") const|volatile|;")) ||
+                     (Token::simpleMatch(tokOffset, "( (") &&
+                      Token::Match(tokOffset->next()->link()->previous(), "%type% ) (") &&
+                      Token::Match(tokOffset->next()->link()->next()->link(), ") const|volatile| ) ;|,")) ||
+                     (Token::simpleMatch(tokOffset, "( * (") &&
+                      Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
+                      Token::Match(tokOffset->linkAt(2)->next()->link(), ") const|volatile| ) ;|,")))) {
             if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
             else if (Token::simpleMatch(tokOffset, "( * (")) {
@@ -987,8 +986,6 @@ void Tokenizer::simplifyTypedef()
         while (!done) {
             std::string pattern = typeName->str();
             int scope = 0;
-            bool inScope = true;
-            bool exitThisScope = false;
             int exitScope = 0;
             bool simplifyType = false;
             bool inMemberFunc = false;
@@ -1020,12 +1017,7 @@ void Tokenizer::simplifyTypedef()
                     } else {
                         --scope;
                         if (scope < 0)
-                            inScope = false;
-
-                        if (exitThisScope) {
-                            if (scope < exitScope)
-                                exitThisScope = false;
-                        }
+                            break;
                     }
                 }
 
@@ -1096,15 +1088,9 @@ void Tokenizer::simplifyTypedef()
                 // check for typedef that can be substituted
                 else if (Token::Match(tok2, pattern.c_str()) ||
                          (inMemberFunc && tok2->str() == typeName->str())) {
-                    std::string pattern1;
 
                     // member function class variables don't need qualification
-                    if (inMemberFunc && tok2->str() == typeName->str())
-                        pattern1 = tok2->str();
-                    else
-                        pattern1 = pattern;
-
-                    if (pattern1.find("::") != std::string::npos) { // has a "something ::"
+                    if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
                         size_t count = 0;
                         int back = int(classLevel) - 1;
@@ -1143,7 +1129,7 @@ void Tokenizer::simplifyTypedef()
                             }
                             simplifyType = true;
                         }
-                    } else if ((inScope && !exitThisScope) || inMemberFunc) {
+                    } else {
                         if (tok2->strAt(-1) == "::") {
                             // Don't replace this typename if it's preceded by "::" unless it's a namespace
                             if (!spaceInfo.empty() && (tok2->strAt(-2) == spaceInfo[0].className) && spaceInfo[0].isNamespace) {
@@ -1152,7 +1138,7 @@ void Tokenizer::simplifyTypedef()
                             }
                         } else if (Token::Match(tok2->previous(), "case %type% :")) {
                             tok2 = tok2->next();
-                        } else if (duplicateTypedef(&tok2, typeName, typeDef, undefinedStruct)) {
+                        } else if (duplicateTypedef(&tok2, typeName, typeDef, structs)) {
                             exitScope = scope;
 
                             // skip to end of scope if not already there
@@ -1250,8 +1236,7 @@ void Tokenizer::simplifyTypedef()
                     tok2 = copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
-                        std::list<std::string>::const_iterator iter;
-                        for (iter = pointers.begin(); iter != pointers.end(); ++iter) {
+                        for (std::list<std::string>::const_iterator iter = pointers.begin(); iter != pointers.end(); ++iter) {
                             tok2->insertToken(*iter);
                             tok2 = tok2->next();
                         }
@@ -1482,7 +1467,7 @@ void Tokenizer::simplifyTypedef()
                                 else if (tok2->next()->str().at(0) == '\"')
                                     tok2 = tok2->tokAt(2);
                             }
-                        } while (Token::Match(tok2, ", %name% ;|'|=|,"));
+                        } while (Token::Match(tok2, ", %name% ;|=|,"));
                     }
 
                     simplifyType = false;
@@ -1509,17 +1494,16 @@ void Tokenizer::simplifyTypedef()
                     if (tokOffset && tokOffset->str() == "[") {
                         arrayStart = tokOffset;
 
-                        bool atEnd = false;
-                        while (!atEnd) {
+                        for (;;) {
                             while (tokOffset->next() && !Token::Match(tokOffset->next(), ";|,"))
                                 tokOffset = tokOffset->next();
 
                             if (!tokOffset->next())
                                 return; // invalid input
                             else if (tokOffset->next()->str() == ";")
-                                atEnd = true;
+                                break;
                             else if (tokOffset->str() == "]")
-                                atEnd = true;
+                                break;
                             else
                                 tokOffset = tokOffset->next();
                         }
@@ -1762,6 +1746,7 @@ bool Tokenizer::hasEnumsWithTypedef()
             const Token *tok2 = Token::findsimplematch(tok, "typedef", tok->link());
             if (tok2)
                 syntaxError(tok2);
+            tok = tok->link();
         }
     }
 
@@ -2365,8 +2350,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                     ++typeCount;
                 ++singleNameCount;
             }
-        } else if ((TemplateSimplifier::templateParameters(tok2) > 0) ||
-                   Token::simpleMatch(tok2, "< >") /* Ticket #4764 */) {
+        } else if (!c && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
+                          Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
             tok2 = tok2->findClosingBracket();
             if (tok2->str() != ">")
                 break;
@@ -3535,14 +3520,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
 
-    // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
 
     // simplify bit fields..
     simplifyBitfields();
 
-    // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
 
@@ -3551,7 +3534,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // struct simplification "struct S {} s; => struct S { } ; S s ;
     simplifyStructDecl();
 
-    // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
 
@@ -3564,7 +3546,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // x = ({ 123; });  =>   { x = 123; }
     simplifyAssignmentBlock();
 
-    // The simplifyTemplates have inner loops
     if (_settings->terminated())
         return false;
 
@@ -4923,7 +4904,7 @@ bool Tokenizer::simplifyConstTernaryOp()
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
         bool inTemplateParameter = false;
-        if (tok->strAt(-2*offset) == "<") {
+        if (!isC() && tok->strAt(-2*offset) == "<") {
             if (!TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
                 continue;
             inTemplateParameter = true;
@@ -5515,7 +5496,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         }
 
         //skip combinations of templates and namespaces
-        while (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::")) {
+        while (!isC() && (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::"))) {
             if (tok2->next()->str() == "<" && !TemplateSimplifier::templateParameters(tok2->next())) {
                 tok2 = nullptr;
                 break;
@@ -5594,7 +5575,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
-                            if (tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
+                            if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
                                 tok2 = tok2->findClosingBracket();
                             tok2 = tok2->next();
                         }
@@ -5666,7 +5647,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                 if (Token::Match(tok2, "{|("))
                     tok2 = tok2->link();
 
-                else if (tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
+                else if (!isC() && tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
                     tok2 = tok2->findClosingBracket();
 
                 else if (std::strchr(";,", tok2->str()[0])) {
