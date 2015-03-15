@@ -986,7 +986,6 @@ void Tokenizer::simplifyTypedef()
         while (!done) {
             std::string pattern = typeName->str();
             int scope = 0;
-            int exitScope = 0;
             bool simplifyType = false;
             bool inMemberFunc = false;
             int memberScope = 0;
@@ -1139,8 +1138,6 @@ void Tokenizer::simplifyTypedef()
                         } else if (Token::Match(tok2->previous(), "case %type% :")) {
                             tok2 = tok2->next();
                         } else if (duplicateTypedef(&tok2, typeName, typeDef, structs)) {
-                            exitScope = scope;
-
                             // skip to end of scope if not already there
                             if (tok2->str() != "}") {
                                 while (tok2->next()) {
