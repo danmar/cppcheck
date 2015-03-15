@@ -1898,20 +1898,19 @@ void CheckOther::checkMathFunctions()
             }
 
             // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-            else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )") &&
-                     std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0) {
-                mathfunctionCallWarning(tok);
+            else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
+                if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
+                    mathfunctionCallWarning(tok);
             }
             // sqrt( x ): if x is negative the result is undefined
-            else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )") &&
-                     MathLib::isNegative(tok->strAt(2))) {
-                mathfunctionCallWarning(tok);
+            else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
+                if (MathLib::isNegative(tok->strAt(2)))
+                    mathfunctionCallWarning(tok);
             }
             // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-            else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )") &&
-                     MathLib::isNullValue(tok->strAt(2)) &&
-                     MathLib::isNullValue(tok->strAt(4))) {
-                mathfunctionCallWarning(tok, 2);
+            else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
+                if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNullValue(tok->strAt(4)))
+                    mathfunctionCallWarning(tok, 2);
             }
             // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
             else if (Token::Match(tok, "fmod|fmodf|fmodl ( %any%")) {
@@ -1920,10 +1919,9 @@ void CheckOther::checkMathFunctions()
                     mathfunctionCallWarning(tok, 2);
             }
             // pow ( x , y) If x is zero, and y is negative --> division by zero
-            else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )") &&
-                     MathLib::isNullValue(tok->strAt(2))  &&
-                     MathLib::isNegative(tok->strAt(4))) {
-                mathfunctionCallWarning(tok, 2);
+            else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )")) {
+                if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNegative(tok->strAt(4)))
+                    mathfunctionCallWarning(tok, 2);
             }
 
             if (styleC99) {
