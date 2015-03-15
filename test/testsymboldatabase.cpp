@@ -2237,7 +2237,8 @@ private:
                           "   }\n"
                           "};");
             ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
-            ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
+            if (db)
+                ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
         }
 
         // #5590

@@ -322,13 +322,13 @@ void CheckCondition::multiCondition()
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eIf || !Token::simpleMatch(i->classDef, "if ("))
+        if (i->type != Scope::eIf)
             continue;
 
         const Token * const cond1 = i->classDef->next()->astOperand2();
 
         const Token * tok2 = i->classDef->next();
-        while (tok2) {
+        for (;;) {
             tok2 = tok2->link();
             if (!Token::simpleMatch(tok2, ") {"))
                 break;

@@ -945,7 +945,7 @@ void CmdLineParser::PrintHelp()
               "                                 64 bit Windows\n"
               "                          * native\n"
               "                                 Unspecified platform. Type sizes of host system\n"
-              "                                 is assumed, but no further assumptions.\n"
+              "                                 are assumed, but no further assumptions.\n"
               "    -q, --quiet          Only print error messages.\n"
               "    -rp, --relative-paths\n"
               "    -rp=<paths>, --relative-paths=<paths>\n"
