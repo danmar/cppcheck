@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <ndbm.h>
 #include <netdb.h>
 #include <regex.h>
 #include <time.h>
