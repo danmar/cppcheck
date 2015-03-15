@@ -2737,17 +2737,9 @@ void Scope::getVariableList(const Library* lib)
         return;
 
     AccessControl varaccess = defaultAccess();
-    unsigned int level = 1;
-    for (const Token *tok = start; tok; tok = tok->next()) {
-        // end of scope?
-        if (tok->str() == "}") {
-            level--;
-            if (level == 0)
-                break;
-        }
-
+    for (const Token *tok = start; tok && tok != classEnd; tok = tok->next()) {
         // syntax error?
-        else if (tok->next() == nullptr)
+        if (tok->next() == nullptr)
             break;
 
         // Is it a function?
@@ -2772,7 +2764,6 @@ void Scope::getVariableList(const Library* lib)
                 tok = tok->next()->link()->tokAt(2);
                 continue;
             } else if (Token::simpleMatch(tok->next()->link(), "} ;")) {
-                level++;
                 tok = tok->next();
                 continue;
             }
@@ -2815,8 +2806,8 @@ void Scope::getVariableList(const Library* lib)
         else if (tok->str() == "__property")
             continue;
 
-        // skip return and delete
-        else if (Token::Match(tok, "return|delete")) {
+        // skip return, goto and delete
+        else if (Token::Match(tok, "return|delete|goto")) {
             while (tok->next() &&
                    tok->next()->str() != ";" &&
                    tok->next()->str() != "}" /* ticket #4994 */) {
@@ -2828,12 +2819,8 @@ void Scope::getVariableList(const Library* lib)
         // Search for start of statement..
         else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;
-        else if (Token::Match(tok, ";|{|}"))
+        else if (tok->str() == ";")
             continue;
-        else if (Token::Match(tok, "goto %name% ;")) {
-            tok = tok->tokAt(2);
-            continue;
-        }
 
         tok = checkVariable(tok, varaccess, lib);
 
