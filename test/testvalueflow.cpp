@@ -65,6 +65,7 @@ private:
         TEST_CASE(valueFlowFunctionReturn);
 
         TEST_CASE(valueFlowFunctionDefaultParameter);
+        TEST_CASE(valueFlowCharArray);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -1477,6 +1478,47 @@ private:
                "    continuous_src_time(std::complex<double> f, double st = 0.0, double et = infinity) {}\n"
                "};";
         testValueOfX(code, 2U, 2); // Don't crash (#6494)
+    }
+
+    void valueFlowCharArray() {
+        const char *code;
+
+        code = "void f() {\n"
+               "    char x[] = \"Sample_string\";\n"
+               "    char str2[10];\n"
+               "    memcpy(str2, x, strlen(x) + 1);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, "\"Sample_string\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, "\"Sample_string\""));
+        ASSERT_EQUALS(14, valueOfTok(code, "+").intvalue);
+
+        code = "void f() {\n"
+               "    char str[] = \"abcd\";\n"
+               "    str[1] = 'x';\n"
+               "     x(str);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, "\"abcd\"")); // The value was lost when the array was modified
+
+        code = "void f() {\n"
+               "    char x[] = \"Sample_string\";\n"
+               "    char str2[10];\n"
+               "    x = \"New_string_for_calculation\";\n"
+               "    memcpy(str2, x, strlen(x) + 1);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, "\"Sample_string\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, "\"New_string_for_calculation\""));
+        ASSERT_EQUALS(27, valueOfTok(code, "+").intvalue);
+
+        code = "void h() {\n"
+               "    char str1[] = \"Sample_string\";\n"
+               "    char str2[10];\n"
+               "    char x[];\n"
+               "    x = str1;\n"
+               "    memcpy(str2, x, strlen(x) + 1);\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"Sample_string\""));
+        ASSERT_EQUALS(14, valueOfTok(code, "+").intvalue);
+
     }
 };
 

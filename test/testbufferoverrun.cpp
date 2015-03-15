@@ -3058,7 +3058,8 @@ private:
               "    char str[] = \"abcd\";\n"
               "    mymemset(str, 0, 10);\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n"
+                      "[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
         // ticket #1659 - overflowing variable when using memcpy
         check("void f(void) { \n"
