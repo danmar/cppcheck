@@ -178,6 +178,7 @@ private:
     void autoPointerError(const Token *tok);
     void autoPointerContainerError(const Token *tok);
     void autoPointerArrayError(const Token *tok);
+    void autoPointerMallocError(const Token *tok, const std::string& allocFunction);
 
     void uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function);
     void uselessCallsSwapError(const Token *tok, const std::string &varname);
@@ -210,6 +211,7 @@ private:
         c.autoPointerError(0);
         c.autoPointerContainerError(0);
         c.autoPointerArrayError(0);
+        c.autoPointerMallocError(0, "malloc");
         c.uselessCallsReturnValueError(0, "str", "find");
         c.uselessCallsSwapError(0, "str");
         c.uselessCallsSubstrError(0, false);

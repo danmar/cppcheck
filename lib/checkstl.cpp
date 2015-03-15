@@ -1232,6 +1232,7 @@ static bool hasArrayEndParen(const Token *tok1)
 void CheckStl::checkAutoPointer()
 {
     std::set<unsigned int> autoPtrVarId;
+    std::map<unsigned int, const std::string> mallocVarId; // variables allocated by the malloc-like function
     static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -1246,6 +1247,17 @@ void CheckStl::checkAutoPointer()
                     const Token *tok3 = tok2->tokAt(2);
                     if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
                         autoPointerArrayError(tok2->next());
+                    }
+                    if (Token::Match(tok3, "( malloc|calloc|strdup|strndup|kmalloc|kzalloc|kcalloc (")) {
+                        // malloc-like function allocated memory passed to the auto_ptr constructor -> error
+                        autoPointerMallocError(tok2->next(), tok3->next()->str());
+                    }
+                    if (Token::Match(tok3, "( %var%")) {
+                        std::map<unsigned int, const std::string>::const_iterator it = mallocVarId.find(tok3->next()->varId());
+                        if (it != mallocVarId.cend()) {
+                            // pointer on the memory allocated by malloc used in the auto pointer constructor -> error
+                            autoPointerMallocError(tok2->next(), it->second);
+                        }
                     }
                     while (tok3 && tok3->str() != ";") {
                         tok3 = tok3->next();
@@ -1280,6 +1292,21 @@ void CheckStl::checkAutoPointer()
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
                 }
+            } else if (Token::Match(tok, "%var% = malloc|calloc|strdup|strndup|kmalloc|kzalloc|kcalloc (")) {
+                // C library function like 'malloc' used together with auto pointer -> error
+                std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
+                if (iter != autoPtrVarId.end()) {
+                    autoPointerMallocError(tok, tok->strAt(2));
+                } else if (tok->varId()) {
+                    // it is not an auto pointer variable and it is allocated by malloc like function.
+                    mallocVarId.insert(std::make_pair(tok->varId(), tok->strAt(2)));
+                }
+            } else if ((Token::Match(tok, "%var% . reset ( malloc|calloc|strdup|strndup|kmalloc|kzalloc|kcalloc ("))) {
+                // C library function like 'malloc' used when resetting auto pointer -> error
+                std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
+                if (iter != autoPtrVarId.end()) {
+                    autoPointerMallocError(tok, tok->strAt(4));
+                }
             }
         }
     }
@@ -1308,6 +1335,13 @@ void CheckStl::autoPointerArrayError(const Token *tok)
                 "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n"
                 "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes arrays, which are allocated by operator 'new[]' and must be deallocated by operator 'delete[]'."
                );
+}
+
+void CheckStl::autoPointerMallocError(const Token *tok, const std::string& allocFunction)
+{
+    const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '" + allocFunction + "'.";
+    const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '" + allocFunction + "'), which must be deallocated by the appropriate C library function.";
+    reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose);
 }
 
 void CheckStl::uselessCalls()
