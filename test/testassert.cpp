@@ -26,9 +26,7 @@ public:
     TestAssert() : TestFixture("TestAssert") {}
 
 private:
-    void check(
-        const char code[],
-        const char *filename = NULL) {
+    void check(const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -38,7 +36,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename ? filename : "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check..
         CheckAssert checkAssert(&tokenizer, &settings, this);

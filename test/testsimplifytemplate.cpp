@@ -132,8 +132,8 @@ private:
         const char code[] = "template <classname T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
-        const std::string expected("f<int> ( 10 ) ; "
-                                   "void f<int> ( int val ) { }");
+        const char expected[] = "f<int> ( 10 ) ; "
+                                "void f<int> ( int val ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -142,8 +142,8 @@ private:
         const char code[] = "template <classname T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
-        const std::string expected("Fred<int> fred ; "
-                                   "class Fred<int> { int a ; } ;");
+        const char expected[] = "Fred<int> fred ; "
+                                "class Fred<int> { int a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -152,8 +152,8 @@ private:
         const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
-        const std::string expected("Fred<float,4> fred ; "
-                                   "class Fred<float,4> { float data [ 4 ] ; } ;");
+        const char expected[] = "Fred<float,4> fred ; "
+                                "class Fred<float,4> { float data [ 4 ] ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -162,8 +162,8 @@ private:
         const char code[] = "template <classname T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
-        const std::string expected("Fred<float> fred ; "
-                                   "class Fred<float> { Fred<float> ( ) ; } ;");
+        const char expected[] = "Fred<float> fred ; "
+                                "class Fred<float> { Fred<float> ( ) ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -173,10 +173,10 @@ private:
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const std::string expected("template < classname T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
-                                   "Fred<float> fred ; "
-                                   "class Fred<float> { } ; "
-                                   "Fred<float> :: Fred<float> ( ) { }");
+        const char expected[] = "template < classname T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
+                                "Fred<float> fred ; "
+                                "class Fred<float> { } ; "
+                                "Fred<float> :: Fred<float> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -186,9 +186,9 @@ private:
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
-        const std::string expected("Fred<float> fred1 ; "
-                                   "Fred<float> fred2 ; "
-                                   "class Fred<float> { } ;");
+        const char expected[] = "Fred<float> fred1 ; "
+                                "Fred<float> fred2 ; "
+                                "class Fred<float> { } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -203,7 +203,7 @@ private:
                                 "    typedef ABC<T> m;\n"
                                 "};\n";
 
-            const std::string expected("template < class T > class ABC { public: } ;");
+            const char expected[] = "template < class T > class ABC { public: } ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -219,19 +219,19 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string wanted("template < typename T > class ABC { public: } ; "
-                                     "int main ( ) { "
-                                     "std :: vector < int > v ; "
-                                     "v . push_back ( 4 ) ; "
-                                     "return 0 ; "
-                                     "}");
+            const char wanted[] = "template < typename T > class ABC { public: } ; "
+                                  "int main ( ) { "
+                                  "std :: vector < int > v ; "
+                                  "v . push_back ( 4 ) ; "
+                                  "return 0 ; "
+                                  "}";
 
-            const std::string current("template < typename T > class ABC { public: } ; "
-                                      "int main ( ) { "
-                                      "ABC < int > :: type v ; "
-                                      "v . push_back ( 4 ) ; "
-                                      "return 0 ; "
-                                      "}");
+            const char current[] = "template < typename T > class ABC { public: } ; "
+                                   "int main ( ) { "
+                                   "ABC < int > :: type v ; "
+                                   "v . push_back ( 4 ) ; "
+                                   "return 0 ; "
+                                   "}";
 
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
@@ -247,12 +247,12 @@ private:
                                 "    }\n"
                                 "};\n";
 
-            const std::string expected("template < typename T > class ABC { "
-                                       "public: void f ( ) { "
-                                       "ABC < int > :: type v ; "
-                                       "v . push_back ( 4 ) ; "
-                                       "} "
-                                       "} ;");
+            const char expected[] = "template < typename T > class ABC { "
+                                    "public: void f ( ) { "
+                                    "ABC < int > :: type v ; "
+                                    "v . push_back ( 4 ) ; "
+                                    "} "
+                                    "} ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -300,9 +300,9 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected("void f ( ) { A<int> a ; } "
-                             "template < typename T > class B { void g ( ) { A<T> b ; b = A<T> :: h ( ) ; } } ; "
-                             "class A<int> { } ; class A<T> { } ;");
+        const char expected[] = "void f ( ) { A<int> a ; } "
+                                "template < typename T > class B { void g ( ) { A<T> b ; b = A<T> :: h ( ) ; } } ; "
+                                "class A<int> { } ; class A<T> { } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -317,11 +317,11 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void f ( ) "
-                                   "{"
-                                   " foo<3,int> ( ) ; "
-                                   "} "
-                                   "int * foo<3,int> ( ) { return new int [ 3 ] ; }");
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " foo<3,int> ( ) ; "
+                                "} "
+                                "int * foo<3,int> ( ) { return new int [ 3 ] ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -335,11 +335,11 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void f ( ) "
-                                   "{"
-                                   " char * p ; p = foo<3,char> ( ) ; "
-                                   "} "
-                                   "char * foo<3,char> ( ) { return new char [ 3 ] ; }");
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " char * p ; p = foo<3,char> ( ) ; "
+                                "} "
+                                "char * foo<3,char> ( ) { return new char [ 3 ] ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -354,12 +354,12 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void f ( ) "
-                                   "{"
-                                   " A<12,12,11> a ; "
-                                   "} "
-                                   "class A<12,12,11> : public B < 12 , 12 , 0 > "
-                                   "{ } ;");
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " A<12,12,11> a ; "
+                                "} "
+                                "class A<12,12,11> : public B < 12 , 12 , 0 > "
+                                "{ } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -402,10 +402,10 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void foo<int*> ( ) "
-                                   "{ x ( ) ; } "
-                                   "int main ( ) "
-                                   "{ foo<int*> ( ) ; }");
+        const char expected[] = "void foo<int*> ( ) "
+                                "{ x ( ) ; } "
+                                "int main ( ) "
+                                "{ foo<int*> ( ) ; }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -426,11 +426,11 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void a<0> ( ) { } "
-                                   "int main ( ) "
-                                   "{ a<2> ( ) ; return 0 ; } "
-                                   "void a<2> ( ) { a<1> ( ) ; } "
-                                   "void a<1> ( ) { a<0> ( ) ; }");
+        const char expected[] = "void a<0> ( ) { } "
+                                "int main ( ) "
+                                "{ a<2> ( ) ; return 0 ; } "
+                                "void a<2> ( ) { a<1> ( ) ; } "
+                                "void a<1> ( ) { a<0> ( ) ; }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -448,10 +448,10 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        const std::string expected("int main ( ) { b<2> ( ) ; return 0 ; } "
-                                   "void b<2> ( ) { a<2> ( ) ; } "
-                                   "void a<i> ( ) { } "
-                                   "void a<2> ( ) { }");
+        const char expected[] = "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                "void b<2> ( ) { a<2> ( ) ; } "
+                                "void a<i> ( ) { } "
+                                "void a<2> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -476,8 +476,8 @@ private:
         const char code[] = "template <class T> class foo { T a; };\n"
                             "foo<int> *f;";
 
-        const std::string expected("foo<int> * f ; "
-                                   "class foo<int> { int a ; } ;");
+        const char expected[] = "foo<int> * f ; "
+                                "class foo<int> { int a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -492,11 +492,11 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("void f ( ) "
-                                   "{"
-                                   " char p ; p = foo<char> ( ) ; "
-                                   "} "
-                                   "char & foo<char> ( ) { static char temp ; return temp ; }");
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " char p ; p = foo<char> ( ) ; "
+                                "} "
+                                "char & foo<char> ( ) { static char temp ; return temp ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -515,10 +515,10 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const std::string expected("template < class T > A < T > :: ~ A ( ) { } "  // <- TODO: this should be removed
-                                   "A<int> a ; "
-                                   "class A<int> { public: ~ A<int> ( ) ; } ; "
-                                   "A<int> :: ~ A<int> ( ) { }");
+        const char expected[] = "template < class T > A < T > :: ~ A ( ) { } "  // <- TODO: this should be removed
+                                "A<int> a ; "
+                                "class A<int> { public: ~ A<int> ( ) ; } ; "
+                                "A<int> :: ~ A<int> ( ) { }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -527,8 +527,8 @@ private:
             const char code[] = "template <classname T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
 
-            const std::string expected("Fred<int> fred ; "
-                                       "struct Fred<int> { int a ; } ;");
+            const char expected[] = "Fred<int> fred ; "
+                                    "struct Fred<int> { int a ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -537,8 +537,8 @@ private:
             const char code[] = "template <classname T, int sz> struct Fred { T data[sz]; };\n"
                                 "Fred<float,4> fred;";
 
-            const std::string expected("Fred<float,4> fred ; "
-                                       "struct Fred<float,4> { float data [ 4 ] ; } ;");
+            const char expected[] = "Fred<float,4> fred ; "
+                                    "struct Fred<float,4> { float data [ 4 ] ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -547,8 +547,8 @@ private:
             const char code[] = "template <classname T> struct Fred { Fred(); };\n"
                                 "Fred<float> fred;";
 
-            const std::string expected("Fred<float> fred ; "
-                                       "struct Fred<float> { Fred<float> ( ) ; } ;");
+            const char expected[] = "Fred<float> fred ; "
+                                    "struct Fred<float> { Fred<float> ( ) ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -558,9 +558,9 @@ private:
                                 "Fred<float> fred1;\n"
                                 "Fred<float> fred2;";
 
-            const std::string expected("Fred<float> fred1 ; "
-                                       "Fred<float> fred2 ; "
-                                       "struct Fred<float> { } ;");
+            const char expected[] = "Fred<float> fred1 ; "
+                                    "Fred<float> fred2 ; "
+                                    "struct Fred<float> { } ;";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -570,8 +570,8 @@ private:
         const char code[] = "template <classname T> struct Fred { T a; };\n"
                             "Fred<std::string> fred;";
 
-        const std::string expected("Fred<std::string> fred ; "
-                                   "struct Fred<std::string> { std :: string a ; } ;");
+        const char expected[] = "Fred<std::string> fred ; "
+                                "struct Fred<std::string> { std :: string a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -582,10 +582,10 @@ private:
                             "    std::cout << (foo<double>());\n"
                             "}";
 
-        const std::string expected("void bar ( ) {"
-                                   " std :: cout << ( foo<double> ( ) ) ; "
-                                   "} "
-                                   "void foo<double> ( ) { }");
+        const char expected[] = "void bar ( ) {"
+                                " std :: cout << ( foo<double> ( ) ) ; "
+                                "} "
+                                "void foo<double> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -889,15 +889,15 @@ private:
                             "template void Fred<float>::f();\n"
                             "template void Fred<int>::g();\n";
 
-        const std::string expected("template < classname T > void Fred<T> :: f ( ) { } "
-                                   "template < classname T > void Fred<T> :: g ( ) { } "
-                                   "template void Fred<float> :: f ( ) ; "
-                                   "template void Fred<int> :: g ( ) ; "
-                                   "class Fred<T> { void f ( ) ; void g ( ) ; } ; "
-                                   "Fred<T> :: f ( ) { } "
-                                   "Fred<T> :: g ( ) { } "
-                                   "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
-                                   "class Fred<int> { void f ( ) ; void g ( ) ; } ;");
+        const char expected[] = "template < classname T > void Fred<T> :: f ( ) { } "
+                                "template < classname T > void Fred<T> :: g ( ) { } "
+                                "template void Fred<float> :: f ( ) ; "
+                                "template void Fred<int> :: g ( ) ; "
+                                "class Fred<T> { void f ( ) ; void g ( ) ; } ; "
+                                "Fred<T> :: f ( ) { } "
+                                "Fred<T> :: g ( ) { } "
+                                "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
+                                "class Fred<int> { void f ( ) ; void g ( ) ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -908,13 +908,13 @@ private:
                             "template<> void Fred<float>::f() { }\n"
                             "template<> void Fred<int>::g() { }\n";
 
-        const std::string expected("template < classname T > void Fred<T> :: f ( ) { } "
-                                   "template < > void Fred<float> :: f ( ) { } "
-                                   "template < > void Fred<int> :: g ( ) { } "
-                                   "class Fred<T> { void f ( ) ; } ; "
-                                   "Fred<T> :: f ( ) { } "
-                                   "class Fred<float> { void f ( ) ; } ; "
-                                   "class Fred<int> { void f ( ) ; } ;");
+        const char expected[] = "template < classname T > void Fred<T> :: f ( ) { } "
+                                "template < > void Fred<float> :: f ( ) { } "
+                                "template < > void Fred<int> :: g ( ) { } "
+                                "class Fred<T> { void f ( ) ; } ; "
+                                "Fred<T> :: f ( ) { } "
+                                "class Fred<float> { void f ( ) ; } ; "
+                                "class Fred<int> { void f ( ) ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -964,15 +964,15 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("void f ( ) "
-                                       "{"
-                                       " A<int,2> a1 ;"
-                                       " A<int,3> a2 ; "
-                                       "} "
-                                       "class A<int,2> "
-                                       "{ int ar [ 2 ] ; } ; "
-                                       "class A<int,3> "
-                                       "{ int ar [ 3 ] ; } ;");
+            const char expected[] = "void f ( ) "
+                                    "{"
+                                    " A<int,2> a1 ;"
+                                    " A<int,3> a2 ; "
+                                    "} "
+                                    "class A<int,2> "
+                                    "{ int ar [ 2 ] ; } ; "
+                                    "class A<int,3> "
+                                    "{ int ar [ 3 ] ; } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
@@ -987,13 +987,13 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("void f ( ) "
-                                       "{"
-                                       " A<int,3,2> a1 ;"
-                                       " A<int,3,2> a2 ; "
-                                       "} "
-                                       "class A<int,3,2> "
-                                       "{ int ar [ 5 ] ; } ;");
+            const char expected[] = "void f ( ) "
+                                    "{"
+                                    " A<int,3,2> a1 ;"
+                                    " A<int,3,2> a2 ; "
+                                    "} "
+                                    "class A<int,3,2> "
+                                    "{ int ar [ 5 ] ; } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
@@ -1007,27 +1007,26 @@ private:
                                 "    A<int> a2;\n"
                                 "}\n";
 
-            const std::string wanted("template < class T , int n >"
-                                     " class A"
-                                     " { T ar [ n ] ; } ;"
-                                     " void f ( )"
-                                     " {"
-                                     " A<int,(int)2> a1 ;"
-                                     " A<int,3> a2 ;"
-                                     " }"
-                                     " class A<int,2>"
-                                     " { int ar [ 2 ] ; }"
-                                     " class A<int,3>"
-                                     " { int ar [ 3 ] ; }");
+            const char wanted[] = "template < class T , int n >"
+                                  " class A"
+                                  " { T ar [ n ] ; } ;"
+                                  " void f ( )"
+                                  " {"
+                                  " A<int,(int)2> a1 ;"
+                                  " A<int,3> a2 ;"
+                                  " }"
+                                  " class A<int,2>"
+                                  " { int ar [ 2 ] ; }"
+                                  " class A<int,3>"
+                                  " { int ar [ 3 ] ; }";
 
-            const std::string current("void f ( ) "
-                                      "{ "
-                                      "A < int , ( int ) 2 > a1 ; "
-                                      "A<int,3> a2 ; "
-                                      "} "
-                                      "class A<int,3> "
-                                      "{ int ar [ 3 ] ; } ;"
-                                     );
+            const char current[] = "void f ( ) "
+                                   "{ "
+                                   "A < int , ( int ) 2 > a1 ; "
+                                   "A<int,3> a2 ; "
+                                   "} "
+                                   "class A<int,3> "
+                                   "{ int ar [ 3 ] ; } ;";
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
         {
@@ -1078,7 +1077,7 @@ private:
                                 "{ }";
 
             // The expected result..
-            const std::string expected("template < class T > void foo ( T :: t * ) { }");
+            const char expected[] = "template < class T > void foo ( T :: t * ) { }";
             ASSERT_EQUALS(expected, tok(code));
         }
 

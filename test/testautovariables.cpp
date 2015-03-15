@@ -29,8 +29,7 @@ public:
 private:
 
 
-
-    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true, const char* filename=nullptr) {
+    void check(const char code[], bool inconclusive = false, bool runSimpleChecks = true, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -42,7 +41,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, (filename)?filename:"test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();

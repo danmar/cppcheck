@@ -1655,7 +1655,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected1("void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }");
+        const char expected1[] = "void f ( ) { char a [ 256 ] ; char b [ 256 ] ; }";
         ASSERT_EQUALS(expected1, tok(code1, false));
         ASSERT_EQUALS("", errout.str());
 
@@ -1666,7 +1666,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected2("void f ( ) { char a [ 256 ] ; a = { 0 } ; char b [ 256 ] ; b = { 0 } ; }");
+        const char expected2[] = "void f ( ) { char a [ 256 ] ; a = { 0 } ; char b [ 256 ] ; b = { 0 } ; }";
         ASSERT_EQUALS(expected2, tok(code2, false));
         ASSERT_EQUALS("", errout.str());
 
@@ -1677,7 +1677,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected3("void f ( ) { char a [ 256 ] ; a = \"\" ; char b [ 256 ] ; b = \"\" ; }");
+        const char expected3[] = "void f ( ) { char a [ 256 ] ; a = \"\" ; char b [ 256 ] ; b = \"\" ; }";
         ASSERT_EQUALS(expected3, tok(code3, false));
         ASSERT_EQUALS("", errout.str());
 
@@ -1688,7 +1688,7 @@ private:
                              "}";
 
         // The expected tokens..
-        const std::string expected4("void f ( ) { char a [ 256 ] ; a = \"1234\" ; char b [ 256 ] ; b = \"5678\" ; }");
+        const char expected4[] = "void f ( ) { char a [ 256 ] ; a = \"1234\" ; char b [ 256 ] ; b = \"5678\" ; }";
         ASSERT_EQUALS(expected4, tok(code4, false));
         ASSERT_EQUALS("", errout.str());
     }

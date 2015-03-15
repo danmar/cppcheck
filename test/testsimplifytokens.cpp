@@ -1448,7 +1448,7 @@ private:
                                 "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
                                 "}\n";
 
-            const std::string expected("void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }");
+            const char expected[] = "void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1459,7 +1459,7 @@ private:
                                 "    p = const_cast<char *> qtu ();\n"
                                 "}\n";
 
-            const std::string expected("void f ( ) { p = const_cast < char * > qtu ( ) ; }");
+            const char expected[] = "void f ( ) { p = const_cast < char * > qtu ( ) ; }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1470,7 +1470,7 @@ private:
                                 "{\n"
                                 "    return dynamic_cast<Foo *>((bar()));\n"
                                 "}\n";
-            const std::string expected("void f ( ) { return bar ( ) ; }");
+            const char expected[] = "void f ( ) { return bar ( ) ; }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1534,7 +1534,7 @@ private:
         {
             const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
 
-            const std::string expected("namespace a { namespace b { void f ( ) { } } }");
+            const char expected[] = "namespace a { namespace b { void f ( ) { } } }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1542,7 +1542,7 @@ private:
         {
             const char code[] = "namespace b{ void f(){} }";
 
-            const std::string expected("namespace b { void f ( ) { } }");
+            const char expected[] = "namespace b { void f ( ) { } }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1550,7 +1550,7 @@ private:
         {
             const char code[] = "void f(int namespace) { }";
 
-            const std::string expected("void f ( int namespace ) { }");
+            const char expected[] = "void f ( int namespace ) { }";
 
             ASSERT_EQUALS(expected, tok(code));
         }

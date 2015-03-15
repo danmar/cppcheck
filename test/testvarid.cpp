@@ -188,15 +188,15 @@ private:
                                            "    i = 4;\n"
                                            "}\n", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: static int i@1 = 1 ;\n"
-                                       "2: void f ( )\n"
-                                       "3: {\n"
-                                       "4: int i@2 ; i@2 = 2 ;\n"
-                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 ) {\n"
-                                       "6: i@3 = 3 ; }\n"
-                                       "7: i@2 = 4 ;\n"
-                                       "8: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: static int i@1 = 1 ;\n"
+                                    "2: void f ( )\n"
+                                    "3: {\n"
+                                    "4: int i@2 ; i@2 = 2 ;\n"
+                                    "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 ) {\n"
+                                    "6: i@3 = 3 ; }\n"
+                                    "7: i@2 = 4 ;\n"
+                                    "8: }\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -214,17 +214,17 @@ private:
                                            "    i = 4;\n"
                                            "}\n", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: static int i@1 = 1 ;\n"
-                                       "2: void f ( )\n"
-                                       "3: {\n"
-                                       "4: int i@2 ; i@2 = 2 ;\n"
-                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
-                                       "6: {\n"
-                                       "7: i@3 = 3 ;\n"
-                                       "8: }\n"
-                                       "9: i@2 = 4 ;\n"
-                                       "10: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: static int i@1 = 1 ;\n"
+                                    "2: void f ( )\n"
+                                    "3: {\n"
+                                    "4: int i@2 ; i@2 = 2 ;\n"
+                                    "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
+                                    "6: {\n"
+                                    "7: i@3 = 3 ;\n"
+                                    "8: }\n"
+                                    "9: i@2 = 4 ;\n"
+                                    "10: }\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -239,13 +239,13 @@ private:
                                        "    i = abc.a;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( )\n"
-                                   "2: {\n"
-                                   "3: struct ABC abc@1 ;\n"
-                                   "4: abc@1 . a@2 = 3 ;\n"
-                                   "5: i = abc@1 . a@2 ;\n"
-                                   "6: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( )\n"
+                                "2: {\n"
+                                "3: struct ABC abc@1 ;\n"
+                                "4: abc@1 . a@2 = 3 ;\n"
+                                "5: i = abc@1 . a@2 ;\n"
+                                "6: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -259,13 +259,13 @@ private:
                                        "    str[0] = 0;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: static char str@1 [ 4 ] ;\n"
-                                   "2: void f ( )\n"
-                                   "3: {\n"
-                                   "4: char str@2 [ 10 ] ;\n"
-                                   "5: str@2 [ 0 ] = 0 ;\n"
-                                   "6: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: static char str@1 [ 4 ] ;\n"
+                                "2: void f ( )\n"
+                                "3: {\n"
+                                "4: char str@2 [ 10 ] ;\n"
+                                "5: str@2 [ 0 ] = 0 ;\n"
+                                "6: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -277,11 +277,11 @@ private:
                                        "    int i = *(a+10);\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( const int a@1 [ ] )\n"
-                                   "2: {\n"
-                                   "3: int i@2 ; i@2 = * ( a@1 + 10 ) ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( const int a@1 [ ] )\n"
+                                "2: {\n"
+                                "3: int i@2 ; i@2 = * ( a@1 + 10 ) ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -293,11 +293,11 @@ private:
                                        "    int a,b;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( )\n"
-                                   "2: {\n"
-                                   "3: int a@1 ; int b@2 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( )\n"
+                                "2: {\n"
+                                "3: int a@1 ; int b@2 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -310,11 +310,11 @@ private:
                                        "    return a+b;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: int f ( int a@1 , int b@2 )\n"
-                                   "2: {\n"
-                                   "3: return a@1 + b@2 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: int f ( int a@1 , int b@2 )\n"
+                                "2: {\n"
+                                "3: return a@1 + b@2 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -329,13 +329,13 @@ private:
                                        "    }\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void func ( ) {\n"
-                                   "2: char a@1 [ 256 ] = \"test\" ;\n"
-                                   "3: {\n"
-                                   "4: char b@2 [ 256 ] = \"test\" ;\n"
-                                   "5: }\n"
-                                   "6: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void func ( ) {\n"
+                                "2: char a@1 [ 256 ] = \"test\" ;\n"
+                                "3: {\n"
+                                "4: char b@2 [ 256 ] = \"test\" ;\n"
+                                "5: }\n"
+                                "6: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -348,12 +348,12 @@ private:
                                        "    return a;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: int f ( )\n"
-                                   "2: {\n"
-                                   "3: int a@1 ;\n"
-                                   "4: return a@1 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: int f ( )\n"
+                                "2: {\n"
+                                "3: int a@1 ;\n"
+                                "4: return a@1 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -366,12 +366,12 @@ private:
                                        "    return (abits_val_ & mask);\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: long mask@1 ; mask@1 = ( 1UL << size_ ) - 1 ;\n"
-                                   "4: return ( abits_val_ & mask@1 ) ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: long mask@1 ; mask@1 = ( 1UL << size_ ) - 1 ;\n"
+                                "4: return ( abits_val_ & mask@1 ) ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -384,12 +384,12 @@ private:
                                        "    str.clear();\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void func ( )\n"
-                                   "2: {\n"
-                                   "3: std :: string str@1 ( \"test\" ) ;\n"
-                                   "4: str@1 . clear ( ) ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void func ( )\n"
+                                "2: {\n"
+                                "3: std :: string str@1 ( \"test\" ) ;\n"
+                                "4: str@1 . clear ( ) ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -398,8 +398,8 @@ private:
         const std::string actual = tokenize(
                                        "typedef int INT32;\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -412,12 +412,12 @@ private:
                                        "    struct abc abc1;\n"
                                        "}", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: int abc@1 ;\n"
-                                   "4: struct abc abc1@2 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: int abc@1 ;\n"
+                                "4: struct abc abc1@2 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -426,8 +426,8 @@ private:
         const std::string actual = tokenize(
                                        "class Foo;\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Foo ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Foo ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -439,11 +439,11 @@ private:
                                        "    class Foo *foo;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: static void a ( )\n"
-                                   "2: {\n"
-                                   "3: class Foo * foo@1 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: static void a ( )\n"
+                                "2: {\n"
+                                "3: class Foo * foo@1 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -456,12 +456,12 @@ private:
                                        "    a = a;\n"
                                        "}\n", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( )\n"
-                                   "2: {\n"
-                                   "3: int a@1 ; int b@2 ;\n"
-                                   "4: a@1 = a@1 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( )\n"
+                                "2: {\n"
+                                "3: int a@1 ; int b@2 ;\n"
+                                "4: a@1 = a@1 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -476,13 +476,13 @@ private:
                                        "b * a;\n"
                                        "}", false, "test.c");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: A a@1 ;\n"
-                                   "4: B b@2 ;\n"
-                                   "5: b@2 * a@1 ;\n"
-                                   "6: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: A a@1 ;\n"
+                                "4: B b@2 ;\n"
+                                "5: b@2 * a@1 ;\n"
+                                "6: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -495,11 +495,11 @@ private:
                                            "    } t;\n"
                                            "} s;", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: struct S {\n"
-                                       "2: struct T {\n"
-                                       "3: } ; struct T t@1 ;\n"
-                                       "4: } ; struct S s@2 ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: struct S {\n"
+                                    "2: struct T {\n"
+                                    "3: } ; struct T t@1 ;\n"
+                                    "4: } ; struct S s@2 ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -511,11 +511,11 @@ private:
                                            "    } t;\n"
                                            "};", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: struct S {\n"
-                                       "2: struct T {\n"
-                                       "3: } ; struct T t@1 ;\n"
-                                       "4: } ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: struct S {\n"
+                                    "2: struct T {\n"
+                                    "3: } ; struct T t@1 ;\n"
+                                    "4: } ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -528,12 +528,12 @@ private:
                            "    y = (z * x);\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: int x@1 ; x@1 = 1 ;\n"
-                                   "4: y = z * x@1 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: int x@1 ; x@1 = 1 ;\n"
+                                "4: y = z * x@1 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
     }
@@ -545,12 +545,12 @@ private:
                            "    return c;\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: char foo ( )\n"
-                                   "2: {\n"
-                                   "3: char c@1 ( 'c' ) ;\n"
-                                   "4: return c@1 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: char foo ( )\n"
+                                "2: {\n"
+                                "3: char c@1 ( 'c' ) ;\n"
+                                "4: return c@1 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
     }
@@ -561,11 +561,11 @@ private:
                            "    bar::c = c;\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: char foo ( char c@1 )\n"
-                                   "2: {\n"
-                                   "3: bar :: c = c@1 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: char foo ( char c@1 )\n"
+                                "2: {\n"
+                                "3: bar :: c = c@1 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -576,11 +576,11 @@ private:
                            "    std::pair<std::vector<double>, int> x;\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: std :: pair < std :: vector < double > , int > x@1 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: std :: pair < std :: vector < double > , int > x@1 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -591,11 +591,11 @@ private:
                            "    pair<vector<int>, vector<double> > x;\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void foo ( )\n"
-                                   "2: {\n"
-                                   "3: pair < vector < int > , vector < double > > x@1 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void foo ( )\n"
+                                "2: {\n"
+                                "3: pair < vector < int > , vector < double > > x@1 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -609,14 +609,14 @@ private:
                            "    static int i;\n"
                            "};\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class foo ( )\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: ;\n"
-                                   "5: private:\n"
-                                   "6: static int i@1 ;\n"
-                                   "7: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class foo ( )\n"
+                                "2: {\n"
+                                "3: public:\n"
+                                "4: ;\n"
+                                "5: private:\n"
+                                "6: static int i@1 ;\n"
+                                "7: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -630,31 +630,31 @@ private:
                            "    mutable int i;\n"
                            "};\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class foo ( )\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: ;\n"
-                                   "5: private:\n"
-                                   "6: mutable int i@1 ;\n"
-                                   "7: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class foo ( )\n"
+                                "2: {\n"
+                                "3: public:\n"
+                                "4: ;\n"
+                                "5: private:\n"
+                                "6: mutable int i@1 ;\n"
+                                "7: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid26() {
         const char code[] ="list<int (*)()> functions;\n";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: list < int ( * ) ( ) > functions@1 ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: list < int ( * ) ( ) > functions@1 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid27() {
         const char code[] ="int fooled_ya;\n"
                            "fooled_ya::iterator iter;\n";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: int fooled_ya@1 ;\n"
-                                   "2: fooled_ya :: iterator iter@2 ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: int fooled_ya@1 ;\n"
+                                "2: fooled_ya :: iterator iter@2 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -667,10 +667,10 @@ private:
         const char code[] ="class A {\n"
                            "    B<C<1>,1> b;\n"
                            "};\n";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class A {\n"
-                                   "2: B < C < 1 > , 1 > b@1 ;\n"
-                                   "3: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A {\n"
+                                "2: B < C < 1 > , 1 > b@1 ;\n"
+                                "3: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -680,21 +680,21 @@ private:
                              "    EventPtr event = *eventP;\n"
                              "    *actionsP = &event->actions;\n"
                              "}\n";
-        const std::string expected1("\n\n##file 0\n"
-                                    "1: void f ( EventPtr * eventP@1 , ActionPtr * * actionsP@2 )\n"
-                                    "2: {\n"
-                                    "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
-                                    "4: * actionsP@2 = & event@3 . actions@4 ;\n"
-                                    "5: }\n");
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: void f ( EventPtr * eventP@1 , ActionPtr * * actionsP@2 )\n"
+                                 "2: {\n"
+                                 "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
+                                 "4: * actionsP@2 = & event@3 . actions@4 ;\n"
+                                 "5: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, false, "test.c"));
 
         const char code2[] = "void f(int b, int c) {\n"
                              "    x(a*b*c,10);\n"
                              "}\n";
-        const std::string expected2("\n\n##file 0\n"
-                                    "1: void f ( int b@1 , int c@2 ) {\n"
-                                    "2: x ( a * b@1 * c@2 , 10 ) ;\n"
-                                    "3: }\n");
+        const char expected2[] = "\n\n##file 0\n"
+                                 "1: void f ( int b@1 , int c@2 ) {\n"
+                                 "2: x ( a * b@1 * c@2 , 10 ) ;\n"
+                                 "3: }\n";
         ASSERT_EQUALS(expected2, tokenize(code2, false, "test.c"));
 
         const char code3[] = "class Nullpointer : public ExecutionPath\n"
@@ -704,14 +704,14 @@ private:
                              "    {\n"
                              "    }\n"
                              "}\n";
-        const std::string expected3("\n\n##file 0\n"
-                                    "1: class Nullpointer : public ExecutionPath\n"
-                                    "2: {\n"
-                                    "3: Nullpointer ( Check * c@1 , const int id@2 , const std :: string & name@3 )\n"
-                                    "4: : ExecutionPath ( c@1 , id@2 )\n"
-                                    "5: {\n"
-                                    "6: }\n"
-                                    "7: }\n");
+        const char expected3[] = "\n\n##file 0\n"
+                                 "1: class Nullpointer : public ExecutionPath\n"
+                                 "2: {\n"
+                                 "3: Nullpointer ( Check * c@1 , const int id@2 , const std :: string & name@3 )\n"
+                                 "4: : ExecutionPath ( c@1 , id@2 )\n"
+                                 "5: {\n"
+                                 "6: }\n"
+                                 "7: }\n";
         ASSERT_EQUALS(expected3, tokenize(code3));
     }
 
@@ -741,14 +741,14 @@ private:
                            "private:\n"
                            "    int a;\n"
                            "};\n";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred : public B1 , public B2\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: Fred ( ) { a@1 = 0 ; }\n"
-                                   "5: private:\n"
-                                   "6: int a@1 ;\n"
-                                   "7: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred : public B1 , public B2\n"
+                                "2: {\n"
+                                "3: public:\n"
+                                "4: Fred ( ) { a@1 = 0 ; }\n"
+                                "5: private:\n"
+                                "6: int a@1 ;\n"
+                                "7: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -758,11 +758,11 @@ private:
                            "    int f(x);\n"
                            "    return f;\n"
                            "}\n";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: int foo ( ) {\n"
-                                   "2: int f@1 ( x ) ;\n"
-                                   "3: return f@1 ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: int foo ( ) {\n"
+                                "2: int f@1 ( x ) ;\n"
+                                "3: return f@1 ;\n"
+                                "4: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -1023,11 +1023,11 @@ private:
                            "    int x;\n"
                            "    x = a(y*x,10);\n"
                            "}";
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( ) {\n"
-                                   "2: int x@1 ;\n"
-                                   "3: x@1 = a ( y * x@1 , 10 ) ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( ) {\n"
+                                "2: int x@1 ;\n"
+                                "3: x@1 = a ( y * x@1 , 10 ) ;\n"
+                                "4: }\n";
         ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
     }
 
@@ -1051,11 +1051,11 @@ private:
                            "    int b = c - (foo::bar * a);\n"
                            "}";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( ) {\n"
-                                   "2: int a@1 ; a@1 = 0 ;\n"
-                                   "3: int b@2 ; b@2 = c - ( foo :: bar * a@1 ) ;\n"
-                                   "4: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( ) {\n"
+                                "2: int a@1 ; a@1 = 0 ;\n"
+                                "3: int b@2 ; b@2 = c - ( foo :: bar * a@1 ) ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -1086,17 +1086,16 @@ private:
                                        "std::map<int, 1> m;\n"
                                    );
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: list < int > ints@1 ;\n"
-                                   "2: list < int > :: iterator it@2 ;\n"
-                                   "3: std :: vector < std :: string > dirs@3 ;\n"
-                                   "4: std :: map < int , int > coords@4 ;\n"
-                                   "5: std :: unordered_map < int , int > xy@5 ;\n"
-                                   "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
-                                   "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
-                                   "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
-                                   "9: std :: map < int , 1 > m@9 ;\n"
-                                  );
+        const char expected[] = "\n\n##file 0\n"
+                                "1: list < int > ints@1 ;\n"
+                                "2: list < int > :: iterator it@2 ;\n"
+                                "3: std :: vector < std :: string > dirs@3 ;\n"
+                                "4: std :: map < int , int > coords@4 ;\n"
+                                "5: std :: unordered_map < int , int > xy@5 ;\n"
+                                "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
+                                "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
+                                "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
+                                "9: std :: map < int , 1 > m@9 ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -1115,12 +1114,12 @@ private:
                                        "  delete a;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( )\n"
-                                   "2: {\n"
-                                   "3: int * a@1 ;\n"
-                                   "4: delete a@1 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( )\n"
+                                "2: {\n"
+                                "3: int * a@1 ;\n"
+                                "4: delete a@1 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -1131,9 +1130,9 @@ private:
                                            "void f();\n"
                                            "void f(){}\n", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: void f ( ) ;\n"
-                                       "2: void f ( ) { }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: void f ( ) ;\n"
+                                    "2: void f ( ) { }\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1145,11 +1144,11 @@ private:
                                            "A g();\n"
                                            "A e(int c);\n", false, "test.c");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: A f@1 ( 3 ) ;\n"
-                                       "2: A f2@2 ( true ) ;\n"
-                                       "3: A g ( ) ;\n"
-                                       "4: A e ( int c@3 ) ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: A f@1 ( 3 ) ;\n"
+                                    "2: A f2@2 ( true ) ;\n"
+                                    "3: A g ( ) ;\n"
+                                    "4: A e ( int c@3 ) ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1169,34 +1168,34 @@ private:
                                            "    s.size();\n"
                                            "}\n");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: void f1 ( int & p@1 )\n"
-                                       "2: {\n"
-                                       "3: p@1 = 0 ;\n"
-                                       "4: }\n"
-                                       "5: void f2 ( std :: string & str@2 )\n"
-                                       "6: {\n"
-                                       "7: str@2 . clear ( ) ;\n"
-                                       "8: }\n"
-                                       "9: void f3 ( const std :: string & s@3 )\n"
-                                       "10: {\n"
-                                       "11: s@3 . size ( ) ;\n"
-                                       "12: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: void f1 ( int & p@1 )\n"
+                                    "2: {\n"
+                                    "3: p@1 = 0 ;\n"
+                                    "4: }\n"
+                                    "5: void f2 ( std :: string & str@2 )\n"
+                                    "6: {\n"
+                                    "7: str@2 . clear ( ) ;\n"
+                                    "8: }\n"
+                                    "9: void f3 ( const std :: string & s@3 )\n"
+                                    "10: {\n"
+                                    "11: s@3 . size ( ) ;\n"
+                                    "12: }\n";
 
             ASSERT_EQUALS(expected, actual);
         }
 
         {
             const std::string actual = tokenize("void f(struct foobar);", false, "test.c");
-            const std::string expected("\n\n##file 0\n"
-                                       "1: void f ( struct foobar ) ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: void f ( struct foobar ) ;\n";
             ASSERT_EQUALS(expected, actual);
         }
 
         {
             const std::string actual = tokenize("bool f(X x, int=3);", false, "test.cpp");
-            const std::string expected("\n\n##file 0\n"
-                                       "1: bool f ( X x@1 , int = 3 ) ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: bool f ( X x@1 , int = 3 ) ;\n";
             ASSERT_EQUALS(expected, actual);
         }
     }
@@ -1217,13 +1216,13 @@ private:
                                        "    std::vector<int> *c = &b;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( )\n"
-                                   "2: {\n"
-                                   "3: std :: vector < int > b@1 ;\n"
-                                   "4: std :: vector < int > & a@2 = b@1 ;\n"
-                                   "5: std :: vector < int > * c@3 ; c@3 = & b@1 ;\n"
-                                   "6: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: void f ( )\n"
+                                "2: {\n"
+                                "3: std :: vector < int > b@1 ;\n"
+                                "4: std :: vector < int > & a@2 = b@1 ;\n"
+                                "5: std :: vector < int > * c@3 ; c@3 = & b@1 ;\n"
+                                "6: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -1238,13 +1237,13 @@ private:
                                            "    std::string name2;\n"
                                            "};\n");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: class Foo\n"
-                                       "2: {\n"
-                                       "3: public:\n"
-                                       "4: std :: string name1@1 ;\n"
-                                       "5: std :: string name2@2 ;\n"
-                                       "6: } ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: class Foo\n"
+                                    "2: {\n"
+                                    "3: public:\n"
+                                    "4: std :: string name1@1 ;\n"
+                                    "5: std :: string name2@2 ;\n"
+                                    "6: } ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1265,20 +1264,20 @@ private:
                                            "    int y = pOutput.y;\n"
                                            "}\n");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: class foo\n"
-                                       "2: {\n"
-                                       "3: public:\n"
-                                       "4: void do_something ( const int x@1 , const int y@2 ) ;\n"
-                                       "5: void bar ( ) ;\n"
-                                       "6: } ;\n"
-                                       "7:\n"
-                                       "8: void foo :: bar ( )\n"
-                                       "9: {\n"
-                                       "10: POINT pOutput@3 ; pOutput@3 = { 0 , 0 } ;\n"
-                                       "11: int x@4 ; x@4 = pOutput@3 . x@5 ;\n"
-                                       "12: int y@6 ; y@6 = pOutput@3 . y@7 ;\n"
-                                       "13: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: class foo\n"
+                                    "2: {\n"
+                                    "3: public:\n"
+                                    "4: void do_something ( const int x@1 , const int y@2 ) ;\n"
+                                    "5: void bar ( ) ;\n"
+                                    "6: } ;\n"
+                                    "7:\n"
+                                    "8: void foo :: bar ( )\n"
+                                    "9: {\n"
+                                    "10: POINT pOutput@3 ; pOutput@3 = { 0 , 0 } ;\n"
+                                    "11: int x@4 ; x@4 = pOutput@3 . x@5 ;\n"
+                                    "12: int y@6 ; y@6 = pOutput@3 . y@7 ;\n"
+                                    "13: }\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1300,21 +1299,21 @@ private:
                                        "{\n"
                                        "    foo.x = x;\n"
                                        "}\n");
-        const std::string expected("\n\n##file 0\n"
-                                   "1: struct Foo {\n"
-                                   "2: int x@1 ;\n"
-                                   "3: } ;\n"
-                                   "4:\n"
-                                   "5: struct Bar {\n"
-                                   "6: Foo foo@2 ;\n"
-                                   "7: int x@3 ;\n"
-                                   "8: void f ( ) ;\n"
-                                   "9: } ;\n"
-                                   "10:\n"
-                                   "11: void Bar :: f ( )\n"
-                                   "12: {\n"
-                                   "13: foo@2 . x@4 = x@3 ;\n"
-                                   "14: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: struct Foo {\n"
+                                "2: int x@1 ;\n"
+                                "3: } ;\n"
+                                "4:\n"
+                                "5: struct Bar {\n"
+                                "6: Foo foo@2 ;\n"
+                                "7: int x@3 ;\n"
+                                "8: void f ( ) ;\n"
+                                "9: } ;\n"
+                                "10:\n"
+                                "11: void Bar :: f ( )\n"
+                                "12: {\n"
+                                "13: foo@2 . x@4 = x@3 ;\n"
+                                "14: }\n";
         ASSERT_EQUALS(expected, actual);
     }
 
@@ -1698,12 +1697,12 @@ private:
                                            "    void operator=(const Foo &);\n"
                                            "};\n");
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: class Foo\n"
-                                       "2: {\n"
-                                       "3: public:\n"
-                                       "4: void operator= ( const Foo & ) ;\n"
-                                       "5: } ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: class Foo\n"
+                                    "2: {\n"
+                                    "3: public:\n"
+                                    "4: void operator= ( const Foo & ) ;\n"
+                                    "5: } ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1712,10 +1711,10 @@ private:
                                            "struct Foo {\n"
                                            "    void * operator new [](int);\n"
                                            "};\n");
-            const std::string expected("\n\n##file 0\n"
-                                       "1: struct Foo {\n"
-                                       "2: void * operatornew[] ( int ) ;\n"
-                                       "3: } ;\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: struct Foo {\n"
+                                    "2: void * operatornew[] ( int ) ;\n"
+                                    "3: } ;\n";
 
             ASSERT_EQUALS(expected, actual);
         }
@@ -1726,9 +1725,9 @@ private:
                                        "UserDefinedException* pe = new UserDefinedException();\n"
                                        "throw pe;\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: UserDefinedException * pe@1 ; pe@1 = new UserDefinedException ( ) ;\n"
-                                   "2: throw pe@1 ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: UserDefinedException * pe@1 ; pe@1 = new UserDefinedException ( ) ;\n"
+                                "2: throw pe@1 ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2051,23 +2050,23 @@ private:
                                        "    i = 0;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred\n"
-                                   "2: {\n"
-                                   "3: private:\n"
-                                   "4: int i@1 ;\n"
-                                   "5:\n"
-                                   "6: void foo1 ( ) ;\n"
-                                   "7: void foo2 ( )\n"
-                                   "8: {\n"
-                                   "9: ++ i@1 ;\n"
-                                   "10: }\n"
-                                   "11: }\n"
-                                   "12:\n"
-                                   "13: Fred :: foo1 ( )\n"
-                                   "14: {\n"
-                                   "15: i@1 = 0 ;\n"
-                                   "16: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred\n"
+                                "2: {\n"
+                                "3: private:\n"
+                                "4: int i@1 ;\n"
+                                "5:\n"
+                                "6: void foo1 ( ) ;\n"
+                                "7: void foo2 ( )\n"
+                                "8: {\n"
+                                "9: ++ i@1 ;\n"
+                                "10: }\n"
+                                "11: }\n"
+                                "12:\n"
+                                "13: Fred :: foo1 ( )\n"
+                                "14: {\n"
+                                "15: i@1 = 0 ;\n"
+                                "16: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2088,19 +2087,19 @@ private:
                                        "    i = 0;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred\n"
-                                   "2: { void f ( ) ; } ;\n"
-                                   "3:\n"
-                                   "4: void A :: foo1 ( )\n"
-                                   "5: {\n"
-                                   "6: int i@1 ; i@1 = 0 ;\n"
-                                   "7: }\n"
-                                   "8:\n"
-                                   "9: void Fred :: f ( )\n"
-                                   "10: {\n"
-                                   "11: i = 0 ;\n"
-                                   "12: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred\n"
+                                "2: { void f ( ) ; } ;\n"
+                                "3:\n"
+                                "4: void A :: foo1 ( )\n"
+                                "5: {\n"
+                                "6: int i@1 ; i@1 = 0 ;\n"
+                                "7: }\n"
+                                "8:\n"
+                                "9: void Fred :: f ( )\n"
+                                "10: {\n"
+                                "11: i = 0 ;\n"
+                                "12: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2121,19 +2120,19 @@ private:
                                        "    i = 0;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred\n"
-                                   "2: { int i@1 ; void f ( ) ; } ;\n"
-                                   "3:\n"
-                                   "4: void Fred :: f ( )\n"
-                                   "5: {\n"
-                                   "6: i@1 = 0 ;\n"
-                                   "7: }\n"
-                                   "8:\n"
-                                   "9: void A :: f ( )\n"
-                                   "10: {\n"
-                                   "11: i = 0 ;\n"
-                                   "12: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred\n"
+                                "2: { int i@1 ; void f ( ) ; } ;\n"
+                                "3:\n"
+                                "4: void Fred :: f ( )\n"
+                                "5: {\n"
+                                "6: i@1 = 0 ;\n"
+                                "7: }\n"
+                                "8:\n"
+                                "9: void A :: f ( )\n"
+                                "10: {\n"
+                                "11: i = 0 ;\n"
+                                "12: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2150,15 +2149,15 @@ private:
                                        "    i = 0;\n"
                                        "}\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred\n"
-                                   "2: { int i@1 ; void f ( ) ; } ;\n"
-                                   "3:\n"
-                                   "4: void Fred :: f ( )\n"
-                                   "5: {\n"
-                                   "6: if ( i@1 ) { }\n"
-                                   "7: i@1 = 0 ;\n"
-                                   "8: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred\n"
+                                "2: { int i@1 ; void f ( ) ; } ;\n"
+                                "3:\n"
+                                "4: void Fred :: f ( )\n"
+                                "5: {\n"
+                                "6: if ( i@1 ) { }\n"
+                                "7: i@1 = 0 ;\n"
+                                "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2173,14 +2172,14 @@ private:
                                        "    { }\n"
                                        "};\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class A { } ;\n"
-                                   "2: class B\n"
-                                   "3: {\n"
-                                   "4: A * a@1 ;\n"
-                                   "5: B ( ) : a@1 ( new A )\n"
-                                   "6: { }\n"
-                                   "7: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A { } ;\n"
+                                "2: class B\n"
+                                "3: {\n"
+                                "4: A * a@1 ;\n"
+                                "5: B ( ) : a@1 ( new A )\n"
+                                "6: { }\n"
+                                "7: } ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2199,20 +2198,20 @@ private:
                                        "  A::buf[10] = 0;\n"
                                        "}");
 
-        const std::string wanted("\n\n##file 0\n"
-                                 "1: class A\n"
-                                 "2: {\n"
-                                 "3: public:\n"
-                                 "4: static char buf@1 [ 20 ] ;\n"
-                                 "5: } ;\n"
-                                 "6: char A :: buf@1 [ 20 ] ;\n"
-                                 "7: int main ( )\n"
-                                 "8: {\n"
-                                 "9: char buf@2 [ 2 ] ;\n"
-                                 "10: A :: buf@1 [ 10 ] = 0 ;\n"
-                                 "11: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A\n"
+                                "2: {\n"
+                                "3: public:\n"
+                                "4: static char buf@1 [ 20 ] ;\n"
+                                "5: } ;\n"
+                                "6: char A :: buf@1 [ 20 ] ;\n"
+                                "7: int main ( )\n"
+                                "8: {\n"
+                                "9: char buf@2 [ 2 ] ;\n"
+                                "10: A :: buf@1 [ 10 ] = 0 ;\n"
+                                "11: }\n";
 
-        ASSERT_EQUALS(wanted, actual);
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varidclass7() {
@@ -2223,12 +2222,12 @@ private:
                                        "  A::buf[10] = 0;\n"
                                        "}");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: int main ( )\n"
-                                   "2: {\n"
-                                   "3: char buf@1 [ 2 ] ;\n"
-                                   "4: A :: buf [ 10 ] = 0 ;\n"
-                                   "5: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: int main ( )\n"
+                                "2: {\n"
+                                "3: char buf@1 [ 2 ] ;\n"
+                                "4: A :: buf [ 10 ] = 0 ;\n"
+                                "5: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -2242,14 +2241,14 @@ private:
                            "    int x;\n"
                            "}\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred {\n"
-                                   "2: public:\n"
-                                   "3: void foo ( int d@1 ) {\n"
-                                   "4: int i@2 ; i@2 = bar ( x@3 * d@1 ) ;\n"
-                                   "5: }\n"
-                                   "6: int x@3 ;\n"
-                                   "7: }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred {\n"
+                                "2: public:\n"
+                                "3: void foo ( int d@1 ) {\n"
+                                "4: int i@2 ; i@2 = bar ( x@3 * d@1 ) ;\n"
+                                "5: }\n"
+                                "6: int x@3 ;\n"
+                                "7: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -2265,16 +2264,16 @@ private:
                            "    sizeof(cl);\n"
                            "}";
 
-        const std::string expected("\n\n"
-                                   "##file 0\n"
-                                   "1: class A {\n"
-                                   "2: public:\n"
-                                   "3: void f ( char ( & cl@1 ) [ 10 ] ) ;\n"
-                                   "4: void g ( char cl@2 [ 10 ] ) ;\n"
-                                   "5: }\n"
-                                   "6: void Fred :: f ( char ( & cl@3 ) [ 10 ] ) {\n"
-                                   "7: sizeof ( cl@3 ) ;\n"
-                                   "8: }\n");
+        const char expected[] = "\n\n"
+                                "##file 0\n"
+                                "1: class A {\n"
+                                "2: public:\n"
+                                "3: void f ( char ( & cl@1 ) [ 10 ] ) ;\n"
+                                "4: void g ( char cl@2 [ 10 ] ) ;\n"
+                                "5: }\n"
+                                "6: void Fred :: f ( char ( & cl@3 ) [ 10 ] ) {\n"
+                                "7: sizeof ( cl@3 ) ;\n"
+                                "8: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -2287,13 +2286,13 @@ private:
                            "    int a;\n"
                            "};\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class A {\n"
-                                   "2: void f ( ) {\n"
-                                   "3: a@1 = 3 ;\n"
-                                   "4: }\n"
-                                   "5: int a@1 ;\n"
-                                   "6: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A {\n"
+                                "2: void f ( ) {\n"
+                                "3: a@1 = 3 ;\n"
+                                "4: }\n"
+                                "5: int a@1 ;\n"
+                                "6: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -2309,17 +2308,17 @@ private:
                            "void Fred::f() { a = 0; }\n"
                            "void Wilma::f() { a = 0; }\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred {\n"
-                                   "2: int a@1 ;\n"
-                                   "3: void f ( ) ;\n"
-                                   "4: } ;\n"
-                                   "5: class Wilma {\n"
-                                   "6: int a@2 ;\n"
-                                   "7: void f ( ) ;\n"
-                                   "8: } ;\n"
-                                   "9: void Fred :: f ( ) { a@1 = 0 ; }\n"
-                                   "10: void Wilma :: f ( ) { a@2 = 0 ; }\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred {\n"
+                                "2: int a@1 ;\n"
+                                "3: void f ( ) ;\n"
+                                "4: } ;\n"
+                                "5: class Wilma {\n"
+                                "6: int a@2 ;\n"
+                                "7: void f ( ) ;\n"
+                                "8: } ;\n"
+                                "9: void Fred :: f ( ) { a@1 = 0 ; }\n"
+                                "10: void Wilma :: f ( ) { a@2 = 0 ; }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -2330,11 +2329,11 @@ private:
                            "    void f() { Fred::a = 0; }\n"
                            "};\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred {\n"
-                                   "2: int a@1 ;\n"
-                                   "3: void f ( ) { Fred :: a@1 = 0 ; }\n"
-                                   "4: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred {\n"
+                                "2: int a@1 ;\n"
+                                "3: void f ( ) { Fred :: a@1 = 0 ; }\n"
+                                "4: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -2345,11 +2344,11 @@ private:
                            "    void f() { Foo::Fred::a = 0; }\n"
                            "};\n";
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Fred {\n"
-                                   "2: int a@1 ;\n"
-                                   "3: void f ( ) { Foo :: Fred :: a = 0 ; }\n"
-                                   "4: } ;\n");
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class Fred {\n"
+                                "2: int a@1 ;\n"
+                                "3: void f ( ) { Foo :: Fred :: a = 0 ; }\n"
+                                "4: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
     }
@@ -2361,10 +2360,10 @@ private:
                                "friend class B;\n"
                                "}";
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: class A {\n"
-                                       "2: friend class B ;\n"
-                                       "3: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: class A {\n"
+                                    "2: friend class B ;\n"
+                                    "3: }\n";
 
             ASSERT_EQUALS(expected, tokenize(code));
         }
@@ -2374,10 +2373,10 @@ private:
                                "private: friend class B;\n"
                                "}";
 
-            const std::string expected("\n\n##file 0\n"
-                                       "1: class A {\n"
-                                       "2: private: friend class B ;\n"
-                                       "3: }\n");
+            const char expected[] = "\n\n##file 0\n"
+                                    "1: class A {\n"
+                                    "2: private: friend class B ;\n"
+                                    "3: }\n";
 
             ASSERT_EQUALS(expected, tokenize(code));
         }
