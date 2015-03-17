@@ -6067,8 +6067,7 @@ void Tokenizer::simplifyIfNot()
             if (!tok)
                 break;
 
-            if (Token::Match(tok, "0|false == (") ||
-                Token::Match(tok, "0|false == %name%")) {
+            if (Token::Match(tok, "0|false == %name%|(")) {
                 tok->deleteNext();
                 tok->str("!");
             }
@@ -6145,8 +6144,7 @@ void Tokenizer::simplifyIfNotNull()
             if (!tok)
                 break;
 
-            if (Token::simpleMatch(tok, "0 != (") ||
-                Token::Match(tok, "0 != %name%")) {
+            if (Token::Match(tok, "0 != %name%|(")) {
                 deleteFrom = tok->previous();
                 if (tok->tokAt(2))
                     tok->tokAt(2)->isPointerCompare(true);
