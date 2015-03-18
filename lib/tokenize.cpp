@@ -9228,7 +9228,6 @@ void Tokenizer::simplifyAttribute()
             }
 
             else if (Token::Match(tok->tokAt(2), "( unused|__unused__|used|__used__ )")) {
-                const std::string &attribute(tok->strAt(3));
                 Token *vartok = nullptr;
 
                 // check if after variable name
@@ -9242,6 +9241,7 @@ void Tokenizer::simplifyAttribute()
                     vartok = tok->next()->link()->next();
 
                 if (vartok) {
+                    const std::string &attribute(tok->strAt(3));
                     if (attribute.find("unused") != std::string::npos)
                         vartok->isAttributeUnused(true);
                     else
@@ -9250,7 +9250,6 @@ void Tokenizer::simplifyAttribute()
             }
 
             else if (Token::Match(tok->tokAt(2), "( pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__ )")) {
-                const std::string &attribute(tok->strAt(3));
                 Token *functok = nullptr;
 
                 // type func(...) __attribute__((attribute));
@@ -9267,6 +9266,7 @@ void Tokenizer::simplifyAttribute()
                 }
 
                 if (functok) {
+                    const std::string &attribute(tok->strAt(3));
                     if (attribute.find("pure") != std::string::npos)
                         functok->isAttributePure(true);
                     else if (attribute.find("const") != std::string::npos)
