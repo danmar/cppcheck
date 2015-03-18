@@ -25,7 +25,7 @@
 #include <QActionGroup>
 #include <QTimer>
 #include <QStringList>
-
+#include <QCompleter>
 #include "settings.h"
 #include "platforms.h"
 #include "ui_main.h"
@@ -510,6 +510,7 @@ private:
     /**
     * @brief Filter field in the Filter toolbar.
     */
+    QCompleter *Complet ;
     QLineEdit* mLineEditFilter;
 
     /**
