@@ -59,6 +59,12 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mCppStandardActions(new QActionGroup(this)),
     mExiting(false)
 {
+    QStringList CompletionList ;
+    CompletionList << "pointer dereference" << "missed break statement" << "syntax error" << "scope reducing"
+                   << "uninitialized variable" << "value never used"
+                   << "scanf" << "return" << "missed break" << "memory leak"<< "divison by zero" << "out of range" << "void *" ;
+    Complet = new QCompleter(CompletionList ,this) ;
+    Complet->setCaseSensitivity(Qt::CaseInsensitive);
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
 
@@ -74,6 +80,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mUI.mToolBarFilter->addWidget(mLineEditFilter);
+    mLineEditFilter->setCompleter(Complet);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
 
