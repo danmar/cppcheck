@@ -9754,10 +9754,10 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->str("fopen_s");
                 tok->originalName("_tfopen_s");
             } else if (Token::simpleMatch(tok, "_tfreopen (")) {
-                tok->str("_wfreopen");
+                tok->str("freopen");
                 tok->originalName("_tfreopen");
             } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
-                tok->str("_wfreopen_s");
+                tok->str("freopen_s");
                 tok->originalName("_tfreopen_s");
             } else if (Token::simpleMatch(tok, "_tcscat (")) {
                 tok->str("strcat");
