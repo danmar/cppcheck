@@ -2409,11 +2409,12 @@ static void setVarIdStructMembers(Token **tok1,
             break;
 
         std::map<std::string, unsigned int>& members = (*structMembers)[struct_varid];
-        if (members.empty() || members.find(tok->str()) == members.end()) {
+        const std::map<std::string, unsigned int>::iterator it = members.find(tok->str());
+        if (it == members.end()) {
             members[tok->str()] = ++(*_varId);
             tok->varId(*_varId);
         } else {
-            tok->varId(members[tok->str()]);
+            tok->varId(it->second);
         }
     }
     // tok can't be null
