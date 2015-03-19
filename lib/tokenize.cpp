@@ -9739,221 +9739,114 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-    if (_settings->platformType == Settings::Win32A) {
+    if (_settings->platformType == Settings::Win32A ||
+        _settings->platformType == Settings::Win32W ||
+        _settings->platformType == Settings::Win64) {
+
+        const bool ansi = _settings->platformType == Settings::Win32A;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "_topen (")) {
-                tok->str("open");
+                tok->str(ansi ? "open" : "_wopen");
                 tok->originalName("_topen");
             } else if (Token::simpleMatch(tok, "_tsopen_s (")) {
-                tok->str("_sopen_s");
+                tok->str(ansi ? "_sopen_s" : "_wsopen_s");
                 tok->originalName("_tsopen_s");
             } else if (Token::simpleMatch(tok, "_tfopen (")) {
-                tok->str("fopen");
+                tok->str(ansi ? "fopen" : "_wfopen");
                 tok->originalName("_tfopen");
             } else if (Token::simpleMatch(tok, "_tfopen_s (")) {
-                tok->str("fopen_s");
+                tok->str(ansi ? "fopen_s" : "_wfopen_s");
                 tok->originalName("_tfopen_s");
             } else if (Token::simpleMatch(tok, "_tfreopen (")) {
-                tok->str("freopen");
+                tok->str(ansi ? "freopen" : "_wfreopen");
                 tok->originalName("_tfreopen");
             } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
-                tok->str("freopen_s");
+                tok->str(ansi ? "freopen_s" : "_wfreopen_s");
                 tok->originalName("_tfreopen_s");
             } else if (Token::simpleMatch(tok, "_tcscat (")) {
-                tok->str("strcat");
+                tok->str(ansi ? "strcat" : "wcscat");
                 tok->originalName("_tcscat");
             } else if (Token::simpleMatch(tok, "_tcschr (")) {
-                tok->str("strchr");
+                tok->str(ansi ? "strchr" : "wcschr");
                 tok->originalName("_tcschr");
             } else if (Token::simpleMatch(tok, "_tcscmp (")) {
-                tok->str("strcmp");
+                tok->str(ansi ? "strcmp" : "wcscmp");
                 tok->originalName("_tcscmp");
             } else if (Token::simpleMatch(tok, "_tcsdup (")) {
-                tok->str("strdup");
+                tok->str(ansi ? "strdup" : "wcsdup");
                 tok->originalName("_tcsdup");
             } else if (Token::simpleMatch(tok, "_tcscpy (")) {
-                tok->str("strcpy");
+                tok->str(ansi ? "strcpy" : "wcscpy");
                 tok->originalName("_tcscpy");
             } else if (Token::simpleMatch(tok, "_tcslen (")) {
-                tok->str("strlen");
+                tok->str(ansi ? "strlen" : "wcslen");
                 tok->originalName("_tcslen");
             } else if (Token::simpleMatch(tok, "_tcsncat (")) {
-                tok->str("strncat");
+                tok->str(ansi ? "strncat" : "wcsncat");
                 tok->originalName("_tcsncat");
             } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
-                tok->str("strncpy");
+                tok->str(ansi ? "strncpy" : "wcsncpy");
                 tok->originalName("_tcsncpy");
             } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
-                tok->str("strnlen");
+                tok->str(ansi ? "strnlen" : "wcsnlen");
                 tok->originalName("_tcsnlen");
             } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
-                tok->str("strrchr");
+                tok->str(ansi ? "strrchr" : "wcsrchr");
                 tok->originalName("_tcsrchr");
             } else if (Token::simpleMatch(tok, "_tcsstr (")) {
-                tok->str("strstr");
+                tok->str(ansi ? "strstr" : "wcsstr");
                 tok->originalName("_tcsstr");
             } else if (Token::simpleMatch(tok, "_tcstok (")) {
-                tok->str("strtok");
+                tok->str(ansi ? "strtok" : "wcstok");
                 tok->originalName("_tcstok");
             } else if (Token::simpleMatch(tok, "_ftprintf (")) {
-                tok->str("fprintf");
+                tok->str(ansi ? "fprintf" : "fwprintf");
                 tok->originalName("_ftprintf");
             } else if (Token::simpleMatch(tok, "_tprintf (")) {
-                tok->str("printf");
+                tok->str(ansi ? "printf" : "wprintf");
                 tok->originalName("_tprintf");
             } else if (Token::simpleMatch(tok, "_stprintf (")) {
-                tok->str("sprintf");
+                tok->str(ansi ? "sprintf" : "swprintf");
                 tok->originalName("_stprintf");
             } else if (Token::simpleMatch(tok, "_sntprintf (")) {
-                tok->str("_snprintf");
+                tok->str(ansi ? "_snprintf" : "_snwprintf");
                 tok->originalName("_sntprintf");
             } else if (Token::simpleMatch(tok, "_ftscanf (")) {
-                tok->str("fscanf");
+                tok->str(ansi ? "fscanf" : "fwscanf");
                 tok->originalName("_ftscanf");
             } else if (Token::simpleMatch(tok, "_tscanf (")) {
-                tok->str("scanf");
+                tok->str(ansi ? "scanf" : "wscanf");
                 tok->originalName("_tscanf");
             } else if (Token::simpleMatch(tok, "_stscanf (")) {
-                tok->str("sscanf");
+                tok->str(ansi ? "sscanf" : "swscanf");
                 tok->originalName("_stscanf");
             } else if (Token::simpleMatch(tok, "_ftprintf_s (")) {
-                tok->str("fprintf_s");
+                tok->str(ansi ? "fprintf_s" : "fwprintf_s");
                 tok->originalName("_ftprintf_s");
             } else if (Token::simpleMatch(tok, "_tprintf_s (")) {
-                tok->str("printf_s");
+                tok->str(ansi ? "printf_s" : "wprintf_s");
                 tok->originalName("_tprintf_s");
             } else if (Token::simpleMatch(tok, "_stprintf_s (")) {
-                tok->str("sprintf_s");
+                tok->str(ansi ? "sprintf_s" : "swprintf_s");
                 tok->originalName("_stprintf_s");
             } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
-                tok->str("_snprintf_s");
+                tok->str(ansi ? "_snprintf_s" : "_snwprintf_s");
                 tok->originalName("_sntprintf_s");
             } else if (Token::simpleMatch(tok, "_ftscanf_s (")) {
-                tok->str("fscanf_s");
+                tok->str(ansi ? "fscanf_s" : "fwscanf_s");
                 tok->originalName("_ftscanf_s");
             } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
-                tok->str("scanf_s");
+                tok->str(ansi ? "scanf_s" : "wscanf_s");
                 tok->originalName("_tscanf_s");
             } else if (Token::simpleMatch(tok, "_stscanf_s (")) {
-                tok->str("sscanf_s");
+                tok->str(ansi ? "sscanf_s" : "swscanf_s");
                 tok->originalName("_stscanf_s");
             } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
-                while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
-                    tok->next()->deleteNext();
-                    tok->next()->deleteThis();
-                    tok->next()->deleteNext();
-                    tok->concatStr(tok->next()->str());
-                    tok->deleteNext();
-                }
-            }
-        }
-    } else if (_settings->platformType == Settings::Win32W ||
-               _settings->platformType == Settings::Win64) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "_topen (")) {
-                tok->str("_wopen");
-                tok->originalName("_topen");
-            } else if (Token::simpleMatch(tok, "_tsopen_s (")) {
-                tok->str("_wsopen_s");
-                tok->originalName("_tsopen_s");
-            } else if (Token::simpleMatch(tok, "_tfopen (")) {
-                tok->str("_wfopen");
-                tok->originalName("_tfopen");
-            } else if (Token::simpleMatch(tok, "_tfopen_s (")) {
-                tok->str("_wfopen_s");
-                tok->originalName("_tfopen_s");
-            } else if (Token::simpleMatch(tok, "_tfreopen (")) {
-                tok->str("_wfreopen");
-                tok->originalName("_tfreopen");
-            } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
-                tok->str("_wfreopen_s");
-                tok->originalName("_tfreopen_s");
-            } else if (Token::simpleMatch(tok, "_tcscat (")) {
-                tok->str("wcscat");
-                tok->originalName("_tcscat");
-            } else if (Token::simpleMatch(tok, "_tcschr (")) {
-                tok->str("wcschr");
-                tok->originalName("_tcschr");
-            } else if (Token::simpleMatch(tok, "_tcscmp (")) {
-                tok->str("wcscmp");
-                tok->originalName("_tcscmp");
-            } else if (Token::simpleMatch(tok, "_tcscpy (")) {
-                tok->str("wcscpy");
-                tok->originalName("_tcscpy");
-            } else if (Token::simpleMatch(tok, "_tcsdup (")) {
-                tok->str("wcsdup");
-                tok->originalName("_tcsdup");
-            } else if (Token::simpleMatch(tok, "_tcslen (")) {
-                tok->str("wcslen");
-                tok->originalName("_tcslen");
-            } else if (Token::simpleMatch(tok, "_tcsncat (")) {
-                tok->str("wcsncat");
-                tok->originalName("_tcsncat");
-            } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
-                tok->str("wcsncpy");
-                tok->originalName("_tcsncpy");
-            } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
-                tok->str("wcsnlen");
-                tok->originalName("_tcsnlen");
-            } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
-                tok->str("wcsrchr");
-                tok->originalName("_tcsrchr");
-            } else if (Token::simpleMatch(tok, "_tcsstr (")) {
-                tok->str("wcsstr");
-                tok->originalName("_tcsstr");
-            } else if (Token::simpleMatch(tok, "_tcstok (")) {
-                tok->str("wcstok");
-                tok->originalName("_tcstok");
-            } else if (Token::simpleMatch(tok, "_ftprintf (")) {
-                tok->str("fwprintf");
-                tok->originalName("_ftprintf");
-            } else if (Token::simpleMatch(tok, "_tprintf (")) {
-                tok->str("wprintf");
-                tok->originalName("_tprintf");
-            } else if (Token::simpleMatch(tok, "_stprintf (")) {
-                tok->str("swprintf");
-                tok->originalName("_stprintf");
-            } else if (Token::simpleMatch(tok, "_sntprintf (")) {
-                tok->str("_snwprintf");
-                tok->originalName("_sntprintf");
-            } else if (Token::simpleMatch(tok, "_ftscanf (")) {
-                tok->str("fwscanf");
-                tok->originalName("_ftscanf");
-            } else if (Token::simpleMatch(tok, "_tscanf (")) {
-                tok->str("wscanf");
-                tok->originalName("_tscanf");
-            } else if (Token::simpleMatch(tok, "_stscanf (")) {
-                tok->str("swscanf");
-                tok->originalName("_stscanf");
-            } else if (Token::simpleMatch(tok, "_ftprintf_s (")) {
-                tok->str("fwprintf_s");
-                tok->originalName("_ftprintf_s");
-            } else if (Token::simpleMatch(tok, "_tprintf_s (")) {
-                tok->str("wprintf_s");
-                tok->originalName("_tprintf_s");
-            } else if (Token::simpleMatch(tok, "_stprintf_s (")) {
-                tok->str("swprintf_s");
-                tok->originalName("_stprintf_s");
-            } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
-                tok->str("_snwprintf_s");
-                tok->originalName("_sntprintf_s");
-            } else if (Token::simpleMatch(tok, "_ftscanf_s (")) {
-                tok->str("fwscanf_s");
-                tok->originalName("_ftscanf_s");
-            } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
-                tok->str("wscanf_s");
-                tok->originalName("_tscanf_s");
-            } else if (Token::simpleMatch(tok, "_stscanf_s (")) {
-                tok->str("swscanf_s");
-                tok->originalName("_stscanf_s");
-            } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
-                tok->deleteNext();
-                tok->deleteThis();
-                tok->deleteNext();
-                tok->isLong(true);
+                if (!ansi)
+                    tok->isLong(true);
                 while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
                     tok->next()->deleteNext();
                     tok->next()->deleteThis();
