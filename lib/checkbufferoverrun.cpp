@@ -1736,13 +1736,15 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
                 tok->next()->astOperand2()) {
                 const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
                 if (value && value->intvalue > 0) {
+                    const int arrayIndex = value->intvalue;
+                    std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
+                    if (it != fileInfo->arrayUsage.end() && it->second.index >= arrayIndex)
+                        continue;
                     struct MyFileInfo::ArrayUsage arrayUsage;
-                    arrayUsage.index = value->intvalue;
+                    arrayUsage.index = arrayIndex;
                     arrayUsage.fileName = tokenizer->list.file(tok);
                     arrayUsage.linenr = tok->linenr();
-                    std::map<std::string, struct MyFileInfo::ArrayUsage>::iterator it = fileInfo->arrayUsage.find(tok->str());
-                    if (it == fileInfo->arrayUsage.end() || it->second.index < arrayUsage.index)
-                        fileInfo->arrayUsage[tok->str()] = arrayUsage;
+                    fileInfo->arrayUsage[tok->str()] = arrayUsage;
                 }
             }
         }
