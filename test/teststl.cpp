@@ -2298,6 +2298,52 @@ private:
               "    auto_ptr_array<char> domainName(new char[42]);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #749
+        check("int main()\n"
+              "{\n"
+              "    int *i = malloc(sizeof(int));\n"
+              "    auto_ptr<int> x(i);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> x((int*)malloc(sizeof(int)*4));\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> b(static_cast<int*>(malloc(sizeof(int)*4)));\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> x = (int*)malloc(sizeof(int)*4);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> x = static_cast<int*>(malloc(sizeof(int)*4));\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> x;\n"
+            "    x.reset((int*)malloc(sizeof(int)*4));\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
+
+        check("int main()\n"
+            "{\n"
+            "    auto_ptr<int> x;\n"
+            "    x.reset(static_cast<int*>(malloc(sizeof(int)*4)));\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
     }
 
     void uselessCalls() {
