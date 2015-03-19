@@ -9779,13 +9779,13 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                 tok->originalName("_tcslen");
             } else if (Token::simpleMatch(tok, "_tcsncat (")) {
                 tok->str("strncat");
-                tok->originalName("_tcscat");
+                tok->originalName("_tcsncat");
             } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
                 tok->str("strncpy");
                 tok->originalName("_tcsncpy");
             } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
                 tok->str("strnlen");
-                tok->originalName("_tcslen");
+                tok->originalName("_tcsnlen");
             } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
                 tok->str("strrchr");
                 tok->originalName("_tcsrchr");
@@ -9856,7 +9856,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
             if (Token::simpleMatch(tok, "_topen (")) {
                 tok->str("_wopen");
                 tok->originalName("_topen");
-            } else if (Token::simpleMatch(tok, "_tsfopen_s (")) {
+            } else if (Token::simpleMatch(tok, "_tsopen_s (")) {
                 tok->str("_wsopen_s");
                 tok->originalName("_tsopen_s");
             } else if (Token::simpleMatch(tok, "_tfopen (")) {
