@@ -255,10 +255,12 @@ html_escape_table = {
     '"': "&quot;",
     "'": "&apos;"
 }
-html_unescape_table = {v:k for k, v in html_escape_table.items()}
+html_unescape_table = {v: k for k, v in html_escape_table.items()}
+
 
 def html_escape(text):
     return escape(text, html_escape_table)
+
 
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
@@ -273,7 +275,7 @@ class AnnotateCodeFormatter(HtmlFormatter):
                     if error['line'] == line_no:
                         try:
                             if error['inconclusive'] == 'true':
-                                if error.get('verbose') and (error['verbose'] != error['msg']): # only print verbose msg if it really differs from actual message
+                                if error.get('verbose') and (error['verbose'] != error['msg']):  # only print verbose msg if it really differs from actual message
                                     index = t.rfind('\n')
                                     t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index+1:]
                                 else:
@@ -441,10 +443,10 @@ if __name__ == '__main__':
                 content = input_file.read()
         except IOError:
             if (error['id'] == 'unmatchedSuppression'):
-                continue; # file not found, bail out
+                continue  # file not found, bail out
             else:
                 sys.stderr.write("ERROR: Source file '%s' not found.\n" %
-                                source_filename)
+                                 source_filename)
             continue
         except UnicodeDecodeError:
             sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
@@ -533,7 +535,7 @@ if __name__ == '__main__':
                 output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
                 output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
-                if filename.endswith('*'): # assume unmatched suppression
+                if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
                         "\n       <tr><td colspan='4'>%s</td></tr>" %
                         (filename))
