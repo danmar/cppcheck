@@ -4678,6 +4678,87 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
 
         check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first) {\n"
+            "  if (first.ptr >= 0) {} \n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if((first.ptr - second.ptr) >= 0) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first) {\n"
+            "  if((first.ptr) >= 0) {} \n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if(0 <= first.ptr - second.ptr) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if(0 <= (first.ptr - second.ptr)) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if(first.ptr - second.ptr < 0) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if((first.ptr - second.ptr) < 0) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if(0 > first.ptr - second.ptr) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
+            "struct S {\n"
+            "  int* ptr;\n"
+            "};\n"
+            "void foo(S* first, S* second) {\n"
+            "  if(0 > (first.ptr - second.ptr)) {} \n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check_signOfUnsignedVariable(
             "bool foo(int* x) {\n"
             "  if (0 <= x[0])"
             "    bar();\n"
