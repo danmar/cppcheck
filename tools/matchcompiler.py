@@ -123,7 +123,7 @@ class MatchCompiler:
         elif tok == '%varid%':
             return '(tok->isName() && tok->varId()==varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
-            print ("unhandled:" + tok)
+            print("unhandled:" + tok)
 
         return (
             '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
@@ -524,8 +524,8 @@ class MatchCompiler:
                 break
 
             assert(len(res) >= 3 or len(res) < 6)
-                   # assert that Token::find(simple)match has either 2, 3 or
-                   # four arguments
+            # assert that Token::find(simple)match has either 2, 3 or
+            # four arguments
 
             g0 = res[0]
             tok = res[1]
@@ -664,7 +664,7 @@ def main():
 
     # convert all lib/*.cpp files
     for f in glob.glob('lib/*.cpp'):
-        print (f + ' => ' + build_dir + '/' + f[4:])
+        print(f + ' => ' + build_dir + '/' + f[4:])
         mc.convertFile(f, build_dir + '/' + f[4:])
 
 if __name__ == '__main__':
