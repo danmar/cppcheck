@@ -84,6 +84,7 @@ private:
         TEST_CASE(template51);  // #6172 - crash upon valid code
         TEST_CASE(template52);  // #6437 - crash upon valid code
         TEST_CASE(template53);  // #4335 - bail out for valid code
+        TEST_CASE(template54);  // #6587 - memory corruption upon valid code
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -951,6 +952,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void template54() { // #6587
+        tok("template<typename _Tp> _Tp* fn(); "
+            "template <class T> struct A { "
+            "  template <class U, class S = decltype(fn<T>())> "
+            "  struct B { }; "
+            "}; "
+            "A<int> a;");
+    }
+
     void template_default_parameter() {
         {
             const char code[] = "template <class T, int n=3>\n"
@@ -1036,8 +1046,8 @@ private:
                                 "template<class T1 = A, typename T2 = B<A>> class D { };";
             ASSERT_EQUALS("class A { } ; "
                           "template < class T > class B { } ; "
-                          "template < class T1 , class T2 > class C { } ; "
-                          "template < class T1 , typename T2 > class D { } ;", tok(code));
+                          "template < class T1 , class T2 = B < T1 > > class C { } ; "
+                          "template < class T1 = A , typename T2 = B < A > > class D { } ;", tok(code));
         }
     }
 
