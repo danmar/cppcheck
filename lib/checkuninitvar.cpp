@@ -1563,10 +1563,9 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
             }
 
             if (isVariableUsage(tok, var.isPointer(), alloc)) {
-                if (!suppressErrors)
-                    uninitvarError(tok, tok->str());
-                else
+                if (suppressErrors)
                     continue;
+                uninitvarError(tok, tok->str());
             }
             return true;
         }
