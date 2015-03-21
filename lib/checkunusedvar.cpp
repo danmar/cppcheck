@@ -1216,10 +1216,8 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             // Try to prevent false positives when struct members are not used directly.
-            if (Token::findmatch(tok, (structname + " *").c_str()))
+            if (Token::findmatch(tok, (structname + " %type%| *").c_str()))
                 structname.clear();
-            else if (Token::findmatch(tok, (structname + " %type% *").c_str()))
-                structname = "";
         }
 
         if (tok->str() == "}")
