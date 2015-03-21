@@ -812,7 +812,7 @@ const Token * Token::findClosingBracket() const
         for (closing = this; closing != nullptr; closing = closing->next()) {
             if (Token::Match(closing, "{|[|("))
                 closing = closing->link();
-            else if (Token::Match(closing, "}|]|)|;|="))
+            else if (Token::Match(closing, "}|]|)|;"))
                 break;
             else if (closing->str() == "<")
                 ++depth;
