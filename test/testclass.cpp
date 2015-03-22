@@ -201,7 +201,7 @@ private:
         checkCopyCtorAndEqOperator("class A \n"
                                   "{ \n"
                                   "    A(const A& other) { } \n"
-                                  "    A& operator=(const A*) { return *this; }\n"
+                                  "    A& operator=(const A& other) { return *this; }\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -219,7 +219,7 @@ private:
         
         checkCopyCtorAndEqOperator("class A \n"
                                   "{ \n"
-                                  "    A& operator=(const A*) { return *this; }\n"
+                                  "    A& operator=(const A& other) { return *this; }\n"
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", errout.str());
     }
