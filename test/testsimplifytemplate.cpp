@@ -85,6 +85,7 @@ private:
         TEST_CASE(template52);  // #6437 - crash upon valid code
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
+        TEST_CASE(template55);  // #6604 - simplify "const const" to "const" in template instantiations
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -959,6 +960,22 @@ private:
             "  struct B { }; "
             "}; "
             "A<int> a;");
+    }
+
+    void template55() { // #6604
+        ASSERT_EQUALS(
+            "class AtSmartPtr<T> : public ConstCastHelper < AtSmartPtr<constT> , T > { "
+            "friend struct ConstCastHelper < AtSmartPtr<constT> , T > ; "
+            "AtSmartPtr<T> ( const AtSmartPtr<T> & r ) ; "
+            "} ; "
+            "class AtSmartPtr<constT> : public ConstCastHelper < AtSmartPtr < const const T > , const T > { "
+            "friend struct ConstCastHelper < AtSmartPtr < const const T > , const T > ; "
+            "AtSmartPtr<constT> ( const AtSmartPtr<T> & r ) ; } ;",
+            tok("template<class T> class AtSmartPtr : public ConstCastHelper<AtSmartPtr<const T>, T>\n"
+                "{\n"
+                "    friend struct ConstCastHelper<AtSmartPtr<const T>, T>;\n"
+                "    AtSmartPtr(const AtSmartPtr<T>& r);\n"
+                "};"));
     }
 
     void template_default_parameter() {

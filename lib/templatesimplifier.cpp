@@ -1249,12 +1249,15 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 ++indentlevel;
             else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;
-            templateMatchPattern += tok3->str();
-            templateMatchPattern += ' ';
+            bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
+            if (!constconst) {
+                templateMatchPattern += tok3->str();
+                templateMatchPattern += ' ';
+            }
             if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]"))
                 typesUsedInTemplateInstantiation.push_back(tok3);
             // add additional type information
-            if (tok3->str() != "class") {
+            if (!constconst && tok3->str() != "class") {
                 if (tok3->isUnsigned())
                     typeForNewNameStr += "unsigned";
                 else if (tok3->isSigned())
