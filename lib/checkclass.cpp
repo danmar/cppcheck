@@ -2265,3 +2265,43 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
     reportError(toks, Severity::warning, "duplInheritedMember", message);
 }
+
+
+//---------------------------------------------------------------------------
+// Check for members hiding inherited members with the same name
+//---------------------------------------------------------------------------
+
+void CheckClass::checkCopyCtorAndEqOperator() 
+{
+    if (!_settings->isEnabled("warning"))
+        return;
+
+    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
+    for (std::size_t i = 0; i < classes; ++i) {        
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        
+        bool hasCopyCtor = false;
+        bool hasAssignmentOperator = false;
+
+        std::list<Function>::const_iterator func;
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+            if (!hasCopyCtor)
+                hasCopyCtor = (func->type == Function::eCopyConstructor);
+            if (!hasAssignmentOperator)
+                hasAssignmentOperator = (func->type == Function::eOperatorEqual);
+        }
+
+        if(hasCopyCtor != hasAssignmentOperator)
+            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);       
+    }
+}
+
+void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor) 
+{
+    const std::string message = "The " + std::string(isStruct ? "struct" : "class") + " '" + classname +
+                                "' has '" + getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) + 
+                                "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) + 
+                                "'.";    
+
+    reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
+}
