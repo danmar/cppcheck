@@ -7831,7 +7831,7 @@ void Tokenizer::simplifyEnum()
                         const Token *prev = tok2->previous();
                         bool type = false;
                         while (prev && (prev->isName() || Token::Match(prev, "*|&|::"))) {
-                            type |= (Token::Match(prev, "%type% !!::") && !Token::Match(prev, "throw|return"));
+                            type = type || ((Token::Match(prev, "%type% !!::") && !Token::Match(prev, "throw|return")));
                             prev = prev->previous();
                         }
                         if (type && (!prev || Token::Match(prev, "[;{}]"))) {
