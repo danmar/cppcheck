@@ -2005,11 +2005,11 @@ void CheckClass::initializerListOrder()
 
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * info = symbolDatabase->classAndStructScopes[i];
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
         std::list<Function>::const_iterator func;
 
         // iterate through all member functions looking for constructors
-        for (func = info->functionList.begin(); func != info->functionList.end(); ++func) {
+        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if ((func->isConstructor()) && func->hasBody()) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
@@ -2021,13 +2021,12 @@ void CheckClass::initializerListOrder()
                     // find all variable initializations in list
                     while (tok && tok != func->functionScope->classStart) {
                         if (Token::Match(tok, "%name% (|{")) {
-                            const Variable *var = info->getVariable(tok->str());
-
+                            const Variable *var = scope->getVariable(tok->str());
                             if (var)
                                 vars.push_back(VarInfo(var, tok));
 
                             if (Token::Match(tok->tokAt(2), "%name% =")) {
-                                var = info->getVariable(tok->strAt(2));
+                                var = scope->getVariable(tok->strAt(2));
 
                                 if (var)
                                     vars.push_back(VarInfo(var, tok->tokAt(2)));
@@ -2041,7 +2040,7 @@ void CheckClass::initializerListOrder()
                     for (std::size_t j = 1; j < vars.size(); j++) {
                         // check for out of order initialization
                         if (vars[j].var->index() < vars[j - 1].var->index())
-                            initializerListError(vars[j].tok,vars[j].var->nameToken(), info->className, vars[j].var->name());
+                            initializerListError(vars[j].tok,vars[j].var->nameToken(), scope->className, vars[j].var->name());
                     }
                 }
             }
