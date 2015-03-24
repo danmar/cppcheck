@@ -1845,6 +1845,14 @@ private:
         }
 
         {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if( x ) delete a, a = 0;\n"
+                                "}\n";
+            ASSERT_EQUALS("void foo ( ) { if ( x ) { delete a ; a = 0 ; } }", tok(code));
+        }
+
+        {
             const char code[] = "void f()\n"
                                 "{\n"
                                 "    for(int a,b; a < 10; a = a + 1, b = b + 1);\n"
