@@ -1449,10 +1449,10 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         return false;
     const Token * const vartok = Token::Match(tok, "%var% =") ? tok : tok->next();
     *varid = vartok->varId();
-    const Token * const num1tok = Token::Match(vartok->tokAt(2), "%num% ;") ? vartok->tokAt(2) : nullptr;
+    tok = vartok->tokAt(2);
+    const Token * const num1tok = Token::Match(tok, "%num% ;") ? tok : nullptr;
     if (num1tok)
         *num1 = MathLib::toLongNumber(num1tok->str());
-    tok = vartok->tokAt(2);
     while (Token::Match(tok, "%name%|%num%|%or%|+|-|*|/|&|[|]|("))
         tok = (tok->str() == "(") ? tok->link()->next() : tok->next();
     if (!tok || tok->str() != ";")
