@@ -8726,9 +8726,8 @@ void Tokenizer::simplifyComma()
 
         if (Token::Match(tok->tokAt(-2), "delete %name% , %name% ;") &&
             tok->next()->varId() != 0) {
-            // Handle "delete a, b;"
+            // Handle "delete a, b;" - convert to delete a; b;
             tok->str(";");
-            tok->insertToken("delete");
         } else if (!inReturn && tok->tokAt(-2)) {
             bool replace = false;
             for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous()) {
