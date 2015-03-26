@@ -510,7 +510,6 @@ private:
     /**
     * @brief Filter field in the Filter toolbar.
     */
-    QCompleter *Complet ;
     QLineEdit* mLineEditFilter;
 
     /**
