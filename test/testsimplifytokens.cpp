@@ -1802,11 +1802,32 @@ private:
         {
             const char code[] = "void foo()\n"
                                 "{\n"
+                                "    char *a, *b, *c;\n"
+                                "    delete a, b, c;\n"
+                                "}\n";
+            // delete a; b; c; would be better but this will do too
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; delete a ; b , c ; }", tok(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
                                 "    char *a, *b;\n"
                                 "    if (x) \n"
                                 "        delete a, b;\n"
                                 "}\n";
             ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; if ( x ) { delete a ; b ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    char *a, *b, *c;\n"
+                                "    if (x) \n"
+                                "        delete a, b, c;\n"
+                                "}\n";
+            // delete a; b; c; would be better but this will do too
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; if ( x ) { delete a ; b , c ; } }", tok(code));
         }
 
         {
