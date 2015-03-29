@@ -476,6 +476,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     unsigned char previous = 0;
     bool inPreprocessorLine = false;
     std::vector<std::string> suppressionIDs;
+    const bool detectFallThroughComments = _settings && _settings->experimental && _settings->isEnabled("style");
     bool fallThroughComment = false;
 
     for (std::string::size_type i = hasbom(str) ? 3U : 0U; i < str.length(); ++i) {
@@ -548,7 +549,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
-            if (isFallThroughComment(comment)) {
+            if (detectFallThroughComments && isFallThroughComment(comment)) {
                 fallThroughComment = true;
             }
 
@@ -570,7 +571,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             }
             std::string comment(str, commentStart, i - commentStart - 1);
 
-            if (isFallThroughComment(comment)) {
+            if (detectFallThroughComments && isFallThroughComment(comment)) {
                 fallThroughComment = true;
             }
 
@@ -629,7 +630,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
                 // First check for a "fall through" comment match, but only
                 // add a suppression if the next token is 'case' or 'default'
-                if (_settings && _settings->isEnabled("style") && _settings->experimental && fallThroughComment) {
+                if (detectFallThroughComments && fallThroughComment) {
                     std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
                     std::string tok = str.substr(i, j - i);
                     if (tok == "case" || tok == "default")
