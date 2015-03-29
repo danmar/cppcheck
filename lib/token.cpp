@@ -446,7 +446,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
     break;
     default:
         //unknown %cmd%, abort
-        throw InternalError( tok, "Unexpected command" );
+        throw InternalError(tok, "Unexpected command");
     }
 
     if (*haystack == '|')
