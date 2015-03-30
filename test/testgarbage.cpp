@@ -70,6 +70,7 @@ private:
         TEST_CASE(garbageCode29);
         TEST_CASE(garbageCode30); // #5867
         TEST_CASE(garbageCode31); // #6539
+        TEST_CASE(garbageCode32); // #6135
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -394,6 +395,10 @@ private:
 
     void garbageCode31() {
         ASSERT_THROW(checkCode("typedef struct{}x[([],)]typedef e y;(y,x 0){}"), InternalError);
+    }
+
+    void garbageCode32() { // #6135
+        checkCode(" ( * const ( size_t ) ; foo )");
     }
 
     void garbageValueFlow() {
