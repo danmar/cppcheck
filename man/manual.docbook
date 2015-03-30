@@ -1053,14 +1053,14 @@ Checking useretval.c...
   &lt;define name="NULL_VALUE" value="0"/&gt;
 &lt;/def&gt;</programlisting>
 
-      <para>Each occurence of "NULL_VALUE" in the code would then be replaced
+      <para>Each occurrence of "NULL_VALUE" in the code would then be replaced
       by "0" at preprocessor stage.</para>
     </section>
 
     <section>
       <title>podtype</title>
 
-      <para>Lots of code relies on typedefs providing platform independant
+      <para>Lots of code relies on typedefs providing platform independent
       types. "podtype"-tags can be used to provide necessary information to
       cppcheck to support them. Without further information, cppcheck does not
       understand the type "uint16_t" in the following example:</para>
