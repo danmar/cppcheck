@@ -314,11 +314,13 @@ static char mytstack[MYSTACKSIZE]; // alternative stack for signal handler
 static bool bStackBelowHeap=false;
 
 /*
- * \return true if address is supposed to be on stack (contrary to heap or elsewhere).
+ * \return true if address is supposed to be on stack (contrary to heap or elsewhere). If ptr is 0 false will be returned.
  * If unknown better return false.
  */
 static bool isAddressOnStack(const void* ptr)
 {
+    if (nullptr==ptr)
+        return false;
     char a;
     if (bStackBelowHeap)
         return ptr < &a;
@@ -336,7 +338,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
     int type = -1;
     pid_t killid = getpid();
-    const ucontext_t* uc = reinterpret_cast<const ucontext_t*>(context);
+    const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
 #if defined(__linux__) && defined(REG_ERR)
     killid = (pid_t) syscall(SYS_gettid);
     if (uc) {
@@ -347,7 +349,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
     const bool isaddressonstack = isAddressOnStack(info->si_addr);
-    FILE* f=CppCheckExecutor::getExceptionOutput()=="stderr" ? stderr : stdout;
+    FILE* f = (CppCheckExecutor::getExceptionOutput()=="stderr") ? stderr : stdout;
     fputs("Internal error: cppcheck received signal ", f);
     fputs(signame, f);
     fputs(", ", f);
@@ -377,8 +379,8 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).\n",
-                info->si_addr);
+        fprintf(f, " (at 0x%lx).\n",
+                (unsigned long)info->si_addr);
         break;
     case SIGFPE:
         switch (info->si_code) {
@@ -409,8 +411,8 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).\n",
-                info->si_addr);
+        fprintf(f, " (at 0x%lx).\n",
+                (unsigned long)info->si_addr);
         break;
     case SIGILL:
         switch (info->si_code) {
@@ -441,8 +443,8 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (at 0x%p).%s\n",
-                info->si_addr,
+        fprintf(f, " (at 0x%lx).%s\n",
+                (unsigned long)info->si_addr,
                 (isaddressonstack)?" Stackoverflow?":"");
         break;
     case SIGINT:
@@ -460,10 +462,10 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         default:
             break;
         }
-        fprintf(f, " (%sat 0x%p).%s\n",
+        fprintf(f, " (%sat 0x%lx).%s\n",
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
-                info->si_addr,
+                (unsigned long)info->si_addr,
                 (isaddressonstack)?" Stackoverflow?":""
                );
         break;
@@ -475,6 +477,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         print_stacktrace(f, true, -1 /*(isaddressonstack)?8:-1*/);
         fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
+    fflush(f);
 
     // now let the system proceed, shutdown and hopefully dump core for post-mortem analysis
     signal(signo, SIG_DFL);
@@ -483,7 +486,6 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 #endif
 
 #ifdef USE_WINDOWS_SEH
-
 static const ULONG maxnamelength = 512;
 struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
     TCHAR NameExt[maxnamelength]; // actually no need to worry about character encoding here
@@ -698,6 +700,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
     }
     fputs("\n", f);
     PrintCallstack(f, ex);
+    fflush(f);
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
