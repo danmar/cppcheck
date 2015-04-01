@@ -298,16 +298,16 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
         if (ch == '.' &&
             !CurrentToken.empty() &&
-            std::isdigit(CurrentToken[0])) {
+            std::isdigit((unsigned char)CurrentToken[0])) {
             // Don't separate doubles "5.4"
         } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
-                   std::isdigit(CurrentToken[0]) &&
+                   std::isdigit((unsigned char)CurrentToken[0]) &&
                    (CurrentToken[CurrentToken.length()-1] == 'e' ||
                     CurrentToken[CurrentToken.length()-1] == 'E') &&
                    !MathLib::isHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
-        } else if (CurrentToken.empty() && ch == '.' && std::isdigit(code.peek())) {
+        } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {
             // tokenize .125 into 0.125
             CurrentToken = "0";
         } else if (std::strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch)) {

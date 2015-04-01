@@ -264,7 +264,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
         while (Token::Match(tok, "%name% ::")) {
             tok = tok->tokAt(2);
-            if (tok->str() == "*") // Ticket #5759: Class member pointer as a template argument; skip '*'
+            if (tok && tok->str() == "*") // Ticket #5759: Class member pointer as a template argument; skip '*'
                 tok = tok->next();
         }
         if (!tok)
@@ -1231,18 +1231,18 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         // New type..
         std::vector<const Token *> typesUsedInTemplateInstantiation;
-        std::string typeForNewNameStr;
+        std::string typeForNewName;
         std::string templateMatchPattern(name + " < ");
         unsigned int indentlevel = 0;
         for (const Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
             // #2648 - unhandled parentheses => bail out
             // #2721 - unhandled [ => bail out
             if (Token::Match(tok3, "(|[")) {
-                typeForNewNameStr.clear();
+                typeForNewName.clear();
                 break;
             }
             if (!tok3->next()) {
-                typeForNewNameStr.clear();
+                typeForNewName.clear();
                 break;
             }
             if (Token::Match(tok3->tokAt(-2), "[<,] %name% <") && templateParameters(tok3) > 0)
@@ -1259,16 +1259,15 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             // add additional type information
             if (!constconst && tok3->str() != "class") {
                 if (tok3->isUnsigned())
-                    typeForNewNameStr += "unsigned";
+                    typeForNewName += "unsigned";
                 else if (tok3->isSigned())
-                    typeForNewNameStr += "signed";
+                    typeForNewName += "signed";
                 if (tok3->isLong())
-                    typeForNewNameStr += "long";
-                typeForNewNameStr += tok3->str();
+                    typeForNewName += "long";
+                typeForNewName += tok3->str();
             }
         }
         templateMatchPattern += ">";
-        const std::string typeForNewName(typeForNewNameStr);
 
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
             if (_settings->debugwarnings && errorlogger) {

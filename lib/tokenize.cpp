@@ -2601,9 +2601,10 @@ void Tokenizer::setVarId()
         } else if (!executableScope.top() && tok->str() == "(" && isFunctionHead(tok, ";")) {
             scopeInfo.push(variableId);
         } else if (!executableScope.top() && tok->str() == ")" && isFunctionHead(tok, ";")) {
+            if (scopeInfo.empty())
+                cppcheckError(tok);
             variableId.swap(scopeInfo.top());
             scopeInfo.pop();
-
         } else if (tok->str() == "{") {
             // parse anonymous unions as part of the current scope
             if (!(tok->strAt(-1) == "union" && Token::simpleMatch(tok->link(), "} ;"))) {

@@ -71,6 +71,7 @@ private:
         TEST_CASE(garbageCode30); // #5867
         TEST_CASE(garbageCode31); // #6539
         TEST_CASE(garbageCode32); // #6135
+        TEST_CASE(garbageCode33); // #6613
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -399,6 +400,14 @@ private:
 
     void garbageCode32() { // #6135
         checkCode(" ( * const ( size_t ) ; foo )");
+    }
+
+    void garbageCode33() { // #6613
+        ASSERT_THROW(checkCode("main(()B{});"), InternalError);
+
+        checkCode("f::y:y : <x::");
+
+        checkCode("\xe2u.");
     }
 
     void garbageValueFlow() {
