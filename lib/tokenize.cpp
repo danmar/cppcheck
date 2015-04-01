@@ -6585,12 +6585,12 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
             return false;
 
         // no break => the value of the counter value is known after the for loop..
-        const std::string& compareop = tok2->strAt(5);
-        if (compareop == "<") {
-            value = tok2->strAt(6);
-            valueVarId = tok2->tokAt(6)->varId();
+        const Token* compareTok = tok2->tokAt(5);
+        if (compareTok->str() == "<") {
+            value = compareTok->next()->str();
+            valueVarId = compareTok->next()->varId();
         } else
-            value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
+            value = MathLib::toString(MathLib::toLongNumber(compareTok->next()->str()) + 1);
 
         // Skip for-body..
         tok3 = tok2->previous()->link()->next()->link()->next();
