@@ -137,6 +137,7 @@ private:
         TEST_CASE(simplifyAtol)
 
         TEST_CASE(simplifyOperator1);
+        TEST_CASE(simplifyOperator2);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -2512,6 +2513,31 @@ private:
                                 "operatorstring ( ) const ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyOperator2() {
+        // #6576
+        ASSERT_EQUALS("class TClass { "
+                      "public: "
+                      "TClass & operator= ( const TClass & rhs ) ; "
+                      "} ; "
+                      "TClass :: TClass ( const TClass & other ) "
+                      "{ "
+                      "operator= ( other ) ; "
+                      "} class SharedPtr<Y> { "
+                      "SharedPtr<Y> & operator= ( SharedPtr<Y> const & r ) ; "
+                      "} ;",
+                      tok("template<class T>\n"
+                          "    class SharedPtr {\n"
+                          "    SharedPtr& operator=(SharedPtr<Y> const & r);\n"
+                          "};\n"
+                          "class TClass {\n"
+                          "public:\n"
+                          "    TClass& operator=(const TClass& rhs);\n"
+                          "};\n"
+                          "TClass::TClass(const TClass &other) {\n"
+                          "    operator=(other);\n"
+                          "}"));
     }
 
     void reverseArraySyntax() {

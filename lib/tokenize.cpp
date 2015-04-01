@@ -3553,6 +3553,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Simplify float casts (float)1 => 1.0
     simplifyFloatCasts();
 
+    // Collapse operator name tokens into single token
+    // operator = => operator=
+    simplifyOperatorName();
+
     // Remove redundant parentheses
     simplifyRedundantParentheses();
     for (Token *tok = list.front(); tok; tok = tok->next())
@@ -3572,10 +3576,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // syntax is corrected.
     if (!isC())
         TemplateSimplifier::cleanupAfterSimplify(list.front());
-
-    // Collapse operator name tokens into single token
-    // operator = => operator=
-    simplifyOperatorName();
 
     // Simplify pointer to standard types (C only)
     simplifyPointerToStandardType();
