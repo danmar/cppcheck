@@ -3242,6 +3242,12 @@ private:
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
 
+        check("void f(char value) {\n"
+              "  char *a = new char(value);\n"
+              "  mysprintf(a, \"a\");\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds.\n", errout.str());
+
         // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
