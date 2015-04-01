@@ -108,17 +108,18 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 // checks if side effects happen on the variable prior to tmp
 void CheckAssert::checkVariableAssignment(const Token* assignTok)
 {
-    const Variable* v = assignTok->previous()->variable();
-    if (!v) return;
+    const Variable* prevVar = assignTok->previous()->variable();
+    if (!prevVar)
+        return;
 
     // assignment
     if (assignTok->isAssignmentOp() || assignTok->type() == Token::eIncDecOp) {
+        if (prevVar->isConst())
+            return;
 
-        if (v->isConst()) return;
-
-        assignmentInAssertError(assignTok, v->name());
+        assignmentInAssertError(assignTok, prevVar->name());
     }
-    // TODO: function calls on v
+    // TODO: function calls on prevVar
 }
 
 bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)
