@@ -2027,7 +2027,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 
 
 // Check for memory leaks for a function variable.
-void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz)
+void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz)
 {
     std::list<const Token *> callstack;
 
@@ -2036,7 +2036,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
     const Token *result;
 
-    Token *tok = getcode(Tok1, callstack, varid, alloctype, dealloctype, classmember, sz);
+    Token *tok = getcode(startTok, callstack, varid, alloctype, dealloctype, classmember, sz);
     //tok->printOut((std::string("Checkmemoryleak: getcode result for: ") + varname).c_str());
 
     const bool use_addr = bool(Token::findsimplematch(tok, "&use") != nullptr);

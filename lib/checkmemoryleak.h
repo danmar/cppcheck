@@ -288,13 +288,13 @@ public:
 
     /**
      * Checking the variable varname
-     * @param Tok1 start token
+     * @param startTok start token
      * @param varname name of variable (for error messages)
      * @param varid variable id
      * @param classmember is the scope inside a class member function
      * @param sz size of type.. if the variable is a "int *" then sz should be "sizeof(int)"
      */
-    void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
+    void checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
 private:
     /** Report all possible errors (for the --errorlist) */
