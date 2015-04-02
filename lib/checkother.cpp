@@ -2548,9 +2548,11 @@ void CheckOther::negativeBitwiseShiftError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkIncompleteArrayFill()
 {
+    if (!_settings->inconclusive)
+        return;
     bool warning = _settings->isEnabled("warning");
     bool portability = _settings->isEnabled("portability");
-    if (!_settings->inconclusive || (!portability && !warning))
+    if (!portability && !warning)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
