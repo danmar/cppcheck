@@ -1168,10 +1168,10 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "", true);
 
-        const Token *tok = tokenizer.tokens();
+        const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)
-            tok = tok->next();
-        return TemplateSimplifier::getTemplateNamePosition(tok);
+            _tok = _tok->next();
+        return TemplateSimplifier::getTemplateNamePosition(_tok);
     }
 
     void templateNamePosition() {
