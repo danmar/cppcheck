@@ -1150,6 +1150,7 @@ private:
         ASSERT_EQUALS(1U, templateParameters("<const int> x;"));
         ASSERT_EQUALS(1U, templateParameters("<int const *> x;"));
         ASSERT_EQUALS(1U, templateParameters("<const struct C> x;"));
+        ASSERT_EQUALS(0U, templateParameters("<len>>x;"));
     }
 
     void templateParameters1() {

@@ -305,7 +305,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // ,/>
         while (Token::Match(tok, ">|>>")) {
             if (level == 0)
-                return numberOfParameters;
+                return ((tok->str() == ">") ? numberOfParameters : 0);
             --level;
             if (tok->str() == ">>") {
                 if (level == 0)
