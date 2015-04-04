@@ -1303,44 +1303,47 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 tok1 = tok1->tokAt(-1);
         }
 
-        // skip over pointers and references
-        while (Token::Match(tok1, "[*&]"))
-            tok1 = tok1->tokAt(-1);
-
-        // skip over template
-        if (tok1 && tok1->str() == ">") {
-            if (tok1->link())
-                tok1 = tok1->link()->previous();
-            else
-                return false;
-        }
-
-        // function can't have number or variable as return type
-        if (tok1 && (tok1->isNumber() || tok1->varId()))
-            return false;
-
-        // skip over return type
-        if (Token::Match(tok1, "%name%")) {
-            if (tok1->str() == "return")
-                return false;
-            tok1 = tok1->previous();
-        }
-
-        // skip over qualification
-        while (Token::simpleMatch(tok1, "::")) {
-            if (Token::Match(tok1->tokAt(-1), "%name%"))
-                tok1 = tok1->tokAt(-2);
-            else
+        // done if constructor or destructor
+        if (!Token::Match(tok1, "{|}|;|public:|protected:|private:") && tok1) {
+            // skip over pointers and references
+            while (Token::Match(tok1, "[*&]"))
                 tok1 = tok1->tokAt(-1);
+
+            // skip over template
+            if (tok1 && tok1->str() == ">") {
+                if (tok1->link())
+                    tok1 = tok1->link()->previous();
+                else
+                    return false;
+            }
+
+            // function can't have number or variable as return type
+            if (tok1 && (tok1->isNumber() || tok1->varId()))
+                return false;
+
+            // skip over return type
+            if (Token::Match(tok1, "%name%")) {
+                if (tok1->str() == "return")
+                    return false;
+                tok1 = tok1->previous();
+            }
+
+            // skip over qualification
+            while (Token::simpleMatch(tok1, "::")) {
+                if (Token::Match(tok1->tokAt(-1), "%name%"))
+                    tok1 = tok1->tokAt(-2);
+                else
+                    tok1 = tok1->tokAt(-1);
+            }
+
+            // skip over modifiers and other stuff
+            while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class"))
+                tok1 = tok1->previous();
+
+            // should be at a sequence point if this is a function
+            if (!Token::Match(tok1, ">|{|}|;|public:|protected:|private:") && tok1)
+                return false;
         }
-
-        // skip over modifiers and other stuff
-        while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class"))
-            tok1 = tok1->previous();
-
-        // should be at a sequence point if this is a function
-        if (!Token::Match(tok1, ">|{|}|;|public:|protected:|private:") && tok1)
-            return false;
 
         const Token* tok2 = tok->next()->link()->next();
         if (tok2 &&

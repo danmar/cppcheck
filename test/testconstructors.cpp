@@ -73,6 +73,7 @@ private:
         TEST_CASE(noConstructor7); // ticket #4391
         TEST_CASE(noConstructor8); // ticket #4404
         TEST_CASE(noConstructor9); // ticket #4419
+        TEST_CASE(noConstructor10); // ticket #6614
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -506,6 +507,26 @@ private:
               "private:\n"
               " bool MessageSet;\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor10() {
+        // ticket #6614
+        check("class A : public wxDialog\n"
+              "{\n"
+              "private:\n"
+              "    DECLARE_EVENT_TABLE()\n"
+              "public:\n"
+              "    A(wxWindow *parent,\n"
+              "      wxWindowID id = 1,\n"
+              "      const wxString &title = wxT(""),\n"
+              "      const wxPoint& pos = wxDefaultPosition,\n"
+              "      const wxSize& size = wxDefaultSize,\n"
+              "      long style = wxDIALOG_NO_PARENT | wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxCLOSE_BOX);\n"
+              "    virtual ~A();\n"
+              "private:\n"
+              "    wxTimer *WxTimer1;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
