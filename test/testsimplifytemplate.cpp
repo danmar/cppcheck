@@ -86,6 +86,7 @@ private:
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
         TEST_CASE(template55);  // #6604 - simplify "const const" to "const" in template instantiations
+        TEST_CASE(template56);  // #6592 - infinite loop upon valid code with variadic template
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -976,6 +977,20 @@ private:
                 "    friend struct ConstCastHelper<AtSmartPtr<const T>, T>;\n"
                 "    AtSmartPtr(const AtSmartPtr<T>& r);\n"
                 "};"));
+    }
+
+    void template56() { // #6592
+        // The following used to give "Unknown type 'A<int>'." in debug mode
+        tok("template<typename> struct A {}; "
+            "template<typename... T> struct A<T...> {}; "
+            "A<int> a;", /*simplify=*/true, /*debugwarnings=*/true);
+        ASSERT_EQUALS("", errout.str());
+
+        // And that one (invalid) used to trigger an infinite loop
+        tok("template<typename> struct A {}; "
+            "template<typename... T> struct A<T::T...> {}; "
+            "A<int> a;", /*simplify=*/true, /*debugwarnings=*/true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_default_parameter() {
