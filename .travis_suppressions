@@ -13,5 +13,4 @@ variableScope:test/testtokenize.cpp
 *:htdocs*
 *:htmlreport*
 *:samples*
-*:tools*
 *:win_installer*
