@@ -438,7 +438,7 @@ void CheckBool::pointerArithBool()
             if (tok)
                 tok = tok->astOperand1();
         } else if (scope->type == Scope::eDo)
-            tok = scope->classEnd->tokAt(2)->astOperand2();
+            tok = (scope->classEnd->tokAt(2)) ? scope->classEnd->tokAt(2)->astOperand2() : nullptr;
 
         pointerArithBoolCond(tok);
     }

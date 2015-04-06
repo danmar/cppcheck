@@ -1455,6 +1455,8 @@ void CheckStl::checkDereferenceInvalidIterator()
             const Token* startOfCondition = tok->next();
             if (i->type == Scope::eDo)
                 startOfCondition = startOfCondition->link()->tokAt(2);
+            if (!startOfCondition) // ticket #6626 invalid code
+                continue;
             const Token* endOfCondition = startOfCondition->link();
             if (!endOfCondition)
                 continue;

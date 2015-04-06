@@ -72,6 +72,7 @@ private:
         TEST_CASE(garbageCode31); // #6539
         TEST_CASE(garbageCode32); // #6135
         TEST_CASE(garbageCode33); // #6613
+        TEST_CASE(garbageCode34); // 6626
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -408,6 +409,15 @@ private:
         checkCode("f::y:y : <x::");
 
         checkCode("\xe2u.");
+    }
+
+    // Bug #6626 crash: Token::astOperand2() const ( do while )
+    void garbageCode34() {
+        checkCode("void foo(void) {\n"
+                  " do\n"
+                  " while (0);\n"
+                  "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void garbageValueFlow() {
