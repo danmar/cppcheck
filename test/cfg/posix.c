@@ -182,4 +182,8 @@ void timet_h() {
   struct timespec* ptp;
   // cppcheck-suppress uninitvar
   clock_settime(CLOCK_REALTIME, ptp);
+  
+  time_t clock = time(0);
+  char buf[26];
+  ctime_r(&clock, buf);
 }

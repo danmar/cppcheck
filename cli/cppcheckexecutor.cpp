@@ -346,14 +346,11 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     }
 #endif
     const char * const signame = signal_name(signo);
-    const char * const sigtext = strsignal(signo);
     bool bPrintCallstack=true;
     const bool isaddressonstack = isAddressOnStack(info->si_addr);
     FILE* f = (CppCheckExecutor::getExceptionOutput()=="stderr") ? stderr : stdout;
     fputs("Internal error: cppcheck received signal ", f);
     fputs(signame, f);
-    fputs(", ", f);
-    fputs(sigtext, f);
     switch (signo) {
     case SIGBUS:
         switch (info->si_code) {
