@@ -242,6 +242,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 
 void CheckNullPointer::nullPointerLinkedList()
 {
+
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // looping through items in a linked list in a inner loop.
