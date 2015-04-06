@@ -2414,6 +2414,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
 void CheckMemoryLeakInClass::unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname)
 {
+    if (!_settings->isEnabled("style"))
+        return;
+
     reportError(tok, Severity::style, "unsafeClassCanLeak",
                 "Class '" + classname + "' is unsafe, '" + varname + "' can leak by wrong usage.\n"
                 "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.");
