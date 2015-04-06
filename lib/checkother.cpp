@@ -1872,6 +1872,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 void CheckOther::checkMathFunctions()
 {
     bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
+    bool printWarnings = _settings->isEnabled("warning");
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1880,48 +1881,50 @@ void CheckOther::checkMathFunctions()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
-            if (tok->strAt(-1) != "."
-                && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
-                const std::string& number = tok->strAt(2);
-                bool isNegative = MathLib::isNegative(number);
-                bool isInt = MathLib::isInt(number);
-                bool isFloat = MathLib::isFloat(number);
-                if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                    mathfunctionCallWarning(tok); // case log(-2)
-                } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                    mathfunctionCallWarning(tok); // case log(-2.0)
-                } else if (!isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                    mathfunctionCallWarning(tok); // case log(0.0)
-                } else if (!isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                    mathfunctionCallWarning(tok); // case log(0)
+            if (printWarnings) {
+                if (tok->strAt(-1) != "."
+                    && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
+                    const std::string& number = tok->strAt(2);
+                    bool isNegative = MathLib::isNegative(number);
+                    bool isInt = MathLib::isInt(number);
+                    bool isFloat = MathLib::isFloat(number);
+                    if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
+                        mathfunctionCallWarning(tok); // case log(-2)
+                    } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
+                        mathfunctionCallWarning(tok); // case log(-2.0)
+                    } else if (!isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
+                        mathfunctionCallWarning(tok); // case log(0.0)
+                    } else if (!isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
+                        mathfunctionCallWarning(tok); // case log(0)
+                    }
                 }
-            }
 
-            // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-            else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
-                if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
-                    mathfunctionCallWarning(tok);
-            }
-            // sqrt( x ): if x is negative the result is undefined
-            else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
-                if (MathLib::isNegative(tok->strAt(2)))
-                    mathfunctionCallWarning(tok);
-            }
-            // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
-            else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
-                if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNullValue(tok->strAt(4)))
-                    mathfunctionCallWarning(tok, 2);
-            }
-            // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
-            else if (Token::Match(tok, "fmod|fmodf|fmodl ( %any%")) {
-                const Token* nextArg = tok->tokAt(2)->nextArgument();
-                if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
-                    mathfunctionCallWarning(tok, 2);
-            }
-            // pow ( x , y) If x is zero, and y is negative --> division by zero
-            else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )")) {
-                if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNegative(tok->strAt(4)))
-                    mathfunctionCallWarning(tok, 2);
+                // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
+                else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
+                    if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
+                        mathfunctionCallWarning(tok);
+                }
+                // sqrt( x ): if x is negative the result is undefined
+                else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
+                    if (MathLib::isNegative(tok->strAt(2)))
+                        mathfunctionCallWarning(tok);
+                }
+                // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
+                else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
+                    if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNullValue(tok->strAt(4)))
+                        mathfunctionCallWarning(tok, 2);
+                }
+                // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
+                else if (Token::Match(tok, "fmod|fmodf|fmodl ( %any%")) {
+                    const Token* nextArg = tok->tokAt(2)->nextArgument();
+                    if (nextArg && nextArg->isNumber() && MathLib::isNullValue(nextArg->str()))
+                        mathfunctionCallWarning(tok, 2);
+                }
+                // pow ( x , y) If x is zero, and y is negative --> division by zero
+                else if (Token::Match(tok, "pow|powf|powl ( %num% , %num% )")) {
+                    if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNegative(tok->strAt(4)))
+                        mathfunctionCallWarning(tok, 2);
+                }
             }
 
             if (styleC99) {
