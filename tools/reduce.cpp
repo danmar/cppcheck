@@ -44,7 +44,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const ReduceSettings & settings)
+    explicit CppcheckExecutor(const ReduceSettings & settings)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
