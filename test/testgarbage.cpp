@@ -377,10 +377,10 @@ private:
 
     void garbageCode28() {
         // 5702
-        ASSERT_THROW(checkCode("struct R1 {\n"
-                               "  int a;\n"
-                               "  R1 () : a { }\n"
-                               "};\n"), InternalError);
+        checkCode("struct R1 {\n"
+                  "  int a;\n"
+                  "  R1 () : a { }\n"
+                  "};\n");
     }
 
     void garbageCode29() {

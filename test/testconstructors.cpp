@@ -63,6 +63,7 @@ private:
         TEST_CASE(simple11); // ticket #4536, #6214
         TEST_CASE(simple12); // ticket #4620
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
+        TEST_CASE(simple14); // #6253 template base
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -419,6 +420,30 @@ private:
         check("class Fred {\n"
               "    int x=1;\n"
               "    int *y=0;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple14() { // #6253 template base
+        check("class Fred : public Base<A, B> {"
+              "public:"
+              "    Fred()\n"
+              "    :Base<A, B>(1),\n"
+              "     x(1)\n"
+              "    {}\n"
+              "private:\n"
+              "    int x;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred : public Base<A, B> {"
+              "public:"
+              "    Fred()\n"
+              "    :Base<A, B>{1},\n"
+              "     x{1}\n"
+              "    {}\n"
+              "private:\n"
+              "    int x;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }

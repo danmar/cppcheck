@@ -572,8 +572,21 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             }
 
                             // find start of function '{'
-                            while (end && end->str() != "{" && end->str() != ";")
-                                end = end->next();
+                            bool foundInitList = false;
+                            while (end && end->str() != "{" && end->str() != ";") {
+                                if (end->link() && Token::Match(end, "(|<")) {
+                                    end = end->link();
+                                } else if (foundInitList &&
+                                           Token::Match(end, "%name%|> {") &&
+                                           Token::Match(end->linkAt(1), "} ,|{")) {
+                                    end = end->linkAt(1);
+                                } else {
+                                    if (end->str() == ":")
+                                        foundInitList = true;
+                                    end = end->next();
+                                }
+                            }
+
                             if (!end || end->str() == ";")
                                 continue;
 
@@ -1843,17 +1856,23 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     scopeList.push_back(Scope(this, tok1, *scope));
     Scope *new_scope = &scopeList.back();
 
-    // skip to start of function
-    bool foundInitLit = false;
-    while (tok1 && (tok1->str() != "{" || (foundInitLit && tok1->previous()->isName()))) {
-        if (Token::Match(tok1, "(|{"))
+    // find start of function '{'
+    bool foundInitList = false;
+    while (tok1 && tok1->str() != "{" && tok1->str() != ";") {
+        if (tok1->link() && Token::Match(tok1, "(|<")) {
             tok1 = tok1->link();
-        if (tok1->str() == ":")
-            foundInitLit = true;
-        tok1 = tok1->next();
+        } else if (foundInitList &&
+                   Token::Match(tok1, "%name%|> {") &&
+                   Token::Match(tok1->linkAt(1), "} ,|{")) {
+            tok1 = tok1->linkAt(1);
+        } else {
+            if (tok1->str() == ":")
+                foundInitList = true;
+            tok1 = tok1->next();
+        }
     }
 
-    if (tok1) {
+    if (tok1 && tok1->str() == "{") {
         new_scope->classStart = tok1;
         new_scope->classEnd = tok1->link();
 

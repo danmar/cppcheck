@@ -485,7 +485,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
         if (initList) {
-            if (level == 0 && Token::Match(ftok, "%name% {|(")) {
+            if (level == 0 && Token::Match(ftok, "%name% {|(") && Token::Match(ftok->linkAt(1), "}|) ,|{")) {
                 if (ftok->str() != func.name()) {
                     initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
@@ -514,21 +514,20 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                         }
                     }
                 }
-                ftok = ftok->next();
-                level++;
             } else if (level != 0 && Token::Match(ftok, "%name% =")) // assignment in the initializer: var(value = x)
                 assignVar(ftok->str(), scope, usage);
 
-            else if (ftok->str() == "(")
+            // Level handling
+            if (ftok->link() && Token::Match(ftok, "(|<"))
                 level++;
-            else if (ftok->str() == ")" || ftok->str() == "}")
-                level--;
             else if (ftok->str() == "{") {
-                if (level == 0)
-                    initList = false;
+                if (level != 0 ||
+                    (Token::Match(ftok->previous(), "%name%|>") && Token::Match(ftok->link(), "} ,|{")))
+                    level++;
                 else
-                    ftok = ftok->link();
-            }
+                    initList = false;
+            } else if (ftok->link() && Token::Match(ftok, ")|>|}"))
+                level--;
         }
 
         if (initList)
