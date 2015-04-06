@@ -6045,7 +6045,7 @@ private:
         if (s)
             settings = *s;
         else
-            settings.addEnabled("style");
+            settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
 
         // Tokenize..

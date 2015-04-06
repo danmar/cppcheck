@@ -2101,6 +2101,8 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 
 void CheckClass::checkPureVirtualFunctionCall()
 {
+    if (! _settings->isEnabled("warning"))
+        return;
     const std::size_t functions = symbolDatabase->functionScopes.size();
     std::map<const Function *, std::list<const Token *> > callsPureVirtualFunctionMap;
     for (std::size_t i = 0; i < functions; ++i) {
