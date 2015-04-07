@@ -979,6 +979,8 @@ static const Scope* findFunctionOf(const Scope* scope)
 
 void CheckClass::checkMemset()
 {
+    const bool printWarnings = _settings->isEnabled("warning");
+
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1052,7 +1054,7 @@ void CheckClass::checkMemset()
                 std::list<const Scope *> parsedTypes;
                 checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
-                if (tok->variable()->typeScope()->numConstructors > 0 && _settings->isEnabled("warning"))
+                if (tok->variable()->typeScope()->numConstructors > 0 && printWarnings)
                     mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);
             }
         }
@@ -1061,6 +1063,8 @@ void CheckClass::checkMemset()
 
 void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes)
 {
+    const bool printPortability = _settings->isEnabled("portability");
+
     // If type has been checked there is no need to check it again
     if (std::find(parsedTypes.begin(), parsedTypes.end(), type) != parsedTypes.end())
         return;
@@ -1110,7 +1114,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                 checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
 
             // check for float
-            else if (tok->str() == "memset" && var->isFloatingType() && _settings->isEnabled("portability"))
+            else if (tok->str() == "memset" && var->isFloatingType() && printPortability)
                 memsetErrorFloat(tok, type->classDef->str());
         }
     }

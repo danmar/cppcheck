@@ -2870,6 +2870,8 @@ static bool getlines(std::istream &istr, std::string &line)
 
 bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
 {
+    const bool printInformation = (_settings && _settings->isEnabled("information"));
+
     // fill up "macros" with empty configuration macros
     std::set<std::string> macros;
     for (std::string::size_type pos = 0; pos < cfg.size();) {
@@ -2917,7 +2919,7 @@ bool Preprocessor::validateCfg(const std::string &code, const std::string &cfg)
                 if (pos2 < code.size() && (std::isalnum((unsigned char)code[pos2]) || code[pos2] == '_'))
                     continue;
                 // macro is used in code, return false
-                if (_settings && _settings->isEnabled("information"))
+                if (printInformation)
                     validateCfgError(cfg, macro);
                 return false;
             }

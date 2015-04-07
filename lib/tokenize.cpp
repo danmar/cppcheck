@@ -7515,6 +7515,7 @@ void Tokenizer::simplifyEnum()
     std::string className;
     int classLevel = 0;
     bool goback = false;
+    const bool printStyle = _settings->isEnabled("style");
     for (Token *tok = list.front(); tok; tok = tok->next()) {
 
         if (goback) {
@@ -7776,7 +7777,7 @@ void Tokenizer::simplifyEnum()
                                         if (prev->str() == "(" && (!Token::Match(prev->tokAt(-2), "%type%|::|*|& %type% (") || prev->strAt(-2) == "else"))
                                             continue;
                                         shadowVars.insert(arg->str());
-                                        if (inScope && _settings->isEnabled("style")) {
+                                        if (inScope && printStyle) {
                                             const EnumValue& enumValue = enumValues.find(arg->str())->second;
                                             duplicateEnumError(arg, enumValue.name, "Function argument");
                                         }
@@ -7796,7 +7797,7 @@ void Tokenizer::simplifyEnum()
                                         (Token::Match(prev->previous(), "%type% *|&") && (prev->previous()->isStandardType() || prev->strAt(-1) == "const" || Token::Match(prev->tokAt(-2), ";|{|}")))) {
                                         // variable declaration?
                                         shadowVars.insert(tok3->str());
-                                        if (inScope && _settings->isEnabled("style")) {
+                                        if (inScope && printStyle) {
                                             const EnumValue& enumValue = enumValues.find(tok3->str())->second;
                                             duplicateEnumError(tok3, enumValue.name, "Variable");
                                         }

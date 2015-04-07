@@ -584,8 +584,8 @@ template<class T> static T getvalue(const int test, const T value1, const T valu
 
 void CheckCondition::checkIncorrectLogicOperator()
 {
-    bool style = _settings->isEnabled("style");
-    bool warning = _settings->isEnabled("warning");
+    const bool style = _settings->isEnabled("style");
+    const bool warning = _settings->isEnabled("warning");
     if (!style && !warning)
         return;
 

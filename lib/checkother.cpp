@@ -1785,6 +1785,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 //---------------------------------------------------------------------------
 void CheckOther::checkZeroDivision()
 {
+    const bool printWarnings = _settings->isEnabled("warning");
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
             MathLib::isInt(tok->strAt(4)) &&
@@ -1804,7 +1806,7 @@ void CheckOther::checkZeroDivision()
                     continue;
                 if (value->condition == nullptr)
                     zerodivError(tok, value->inconclusive);
-                else if (_settings->isEnabled("warning"))
+                else if (printWarnings)
                     zerodivcondError(value->condition,tok,value->inconclusive);
             }
         }
@@ -1872,7 +1874,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 void CheckOther::checkMathFunctions()
 {
     bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
-    bool printWarnings = _settings->isEnabled("warning");
+    const bool printWarnings = _settings->isEnabled("warning");
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -2553,8 +2555,8 @@ void CheckOther::checkIncompleteArrayFill()
 {
     if (!_settings->inconclusive)
         return;
-    bool warning = _settings->isEnabled("warning");
-    bool portability = _settings->isEnabled("portability");
+    const bool warning = _settings->isEnabled("warning");
+    const bool portability = _settings->isEnabled("portability");
     if (!portability && !warning)
         return;
 

@@ -118,8 +118,8 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
 
 void CheckAutoVariables::assignFunctionArg()
 {
-    bool style = _settings->isEnabled("style");
-    bool warning = _settings->isEnabled("warning");
+    const bool style = _settings->isEnabled("style");
+    const bool warning = _settings->isEnabled("warning");
     if (!style && !warning)
         return;
 

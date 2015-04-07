@@ -99,6 +99,8 @@ static bool astGetSizeSign(const Settings *settings, const Token *tok, unsigned 
 
 void CheckType::checkTooBigBitwiseShift()
 {
+    const bool printWarnings = _settings->isEnabled("warning");
+
     // unknown sizeof(int) => can't run this checker
     if (_settings->platformType == Settings::Unspecified)
         return;
@@ -134,7 +136,7 @@ void CheckType::checkTooBigBitwiseShift()
             const ValueFlow::Value *value = tok->astOperand2()->getValueGE(lhsbits, _settings);
             if (!value)
                 continue;
-            if (value->condition && !_settings->isEnabled("warning"))
+            if (value->condition && !printWarnings)
                 continue;
             if (value->inconclusive && !_settings->inconclusive)
                 continue;

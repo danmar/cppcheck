@@ -308,6 +308,8 @@ void CheckNullPointer::nullPointerLinkedList()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
+    const bool printWarnings = _settings->isEnabled("warning");
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Variable *var = tok->variable();
         if (!var || !var->isPointer() || tok == var->nameToken())
@@ -336,7 +338,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 if (value->condition == nullptr)
                     nullPointerError(tok, tok->str(), false, value->defaultArg);
-                else if (_settings->isEnabled("warning"))
+                else if (printWarnings)
                     nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
             }
             continue;
@@ -356,7 +358,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
         if (value->condition == nullptr)
             nullPointerError(tok, tok->str(), value->inconclusive, value->defaultArg);
-        else if (_settings->isEnabled("warning"))
+        else if (printWarnings)
             nullPointerError(tok, tok->str(), value->condition, value->inconclusive);
     }
 }

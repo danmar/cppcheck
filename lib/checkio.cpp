@@ -100,6 +100,8 @@ void CheckIO::checkFileUsage()
     };
     static const std::set<std::string> whitelist(_whitelist, _whitelist + sizeof(_whitelist)/sizeof(*_whitelist));
     const bool windows = _settings->isWindowsPlatform();
+    const bool printPortability = _settings->isEnabled("portability");
+    const bool printWarnings = _settings->isEnabled("warning");
 
     std::map<unsigned int, Filepointer> filepointers;
 
@@ -179,7 +181,7 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
-                    if (_settings->isEnabled("portability") && tok->str() == "fflush") {
+                    if (printPortability && tok->str() == "fflush") {
                         fileTok = tok->tokAt(2);
                         if (fileTok) {
                             if (fileTok->str() == "stdin")
@@ -270,7 +272,7 @@ void CheckIO::checkFileUsage()
                 case Filepointer::POSITIONING:
                     if (f.mode == CLOSED)
                         useClosedFileError(tok);
-                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && _settings->isEnabled("warning"))
+                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && printWarnings)
                         seekOnAppendedFileError(tok);
                     break;
                 case Filepointer::READ:

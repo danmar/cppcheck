@@ -1238,6 +1238,7 @@ void CheckStl::checkAutoPointer()
     std::map<unsigned int, const std::string> mallocVarId; // variables allocated by the malloc-like function
     static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
     const int malloc = _settings->library.alloc("malloc"); // allocation function, which are not compatible with auto_ptr
+    const bool printStyle = _settings->isEnabled("style");
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
@@ -1284,7 +1285,7 @@ void CheckStl::checkAutoPointer()
             }
         } else {
             if (Token::Match(tok, "%name% = %var% ;")) {
-                if (_settings->isEnabled("style")) {
+                if (printStyle) {
                     std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->tokAt(2)->varId());
                     if (iter != autoPtrVarId.end()) {
                         autoPointerError(tok->tokAt(2));

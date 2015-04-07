@@ -35,6 +35,8 @@ void CheckVaarg::va_start_argument()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
+    const bool printWarnings = _settings->isEnabled("warning");
+
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
@@ -48,7 +50,7 @@ void CheckVaarg::va_start_argument()
                 const Variable* var = param2->variable();
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
-                if (var && var->index() + 2 < function->argCount() && _settings->isEnabled("warning")) {
+                if (var && var->index() + 2 < function->argCount() && printWarnings) {
                     std::list<Variable>::const_reverse_iterator it = function->argumentList.rbegin();
                     ++it;
                     wrongParameterTo_va_start_error(tok, var->name(), it->name());
