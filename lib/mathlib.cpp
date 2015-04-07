@@ -605,7 +605,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
 std::string MathLib::mod(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        bigint b = toLongNumber(second);
+        const bigint b = toLongNumber(second);
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
         return toString(toLongNumber(first) % b);
