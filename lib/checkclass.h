@@ -69,6 +69,7 @@ public:
         checkClass.initializerListOrder();
         checkClass.initializationListUsage();
         checkClass.checkSelfInitialization();
+        checkClass.checkUsageBeforeInitialization();
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
@@ -128,6 +129,9 @@ public:
     /** @brief Check for initialization of a member with itself */
     void checkSelfInitialization();
 
+    /** @brief Check for member usage before it is initialized */
+    void checkUsageBeforeInitialization();
+
     void copyconstructors();
 
     /** @brief call of pure virtual function */
@@ -166,6 +170,7 @@ private:
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
     void selfInitializationError(const Token* tok, const std::string& varname);
+    void usageBeforeInitializationError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
@@ -197,6 +202,7 @@ private:
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
         c.selfInitializationError(0, "var");
+        c.usageBeforeInitializationError(0, "classname", "varname", false);
         c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
     }
 
@@ -221,6 +227,7 @@ private:
                "- Order of initializations\n"
                "- Suggest usage of initialization list\n"
                "- Initialization of a member with itself\n"
+               "- Usage of a member before it is initialized\n"
                "- Suspicious subtraction from 'this'\n"
                "- Call of pure virtual function in constructor/destructor\n"
                "- Duplicated inherited data members\n";
