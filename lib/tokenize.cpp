@@ -79,6 +79,17 @@ static const Token * isFunctionHead(const Token *tok, const std::string &endsWit
     }
     return nullptr;
 }
+
+static bool isClassStructUnionStart(const Token * tok)
+{
+    if (tok->str() != "{")
+        return false;
+    const Token * tok2 = tok->previous();
+    while (tok2 && !Token::Match(tok2, "class|struct|union|{|;"))
+        tok2 = tok2->previous();
+    return Token::Match(tok2, "class|struct|union");
+}
+
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer() :
@@ -2590,14 +2601,14 @@ void Tokenizer::setVarId()
                 scopeInfo.push(variableId);
         } else if (tok->str() == "{") {
             // parse anonymous unions as part of the current scope
-            if (!(tok->strAt(-1) == "union" && Token::simpleMatch(tok->link(), "} ;")) &&
-                !(initlist && Token::Match(tok->previous(), "%name%|>|>>") && Token::Match(tok->link(), "} ,|{"))) {
+            if (!(initlist && Token::Match(tok->previous(), "%name%|>|>>") && Token::Match(tok->link(), "} ,|{"))) {
                 bool isExecutable;
                 if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%") ||
                     (initlist && tok->strAt(-1) == "}")) {
                     isExecutable = true;
                 } else {
-                    isExecutable = (initlist || tok->strAt(-1) == "else");
+                    isExecutable = ((scopeStack.top().isExecutable || initlist || tok->strAt(-1) == "else") &&
+                                    !isClassStructUnionStart(tok));
                     scopeInfo.push(variableId);
                 }
                 initlist = false;

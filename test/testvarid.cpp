@@ -85,6 +85,7 @@ private:
         TEST_CASE(varid54); // hang
         TEST_CASE(varid55); // #5868: Function::addArgument with varid 0 for argument named the same as a typedef
         TEST_CASE(varid56); // function with a throw()
+        TEST_CASE(varid57); // #6636: new scope by {}
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -989,6 +990,37 @@ private:
                                  "void fred ( int x@1 ) throw ( ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
         ASSERT_EQUALS(expected3, tokenize(code3, false, "test.cpp"));
+    }
+
+    void varid57() { // #6636: new scope by {}
+        const char code1[] = "void SmoothPath() {\n"
+                             "    {\n" // new scope
+                             "        float dfx = (p2p0.x > 0.0f)?\n"
+                             "                    ((n0->xmax() * SQUARE_SIZE) - p0.x):\n"
+                             "                    ((n0->xmin() * SQUARE_SIZE) - p0.x);\n"
+                             "        float tx = dfx / dx;\n"
+                             "        if (hEdge) {\n"
+                             "        }\n"
+                             "        if (vEdge) {\n"
+                             "            pi.z = tx;\n"
+                             "        }\n"
+                             "    }\n"
+                             "}\n";
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: void SmoothPath ( ) {\n"
+                                 "2:\n"
+                                 "3: float dfx@1 ; dfx@1 = ( p2p0 . x > 0.0f ) ?\n"
+                                 "4: ( ( n0 . xmax ( ) * SQUARE_SIZE ) - p0 . x ) :\n"
+                                 "5: ( ( n0 . xmin ( ) * SQUARE_SIZE ) - p0 . x ) ;\n"
+                                 "6: float tx@2 ; tx@2 = dfx@1 / dx ;\n"
+                                 "7: if ( hEdge ) {\n"
+                                 "8: }\n"
+                                 "9: if ( vEdge ) {\n"
+                                 "10: pi . z = tx@2 ;\n"
+                                 "11: }\n"
+                                 "12:\n"
+                                 "13: }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
     }
 
     void varid_cpp_keywords_in_c_code() {
