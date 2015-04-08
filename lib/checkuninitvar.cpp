@@ -1325,7 +1325,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                     bool possibleInitElse(number_of_if > 0 || suppressErrors);
                     bool noreturnElse = false;
-                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, nullptr, alloc, membervar);
+                    const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar);
 
                     std::map<unsigned int, int> varValueElse;
                     if (!alwaysTrue && !initelse && !noreturnElse) {
@@ -1347,11 +1347,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         (alwaysTrue || initelse || noreturnElse))
                         return true;
 
-                    if ((initif || initelse || possibleInitElse) && !noreturnIf && !noreturnElse) {
+                    if (initif || initelse || possibleInitElse)
                         ++number_of_if;
+                    if (!initif && !noreturnIf)
                         variableValue.insert(varValueIf.begin(), varValueIf.end());
+                    if (!initelse && !noreturnElse)
                         variableValue.insert(varValueElse.begin(), varValueElse.end());
-                    }
                 }
             }
         }

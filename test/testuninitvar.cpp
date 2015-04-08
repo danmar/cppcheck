@@ -2607,6 +2607,15 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVarB("int f(int a) {\n" // #6583
+                        "    int x;\n"
+                        "    if (a < 2) exit(1);\n"
+                        "    else if (a == 2) x = 0;\n"
+                        "    else exit(2);\n"
+                        "    return x;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVarB("int f(int a) {\n" // #4560
                         "    int x = 1, y;\n"
                         "    if (a) x = 0;\n"
