@@ -61,7 +61,7 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param extra Extra file extensions
-     * @param extra recursive Enable recursion
+     * @param recursive Enable recursion
      */
     static void addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive);
 

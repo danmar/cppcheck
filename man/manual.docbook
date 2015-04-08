@@ -1183,7 +1183,7 @@ Checking unusedvar.cpp...
 
     <para>To get started writing rules, see the related articles here:</para>
 
-    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
+    <para><ulink url="http://sourceforge.net/projects/cppcheck/files/Articles/">http://sourceforge.net/projects/cppcheck/files/Articles/</ulink></para>
 
     <para>The file format for rules is:</para>
 
@@ -1291,7 +1291,7 @@ Checking unusedvar.cpp...
     for instance Python.</para>
 
     <para>The <literal>cppcheckdata.py</literal> module
-    (<uri>http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py</uri>)
+      (<ulink url="http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py">http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py</ulink>)
     allows you to load such dump file. It contains
     <literal>Token</literal>/<literal>Variable</literal>/<literal>ValueFlow.Value</literal>/<literal>Scope</literal>
     classes that are similar to the <literal>C++</literal> classes in
