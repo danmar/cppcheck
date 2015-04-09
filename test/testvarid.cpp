@@ -86,6 +86,7 @@ private:
         TEST_CASE(varid55); // #5868: Function::addArgument with varid 0 for argument named the same as a typedef
         TEST_CASE(varid56); // function with a throw()
         TEST_CASE(varid57); // #6636: new scope by {}
+        TEST_CASE(varid58); // #6638: for loop in for condition
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -1020,6 +1021,25 @@ private:
                                  "11: }\n"
                                  "12:\n"
                                  "13: }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+    }
+
+    void varid58() { // #6638: for loop in for condition
+        const char code1[] = "void f() {\n"
+                             "    for (int i;\n"
+                             "         ({for(int i;i;++i){i++;}i++;}),i;\n"
+                             "         ({for(int i;i;++i){i++;}i++;}),i++) {\n"
+                             "         i++;\n"
+                             "    }\n"
+                             "}\n";
+        const char expected1[] = "\n\n##file 0\n"
+                                 "1: void f ( ) {\n"
+                                 "2: for ( int i@1 ;\n"
+                                 "3: { for ( int i@2 ; i@2 ; ++ i@2 ) { i@2 ++ ; } i@1 ++ ; } , i@1 ;\n"
+                                 "4: { for ( int i@3 ; i@3 ; ++ i@3 ) { i@3 ++ ; } i@1 ++ ; } , i@1 ++ ) {\n"
+                                 "5: i@1 ++ ;\n"
+                                 "6: }\n"
+                                 "7: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
     }
 

@@ -2575,11 +2575,11 @@ void Tokenizer::setVarId()
     std::stack<scopeStackEntryType> scopeStack;
 
     scopeStack.push(scopeStackEntryType());
-    const Token * functionDeclEnd = nullptr;
+    std::stack<const Token *> functionDeclEndStack;
     bool initlist = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok == functionDeclEnd) {
-            functionDeclEnd = nullptr;
+        if (!functionDeclEndStack.empty() && tok == functionDeclEndStack.top()) {
+            functionDeclEndStack.pop();
             if (tok->str() == ":")
                 initlist = true;
             else if (tok->str() == ";") {
@@ -2589,16 +2589,20 @@ void Tokenizer::setVarId()
                 scopeInfo.pop();
             } else if (tok->str() == "{")
                 scopeStack.push(scopeStackEntryType(true, _varId));
-        } else if (!functionDeclEnd && !initlist && tok->str()=="(") {
+        } else if (!initlist && tok->str()=="(") {
+            const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
-                functionDeclEnd = isFunctionHead(tok, "{:;");
+                newFunctionDeclEnd = isFunctionHead(tok, "{:;");
             else {
                 Token const * tokenLinkNext = tok->link()->next();
                 if (tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
-                    functionDeclEnd = tokenLinkNext;
+                    newFunctionDeclEnd = tokenLinkNext;
             }
-            if (functionDeclEnd)
+            if (newFunctionDeclEnd &&
+                (functionDeclEndStack.empty() || newFunctionDeclEnd != functionDeclEndStack.top())) {
+                functionDeclEndStack.push(newFunctionDeclEnd);
                 scopeInfo.push(variableId);
+            }
         } else if (tok->str() == "{") {
             // parse anonymous unions as part of the current scope
             if (!(initlist && Token::Match(tok->previous(), "%name%|>|>>") && Token::Match(tok->link(), "} ,|{"))) {
