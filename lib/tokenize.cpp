@@ -80,14 +80,17 @@ static const Token * isFunctionHead(const Token *tok, const std::string &endsWit
     return nullptr;
 }
 
-static bool isClassStructUnionStart(const Token * tok)
+/**
+ * is tok the start brace { of a class, struct, union, or enum
+ */
+static bool isClassStructUnionEnumStart(const Token * tok)
 {
-    if (tok->str() != "{")
+    if (!Token::Match(tok->previous(), "class|struct|union|enum|%name%|>|>> {"))
         return false;
     const Token * tok2 = tok->previous();
-    while (tok2 && !Token::Match(tok2, "class|struct|union|{|;"))
+    while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|;"))
         tok2 = tok2->previous();
-    return Token::Match(tok2, "class|struct|union");
+    return Token::Match(tok2, "class|struct|union|enum");
 }
 
 //---------------------------------------------------------------------------
@@ -2612,7 +2615,7 @@ void Tokenizer::setVarId()
                     isExecutable = true;
                 } else {
                     isExecutable = ((scopeStack.top().isExecutable || initlist || tok->strAt(-1) == "else") &&
-                                    !isClassStructUnionStart(tok));
+                                    !isClassStructUnionEnumStart(tok));
                     scopeInfo.push(variableId);
                 }
                 initlist = false;
