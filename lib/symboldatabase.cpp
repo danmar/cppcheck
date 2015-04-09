@@ -1301,7 +1301,6 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              (tok->previous()->isName() || tok->strAt(-1) == ">" || tok->strAt(-1) == "&" || tok->strAt(-1) == "*" || // Either a return type in front of tok
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct())) { // or a ctor/dtor
-
         const Token* tok1 = tok->previous();
 
         // skip over destructor "~"
@@ -1312,6 +1311,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         while (Token::simpleMatch(tok1, "::")) {
             if (Token::Match(tok1->tokAt(-1), "%name%"))
                 tok1 = tok1->tokAt(-2);
+            else if (tok1->strAt(-1) == ">" && tok1->linkAt(-1) && Token::Match(tok1->linkAt(-1)->previous(), "%name%"))
+                tok1 = tok1->linkAt(-1)->tokAt(-2);
             else
                 tok1 = tok1->tokAt(-1);
         }
@@ -1717,6 +1718,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
     // skip class/struct name
     if (destructor)
         tok1 = (*tok)->tokAt(-3);
+    else if ((*tok)->strAt(-2) == ">" && (*tok)->linkAt(-2))
+        tok1 = (*tok)->linkAt(-2)->previous();
     else
         tok1 = (*tok)->tokAt(-2);
 
@@ -1730,11 +1733,25 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 
     // back up to head of path
     while (tok1 && tok1->previous() && tok1->previous()->str() == "::" &&
-           tok1->tokAt(-2) && tok1->tokAt(-2)->isName()) {
-        path = tok1->str() + " :: " + path;
-        tok1 = tok1->tokAt(-2);
-        count++;
-        path_length++;
+           tok1->tokAt(-2) && (tok1->tokAt(-2)->isName() || (tok1->strAt(-2) == ">" && tok1->linkAt(-2)))) {
+        if (tok1->strAt(-2) == ">") {
+            tok1 = tok1->tokAt(-2);
+            const Token * tok2 = tok1->previous();
+            path = ":: " + path;
+            if (tok2) {
+                do {
+                    path = tok1->str() + " " + path;
+                    tok1 = tok1->previous();
+                    count++;
+                    path_length++;
+                } while (tok1 != tok2);
+            }
+        } else {
+            path = tok1->str() + " :: " + path;
+            tok1 = tok1->tokAt(-2);
+            count++;
+            path_length++;
+        }
     }
 
     if (tok1 && count) {
