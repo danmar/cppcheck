@@ -257,7 +257,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
         tok = tok->next();
 
     if (Token::Match(tok, "free|kfree ( %varid% ) [;:]", varid) ||
-        Token::Match(tok, "free|kfree ( %varid% -", varid) ||
+        Token::Match(tok, "free|kfree ( %varid% -|,", varid) ||
         Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
         return Malloc;
 

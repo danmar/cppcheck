@@ -163,6 +163,7 @@ private:
         TEST_CASE(simple7);
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
         TEST_CASE(simple11);
+        TEST_CASE(nonstd_free);
         TEST_CASE(new_nothrow);
 
         TEST_CASE(staticvar);
@@ -970,6 +971,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nonstd_free() {
+        check("void f() {\n"
+              "    void* mem = malloc(100, foo);" // Non-standard malloc() implementation
+              "    free(mem, bar);" // Non-standard free() implementation (#5665)
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void new_nothrow() {
