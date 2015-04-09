@@ -3400,19 +3400,6 @@ const Function *Scope::getDestructor() const
 
 //---------------------------------------------------------------------------
 
-unsigned int Scope::getNestedNonFunctions() const
-{
-    unsigned int nested = 0;
-    std::list<Scope *>::const_iterator ni;
-    for (ni = nestedList.begin(); ni != nestedList.end(); ++ni) {
-        if ((*ni)->type != Scope::eFunction)
-            nested++;
-    }
-    return nested;
-}
-
-//---------------------------------------------------------------------------
-
 bool SymbolDatabase::isCPP() const
 {
     return _tokenizer->isCPP();

@@ -573,20 +573,6 @@ const char *Token::chrInFirstWord(const char *str, char c)
     }
 }
 
-int Token::firstWordLen(const char *str)
-{
-    int len = 0;
-    for (;;) {
-        if (*str == ' ' || *str == 0)
-            break;
-
-        ++len;
-        ++str;
-    }
-
-    return len;
-}
-
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;

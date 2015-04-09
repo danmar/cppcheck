@@ -733,13 +733,6 @@ private:
      */
     static const char *chrInFirstWord(const char *str, char c);
 
-    /**
-     * Works almost like strlen() except
-     * if str has empty space &apos; &apos; character, that character is handled
-     * as if it were &apos;\\0&apos;
-     */
-    static int firstWordLen(const char *str);
-
     std::string _str;
 
     Token *_next;
