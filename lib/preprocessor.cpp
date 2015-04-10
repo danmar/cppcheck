@@ -1217,6 +1217,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     unsigned int linenr = 0;
     std::istringstream istr(filedata);
     std::string line;
+    const bool printDebug = (_settings && _settings->debugwarnings);
     while (std::getline(istr, line)) {
         ++linenr;
 
@@ -1414,7 +1415,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 if (!includeStack.top().second) {
                     ret.push_back(def);
                 } else {
-                    if (_errorLogger && _settings && _settings->debugwarnings) {
+                    if (_errorLogger && printDebug) {
                         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                         const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug,
                                                                "Configuration not considered: " + def +" for file:"+includeStack.top().first, "debug", false);
@@ -1578,7 +1579,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (unhandled) {
             // unhandled ifdef configuration..
-            if (_errorLogger && _settings && _settings->debugwarnings) {
+            if (_errorLogger && printDebug) {
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 const ErrorLogger::ErrorMessage errmsg(locationList, Severity::debug, "unhandled configuration: " + *it, "debug", false);
                 _errorLogger->reportErr(errmsg);

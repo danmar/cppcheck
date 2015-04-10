@@ -75,17 +75,18 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 void CheckClass::constructors()
 {
-    const bool style = _settings->isEnabled("style");
-    const bool warnings = _settings->isEnabled("warning");
-    if (!style && !warnings)
+    const bool printStyle = _settings->isEnabled("style");
+    const bool printWarnings = _settings->isEnabled("warning");
+    if (!printStyle && !printWarnings)
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
 
         // There are no constructors.
-        if (scope->numConstructors == 0 && style) {
+        if (scope->numConstructors == 0 && printStyle) {
             // If there is a private variable, there should be a constructor..
             std::list<Variable>::const_iterator var;
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
@@ -97,7 +98,7 @@ void CheckClass::constructors()
             }
         }
 
-        if (!warnings)
+        if (!printWarnings)
             continue;
 
         // #3196 => bailout if there are nested unions
@@ -176,7 +177,7 @@ void CheckClass::constructors()
                     !(var->type() && var->type()->needInitialization != Type::True) &&
                     (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
                     if (!var->typeStartToken()->isStandardType()) {
-                        if (_settings->inconclusive)
+                        if (printInconclusive)
                             inconclusive = true;
                         else
                             continue;
@@ -206,7 +207,7 @@ void CheckClass::constructors()
                             func->arg && func->arg->link()->next() == func->functionScope->classStart &&
                             func->functionScope->classStart->link() == func->functionScope->classStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
-                            if (_settings->inconclusive)
+                            if (printInconclusive)
                                 uninitVarError(func->token, scope->className, var->name(), true);
                         } else
                             uninitVarError(func->token, scope->className, var->name(), inconclusive);
@@ -1466,6 +1467,7 @@ void CheckClass::virtualDestructor()
     // * base class is deleted
     // unless inconclusive in which case:
     // * base class has virtual members but doesn't have virtual destructor
+    const bool printInconclusive = _settings->inconclusive;
 
     std::list<const Function *> inconclusive_errors;
 
@@ -1475,7 +1477,7 @@ void CheckClass::virtualDestructor()
 
         // Skip base classes (unless inconclusive)
         if (scope->definedType->derivedFrom.empty()) {
-            if (_settings->inconclusive) {
+            if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->isVirtual()) {
                     std::list<Function>::const_iterator func;

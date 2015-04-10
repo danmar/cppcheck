@@ -118,9 +118,9 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
 
 void CheckAutoVariables::assignFunctionArg()
 {
-    const bool style = _settings->isEnabled("style");
-    const bool warning = _settings->isEnabled("warning");
-    if (!style && !warning)
+    const bool printStyle = _settings->isEnabled("style");
+    const bool printWarning = _settings->isEnabled("warning");
+    if (!printStyle && !printWarning)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -132,9 +132,9 @@ void CheckAutoVariables::assignFunctionArg()
                 isNonReferenceArg(tok->next()) &&
                 !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope) &&
                 !Token::findsimplematch(tok, "goto", scope->classEnd)) {
-                if (tok->next()->variable()->isPointer() && warning)
+                if (tok->next()->variable()->isPointer() && printWarning)
                     errorUselessAssignmentPtrArg(tok->next());
-                else if (style)
+                else if (printStyle)
                     errorUselessAssignmentArg(tok->next());
             }
         }
@@ -143,6 +143,7 @@ void CheckAutoVariables::assignFunctionArg()
 
 void CheckAutoVariables::autoVariables()
 {
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -157,7 +158,7 @@ void CheckAutoVariables::autoVariables()
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
-                if (_settings->inconclusive) {
+                if (printInconclusive) {
                     const Variable * var1 = tok->next()->variable();
                     if (var1 && var1->isArgument() && var1->isPointer()) {
                         const Token * const var2tok = tok->tokAt(6);
@@ -168,7 +169,7 @@ void CheckAutoVariables::autoVariables()
                 tok = tok->tokAt(6);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
-                if (_settings->inconclusive) {
+                if (printInconclusive) {
                     const Variable * var1 = tok->next()->variable();
                     if (var1 && var1->isArgument() && var1->isPointer()) {
                         if (isAutoVarArray(tok->tokAt(5)))

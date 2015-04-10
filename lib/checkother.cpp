@@ -433,6 +433,7 @@ void CheckOther::invalidPointerCast()
     if (!_settings->isEnabled("portability"))
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -491,7 +492,7 @@ void CheckOther::invalidPointerCast()
 
             std::string fromType = analyzeType(fromTok);
             std::string toType = analyzeType(toTok);
-            if (fromType != toType && !fromType.empty() && !toType.empty() && (toTok->str() != "char" || _settings->inconclusive))
+            if (fromType != toType && !fromType.empty() && !toType.empty() && (toTok->str() != "char" || printInconclusive))
                 invalidPointerCastError(tok, fromType, toType, toTok->str() == "char");
         }
     }
@@ -585,11 +586,12 @@ static void eraseMemberAssignments(const unsigned int varId, const std::map<unsi
 
 void CheckOther::checkRedundantAssignment()
 {
-    const bool performance = _settings->isEnabled("performance");
-    const bool warning = _settings->isEnabled("warning");
-    if (!warning && !performance)
+    const bool printPerformance = _settings->isEnabled("performance");
+    const bool printWarning = _settings->isEnabled("warning");
+    if (!printWarning && !printPerformance)
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
@@ -660,11 +662,11 @@ void CheckOther::checkRedundantAssignment()
                             }
                         }
                         if (error) {
-                            if (warning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
-                            else if (performance) {
+                            else if (printPerformance) {
                                 const bool nonlocal = nonLocal(it->second->variable());
-                                if (_settings->inconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
+                                if (printInconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
                                     redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
                             }
                         }
@@ -699,9 +701,9 @@ void CheckOther::checkRedundantAssignment()
                             memAssignments[param1->varId()] = tok;
                         else {
                             const std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
-                            if (warning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                            if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
-                            else if (performance)
+                            else if (printPerformance)
                                 redundantCopyError(it->second, tok, param1->str());
                         }
                     }
@@ -1135,7 +1137,7 @@ void CheckOther::checkUnreachableCode()
 {
     if (!_settings->isEnabled("style"))
         return;
-
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -1170,7 +1172,7 @@ void CheckOther::checkUnreachableCode()
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
             bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
 
-            if (secondBreak && (_settings->inconclusive || !inconclusive)) {
+            if (secondBreak && (printInconclusive || !inconclusive)) {
                 if (Token::Match(secondBreak, "continue|goto|throw") ||
                     (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
                     duplicateBreakError(secondBreak, inconclusive);
@@ -1275,9 +1277,9 @@ void CheckOther::memsetZeroBytesError(const Token *tok, const std::string &varna
 
 void CheckOther::checkMemsetInvalid2ndParam()
 {
-    const bool portability = _settings->isEnabled("portability");
-    const bool warning = _settings->isEnabled("warning");
-    if (!warning && !portability)
+    const bool printPortability = _settings->isEnabled("portability");
+    const bool printWarning = _settings->isEnabled("warning");
+    if (!printWarning && !printPortability)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1302,9 +1304,9 @@ void CheckOther::checkMemsetInvalid2ndParam()
                     top = top->astParent();
 
                 // Check if second parameter is a float variable or a float literal != 0.0f
-                if (portability && astIsFloat(top,false)) {
+                if (printPortability && astIsFloat(top,false)) {
                     memsetFloatError(secondParamTok, top->expressionString());
-                } else if (warning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
+                } else if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                     const long long int value = MathLib::toLongNumber(secondParamTok->str());
                     if (value < -128 || value > 255)
                         memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
@@ -1786,6 +1788,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type)
 void CheckOther::checkZeroDivision()
 {
     const bool printWarnings = _settings->isEnabled("warning");
+    const bool printInconclusive = _settings->inconclusive;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
@@ -1802,7 +1805,7 @@ void CheckOther::checkZeroDivision()
             // Value flow..
             const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
             if (value) {
-                if (!_settings->inconclusive && value->inconclusive)
+                if (!printInconclusive && value->inconclusive)
                     continue;
                 if (value->condition == nullptr)
                     zerodivError(tok, value->inconclusive);
@@ -2071,6 +2074,7 @@ void CheckOther::checkInvalidFree()
 {
     std::map<unsigned int, bool> allocatedVariables;
 
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -2088,7 +2092,7 @@ void CheckOther::checkInvalidFree()
             else if (Token::Match(tok, "%var% = %name% +|-") &&
                      tok->varId() == tok->tokAt(2)->varId() &&
                      allocatedVariables.find(tok->varId()) != allocatedVariables.end()) {
-                if (_settings->inconclusive)
+                if (printInconclusive)
                     allocatedVariables[tok->varId()] = true;
                 else
                     allocatedVariables.erase(tok->varId());
@@ -2555,9 +2559,9 @@ void CheckOther::checkIncompleteArrayFill()
 {
     if (!_settings->inconclusive)
         return;
-    const bool warning = _settings->isEnabled("warning");
-    const bool portability = _settings->isEnabled("portability");
-    if (!portability && !warning)
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool printPortability = _settings->isEnabled("portability");
+    if (!printPortability && !printWarning)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2574,9 +2578,9 @@ void CheckOther::checkIncompleteArrayFill()
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
-                        if (warning)
+                        if (printWarning)
                             incompleteArrayFillError(tok, var->name(), tok->str(), false);
-                    } else if (var->typeStartToken()->str() == "bool" && portability) // sizeof(bool) is not 1 on all platforms
+                    } else if (var->typeStartToken()->str() == "bool" && printPortability) // sizeof(bool) is not 1 on all platforms
                         incompleteArrayFillError(tok, var->name(), tok->str(), true);
                 }
             }

@@ -517,6 +517,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             return;
     }
 
+    const bool printInconclusive = _settings->inconclusive;
     const MathLib::bigint total_size = arrayInfo.element_size() * size;
     const unsigned int declarationId = arrayInfo.declarationId();
 
@@ -540,7 +541,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     // out of bounds then this flag will be set.
     bool pointerIsOutOfBounds = false;
 
-    const bool isPortabilityEnabled = _settings->isEnabled("portability");
+    const bool printPortability = _settings->isEnabled("portability");
 
     for (const Token* const end = tok->scope()->classEnd; tok && tok != end; tok = tok->next()) {
         if (declarationId != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", declarationId)) {
@@ -632,7 +633,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                             // The access is still within the memory range for the array
                             // so it may be intentional.
-                            else if (_settings->inconclusive) {
+                            else if (printInconclusive) {
                                 arrayIndexOutOfBoundsError(tok->tokAt(1 + varcount), arrayInfo, indexes);
                                 break; // only warn about the first one
                             }
@@ -669,7 +670,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 if (var && var->isArray() && var->dimensions().size() == 1) {
                     const MathLib::bigint len = var->dimension(0);
                     if (len > total_size) {
-                        if (_settings->inconclusive)
+                        if (printInconclusive)
                             possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
                         continue;
                     }
@@ -707,7 +708,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // undefined behaviour: result of pointer arithmetic is out of bounds
         if (declarationId && Token::Match(tok, "= %varid% + %num% ;", declarationId)) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(3));
-            if (isPortabilityEnabled && index > size)
+            if (printPortability && index > size)
                 pointerOutOfBoundsError(tok->tokAt(2));
             if (index >= size && Token::Match(tok->tokAt(-2), "[;{}] %varid% =", declarationId))
                 pointerIsOutOfBounds = true;
@@ -733,6 +734,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
                 return;
         }
     */
+    const bool printInconclusive = _settings->inconclusive;
     // Taking address?
     bool addressOf = false;
     {
@@ -819,7 +821,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
                     if (indexes[i].intvalue >= arrayInfo.num(i)) {
                         // The access is still within the memory range for the array
                         // so it may be intentional.
-                        if (_settings->inconclusive) {
+                        if (printInconclusive) {
                             arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
                             break; // only warn about the first one
                         }
@@ -839,8 +841,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
     const unsigned int declarationId = arrayInfo.declarationId();
 
-    const bool isPortabilityEnabled = _settings->isEnabled("portability");
-    const bool isWarningEnabled = _settings->isEnabled("warning");
+    const bool printPortability = _settings->isEnabled("portability");
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool printInconclusive = _settings->inconclusive;
 
     bool reassigned = false;
 
@@ -857,7 +860,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 valueFlowCheckArrayIndex(tok->next(), arrayInfo);
             }
 
-            else if (isPortabilityEnabled && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
+            else if (printPortability && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
                 // undefined behaviour: result of pointer arithmetic is out of bounds
                 const Token *index;
                 if (tok == tok->astParent()->astOperand1())
@@ -873,7 +876,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 }
             }
 
-            else if (isPortabilityEnabled && tok->astParent() && tok->astParent()->str() == "-") {
+            else if (printPortability && tok->astParent() && tok->astParent()->str() == "-") {
                 const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(declarationId);
                 if (var && var->isArray()) {
                     const Token *index = tok->astParent()->astOperand2();
@@ -893,7 +896,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             // Check function call..
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
-            if (isWarningEnabled && _settings->inconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
+            if (printWarning && printInconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
                 if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
                     const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(6));
                     if (total_size == num)
@@ -901,7 +904,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 }
             }
 
-            if (isWarningEnabled && Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
+            if (printWarning && Token::Match(tok, "strncpy|strncat ( %varid% ,", declarationId) && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
                 const Token* param3 = tok->linkAt(1)->previous();
 
                 // check for strncpy which is not terminated
@@ -910,7 +913,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     const MathLib::bigint num = MathLib::toLongNumber(param3->str());
 
                     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
-                    if (num >= total_size && _settings->inconclusive) {
+                    if (printInconclusive && num >= total_size) {
                         const Token *tok2 = tok->next()->link()->next();
                         for (; tok2; tok2 = tok2->next()) {
                             const Token* tok3 = tok->tokAt(2);

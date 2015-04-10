@@ -77,6 +77,7 @@ void CheckExceptionSafety::deallocThrow()
     if (!_settings->isEnabled("warning"))
         return;
 
+    const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // Deallocate a global/member pointer and then throw exception
@@ -113,7 +114,7 @@ void CheckExceptionSafety::deallocThrow()
             for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                 // Throw after delete -> Dead pointer
                 if (tok2->str() == "throw") {
-                    if (_settings->inconclusive) { // For inconclusive checking, throw directly.
+                    if (printInconclusive) { // For inconclusive checking, throw directly.
                         deallocThrowError(tok2, tok->str());
                         break;
                     }

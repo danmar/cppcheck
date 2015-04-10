@@ -37,6 +37,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const bool cStandard = _settings->standards.c >= Standards::C99 ;
 
     // Functions defined somewhere?
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
@@ -64,7 +65,7 @@ void CheckObsoleteFunctions::obsoleteFunctions()
                             reportError(tok, Severity::style, "obsoleteFunctions"+it->first, it->second);
                         }
                     }
-                    if (_settings->standards.c >= Standards::C99) {
+                    if (cStandard) {
                         // alloca : this function is obsolete in C but not in C++ (#4382)
                         it = _obsoleteC99Functions.find(tok->str());
                         if (it != _obsoleteC99Functions.end() && !(tok->str() == "alloca" && _tokenizer->isCPP())) {

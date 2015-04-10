@@ -309,6 +309,7 @@ void CheckNullPointer::nullPointerLinkedList()
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
     const bool printWarnings = _settings->isEnabled("warning");
+    const bool printInconclusive = (_settings->inconclusive);
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         const Variable *var = tok->variable();
@@ -320,7 +321,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!value)
             continue;
 
-        if (!_settings->inconclusive && value->inconclusive)
+        if (!printInconclusive && value->inconclusive)
             continue;
 
         // Is pointer used as function parameter?
@@ -347,7 +348,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         // Pointer dereference.
         bool unknown = false;
         if (!isPointerDeRef(tok,unknown)) {
-            if (_settings->inconclusive && unknown) {
+            if (printInconclusive && unknown) {
                 if (value->condition == nullptr)
                     nullPointerError(tok, tok->str(), true, value->defaultArg);
                 else

@@ -758,9 +758,9 @@ static bool if_findCompare(const Token * const tokBack)
 
 void CheckStl::if_find()
 {
-    const bool warning = _settings->isEnabled("warning");
-    const bool performance = _settings->isEnabled("performance");
-    if (!warning && !performance)
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool printPerformance = _settings->isEnabled("performance");
+    if (!printWarning && !printPerformance)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -811,11 +811,11 @@ void CheckStl::if_find()
                 if (if_findCompare(funcTok->next()))
                     continue;
 
-                if (warning && !container->stdStringLike)
+                if (printWarning && !container->stdStringLike)
                     if_findError(tok, false);
-                else if (performance && container->stdStringLike)
+                else if (printPerformance && container->stdStringLike)
                     if_findError(tok, true);
-            } else if (warning && Token::Match(tok, "std :: find|find_if (")) {
+            } else if (printWarning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
                 if (!if_findCompare(tok->tokAt(3))) {
                     if_findError(tok, false);
@@ -1044,7 +1044,8 @@ static bool isLocal(const Token *tok)
 
 void CheckStl::string_c_str()
 {
-    const bool performance = _settings->isEnabled("performance");
+    const bool printInconclusive = _settings->inconclusive;
+    const bool printPerformance = _settings->isEnabled("performance");
     // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
     static const char* const stl_string[] = {
         "string", "u16string", "u32string", "wstring"
@@ -1058,7 +1059,7 @@ void CheckStl::string_c_str()
 
     // Find all functions that take std::string as argument
     std::multimap<std::string, unsigned int> c_strFuncParam;
-    if (performance) {
+    if (printPerformance) {
         for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
             for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 if (c_strFuncParam.erase(func->tokenDef->str()) != 0) { // Check if function with this name was already found
@@ -1106,7 +1107,7 @@ void CheckStl::string_c_str()
                 const Variable* var = tok->next()->variable();
                 if (var && var->isPointer())
                     string_c_strError(tok);
-            } else if (performance && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
+            } else if (printPerformance && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
                        !Token::Match(tok->previous(), "::|.") && tok->varId() == 0 && tok->str() != scope->className) { // calling function. TODO: Add support for member functions
                 std::pair<std::multimap<std::string, unsigned int>::const_iterator, std::multimap<std::string, unsigned int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
                 for (std::multimap<std::string, unsigned int>::const_iterator i = range.first; i != range.second; ++i) {
@@ -1157,7 +1158,7 @@ void CheckStl::string_c_str()
                 } else if (Token::simpleMatch(tok, "return (") &&
                            Token::Match(tok->next()->link(), ") . c_str|data ( ) ;")) {
                     // Check for "+ localvar" or "+ std::string(" inside the bracket
-                    bool is_implicit_std_string = _settings->inconclusive;
+                    bool is_implicit_std_string = printInconclusive;
                     const Token *search_end = tok->next()->link();
                     for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
                         if (Token::Match(search_tok, "+ %var%") && isLocal(search_tok->next()) &&
@@ -1175,7 +1176,7 @@ void CheckStl::string_c_str()
                 }
             }
             // Using c_str() to get the return value is redundant if the function returns std::string or const std::string&.
-            else if (performance && (returnType == stdString || returnType == stdStringConstRef)) {
+            else if (printPerformance && (returnType == stdString || returnType == stdStringConstRef)) {
                 if (tok->str() == "return") {
                     const Token* tok2 = Token::findsimplematch(tok->next(), ";");
                     if (Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
@@ -1351,6 +1352,11 @@ void CheckStl::autoPointerMallocError(const Token *tok, const std::string& alloc
 
 void CheckStl::uselessCalls()
 {
+    const bool printPerformance = _settings->isEnabled("performance");
+    const bool printWarning = _settings->isEnabled("warning");
+    if (!printPerformance && !printWarning)
+        return;
+
     // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
     static const char* const stl_string[] = {
         "string", "u16string", "u32string", "wstring"
@@ -1363,23 +1369,18 @@ void CheckStl::uselessCalls()
         "unordered_set", "vector", "wstring"
     };
 
-    const bool performance = _settings->isEnabled("performance");
-    const bool warning = _settings->isEnabled("warning");
-    if (!performance && !warning)
-        return;
-
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (warning && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %name% [,)]") &&
+            if (printWarning && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %name% [,)]") &&
                 tok->varId() == tok->tokAt(4)->varId()) {
                 uselessCallsReturnValueError(tok->tokAt(4), tok->str(), tok->strAt(2));
-            } else if (performance && Token::Match(tok, "%var% . swap ( %name% )") &&
+            } else if (printPerformance && Token::Match(tok, "%var% . swap ( %name% )") &&
                        tok->varId() == tok->tokAt(4)->varId()) {
                 uselessCallsSwapError(tok, tok->str());
-            } else if (performance && Token::Match(tok, "%var% . substr (") &&
+            } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
                        tok->variable() && tok->variable()->isStlType(stl_string)) {
                 if (Token::Match(tok->tokAt(4), "0| )"))
                     uselessCallsSubstrError(tok, false);
@@ -1388,7 +1389,7 @@ void CheckStl::uselessCalls()
                         uselessCallsSubstrError(tok, false);
                 } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
-            } else if (warning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
+            } else if (printWarning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())

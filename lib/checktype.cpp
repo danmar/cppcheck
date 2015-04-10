@@ -100,6 +100,7 @@ static bool astGetSizeSign(const Settings *settings, const Token *tok, unsigned 
 void CheckType::checkTooBigBitwiseShift()
 {
     const bool printWarnings = _settings->isEnabled("warning");
+    const bool printInconclusive = _settings->inconclusive;
 
     // unknown sizeof(int) => can't run this checker
     if (_settings->platformType == Settings::Unspecified)
@@ -138,7 +139,7 @@ void CheckType::checkTooBigBitwiseShift()
                 continue;
             if (value->condition && !printWarnings)
                 continue;
-            if (value->inconclusive && !_settings->inconclusive)
+            if (value->inconclusive && !printInconclusive)
                 continue;
             tooBigBitwiseShiftError(tok, lhsbits, *value);
         }

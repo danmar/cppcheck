@@ -366,9 +366,9 @@ void CheckIO::seekOnAppendedFileError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckIO::invalidScanf()
 {
-    const bool warning = _settings->isEnabled("warning");
-    const bool portability = _settings->isEnabled("portability");
-    if (!warning && !portability)
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool printPortability = _settings->isEnabled("portability");
+    if (!printWarning && !printPortability)
         return;
 
     const bool windows = _settings->isWindowsPlatform();
@@ -405,9 +405,9 @@ void CheckIO::invalidScanf()
                 }
 
                 else if (std::isalpha((unsigned char)formatstr[i]) || formatstr[i] == '[') {
-                    if (warning && (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')))  // #3490 - field width limits are only necessary for string input
+                    if (printWarning && (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's')))  // #3490 - field width limits are only necessary for string input
                         invalidScanfError(tok, false);
-                    else if (portability && formatstr[i] != 'n' && formatstr[i] != 'c' && !windows)
+                    else if (printPortability && formatstr[i] != 'n' && formatstr[i] != 'c' && !windows)
                         invalidScanfError(tok, true); // Warn about libc bug in versions prior to 2.13-25
                     format = false;
                 }
@@ -514,8 +514,8 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const bool warning = _settings->isEnabled("warning");
-    const bool windows = _settings->isWindowsPlatform();
+    const bool printWarning = _settings->isEnabled("warning");
+    const bool isWindows = _settings->isWindowsPlatform();
 
     std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
@@ -548,7 +548,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 // formatstring found in library. Find format string and first argument belonging to format string.
                 if (!findFormat(static_cast<unsigned int>(formatStringArgNo), tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (windows && Token::Match(tok, "Format|AppendFormat (") &&
+            } else if (isWindows && Token::Match(tok, "Format|AppendFormat (") &&
                        Token::Match(tok->tokAt(-2), "%var% .") && tok->tokAt(-2)->variable() &&
                        tok->tokAt(-2)->variable()->typeStartToken()->str() == "CString") {
                 // Find second parameter and format string
@@ -562,7 +562,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 // Find forth parameter and format string
                 if (!findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok))
                     continue;
-            } else if (windows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
+            } else if (isWindows && Token::Match(tok, "sprintf_s|swprintf_s (")) {
                 // template <size_t size> int sprintf_s(char (&buffer)[size], const char *format, ...);
                 if (findFormat(1, tok->tokAt(2), &formatStringTok, &argListTok)) {
                     if (!formatStringTok)
@@ -573,7 +573,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                     if (!formatStringTok)
                         continue;
                 }
-            } else if (windows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
+            } else if (isWindows && Token::Match(tok, "_snprintf_s|_snwprintf_s (")) {
                 // template <size_t size> int _snprintf_s(char (&buffer)[size], size_t count, const char *format, ...);
                 if (findFormat(2, tok->tokAt(2), &formatStringTok, &argListTok)) {
                     if (!formatStringTok)
@@ -1040,7 +1040,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         break;
                                     }
                                 }
-                            } else if (!scan && warning) {
+                            } else if (!scan && printWarning) {
                                 std::string specifier;
                                 bool done = false;
                                 while (!done) {
@@ -1357,7 +1357,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 argListTok2 = argListTok2->nextArgument(); // Find next argument
             }
 
-            if (warning) {
+            if (printWarning) {
                 // Check that all parameter positions reference an actual parameter
                 for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
                     if ((*it == 0) || (*it > numFormat))

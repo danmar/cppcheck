@@ -1189,11 +1189,13 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     if (!tok)
         return false;
 
+    const bool printDebug = _settings->debugwarnings;
+
     // get the position of the template name
     int namepos = TemplateSimplifier::getTemplateNamePosition(tok);
     if (namepos == -1) {
         // debug message that we bail out..
-        if (_settings->debugwarnings && errorlogger) {
+        if (printDebug && errorlogger) {
             std::list<const Token *> callstack(1, tok);
             errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug", "simplifyTemplates: bailing out", false));
         }
@@ -1270,7 +1272,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         templateMatchPattern += ">";
 
         if (typeForNewName.empty() || typeParametersInDeclaration.size() != typesUsedInTemplateInstantiation.size()) {
-            if (_settings->debugwarnings && errorlogger) {
+            if (printDebug && errorlogger) {
                 std::list<const Token *> callstack(1, tok2);
                 errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug",
                                        "Failed to instantiate template \"" + name + "\". The checking continues anyway.", false));

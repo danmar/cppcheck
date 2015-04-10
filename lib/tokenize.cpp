@@ -6633,6 +6633,7 @@ bool Tokenizer::simplifyKnownVariablesGetData(unsigned int varid, Token **_tok2,
 bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsigned int varid, const std::string &structname, std::string &value, unsigned int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const
 {
     const bool pointeralias(valueToken->isName() || Token::Match(valueToken, "& %name% ["));
+    const bool printDebug = _settings->debugwarnings;
 
     if (_errorLogger && !list.getFiles().empty())
         _errorLogger->reportProgress(list.getFiles()[0], "Tokenize (simplifyKnownVariables)", tok3->progressValue());
@@ -6792,7 +6793,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         if (tok3->varId() == varid) {
             // This is a really generic bailout so let's try to avoid this.
             // There might be lots of false negatives.
-            if (_settings->debugwarnings) {
+            if (printDebug) {
                 // FIXME: Fix all the debug warnings for values and then
                 // remove this bailout
                 if (pointeralias)
@@ -9636,6 +9637,7 @@ void Tokenizer::simplifyNamespaceStd()
         "make_pair", "make_shared", "make_tuple"
     };
     static const std::set<std::string> stdFunctions(stdFunctions_, stdFunctions_+sizeof(stdFunctions_)/sizeof(*stdFunctions_));
+    const bool isCPP11  = _settings->standards.cpp == Standards::CPP11;
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
@@ -9653,12 +9655,12 @@ void Tokenizer::simplifyNamespaceStd()
             tok->previous()->insertToken("::");
         }
 
-        else if (_settings->standards.cpp == Standards::CPP11 && Token::Match(tok, "!!:: tr1 ::"))
+        else if (isCPP11 && Token::Match(tok, "!!:: tr1 ::"))
             tok->next()->str("std");
     }
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (_settings->standards.cpp == Standards::CPP11 && Token::simpleMatch(tok, "std :: tr1 ::"))
+        if (isCPP11 && Token::simpleMatch(tok, "std :: tr1 ::"))
             Token::eraseTokens(tok, tok->tokAt(3));
 
         else if (Token::simpleMatch(tok, "using namespace std ;")) {

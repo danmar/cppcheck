@@ -584,9 +584,9 @@ template<class T> static T getvalue(const int test, const T value1, const T valu
 
 void CheckCondition::checkIncorrectLogicOperator()
 {
-    const bool style = _settings->isEnabled("style");
-    const bool warning = _settings->isEnabled("warning");
-    if (!style && !warning)
+    const bool printStyle = _settings->isEnabled("style");
+    const bool printWarning = _settings->isEnabled("warning");
+    if (!printWarning && !printStyle)
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -703,14 +703,14 @@ void CheckCondition::checkIncorrectLogicOperator()
 
                 const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
                 const std::string cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
-                if (warning && (alwaysTrue || alwaysFalse)) {
+                if (printWarning && (alwaysTrue || alwaysFalse)) {
                     const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                     incorrectLogicOperatorError(tok, text, alwaysTrue);
-                } else if (style && secondTrue) {
+                } else if (printStyle && secondTrue) {
                     const std::string text = "If " + cond1str + ", the comparison " + cond2str +
                                              " is always " + (secondTrue ? "true" : "false") + ".";
                     redundantConditionError(tok, text);
-                } else if (style && firstTrue) {
+                } else if (printStyle && firstTrue) {
                     //const std::string text = "The comparison " + cond1str + " is always " +
                     //                         (firstTrue ? "true" : "false") + " when " +
                     //                         cond2str + ".";
