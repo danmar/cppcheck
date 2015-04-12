@@ -1369,8 +1369,13 @@ void TemplateSimplifier::simplifyTemplates(
             tok->deleteThis();
 
         if (Token::simpleMatch(tok, "template <")) {
-            while (tok && tok->str() != ">")
+            while (tok && tok->str() != ">") {
+                if (Token::Match(tok, ". . . %name%")) { // Ticket #6592: The type in "typename... T" is "...T", not "T"
+                    tok->str(". . . " + tok->strAt(3));
+                    tok->deleteNext(3);
+                }
                 tok = tok->next();
+            }
             if (!tok)
                 break;
         }
