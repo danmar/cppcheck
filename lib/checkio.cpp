@@ -533,7 +533,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             if (Token::Match(tok->next(), "( %any%") && _settings->library.formatstr_function(tok->str())) {
                 const std::map<int, Library::ArgumentChecks>& argumentChecks = _settings->library.argumentChecks.at(tok->str());
-                for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecks.begin(); i != argumentChecks.end(); ++i) {
+                for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecks.cbegin(); i != argumentChecks.cend(); ++i) {
                     if (i->second.formatstr) {
                         formatStringArgNo = i->first - 1;
                         break;
