@@ -2133,7 +2133,7 @@ void CheckClass::checkUsageBeforeInitialization()
         vars.reserve(info->varlist.size());
 
         // iterate through all member functions looking for constructors
-        for (std::list<Function>::const_iterator funcIter = info->functionList.cbegin(); funcIter != info->functionList.cend(); ++funcIter) {
+        for (std::list<Function>::const_iterator funcIter = info->functionList.begin(); funcIter != info->functionList.end(); ++funcIter) {
             if (!(*funcIter).isConstructor() || !(*funcIter).hasBody())
                 continue;
 
@@ -2206,11 +2206,12 @@ void CheckClass::checkUsageBeforeInitialization()
                 while (tok && tok != (*funcIter).functionScope->classEnd) {
                     if (Token::Match(tok, "%name% =")) {
                         const Variable *var = tok->variable();
-                        const std::vector< VarDependency >::const_iterator currentEnd = vars.cend();
+                        const std::vector< VarDependency >::const_iterator currentEnd = vars.end();
 
                         if (var && (var->scope() == info)) {
-                            const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), currentEnd, var);
-                            if (depIter == vars.cend()) {
+                            const std::vector< VarDependency >::const_iterator currentBeg = vars.begin();
+                            const std::vector< VarDependency >::const_iterator depIter = std::find(currentBeg, currentEnd, var);
+                            if (depIter == vars.end()) {
                                 vars.push_back(VarDependency(var, tok, vars.size()));
                             }
                         }
@@ -2222,8 +2223,8 @@ void CheckClass::checkUsageBeforeInitialization()
 
                                 if (varRhs && (varRhs->scope() == info)) {
                                     if (tok->varId() == varRhs->nameToken()->varId()) {
-                                        const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), vars.cend(), varRhs);
-                                        if (depIter == vars.cend()) {
+                                        const std::vector< VarDependency >::const_iterator depIter = std::find(vars.begin(), vars.end(), varRhs);
+                                        if (depIter == vars.end()) {
                                             if (vars.size() > 0) {
                                                 vars.push_back(VarDependency(varRhs, tok, vars.back().initOrder));
                                             } else {
@@ -2246,7 +2247,8 @@ void CheckClass::checkUsageBeforeInitialization()
 
                                 if (dep && (dep->scope() == info) && !(dep->isClass() || dep->isStatic() || dep->isReference() || isAddress)) {
                                     if (tok->varId() == dep->nameToken()->varId()) {
-                                        const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), currentEnd, dep);
+                                        const std::vector< VarDependency >::const_iterator currentBeg = vars.begin();
+                                        const std::vector< VarDependency >::const_iterator depIter = std::find(currentBeg, currentEnd, dep);
                                         if (depIter == currentEnd)
                                             usageBeforeInitializationError(tok, info->className, dep->name(), false);
                                     }
@@ -2260,8 +2262,8 @@ void CheckClass::checkUsageBeforeInitialization()
 
                         if (var && (var->scope() == info) && !(var->isClass() || var->isStatic())) {
                             if (tok->varId() == var->nameToken()->varId()) {
-                                const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), vars.cend(), var);
-                                if (depIter == vars.cend())
+                                const std::vector< VarDependency >::const_iterator depIter = std::find(vars.begin(), vars.end(), var);
+                                if (depIter == vars.end())
                                     usageBeforeInitializationError(tok, info->className, var->name(), false);
                             }
                         }
