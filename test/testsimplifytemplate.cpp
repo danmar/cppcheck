@@ -963,6 +963,7 @@ private:
     }
 
     void template55() { // #6604
+        // Avoid constconstconst in macro instantiations
         ASSERT_EQUALS(
             "class AtSmartPtr<T> : public ConstCastHelper < AtSmartPtr<constT> , T > { "
             "friend struct ConstCastHelper < AtSmartPtr<constT> , T > ; "
@@ -976,6 +977,23 @@ private:
                 "    friend struct ConstCastHelper<AtSmartPtr<const T>, T>;\n"
                 "    AtSmartPtr(const AtSmartPtr<T>& r);\n"
                 "};"));
+
+        // Similar problem can also happen with ...
+        ASSERT_EQUALS(
+            "A<int> a ( 0 ) ; struct A<int> { "
+            "A<int> ( int * p ) { p ; } "
+            "} ; "
+            "struct A<int...> { "
+            "A<int...> ( int * p ) { "
+            "p ; "
+            "} } ;",
+            tok("template <typename... T> struct A\n"
+                "{\n"
+                "    A(T* p) {\n"
+                "        (A<T...>*)(p);\n"
+                "    }\n"
+                "};\n"
+                "A<int> a(0);"));
     }
 
     void template_default_parameter() {
