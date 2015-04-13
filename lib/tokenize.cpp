@@ -8372,7 +8372,7 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 void Tokenizer::simplifyMathFunctions()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isName() && tok->strAt(1) == "(") { // precondition for function
+        if (tok->isName() && !tok->varId() && tok->strAt(1) == "(") { // precondition for function
             bool simplifcationMade = false;
             if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
                 if (tok->previous() &&

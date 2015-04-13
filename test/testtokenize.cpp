@@ -7557,6 +7557,11 @@ private:
                                      "std :: cout << 0 ;\n"
                                      "}";
         ASSERT_EQUALS(expected_sinl, tokenizeAndStringify(code_sinl));
+
+        // #6629
+        const char code[] = "class Foo { int sinf; Foo() : sinf(0) {} };";
+        const char expected[] = "class Foo { int sinf ; Foo ( ) : sinf ( 0 ) { } } ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyMathFunctions_ilogb() {
