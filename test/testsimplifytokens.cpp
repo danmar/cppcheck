@@ -893,8 +893,9 @@ private:
         }
 
         code = "char i[2][20];\n"
-               "sizeof(i[1]);";
-        ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ;", tok(code));
+               "sizeof(i[1]);\n"
+               "sizeof(i);";
+        ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ; 40 ;", tok(code));
     }
 
     void sizeof5() {

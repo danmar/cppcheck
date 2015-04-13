@@ -3018,12 +3018,20 @@ bool Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->previous(), "%type% %name% [ %num% ] [[;=]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %name% [ %num% ] [[;=]")) {
-                const unsigned int size = sizeOfType(tok->previous());
+                unsigned int size = sizeOfType(tok->previous());
                 if (size == 0)
                     continue;
 
-                sizeOfVar[varId] = size * static_cast<unsigned int>(MathLib::toLongNumber(tok->strAt(2)));
-                declTokOfVar[varId] = tok;
+                Token* tok2 = tok->next();
+                while (Token::Match(tok2, "[ %num% ]")) {
+                    size *= static_cast<unsigned int>(MathLib::toLongNumber(tok2->strAt(1)));
+                    tok2 = tok2->tokAt(3);
+                }
+                if (Token::Match(tok2, "[;=]")) {
+                    sizeOfVar[varId] = size;
+                    declTokOfVar[varId] = tok;
+                }
+                tok = tok2;
             }
 
             else if (Token::Match(tok->previous(), "%type% %name% [ %num% ] [,)]") ||
