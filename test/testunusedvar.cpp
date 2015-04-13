@@ -90,6 +90,7 @@ private:
         TEST_CASE(localvar44); // ticket #4020
         TEST_CASE(localvar45); // ticket #4899
         TEST_CASE(localvar46); // ticket #5491 (C++11 style initialization)
+        TEST_CASE(localvar47); // ticket #6603
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1883,6 +1884,14 @@ private:
                               "    std::shared_lock<std::shared_timed_mutex> lock( m );\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar47() { // #6603
+        functionVariableUsage("void f() {\n"
+                              "    int (SfxUndoManager::*retrieveCount)(bool) const\n"
+                              "        = (flag) ? &SfxUndoManager::foo : &SfxUndoManager::bar;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'retrieveCount' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias1() {

@@ -2610,10 +2610,10 @@ private:
             const char expected[] = "C f1 ( ) ; "
                                     "C * f2 ; " // this gets simplified to a regular pointer
                                     "C ( & f3 ) ( ) ; "
-                                    "C * f4 ; "
-                                    "C ( C :: * f5 ) ( ) const ; "
-                                    "C * f6 ; " // volatile is removed
-                                    "C ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "C * f4 ; " // this gets simplified to a regular pointer
+                                    "C * f5 ; " // this gets simplified to a regular pointer
+                                    "C * f6 ; " // this gets simplified to a regular pointer
+                                    "C * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2639,10 +2639,10 @@ private:
             const char expected[] = "const C f1 ( ) ; "
                                     "const C * f2 ; " // this gets simplified to a regular pointer
                                     "const C ( & f3 ) ( ) ; "
-                                    "const C * f4 ; "
-                                    "const C ( C :: * f5 ) ( ) const ; "
-                                    "const C * f6 ; " // volatile is removed
-                                    "const C ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "const C * f4 ; " // this gets simplified to a regular pointer
+                                    "const C * f5 ; " // this gets simplified to a regular pointer
+                                    "const C * f6 ; " // this gets simplified to a regular pointer
+                                    "const C * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2667,10 +2667,10 @@ private:
             const char expected[] = "const C f1 ( ) ; "
                                     "const C * f2 ; " // this gets simplified to a regular pointer
                                     "const C ( & f3 ) ( ) ; "
-                                    "const C * f4 ; "
-                                    "const C ( C :: * f5 ) ( ) const ; "
-                                    "const C * f6 ; " // volatile is removed
-                                    "const C ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "const C * f4 ; " // this gets simplified to a regular pointer
+                                    "const C * f5 ; " // this gets simplified to a regular pointer
+                                    "const C * f6 ; " // this gets simplified to a regular pointer
+                                    "const C * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2695,10 +2695,10 @@ private:
             const char expected[] = "C * f1 ( ) ; "
                                     "C * * f2 ; " // this gets simplified to a regular pointer
                                     "C * ( & f3 ) ( ) ; "
-                                    "C * * f4 ; "
-                                    "C * ( C :: * f5 ) ( ) const ; "
-                                    "C * * f6 ; " // volatile is removed
-                                    "C * ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "C * * f4 ; " // this gets simplified to a regular pointer
+                                    "C * * f5 ; " // this gets simplified to a regular pointer
+                                    "C * * f6 ; " // this gets simplified to a regular pointer
+                                    "C * * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2723,10 +2723,10 @@ private:
             const char expected[] = "const C * f1 ( ) ; "
                                     "const C * * f2 ; " // this gets simplified to a regular pointer
                                     "const C * ( & f3 ) ( ) ; "
-                                    "const C * * f4 ; "
-                                    "const C * ( C :: * f5 ) ( ) const ; "
-                                    "const C * * f6 ; " // volatile is removed
-                                    "const C * ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "const C * * f4 ; " // this gets simplified to a regular pointer
+                                    "const C * * f5 ; " // this gets simplified to a regular pointer
+                                    "const C * * f6 ; " // this gets simplified to a regular pointer
+                                    "const C * * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2752,10 +2752,10 @@ private:
             const char expected[] = "const C * f1 ( ) ; "
                                     "const C * * f2 ; " // this gets simplified to a regular pointer
                                     "const C * ( & f3 ) ( ) ; "
-                                    "const C * * f4 ; "
-                                    "const C * ( C :: * f5 ) ( ) const ; "
-                                    "const C * * f6 ; " // volatile is removed
-                                    "const C * ( C :: * f7 ) ( ) const ;"; // volatile is removed
+                                    "const C * * f4 ; " // this gets simplified to a regular pointer
+                                    "const C * * f5 ; " // this gets simplified to a regular pointer
+                                    "const C * * f6 ; " // this gets simplified to a regular pointer
+                                    "const C * * f7 ;"; // this gets simplified to a regular pointer
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2898,9 +2898,9 @@ private:
 
             // The expected result..
             const char expected[] = "B :: C * f1 ; "
-                                    "B :: C ( B :: C :: * f2 ) ( ) const ; "
+                                    "B :: C * f2 ; "
                                     "B :: C * f3 ; "
-                                    "B :: C ( B :: C :: * f4 ) ( ) const ;";
+                                    "B :: C * f4 ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }
@@ -2936,9 +2936,9 @@ private:
 
             // The expected result..
             const char expected[] = "A :: B :: C * f1 ; "
-                                    "A :: B :: C ( A :: B :: C :: * f2 ) ( ) const ; "
+                                    "A :: B :: C * f2 ; "
                                     "A :: B :: C * f3 ; "
-                                    "A :: B :: C ( A :: B :: C :: * f4 ) ( ) const ;";
+                                    "A :: B :: C * f4 ;";
             ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
             ASSERT_EQUALS("", errout.str());
         }

@@ -5270,9 +5270,12 @@ void Tokenizer:: simplifyFunctionPointers()
             tok = tok->next();
 
         // check that the declaration ends
-        const Token *endTok = tok->link()->next()->link();
-        if (!Token::Match(endTok, ") ;|,|)|=|[|{"))
+        Token *endTok = tok->link()->next()->link();
+        if (!Token::Match(endTok, ") const| ;|,|)|=|[|{"))
             continue;
+
+        if (endTok->strAt(1) == "const")
+            endTok->deleteNext();
 
         // ok simplify this function pointer to an ordinary pointer
         Token::eraseTokens(tok->link(), endTok->next());
