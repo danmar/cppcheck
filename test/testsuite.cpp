@@ -170,20 +170,12 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
 {
-    std::ostringstream ostr1;
-    ostr1 << expected;
-    std::ostringstream ostr2;
-    ostr2 << actual;
-    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    assertEquals(filename, linenr, MathLib::toString(expected), MathLib::toString(actual), msg);
 }
 
 void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg) const
 {
-    std::ostringstream ostr1;
-    ostr1 << expected;
-    std::ostringstream ostr2;
-    ostr2 << actual;
-    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+    assertEquals(filename, linenr, MathLib::toString(expected), MathLib::toString(actual), msg);
 }
 
 void TestFixture::todoAssertEquals(const char *filename, unsigned int linenr,
@@ -301,7 +293,7 @@ std::size_t TestFixture::runTests(const options& args)
 
     if (!missingLibs.empty()) {
         std::cerr << "Missing libraries: ";
-        for (std::set<std::string>::const_iterator i = missingLibs.begin(); i != missingLibs.end(); ++i)
+        for (std::set<std::string>::const_iterator i = missingLibs.cbegin(); i != missingLibs.cend(); ++i)
             std::cerr << *i << "  ";
         std::cerr << std::endl << std::endl;
     }

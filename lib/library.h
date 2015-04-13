@@ -107,7 +107,7 @@ public:
     }
 
     bool formatstr_function(const std::string& funcname) const {
-        return _formatstr.find(funcname) != _formatstr.end();
+        return _formatstr.find(funcname) != _formatstr.cend();
     }
 
     bool formatstr_scan(const std::string& funcname) const {

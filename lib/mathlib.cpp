@@ -143,6 +143,8 @@ double MathLib::toDoubleNumber(const std::string &str)
     // nullcheck
     else if (isNullValue(str))
         return 0.0;
+    else if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
+        return std::strtod(str.c_str(), 0);
     // otherwise, convert to double
     std::istringstream istr(str);
     double ret;

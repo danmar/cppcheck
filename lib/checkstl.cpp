@@ -1260,7 +1260,7 @@ void CheckStl::checkAutoPointer()
                     }
                     if (Token::Match(tok3, "( %var%")) {
                         std::map<unsigned int, const std::string>::const_iterator it = mallocVarId.find(tok3->next()->varId());
-                        if (it != mallocVarId.end()) {
+                        if (it != mallocVarId.cend()) {
                             // pointer on the memory allocated by malloc used in the auto pointer constructor -> error
                             autoPointerMallocError(tok2->next(), it->second);
                         }
