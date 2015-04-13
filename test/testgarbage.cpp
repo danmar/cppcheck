@@ -72,7 +72,8 @@ private:
         TEST_CASE(garbageCode31); // #6539
         TEST_CASE(garbageCode32); // #6135
         TEST_CASE(garbageCode33); // #6613
-        TEST_CASE(garbageCode34); // 6626
+        TEST_CASE(garbageCode34); // #6626
+        TEST_CASE(garbageCode35); // #2599, #2604
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -242,7 +243,7 @@ private:
     }
 
     void garbageCode7() {
-        ASSERT_THROW(checkCode("1 (int j) { return return (c) * sizeof } y[1];"), InternalError);
+        checkCode("1 (int j) { return return (c) * sizeof } y[1];");
         checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)");
     }
 
@@ -418,6 +419,14 @@ private:
                   " while (0);\n"
                   "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageCode35() {
+        // ticket #2599 segmentation fault
+        checkCode("sizeof");
+
+        // ticket #2604 segmentation fault
+        checkCode("sizeof <= A");
     }
 
     void garbageValueFlow() {

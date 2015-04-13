@@ -2974,25 +2974,22 @@ void Tokenizer::createLinks2()
 void Tokenizer::sizeofAddParentheses()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof %name%|%num%|%str%")) {
-            Token *endToken = tok->next();
-            while (Token::Match(endToken, "%name%|%num%|%str%|[|(|.|::|++|--|!|~")) {
-                if (endToken->str() == "[" || endToken->str() == "(")
-                    endToken = endToken->link();
-                endToken = endToken->next();
-                if (Token::simpleMatch(endToken, "- >"))
-                    endToken = endToken->tokAt(2);
+        Token* next = tok->next();
+        if (Token::Match(tok, "sizeof !!(") && next && (next->isLiteral() || next->isName() || Token::Match(next, "[*~!]"))) {
+            Token *endToken = next;
+            while (Token::Match(endToken->next(), "%name%|%num%|%str%|[|(|.|::|++|--|!|~") || (Token::Match(endToken, "%type% * %op%|?|:|const|;|,"))) {
+                if (endToken->strAt(1) == "[" || endToken->strAt(1) == "(")
+                    endToken = endToken->linkAt(1);
+                else
+                    endToken = endToken->next();
             }
 
-            if (endToken) {
-                // Ok. Add ( after sizeof and ) before endToken
-                tok->insertToken("(");
-                endToken->previous()->insertToken(")");
-                Token::createMutualLinks(tok->next(), endToken->previous());
-            }
+            // Add ( after sizeof and ) behind endToken
+            tok->insertToken("(");
+            endToken->insertToken(")");
+            Token::createMutualLinks(tok->next(), endToken->next());
         }
     }
-
 }
 
 bool Tokenizer::simplifySizeof()
@@ -3059,16 +3056,6 @@ bool Tokenizer::simplifySizeof()
             tok->deleteNext(3);
         }
 
-        // sizeof 'x'
-        if (tok->next()->type() == Token::eChar) {
-            tok->deleteThis();
-            std::ostringstream sz;
-            sz << sizeof 'x';
-            tok->str(sz.str());
-            ret = true;
-            continue;
-        }
-
         // sizeof('x')
         if (Token::Match(tok, "sizeof ( %char% )")) {
             tok->deleteNext();
@@ -3077,16 +3064,6 @@ bool Tokenizer::simplifySizeof()
             std::ostringstream sz;
             sz << sizeof 'x';
             tok->str(sz.str());
-            ret = true;
-            continue;
-        }
-
-        // sizeof "text"
-        if (tok->next()->type() == Token::eString) {
-            tok->deleteThis();
-            std::ostringstream ostr;
-            ostr << (Token::getStrLength(tok) + 1);
-            tok->str(ostr.str());
             ret = true;
             continue;
         }
@@ -3101,71 +3078,6 @@ bool Tokenizer::simplifySizeof()
             tok->str(ostr.str());
             ret = true;
             continue;
-        }
-
-        // sizeof * (...) -> sizeof(*...)
-        if (Token::simpleMatch(tok->next(), "* (") && !Token::simpleMatch(tok->linkAt(2), ") .")) {
-            tok->deleteNext();
-            tok->next()->insertToken("*");
-        }
-
-        // sizeof a++ -> sizeof(a++)
-        if (Token::Match(tok->next(), "++|-- %name% !!.") || Token::Match(tok->next(), "%name% ++|--")) {
-            tok->insertToken("(");
-            tok->tokAt(3)->insertToken(")");
-            Token::createMutualLinks(tok->next(), tok->tokAt(4));
-        }
-
-        // sizeof 1 => sizeof ( 1 )
-        if (tok->next()->isNumber()) {
-            Token *tok2 = tok->next();
-            tok->insertToken("(");
-            tok2->insertToken(")");
-            Token::createMutualLinks(tok->next(), tok2->next());
-        }
-
-        // sizeof int -> sizeof( int )
-        else if (tok->next()->str() != "(") {
-            // Add parentheses around the sizeof
-            int parlevel = 0;
-            for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next()) {
-                if (tempToken->str() == "(")
-                    ++parlevel;
-                else if (tempToken->str() == ")") {
-                    --parlevel;
-                    if (parlevel == 0 && !Token::Match(tempToken, ") . %name%")) {
-                        // Ok, we should be clean. Add ) after tempToken
-                        tok->insertToken("(");
-                        tempToken->insertToken(")");
-                        Token::createMutualLinks(tok->next(), tempToken->next());
-                        break;
-                    }
-                }
-                if (parlevel == 0 && Token::Match(tempToken, "%name%")) {
-                    while (tempToken && tempToken->next() && tempToken->next()->str() == "[") {
-                        tempToken = tempToken->next()->link();
-                    }
-                    if (!tempToken || !tempToken->next()) {
-                        break;
-                    }
-
-                    if (tempToken->next()->str() == ".") {
-                        // We are checking a class or struct, search next varname
-                        tempToken = tempToken->next();
-                        continue;
-                    } else if (tempToken->next()->type() == Token::eIncDecOp) {
-                        // We have variable++ or variable--, there should be
-                        // nothing after this
-                        tempToken = tempToken->tokAt(2);
-                    }
-
-                    // Ok, we should be clean. Add ) after tempToken
-                    tok->insertToken("(");
-                    tempToken->insertToken(")");
-                    Token::createMutualLinks(tok->next(), tempToken->next());
-                    break;
-                }
-            }
         }
 
         // sizeof(type *) => sizeof(*)
@@ -3332,10 +3244,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (!simplifyAddBraces())
         return false;
 
-    sizeofAddParentheses();
-
     // Combine tokens..
     combineOperators();
+
+    sizeofAddParentheses();
 
     // Simplify: 0[foo] -> *(foo)
     for (Token* tok = list.front(); tok; tok = tok->next()) {
