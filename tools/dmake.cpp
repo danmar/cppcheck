@@ -325,7 +325,7 @@ int main(int argc, char **argv)
                                 "-Wextra "
                                 "-Wabi "
                                 "-Wcast-qual "
-                                "-Wconversion "
+//                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
                                 "-Wfloat-equal "
                                 "-Winline "
 //                                "-Wlogical-op "
