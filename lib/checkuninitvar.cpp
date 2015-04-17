@@ -1773,8 +1773,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 // control-flow statement reading the variable "by value"
                 return alloc == NO_ALLOC;
             } else {
-                bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
-                bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
+                const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
+                const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
                 if (alloc != NO_ALLOC)
                     return isnullbad && isuninitbad;
                 return isuninitbad && (!address || isnullbad);
@@ -1792,7 +1792,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 do {
                     tok2 = tok2->astOperand1();
                 } while (Token::simpleMatch(tok2, "<<"));
-                if (tok2->strAt(-1) == "::")
+                if (tok2 && tok2->strAt(-1) == "::")
                     tok2 = tok2->previous();
                 if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType()))
                     return true;
