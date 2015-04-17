@@ -73,6 +73,18 @@ public:
 public slots:
 
     /**
+    * @brief Slot opening a print dialog to print the current report
+    *
+    */
+    void PrintReport();
+
+    /**
+    * @brief Slot opening a print preview dialogPrintPreview
+    *
+    */
+    void PrintPreview();
+
+    /**
     * @brief Slot for check files menu item
     *
     */

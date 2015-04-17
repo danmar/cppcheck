@@ -6,9 +6,9 @@ DEPENDPATH += . \
 INCLUDEPATH += . \
     ../lib
 
-# In Qt 5 widgets are in separate module
 greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
+    QT += widgets # In Qt 5 widgets are in separate module
+    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
 }
 
 contains(LINKCORE, [yY][eE][sS]) {
@@ -88,6 +88,7 @@ HEADERS += aboutdialog.h \
            logview.h \
            mainwindow.h \
            platforms.h \
+           printablereport.h \
            project.h \
            projectfile.h \
            projectfiledialog.h \
@@ -121,6 +122,7 @@ SOURCES += aboutdialog.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \
+           printablereport.cpp \
            project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \

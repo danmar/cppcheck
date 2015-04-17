@@ -29,6 +29,7 @@
 class ErrorItem;
 class ApplicationList;
 class QModelIndex;
+class QPrinter;
 class QSettings;
 class CheckStatistics;
 
@@ -74,6 +75,9 @@ public:
     * @param type Type of the report.
     */
     void Save(const QString &filename, Report::Type type) const;
+
+    void Print();
+    void PrintPreview();
 
     /**
     * @brief Update tree settings
@@ -221,6 +225,8 @@ public slots:
     * @param index Position of new selected item.
     */
     void UpdateDetails(const QModelIndex &index);
+
+    void Print(QPrinter* printer);
 
 protected:
     /**
