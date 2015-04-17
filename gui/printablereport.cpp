@@ -18,11 +18,9 @@
 
 #include "printablereport.h"
 #include <QDir>
-#include <QTextDocument>
 
 PrintableReport::PrintableReport() :
-    Report(QString()),
-    mReportDocument(new QTextDocument(this))
+    Report(QString())
 {
 }
 
@@ -55,9 +53,8 @@ void PrintableReport::WriteError(const ErrorItem &error)
     mFormattedReport += "\n";
 }
 
-QTextDocument* PrintableReport::GetReport() const
+QString PrintableReport::GetFormattedReportText() const
 {
-    mReportDocument->setPlainText(mFormattedReport);
-    return mReportDocument;
+    return mFormattedReport;
 }
 

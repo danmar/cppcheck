@@ -21,17 +21,13 @@
 
 #include "report.h"
 
-class QTextDocument;
-
 /// @addtogroup GUI
 /// @{
 
 
 /**
-* @brief CSV text file report.
-* This report exports results as CSV (comma separated values). CSV files are
-* easy to import to many other programs.
-* @todo This class should be inherited from TxtReport?
+* @brief Printable (in-memory) report.
+* This report formats results and exposes them for printing.
 */
 class PrintableReport : public Report {
 public:
@@ -60,12 +56,17 @@ public:
     */
     virtual void WriteError(const ErrorItem &error);
 
-    QTextDocument* GetReport() const;
+    /**
+    * @brief Returns the formatted report.
+    */
+    QString GetFormattedReportText() const;
 
 private:
 
+    /**
+    * @brief Stores the formatted report contents.
+    */
     QString mFormattedReport;
-    QTextDocument* mReportDocument;
 };
 /// @}
 #endif // PRINTABLE_REPORT_H

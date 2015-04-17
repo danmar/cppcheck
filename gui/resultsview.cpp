@@ -213,7 +213,8 @@ void ResultsView::Print(QPrinter* printer)
 
     PrintableReport report;
     mUI.mTree->SaveResults(&report);
-    report.GetReport()->print(printer);
+    QTextDocument doc(report.GetFormattedReportText());
+    doc.print(printer);
 }
 
 void ResultsView::UpdateSettings(bool showFullPath,
