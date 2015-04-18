@@ -77,8 +77,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
 
-    connect(mUI.mActionPrint, SIGNAL(triggered()), this, SLOT(PrintReport()));
-    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), this, SLOT(PrintPreview()));
+    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(Print()));
+    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(PrintPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
@@ -437,16 +437,6 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     SetPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
 
     return selected;
-}
-
-void MainWindow::PrintReport()
-{
-    mUI.mResults->Print();
-}
-
-void MainWindow::PrintPreview()
-{
-    mUI.mResults->PrintPreview();
 }
 
 void MainWindow::CheckFiles()
