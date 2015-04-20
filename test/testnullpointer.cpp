@@ -1737,6 +1737,13 @@ private:
               "    *p = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Possible null pointer dereference: p - otherwise it is redundant to check it against null.\n", errout.str());
+
+        // sizeof
+        check("void f() {\n"
+              "  int *pointer = NULL;\n"
+              "  pointer = func(sizeof pointer[0]);\n"
+              "}", false, "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Test CheckNullPointer::nullConstantDereference

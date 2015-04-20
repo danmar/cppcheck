@@ -312,6 +312,11 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     const bool printInconclusive = (_settings->inconclusive);
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
+            tok = tok->next()->link();
+            continue;
+        }
+
         const Variable *var = tok->variable();
         if (!var || !var->isPointer() || tok == var->nameToken())
             continue;
