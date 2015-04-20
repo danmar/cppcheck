@@ -6,8 +6,9 @@ import io
 import sys
 import optparse
 import os
-from collections import Counter
+import operator
 
+from collections import Counter
 from pygments import highlight
 from pygments.lexers import guess_lexer_for_filename
 from pygments.formatters import HtmlFormatter
@@ -15,7 +16,6 @@ from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
 from xml.sax.saxutils import escape
-
 """
 Turns a cppcheck xml file into a browsable html report along
 with syntax highlighted source code.
@@ -425,6 +425,7 @@ if __name__ == '__main__':
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print('Processing errors')
+
     decode_errors = []
     for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
@@ -525,7 +526,7 @@ if __name__ == '__main__':
                 stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
 
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
-        output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '       </p>')
+        output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '<br/><br/><a href="stats.html">Statistics</a></p>')
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
         output_file.write('       <table>\n')
         output_file.write(
@@ -583,4 +584,60 @@ if __name__ == '__main__':
                  'w') as css_file:
         css_file.write(STYLE_FILE)
 
+
+    print("Creating stats.html (statistics)\n")
+    stats_countlist={}
+
+    for filename, data in sorted(files.items()):
+        if (filename == ''):
+            continue
+        stats_tmplist=[]
+        for error in sorted(data['errors'], key=lambda k: k['line']):
+            stats_tmplist.append(error['severity'])
+
+        stats_countlist[filename] = dict(Counter(stats_tmplist))
+
+    # get top ten for each severity
+    SEVERITIES = "error", "warning", "portability", "performance", "style", "unusedFunction", "information", "missingInclude", "internal"
+
+    with io.open(os.path.join(options.report_dir, 'stats.html'), 'w') as stats_file:
+
+        stats_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
+        stats_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
+
+        for sev in SEVERITIES:
+            _sum = 0
+            stats_templist={}
+
+            try:        # if the we have an style warning but we are checking for portability, we have to skip it to prevent KeyError
+                for filename in stats_countlist:
+                    try: # also bail out if we have a file with no sev-results
+                        _sum += stats_countlist[filename][sev]
+                        stats_templist[filename] = (int)(stats_countlist[filename][sev]) # file : amount,
+                    except KeyError:
+                        continue
+                if (_sum == 0): # don't print "0 style" etc, if no style warnings were found
+                    break
+            except KeyError:
+                continue
+            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
+
+
+            # sort, so that the file with the most severities per type is first
+            stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1,0), reverse=True)
+            it = 0
+            LENGTH = 0
+
+            for i in stats_list_sorted: # printing loop
+                # for aesthetics: if it's the first iteration of the loop, get the max length of the number string
+                if (it == 0):
+                    LENGTH = len(str(i[1])) # <- length of longest number, now get the difference and try to  make other numbers align to it
+
+                stats_file.write("&#160;"*3 + str(i[1]) + "&#160;"*(1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
+                it += 1
+                if (it == 10): # print only the top 10
+                    break
+            stats_file.write("</p>\n")
+
     print("\nOpen '" + options.report_dir + "/index.html' to see the results.")
+
