@@ -2206,15 +2206,6 @@ void CheckClass::checkUsageBeforeInitialization()
                 while (tok && tok != (*funcIter).functionScope->classEnd) {
                     if (Token::Match(tok, "%name% =")) {
                         const Variable *var = tok->variable();
-                        const std::vector< VarDependency >::const_iterator currentEnd = vars.cend();
-
-                        if (var && (var->scope() == info)) {
-                            const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), currentEnd, var);
-                            if (depIter == vars.cend()) {
-                                vars.push_back(VarDependency(var, tok, vars.size()));
-                            }
-                        }
-
                         tok = tok->next()->next();
                         while (tok && tok->str() != ";") {  // parse variables until end of assignment
                             if (Token::Match(tok, "%name% =")) { // cascading assignments
@@ -2246,13 +2237,19 @@ void CheckClass::checkUsageBeforeInitialization()
 
                                 if (dep && (dep->scope() == info) && !(dep->isClass() || dep->isStatic() || dep->isReference() || isAddress)) {
                                     if (tok->varId() == dep->nameToken()->varId()) {
-                                        const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), currentEnd, dep);
-                                        if (depIter == currentEnd)
+                                        const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), vars.cend(), dep);
+                                        if (depIter == vars.cend())
                                             usageBeforeInitializationError(tok, info->className, dep->name(), false);
                                     }
                                 }
 
                                 tok = tok->next();
+                            }
+                        }
+                        if (var && (var->scope() == info)) {
+                            const std::vector< VarDependency >::const_iterator depIter = std::find(vars.cbegin(), vars.cend(), var);
+                            if (depIter == vars.cend()) {
+                                vars.push_back(VarDependency(var, tok, vars.size()));
                             }
                         }
                     } else if (Token::Match(tok, "%name% ++|--")) { // check for post increment/decrement of unitialized members
