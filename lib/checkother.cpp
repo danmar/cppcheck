@@ -353,7 +353,7 @@ void CheckOther::checkSuspiciousSemicolon()
 void CheckOther::SuspiciousSemicolonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousSemicolon",
-                "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", true);
+                "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", 0U, true);
 }
 
 
@@ -504,7 +504,7 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
         if (!inconclusive)
             reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to integer* is not portable due to different binary data representations on different platforms.");
         else
-            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", true);
+            reportError(tok, Severity::portability, "invalidPointerCast", "Casting from " + from + "* to char* is not portable due to different binary data representations on different platforms.", 0U, true);
     } else
         reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + "* and " + to + "* which have an incompatible binary data representation.");
 }
@@ -758,7 +758,7 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
     if (inconclusive)
         reportError(callstack, Severity::performance, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
-                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", true);
+                    "Variable '" + var + "' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", 0U, true);
     else
         reportError(callstack, Severity::performance, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used.");
@@ -999,7 +999,7 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 {
     reportError(tok, Severity::warning, "suspiciousCase",
                 "Found suspicious case label in switch(). Operator '" + operatorString + "' probably doesn't work as intended.\n"
-                "Using an operator like '" + operatorString + "' in a case label is suspicious. Did you intend to use a bitwise operator, multiple case labels or if/else instead?", true);
+                "Using an operator like '" + operatorString + "' in a case label is suspicious. Did you intend to use a bitwise operator, multiple case labels or if/else instead?", 0U, true);
 }
 
 //---------------------------------------------------------------------------
@@ -1061,7 +1061,7 @@ void CheckOther::checkSuspiciousEqualityComparison()
 void CheckOther::suspiciousEqualityComparisonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousEqualityComparison",
-                "Found suspicious equality comparison. Did you intend to assign a value instead?", true);
+                "Found suspicious equality comparison. Did you intend to assign a value instead?", 0U, true);
 }
 
 
@@ -1235,13 +1235,13 @@ void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
     reportError(tok, Severity::style, "duplicateBreak",
                 "Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
                 "Consecutive return, break, continue, goto or throw statements are unnecessary. "
-                "The second statement can never be executed, and so should be removed.", inconclusive);
+                "The second statement can never be executed, and so should be removed.", 0U, inconclusive);
 }
 
 void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed.", inconclusive);
+                "Statements following return, break, continue, goto or throw will never be executed.", 0U, inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -1818,7 +1818,7 @@ void CheckOther::checkZeroDivision()
 
 void CheckOther::zerodivError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "zerodiv", "Division by zero.", inconclusive);
+    reportError(tok, Severity::error, "zerodiv", "Division by zero.", 0U, inconclusive);
 }
 
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive)
@@ -1844,7 +1844,7 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, boo
             condition = tokcond->str() + "!=0";
     }
     const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
-    reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".", inconclusive);
+    reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".", 0U, inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -2061,7 +2061,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
     reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
-                "carefully to determine if it is correct.", true);
+                "carefully to determine if it is correct.", 0U, true);
 }
 
 
@@ -2139,7 +2139,7 @@ void CheckOther::checkInvalidFree()
 
 void CheckOther::invalidFreeError(const Token *tok, bool inconclusive)
 {
-    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.", inconclusive);
+    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.", 0U, inconclusive);
 }
 
 
@@ -2394,7 +2394,7 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
                     "Checking if unsigned variable '" + varname + "' is less than zero. An unsigned "
                     "variable will never be negative so it is either pointless or an error to check if it is. "
                     "It's not known if the used constant is a template parameter or not and therefore "
-                    "this message might be a false warning.", true);
+                    "this message might be a false warning.", 0U, true);
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "Checking if unsigned variable '" + varname + "' is less than zero.\n"
@@ -2406,7 +2406,7 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
 void CheckOther::pointerLessThanZeroError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "pointerLessThanZero",
-                "A pointer can not be negative so it is either pointless or an error to check if it is.", inconclusive);
+                "A pointer can not be negative so it is either pointless or an error to check if it is.", 0U, inconclusive);
 }
 
 void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
@@ -2416,7 +2416,7 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
                     "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.\n"
                     "The unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it. "
                     "It's not known if the used constant is a "
-                    "template parameter or not and therefore this message might be a false warning", true);
+                    "template parameter or not and therefore this message might be a false warning", 0U, true);
     } else {
         reportError(tok, Severity::style, "unsignedPositive",
                     "Unsigned variable '" + varname + "' can't be negative so it is unnecessary to test it.");
@@ -2426,7 +2426,7 @@ void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varn
 void CheckOther::pointerPositiveError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "pointerPositive",
-                "A pointer can not be negative so it is either pointless or an error to check if it is not.", inconclusive);
+                "A pointer can not be negative so it is either pointless or an error to check if it is not.", 0U, inconclusive);
 }
 
 /* check if a constructor in given class scope takes a reference */
@@ -2493,6 +2493,7 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
                 "Use const reference for '" + varname + "' to avoid unnecessary data copying.\n"
                 "The const variable '"+varname+"' is assigned a copy of the data. You can avoid "
                 "the unnecessary data copying by converting '" + varname + "' to const reference.",
+                0U,
                 true); // since #5618 that check became inconlusive
 }
 
@@ -2593,11 +2594,11 @@ void CheckOther::incompleteArrayFillError(const Token* tok, const std::string& b
     if (boolean)
         reportError(tok, Severity::portability, "incompleteArrayFill",
                     "Array '" + buffer + "' might be filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
-                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but the type 'bool' is larger than 1 on some platforms. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", 0U, true);
     else
         reportError(tok, Severity::warning, "incompleteArrayFill",
                     "Array '" + buffer + "' is filled incompletely. Did you forget to multiply the size given to '" + function + "()' with 'sizeof(*" + buffer + ")'?\n"
-                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", true);
+                    "The array '" + buffer + "' is filled incompletely. The function '" + function + "()' needs the size given in bytes, but an element of the given array is larger than one byte. Did you forget to multiply the size with 'sizeof(*" + buffer + ")'?", 0U, true);
 }
 
 //---------------------------------------------------------------------------
@@ -2717,7 +2718,7 @@ void CheckOther::checkIgnoredReturnValue()
 void CheckOther::ignoredReturnValueError(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "ignoredReturnValue",
-                "Return value of function " + function + "() is not used.", false);
+                "Return value of function " + function + "() is not used.", 0U, false);
 }
 
 void CheckOther::checkRedundantPointerOp()
@@ -2754,7 +2755,7 @@ void CheckOther::checkRedundantPointerOp()
 void CheckOther::redundantPointerOpError(const Token* tok, const std::string &varname, bool inconclusive)
 {
     reportError(tok, Severity::style, "redundantPointerOp",
-                "Redundant pointer operation on " + varname + " - it's already a pointer.", inconclusive);
+                "Redundant pointer operation on " + varname + " - it's already a pointer.", 0U, inconclusive);
 }
 
 void CheckOther::checkLibraryMatchFunctions()

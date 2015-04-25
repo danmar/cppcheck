@@ -249,6 +249,7 @@ private:
         ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
         ASSERT_EQUALS("7 errorId"
                       "5 error"
+                      "1 0"
                       "12 inconclusive"
                       "17 Programming error"
                       "17 Programming error"
@@ -272,11 +273,12 @@ private:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", false);
 
-        ASSERT_EQUALS(std::string("7 errorId") +
-                      std::string("5 error") +
-                      std::string("33 Illegal character in \"foo\\001bar\"") +
-                      std::string("33 Illegal character in \"foo\\001bar\"") +
-                      std::string("0 "), msg.serialize());
+        ASSERT_EQUALS("7 errorId"
+                      "5 error"
+                      "1 0"
+                      "33 Illegal character in \"foo\\001bar\""
+                      "33 Illegal character in \"foo\\001bar\""
+                      "0 ", msg.serialize());
 
         ErrorMessage msg2;
         msg2.deserialize(msg.serialize());

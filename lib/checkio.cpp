@@ -1971,10 +1971,10 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFor
             return;
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
                << " '" << varname << "[" << arrlen << "]'.";
-        reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), true);
+        reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), 0U, true);
     } else {
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
                << varname << "[" << arrlen << "]', use %" << (arrlen - 1) << "s to prevent overflowing it.";
-        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), false);
+        reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), 0U, false);
     }
 }

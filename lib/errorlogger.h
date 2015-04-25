@@ -230,6 +230,7 @@ public:
         std::string file0;
 
         Severity::SeverityType _severity;
+        unsigned int _cwe;
         bool _inconclusive;
 
         /** set short and verbose messages */

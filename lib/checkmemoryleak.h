@@ -73,8 +73,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -82,8 +83,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const;
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)

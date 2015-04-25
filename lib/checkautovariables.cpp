@@ -268,7 +268,9 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     "Function parameter is assigned the address of a local auto-variable. "
                     "Local auto-variables are reserved from the stack which is freed when "
                     "the function ends. The address is invalid after the function ends and it "
-                    "might 'leak' from the function through the parameter.", true);
+                    "might 'leak' from the function through the parameter.",
+                    0U,
+                    true);
     }
 }
 

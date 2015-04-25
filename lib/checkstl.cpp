@@ -1612,5 +1612,5 @@ void CheckStl::readingEmptyStlContainer()
 
 void CheckStl::readingEmptyStlContainerError(const Token *tok)
 {
-    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container", true);
+    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container", 0U, true);
 }

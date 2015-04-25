@@ -45,7 +45,7 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-    : _severity(Severity::none), _inconclusive(false)
+    : _severity(Severity::none), _cwe(0U), _inconclusive(false)
 {
 }
 
@@ -53,6 +53,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
     _severity(severity),   // severity for this error message
+    _cwe(0U),
     _inconclusive(inconclusive)
 {
     // set the summary and verbose messages
@@ -60,7 +61,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : _id(id), _severity(severity), _inconclusive(inconclusive)
+    : _id(id), _severity(severity), _cwe(0U), _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -105,6 +106,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
+    oss << MathLib::toString(_cwe).length() << " " << MathLib::toString(_cwe);
     if (_inconclusive) {
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
@@ -150,17 +152,18 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         }
 
         results.push_back(temp);
-        if (results.size() == 4)
+        if (results.size() == 5)
             break;
     }
 
-    if (results.size() != 4)
+    if (results.size() != 5)
         throw InternalError(0, "Internal Error: Deserialization of error message failed");
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
-    _shortMessage = results[2];
-    _verboseMessage = results[3];
+    _cwe = MathLib::toULongNumber(results[2]);
+    _shortMessage = results[3];
+    _verboseMessage = results[4];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -271,6 +274,8 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
         printer.PushAttribute("msg", _shortMessage.c_str());
         printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
+        if (_cwe)
+            printer.PushAttribute("cwe", _cwe);
         if (_inconclusive)
             printer.PushAttribute("inconclusive", "true");
 

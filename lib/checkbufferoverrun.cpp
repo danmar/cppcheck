@@ -91,7 +91,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
         std::list<const Token *> callstack;
         callstack.push_back(tok);
         callstack.push_back(condition);
-        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str());
+        reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), 0U, false);
     } else {
         reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
     }
@@ -101,7 +101,7 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const std::list<const Token 
 {
     std::ostringstream oss;
     makeArrayIndexOutOfBoundsError(oss, arrayInfo, index);
-    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str());
+    reportError(callstack, Severity::error, "arrayIndexOutOfBounds", oss.str(), 0U, false);
 }
 
 static std::string bufferOverrunMessage(std::string varnames)
@@ -125,7 +125,7 @@ void CheckBufferOverrun::bufferOverrunError(const Token *tok, const std::string 
 
 void CheckBufferOverrun::bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames)
 {
-    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames));
+    reportError(callstack, Severity::error, "bufferAccessOutOfBounds", bufferOverrunMessage(varnames), 0U, false);
 }
 
 void CheckBufferOverrun::possibleBufferOverrunError(const Token *tok, const std::string &src, const std::string &dst, bool cat)
@@ -207,7 +207,7 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "The buffer '" + varname + "' may not be null-terminated after the call to strncpy().\n"
                 "If the source string's size fits or exceeds the given size, strncpy() does not add a "
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
-                "assumes buffer is null-terminated.", true);
+                "assumes buffer is null-terminated.", 0U, true);
 }
 
 void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
@@ -221,7 +221,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
                                "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
                                "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
 
-    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, true);
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, 0U, true);
 }
 
 void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
@@ -1613,7 +1613,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
     ostr << "Array index " << index.intvalue << " is out of bounds.";
     if (index.condition)
         ostr << " Otherwise there is useless condition at line " << index.condition->linenr() << ".";
-    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), index.inconclusive);
+    reportError(tok, index.condition ? Severity::warning : Severity::error, "negativeIndex", ostr.str(), 0U, index.inconclusive);
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()

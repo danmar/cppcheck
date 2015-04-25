@@ -156,7 +156,7 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
     errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
-    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), rhsbits.inconclusive);
+    reportError(callstack, rhsbits.condition ? Severity::warning : Severity::error, "shiftTooManyBits", errmsg.str(), 0U, rhsbits.inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -211,6 +211,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
                 value.condition ? Severity::warning : Severity::error,
                 "integerOverflow",
                 "Signed integer overflow for expression '"+expr+"'"+cond,
+                0U,
                 value.inconclusive);
 }
 
