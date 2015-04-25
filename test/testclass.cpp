@@ -169,7 +169,6 @@ private:
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
         TEST_CASE(selfInitialization);
-        TEST_CASE(usageBeforeInitialization);
 
         TEST_CASE(pureVirtualFunctionCall);
         TEST_CASE(pureVirtualFunctionCallOtherClass);
@@ -6034,101 +6033,6 @@ private:
                                 "    Foo(int i)\n"
                                 "        : std::Bar(""), i{i} {}\n"
                                 "};");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkUsageBeforeInitialization(const char code []) {
-        // Clear the error log
-        errout.str("");
-
-        // Check..
-        Settings settings;
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
-
-        CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUsageBeforeInitialization();
-    }
-
-    void usageBeforeInitialization() {
-        checkUsageBeforeInitialization("class A {\n" // Ticket #220
-                                       "    int a;\n"
-                                       "    double b;\n"
-                                       "    double c;\n"
-                                       "public:\n"
-                                       "    A(const double& x) {\n"
-                                       "        a = a + 4;\n"
-                                       "        c = b * 2;\n"
-                                       "        b = x;\n"
-                                       "     }\n"
-                                       "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Member variable 'A::a' is used before it is initialized.\n"
-                      "[test.cpp:8]: (error) Member variable 'A::b' is used before it is initialized.\n", errout.str());
-
-        checkUsageBeforeInitialization("class A {\n"
-                                       "    int a;\n"
-                                       "    double b;\n"
-                                       "    double c;\n"
-                                       "public:\n"
-                                       "    A(const double& x) : a(a+4), c(b*2), b(x) {}\n"
-                                       "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Member variable 'A::a' is used before it is initialized.\n", errout.str());
-
-        checkUsageBeforeInitialization("class A {\n"
-                                       "    int a;\n"
-                                       "    double b;\n"
-                                       "    double c;\n"
-                                       "public:\n"
-                                       "    A(const double& x) : a(a++), b(c*2), c(x) {}\n"
-                                       "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Member variable 'A::a' is used before it is initialized.\n"
-                      "[test.cpp:6]: (error) Member variable 'A::c' is used before it is initialized.\n", errout.str());
-
-        checkUsageBeforeInitialization("class A {\n" // Ticket #4856
-                                       "    int a;\n"
-                                       "public:\n"
-                                       "    A() {\n"
-                                       "        a++;\n"
-                                       "     }\n"
-                                       "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Member variable 'A::a' is used before it is initialized.\n", errout.str());
-
-        checkUsageBeforeInitialization("class A {\n"
-                                       "    int* a;\n"
-                                       "    int& b;\n"
-                                       "    int c;\n"
-                                       "public:\n"
-                                       "    A() : a(&c), b(c), c(0) {\n"
-                                       "        c--;\n"
-                                       "     }\n"
-                                       "};\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUsageBeforeInitialization("class A {\n"
-                                       "    int a;\n"
-                                       "    int b;\n"
-                                       "    int c;\n"
-                                       "public:\n"
-                                       "    A(int _a, int _b) : a(++_a), b(a + _b) {\n"
-                                       "        _a = c + _b;\n"
-                                       "        c = a + b + _a + _b;\n"
-                                       "     }\n"
-                                       "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Member variable 'A::c' is used before it is initialized.\n", errout.str());
-
-
-        checkUsageBeforeInitialization("class A {\n"
-                                       "    int a;\n"
-                                       "    int b;\n"
-                                       "public:\n"
-                                       "    A(const A& that) : a(that.a) {\n"
-                                       "         b = that.b;\n"
-                                       "    }\n"
-                                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
