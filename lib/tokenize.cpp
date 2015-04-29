@@ -2597,8 +2597,8 @@ void Tokenizer::setVarId()
             if (!scopeStack.top().isExecutable)
                 newFunctionDeclEnd = isFunctionHead(tok, "{:;");
             else {
-                Token const * tokenLinkNext = tok->link()->next();
-                if (tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
+                Token const * const tokenLinkNext = tok->link()->next();
+                if (tokenLinkNext && tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
                     newFunctionDeclEnd = tokenLinkNext;
             }
             if (newFunctionDeclEnd &&

@@ -402,6 +402,8 @@ private:
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
+        TEST_CASE(setVarId) // #6660 - crash
+
         TEST_CASE(platformWin);
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -8710,6 +8712,19 @@ private:
         ASSERT_EQUALS("sizeof ( a . b ) + 3 ;", tokenizeAndStringify("sizeof a.b+3;"));
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
+    }
+
+    void setVarId() {
+        const char * code = "CS_PLUGIN_NAMESPACE_BEGIN(csparser)\n"
+                            "{\n"
+                            "    struct foo\n"
+                            "    {\n"
+                            "      union\n"
+                            "      {};\n"
+                            "    } halo;\n"
+                            "}\n"
+                            "CS_PLUGIN_NAMESPACE_END(csparser)\n";
+        tokenizeAndStringify(code, true);
     }
 };
 
