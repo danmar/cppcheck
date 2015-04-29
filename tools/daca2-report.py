@@ -23,7 +23,7 @@ def readdate(data):
         d = data[datepos]
         if d >= '0' and d <= '9':
             datestr = datestr + d
-        elif d == '\n':
+        elif d == '\n' or d == '\r':
             if len(datestr) == 8:
                 return datestr[:4] + '-' + datestr[4:6] + '-' + datestr[6:]
             return None
