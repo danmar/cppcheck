@@ -634,12 +634,12 @@ Möchten Sie die Prüfung wirklich durchführen, ohne eine Projektdatei zu verwe
     <message>
         <location filename="mainwindow.cpp" line="580"/>
         <source>Duplicate platform type</source>
-        <translation>Platformtyp doppelt</translation>
+        <translation>Plattformtyp doppelt</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="583"/>
         <source>Platform type redefined</source>
-        <translation>Platformtyp neu definiert</translation>
+        <translation>Plattformtyp neu definiert</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="588"/>
