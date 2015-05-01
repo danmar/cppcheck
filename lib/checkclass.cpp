@@ -2280,18 +2280,20 @@ void CheckClass::checkCopyCtorAndEqOperator()
     for (std::size_t i = 0; i < classes; ++i) {        
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
         
-        bool hasCopyCtor = false;
-        bool hasAssignmentOperator = false;
+        int hasCopyCtor = 0;
+        int hasAssignmentOperator = 0;
 
         std::list<Function>::const_iterator func;
         for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!hasCopyCtor)
-                hasCopyCtor = (func->type == Function::eCopyConstructor);
-            if (!hasAssignmentOperator)
-                hasAssignmentOperator = (func->type == Function::eOperatorEqual);
+            if (!hasCopyCtor && func->type == Function::eCopyConstructor) {
+            	hasCopyCtor = func->hasBody() ? 2 : 1;
+            }
+            if (!hasAssignmentOperator && func->type == Function::eOperatorEqual) {
+            	hasAssignmentOperator = func->hasBody() ? 2 : 1;
+            }
         }
 
-        if(hasCopyCtor != hasAssignmentOperator)
+        if(std::abs(hasCopyCtor - hasAssignmentOperator) == 2)
             copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, hasCopyCtor);       
     }
 }
