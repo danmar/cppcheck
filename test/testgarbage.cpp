@@ -74,6 +74,7 @@ private:
         TEST_CASE(garbageCode33); // #6613
         TEST_CASE(garbageCode34); // #6626
         TEST_CASE(garbageCode35); // #2599, #2604
+        TEST_CASE(garbageCode36); // #6334
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -542,6 +543,15 @@ private:
             "        using AliasA = A<T>;\n"
             "}\n"
         );
+    }
+
+    void garbageCode36() { // #6334
+        checkCode("{ } < class template < > , { = } ; class... >\n"
+                  "struct Y { }\n"
+                  "class Types { }\n"
+                  "( X < int > \"uses template\" ) ( < ( ) \"uses ; \n"
+                  "( int int ::primary \"uses template\" ) int double \"uses )\n"
+                  "::primary , \"uses template\" ;\n");
     }
 };
 

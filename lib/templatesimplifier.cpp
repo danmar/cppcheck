@@ -557,6 +557,8 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
         for (Token *tok = *iter1; tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "template < >")) { // Ticket #5762: Skip specialization tokens
                 tok = tok->tokAt(2);
+                if (0 == templateParmDepth)
+                    break;
                 continue;
             }
 
@@ -638,7 +640,11 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
             Token *tok2;
             int indentlevel = 0;
             for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "(")
+                if (Token::Match(tok2, ";|)|}|]")) { // bail out #6607
+                    tok2 = nullptr;
+                    break;
+                }
+                if (Token::Match(tok2, "(|{|["))
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
                     std::list<Token*>::iterator ti = std::find(templateInstantiations->begin(),
