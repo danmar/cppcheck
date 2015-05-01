@@ -2158,7 +2158,9 @@ static Token *skipTernaryOp(Token *tok)
                 break;
             }
         }
-        if (Token::Match(tok->next(), "[{};]"))
+        if (tok->link() && Token::Match(tok, "[(<]"))
+            tok = tok->link();
+        else if (Token::Match(tok->next(), "[{};)]"))
             break;
     }
     if (colonlevel) // Ticket #5214: Make sure the ':' matches the proper '?'
