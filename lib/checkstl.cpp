@@ -1535,10 +1535,14 @@ void CheckStl::readingEmptyStlContainer()
         if (i->type != Scope::eFunction)
             continue;
 
+        const Token* restartTok = nullptr;
         for (const Token *tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "for|while|do|}")) { // Loops and end of scope clear the sets.
+            if (Token::Match(tok, "for|while")) { // Loops and end of scope clear the sets.
+                restartTok = tok->linkAt(1); // Check condition to catch looping over empty containers
+            } else if (tok == restartTok || Token::Match(tok, "do|}")) {
                 empty_map.clear();
                 empty_nonmap.clear();
+                restartTok = nullptr;
             }
 
             if (!tok->varId())
