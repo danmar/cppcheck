@@ -305,7 +305,7 @@ cppcheck -DA --force file.c</programlisting>
   &lt;cppcheck version="1.66"&gt;
   &lt;errors&gt;
     &lt;error id="someError" severity="error" msg="short error text"
-           verbose="long error text" inconclusive="true"&gt;
+           verbose="long error text" inconclusive="true" cwe="312"&gt;
       &lt;location file="file.c" line="1"/&gt;
     &lt;/error&gt;
   &lt;/errors&gt;
@@ -359,6 +359,15 @@ cppcheck -DA --force file.c</programlisting>
           <listitem>
             <para>This attribute is only used when the message is
             inconclusive.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>cwe</sgmltag></term>
+
+          <listitem>
+            <para>CWE ID for message. This attribute is only used
+	    when the CWE ID for the message is known.</para>
           </listitem>
         </varlistentry>
       </variablelist>
