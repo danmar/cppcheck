@@ -158,6 +158,8 @@ private:
      */
     void eraseCheckLoop(const Token *it);
 
+    void readingEmptyStlContainer_parseUsage(const Token* tok, bool map, std::set<unsigned int>& empty, bool noerror);
+
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
     void string_c_strThrowError(const Token *tok);
     void string_c_strError(const Token *tok);

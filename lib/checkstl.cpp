@@ -1514,6 +1514,36 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
 
 
 
+void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, bool map, std::set<unsigned int>& empty, bool noerror)
+{
+    // Check for various conditions for the way stl containers and variables can be used
+    if (tok->strAt(1) == "=" || (tok->strAt(1) == "[" && Token::simpleMatch(tok->linkAt(1), "] ="))) {
+        // Assignment (LHS)
+        empty.erase(tok->varId());
+    } else if (Token::Match(tok, "%name% [")) {
+        // Access through operator[]
+        if (map) { // operator[] inserts an element, if used on a std::map
+            if (!noerror && tok->strAt(-1) == "=")
+                readingEmptyStlContainerError(tok);
+            empty.erase(tok->varId());
+        } else if (!noerror)
+            readingEmptyStlContainerError(tok);
+    } else if (Token::Match(tok, "%name% . %type% (")) {
+        // Member function call
+        if (Token::Match(tok->tokAt(2), "find|at|data|c_str|back|front|empty|top|size|count")) { // These functions read from the container
+            if (!noerror)
+                readingEmptyStlContainerError(tok);
+        } else
+            empty.erase(tok->varId());
+    } else if (tok->strAt(-1) == "=") {
+        // Assignment (RHS)
+        if (!noerror)
+            readingEmptyStlContainerError(tok);
+    } else {
+        // Unknown usage. Assume it is initialized.
+        empty.erase(tok->varId());
+    }
+}
 
 void CheckStl::readingEmptyStlContainer()
 {
@@ -1535,14 +1565,28 @@ void CheckStl::readingEmptyStlContainer()
         if (i->type != Scope::eFunction)
             continue;
 
-        const Token* restartTok = nullptr;
         for (const Token *tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "for|while")) { // Loops and end of scope clear the sets.
-                restartTok = tok->linkAt(1); // Check condition to catch looping over empty containers
-            } else if (tok == restartTok || Token::Match(tok, "do|}")) {
+                const Token* tok2 = tok->linkAt(1);
+                if (!tok2)
+                    continue;
+                tok2 = tok2->next();
+                for (const Token* end2 = tok2->link(); tok2 && tok2 != end2; tok2 = tok2->next()) {
+                    if (!tok2->varId())
+                        continue;
+
+                    const bool map = empty_map.find(tok2->varId()) != empty_map.end();
+                    if (!map && empty_nonmap.find(tok2->varId()) == empty_nonmap.end())
+                        continue;
+
+                    if (map)
+                        readingEmptyStlContainer_parseUsage(tok2, true, empty_map, true);
+                    else
+                        readingEmptyStlContainer_parseUsage(tok2, false, empty_nonmap, true);
+                }
+            } else if (Token::Match(tok, "do|}")) {
                 empty_map.clear();
                 empty_nonmap.clear();
-                restartTok = nullptr;
             }
 
             if (!tok->varId())
@@ -1571,39 +1615,10 @@ void CheckStl::readingEmptyStlContainer()
             if (!map && empty_nonmap.find(tok->varId()) == empty_nonmap.end())
                 continue;
 
-            // Check for various conditions for the way stl containers and variables can be used
-            if (tok->strAt(1) == "=" || (tok->strAt(1) == "[" && Token::simpleMatch(tok->linkAt(1), "] ="))) {
-                // Assignment (LHS)
-                if (map)
-                    empty_map.erase(tok->varId());
-                else
-                    empty_nonmap.erase(tok->varId());
-            } else if (Token::Match(tok, "%name% [")) {
-                // Access through operator[]
-                if (map) { // operator[] inserts an element, if used on a std::map
-                    if (tok->strAt(-1) == "=")
-                        readingEmptyStlContainerError(tok);
-                    empty_map.erase(tok->varId());
-                } else
-                    readingEmptyStlContainerError(tok);
-            } else if (Token::Match(tok, "%name% . %type% (")) {
-                // Member function call
-                if (Token::Match(tok->tokAt(2), "find|at|data|c_str|back|front|empty|top|size|count")) // These functions read from the container
-                    readingEmptyStlContainerError(tok);
-                else if (map)
-                    empty_map.erase(tok->varId());
-                else
-                    empty_nonmap.erase(tok->varId());
-            } else if (tok->strAt(-1) == "=") {
-                // Assignment (RHS)
-                readingEmptyStlContainerError(tok);
-            } else {
-                // Unknown usage. Assume it is initialized.
-                if (map)
-                    empty_map.erase(tok->varId());
-                else
-                    empty_nonmap.erase(tok->varId());
-            }
+            if (map)
+                readingEmptyStlContainer_parseUsage(tok, true, empty_map, false);
+            else
+                readingEmptyStlContainer_parseUsage(tok, false, empty_nonmap, false);
         }
         empty_map.clear();
         empty_nonmap.clear();

@@ -2671,6 +2671,14 @@ private:
               "    for(int i = 0; i < v.size(); i++) { cout << v[i]; }\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+
+        // #6663
+        check("void foo() {\n"
+              "    std::set<int> container;\n"
+              "    while (container.size() < 5)\n"
+              "        container.insert(22);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
