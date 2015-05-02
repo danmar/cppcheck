@@ -306,8 +306,24 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
                 if ((std::size_t)sz > arraySize)
                     error = true;
-            } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
+            } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken) {
                 *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
+            } else {
+                // The value can be calculated by valueflow algorithm. Find the argument in the ast tree!
+                const Token* tok = argtok;
+                while (tok && tok->str() != ",") {
+                    tok = tok->astParent();
+                }
+
+                if (tok && tok->astOperand2() && !tok->astOperand2()->values.empty()) {
+                    std::list<ValueFlow::Value>::const_iterator value;
+                    for (value = tok->astOperand2()->values.begin(); value != tok->astOperand2()->values.end(); ++value) {
+                        if (value->intvalue > arraySize) {
+                            error = true;
+                        }
+                    }
+                }
+            }
             break;
         case Library::ArgumentChecks::MinSize::MUL:
             // TODO: handle arbitrary arg2
@@ -1319,6 +1335,10 @@ void CheckBufferOverrun::bufferOverrun2()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         // Array index
         if (!Token::Match(tok, "%name% ["))
+            continue;
+
+        // It is a declaration of const char with defined literal - skip
+        if (Token::Match(tok->previous(), "%type% %name% [ %num% ] = %str%"))
             continue;
 
         // TODO: what to do about negative index..

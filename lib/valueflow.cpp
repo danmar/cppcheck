@@ -368,6 +368,25 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         }
     }
 
+    // Strlen function
+    else if (parent->astOperand1() && parent->astOperand2() && parent->astOperand1()->str() == "strlen") {
+        std::list<ValueFlow::Value>::const_iterator value;
+        for (value = parent->astOperand2()->values.begin(); value != parent->astOperand2()->values.end(); ++value) {
+            if (!value->tokvalue)
+                continue;
+
+            if (value->tokvalue->type() == Token::eString) {
+                ValueFlow::Value result(0);
+                result.condition = value->condition;
+                result.inconclusive = value->inconclusive;
+                result.varId = value->varId;
+                result.varvalue = value->intvalue;
+                result.intvalue = value->tokvalue->strValue().size();
+                setTokenValue(parent, result);
+            }
+        }
+    }
+
     // Array element
     else if (parent->str() == "[" && parent->astOperand1() && parent->astOperand2()) {
         std::list<ValueFlow::Value>::const_iterator value1, value2;
@@ -441,13 +460,6 @@ static void valueFlowArray(TokenList *tokenlist)
             const Token *rhstok = vartok->next()->link()->tokAt(2);
             constantArrays[vartok->varId()] = rhstok;
             tok = rhstok->link();
-        }
-
-        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
-            const Token *vartok = tok->tokAt(2);
-            const Token *strtok = vartok->next()->link()->tokAt(2);
-            constantArrays[vartok->varId()] = strtok;
-            tok = strtok->next();
         }
 
         if (tok->varId() > 0U) {
@@ -1043,6 +1055,31 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
+            // Reference to string is null
+            bool hasNullValue = false;
+            std::list<ValueFlow::Value>::const_iterator it;
+            for (it = values.begin(); !hasNullValue && it != values.end(); ++it) {
+                hasNullValue = !it->tokvalue;
+            }
+
+            // bailout: assignment to the non-null char array (we want to propagate null value)
+            if (Token::Match(tok2->previous(), "!!char %name% [ %num%|%var% ] =") && !hasNullValue) {
+                // simplify rhs
+                for (Token *tok3 = tok2->tokAt(6); tok3; tok3 = tok3->next()) {
+                    if (tok3->varId() == varid) {
+                        std::list<ValueFlow::Value>::const_iterator it;
+                        for (it = values.begin(); it != values.end(); ++it)
+                            setTokenValue(tok3, *it);
+                    }
+                    else if (Token::Match(tok3, "++|--|?|:|;"))
+                        break;
+                }
+
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "array assignment of " + tok2->str());
+                return false;
+            }
+
             // bailout increment/decrement for now..
             if (Token::Match(tok2->previous(), "++|-- %name%") || Token::Match(tok2, "%name% ++|--")) {
                 if (settings->debugwarnings)
@@ -1118,27 +1155,57 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symboldatabase->functionScopes[i];
         for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
-            // Assignment
-            if ((tok->str() != "=") || (tok->astParent()))
-                continue;
+            if (Token::Match(tok, "char %name% [ %num% ] =")) {
+                // Lhs should be a variable
+                if (!tok->next() || !tok->next()->varId())
+                    continue;
+                
+                const unsigned int varid = tok->next()->varId();
+                const Variable *var = tok->next()->variable();
 
-            // Lhs should be a variable
-            if (!tok->astOperand1() || !tok->astOperand1()->varId())
-                continue;
-            const unsigned int varid = tok->astOperand1()->varId();
-            const Variable *var = tok->astOperand1()->variable();
-            if (!var || (!var->isLocal() && !var->isArgument()))
-                continue;
+                if (!var || (!var->isLocal() && !var->isArgument()))
+                    continue;
 
-            const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+                const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+                const Token * const rhs = tok->tokAt(6);
 
-            // Rhs values..
-            if (!tok->astOperand2() || tok->astOperand2()->values.empty())
-                continue;
+                // Rhs values..
+                if (!rhs || rhs->values.empty())
+                    continue;
 
-            const std::list<ValueFlow::Value>& values = tok->astOperand2()->values;
-            const bool constValue = tok->astOperand2()->isNumber();
-            valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
+                const std::list<ValueFlow::Value>& values = rhs->values;
+                const bool constValue = rhs->type() == Token::eString;
+
+                if (constValue) {
+                    ValueFlow::Value value;
+                    value.tokvalue = rhs;
+                    setTokenValue(tok->next(), value);
+                }
+
+                valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
+            } else {
+                // Assignment
+                if ((tok->str() != "=") || (tok->astParent()))
+                    continue;
+
+                // Lhs should be a variable
+                if (!tok->astOperand1() || !tok->astOperand1()->varId())
+                    continue;
+                const unsigned int varid = tok->astOperand1()->varId();
+                const Variable *var = tok->astOperand1()->variable();
+                if (!var || (!var->isLocal() && !var->isArgument()))
+                    continue;
+
+                const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+
+                // Rhs values..
+                if (!tok->astOperand2() || tok->astOperand2()->values.empty())
+                    continue;
+
+                const std::list<ValueFlow::Value>& values = tok->astOperand2()->values;
+                const bool constValue = tok->astOperand2()->isNumber();
+                valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
+            }
         }
     }
 }
@@ -1464,7 +1531,7 @@ static bool valueFlowForLoop1(const Token *tok, unsigned int * const varid, Math
         num2tok = tok->astOperand2();
         if (num2tok && num2tok->str() == "(" && !num2tok->astOperand2())
             num2tok = num2tok->astOperand1();
-        if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no lnger be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
+        if (!Token::Match(num2tok, "%num% ;|%oror%")) // TODO: || enlarges the scope of the condition, so it should not cause FP, but it should no longer be part of this pattern as soon as valueFlowForLoop2 can handle an unknown RHS of || better
             num2tok = 0;
     }
     if (!num2tok)
@@ -1842,6 +1909,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger, settings);
     valueFlowBitAnd(tokenlist);
+    valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
