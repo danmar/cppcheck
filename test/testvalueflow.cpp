@@ -641,6 +641,7 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 9));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 8));
 
         code = "void f() {\n"
                "    int x = 0;\n"
@@ -1346,7 +1347,7 @@ private:
                "  for (x = 0; x < 20; x++) {}\n"
                "  a = x++;\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 20));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 20));
 
         code = "void f() {\n"
                "  int x;\n"

@@ -1043,13 +1043,6 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
-            // bailout increment/decrement for now..
-            if (Token::Match(tok2->previous(), "++|-- %name%") || Token::Match(tok2, "%name% ++|--")) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
-                return false;
-            }
-
             // bailout: possible assignment using >>
             if (Token::Match(tok2->previous(), ">> %name% >>|;")) {
                 const Token *parent = tok2->previous();
@@ -1079,6 +1072,34 @@ static bool valueFlowForward(Token * const               startToken,
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = values.begin(); it != values.end(); ++it)
                     setTokenValue(tok2, *it);
+            }
+
+            // increment/decrement
+            if (Token::Match(tok2->previous(), "++|-- %name%") || Token::Match(tok2, "%name% ++|--")) {
+                const bool pre   = Token::Match(tok2->previous(), "++|--");
+                Token * const op = pre ? tok2->previous() : tok2->next();
+                const bool inc   = (op->str() == "++");
+                std::list<ValueFlow::Value>::iterator it;
+                // Erase values that are not int values..
+                for (it = values.begin(); it != values.end();) {
+                    if (it->tokvalue)
+                        it = values.erase(it);
+                    else
+                        ++it;
+                }
+                if (values.empty()) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
+                    return false;
+                }
+                // Perform increment/decrement..
+                for (it = values.begin(); it != values.end(); ++it) {
+                    if (!pre)
+                        setTokenValue(op, *it);
+                    it->intvalue += (inc ? 1 : -1);
+                    if (pre)
+                        setTokenValue(op, *it);
+                }
             }
 
             // bailout if address of var is taken..
