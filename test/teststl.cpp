@@ -2582,13 +2582,13 @@ private:
               "    std::string strValue = CMap[1]; \n"
               "    std::cout << strValue << CMap.size() << std::endl;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
 
         check("void f() {\n"
               "    std::map<int,std::string> CMap;\n"
               "    std::string strValue = CMap[1];"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
 
         check("void f() {\n"
               "    std::map<int,std::string> CMap;\n"
@@ -2605,7 +2605,7 @@ private:
               "    }\n"
               "    return Vector;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'Vector'\n", errout.str());
 
         check("f() {\n"
               "    try {\n"
@@ -2656,21 +2656,21 @@ private:
               "    v.clear();\n"
               "    int i = v.find(foobar);\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
 
         check("void f() {\n"
               "    std::map<int, std::string> CMap;\n"
               "    std::string strValue = CMap[1];\n"
               "    std::string strValue2 = CMap[1];\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
 
         // #4306
         check("void f(std::vector<int> v) {\n"
               "    v.clear();\n"
               "    for(int i = 0; i < v.size(); i++) { cout << v[i]; }\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
 
         // #6663
         check("void foo() {\n"
