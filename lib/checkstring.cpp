@@ -50,7 +50,7 @@ void CheckString::stringLiteralWrite()
 void CheckString::stringLiteralWriteError(const Token *tok)
 {
     reportError(tok, Severity::error, "stringLiteralWrite",
-                "Modifying string literal directly or indirectly is UB");
+                "Modifying string literal directly or indirectly is undefined behaviour");
 }
 
 //---------------------------------------------------------------------------
