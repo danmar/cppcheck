@@ -111,8 +111,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Modifying string literal directly or indirectly is undefined behaviour\n", errout.str());
 
         check("void f() {\n"
-              "  char *abc = \"abc\";\n"
-              "  if (*abc == 'a'){}\n"
+              "  QString abc = \"abc\";\n"
+              "  abc[0] = 'a';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

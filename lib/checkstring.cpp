@@ -35,7 +35,7 @@ namespace {
 void CheckString::stringLiteralWrite()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->variable())
+        if (!tok->variable() || !tok->variable()->isPointer())
             continue;
         const Token *str = tok->getValueTokenMinStrSize();
         if (!str)
