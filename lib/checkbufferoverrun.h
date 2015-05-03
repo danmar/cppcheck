@@ -60,6 +60,7 @@ public:
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.bufferOverrun2();
         checkBufferOverrun.arrayIndexThenCheck();
+        checkBufferOverrun.negativeArraySize();
     }
 
     /** @brief %Check for buffer overruns */
@@ -70,6 +71,9 @@ public:
 
     /** @brief Using array index before bounds check */
     void arrayIndexThenCheck();
+
+    /** @brief negative size for array */
+    void negativeArraySize();
 
     /** @brief %Check for buffer overruns by inspecting execution paths */
     void executionPaths();
@@ -218,6 +222,7 @@ private:
     void bufferOverrunError(const std::list<const Token *> &callstack, const std::string &varnames = emptyString);
     void strncatUsageError(const Token *tok);
     void negativeMemoryAllocationSizeError(const Token *tok); // provide a negative value to memory allocation function
+    void negativeArraySizeError(const Token *tok);
     void outOfBoundsError(const Token *tok, const std::string &what, const bool show_size_info, const MathLib::bigint &supplied_size, const MathLib::bigint &actual_size);
     void sizeArgumentAsCharError(const Token *tok);
     void terminateStrncpyError(const Token *tok, const std::string &varname);
@@ -251,6 +256,7 @@ public:
         c.possibleBufferOverrunError(0, "source", "destination", false);
         c.argumentSizeError(0, "function", "array");
         c.negativeMemoryAllocationSizeError(0);
+        c.negativeArraySizeError(0);
         c.reportError(nullptr, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'x[10]' accessed at index 20, which is out of bounds. Otherwise condition 'y==20' is redundant.");
     }
 private:

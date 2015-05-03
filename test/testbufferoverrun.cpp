@@ -60,10 +60,8 @@ private:
         }
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.bufferOverrun();
-        checkBufferOverrun.bufferOverrun2();
-        checkBufferOverrun.arrayIndexThenCheck();
+        CheckBufferOverrun checkBufferOverrun;
+        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -246,6 +244,7 @@ private:
         TEST_CASE(bufferNotZeroTerminated);
 
         TEST_CASE(negativeMemoryAllocationSizeError) // #389
+        TEST_CASE(negativeArraySize);
 
         TEST_CASE(garbage1) // #6303
     }
@@ -3804,6 +3803,14 @@ private:
               "   free(a);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
+    }
+
+    void negativeArraySize() {
+        check("void f(int sz) {\n" // #1760 - VLA
+              "   int a[sz];\n"
+              "}\n"
+              "void x() { f(-100); }");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", errout.str());
     }
 
     void garbage1() {
