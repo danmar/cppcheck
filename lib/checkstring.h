@@ -94,6 +94,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckString c(0, settings, errorLogger);
 
+        c.stringLiteralWriteError(0);
         c.sprintfOverlappingDataError(0, "varname");
         c.strPlusCharError(0);
         c.incorrectStringCompareError(0, "substr", "\"Hello World\"");
