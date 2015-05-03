@@ -569,9 +569,10 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
             if (tok->str() == ">") {
                 if (Token::Match(tok, "> class|struct %name%"))
                     classname = tok->strAt(2);
-                --templateParmDepth;
-                if (0 == templateParmDepth)
+                if (templateParmDepth<2)
                     break;
+                else
+                    --templateParmDepth;
             }
 
             // next template parameter
@@ -601,7 +602,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
 
             // count the parameters..
             tok = tok->next();
-            unsigned int usedpar = TemplateSimplifier::templateParameters(tok);
+            const unsigned int usedpar = TemplateSimplifier::templateParameters(tok);
             tok = tok->findClosingBracket();
 
             if (tok && tok->str() == ">") {
