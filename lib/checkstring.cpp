@@ -40,7 +40,7 @@ void CheckString::stringLiteralWrite()
         const Token *str = tok->getValueTokenMinStrSize();
         if (!str)
             continue;
-        if (Token::Match(tok, "%var% [") && Token::Match(tok->linkAt(1), "] ="))
+        if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
             stringLiteralWriteError(tok);
         else if (Token::Match(tok->previous(), "* %var% ="))
             stringLiteralWriteError(tok);
