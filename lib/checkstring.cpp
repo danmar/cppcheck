@@ -30,6 +30,30 @@ namespace {
 
 
 //---------------------------------------------------------------------------
+// Writing string literal is UB
+//---------------------------------------------------------------------------
+void CheckString::stringLiteralWrite()
+{
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->variable())
+            continue;
+        const Token *str = tok->getValueTokenMinStrSize();
+        if (!str)
+            continue;
+        if (Token::Match(tok, "%var% [") && Token::Match(tok->linkAt(1), "] ="))
+            stringLiteralWriteError(tok);
+        else if (Token::Match(tok->previous(), "* %var% ="))
+            stringLiteralWriteError(tok);
+    }
+}
+
+void CheckString::stringLiteralWriteError(const Token *tok)
+{
+    reportError(tok, Severity::error, "stringLiteralWrite",
+                "Modifying string literal directly or indirectly is UB");
+}
+
+//---------------------------------------------------------------------------
 // Check for string comparison involving two static strings.
 // if(strcmp("00FF00","00FF00")==0) // <- statement is always true
 //---------------------------------------------------------------------------

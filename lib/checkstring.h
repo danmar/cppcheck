@@ -59,7 +59,11 @@ public:
         checkString.checkIncorrectStringCompare();
         checkString.checkAlwaysTrueOrFalseStringCompare();
         checkString.sprintfOverlappingData();
+        checkString.stringLiteralWrite();
     }
+
+    /** @brief undefined behaviour, writing string literal */
+    void stringLiteralWrite();
 
     /** @brief str plus char (unusual pointer arithmetic) */
     void strPlusChar();
@@ -77,6 +81,7 @@ public:
     void sprintfOverlappingData();
 
 private:
+    void stringLiteralWriteError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);

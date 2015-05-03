@@ -32,6 +32,8 @@ public:
 private:
 
     void run() {
+        TEST_CASE(stringLiteralWrite);
+
         TEST_CASE(alwaysTrueFalseStringCompare);
         TEST_CASE(suspiciousStringCompare);
         TEST_CASE(suspiciousStringCompare_char);
@@ -93,6 +95,26 @@ private:
         // Check..
         CheckString checkString(&tokenizer, &settings, this);
         checkString.checkAlwaysTrueOrFalseStringCompare();
+    }
+
+    void stringLiteralWrite() {
+        check("void f() {\n"
+              "  char *abc = \"abc\";\n"
+              "  abc[0] = 'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Modifying string literal directly or indirectly is UB\n", errout.str());
+
+        check("void f() {\n"
+              "  char *abc = \"abc\";\n"
+              "  *abc = 'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Modifying string literal directly or indirectly is UB\n", errout.str());
+
+        check("void f() {\n"
+              "  char *abc = \"abc\";\n"
+              "  if (*abc == 'a'){}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueFalseStringCompare() {
