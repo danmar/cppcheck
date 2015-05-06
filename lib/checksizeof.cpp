@@ -78,7 +78,7 @@ void CheckSizeof::checkSizeofForArrayParameter()
                 }
 
                 const Variable *var = varTok->variable();
-                if (var && var->isArray() && var->isArgument())
+                if (var && var->isArray() && var->isArgument() && !var->isReference())
                     sizeofForArrayParameterError(tok);
             }
         }

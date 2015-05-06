@@ -181,6 +181,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Using 'sizeof' on array given as "
                       "function argument returns size of a pointer.\n", errout.str());
 
+        check("typedef char Fixname[1000];\n"
+              "int f2(Fixname& f2v) {\n"
+              "  int i = sizeof(f2v);\n"
+              "  printf(\"sizeof f2v %d\n\", i);\n"
+              "   }\n"
+             );
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int *p) {\n"
               "    p[0] = 0;\n"
               "    int unused = sizeof(p);\n"
