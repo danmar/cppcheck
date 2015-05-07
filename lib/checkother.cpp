@@ -309,7 +309,7 @@ void CheckOther::clarifyStatement()
                 while (tok2 && tok2->str() == "*")
                     tok2 = tok2->previous();
 
-                if (Token::Match(tok2, "[{};]")) {
+                if (!tok2->astParent() && Token::Match(tok2, "[{};]")) {
                     tok2 = tok->astOperand1();
                     if (Token::Match(tok2, "++|-- [;,]"))
                         clarifyStatementError(tok2);

@@ -75,6 +75,7 @@ private:
         TEST_CASE(garbageCode34); // #6626
         TEST_CASE(garbageCode35); // #2599, #2604
         TEST_CASE(garbageCode36); // #6334
+        TEST_CASE(garbageCode37); // #5166
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -430,6 +431,20 @@ private:
         checkCode("sizeof <= A");
     }
 
+    void garbageCode36() { // #6334
+        checkCode("{ } < class template < > , { = } ; class... >\n"
+                  "struct Y { }\n"
+                  "class Types { }\n"
+                  "( X < int > \"uses template\" ) ( < ( ) \"uses ; \n"
+                  "( int int ::primary \"uses template\" ) int double \"uses )\n"
+                  "::primary , \"uses template\" ;\n");
+    }
+
+    void garbageCode37() {
+        // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
+        checkCode("void * f { } void b ( ) { * f }");
+    }
+
     void garbageValueFlow() {
         // #6089
         const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
@@ -543,15 +558,6 @@ private:
             "        using AliasA = A<T>;\n"
             "}\n"
         );
-    }
-
-    void garbageCode36() { // #6334
-        checkCode("{ } < class template < > , { = } ; class... >\n"
-                  "struct Y { }\n"
-                  "class Types { }\n"
-                  "( X < int > \"uses template\" ) ( < ( ) \"uses ; \n"
-                  "( int int ::primary \"uses template\" ) int double \"uses )\n"
-                  "::primary , \"uses template\" ;\n");
     }
 };
 

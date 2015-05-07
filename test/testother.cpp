@@ -3843,8 +3843,9 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
-        check("void * f { } void b ( ) { * f }");
+        check("void *f(char* p) {\n"
+              "    for (p = path; *p++;) ;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
