@@ -67,8 +67,8 @@ static unsigned char readChar(std::istream &istr, unsigned int bom)
     // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
     // character is non-ASCII character then replace it with 0xff
     if (bom == 0xfeff || bom == 0xfffe) {
-        unsigned char ch2 = (unsigned char)istr.get();
-        int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
+        const unsigned char ch2 = (unsigned char)istr.get();
+        const int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
         ch = (unsigned char)((ch16 >= 0x80) ? 0xff : ch16);
     }
 
@@ -673,7 +673,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                     chNext = str[i];
                     if (chNext == '\\') {
                         ++i;
-                        char chSeq = str[i];
+                        const char chSeq = str[i];
                         if (chSeq == '\n')
                             ++newlines;
                         else {
@@ -1232,9 +1232,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 6, "#file ") == 0) {
             includeguard = true;
-            std::string::size_type start=line.find("\"");
-            std::string::size_type end=line.find("\"",start+1);
-            std::string includeFile=line.substr(start+1,end-start-1);
+            const std::string::size_type start=line.find("\"");
+            const std::string::size_type end=line.find("\"",start+1);
+            const std::string includeFile=line.substr(start+1,end-start-1);
             bool fileExcluded = false;
             ++filelevel;
             if (! _settings) {
@@ -1257,7 +1257,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (line.compare(0, 8, "#define ") == 0) {
             bool valid = false;
             for (std::string::size_type pos = 8; pos < line.size(); ++pos) {
-                char ch = line[pos];
+                const char ch = line[pos];
                 if (ch=='_' || (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') || (pos>8 && ch>='0' && ch<='9')) {
                     valid = true;
                     continue;
@@ -1323,8 +1323,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             if (par != 0) {
                 std::ostringstream lineStream;
                 lineStream << __LINE__;
-                std::string errorId = "preprocessor" + lineStream.str();
-                std::string errorText = "mismatching number of '(' and ')' in this line: " + def;
+                const std::string errorId = "preprocessor" + lineStream.str();
+                const std::string errorText = "mismatching number of '(' and ')' in this line: " + def;
                 writeError(filename, linenr, _errorLogger, errorId, errorText);
                 ret.clear();
                 return ret;
@@ -1822,7 +1822,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             if (_settings) {
                 typedef std::set<std::string>::const_iterator It;
                 for (It it = _settings->userUndefs.begin(); it != _settings->userUndefs.end(); ++it) {
-                    std::string::size_type pos = line.find_first_not_of(' ',8);
+                    const std::string::size_type pos = line.find_first_not_of(' ',8);
                     if (pos != std::string::npos) {
                         std::string::size_type pos2 = line.find(*it,pos);
                         if ((pos2 != std::string::npos) &&
@@ -1846,7 +1846,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
             }
 
             if (match) {
-                std::string::size_type pos = line.find_first_of(" (", 8);
+                const std::string::size_type pos = line.find_first_of(" (", 8);
                 if (pos == std::string::npos)
                     cfgmap[line.substr(8)] = "";
                 else if (line[pos] == ' ') {
@@ -2070,7 +2070,7 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
 
     unsigned int linenr = 0;
 
-    std::set<std::string> undefs = _settings ? _settings->userUndefs : std::set<std::string>();
+    const std::set<std::string>& undefs = _settings ? _settings->userUndefs : std::set<std::string>();
 
     if (_errorLogger)
         _errorLogger->reportProgress(filePath, "Preprocessor (handleIncludes)", 0);
@@ -2148,13 +2148,13 @@ std::string Preprocessor::handleIncludes(const std::string &code, const std::str
                 elseIsTrue = true;  // this value doesn't matter when suppressCurrentCodePath is true
         } else if (line.compare(0,6,"#elif ") == 0 || line.compare(0,5,"#else") == 0) {
             if (!elseIsTrue) {
-                if (indentmatch == indent) {
+                if ((indentmatch > 0) && (indentmatch == indent)) {
                     indentmatch = indent - 1;
                 }
             } else {
-                if (indentmatch == indent) {
+                if ((indentmatch > 0) && (indentmatch == indent)) {
                     indentmatch = indent - 1;
-                } else if (indentmatch == indent - 1) {
+                } else if ((indent > 0) && indentmatch == indent - 1) {
                     if (line.compare(0,5,"#else")==0 || match_cfg_def(defs,line.substr(6))) {
                         indentmatch = indent;
                         elseIsTrue = false;
@@ -2269,7 +2269,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     std::list<std::string> paths;
     std::string path;
     path = filePath;
-    std::string::size_type sep_pos = path.find_last_of("\\/");
+    const std::string::size_type sep_pos = path.find_last_of("\\/");
     if (sep_pos != std::string::npos)
         path.erase(1 + sep_pos);
     paths.push_back(path);
@@ -2428,10 +2428,10 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
  */
 static std::string trim(const std::string& s)
 {
-    std::string::size_type beg = s.find_first_not_of(" \t");
+    const std::string::size_type beg = s.find_first_not_of(" \t");
     if (beg == std::string::npos)
         return s;
-    std::string::size_type end = s.find_last_not_of(" \t");
+    const std::string::size_type end = s.find_last_not_of(" \t");
     if (end == std::string::npos)
         return s.substr(beg);
     return s.substr(beg, end - beg + 1);
@@ -2577,7 +2577,7 @@ private:
 
         for (std::size_t ipar = 0; ipar < params1.size(); ++ipar) {
             const std::string s(innerMacroName + "(");
-            std::string param(params1[ipar]);
+            const std::string param(params1[ipar]);
             if (param.compare(0,s.length(),s)==0 && param[param.length()-1]==')') {
                 std::vector<std::string> innerparams;
                 std::string::size_type pos = s.length() - 1;
@@ -2626,7 +2626,7 @@ public:
         // initialize parameters to default values
         _variadic = _nopar = false;
 
-        std::string::size_type pos = macro.find_first_of(" (");
+        const std::string::size_type pos = macro.find_first_of(" (");
         if (pos != std::string::npos && macro[pos] == '(') {
             // Extract macro parameters
             if (Token::Match(tokens(), "%name% ( %name%")) {
