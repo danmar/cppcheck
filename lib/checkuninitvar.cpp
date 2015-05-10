@@ -1886,6 +1886,8 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
         else if (Token::Match(tok->tokAt(-2), "[(,=] &"))
             return true;
+        else if (Token::Match(tok->tokAt(-2), "%name% >>") && Token::Match(tok->tokAt(3), ";|>>")) // #6680
+            return true;
         else if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
             ; // member variable usage
         else if (tok->tokAt(3)->isConstOp())

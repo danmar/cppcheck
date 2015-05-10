@@ -70,6 +70,7 @@ private:
         TEST_CASE(uninitvar9); // ticket #6424
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
+        TEST_CASE(uninitvar_operator); // #6680
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -2869,6 +2870,25 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: Factory\n", errout.str());
     }
+
+    void uninitvar_operator() { // Ticket #6680
+        checkUninitVar2("struct Source { Source& operator>>(int& i) { i = 0; return *this; } };\n"
+                        "struct Sink { int v; };\n"
+                        "Source foo;\n"
+                        "void uninit() {\n"
+                        "  Sink s;\n"
+                        "  int n = 1 >> s.v;\n" // Not initialized
+                        "};\n"
+                        "void notUninit() {\n"
+                        "  Sink s1;\n"
+                        "  foo >> s1.v;\n" // Initialized by operator>>
+                        "  Sink s2;\n"
+                        "  int n;\n"
+                        "  foo >> s2.v >> n;\n" // Initialized by operator>>
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized struct member: s.v\n", errout.str());
+    }
+
     // Handling of function calls
     void uninitvar2_func() {
         // non-pointer variable
