@@ -455,6 +455,8 @@ private:
         TEST_CASE(simplifyMathExpressions); //ticket #1620
         TEST_CASE(simplifyStaticConst);
 
+        TEST_CASE(simplifyDeprecated);
+
         TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
 
         // AST data
@@ -8356,6 +8358,17 @@ private:
             "+ i13 + i14 + i15 + i16 + i17 + i18 ;\n"
             "}";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
+    }
+
+    void simplifyDeprecated() {
+        ASSERT_EQUALS("int f ( ) ;",
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.cpp", true));
+
+        ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.cpp", false));
+
+        ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
+                      tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.c", true));
     }
 
     static std::string testAst(const char code[],bool verbose=false) {

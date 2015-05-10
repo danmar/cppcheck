@@ -3208,6 +3208,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
+    // Remove [[deprecated]]
+    simplifyDeprecated();
+
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
@@ -10087,6 +10090,19 @@ void Tokenizer::removeUnnecessaryQualification()
                     tok->deleteThis();
                 }
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyDeprecated()
+{
+    if (_settings->standards.cpp != Standards::CPP11 || isC())
+        return; // It is actually a C++14 feature, however, there seems to be nothing dangerous about removing it for C++11 as well
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->link() && Token::simpleMatch(tok, "[ [ deprecated")) {
+            Token::eraseTokens(tok, tok->link()->next());
+            tok->deleteThis();
         }
     }
 }

@@ -682,6 +682,11 @@ public:
     void simplifyOperatorName();
 
     /**
+    * Remove [[deprecated]] (C++14) from TokenList
+    */
+    void simplifyDeprecated();
+
+    /**
      * check for duplicate enum definition
      */
     bool duplicateDefinition(Token **tokPtr, const Token *name) const;
