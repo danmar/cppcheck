@@ -1044,6 +1044,16 @@ private:
               "    A() { number = 42; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6675
+        check("struct Foo {\n"
+              "  Foo();\n"
+              "  Foo(int foo);\n"
+              "  int foo_;\n"
+              "};\n"
+              "Foo::Foo() : Foo(0) {}\n"
+              "Foo::Foo(int foo) : foo_(foo) {}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

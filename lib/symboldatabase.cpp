@@ -1198,7 +1198,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 func->functionScope->functionOf && func->arg && func->arg->link()->strAt(1) == ":") {
                 const Token * tok = func->arg->link()->tokAt(2);
                 while (tok && tok != func->functionScope->classStart) {
-                    if (Token::Match(tok, "%name% {")) {
+                    if (Token::Match(tok, "%name% {|(")) {
                         if (tok->str() == func->tokenDef->str()) {
                             const_cast<Token *>(tok)->function(func->functionScope->functionOf->findFunction(tok));
                             break;
