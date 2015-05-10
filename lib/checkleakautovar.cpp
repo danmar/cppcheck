@@ -150,8 +150,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
     // Parse all tokens
     const Token * const endToken = startToken->link();
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
-        if (!tok->scope()->isExecutable())
+        if (!tok->scope()->isExecutable()) {
             tok = tok->scope()->classEnd;
+            if (!tok) // Ticket #6666 (crash upon invalid code)
+                break;
+        }
 
         // Deallocation and then dereferencing pointer..
         if (tok->varId() > 0) {

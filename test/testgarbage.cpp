@@ -76,6 +76,7 @@ private:
         TEST_CASE(garbageCode35); // #2599, #2604
         TEST_CASE(garbageCode36); // #6334
         TEST_CASE(garbageCode37); // #5166
+        TEST_CASE(garbageCode38); // #6666
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -443,6 +444,10 @@ private:
     void garbageCode37() {
         // #5166 segmentation fault (invalid code) in lib/checkother.cpp:329 ( void * f { } void b ( ) { * f } )
         checkCode("void * f { } void b ( ) { * f }");
+    }
+
+    void garbageCode38() { // Ticket #6666
+        checkCode("{ f2 { } } void f3 () { delete[] } { }");
     }
 
     void garbageValueFlow() {
