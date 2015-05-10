@@ -34,16 +34,21 @@ namespace {
 //---------------------------------------------------------------------------
 void CheckString::stringLiteralWrite()
 {
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->variable() || !tok->variable()->isPointer())
-            continue;
-        const Token *str = tok->getValueTokenMinStrSize();
-        if (!str)
-            continue;
-        if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
-            stringLiteralWriteError(tok);
-        else if (Token::Match(tok->previous(), "* %var% ="))
-            stringLiteralWriteError(tok);
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->variable() || !tok->variable()->isPointer())
+                continue;
+            const Token *str = tok->getValueTokenMinStrSize();
+            if (!str)
+                continue;
+            if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
+                stringLiteralWriteError(tok);
+            else if (Token::Match(tok->previous(), "* %var% ="))
+                stringLiteralWriteError(tok);
+        }
     }
 }
 
