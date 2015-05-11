@@ -1584,7 +1584,7 @@ void CheckStl::readingEmptyStlContainer()
                     else
                         readingEmptyStlContainer_parseUsage(tok2, false, empty_nonmap, true);
                 }
-            } else if (Token::Match(tok, "do|}")) {
+            } else if (Token::Match(tok, "do|}|break|case")) {
                 empty_map.clear();
                 empty_nonmap.clear();
             }

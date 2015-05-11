@@ -2677,8 +2677,54 @@ private:
               "    std::set<int> container;\n"
               "    while (container.size() < 5)\n"
               "        container.insert(22);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        // #6679
+        check("class C {\n"
+              "    C() {\n"
+              "        switch (ret) {\n"
+              "            case 1:\n"
+              "                vec.clear();\n"
+              "                break;\n"
+              "            case 2:\n"
+              "                if (vec.empty())\n"
+              "                    ;\n"
+              "                break;\n"
+              "        }\n"
+              "    }\n"
+              "    std::vector<int> vec;\n"
+              "};", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    C() {\n"
+              "        switch (ret) {\n"
+              "            case 1:\n"
+              "                vec.clear();\n"
+              "            case 2:\n"
+              "                if (vec.empty())\n"
+              "                    ;\n"
+              "                break;\n"
+              "        }\n"
+              "    }\n"
+              "    std::vector<int> vec;\n"
+              "};", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    C() {\n"
+              "        switch (ret) {\n"
+              "            case 1:\n"
+              "                vec.clear();\n"
+              "                if (vec.empty())\n"
+              "                    ;\n"
+              "                break;\n"
+              "        }\n"
+              "    }\n"
+              "    std::vector<int> vec;\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Reading from empty STL container 'vec'\n", errout.str());
     }
 };
 
