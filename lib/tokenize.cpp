@@ -3116,12 +3116,34 @@ bool Tokenizer::simplifySizeof()
             }
         }
 
-        else if (Token::Match(tok, "sizeof ( * %name% )") || Token::Match(tok, "sizeof ( %name% [ %num% ] )")) {
+        else if (Token::simpleMatch(tok, "sizeof ( *") || Token::Match(tok, "sizeof ( %name% [")) {
             // Some default value..
             std::size_t sz = 0;
 
-            const unsigned int varid = tok->tokAt((tok->strAt(2) == "*") ? 3 : 2)->varId();
-            if ((varid != 0) && (declTokOfVar.find(varid) != declTokOfVar.end())) {
+            unsigned int derefs = 0;
+
+            const Token* nametok = tok->tokAt(2);
+            if (nametok->str() == "*") {
+                do {
+                    nametok = nametok->next();
+                    derefs++;
+                } while (nametok && nametok->str() == "*");
+
+                if (!Token::Match(nametok, "%name% )"))
+                    continue;
+            } else {
+                const Token* tok2 = nametok->next();
+                do {
+                    tok2 = tok2->link()->next();
+                    derefs++;
+                } while (tok2 && tok2->str() == "[");
+
+                if (!tok2 || tok2->str() != ")")
+                    continue;
+            }
+
+            const unsigned int varid = nametok->varId();
+            if (derefs != 0 && varid != 0 && declTokOfVar.find(varid) != declTokOfVar.end()) {
                 // Try to locate variable declaration..
                 const Token *decltok = declTokOfVar[varid];
                 if (Token::Match(decltok->previous(), "%type%|* %name% [")) {
@@ -3130,20 +3152,28 @@ bool Tokenizer::simplifySizeof()
                     sz = sizeOfType(decltok->tokAt(-2));
                 }
                 // Multi-dimensional array..
-                if (Token::Match(decltok,"%name% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
-                    const Token *tok2 = decltok->linkAt(1);
+                if (Token::Match(decltok, "%name% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
+                    const Token *tok2 = decltok;
+                    for (unsigned int i = 0; i < derefs; i++)
+                        tok2 = tok2->linkAt(1); // Skip all dimensions that are derefenced before the sizeof call
                     while (Token::Match(tok2, "] [ %num% ]")) {
                         sz = sz * MathLib::toLongNumber(tok2->strAt(2));
-                        tok2 = tok2->linkAt(3);
+                        tok2 = tok2->linkAt(1);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
                         sz = 0;
                 }
-            } else if (tok->strAt(3) == "[" && tok->tokAt(2)->isStandardType()) {
-                sz = sizeOfType(tok->tokAt(2));
+            } else if (nametok->strAt(1) == "[" && nametok->isStandardType()) {
+                sz = sizeOfType(nametok);
                 if (sz == 0)
                     continue;
-                sz *= static_cast<unsigned long>(MathLib::toLongNumber(tok->strAt(4)));
+                const Token *tok2 = nametok->next();
+                while (Token::Match(tok2, "[ %num% ]")) {
+                    sz *= static_cast<unsigned long>(MathLib::toLongNumber(tok2->strAt(1)));
+                    tok2 = tok2->link()->next();
+                }
+                if (!tok2 || tok2->str() != ")")
+                    continue;
             }
 
             if (sz > 0) {

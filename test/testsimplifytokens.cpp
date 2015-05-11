@@ -894,6 +894,21 @@ private:
                "sizeof(i[1]);\n"
                "sizeof(i);";
         ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ; 40 ;", tok(code));
+
+        code = "char i[2][20][30];\n"
+               "sizeof(i[1][4][2]);\n"
+               "sizeof(***i);\n"
+               "sizeof(i[1][4]);\n"
+               "sizeof(**i);\n"
+               "sizeof(i[1]);\n"
+               "sizeof(*i);\n"
+               "sizeof(i);";
+        ASSERT_EQUALS("char i [ 2 ] [ 20 ] [ 30 ] ; 1 ; 1 ; 30 ; 30 ; 600 ; 600 ; 1200 ;", tok(code));
+
+        code = "sizeof(char[20]);\n"
+               "sizeof(char[20][3]);\n"
+               "sizeof(char[unknown][3]);";
+        ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
     }
 
     void sizeof5() {
