@@ -297,7 +297,9 @@ private:
         TEST_CASE(if_sizeof);
 
         TEST_CASE(double_include); // #5717
-        TEST_CASE(invalid_ifs)// #5909
+        TEST_CASE(invalid_ifs); // #5909
+
+        TEST_CASE(garbage);
     }
 
 
@@ -4067,7 +4069,19 @@ private:
         Settings settings;
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
+    }
 
+    void garbage() {
+        const char filedata[] = "V\n"
+                                "#define X b   #endif #line 0 \"x\"  ;\n"
+                                "#if ! defined ( Y )    #endif";
+
+        // Preprocess => don't crash..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
     }
 };
 

@@ -1136,7 +1136,7 @@ std::string Preprocessor::getdef(std::string line, bool def)
 }
 
 /** Simplify variable in variable map. */
-static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables)
+static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, std::string> &variables, std::set<std::string> seenVariables, const Settings* settings)
 {
     // TODO: handle function-macros too.
 
@@ -1147,13 +1147,13 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
 
     const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
     if (it != variables.end()) {
-        TokenList tokenList(nullptr);
+        TokenList tokenList(settings);
         std::istringstream istr(it->second);
         if (tokenList.createTokens(istr)) {
             // expand token list
             for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
                 if (tok2->isName()) {
-                    tok2 = simplifyVarMapExpandValue(tok2, variables, seenVariables);
+                    tok2 = simplifyVarMapExpandValue(tok2, variables, seenVariables, settings);
                 }
             }
 
@@ -1175,16 +1175,16 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
  * Simplifies the variable map. For example if the map contains A=>B, B=>1, then A=>B is simplified to A=>1.
  * @param [in,out] variables - a map of variable name to variable value. This map will be modified.
  */
-static void simplifyVarMap(std::map<std::string, std::string> &variables)
+static void simplifyVarMap(std::map<std::string, std::string> &variables, const Settings* settings)
 {
     for (std::map<std::string, std::string>::iterator i = variables.begin(); i != variables.end(); ++i) {
-        TokenList tokenList(nullptr);
+        TokenList tokenList(settings);
         std::istringstream istr(i->second);
         if (tokenList.createTokens(istr)) {
             for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
                 if (tok->isName()) {
                     std::set<std::string> seenVariables;
-                    tok = simplifyVarMapExpandValue(tok, variables, seenVariables);
+                    tok = simplifyVarMapExpandValue(tok, variables, seenVariables, settings);
                 }
             }
 
@@ -1742,7 +1742,7 @@ bool Preprocessor::match_cfg_def(std::map<std::string, std::string> cfg, std::st
         std::cout << "def: \"" << def << "\"\n";
     */
 
-    simplifyVarMap(cfg);
+    simplifyVarMap(cfg, _settings);
     simplifyCondition(cfg, def, true);
 
     if (cfg.find(def) != cfg.end())
