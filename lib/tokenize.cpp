@@ -7306,6 +7306,9 @@ void Tokenizer::simplifyNestedStrcat()
             tok2 = tok2->tokAt(2);
         }
 
+        if (tok2->strAt(3) != ",")
+            continue;
+
         // If we have this code:
         //   strcat(strcat(dst, foo), bar);
         // We move this part of code before all strcat() calls: strcat(dst, foo)
@@ -7323,7 +7326,6 @@ void Tokenizer::simplifyNestedStrcat()
         // Insert semicolon after the moved strcat()
         tok->insertToken(";");
     }
-
 }
 
 void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type) const

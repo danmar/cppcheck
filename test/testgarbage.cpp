@@ -77,6 +77,7 @@ private:
         TEST_CASE(garbageCode36); // #6334
         TEST_CASE(garbageCode37); // #5166
         TEST_CASE(garbageCode38); // #6666
+        TEST_CASE(garbageCode39); // #6686
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -448,6 +449,10 @@ private:
 
     void garbageCode38() { // Ticket #6666
         checkCode("{ f2 { } } void f3 () { delete[] } { }");
+    }
+
+    void garbageCode39() { // #6686
+        checkCode("({ (); strcat(strcat(() ()) ()) })");
     }
 
     void garbageValueFlow() {
