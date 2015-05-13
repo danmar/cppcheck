@@ -1704,8 +1704,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
             // - should only return false if struct member is (or might be) array.
             // - should only return false if function argument is (or might be) non-const pointer or reference
             const Token *tok2 = vartok->next();
-            while (Token::Match(tok2,". %name%"))
+            do {
                 tok2 = tok2->tokAt(2);
+            } while (Token::Match(tok2, ". %name%"));
             if (Token::Match(tok2, "[,)]"))
                 return false;
         } else if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% (")) {

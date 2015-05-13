@@ -2855,12 +2855,12 @@ void Tokenizer::setVarId()
                     // constructor with initializer list
                     if (Token::Match(tok2, ") : %name% (")) {
                         Token *tok3 = tok2;
-                        while (Token::Match(tok3, ") [:,] %name% (")) {
+                        do {
                             Token *vartok = tok3->tokAt(2);
                             if (varlist[classname].find(vartok->str()) != varlist[classname].end())
                                 vartok->varId(varlist[classname][vartok->str()]);
                             tok3 = tok3->linkAt(3);
-                        }
+                        } while (Token::Match(tok3, ") [:,] %name% ("));
                         if (Token::simpleMatch(tok3, ") {")) {
                             setVarIdClassFunction(classname, tok2, tok3->next()->link(), varlist[classname], &structMembers, &_varId);
                         }
@@ -3022,10 +3022,10 @@ bool Tokenizer::simplifySizeof()
                     continue;
 
                 Token* tok2 = tok->next();
-                while (Token::Match(tok2, "[ %num% ]")) {
+                do {
                     size *= static_cast<unsigned int>(MathLib::toLongNumber(tok2->strAt(1)));
                     tok2 = tok2->tokAt(3);
-                }
+                } while (Token::Match(tok2, "[ %num% ]"));
                 if (Token::Match(tok2, "[;=]")) {
                     sizeOfVar[varId] = size;
                     declTokOfVar[varId] = tok;
@@ -6456,8 +6456,9 @@ bool Tokenizer::simplifyKnownVariables()
                 // skip loop variable
                 if (Token::Match(tok2->tokAt(-2), "(|:: %type%")) {
                     const Token *tok3 = tok2->previous();
-                    while (Token::Match(tok3->previous(), ":: %type%"))
+                    do {
                         tok3 = tok3->tokAt(-2);
+                    } while (Token::Match(tok3->previous(), ":: %type%"));
                     if (Token::Match(tok3->tokAt(-2), "for ( %type%"))
                         continue;
                 }
@@ -7302,9 +7303,8 @@ void Tokenizer::simplifyNestedStrcat()
 
         // find inner strcat call
         Token *tok2 = tok->tokAt(3);
-        while (Token::simpleMatch(tok2, "strcat ( strcat")) {
+        while (Token::simpleMatch(tok2, "strcat ( strcat"))
             tok2 = tok2->tokAt(2);
-        }
 
         if (tok2->strAt(3) != ",")
             continue;
@@ -7748,9 +7748,10 @@ void Tokenizer::simplifyEnum()
                                     if (Token::Match(arg->previous(), "%type%|*|& %type% [,)=]") &&
                                         enumValues.find(arg->str()) != enumValues.end()) {
                                         // is this a variable declaration
-                                        const Token *prev = arg;
-                                        while (Token::Match(prev,"%type%|*|&"))
+                                        const Token *prev = arg->previous();
+                                        do {
                                             prev = prev->previous();
+                                        } while (Token::Match(prev, "%type%|*|&"));
                                         if (!Token::Match(prev,"[,(] %type%"))
                                             continue;
                                         if (prev->str() == "(" && (!Token::Match(prev->tokAt(-2), "%type%|::|*|& %type% (") || prev->strAt(-2) == "else"))

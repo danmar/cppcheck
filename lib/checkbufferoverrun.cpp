@@ -683,14 +683,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 std::size_t charactersAppend = 0;
                 const Token *tok2 = tok;
 
-                while (Token::Match(tok2, strcatPattern.c_str(), declarationId)) {
+                do {
                     charactersAppend += Token::getStrLength(tok2->tokAt(4 + varcount));
                     if (charactersAppend >= static_cast<std::size_t>(total_size)) {
                         bufferOverrunError(tok2);
                         break;
                     }
                     tok2 = tok2->tokAt(7 + varcount);
-                }
+                } while (Token::Match(tok2, strcatPattern.c_str(), declarationId));
             }
 
             // Check function call..
