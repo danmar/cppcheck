@@ -3157,7 +3157,7 @@ bool Tokenizer::simplifySizeof()
                     for (unsigned int i = 0; i < derefs; i++)
                         tok2 = tok2->linkAt(1); // Skip all dimensions that are derefenced before the sizeof call
                     while (Token::Match(tok2, "] [ %num% ]")) {
-                        sz = sz * MathLib::toLongNumber(tok2->strAt(2));
+                        sz *= static_cast<size_t>(MathLib::toULongNumber(tok2->strAt(2)));
                         tok2 = tok2->linkAt(1);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
@@ -3169,7 +3169,7 @@ bool Tokenizer::simplifySizeof()
                     continue;
                 const Token *tok2 = nametok->next();
                 while (Token::Match(tok2, "[ %num% ]")) {
-                    sz *= static_cast<unsigned long>(MathLib::toLongNumber(tok2->strAt(1)));
+                    sz *= static_cast<size_t>(MathLib::toLongNumber(tok2->strAt(1)));
                     tok2 = tok2->link()->next();
                 }
                 if (!tok2 || tok2->str() != ")")
@@ -9315,17 +9315,26 @@ void Tokenizer::simplifyKeyword()
             }
 
             // final:
-            // void f() final;  <- function is final
-            // struct name final { };   <- struct is final
-            if (Token::Match(tok, ") final [{;]") || Token::Match(tok, "%type% final [:{]"))
+            // 1) struct name final { };   <- struct is final
+            if (Token::Match(tok, "%type% final [:{]")) {
                 tok->deleteNext();
-
-            // override
+				continue;
+			}
+            // final:
+            // 2) void f() final;  <- function is final
+            // override:
             // void f() override;
-            else if (Token::Match(tok, ") override [{;]"))
-                tok->deleteNext();
-            else if (Token::Match(tok, ") const override [{;]"))
-                tok->next()->deleteNext();
+            //if (Token::Match(tok, ") override [{;]"))
+			if (Token::Match(tok, ") const|override|final")) {
+				Token* specifier = tok->tokAt(2);
+				while(specifier && Token::Match(specifier, "const|override|final"))
+					specifier=specifier->next();
+                if (specifier && Token::Match(specifier, "[{;]")) {
+					specifier=tok->next();
+					while (specifier->str()=="override" || specifier->str()=="final")
+						specifier->deleteThis();
+				}
+			}
         }
     }
 }

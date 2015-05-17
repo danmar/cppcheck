@@ -4443,18 +4443,49 @@ private:
 
     void removeKeywords() {
         const char code[] = "if (__builtin_expect(!!(x), 1));";
-
-        const std::string actual(tokenizeAndStringify(code, true));
-
-        ASSERT_EQUALS("if ( ! ! x ) { ; }", actual);
+        ASSERT_EQUALS("if ( ! ! x ) { ; }", tokenizeAndStringify(code, true));
     }
 
     void simplifyKeyword() {
-        const char code[] = "void f (int a [ static 5] );";
+		{
+			const char code[] = "void f (int a [ static 5] );";
+			ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", tokenizeAndStringify(code));
+		}
+        {
+            const char in1[] = "class Base {\n"
+                               "  virtual int test() = 0;\n"
+                               "};\n"
+                               "class Derived : public Base {\n"
+                               "  virtual int test() override final {\n"
+                               "    for( int Index ( 0 ); Index < 16; ++ Index) { int stub = 0; }\n"
+                               "  }\n"
+                               "};";
+            const char out1[] = "class Base {\n"
+                                "virtual int test ( ) = 0 ;\n"
+                                "} ;\n"
+                                "class Derived : public Base {\n"
+                                "virtual int test ( ) {\n"
+                                "for ( int Index ( 0 ) ; Index < 16 ; ++ Index ) { int stub ; stub = 0 ; }\n"
+                                "}\n"
+                                "} ;";
+            ASSERT_EQUALS(out1, tokenizeAndStringify(in1));
+            const char in2[] =  "class Derived{\n"
+                                "  virtual int test() final override;"
+                                "};";
+            const char out2[] = "class Derived {\n"
+                                "virtual int test ( ) ; } ;";
+            ASSERT_EQUALS(out2, tokenizeAndStringify(in2));
+			const char in3[] =  "class Derived{\n"
+                                "  virtual int test() final override const;"
+                                "};";
+            const char out3[] = "class Derived {\n"
+                                "virtual int test ( ) const ; } ;";
+            ASSERT_EQUALS(out3, tokenizeAndStringify(in3));
 
-        const std::string actual(tokenizeAndStringify(code, true));
-
-        ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", actual);
+			const char in4 [] = "struct B final : A { void foo(); };";
+			const char out4 [] = "struct B : A { void foo ( ) ; } ;";
+			ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
+		}
     }
 
     /**
