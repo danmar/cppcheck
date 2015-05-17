@@ -1868,10 +1868,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     if (end->varId()) {
                         const Variable *var = end->variable();
                         // The container contains the STL types whose operator[] is not a const.
-                        // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-                        static const char* const stl_containers [] = {
-                            "map", "unordered_map"
-                        };
+                        static const std::set<std::string> stl_containers = make_container< std::set<std::string> >() << "map" << "unordered_map";
                         if (var && var->isStlType(stl_containers))
                             return false;
                     }

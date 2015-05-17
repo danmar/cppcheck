@@ -1522,16 +1522,12 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
     }
 }
 
+
+
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_vector[] = {
-        "array", "vector"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[] = {
-        "string", "u16string", "u32string", "wstring"
-    };
+    static const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
+    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
 
     if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
@@ -1586,19 +1582,15 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_container[] = {
-        "array", "bitset", "deque", "forward_list",
-        "hash_map", "hash_multimap", "hash_set",
-        "list", "map", "multimap", "multiset",
-        "priority_queue", "queue", "set", "stack",
-        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set",
-        "vector"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[]= {
-        "string", "u16string", "u32string", "wstring"
-    };
+    static const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
+            "array" << "bitset" << "deque" << "forward_list" <<
+            "hash_map" << "hash_multimap" << "hash_set" <<
+            "list" << "map" << "multimap" << "multiset" <<
+            "priority_queue" << "queue" << "set" << "stack" <<
+            "unordered_map" << "unordered_multimap" << "unordered_multiset" << "unordered_set" << "vector"
+            ;
+    static const std::set<std::string> stl_string= make_container< std::set<std::string> >() <<
+            "string" << "u16string" << "u32string" << "wstring";
 
     if (tok && tok->variable()) {
         const Variable* variable = tok->variable();

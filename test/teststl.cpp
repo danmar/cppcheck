@@ -130,7 +130,7 @@ private:
         TEST_CASE(readingEmptyStlContainer);
     }
 
-    void check(const char code[], const bool inconclusive=false) {
+    void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
         // Clear the error buffer..
         errout.str("");
 
@@ -138,6 +138,7 @@ private:
         settings.addEnabled("style");
         settings.addEnabled("performance");
         settings.inconclusive = inconclusive;
+        settings.standards.cpp = cppstandard;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -1651,106 +1652,148 @@ private:
 
 
     void size1() {
-        check("struct Fred {\n"
-              "    void foo();\n"
-              "    std::list<int> x;\n"
-              "};\n"
-              "void Fred::foo()\n"
-              "{\n"
-              "    if (x.size() == 0) {}\n"
-              "}");
+        const char* code = "struct Fred {\n"
+                           "    void foo();\n"
+                           "    std::list<int> x;\n"
+                           "};\n"
+                           "void Fred::foo()\n"
+                           "{\n"
+                           "    if (x.size() == 0) {}\n"
+                           "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:7]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("std::list<int> x;\n"
-              "void f()\n"
-              "{\n"
-              "    if (x.size() == 0) {}\n"
-              "}");
+        code = "std::list<int> x;\n"
+               "void f()\n"
+               "{\n"
+               "    if (x.size() == 0) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size() == 0) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() == 0) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (0 == x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (0 == x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size() != 0) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() != 0) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (0 != x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (0 != x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size() > 0) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() > 0) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (0 < x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (0 < x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size() >= 1) {}\n"
-              "}");
+        code =  "void f()\n"
+                "{\n"
+                "    std::list<int> x;\n"
+                "    if (x.size() >= 1) {}\n"
+                "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size() < 1) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() < 1) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (1 <= x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (1 <= x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (1 > x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (1 > x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    if (!x.size()) {}\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (!x.size()) {}\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1759,19 +1802,25 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
+        code ="void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    fun(!x.size());\n"
-              "}");
+              "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    fun(a && x.size());\n"
-              "}");
+        code = "void f()\n"
+               "{\n"
+               "    std::list<int> x;\n"
+               "    fun(a && x.size());\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n" // #4039
               "    std::list<int> x;\n"
@@ -1793,46 +1842,53 @@ private:
     }
 
     void size2() {
-        check("struct Fred {\n"
-              "    std::list<int> x;\n"
-              "};\n"
-              "struct Wilma {\n"
-              "    Fred f;\n"
-              "    void foo();\n"
-              "};\n"
-              "void Wilma::foo()\n"
-              "{\n"
-              "    if (f.x.size() == 0) {}\n"
-              "}");
+        const char* code = "struct Fred {\n"
+                           "    std::list<int> x;\n"
+                           "};\n"
+                           "struct Wilma {\n"
+                           "    Fred f;\n"
+                           "    void foo();\n"
+                           "};\n"
+                           "void Wilma::foo()\n"
+                           "{\n"
+                           "    if (f.x.size() == 0) {}\n"
+                           "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void size3() {
-        check("namespace N {\n"
-              "    class Zzz {\n"
-              "    public:\n"
-              "        std::list<int> x;\n"
-              "    };\n"
-              "}\n"
-              "using namespace N;\n"
-              "Zzz * zzz;\n"
-              "int main() {\n"
-              "    if (zzz->x.size() > 0) { }\n"
-              "}");
+        const char* code = "namespace N {\n"
+                           "    class Zzz {\n"
+                           "    public:\n"
+                           "        std::list<int> x;\n"
+                           "    };\n"
+                           "}\n"
+                           "using namespace N;\n"
+                           "Zzz * zzz;\n"
+                           "int main() {\n"
+                           "    if (zzz->x.size() > 0) { }\n"
+                           "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
 
-        check("namespace N {\n"
-              "    class Zzz {\n"
-              "    public:\n"
-              "        std::list<int> x;\n"
-              "    };\n"
-              "}\n"
-              "using namespace N;\n"
-              "int main() {\n"
-              "    Zzz * zzz;\n"
-              "    if (zzz->x.size() > 0) { }\n"
-              "}");
+        code = "namespace N {\n"
+               "    class Zzz {\n"
+               "    public:\n"
+               "        std::list<int> x;\n"
+               "    };\n"
+               "}\n"
+               "using namespace N;\n"
+               "int main() {\n"
+               "    Zzz * zzz;\n"
+               "    if (zzz->x.size() > 0) { }\n"
+               "}";
+        check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
+        check(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void size4() { // #2652 - don't warn about vector/deque
@@ -1843,6 +1899,11 @@ private:
 
         check("void f(std::deque<int> &v) {\n"
               "    if (v.size() > 0U) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::array<int,3> &a) {\n"
+              "    if (a.size() > 0U) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

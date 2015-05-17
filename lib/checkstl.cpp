@@ -843,26 +843,20 @@ void CheckStl::if_findError(const Token *tok, bool str)
 /**
  * Is container.size() slow?
  */
-static bool isContainerSizeSlow(const Token *tok)
+static bool isCpp03ContainerSizeSlow(const Token *tok)
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* stl_size_slow[] = {
-        "array", "bitset",
-        "forward_list", "hash_map", "hash_multimap", "hash_set",
-        "list", "map", "multimap", "multiset",
-        "priority_queue", "queue", "set", "stack", "unordered_map",
-        "unordered_multimap", "unordered_multiset", "unordered_set"
-    };
-
     if (!tok)
         return false;
     const Variable* var = tok->variable();
-    return var && var->isStlType(stl_size_slow);
+    return var && var->isStlType("list");
 }
 
 void CheckStl::size()
 {
     if (!_settings->isEnabled("performance"))
+        return;
+
+    if (_settings->standards.cpp == Standards::CPP11)
         return;
 
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -883,21 +877,21 @@ void CheckStl::size()
                 // check for comparison to zero
                 if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
-                    if (isContainerSizeSlow(tok1))
+                    if (isCpp03ContainerSizeSlow(tok1))
                         sizeError(tok1);
                 }
 
                 // check for comparison to one
                 if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>") && !tok->tokAt(-3)->isArithmeticalOp())) {
-                    if (isContainerSizeSlow(tok1))
+                    if (isCpp03ContainerSizeSlow(tok1))
                         sizeError(tok1);
                 }
 
                 // check for using as boolean expression
                 else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
                          (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
-                    if (isContainerSizeSlow(tok1))
+                    if (isCpp03ContainerSizeSlow(tok1))
                         sizeError(tok1);
                 }
             }
@@ -1046,14 +1040,10 @@ void CheckStl::string_c_str()
 {
     const bool printInconclusive = _settings->inconclusive;
     const bool printPerformance = _settings->isEnabled("performance");
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[] = {
-        "string", "u16string", "u32string", "wstring"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string_stream[] = {
-        "istringstream", "ostringstream", "stringstream", "wstringstream"
-    };
+    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() <<
+            "string" <<  "u16string" <<  "u32string" <<  "wstring" ;
+    static const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
+            "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
@@ -1357,17 +1347,13 @@ void CheckStl::uselessCalls()
     if (!printPerformance && !printWarning)
         return;
 
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_string[] = {
-        "string", "u16string", "u32string", "wstring"
-    };
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_containers_with_empty_and_clear[] = {
-        "deque", "forward_list", "list",
-        "map", "multimap", "multiset", "set", "string",
-        "unordered_map", "unordered_multimap", "unordered_multiset",
-        "unordered_set", "vector", "wstring"
-    };
+    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() <<
+            "string" << "u16string" << "u32string" << "wstring";
+    static const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
+            "deque" <<  "forward_list" <<  "list" <<
+            "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
+            "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
+            "unordered_set" <<  "vector" <<  "wstring";
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1556,8 +1542,10 @@ void CheckStl::readingEmptyStlContainer()
     std::set<unsigned int> empty_map; // empty std::map-like instances of STL containers
     std::set<unsigned int> empty_nonmap; // empty non-std::map-like instances of STL containers
 
-    static const char *MAP_STL_CONTAINERS[] = { "map", "multimap", "unordered_map", "unordered_multimap" };
-    static const char *NONMAP_STL_CONTAINERS[] = { "deque", "forward_list", "list", "multiset", "queue", "set", "stack", "string", "unordered_multiset", "unordered_set", "vector" };
+    static const std::set<std::string> MAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
+            "map" << "multimap" << "unordered_map" << "unordered_multimap" ;
+    static const std::set<std::string> NONMAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
+            "deque" << "forward_list" << "list" << "multiset" << "queue" << "set" << "stack" << "string" << "unordered_multiset" << "unordered_set" << "vector";
 
     const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
 

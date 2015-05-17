@@ -9318,23 +9318,23 @@ void Tokenizer::simplifyKeyword()
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok, "%type% final [:{]")) {
                 tok->deleteNext();
-				continue;
-			}
+                continue;
+            }
             // final:
             // 2) void f() final;  <- function is final
             // override:
             // void f() override;
             //if (Token::Match(tok, ") override [{;]"))
-			if (Token::Match(tok, ") const|override|final")) {
-				Token* specifier = tok->tokAt(2);
-				while(specifier && Token::Match(specifier, "const|override|final"))
-					specifier=specifier->next();
+            if (Token::Match(tok, ") const|override|final")) {
+                Token* specifier = tok->tokAt(2);
+                while (specifier && Token::Match(specifier, "const|override|final"))
+                    specifier=specifier->next();
                 if (specifier && Token::Match(specifier, "[{;]")) {
-					specifier=tok->next();
-					while (specifier->str()=="override" || specifier->str()=="final")
-						specifier->deleteThis();
-				}
-			}
+                    specifier=tok->next();
+                    while (specifier->str()=="override" || specifier->str()=="final")
+                        specifier->deleteThis();
+                }
+            }
         }
     }
 }

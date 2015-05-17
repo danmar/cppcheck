@@ -4447,10 +4447,10 @@ private:
     }
 
     void simplifyKeyword() {
-		{
-			const char code[] = "void f (int a [ static 5] );";
-			ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", tokenizeAndStringify(code));
-		}
+        {
+            const char code[] = "void f (int a [ static 5] );";
+            ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", tokenizeAndStringify(code));
+        }
         {
             const char in1[] = "class Base {\n"
                                "  virtual int test() = 0;\n"
@@ -4475,17 +4475,17 @@ private:
             const char out2[] = "class Derived {\n"
                                 "virtual int test ( ) ; } ;";
             ASSERT_EQUALS(out2, tokenizeAndStringify(in2));
-			const char in3[] =  "class Derived{\n"
+            const char in3[] =  "class Derived{\n"
                                 "  virtual int test() final override const;"
                                 "};";
             const char out3[] = "class Derived {\n"
                                 "virtual int test ( ) const ; } ;";
             ASSERT_EQUALS(out3, tokenizeAndStringify(in3));
 
-			const char in4 [] = "struct B final : A { void foo(); };";
-			const char out4 [] = "struct B : A { void foo ( ) ; } ;";
-			ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
-		}
+            const char in4 [] = "struct B final : A { void foo(); };";
+            const char out4 [] = "struct B : A { void foo ( ) ; } ;";
+            ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
+        }
     }
 
     /**

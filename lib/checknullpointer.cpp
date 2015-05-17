@@ -148,12 +148,10 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  */
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 {
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_stream [] = {
-        "fstream", "ifstream", "iostream", "istream",
-        "istringstream", "ofstream", "ostream", "ostringstream",
-        "stringstream", "wistringstream", "wostringstream", "wstringstream"
-    };
+    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
+            "fstream" << "ifstream" << "iostream" << "istream" <<
+            "istringstream" << "ofstream" << "ostream" << "ostringstream" <<
+            "stringstream" << "wistringstream" << "wostringstream" << "wstringstream";
 
     unknown = false;
 
@@ -379,12 +377,9 @@ void CheckNullPointer::nullPointer()
 void CheckNullPointer::nullConstantDereference()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
-    // THIS ARRAY MUST BE ORDERED ALPHABETICALLY
-    static const char* const stl_stream[] = {
-        "fstream", "ifstream", "iostream", "istream",
-        "istringstream", "stringstream", "wistringstream", "wstringstream"
-    };
+    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
+            "fstream" << "ifstream" << "iostream" << "istream" <<
+            "istringstream" << "stringstream" << "wistringstream" << "wstringstream";
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
