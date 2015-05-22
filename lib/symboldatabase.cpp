@@ -745,6 +745,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // save function prototype in database
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+                            if (!func)
+                                break;
 
                             if (Token::Match(argStart->link(), ") const| noexcept")) {
                                 int arg = 2;
@@ -1658,6 +1660,9 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     if (!function)
         function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
 
+    if (!function)
+        return 0;
+
     function->arg = argStart;
     function->token = funcStart;
     function->hasBody(true);
@@ -1683,6 +1688,8 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok,
     function.access = Public;
 
     // save the function name location
+    if (funcStart && isReservedName(funcStart->str()))
+        return 0;
     function.tokenDef = funcStart;
 
     function.isInline(false);
@@ -3587,4 +3594,29 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     }
 
     return const_cast<Function *>(function);
+}
+
+//---------------------------------------------------------------------------
+
+bool SymbolDatabase::isReservedName(const std::string& iName) const
+{
+    static const std::set<std::string> c_keywords = make_container<std::set<std::string>>() <<
+        "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
+        "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
+        "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
+        "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
+        "while";
+    static const std::set<std::string> cpp_keywords = make_container<std::set<std::string>>() <<
+        "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
+         "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
+         "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
+         "delete" << "do" << "double" << "dynamic_cast" << "else" << "enum" << "explicit" << "export" <<
+         "extern" << "false" << "float" << "for" << "friend" << "goto" << "if" << "inline" << "int" << "long" <<
+         "mutable" << "namespace" << "new" << "noexcept" << "not" << "not_eq" << "nullptr" << "operator" <<
+         "or" << "or_eq" << "private" << "protected" << "public" << "register" << "reinterpret_cast" <<
+         "requires" << "return" << "short" << "signed" << "sizeof" << "static" << "static_assert" <<
+         "static_cast" << "struct" << "switch" << "template" << "this" << "thread_local" << "throw" <<
+         "true" << "try" << "typedef" << "typeid" << "typename" << "union" << "unsigned" << "using" <<
+         "virtual" << "void" << "volatile" << "wchar_t" << "while" << "xor" << "xor_eq";
+    return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }

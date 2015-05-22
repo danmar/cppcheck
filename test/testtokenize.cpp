@@ -1270,7 +1270,7 @@ private:
 
     void ifAddBraces15() {
         // ticket #2616 - unknown macro before if
-        ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
+        ASSERT_THROW(tokenizeAndStringify("{A if(x)y();}", false), InternalError);
     }
 
     void ifAddBraces16() { // ticket # 2739 (segmentation fault)
@@ -6145,7 +6145,7 @@ private:
                                "operator ( ) ; "
                                "}";
 
-        ASSERT_EQUALS(result, tokenizeAndStringify(code,false));
+        ASSERT_EQUALS(result, tokenizeAndStringify(code, /*simplify=*/false, /*expand=*/true, /*platform=*/Settings::Unspecified, "test.c"));
     }
 
     void simplifyOperatorName2() {

@@ -1005,6 +1005,9 @@ private:
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);
 
+    /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
+    bool isReservedName(const std::string& iName) const;
+
 
     const Tokenizer *_tokenizer;
     const Settings *_settings;
