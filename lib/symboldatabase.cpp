@@ -3101,7 +3101,7 @@ void Scope::findFunctionInBase(const std::string & name, size_t args, std::vecto
   This can be difficult because of promotion and conversion operators and casts
   and because the argument can also be a function call.
  */
-const Function* Scope::findFunction(const Token *tok) const
+const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     // make sure this is a function call
     const Token *end = tok->linkAt(1);
@@ -3232,6 +3232,9 @@ const Function* Scope::findFunction(const Token *tok) const
 
         // check if all arguments matched
         if (same == args) {
+            if (requireConst && func->isConst())
+                return func;
+
             // get the function this call is in
             const Scope * scope = tok->scope();
 
@@ -3320,7 +3323,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
-                return var->typeScope()->findFunction(tok);
+                return var->typeScope()->findFunction(tok, var->isConst());
         }
     }
 

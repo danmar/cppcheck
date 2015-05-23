@@ -240,6 +240,7 @@ private:
         TEST_CASE(findFunction4);
         TEST_CASE(findFunction5); // #6230
         TEST_CASE(findFunction6);
+        TEST_CASE(findFunction7); // #6700
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -2516,6 +2517,26 @@ private:
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "void addtoken ( Token * *");
         ASSERT_EQUALS(true, db && f && !f->function()); // regression value only
     }
+
+    void findFunction7() {
+        GET_SYMBOL_DB("class ResultEnsemble {\n"
+                      "public:\n"
+                      "    std::vector<int> &nodeResults() const;\n"
+                      "    std::vector<int> &nodeResults();\n"
+                      "};\n"
+                      "class Simulator {\n"
+                      "    int generatePinchResultEnsemble(const ResultEnsemble &power, const ResultEnsemble &ground) {\n"
+                      "        power.nodeResults().size();\n"
+                      "        assert(power.nodeResults().size()==ground.nodeResults().size());\n"
+                      "    }\n"
+                      "};")
+        const Token *callfunc = Token::findsimplematch(tokenizer.tokens(), "power . nodeResults ( ) . size ( ) ;");
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true, db != nullptr); // not null
+        ASSERT_EQUALS(true, callfunc != nullptr); // not null
+        ASSERT_EQUALS(true, callfunc && callfunc->tokAt(2)->function() && callfunc->tokAt(2)->function()->tokenDef->linenr() == 3);
+    }
+
 
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

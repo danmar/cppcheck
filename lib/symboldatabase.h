@@ -842,9 +842,10 @@ public:
     /**
      * @brief find a function
      * @param tok token of function call
+     * @param requireConst if const refers to a const variable only const methods should be matched
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok) const;
+    const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
     /**
      * @brief find if name is in nested list
