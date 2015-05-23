@@ -1920,8 +1920,7 @@ private:
     }
 
     void symboldatabase36() { // ticket #4892
-        check("void struct ( ) { if ( 1 ) } int main ( ) { }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(check("void struct ( ) { if ( 1 ) } int main ( ) { }"), InternalError);
     }
 
     void symboldatabase37() {

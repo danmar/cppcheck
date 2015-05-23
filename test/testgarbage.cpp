@@ -78,6 +78,8 @@ private:
         TEST_CASE(garbageCode37); // #5166
         TEST_CASE(garbageCode38); // #6666
         TEST_CASE(garbageCode39); // #6686
+        TEST_CASE(garbageCode40); // #6620
+        TEST_CASE(garbageCode41); // #6685
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -453,6 +455,14 @@ private:
 
     void garbageCode39() { // #6686
         checkCode("({ (); strcat(strcat(() ()) ()) })");
+    }
+
+    void garbageCode40() { // #6620
+        ASSERT_THROW(checkCode("{ ( ) () { virtual } ; { } E } A { : { } ( ) } * const ( ) const { }"), InternalError);
+    }
+
+    void garbageCode41() { // #6685
+        ASSERT_THROW(checkCode(" { } { return } *malloc(__SIZE_TYPE__ size); *memcpy(void n); static * const () { memcpy (*slot, 3); } { (); } { }"), InternalError);
     }
 
     void garbageValueFlow() {
