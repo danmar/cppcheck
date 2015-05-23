@@ -81,6 +81,7 @@ private:
         TEST_CASE(garbageCode40); // #6620
         TEST_CASE(garbageCode41); // #6685
         TEST_CASE(garbageCode42); // #5760
+        TEST_CASE(garbageCode43); // #6703
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -468,6 +469,10 @@ private:
 
     void garbageCode42() { // #5760
         ASSERT_THROW(checkCode("{  } * const ( ) { }"), InternalError);
+    }
+
+    void garbageCode43() { // #6703
+        checkCode("int { }; struct A<void> a = { }");
     }
 
     void garbageValueFlow() {
