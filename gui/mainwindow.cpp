@@ -77,6 +77,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
 
+    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(Print()));
+    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(PrintPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
@@ -134,6 +136,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     EnableCheckButtons(true);
 
+    mUI.mActionPrint->setShortcut(QKeySequence::Print);
+    mUI.mActionPrint->setEnabled(false);
+    mUI.mActionPrintPreview->setEnabled(false);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionRecheck->setEnabled(false);
@@ -695,6 +700,8 @@ void MainWindow::CheckDone()
     if (mUI.mResults->HasResults()) {
         mUI.mActionClearResults->setEnabled(true);
         mUI.mActionSave->setEnabled(true);
+        mUI.mActionPrint->setEnabled(true);
+        mUI.mActionPrintPreview->setEnabled(true);
     }
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
@@ -768,6 +775,8 @@ void MainWindow::ClearResults()
     mUI.mResults->Clear(true);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
+    mUI.mActionPrint->setEnabled(false);
+    mUI.mActionPrintPreview->setEnabled(false);
 }
 
 void MainWindow::OpenResults()

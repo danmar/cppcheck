@@ -22,6 +22,9 @@
 #include <QVariant>
 #include <QString>
 #include <QModelIndex>
+#include <QPrinter>
+#include <QPrintDialog>
+#include <QPrintPreviewDialog>
 #include <QSettings>
 #include "common.h"
 #include "erroritem.h"
@@ -32,6 +35,7 @@
 #include "xmlreportv1.h"
 #include "xmlreportv2.h"
 #include "csvreport.h"
+#include "printablereport.h"
 #include "applicationlist.h"
 #include "checkstatistics.h"
 
@@ -176,6 +180,41 @@ void ResultsView::Save(const QString &filename, Report::Type type) const
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }
+}
+
+void ResultsView::Print()
+{
+    QPrinter printer;
+    QPrintDialog dialog(&printer, this);
+    dialog.setWindowTitle(tr("Print Report"));
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    Print(&printer);
+}
+
+void ResultsView::PrintPreview()
+{
+    QPrinter printer;
+    QPrintPreviewDialog dialog(&printer, this);
+    connect(&dialog, SIGNAL(paintRequested(QPrinter*)), SLOT(Print(QPrinter*)));
+    dialog.exec();
+}
+
+void ResultsView::Print(QPrinter* printer)
+{
+    if (!mErrorsFound) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("No errors found, nothing to print."));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+
+    PrintableReport report;
+    mUI.mTree->SaveResults(&report);
+    QTextDocument doc(report.GetFormattedReportText());
+    doc.print(printer);
 }
 
 void ResultsView::UpdateSettings(bool showFullPath,

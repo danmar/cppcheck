@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -78,6 +78,10 @@
     <addaction name="separator"/>
     <addaction name="mActionProjectMRU"/>
     <addaction name="mActionSave"/>
+    <addaction name="separator"/>
+    <addaction name="mActionPrintPreview"/>
+    <addaction name="mActionPrint"/>
+    <addaction name="separator"/>
     <addaction name="mActionQuit"/>
    </widget>
    <widget class="QMenu" name="mMenuView">
@@ -680,6 +684,22 @@
    </property>
    <property name="text">
     <string>C++03</string>
+   </property>
+  </action>
+  <action name="mActionPrint">
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="toolTip">
+    <string>Print the Current Report</string>
+   </property>
+  </action>
+  <action name="mActionPrintPreview">
+   <property name="text">
+    <string>Print Pre&amp;view...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a Print Preview Dialog for the Current Results</string>
    </property>
   </action>
  </widget>

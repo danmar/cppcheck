@@ -29,6 +29,7 @@
 class ErrorItem;
 class ApplicationList;
 class QModelIndex;
+class QPrinter;
 class QSettings;
 class CheckStatistics;
 
@@ -221,6 +222,22 @@ public slots:
     * @param index Position of new selected item.
     */
     void UpdateDetails(const QModelIndex &index);
+
+    /**
+    * @brief Slot opening a print dialog to print the current report
+    */
+    void Print();
+
+    /**
+    * @brief Slot printing the current report to the printer.
+    * @param printer The printer used for printing the report.
+    */
+    void Print(QPrinter* printer);
+
+    /**
+    * @brief Slot opening a print preview dialog
+    */
+    void PrintPreview();
 
 protected:
     /**
