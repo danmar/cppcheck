@@ -9308,7 +9308,7 @@ void Tokenizer::simplifyKeyword()
         }
     }
 
-    if (_settings->standards.cpp >= Standards::CPP11) {
+    if (isCPP() && _settings->standards.cpp >= Standards::CPP11) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             while (tok->str() == "constexpr") {
                 tok->deleteThis();
@@ -9327,12 +9327,17 @@ void Tokenizer::simplifyKeyword()
             //if (Token::Match(tok, ") override [{;]"))
             if (Token::Match(tok, ") const|override|final")) {
                 Token* specifier = tok->tokAt(2);
-                while (specifier && Token::Match(specifier, "const|override|final"))
+                while (specifier && Token::Match(specifier, "const|override|final")) {
                     specifier=specifier->next();
+                }
                 if (specifier && Token::Match(specifier, "[{;]")) {
-                    specifier=tok->next();
-                    while (specifier->str()=="override" || specifier->str()=="final")
-                        specifier->deleteThis();
+                    specifier = tok->next();
+                    while (!Token::Match(specifier, "[{;]")) {
+                        if (specifier->str()=="const")
+                            specifier=specifier->next();
+                        else
+                            specifier->deleteThis();
+                    }
                 }
             }
         }

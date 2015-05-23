@@ -1195,7 +1195,7 @@ private:
               "  HeapDestroy(MyHeap);"
               "}");
         TODO_ASSERT_EQUALS("", "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n"
-                               "[test.c:1]: (error) Resource handle 'MyHeap' freed twice.\n", errout.str());
+                           "[test.c:1]: (error) Resource handle 'MyHeap' freed twice.\n", errout.str());
 
         check("void f() {"
               "  int *a = HeapAlloc(GetProcessHeap(), 0, sizeof(int));"
@@ -1213,7 +1213,7 @@ private:
               "  HeapDestroy(MyHeap);"
               "}");
         TODO_ASSERT_EQUALS("[test.c:1] (error) Memory leak: b", "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n"
-                                                                "[test.c:1]: (error) Memory leak: b\n", errout.str());
+                           "[test.c:1]: (error) Memory leak: b\n", errout.str());
 
         check("void f() {"
               "  HANDLE MyHeap = HeapCreate(0, 0, 0);"

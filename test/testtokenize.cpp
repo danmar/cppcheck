@@ -4485,6 +4485,24 @@ private:
             const char in4 [] = "struct B final : A { void foo(); };";
             const char out4 [] = "struct B : A { void foo ( ) ; } ;";
             ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
+
+            const char in5 [] = "struct ArrayItemsValidator final {\n"
+                                "    SchemaError validate() const override {\n"
+                                "        for (; pos < value.size(); ++pos) {\n"
+                                "        }\n"
+                                "        return none;\n"
+                                "    }\n"
+                                "};\n";
+            const char out5 [] =
+                "struct ArrayItemsValidator {\n"
+                "SchemaError validate ( ) const {\n"
+                "for ( ; pos < value . size ( ) ; ++ pos ) {\n"
+                "}\n"
+                "return none ;\n"
+                "}\n"
+                "} ;";
+
+            ASSERT_EQUALS(out5, tokenizeAndStringify(in5));
         }
     }
 

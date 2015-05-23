@@ -3604,22 +3604,22 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 bool SymbolDatabase::isReservedName(const std::string& iName) const
 {
     static const std::set<std::string> c_keywords = make_container<std::set<std::string>>() <<
-        "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
-        "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
-        "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
-        "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
-        "while";
+            "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
+            "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
+            "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
+            "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
+            "while";
     static const std::set<std::string> cpp_keywords = make_container<std::set<std::string>>() <<
-        "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
-         "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
-         "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
-         "delete" << "do" << "double" << "dynamic_cast" << "else" << "enum" << "explicit" << "export" <<
-         "extern" << "false" << "float" << "for" << "friend" << "goto" << "if" << "inline" << "int" << "long" <<
-         "mutable" << "namespace" << "new" << "noexcept" << "not" << "not_eq" << "nullptr" << "operator" <<
-         "or" << "or_eq" << "private" << "protected" << "public" << "register" << "reinterpret_cast" <<
-         "requires" << "return" << "short" << "signed" << "sizeof" << "static" << "static_assert" <<
-         "static_cast" << "struct" << "switch" << "template" << "this" << "thread_local" << "throw" <<
-         "true" << "try" << "typedef" << "typeid" << "typename" << "union" << "unsigned" << "using" <<
-         "virtual" << "void" << "volatile" << "wchar_t" << "while" << "xor" << "xor_eq";
+            "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
+            "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
+            "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
+            "delete" << "do" << "double" << "dynamic_cast" << "else" << "enum" << "explicit" << "export" <<
+            "extern" << "false" << "float" << "for" << "friend" << "goto" << "if" << "inline" << "int" << "long" <<
+            "mutable" << "namespace" << "new" << "noexcept" << "not" << "not_eq" << "nullptr" << "operator" <<
+            "or" << "or_eq" << "private" << "protected" << "public" << "register" << "reinterpret_cast" <<
+            "requires" << "return" << "short" << "signed" << "sizeof" << "static" << "static_assert" <<
+            "static_cast" << "struct" << "switch" << "template" << "this" << "thread_local" << "throw" <<
+            "true" << "try" << "typedef" << "typeid" << "typename" << "union" << "unsigned" << "using" <<
+            "virtual" << "void" << "volatile" << "wchar_t" << "while" << "xor" << "xor_eq";
     return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }
