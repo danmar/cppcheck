@@ -9564,54 +9564,50 @@ void Tokenizer::simplifyNamespaceStd()
     if (!isCPP())
         return;
 
-    static const char* stdTypes_[] = { // Types and objects in std namespace that are neither functions nor templates
-        "string", "wstring", "u16string", "u32string",
-        "iostream", "ostream", "ofstream", "ostringstream",
-        "istream", "ifstream", "istringstream", "fstream", "stringstream",
-        "wstringstream", "wistringstream", "wostringstream", "wstringbuf",
-        "stringbuf", "streambuf", "ios", "filebuf", "ios_base",
-        "exception", "bad_exception", "bad_alloc",
-        "logic_error", "domain_error", "invalid_argument_", "length_error",
-        "out_of_range", "runtime_error", "range_error", "overflow_error", "underflow_error",
-        "locale",
-        "cout", "cerr", "clog", "cin",
-        "wcerr", "wcin", "wclog", "wcout",
-        "endl", "ends", "flush",
-        "boolalpha", "noboolalpha", "showbase", "noshowbase",
-        "showpoint", "noshowpoint", "showpos", "noshowpos",
-        "skipws", "noskipws", "unitbuf", "nounitbuf", "uppercase", "nouppercase",
-        "dec", "hex", "oct",
-        "fixed", "scientific",
-        "internal", "left", "right",
-        "fpos", "streamoff", "streampos", "streamsize"
-    };
-    static const std::set<std::string> stdTypes(stdTypes_, stdTypes_+sizeof(stdTypes_)/sizeof(*stdTypes_));
-    static const char* stdTemplates_[] = {
-        "array", "basic_string", "bitset", "deque", "list", "map", "multimap",
-        "priority_queue", "queue", "set", "multiset", "stack", "vector", "pair",
-        "iterator", "iterator_traits",
-        "unordered_map", "unordered_multimap", "unordered_set", "unordered_multiset",
-        "tuple", "function"
-    };
-    static const std::set<std::string> stdTemplates(stdTemplates_, stdTemplates_+sizeof(stdTemplates_)/sizeof(*stdTemplates_));
-    static const char* stdFunctions_[] = {
-        "getline",
-        "for_each", "find", "find_if", "find_end", "find_first_of",
-        "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
-        "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace",
-        "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
-        "remove_if", "remove_copy", "remove_copy_if",
-        "unique", "unique_copy", "reverse", "reverse_copy",
-        "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
-        "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element",
-        "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
-        "set_union", "set_intersection", "set_difference",
-        "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
-        "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
-        "advance", "back_inserter", "distance", "front_inserter", "inserter",
-        "make_pair", "make_shared", "make_tuple"
-    };
-    static const std::set<std::string> stdFunctions(stdFunctions_, stdFunctions_+sizeof(stdFunctions_)/sizeof(*stdFunctions_));
+    // Types and objects in std namespace that are neither functions nor templates
+    static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
+            "string"<< "wstring"<< "u16string"<< "u32string" <<
+            "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
+            "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
+            "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
+            "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
+            "exception"<< "bad_exception"<< "bad_alloc" <<
+            "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
+            "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
+            "locale" <<
+            "cout"<< "cerr"<< "clog"<< "cin" <<
+            "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
+            "endl"<< "ends"<< "flush" <<
+            "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
+            "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
+            "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
+            "dec"<< "hex"<< "oct" <<
+            "fixed"<< "scientific" <<
+            "internal"<< "left"<< "right" <<
+            "fpos"<< "streamoff"<< "streampos"<< "streamsize";
+
+    static const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
+            "array"<< "basic_string"<< "bitset"<< "deque"<< "list"<< "map"<< "multimap" <<
+            "priority_queue"<< "queue"<< "set"<< "multiset"<< "stack"<< "vector"<< "pair" <<
+            "iterator"<< "iterator_traits" <<
+            "unordered_map"<< "unordered_multimap"<< "unordered_set"<< "unordered_multiset" <<
+            "tuple"<< "function";
+    static const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
+            "getline" <<
+            "for_each"<< "find"<< "find_if"<< "find_end"<< "find_first_of" <<
+            "adjacent_find"<< "count"<< "count_if"<< "mismatch"<< "equal"<< "search"<< "search_n" <<
+            "copy"<< "copy_backward"<< "swap"<< "swap_ranges"<< "iter_swap"<< "transform"<< "replace" <<
+            "replace_if"<< "replace_copy"<< "replace_copy_if"<< "fill"<< "fill_n"<< "generate"<< "generate_n"<< "remove" <<
+            "remove_if"<< "remove_copy"<< "remove_copy_if" <<
+            "unique"<< "unique_copy"<< "reverse"<< "reverse_copy" <<
+            "rotate"<< "rotate_copy"<< "random_shuffle"<< "partition"<< "stable_partition" <<
+            "sort"<< "stable_sort"<< "partial_sort"<< "partial_sort_copy"<< "nth_element" <<
+            "lower_bound"<< "upper_bound"<< "equal_range"<< "binary_search"<< "merge"<< "inplace_merge"<< "includes" <<
+            "set_union"<< "set_intersection"<< "set_difference" <<
+            "set_symmetric_difference"<< "push_heap"<< "pop_heap"<< "make_heap"<< "sort_heap" <<
+            "min"<< "max"<< "min_element"<< "max_element"<< "lexicographical_compare"<< "next_permutation"<< "prev_permutation" <<
+            "advance"<< "back_inserter"<< "distance"<< "front_inserter"<< "inserter" <<
+            "make_pair"<< "make_shared"<< "make_tuple";
     const bool isCPP11  = _settings->standards.cpp == Standards::CPP11;
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
@@ -9715,121 +9711,75 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-    if (_settings->platformType == Settings::Win32A ||
-        _settings->platformType == Settings::Win32W ||
-        _settings->platformType == Settings::Win64) {
+    if (_settings->platformType != Settings::Win32A &&
+        _settings->platformType != Settings::Win32W &
+        _settings->platformType != Settings::Win64)
+        return;
 
-        const bool ansi = _settings->platformType == Settings::Win32A;
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "_topen (")) {
-                tok->str(ansi ? "open" : "_wopen");
-                tok->originalName("_topen");
-            } else if (Token::simpleMatch(tok, "_tsopen_s (")) {
-                tok->str(ansi ? "_sopen_s" : "_wsopen_s");
-                tok->originalName("_tsopen_s");
-            } else if (Token::simpleMatch(tok, "_tfopen (")) {
-                tok->str(ansi ? "fopen" : "_wfopen");
-                tok->originalName("_tfopen");
-            } else if (Token::simpleMatch(tok, "_tfopen_s (")) {
-                tok->str(ansi ? "fopen_s" : "_wfopen_s");
-                tok->originalName("_tfopen_s");
-            } else if (Token::simpleMatch(tok, "_tfreopen (")) {
-                tok->str(ansi ? "freopen" : "_wfreopen");
-                tok->originalName("_tfreopen");
-            } else if (Token::simpleMatch(tok, "_tfreopen_s (")) {
-                tok->str(ansi ? "freopen_s" : "_wfreopen_s");
-                tok->originalName("_tfreopen_s");
-            } else if (Token::simpleMatch(tok, "_tcscat (")) {
-                tok->str(ansi ? "strcat" : "wcscat");
-                tok->originalName("_tcscat");
-            } else if (Token::simpleMatch(tok, "_tcschr (")) {
-                tok->str(ansi ? "strchr" : "wcschr");
-                tok->originalName("_tcschr");
-            } else if (Token::simpleMatch(tok, "_tcscmp (")) {
-                tok->str(ansi ? "strcmp" : "wcscmp");
-                tok->originalName("_tcscmp");
-            } else if (Token::simpleMatch(tok, "_tcsdup (")) {
-                tok->str(ansi ? "strdup" : "wcsdup");
-                tok->originalName("_tcsdup");
-            } else if (Token::simpleMatch(tok, "_tcscpy (")) {
-                tok->str(ansi ? "strcpy" : "wcscpy");
-                tok->originalName("_tcscpy");
-            } else if (Token::simpleMatch(tok, "_tcslen (")) {
-                tok->str(ansi ? "strlen" : "wcslen");
-                tok->originalName("_tcslen");
-            } else if (Token::simpleMatch(tok, "_tcsncat (")) {
-                tok->str(ansi ? "strncat" : "wcsncat");
-                tok->originalName("_tcsncat");
-            } else if (Token::simpleMatch(tok, "_tcsncpy (")) {
-                tok->str(ansi ? "strncpy" : "wcsncpy");
-                tok->originalName("_tcsncpy");
-            } else if (Token::simpleMatch(tok, "_tcsnlen (")) {
-                tok->str(ansi ? "strnlen" : "wcsnlen");
-                tok->originalName("_tcsnlen");
-            } else if (Token::simpleMatch(tok, "_tcsrchr (")) {
-                tok->str(ansi ? "strrchr" : "wcsrchr");
-                tok->originalName("_tcsrchr");
-            } else if (Token::simpleMatch(tok, "_tcsstr (")) {
-                tok->str(ansi ? "strstr" : "wcsstr");
-                tok->originalName("_tcsstr");
-            } else if (Token::simpleMatch(tok, "_tcstok (")) {
-                tok->str(ansi ? "strtok" : "wcstok");
-                tok->originalName("_tcstok");
-            } else if (Token::simpleMatch(tok, "_ftprintf (")) {
-                tok->str(ansi ? "fprintf" : "fwprintf");
-                tok->originalName("_ftprintf");
-            } else if (Token::simpleMatch(tok, "_tprintf (")) {
-                tok->str(ansi ? "printf" : "wprintf");
-                tok->originalName("_tprintf");
-            } else if (Token::simpleMatch(tok, "_stprintf (")) {
-                tok->str(ansi ? "sprintf" : "swprintf");
-                tok->originalName("_stprintf");
-            } else if (Token::simpleMatch(tok, "_sntprintf (")) {
-                tok->str(ansi ? "_snprintf" : "_snwprintf");
-                tok->originalName("_sntprintf");
-            } else if (Token::simpleMatch(tok, "_ftscanf (")) {
-                tok->str(ansi ? "fscanf" : "fwscanf");
-                tok->originalName("_ftscanf");
-            } else if (Token::simpleMatch(tok, "_tscanf (")) {
-                tok->str(ansi ? "scanf" : "wscanf");
-                tok->originalName("_tscanf");
-            } else if (Token::simpleMatch(tok, "_stscanf (")) {
-                tok->str(ansi ? "sscanf" : "swscanf");
-                tok->originalName("_stscanf");
-            } else if (Token::simpleMatch(tok, "_ftprintf_s (")) {
-                tok->str(ansi ? "fprintf_s" : "fwprintf_s");
-                tok->originalName("_ftprintf_s");
-            } else if (Token::simpleMatch(tok, "_tprintf_s (")) {
-                tok->str(ansi ? "printf_s" : "wprintf_s");
-                tok->originalName("_tprintf_s");
-            } else if (Token::simpleMatch(tok, "_stprintf_s (")) {
-                tok->str(ansi ? "sprintf_s" : "swprintf_s");
-                tok->originalName("_stprintf_s");
-            } else if (Token::simpleMatch(tok, "_sntprintf_s (")) {
-                tok->str(ansi ? "_snprintf_s" : "_snwprintf_s");
-                tok->originalName("_sntprintf_s");
-            } else if (Token::simpleMatch(tok, "_ftscanf_s (")) {
-                tok->str(ansi ? "fscanf_s" : "fwscanf_s");
-                tok->originalName("_ftscanf_s");
-            } else if (Token::simpleMatch(tok, "_tscanf_s (")) {
-                tok->str(ansi ? "scanf_s" : "wscanf_s");
-                tok->originalName("_tscanf_s");
-            } else if (Token::simpleMatch(tok, "_stscanf_s (")) {
-                tok->str(ansi ? "sscanf_s" : "swscanf_s");
-                tok->originalName("_stscanf_s");
-            } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
+    struct triplet {
+        triplet(const char* t, const char* m, const char* u) : tchar(t), mbcs(m), unicode(u) {}
+        triplet(const std::string& t) : tchar(t) {}
+        bool operator <(const triplet& rhs) const {
+            return tchar < rhs.tchar;
+        }
+        std::string tchar, mbcs, unicode;
+    };
+    const static std::set<triplet> apis = make_container< std::set<triplet> >() <<
+                                   triplet("_topen", "open", "_wopen") <<
+                                   triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
+                                   triplet("_tfopen", "fopen", "_wfopen") <<
+                                   triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
+                                   triplet("_tfreopen", "freopen", "_wfreopen") <<
+                                   triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
+                                   triplet("_tcscat", "strcat", "wcscat") <<
+                                   triplet("_tcschr", "strchr", "wcschr") <<
+                                   triplet("_tcscmp", "strcmp", "wcscmp") <<
+                                   triplet("_tcsdup", "strdup", "wcsdup") <<
+                                   triplet("_tcscpy", "strcpy", "wcscpy") <<
+                                   triplet("_tcslen", "strlen", "wcslen") <<
+                                   triplet("_tcsncat", "strncat", "wcsncat") <<
+                                   triplet("_tcsncpy", "strncpy", "wcsncpy") <<
+                                   triplet("_tcsnlen", "strnlen", "wcsnlen") <<
+                                   triplet("_tcsrchr", "strrchr", "wcsrchr") <<
+                                   triplet("_tcsstr", "strstr", "wcsstr") <<
+                                   triplet("_tcstok", "strtok", "wcstok") <<
+                                   triplet("_ftprintf", "fprintf", "fwprintf") <<
+                                   triplet("_tprintf", "printf", "wprintf") <<
+                                   triplet("_stprintf", "sprintf", "swprintf") <<
+                                   triplet("_sntprintf", "_snprintf", "_snwprintf") <<
+                                   triplet("_ftscanf", "fscanf", "fwscanf") <<
+                                   triplet("_tscanf", "scanf", "wscanf") <<
+                                   triplet("_stscanf", "sscanf", "swscanf") <<
+                                   triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
+                                   triplet("_tprintf_s", "printf_s", "wprintf_s") <<
+                                   triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
+                                   triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
+                                   triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
+                                   triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
+                                   triplet("_stscanf_s", "sscanf_s", "swscanf_s")
+                                   ;
+
+    const bool ansi = _settings->platformType == Settings::Win32A;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        std::set<triplet>::const_iterator match = apis.find(tok->str());
+        if (match!=apis.end()) {
+            const std::string pattern(match->tchar + " (");
+            if (Token::simpleMatch(tok, pattern.c_str())) {
+                tok->str(ansi ? match->mbcs : match->unicode);
+                tok->originalName(match->tchar);
+            }
+        } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
+            tok->deleteNext();
+            tok->deleteThis();
+            tok->deleteNext();
+            if (!ansi)
+                tok->isLong(true);
+            while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+                tok->next()->deleteNext();
+                tok->next()->deleteThis();
+                tok->next()->deleteNext();
+                tok->concatStr(tok->next()->str());
                 tok->deleteNext();
-                tok->deleteThis();
-                tok->deleteNext();
-                if (!ansi)
-                    tok->isLong(true);
-                while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
-                    tok->next()->deleteNext();
-                    tok->next()->deleteThis();
-                    tok->next()->deleteNext();
-                    tok->concatStr(tok->next()->str());
-                    tok->deleteNext();
-                }
             }
         }
     }
@@ -10382,7 +10332,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
+    const ErrorLogger::ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
     else
