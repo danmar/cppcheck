@@ -2787,9 +2787,7 @@ void Tokenizer::setVarId()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "namespace|class|struct %name% {|:")) {
             const std::string &classname(tok->next()->str());
-
-            bool namesp = tok->str() == "namespace";
-
+            const bool namesp = tok->str() == "namespace";
             const Token* tokStart = tok->tokAt(2);
             while (tokStart && tokStart->str() != "{") {
                 if (Token::Match(tokStart, "public|private|protected %name%"))
@@ -4795,8 +4793,8 @@ bool Tokenizer::simplifyConditions()
                     else
                         result = !eq;
                 } else {
-                    double op1 = MathLib::toDoubleNumber(tok->next()->str());
-                    double op2 = MathLib::toDoubleNumber(tok->strAt(3));
+                    const double op1 = MathLib::toDoubleNumber(tok->next()->str());
+                    const double op2 = MathLib::toDoubleNumber(tok->strAt(3));
                     if (cmp == ">=")
                         result = (op1 >= op2);
                     else if (cmp == ">")
@@ -4810,8 +4808,8 @@ bool Tokenizer::simplifyConditions()
                 }
             } else {
                 // Compare boolean
-                bool op1 = (tok->next()->str() == std::string("true"));
-                bool op2 = (tok->strAt(3) == std::string("true"));
+                const bool op1 = (tok->next()->str() == std::string("true"));
+                const bool op2 = (tok->strAt(3) == std::string("true"));
 
                 if (cmp == "==")
                     result = (op1 == op2);
@@ -5751,7 +5749,7 @@ void Tokenizer::simplifyStdType()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // long unsigned => unsigned long
         if (Token::Match(tok, "char|short|int|long unsigned|signed")) {
-            bool isUnsigned = tok->next()->str() == "unsigned";
+            const bool isUnsigned = tok->next()->str() == "unsigned";
             tok->deleteNext();
             tok->isUnsigned(isUnsigned);
             tok->isSigned(!isUnsigned);
@@ -5762,7 +5760,7 @@ void Tokenizer::simplifyStdType()
 
         // check if signed or unsigned specified
         if (Token::Match(tok, "unsigned|signed")) {
-            bool isUnsigned = tok->str() == "unsigned";
+            const bool isUnsigned = tok->str() == "unsigned";
 
             // unsigned i => unsigned int i
             if (!Token::Match(tok->next(), "char|short|int|long"))
@@ -7977,14 +7975,14 @@ void Tokenizer::simplifyStd()
     if (isC())
         return;
 
-    std::set<std::string> f;
-    f.insert("strcat");
-    f.insert("strcpy");
-    f.insert("strncat");
-    f.insert("strncpy");
-    f.insert("free");
-    f.insert("malloc");
-    f.insert("strdup");
+    const static std::set<std::string> f = make_container< std::set<std::string> > () <<
+                                           "strcat" <<
+                                           "strcpy" <<
+                                           "strncat" <<
+                                           "strncpy" <<
+                                           "free" <<
+                                           "malloc" <<
+                                           "strdup";
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "std")
@@ -8007,7 +8005,7 @@ void Tokenizer::simplifyStd()
 bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
     std::string unknownFunc;
-    bool ret = _settings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
+    const bool ret = _settings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
     if (unknown)
         *unknown = !unknownFunc.empty();
     if (!unknownFunc.empty() && _settings->checkLibrary && _settings->isEnabled("information")) {
@@ -8271,7 +8269,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
         } else if (isgoto && Token::Match(tok, "[{};] do|while|for|BOOST_FOREACH")) {
             //it's possible that code inside loop is not dead,
             //because of the possible presence of the label pointed by 'goto'
-            Token *start = tok->tokAt(2);
+            const Token *start = tok->tokAt(2);
             if (start && start->str() == "(")
                 start = start->link()->next();
             if (start && start->str() == "{") {
@@ -9712,56 +9710,55 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
     if (_settings->platformType != Settings::Win32A &&
-        _settings->platformType != Settings::Win32W &
+        _settings->platformType != Settings::Win32W &&
         _settings->platformType != Settings::Win64)
         return;
 
     struct triplet {
-        triplet(const char* t, const char* m, const char* u) : tchar(t), mbcs(m), unicode(u) {}
-        triplet(const std::string& t) : tchar(t) {}
+        triplet(const char* t, const char* m="", const char* u="") : tchar(t), mbcs(m), unicode(u) {}
         bool operator <(const triplet& rhs) const {
             return tchar < rhs.tchar;
         }
         std::string tchar, mbcs, unicode;
     };
     const static std::set<triplet> apis = make_container< std::set<triplet> >() <<
-                                   triplet("_topen", "open", "_wopen") <<
-                                   triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
-                                   triplet("_tfopen", "fopen", "_wfopen") <<
-                                   triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
-                                   triplet("_tfreopen", "freopen", "_wfreopen") <<
-                                   triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
-                                   triplet("_tcscat", "strcat", "wcscat") <<
-                                   triplet("_tcschr", "strchr", "wcschr") <<
-                                   triplet("_tcscmp", "strcmp", "wcscmp") <<
-                                   triplet("_tcsdup", "strdup", "wcsdup") <<
-                                   triplet("_tcscpy", "strcpy", "wcscpy") <<
-                                   triplet("_tcslen", "strlen", "wcslen") <<
-                                   triplet("_tcsncat", "strncat", "wcsncat") <<
-                                   triplet("_tcsncpy", "strncpy", "wcsncpy") <<
-                                   triplet("_tcsnlen", "strnlen", "wcsnlen") <<
-                                   triplet("_tcsrchr", "strrchr", "wcsrchr") <<
-                                   triplet("_tcsstr", "strstr", "wcsstr") <<
-                                   triplet("_tcstok", "strtok", "wcstok") <<
-                                   triplet("_ftprintf", "fprintf", "fwprintf") <<
-                                   triplet("_tprintf", "printf", "wprintf") <<
-                                   triplet("_stprintf", "sprintf", "swprintf") <<
-                                   triplet("_sntprintf", "_snprintf", "_snwprintf") <<
-                                   triplet("_ftscanf", "fscanf", "fwscanf") <<
-                                   triplet("_tscanf", "scanf", "wscanf") <<
-                                   triplet("_stscanf", "sscanf", "swscanf") <<
-                                   triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
-                                   triplet("_tprintf_s", "printf_s", "wprintf_s") <<
-                                   triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
-                                   triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
-                                   triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
-                                   triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
-                                   triplet("_stscanf_s", "sscanf_s", "swscanf_s")
-                                   ;
+                                          triplet("_topen", "open", "_wopen") <<
+                                          triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
+                                          triplet("_tfopen", "fopen", "_wfopen") <<
+                                          triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
+                                          triplet("_tfreopen", "freopen", "_wfreopen") <<
+                                          triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
+                                          triplet("_tcscat", "strcat", "wcscat") <<
+                                          triplet("_tcschr", "strchr", "wcschr") <<
+                                          triplet("_tcscmp", "strcmp", "wcscmp") <<
+                                          triplet("_tcsdup", "strdup", "wcsdup") <<
+                                          triplet("_tcscpy", "strcpy", "wcscpy") <<
+                                          triplet("_tcslen", "strlen", "wcslen") <<
+                                          triplet("_tcsncat", "strncat", "wcsncat") <<
+                                          triplet("_tcsncpy", "strncpy", "wcsncpy") <<
+                                          triplet("_tcsnlen", "strnlen", "wcsnlen") <<
+                                          triplet("_tcsrchr", "strrchr", "wcsrchr") <<
+                                          triplet("_tcsstr", "strstr", "wcsstr") <<
+                                          triplet("_tcstok", "strtok", "wcstok") <<
+                                          triplet("_ftprintf", "fprintf", "fwprintf") <<
+                                          triplet("_tprintf", "printf", "wprintf") <<
+                                          triplet("_stprintf", "sprintf", "swprintf") <<
+                                          triplet("_sntprintf", "_snprintf", "_snwprintf") <<
+                                          triplet("_ftscanf", "fscanf", "fwscanf") <<
+                                          triplet("_tscanf", "scanf", "wscanf") <<
+                                          triplet("_stscanf", "sscanf", "swscanf") <<
+                                          triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
+                                          triplet("_tprintf_s", "printf_s", "wprintf_s") <<
+                                          triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
+                                          triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
+                                          triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
+                                          triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
+                                          triplet("_stscanf_s", "sscanf_s", "swscanf_s")
+                                          ;
 
     const bool ansi = _settings->platformType == Settings::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        std::set<triplet>::const_iterator match = apis.find(tok->str());
+        std::set<triplet>::const_iterator match = apis.find(tok->str().c_str());
         if (match!=apis.end()) {
             const std::string pattern(match->tchar + " (");
             if (Token::simpleMatch(tok, pattern.c_str())) {
