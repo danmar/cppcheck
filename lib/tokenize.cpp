@@ -2792,7 +2792,7 @@ void Tokenizer::setVarId()
 
             const Token* tokStart = tok->tokAt(2);
             while (tokStart && tokStart->str() != "{") {
-                if (Token::Match(tokStart, "public|private|protected"))
+                if (Token::Match(tokStart, "public|private|protected %name%"))
                     tokStart = tokStart->next();
                 if (tokStart->strAt(1) == "," || tokStart->strAt(1) == "{")
                     varlist[classname].insert(varlist[tokStart->str()].begin(), varlist[tokStart->str()].end());
