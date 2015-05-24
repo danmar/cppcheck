@@ -276,6 +276,7 @@ public:
     bool isBoolean() const {
         return _type == eBoolean;
     }
+    bool isUnaryPreOp() const;
 
     unsigned int flags() const {
         return _flags;

@@ -1449,6 +1449,16 @@ private:
                "    leaveNotifyEvent(0);\n"
                "}";
         testValueOfX(code, 2U, 2); // No complaint about Token::Match called with varid 0. (#6443)
+
+        // #6560 - multivariables
+        code = "void f1(int x) {\n"
+               "  int a = x && y;\n"
+               "  int b = a ? x : 0;\n"
+               "}\n"
+               "void f2() {\n"
+               "  f1(0);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowFunctionReturn() {

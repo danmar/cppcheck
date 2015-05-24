@@ -147,15 +147,19 @@ static std::map<unsigned int, MathLib::bigint> getProgramMemory(const Token *tok
     const std::map<unsigned int, MathLib::bigint> programMemory1(programMemory);
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-        if (Token::Match(tok2, "[;{}] %var% = %num% ;")) {
-            const Token *vartok = tok2->next();
-            const Token *numtok = tok2->tokAt(3);
-            if (programMemory.find(vartok->varId()) == programMemory.end())
-                programMemory[vartok->varId()] = MathLib::toLongNumber(numtok->str());
-        }
         if (Token::Match(tok2, "[;{}] %varid% = %var% ;", varid)) {
             const Token *vartok = tok2->tokAt(3);
             programMemory[vartok->varId()] = value.intvalue;
+        }
+        if (Token::Match(tok2, "[;{}] %var% =")) {
+            const Token *vartok = tok2->next();
+            if (programMemory.find(vartok->varId()) == programMemory.end()) {
+                MathLib::bigint result = 0;
+                bool error = false;
+                execute(tok2->tokAt(2)->astOperand2(), &programMemory, &result, &error);
+                if (!error)
+                    programMemory[vartok->varId()] = result;
+            }
         }
         if (tok2->str() == "{") {
             if (indentlevel <= 0)
@@ -761,6 +765,16 @@ static void removeValues(std::list<ValueFlow::Value> &values, const std::list<Va
     }
 }
 
+static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value &value)
+{
+    if (!tok)
+        return;
+    if (tok->varId() == varid)
+        setTokenValue(tok, value);
+    valueFlowAST(const_cast<Token*>(tok->astOperand1()), varid, value);
+    valueFlowAST(const_cast<Token*>(tok->astOperand2()), varid, value);
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -1025,6 +1039,31 @@ static bool valueFlowForward(Token * const               startToken,
 
         else if (returnStatement && tok2->str() == ";")
             return false;
+
+        // If a ? is seen and it's known that the condition is true/false..
+        else if (tok2->str() == "?") {
+            const Token *condition = tok2->astOperand1();
+            std::list<ValueFlow::Value>::const_iterator it;
+            for (it = values.begin(); it != values.end(); ++it) {
+                const std::map<unsigned int, MathLib::bigint> programMemory(getProgramMemory(tok2, varid, *it));
+                if (conditionIsTrue(condition, programMemory))
+                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()->astOperand1()), varid, *it);
+                else if (conditionIsFalse(condition, programMemory))
+                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()->astOperand2()), varid, *it);
+                else
+                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()), varid, *it);
+            }
+            // Skip conditional expressions..
+            while (tok2->astOperand1() || tok2->astOperand2()) {
+                if (tok2->astOperand2())
+                    tok2 = const_cast<Token*>(tok2->astOperand2());
+                else if (tok2->isUnaryPreOp())
+                    tok2 = const_cast<Token*>(tok2->astOperand1());
+                else
+                    break;
+            }
+            tok2 = tok2->next();
+        }
 
         if (tok2->varId() == varid) {
             // bailout: assignment
