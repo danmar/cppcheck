@@ -49,6 +49,7 @@ public:
         checkType.checkTooBigBitwiseShift();
         checkType.checkIntegerOverflow();
         checkType.checkSignConversion();
+        checkType.checkLongCast();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -67,6 +68,8 @@ public:
     /** @brief %Check for dangerous sign conversion */
     void checkSignConversion();
 
+    /** @brief %Check for implicit long cast of int result */
+    void checkLongCast();
 private:
     bool isUnsigned(const Variable *var) const;
     static bool isSigned(const Variable *var);
@@ -75,12 +78,16 @@ private:
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void signConversionError(const Token *tok);
+    void longCastAssignError(const Token *tok);
+    void longCastReturnError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckType c(0, settings, errorLogger);
         c.tooBigBitwiseShiftError(0, 32, ValueFlow::Value(64));
         c.integerOverflowError(0, ValueFlow::Value(1LL<<32));
         c.signConversionError(0);
+        c.longCastAssignError(0);
+        c.longCastReturnError(0);
     }
 
     static std::string myName() {
@@ -91,7 +98,9 @@ private:
         return "Type checks\n"
                "- bitwise shift by too many bits (only enabled when --platform is used)\n"
                "- signed integer overflow (only enabled when --platform is used)\n"
-               "- dangerous sign conversion, when signed value can be negative\n";
+               "- dangerous sign conversion, when signed value can be negative\n"
+               "- possible loss of information when assigning int result to long variable\n"
+               "- possible loss of information when returning int result as long return value\n";
     }
 };
 /// @}

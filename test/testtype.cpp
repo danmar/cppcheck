@@ -37,6 +37,8 @@ private:
         TEST_CASE(checkTooBigShift);
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);
+        TEST_CASE(longCastAssign);
+        TEST_CASE(longCastReturn);
     }
 
     void check(const char code[], Settings* settings = 0) {
@@ -133,6 +135,34 @@ private:
               "}\n"
               "void f2() { f1(-4); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void longCastAssign() {
+        Settings settings;
+        settings.addEnabled("style");
+
+        check("long f(int x, int y) {\n"
+              "  const long ret = x * y;\n"
+              "  return ret;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is assigned to long variable\n", errout.str());
+
+        // astIsIntResult
+        check("long f(int x, int y) {\n"
+              "  const long ret = (long)x * y;\n"
+              "  return ret;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void longCastReturn() {
+        Settings settings;
+        settings.addEnabled("style");
+
+        check("long f(int x, int y) {\n"
+              "  return x * y;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is returned as long value\n", errout.str());
     }
 };
 

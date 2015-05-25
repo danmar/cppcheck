@@ -30,6 +30,19 @@ namespace {
     CheckType instance;
 }
 
+static bool astIsIntResult(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->astOperand1())
+        return astIsIntResult(tok->astOperand1()) && astIsIntResult(tok->astOperand2());
+    // todo: handle numbers
+    if (!tok->variable())
+        return false;
+    const Token *type = tok->variable()->typeStartToken();
+    return Token::Match(type, "char|short|int") && !type->isLong();
+}
+
 static bool astGetSizeSign(const Settings *settings, const Token *tok, unsigned int *size, char *sign)
 {
     if (!tok)
@@ -286,4 +299,78 @@ void CheckType::signConversionError(const Token *tok)
                 Severity::warning,
                 "signConversion",
                 "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value");
+}
+
+
+//---------------------------------------------------------------------------
+// Checking for long cast of int result   const long x = var1 * var2;
+//---------------------------------------------------------------------------
+
+void CheckType::checkLongCast()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    // Assignments..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%var% ="))
+            continue;
+        if (!tok->variable() || !tok->variable()->isConst() || tok->variable()->typeStartToken()->str() != "long")
+            continue;
+        if (Token::Match(tok->next()->astOperand2(), "*|<<") && astIsIntResult(tok->next()->astOperand2()))
+            longCastAssignError(tok);
+    }
+
+    // Return..
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+
+        // function must return long data
+        const Token * def = scope->classDef;
+        bool islong = false;
+        while (Token::Match(def, "%type%|::")) {
+            if (def->str() == "long") {
+                islong = true;
+                break;
+            }
+            def = def->previous();
+        }
+        if (!islong)
+            continue;
+
+        // find return statement
+        // todo.. this is slow, we should only check last statement in each child scope
+        const Token *ret = nullptr;
+        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (tok->str() == "return") {
+                if (!ret)
+                    ret = tok;
+                else {
+                    ret =  nullptr;
+                    break;
+                }
+            }
+        }
+
+        if (ret && Token::Match(ret->astOperand1(), "*|<<") && astIsIntResult(ret->astOperand1()))
+            longCastReturnError(ret);
+    }
+}
+
+void CheckType::longCastAssignError(const Token *tok)
+{
+    reportError(tok,
+                Severity::style,
+                "truncLongCastAssignment",
+                "possible loss of information, int result is assigned to long variable");
+}
+
+void CheckType::longCastReturnError(const Token *tok)
+{
+    reportError(tok,
+                Severity::style,
+                "truncLongCastReturn",
+                "possible loss of information, int result is returned as long value");
 }
