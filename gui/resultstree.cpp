@@ -34,6 +34,8 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QClipboard>
+#include <QDesktopServices>
+#include <QUrl>
 #include <QContextMenuEvent>
 #include <QModelIndex>
 #include "common.h"
@@ -130,7 +132,7 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(line.file, item.file0, hide),
+    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(item.files[0], item.file0, hide),
                              line,
                              hide,
                              SeverityToIcon(line.severity));
@@ -530,12 +532,13 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *copyfilename   = new QAction(tr("Copy filename"), &menu);
-            QAction *copypath       = new QAction(tr("Copy full path"), &menu);
-            QAction *copymessage    = new QAction(tr("Copy message"), &menu);
-            QAction *copymessageid  = new QAction(tr("Copy message id"), &menu);
-            QAction *hide           = new QAction(tr("Hide"), &menu);
-            QAction *hideallid      = new QAction(tr("Hide all with id"), &menu);
+            QAction *copyfilename           = new QAction(tr("Copy filename"), &menu);
+            QAction *copypath               = new QAction(tr("Copy full path"), &menu);
+            QAction *copymessage            = new QAction(tr("Copy message"), &menu);
+            QAction *copymessageid          = new QAction(tr("Copy message id"), &menu);
+            QAction *hide                   = new QAction(tr("Hide"), &menu);
+            QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
+            QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
                 copyfilename->setDisabled(true);
@@ -543,6 +546,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 copymessage->setDisabled(true);
                 copymessageid->setDisabled(true);
                 hideallid->setDisabled(true);
+                opencontainingfolder->setDisabled(true);
             }
 
             menu.addAction(copyfilename);
@@ -551,6 +555,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(copymessageid);
             menu.addAction(hide);
             menu.addAction(hideallid);
+            menu.addAction(opencontainingfolder);
 
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
@@ -558,6 +563,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             connect(copymessageid, SIGNAL(triggered()), this, SLOT(CopyMessageId()));
             connect(hide, SIGNAL(triggered()), this, SLOT(HideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(HideAllIdResult()));
+            connect(opencontainingfolder, SIGNAL(triggered()), this, SLOT(OpenContainingFolder()));
         }
 
         //Start the menu
@@ -705,12 +711,12 @@ QString ResultsTree::AskFileDir(const QString &file)
 
 void ResultsTree::CopyFilename()
 {
-    CopyPath(mContextItem, false);
+    CopyPathToClipboard(mContextItem, false);
 }
 
 void ResultsTree::CopyFullPath()
 {
-    CopyPath(mContextItem, true);
+    CopyPathToClipboard(mContextItem, true);
 }
 
 void ResultsTree::CopyMessage()
@@ -810,6 +816,16 @@ void ResultsTree::HideAllIdResult()
     }
 }
 
+void ResultsTree::OpenContainingFolder()
+{
+    QString filePath = GetFilePath(mContextItem, true);
+    if (!filePath.isEmpty())
+    {
+        filePath = QFileInfo(filePath).absolutePath();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+    }
+}
+
 void ResultsTree::Context(int application)
 {
     StartApplication(mContextItem, application);
@@ -820,7 +836,13 @@ void ResultsTree::QuickStartApplication(const QModelIndex &index)
     StartApplication(mModel.itemFromIndex(index));
 }
 
-void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
+void ResultsTree::CopyPathToClipboard(QStandardItem *target, bool fullPath)
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(GetFilePath(target, fullPath));
+}
+
+QString ResultsTree::GetFilePath(QStandardItem *target, bool fullPath)
 {
     if (target) {
         // Make sure we are working with the first column
@@ -838,9 +860,10 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
             pathStr = fi.fileName();
         }
 
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(pathStr);
+        return pathStr;
     }
+
+    return QString();
 }
 
 QString ResultsTree::SeverityToIcon(Severity::SeverityType severity) const
