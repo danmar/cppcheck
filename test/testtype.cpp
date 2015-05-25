@@ -140,7 +140,7 @@ private:
     void longCastAssign() {
         Settings settings;
         settings.addEnabled("style");
-        settings.platform(Settings::PlatformType::Unix64);
+        settings.platform(Settings::Unix64);
 
         check("long f(int x, int y) {\n"
               "  const long ret = x * y;\n"

@@ -871,7 +871,7 @@ static bool valueFlowForward(Token * const               startToken,
 
             // Should scope be skipped because variable value is checked?
             std::list<ValueFlow::Value> truevalues;
-            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+            for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
                 if (!conditionIsFalse(tok2->next()->astOperand2(), getProgramMemory(tok2, varid, *it)))
                     truevalues.push_back(*it);
             }
