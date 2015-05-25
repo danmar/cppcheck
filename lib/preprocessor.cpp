@@ -532,7 +532,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
 
         // Remove comments..
         if (str.compare(i, 2, "//") == 0) {
-            std::size_t commentStart = i + 2;
+            const std::size_t commentStart = i + 2;
             i = str.find('\n', i);
             if (i == std::string::npos)
                 break;
@@ -557,7 +557,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             previous = '\n';
             ++lineno;
         } else if (str.compare(i, 2, "/*") == 0) {
-            std::size_t commentStart = i + 2;
+            const std::size_t commentStart = i + 2;
             unsigned char chPrev = 0;
             ++i;
             while (i < str.length() && (chPrev != '*' || ch != '/')) {
@@ -631,8 +631,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // First check for a "fall through" comment match, but only
                 // add a suppression if the next token is 'case' or 'default'
                 if (detectFallThroughComments && fallThroughComment) {
-                    std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
-                    std::string tok = str.substr(i, j - i);
+                    const std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
+                    const std::string tok = str.substr(i, j - i);
                     if (tok == "case" || tok == "default")
                         suppressionIDs.push_back("switchCaseFallThrough");
                     fallThroughComment = false;
@@ -967,7 +967,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     processedFile = read(srcCodeStream, filename);
 
     if (_settings) {
-        for (std::list<std::string>::iterator it = _settings->userIncludes.begin();
+        for (std::list<std::string>::const_iterator it = _settings->userIncludes.begin();
              it != _settings->userIncludes.end();
              ++it) {
             std::string cur = *it;
@@ -997,7 +997,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
                 ;
         }
 
-        for (std::vector<std::string>::iterator it = _settings->library.defines.begin();
+        for (std::vector<std::string>::const_iterator it = _settings->library.defines.begin();
              it != _settings->library.defines.end();
              ++it) {
             forcedIncludes += *it;

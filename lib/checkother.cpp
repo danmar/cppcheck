@@ -131,6 +131,9 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
     }
     if (tok1->type() == Token::eIncDecOp || tok1->isAssignmentOp())
         return false;
+    // bailout when we see ({..})
+    if (tok1->str() == "{")
+        return false;
     if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
@@ -141,9 +144,6 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
         if (!t1 || !t2 || t1->str() != ")" || t2->str() != ")")
             return false;
     }
-    // bailout when we see ({..})
-    if (tok1->str() == "{")
-        return false;
     bool noncommuative_equals =
         isSameExpression(tok1->astOperand1(), tok2->astOperand1(), constFunctions);
     noncommuative_equals = noncommuative_equals &&
@@ -152,7 +152,7 @@ bool isSameExpression(const Token *tok1, const Token *tok2, const std::set<std::
     if (noncommuative_equals)
         return true;
 
-    bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
+    const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commuative_equals = commutative &&
                              isSameExpression(tok1->astOperand2(), tok2->astOperand1(), constFunctions);
     commuative_equals = commuative_equals &&
@@ -1170,7 +1170,7 @@ void CheckOther::checkUnreachableCode()
 
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
-            bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
+            const bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
 
             if (secondBreak && (printInconclusive || !inconclusive)) {
                 if (Token::Match(secondBreak, "continue|goto|throw") ||
@@ -1876,7 +1876,7 @@ void CheckOther::nanInArithmeticExpressionError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckOther::checkMathFunctions()
 {
-    bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
+    const bool styleC99 = _settings->isEnabled("style") && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
     const bool printWarnings = _settings->isEnabled("warning");
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -2577,7 +2577,7 @@ void CheckOther::checkIncompleteArrayFill()
                     continue;
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                    unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                    const unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)
                             incompleteArrayFillError(tok, var->name(), tok->str(), false);
@@ -2777,5 +2777,3 @@ void CheckOther::checkLibraryMatchFunctions()
         }
     }
 }
-
-

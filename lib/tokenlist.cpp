@@ -400,7 +400,7 @@ unsigned long long TokenList::calculateChecksum() const
 {
     unsigned long long checksum = 0;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->type());
+        const unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->type());
         unsigned int subchecksum2 = 0;
         for (std::size_t i = 0; i < tok->str().size(); i++)
             subchecksum2 += (unsigned int)tok->str()[i];
@@ -618,8 +618,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
         } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
-            bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
-            std::size_t oldOpSize = state.op.size();
+            const bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
+            const std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
             tok = tok2;
             if ((tok->previous() && tok->previous()->isName() && (tok->strAt(-1) != "return" && (!state.cpp || !Token::Match(tok->previous(), "throw|delete"))))

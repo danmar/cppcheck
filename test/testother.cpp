@@ -164,6 +164,7 @@ private:
         TEST_CASE(checkIgnoredReturnValue);
 
         TEST_CASE(redundantPointerOp);
+        TEST_CASE(test_isSameExpression);
     }
 
     void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0, bool verify = true) {
@@ -6150,6 +6151,14 @@ private:
               "    MUTEX_LOCK(*mut);\n"
               "}\n", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
+
+    }
+
+    void test_isSameExpression() { // see #5738
+        check("bool isInUnoIncludeFile(StringRef name) {"
+              "   return  name.startswith(SRCDIR \"/com/\") || name.startswith(SRCDIR \"/uno/\");\n"
+              "};", "test.cpp", false, false);
+        TODO_ASSERT_EQUALS("", "[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '||'.\n", errout.str());
     }
 };
 
