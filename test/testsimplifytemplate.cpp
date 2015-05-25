@@ -1169,6 +1169,14 @@ private:
         ASSERT_EQUALS(1U, templateParameters("<int const *> x;"));
         ASSERT_EQUALS(1U, templateParameters("<const struct C> x;"));
         ASSERT_EQUALS(0U, templateParameters("<len>>x;"));
+        ASSERT_EQUALS(1U, templateParameters("<typename> x;"));
+        ASSERT_EQUALS(0U, templateParameters("<...> x;"));
+        ASSERT_EQUALS(0U, templateParameters("<class T...> x;")); // Invalid syntax
+        ASSERT_EQUALS(1U, templateParameters("<class... T> x;"));
+        ASSERT_EQUALS(0U, templateParameters("<class, typename T...> x;")); // Invalid syntax
+        ASSERT_EQUALS(2U, templateParameters("<class, typename... T> x;"));
+        TODO_ASSERT_EQUALS(1U, 0U, templateParameters("<int...> x;")); // Mishandled valid syntax
+        TODO_ASSERT_EQUALS(2U, 0U, templateParameters("<class, typename...> x;")); // Mishandled valid syntax
     }
 
     void templateParameters1() {
