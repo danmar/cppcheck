@@ -462,15 +462,15 @@ private:
     }
 
     void garbageCode40() { // #6620
-        ASSERT_THROW(checkCode("{ ( ) () { virtual } ; { } E } A { : { } ( ) } * const ( ) const { }"), InternalError);
+        checkCode("{ ( ) () { virtual } ; { } E } A { : { } ( ) } * const ( ) const { }");
     }
 
     void garbageCode41() { // #6685
-        ASSERT_THROW(checkCode(" { } { return } *malloc(__SIZE_TYPE__ size); *memcpy(void n); static * const () { memcpy (*slot, 3); } { (); } { }"), InternalError);
+        checkCode(" { } { return } *malloc(__SIZE_TYPE__ size); *memcpy(void n); static * const () { memcpy (*slot, 3); } { (); } { }");
     }
 
     void garbageCode42() { // #5760
-        ASSERT_THROW(checkCode("{  } * const ( ) { }"), InternalError);
+        checkCode("{  } * const ( ) { }");
     }
 
     void garbageCode43() { // #6703

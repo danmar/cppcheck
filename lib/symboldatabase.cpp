@@ -745,8 +745,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         // save function prototype in database
                         if (newFunc) {
                             Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-                            if (!func)
-                                break;
 
                             if (Token::Match(argStart->link(), ") const| noexcept")) {
                                 int arg = 2;
@@ -1301,7 +1299,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     }
 
     // regular function?
-    else if (Token::Match(tok, "%name% (") && tok->previous() &&
+    else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) && tok->previous() &&
              (tok->previous()->isName() || tok->strAt(-1) == ">" || tok->strAt(-1) == "&" || tok->strAt(-1) == "*" || // Either a return type in front of tok
               tok->strAt(-1) == "::" || tok->strAt(-1) == "~" || // or a scope qualifier in front of tok
               outerScope->isClassOrStruct())) { // or a ctor/dtor
@@ -1660,9 +1658,6 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     if (!function)
         function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
 
-    if (!function)
-        return 0;
-
     function->arg = argStart;
     function->token = funcStart;
     function->hasBody(true);
@@ -1688,8 +1683,6 @@ Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok,
     function.access = Public;
 
     // save the function name location
-    if (funcStart && isReservedName(funcStart->str()))
-        return 0;
     function.tokenDef = funcStart;
 
     function.isInline(false);
