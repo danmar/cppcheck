@@ -140,12 +140,20 @@ private:
     void longCastAssign() {
         Settings settings;
         settings.addEnabled("style");
+        settings.platform(Settings::PlatformType::Unix64);
 
         check("long f(int x, int y) {\n"
               "  const long ret = x * y;\n"
               "  return ret;\n"
               "}\n", &settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is assigned to long variable\n", errout.str());
+
+        // typedef
+        check("long f(int x, int y) {\n"
+              "  const size_t ret = x * y;\n"
+              "  return ret;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("", errout.str());
 
         // astIsIntResult
         check("long f(int x, int y) {\n"
@@ -163,6 +171,12 @@ private:
               "  return x * y;\n"
               "}\n", &settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is returned as long value\n", errout.str());
+
+        // typedef
+        check("size_t f(int x, int y) {\n"
+              "  return x * y;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

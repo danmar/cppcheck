@@ -315,7 +315,9 @@ void CheckType::checkLongCast()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%var% ="))
             continue;
-        if (!tok->variable() || !tok->variable()->isConst() || tok->variable()->typeStartToken()->originalName() != "long")
+        if (!tok->variable() || !tok->variable()->isConst() || tok->variable()->typeStartToken()->str() != "long")
+            continue;
+        if (!tok->variable()->typeStartToken()->originalName().empty())
             continue;
         if (Token::Match(tok->next()->astOperand2(), "*|<<") && astIsIntResult(tok->next()->astOperand2()))
             longCastAssignError(tok);
@@ -331,7 +333,7 @@ void CheckType::checkLongCast()
         const Token * def = scope->classDef;
         bool islong = false;
         while (Token::Match(def, "%type%|::")) {
-            if (def->originalName() == "long") {
+            if (def->str() == "long" && def->originalName().empty()) {
                 islong = true;
                 break;
             }
