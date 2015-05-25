@@ -6820,10 +6820,10 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         // Delete pointer alias
-        if (pointeralias && tok3->str() == "delete" &&
-            (Token::Match(tok3, "delete %varid% ;", varid) ||
-             Token::Match(tok3, "delete [ ] %varid%", varid))) {
-            tok3 = (tok3->next() && tok3->next()->str() == "[") ? tok3->tokAt(3) : tok3->next();
+        if (pointeralias && (tok3->str() == "delete") && tok3->next() &&
+            (Token::Match(tok3->next(), "%varid% ;", varid) ||
+             Token::Match(tok3->next(), "[ ] %varid%", varid))) {
+            tok3 = (tok3->next()->str() == "[") ? tok3->tokAt(3) : tok3->next();
             tok3->str(value);
             tok3->varId(valueVarId);
             ret = true;
