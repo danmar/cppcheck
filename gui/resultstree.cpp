@@ -819,8 +819,7 @@ void ResultsTree::HideAllIdResult()
 void ResultsTree::OpenContainingFolder()
 {
     QString filePath = GetFilePath(mContextItem, true);
-    if (!filePath.isEmpty())
-    {
+    if (!filePath.isEmpty()) {
         filePath = QFileInfo(filePath).absolutePath();
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
     }

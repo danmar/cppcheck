@@ -89,18 +89,19 @@ bool CppCheck::findError(std::string code, const char FileName[])
 {
     std::set<unsigned long long> checksums;
     // First make sure that error occurs with the original code
-    checkFile(code, FileName, checksums);
+    bool internalErrorFound(false);
+    checkFile(code, FileName, checksums, internalErrorFound);
     if (_errorList.empty()) {
         // Error does not occur with this code
         return false;
     }
 
-    std::string previousCode = code;
+    const std::string previousCode = code;
     std::string error = _errorList.front();
     for (;;) {
 
         // Try to remove included files from the source
-        std::size_t found = previousCode.rfind("\n#endfile");
+        const std::size_t found = previousCode.rfind("\n#endfile");
         if (found == std::string::npos) {
             // No modifications can be done to the code
         } else {
@@ -109,7 +110,7 @@ bool CppCheck::findError(std::string code, const char FileName[])
             code = previousCode.substr(found+9);
             _errorList.clear();
             checksums.clear();
-            checkFile(code, FileName, checksums);
+            checkFile(code, FileName, checksums, internalErrorFound);
         }
 
         if (_errorList.empty()) {
@@ -151,10 +152,11 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         _errorLogger.reportOut(std::string("Checking ") + fixedpath + std::string("..."));
     }
 
+    bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(&_settings, this);
         std::list<std::string> configurations;
-        std::string filedata = "";
+        std::string filedata;
 
         {
             Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
@@ -234,7 +236,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                     return exitcode;
                 }
             } else {
-                if (!checkFile(codeWithoutCfg, filename.c_str(), checksums)) {
+                if (!checkFile(codeWithoutCfg, filename.c_str(), checksums, internalErrorFound)) {
                     if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
                         purgedConfigurationMessage(filename, cfg);
                 }
@@ -244,6 +246,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         internalError(filename, e.what());
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
+        exitcode=1; // e.g. reflect a syntax error
     }
 
     // In jointSuppressionReport mode, unmatched suppressions are
@@ -253,6 +256,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
     }
 
     _errorList.clear();
+    if (internalErrorFound && (exitcode==0)) {
+        exitcode=1;
+    }
     return exitcode;
 }
 
@@ -285,7 +291,7 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
     // Preprocess file..
     Preprocessor preprocessor(&_settings, this);
     std::list<std::string> configurations;
-    std::string filedata = "";
+    std::string filedata;
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
     const std::string code = preprocessor.getcode(filedata, "", filename);
 
@@ -303,8 +309,9 @@ void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 //---------------------------------------------------------------------------
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
-bool CppCheck::checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums)
+bool CppCheck::checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums, bool& internalErrorFound)
 {
+    internalErrorFound=false;
     if (_settings.terminated() || _settings.checkConfiguration)
         return true;
 
@@ -331,7 +338,7 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
         timer.Stop();
 
         if (_settings._force || _settings._maxConfigs > 1) {
-            unsigned long long checksum = _tokenizer.list.calculateChecksum();
+            const unsigned long long checksum = _tokenizer.list.calculateChecksum();
             if (checksums.find(checksum) != checksums.end())
                 return false;
             checksums.insert(checksum);
@@ -399,6 +406,7 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
         if (_settings.terminated())
             return true;
     } catch (const InternalError &e) {
+        internalErrorFound=true;
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         ErrorLogger::ErrorMessage::FileLocation loc;
         if (e.token) {
@@ -468,10 +476,10 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 
         int pos = 0;
-        int ovector[30];
+        int ovector[30]= {0};
         while (pos < (int)str.size() && 0 <= pcre_exec(re, nullptr, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
-            unsigned int pos1 = (unsigned int)ovector[0];
-            unsigned int pos2 = (unsigned int)ovector[1];
+            const unsigned int pos1 = (unsigned int)ovector[0];
+            const unsigned int pos2 = (unsigned int)ovector[1];
 
             // jump to the end of the match for the next pcre_exec
             pos = (int)pos2;
@@ -586,7 +594,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (!_settings.library.reportErrors(msg.file0))
         return;
 
-    std::string errmsg = msg.toString(_settings._verbose);
+    const std::string errmsg = msg.toString(_settings._verbose);
     if (errmsg.empty())
         return;
 

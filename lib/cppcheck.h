@@ -149,8 +149,15 @@ private:
      */
     unsigned int processFile(const std::string& filename, std::istream& fileStream);
 
-    /** @brief Check file */
-    bool checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums);
+    /**
+     * @brief Check file
+     * @param code
+     * @param FileName
+     * @param checksums
+     * @param[out] internalErrorFound will be set to true if an internal has been caught, false else
+     * @return false if file has been checked before, true else !?
+     */
+    bool checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums, bool& internalErrorFound);
 
     /**
      * @brief Execute rules, if any
