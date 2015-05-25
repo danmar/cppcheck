@@ -35,6 +35,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QUrl>
 #include <QContextMenuEvent>
 #include <QModelIndex>
 #include "common.h"
