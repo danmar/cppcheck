@@ -805,7 +805,7 @@ private:
         ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
 
         // syntax error: assert there is no segmentation fault
-        ASSERT_THROW(elseif("else if (x) { }"), InternalError);
+        ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", elseif("else if (x) { }"));
 
         {
             const char src[] =  "void f(int g,int f) {\n"

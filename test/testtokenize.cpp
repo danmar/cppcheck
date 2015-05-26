@@ -336,6 +336,7 @@ private:
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
         TEST_CASE(cpp0xtemplate4); // Ticket #6181: Mishandled C++11 syntax
+        TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
 
@@ -1270,7 +1271,7 @@ private:
 
     void ifAddBraces15() {
         // ticket #2616 - unknown macro before if
-        ASSERT_THROW(tokenizeAndStringify("{A if(x)y();}", false), InternalError);
+        ASSERT_EQUALS("{ A if ( x ) { y ( ) ; } }", tokenizeAndStringify("{A if(x)y();}", false));
     }
 
     void ifAddBraces16() { // ticket # 2739 (segmentation fault)
@@ -5262,6 +5263,11 @@ private:
                              "  }; "
                              "  template<class DC> class C2 {}; "
                              "}");
+    }
+
+    void cpp14template() { // Ticket #6708
+        tokenizeAndStringify("template <typename T> "
+                             "decltype(auto) forward(T& t) { return 0; }");
     }
 
     std::string arraySize_(const std::string &code) {
