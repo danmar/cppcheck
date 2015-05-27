@@ -522,18 +522,21 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
 
-        bailout("void f(int x) {\n"
-                "    if (x != 123) { b = x; }\n"
-                "    if (x == 123) {}\n"
-                "}");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) ValueFlow bailout: variable x stopping on }\n", errout.str());
-
         code = "void f(int x) {\n"
                "  a = x;\n"
                "  if (abc) { x = 1; }\n"  // <- condition must be false if x is 7 in next line
                "  if (x == 7) { }\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 7));
+
+        code = "void dostuff(const int *x);\n" // #6710
+               "void f(const int *x) {\n"
+               "  for (int i = *x; i > 0; --i) {\n"
+               "    dostuff(x);\n"
+               "  }\n"
+               "  if (x) {}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowBeforeConditionGlobalVariables() {
