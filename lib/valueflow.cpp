@@ -697,7 +697,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     const Token *vartok = Token::findmatch(tok2->link(), "%varid%", tok2, varid);
                     while (Token::Match(vartok, "%name% = %num% ;") && !vartok->tokAt(2)->getValue(num))
                         vartok = Token::findmatch(vartok->next(), "%varid%", tok2, varid);
-                    if (isVariableChanged(tok2->link(), tok2, varid) && vartok) {
+                    if (vartok) {
                         if (settings->debugwarnings) {
                             std::string errmsg = "variable ";
                             if (var)
