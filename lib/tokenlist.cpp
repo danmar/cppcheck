@@ -156,7 +156,7 @@ void TokenList::addtoken(const std::string & str, const unsigned int lineno, con
 
 void TokenList::addtoken(const Token * tok, const unsigned int lineno, const unsigned int fileno)
 {
-    if (tok == 0)
+    if (tok == nullptr)
         return;
 
     if (_back) {
@@ -411,7 +411,7 @@ unsigned long long TokenList::calculateChecksum() const
 
         checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);
 
-        bool bit1 = (checksum & 1) != 0;
+        const bool bit1 = (checksum & 1) != 0;
         checksum >>= 1;
         if (bit1)
             checksum |= (1ULL << 63);
@@ -689,7 +689,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 state.op.push(tok->next());
                 tok = tok->link()->next();
                 compileBinOp(tok, state, compilePrecedence2);
-            } else if (tok->str() == "[" || tok->str() == "(")
+            } else if (tok && (tok->str() == "[" || tok->str() == "("))
                 compilePrecedence2(tok, state);
             else if (innertype && Token::simpleMatch(tok, ") [")) {
                 tok = tok->next();
@@ -701,7 +701,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
         } else if (state.cpp && Token::Match(tok, "delete %name%|*|&|::|(|[")) {
             Token* tok2 = tok;
             tok = tok->next();
-            if (tok->str() == "[")
+            if (tok && tok->str() == "[")
                 tok = tok->link()->next();
             compilePrecedence3(tok, state);
             compileUnaryOp(tok2, state, nullptr);

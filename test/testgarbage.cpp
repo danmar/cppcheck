@@ -85,6 +85,7 @@ private:
         TEST_CASE(garbageCode44); // #6704
         TEST_CASE(garbageCode45); // #6608
         TEST_CASE(garbageCode46); // #6705
+        TEST_CASE(garbageCode47); // #6706
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -488,6 +489,10 @@ private:
 
     void garbageCode46() { // #6705
         checkCode(" { bar(char *x); void foo (int ...) { struct } va_list ap; va_start(ap, size); va_arg(ap, (d)); }");
+    }
+
+    void garbageCode47() { // #6706
+        checkCode(" { { }; }; * new private: B: B;");
     }
 
     void garbageValueFlow() {
