@@ -84,6 +84,7 @@ private:
         TEST_CASE(garbageCode43); // #6703
         TEST_CASE(garbageCode44); // #6704
         TEST_CASE(garbageCode45); // #6608
+        TEST_CASE(garbageCode46); // #6705
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -483,6 +484,10 @@ private:
 
     void garbageCode45() { // #6608
         checkCode("struct true template < > { = } > struct Types \"s\" ; static_assert < int > ;");
+    }
+
+    void garbageCode46() { // #6705
+        checkCode(" { bar(char *x); void foo (int ...) { struct } va_list ap; va_start(ap, size); va_arg(ap, (d)); }");
     }
 
     void garbageValueFlow() {

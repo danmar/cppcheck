@@ -92,7 +92,7 @@ void CheckVaarg::va_list_usage()
         bool exitOnEndOfStatement = false;
 
         const Token* tok = var->nameToken()->next();
-        for (; tok != var->scope()->classEnd; tok = tok->next()) {
+        for (;  tok && tok != var->scope()->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "va_start ( %varid%", var->declarationId())) {
                 if (open)
                     va_start_subsequentCallsError(tok, var->name());
