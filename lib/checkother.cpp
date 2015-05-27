@@ -2221,7 +2221,7 @@ void CheckOther::checkDuplicateExpression()
                         if (assignment)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
                         else {
-							if (_tokenizer->isCPP() && _settings->standards.cpp==Standards::CPP11 && tok->str() == "==") {
+                            if (_tokenizer->isCPP() && _settings->standards.cpp==Standards::CPP11 && tok->str() == "==") {
                                 const Token* parent = tok->astParent();
                                 while (parent && parent->astParent()) {
                                     parent = parent->astParent();
