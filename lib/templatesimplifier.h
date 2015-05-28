@@ -51,10 +51,11 @@ public:
     static void cleanupAfterSimplify(Token *tokens);
 
     /**
-     * @return 0 if there are no syntax errors or return token which identifies
-     * the location of syntax error.
+     * \param[in] tokens token list
+     * \param[out] errorToken which identifies the syntax error if any. Might be NULL anyway
+     * @return false if there are no syntax errors or true
      */
-    static const Token* hasComplicatedSyntaxErrorsInTemplates(Token *tokens);
+    static bool hasComplicatedSyntaxErrorsInTemplates(const Token *tokens, const Token *& errorToken);
 
     /**
      * is the token pointing at a template parameters block

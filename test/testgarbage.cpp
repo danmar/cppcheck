@@ -87,6 +87,7 @@ private:
         TEST_CASE(garbageCode46); // #6705
         TEST_CASE(garbageCode47); // #6706
         TEST_CASE(garbageCode48); // #6712
+        TEST_CASE(garbageCode49); // #6715
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -498,6 +499,10 @@ private:
 
     void garbageCode48() { // #6712
         checkCode(" { d\n\" ) d ...\n\" } int main ( ) { ( ) catch ( A a ) { { } catch ( ) \"\" } }");
+    }
+
+    void garbageCode49() { // #6715
+        ASSERT_THROW(checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }"), InternalError);
     }
 
     void garbageValueFlow() {

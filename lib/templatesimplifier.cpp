@@ -118,14 +118,18 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
 }
 
 
-const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *tokens)
+bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *tokens, const Token *& errorToken)
 {
+    errorToken=nullptr;
     // check for more complicated syntax errors when using templates..
     for (const Token *tok = tokens; tok; tok = tok->next()) {
         // skip executing scopes (ticket #3183)..
-        if (Token::simpleMatch(tok, "( {"))
+        if (Token::simpleMatch(tok, "( {")) {
             tok = tok->link();
+            if (!tok)
+                return true;
 
+        }
         // skip executing scopes..
         const Token *start = Tokenizer::startOfExecutableScope(tok);
         if (start) {
@@ -142,6 +146,8 @@ const Token* TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(Token *to
             }
         }
 
+        if (!tok)
+            return true;
         // not start of statement?
         if (tok->previous() && !Token::Match(tok, "[;{}]"))
             continue;
