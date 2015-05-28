@@ -155,9 +155,11 @@ void CheckExceptionSafety::checkRethrowCopy()
         const unsigned int varid = i->classStart->tokAt(-2)->varId();
         if (varid) {
             for (const Token* tok = i->classStart->next(); tok && tok != i->classEnd; tok = tok->next()) {
-                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) // Don't check inner catch - it is handled in another iteration of outer loop.
+                if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
                     tok = tok->next()->link()->next()->link();
-                else if (Token::Match(tok, "throw %varid% ;", varid))
+                    if (!tok)
+                        break;
+                } else if (Token::Match(tok, "throw %varid% ;", varid))
                     rethrowCopyError(tok, tok->strAt(1));
             }
         }
