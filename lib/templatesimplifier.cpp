@@ -212,7 +212,7 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
             }
             if (level > 0) {
                 errorToken=tok;
-				return true;
+                return true;
             }
         }
     }

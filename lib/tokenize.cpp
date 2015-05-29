@@ -7520,7 +7520,7 @@ void Tokenizer::simplifyEnum()
                 break;
             if (Token::Match(temp, "class|struct"))
                 temp = temp->next();
-			if (!temp)
+            if (!temp)
                 break;
             if (!Token::Match(temp, "[{:]") &&
                 (!temp->isName() || !Token::Match(temp->next(), "[{:;]")))
