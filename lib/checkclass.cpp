@@ -819,7 +819,7 @@ void CheckClass::initializationListUsage()
                 const Variable* var = tok->variable();
                 if (var && var->scope() == owner && !var->isStatic()) {
                     bool allowed = true;
-                    for (const Token* tok2 = tok->tokAt(2); tok2->str() != ";"; tok2 = tok2->next()) {
+                    for (const Token* tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
                         if (tok2->varId()) {
                             const Variable* var2 = tok2->variable();
                             if (var2 && var2->scope() == owner &&

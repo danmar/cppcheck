@@ -128,7 +128,6 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
             tok = tok->link();
             if (!tok)
                 return true;
-
         }
         // skip executing scopes..
         const Token *start = Tokenizer::startOfExecutableScope(tok);
@@ -212,8 +211,8 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
                 }
             }
             if (level > 0) {
-//                syntaxError(tok);
-                return tok;
+                errorToken=tok;
+				return true;
             }
         }
     }

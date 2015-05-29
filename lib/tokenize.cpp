@@ -7520,6 +7520,8 @@ void Tokenizer::simplifyEnum()
                 break;
             if (Token::Match(temp, "class|struct"))
                 temp = temp->next();
+			if (!temp)
+                break;
             if (!Token::Match(temp, "[{:]") &&
                 (!temp->isName() || !Token::Match(temp->next(), "[{:;]")))
                 continue;
@@ -7529,7 +7531,7 @@ void Tokenizer::simplifyEnum()
             Token *typeTokenEnd = nullptr;
 
             // check for C++11 enum class
-            bool enumClass = isCPP() && Token::Match(tok->next(), "class|struct");
+            const bool enumClass = isCPP() && Token::Match(tok->next(), "class|struct");
             if (enumClass)
                 tok->deleteNext();
 

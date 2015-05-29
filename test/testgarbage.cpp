@@ -88,6 +88,8 @@ private:
         TEST_CASE(garbageCode47); // #6706
         TEST_CASE(garbageCode48); // #6712
         TEST_CASE(garbageCode49); // #6715
+		TEST_CASE(garbageCode50); // #6718
+		TEST_CASE(garbageCode51); // #6719
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -503,6 +505,14 @@ private:
 
     void garbageCode49() { // #6715
         ASSERT_THROW(checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }"), InternalError);
+    }
+
+	void garbageCode50() { // #6718
+        checkCode(" enum struct");
+    }
+
+	void garbageCode51() { // #6719
+        checkCode(" (const \"C\" ...); struct base { int f2; base (int arg1, int arg2); }; global_base(0x55, 0xff); { ((global_base.f1 0x55) (global_base.f2 0xff)) { } } base::base(int arg1, int arg2) { f2 = }");
     }
 
     void garbageValueFlow() {
