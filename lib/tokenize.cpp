@@ -903,6 +903,10 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->previous();
             argStart = tokOffset->next();
             argEnd = tokOffset->next()->link();
+            if (!argEnd) {
+                syntaxError(argStart);
+                return;
+            }
             tok = argEnd->next();
             Token *spec = tok;
             if (Token::Match(spec, "const|volatile")) {

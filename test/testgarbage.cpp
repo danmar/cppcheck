@@ -92,6 +92,7 @@ private:
         TEST_CASE(garbageCode51); // #6719
         TEST_CASE(garbageCode52); // #6720
         TEST_CASE(garbageCode53); // #6721
+        TEST_CASE(garbageCode54); // #6722
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -523,6 +524,10 @@ private:
 
     void garbageCode53() { // #6721
         checkCode("{ { } }; void foo (struct int i) { x->b[i] = = }");
+    }
+
+    void garbageCode54() { // #6722
+        ASSERT_THROW(checkCode("{ typedef long ((pf) p) (); }"), InternalError);
     }
 
     void garbageValueFlow() {
