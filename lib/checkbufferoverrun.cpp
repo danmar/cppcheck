@@ -1721,6 +1721,8 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                 if (tok->type() == Token::eComparisonOp)
                     tok = tok->tokAt(2);
 
+				if (!tok)
+                    break;
                 // skip close parentheses
                 if (tok->str() == ")")
                     tok = tok->next();

@@ -98,6 +98,8 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
             alwaysTrueFalseStringCompareError(tok, str1, str2);
             tok = tok->tokAt(5);
         }
+		if (!tok)
+			break;
     }
 }
 
