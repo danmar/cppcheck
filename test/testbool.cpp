@@ -135,6 +135,16 @@ private:
               "    X *p = new ::std::pair<int,int>[rSize];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ticket #6588
+        check("struct MpegEncContext { int *q_intra_matrix, *q_chroma_intra_matrix; };\n"
+              "void dnxhd_10bit_dct_quantize(MpegEncContext *ctx, int n, int qscale) {\n"
+              "  const int *qmat = n < 4;\n" /* KO */
+              "  const int *rmat = n < 4 ? " /* OK */
+              "                       ctx->q_intra_matrix :"
+              "                       ctx->q_chroma_intra_matrix;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
     void assignBoolToFloat() {

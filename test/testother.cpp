@@ -587,6 +587,12 @@ private:
         invalidFunctionUsage("int f() { memset(a,b,sizeof(a)!=0); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
+        invalidFunctionUsage("void record(char* buf, int n) {\n"
+                             "  memset(buf, 0, n < 255);\n"           /* KO */
+                             "  memset(buf, 0, n < 255 ? n : 255);\n" /* OK */
+                             "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+
         invalidFunctionUsage("int f() { strtol(a,b,sizeof(a)!=12); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (comparison result) but the valid values are '0,2:36'.\n", errout.str());
 
