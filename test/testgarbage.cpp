@@ -94,6 +94,7 @@ private:
         TEST_CASE(garbageCode53); // #6721
         TEST_CASE(garbageCode54); // #6722
         TEST_CASE(garbageCode55); // #6724
+        TEST_CASE(garbageCode56); // #6713
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -533,6 +534,10 @@ private:
 
     void garbageCode55() { // #6724
         checkCode("() __attribute__((constructor)); { } { }");
+    }
+
+    void garbageCode56() { // #6713
+        checkCode("void foo() { int a = 0; int b = ???; }");
     }
 
     void garbageValueFlow() {

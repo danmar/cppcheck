@@ -1043,6 +1043,8 @@ static bool valueFlowForward(Token * const               startToken,
         // If a ? is seen and it's known that the condition is true/false..
         else if (tok2->str() == "?") {
             const Token *condition = tok2->astOperand1();
+            if (!condition) // Ticket #6713
+                continue;
             std::list<ValueFlow::Value>::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 const std::map<unsigned int, MathLib::bigint> programMemory(getProgramMemory(tok2, varid, *it));
