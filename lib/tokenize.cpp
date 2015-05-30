@@ -5241,7 +5241,7 @@ void Tokenizer::simplifyPointerToStandardType()
     }
 }
 
-void Tokenizer:: simplifyFunctionPointers()
+void Tokenizer::simplifyFunctionPointers()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // #2873 - do not simplify function pointer usage here:
