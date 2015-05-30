@@ -93,6 +93,7 @@ private:
         TEST_CASE(garbageCode52); // #6720
         TEST_CASE(garbageCode53); // #6721
         TEST_CASE(garbageCode54); // #6722
+        TEST_CASE(garbageCode55); // #6724
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -528,6 +529,10 @@ private:
 
     void garbageCode54() { // #6722
         ASSERT_THROW(checkCode("{ typedef long ((pf) p) (); }"), InternalError);
+    }
+
+    void garbageCode55() { // #6724
+        checkCode("() __attribute__((constructor)); { } { }");
     }
 
     void garbageValueFlow() {

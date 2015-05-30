@@ -9177,7 +9177,7 @@ void Tokenizer::simplifyAttribute()
                 // prototype for constructor is: void func(void);
                 if (tok->next()->link()->next()->str() == "void") // __attribute__((constructor)) void func() {}
                     tok->next()->link()->next()->next()->isAttributeConstructor(true);
-                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1)) // void func() __attribute__((constructor));
+                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((constructor));
                     tok->previous()->link()->previous()->isAttributeConstructor(true);
                 else // void __attribute__((constructor)) func() {}
                     tok->next()->link()->next()->isAttributeConstructor(true);
@@ -9187,7 +9187,7 @@ void Tokenizer::simplifyAttribute()
                 // prototype for destructor is: void func(void);
                 if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
                     tok->next()->link()->next()->next()->isAttributeDestructor(true);
-                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1)) // void func() __attribute__((destructor));
+                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));
                     tok->previous()->link()->previous()->isAttributeDestructor(true);
                 else // void __attribute__((destructor)) func() {}
                     tok->next()->link()->next()->isAttributeDestructor(true);
