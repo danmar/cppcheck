@@ -6732,9 +6732,9 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
             ret = true;
         }
 
-        // condition "(|&&|%OROR% %varid% )|&&|%OROR%
+        // condition "(|&&|%OROR% %varid% )|&&|%OROR%|;
         if (!Token::Match(tok3->previous(), "( %name% )") &&
-            Token::Match(tok3->previous(), "&&|(|%oror% %varid% &&|%oror%|)", varid)) {
+            Token::Match(tok3->previous(), "&&|(|%oror% %varid% &&|%oror%|)|;", varid)) {
             tok3->str(value);
             tok3->varId(valueVarId);
             ret = true;
