@@ -4858,9 +4858,9 @@ bool Tokenizer::simplifyConstTernaryOp()
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
         bool inTemplateParameter = false;
-        if (!isC() && tok->strAt(-2*offset) == "<") {
-            if (!TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
-                continue;
+        if (tok->strAt(-2*offset) == "<") {
+            if (isC() || !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
+                continue; // '<' is less than; the condition is not a constant
             inTemplateParameter = true;
         }
 
