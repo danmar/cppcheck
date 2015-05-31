@@ -555,7 +555,7 @@ private:
 
     }
 
-    void invalidFunctionUsage(const char code[]) {
+    void invalidFunctionUsage(const char code[], bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
 
@@ -573,7 +573,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c");
 
         // Check for redundant code..
         CheckOther checkOther(&tokenizer, &settings, this);
@@ -587,6 +587,14 @@ private:
         invalidFunctionUsage("int f() { memset(a,b,sizeof(a)!=0); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
+        // Ticket #6588 (c mode)
+        invalidFunctionUsage("void record(char* buf, int n) {\n"
+                             "  memset(buf, 0, n < 255);\n"           /* KO */
+                             "  memset(buf, 0, n < 255 ? n : 255);\n" /* OK */
+                             "}", /*isCPP=*/false);
+        ASSERT_EQUALS("[test.c:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
+
+        // Ticket #6588 (c++ mode)
         invalidFunctionUsage("void record(char* buf, int n) {\n"
                              "  memset(buf, 0, n < 255);\n"           /* KO */
                              "  memset(buf, 0, n < 255 ? n : 255);\n" /* OK */
