@@ -97,8 +97,8 @@ private:
         TEST_CASE(garbageCode56); // #6713
         TEST_CASE(garbageCode57); // #6733
         TEST_CASE(garbageCode58); // #6732
-		TEST_CASE(garbageCode59); // #6735
-		TEST_CASE(garbageCode60); // #6736
+        TEST_CASE(garbageCode59); // #6735
+        TEST_CASE(garbageCode60); // #6736
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -552,13 +552,13 @@ private:
         ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
     }
 
-	void garbageCode59() { // #6735
-		ASSERT_THROW(checkCode("{ { } }; char font8x8[256][8]"), InternalError);
-	}
+    void garbageCode59() { // #6735
+        ASSERT_THROW(checkCode("{ { } }; char font8x8[256][8]"), InternalError);
+    }
 
-	void garbageCode60() { // #6736
-		ASSERT_THROW(checkCode("{ } { } typedef int int_array[]; int_array &right ="), InternalError);
-	}
+    void garbageCode60() { // #6736
+        ASSERT_THROW(checkCode("{ } { } typedef int int_array[]; int_array &right ="), InternalError);
+    }
 
 
     void garbageValueFlow() {
