@@ -4503,7 +4503,10 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         tokAfterCondition->previous()->insertToken("{");
         Token * tokOpenBrace = tokAfterCondition->previous();
         Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
-
+		if (!tokEnd) {
+			syntaxError(tokAfterCondition);
+			return nullptr;
+		}
         tokEnd->insertToken("}");
         Token * tokCloseBrace = tokEnd->next();
 
