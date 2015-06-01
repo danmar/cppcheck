@@ -96,7 +96,7 @@ private:
         TEST_CASE(garbageCode55); // #6724
         TEST_CASE(garbageCode56); // #6713
         TEST_CASE(garbageCode57); // #6733
-	TEST_CASE(garbageCode58); // #6732
+        TEST_CASE(garbageCode58); // #6732
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
