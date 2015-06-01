@@ -366,7 +366,8 @@ void CheckType::longCastAssignError(const Token *tok)
     reportError(tok,
                 Severity::style,
                 "truncLongCastAssignment",
-                "possible loss of information, int result is assigned to long variable");
+                "int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n"
+                "int result is assigned to long variable. If the variable is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'l = a * b;' => 'l = (long)a * b;'.");
 }
 
 void CheckType::longCastReturnError(const Token *tok)
@@ -374,5 +375,6 @@ void CheckType::longCastReturnError(const Token *tok)
     reportError(tok,
                 Severity::style,
                 "truncLongCastReturn",
-                "possible loss of information, int result is returned as long value");
+                "int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n"
+                "int result is returned as long value. If the return value is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.");
 }

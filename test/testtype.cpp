@@ -146,7 +146,7 @@ private:
               "  const long ret = x * y;\n"
               "  return ret;\n"
               "}\n", &settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is assigned to long variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
 
         // typedef
         check("long f(int x, int y) {\n"
@@ -170,7 +170,7 @@ private:
         check("long f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", &settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) possible loss of information, int result is returned as long value\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
