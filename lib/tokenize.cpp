@@ -1490,9 +1490,13 @@ void Tokenizer::simplifyTypedef()
                             }
 
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
+							if (!tok2->next())
+								syntaxError(tok2);
                             tok2 = tok2->next();
 
                             if (tok2->str() == "=") {
+								if (!tok2->next())
+									syntaxError(tok2);
                                 if (tok2->next()->str() == "{")
                                     tok2 = tok2->next()->link()->next();
                                 else if (tok2->next()->str().at(0) == '\"')
@@ -3032,6 +3036,10 @@ bool Tokenizer::simplifySizeof()
                     sizeOfVar[varId] = size;
                     declTokOfVar[varId] = tok;
                 }
+				if (!tok2) {
+					syntaxError(tok);
+					return false;
+				}
                 tok = tok2;
             }
 
@@ -4005,7 +4013,7 @@ void Tokenizer::removeMacroInClassDef()
 void Tokenizer::removeMacroInVarDecl()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %name% (") && tok->next()->isUpperCaseName()) {
+        if (Token::Match(tok, "[;{}] %name% (") && tok->next() && tok->next()->isUpperCaseName()) {
             // goto ')' parentheses
             const Token *tok2 = tok;
             int parlevel = 0;
