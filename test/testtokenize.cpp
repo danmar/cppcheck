@@ -2664,6 +2664,26 @@ private:
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
         }
+        {
+            //don't simplify '&x'!
+            const char code[] = "const int * foo ( ) {\n"
+                                "const int x1 = 1 ;\n"
+                                "f ( & x1 ) ;\n"
+                                "const int x2 = 1 ;\n"
+                                "f ( y , & x2 ) ;\n"
+                                "const int x3 = 1 ;\n"
+                                "t = & x3 ;\n"
+                                "const int x4 = 1 ;\n"
+                                "t = y + & x4 ;\n"
+                                "const int x5 = 1 ;\n"
+                                "z [ & x5 ] = y ;\n"
+                                "const int x6 = 1 ;\n"
+                                "v = { & x6 } ;\n"
+                                "const int x7 = 1 ;\n"
+                                "return & x7 ;\n"
+                                "}";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
     }
 
     void simplifyKnownVariables51() { // #4409 hang

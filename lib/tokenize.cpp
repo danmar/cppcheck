@@ -3624,43 +3624,8 @@ bool Tokenizer::simplifyTokenList2()
     // e.g. const static int value = sizeof(X)/sizeof(Y);
     simplifyCalculations();
 
-    // Replace constants..
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "const static| %type% %name% = %num% ;") ||
-            Token::Match(tok, "const static| %type% %name% ( %num% ) ;")) {
-            int offset = 0;
-            if (tok->strAt(1) == "static")
-                offset = 1;
-            const unsigned int varId(tok->tokAt(2 + offset)->varId());
-            if (varId == 0) {
-                tok = tok->tokAt(5 + offset);
-                continue;
-            }
-
-            const std::string& num = tok->strAt(4 + offset);
-            int indent = 1;
-            for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next()) {
-                if (tok2->str() == "{") {
-                    ++indent;
-                } else if (tok2->str() == "}") {
-                    --indent;
-                    if (indent == 0)
-                        break;
-                }
-
-                // Compare constants, but don't touch members of other structures
-                else if (tok2->varId() == varId) {
-                    tok2->str(num);
-                }
-            }
-        }
-    }
-
     if (_settings->terminated())
         return false;
-
-    // Simplify simple calculations..
-    simplifyCalculations();
 
     // Replace "*(ptr + num)" => "ptr[num]"
     simplifyOffsetPointerDereference();
@@ -6390,6 +6355,7 @@ bool Tokenizer::simplifyKnownVariables()
                     tok1->deleteThis();
                     tok = tok1;
                     goback = true;
+                    ret = true;
                 }
             }
 
