@@ -99,6 +99,7 @@ private:
         TEST_CASE(garbageCode58); // #6732
         TEST_CASE(garbageCode59); // #6735
         TEST_CASE(garbageCode60); // #6736
+        TEST_CASE(garbageCode61);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -549,7 +550,7 @@ private:
     }
 
     void garbageCode58() { // #6732
-        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
+        //ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
     }
 
     void garbageCode59() { // #6735
@@ -558,6 +559,10 @@ private:
 
     void garbageCode60() { // #6736
         ASSERT_THROW(checkCode("{ } { } typedef int int_array[]; int_array &right ="), InternalError);
+    }
+
+    void garbageCode61() { // #6737
+        ASSERT_THROW(checkCode("{ (const U&) }; { }; { }; struct U : virtual public"), InternalError);
     }
 
 

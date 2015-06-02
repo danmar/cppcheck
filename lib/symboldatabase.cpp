@@ -1954,7 +1954,8 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 else if (tok->str() == "struct")
                     base.access = Public;
             }
-
+            if (!tok2)
+                return nullptr;
             if (tok2->str() == "virtual") {
                 base.isVirtual = true;
                 tok2 = tok2->next();
