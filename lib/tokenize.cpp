@@ -5283,6 +5283,10 @@ void Tokenizer::simplifyFunctionPointers()
             tok = tok->next();
 
         // check that the declaration ends
+        if (!tok || !tok->link() || !tok->link()->next()) {
+            syntaxError(nullptr);
+            return;
+        }
         Token *endTok = tok->link()->next()->link();
         if (!Token::Match(endTok, ") const| ;|,|)|=|[|{"))
             continue;
