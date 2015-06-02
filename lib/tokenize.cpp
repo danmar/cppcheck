@@ -1337,6 +1337,10 @@ void Tokenizer::simplifyTypedef()
                             tok2 = processFunc(tok2, inOperator);
 
                         if (needParen) {
+                            if (!tok2) {
+                                syntaxError(nullptr);
+                                return;
+                            }
                             tok2->insertToken(")");
                             tok2 = tok2->next();
                             Token::createMutualLinks(tok2, tok3);
