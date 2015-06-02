@@ -9162,9 +9162,17 @@ void Tokenizer::simplifyAttribute()
         while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {
             if (Token::Match(tok->tokAt(2), "( constructor|__constructor__")) {
                 // prototype for constructor is: void func(void);
-                if (tok->next()->link()->next()->str() == "void") // __attribute__((constructor)) void func() {}
+                if (!tok->next()->link()->next()) {
+                    syntaxError(tok);
+                    return;
+                }
+                if (tok->next()->link()->next()->str() == "void") { // __attribute__((constructor)) void func() {}
+                    if (!tok->next()->link()->next()->next()) {
+                        syntaxError(tok);
+                        return;
+                    }
                     tok->next()->link()->next()->next()->isAttributeConstructor(true);
-                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((constructor));
+                } else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((constructor));
                     tok->previous()->link()->previous()->isAttributeConstructor(true);
                 else // void __attribute__((constructor)) func() {}
                     tok->next()->link()->next()->isAttributeConstructor(true);
@@ -9172,6 +9180,10 @@ void Tokenizer::simplifyAttribute()
 
             else if (Token::Match(tok->tokAt(2), "( destructor|__destructor__")) {
                 // prototype for destructor is: void func(void);
+                if (!tok->next()->link()->next()) {
+                    syntaxError(tok);
+                    return;
+                }
                 if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
                     tok->next()->link()->next()->next()->isAttributeDestructor(true);
                 else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));

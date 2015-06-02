@@ -108,6 +108,7 @@ private:
         TEST_CASE(garbageCode67);
         TEST_CASE(garbageCode68);
         TEST_CASE(garbageCode69);
+        TEST_CASE(garbageCode70);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -603,6 +604,10 @@ private:
 
     void garbageCode69() { // #6746
         ASSERT_THROW(checkCode("{ (make_mess, aux); } typedef void F(void); aux(void (*x)()) { } (void (*y)()) { } F*"), InternalError);
+    }
+
+    void garbageCode70() { // #6747
+        ASSERT_THROW(checkCode("{ } __attribute__((constructor)) void"), InternalError);
     }
 
     void garbageValueFlow() {
