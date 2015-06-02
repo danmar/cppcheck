@@ -96,13 +96,14 @@ private:
         TEST_CASE(garbageCode55); // #6724
         TEST_CASE(garbageCode56); // #6713
         TEST_CASE(garbageCode57); // #6733
-        //TEST_CASE(garbageCode58); // #6732
+        TEST_CASE(garbageCode58); // #6732
         TEST_CASE(garbageCode59); // #6735
         TEST_CASE(garbageCode60); // #6736
         TEST_CASE(garbageCode61);
         TEST_CASE(garbageCode62);
         TEST_CASE(garbageCode63);
         TEST_CASE(garbageCode64);
+        TEST_CASE(garbageCode65);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -553,7 +554,7 @@ private:
     }
 
     void garbageCode58() { // #6732
-        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
+        //ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
     }
 
     void garbageCode59() { // #6735
@@ -578,6 +579,10 @@ private:
 
     void garbageCode64() { // #6740
         ASSERT_THROW(checkCode("{ } foo(void (*bar)(void))"), InternalError);
+    }
+
+    void garbageCode65() { // #6741
+        ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref"), InternalError);
     }
 
 
