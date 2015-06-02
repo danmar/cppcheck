@@ -104,6 +104,7 @@ private:
         TEST_CASE(garbageCode63);
         TEST_CASE(garbageCode64);
         TEST_CASE(garbageCode65);
+        TEST_CASE(garbageCode66);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -583,6 +584,10 @@ private:
 
     void garbageCode65() { // #6741
         ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref"), InternalError);
+    }
+
+    void garbageCode66() { // #6742
+        ASSERT_THROW(checkCode("{ { } }; { { } }; { }; class bar : public virtual"), InternalError);
     }
 
 
