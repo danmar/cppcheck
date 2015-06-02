@@ -105,6 +105,8 @@ private:
         TEST_CASE(garbageCode64);
         TEST_CASE(garbageCode65);
         TEST_CASE(garbageCode66);
+        TEST_CASE(garbageCode67);
+        TEST_CASE(garbageCode68);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -588,6 +590,14 @@ private:
 
     void garbageCode66() { // #6742
         ASSERT_THROW(checkCode("{ { } }; { { } }; { }; class bar : public virtual"), InternalError);
+    }
+
+    void garbageCode67() { // #6744
+        checkCode("&g[0]; { (g[0] 0) } =", "test.c");
+    }
+
+    void garbageCode68() { // #6745
+        checkCode("(int a[3]); typedef void (*fp) (void); fp");
     }
 
 
