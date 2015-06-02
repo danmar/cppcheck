@@ -100,6 +100,7 @@ private:
         TEST_CASE(garbageCode59); // #6735
         TEST_CASE(garbageCode60); // #6736
         TEST_CASE(garbageCode61);
+        TEST_CASE(garbageCode62);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -563,6 +564,10 @@ private:
 
     void garbageCode61() { // #6737
         ASSERT_THROW(checkCode("{ (const U&) }; { }; { }; struct U : virtual public"), InternalError);
+    }
+
+    void garbageCode62() { // #6738
+        checkCode("(int arg2) { } { } typedef void (func_type) (int, int); typedef func_type&");
     }
 
 

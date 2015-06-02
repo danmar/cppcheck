@@ -878,13 +878,13 @@ void Tokenizer::simplifyTypedef()
         //           typedef ... (( ... type )( ... ));
         //           typedef ... ( * ( ... type )( ... ));
         else if (tokOffset->str() == "(" && (
-                     (Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
+                     (tokOffset->link() && Token::Match(tokOffset->link()->previous(), "%type% ) (") &&
                       Token::Match(tokOffset->link()->next()->link(), ") const|volatile|;")) ||
                      (Token::simpleMatch(tokOffset, "( (") &&
-                      Token::Match(tokOffset->next()->link()->previous(), "%type% ) (") &&
+                      tokOffset->next() && Token::Match(tokOffset->next()->link()->previous(), "%type% ) (") &&
                       Token::Match(tokOffset->next()->link()->next()->link(), ") const|volatile| ) ;|,")) ||
                      (Token::simpleMatch(tokOffset, "( * (") &&
-                      Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
+                      tokOffset->linkAt(2) && Token::Match(tokOffset->linkAt(2)->previous(), "%type% ) (") &&
                       Token::Match(tokOffset->linkAt(2)->next()->link(), ") const|volatile| ) ;|,")))) {
             if (tokOffset->next()->str() == "(")
                 tokOffset = tokOffset->next();
