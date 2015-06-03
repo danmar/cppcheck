@@ -110,6 +110,8 @@ private:
         TEST_CASE(garbageCode69);
         TEST_CASE(garbageCode70);
         TEST_CASE(garbageCode71);
+        TEST_CASE(garbageCode72);
+        TEST_CASE(garbageCode73);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -613,6 +615,14 @@ private:
 
     void garbageCode71() { // #6748
         ASSERT_THROW(checkCode("( ) { } typedef void noattr_t ( ) ; noattr_t __attribute__ ( )"), InternalError);
+    }
+
+    void garbageCode72() { // #6749
+        ASSERT_THROW(checkCode("{ } { } typedef void voidfn(void); <voidfn&"), InternalError);
+    }
+
+    void garbageCode73() { // #6750
+        ASSERT_THROW(checkCode("typedef int IRT[2]; IRT&"), InternalError);
     }
 
     void garbageValueFlow() {

@@ -1349,11 +1349,18 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                             Token::createMutualLinks(tok2, tok3);
                         }
-
+                        if (!tok2) {
+                            syntaxError(nullptr);
+                            return;
+                        }
                         tok2 = copyTokens(tok2, argStart, argEnd);
-
-                        if (inTemplate)
+                        if (inTemplate) {
+                            if (!tok2) {
+                                syntaxError(nullptr);
+                                return;
+                            }
                             tok2 = tok2->next();
+                        }
 
                         if (specStart) {
                             Token *spec = specStart;
@@ -1372,7 +1379,7 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("*");
                         tok2 = tok2->next();
 
-                        Token * tok4 = 0;
+                        Token * tok4 = nullptr;
                         if (functionPtrRetFuncPtr) {
                             tok2->insertToken("(");
                             tok2 = tok2->next();
@@ -1486,7 +1493,10 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
-
+                                if (!tok2) {
+                                    syntaxError(nullptr);
+                                    return;
+                                }
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
                                 Token::createMutualLinks(tok2, tok3);
@@ -1498,8 +1508,10 @@ void Tokenizer::simplifyTypedef()
                             }
 
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
-                            if (!tok2->next())
+                            if (!tok2->next()) {
                                 syntaxError(tok2);
+                                return;
+                            }
                             tok2 = tok2->next();
 
                             if (tok2->str() == "=") {
@@ -1520,8 +1532,8 @@ void Tokenizer::simplifyTypedef()
             if (tok->str() == ";")
                 done = true;
             else if (tok->str() == ",") {
-                arrayStart = 0;
-                arrayEnd = 0;
+                arrayStart = nullptr;
+                arrayEnd = nullptr;
                 tokOffset = tok->next();
                 pointers.clear();
 
