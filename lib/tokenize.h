@@ -814,6 +814,8 @@ private:
         return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
     }
 
+    Token *processFunc(Token *tok2, bool inOperator) const;
+
     /** Set pod types */
     void setPodTypes();
 

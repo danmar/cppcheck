@@ -109,6 +109,7 @@ private:
         TEST_CASE(garbageCode68);
         TEST_CASE(garbageCode69);
         TEST_CASE(garbageCode70);
+        TEST_CASE(garbageCode71);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -608,6 +609,10 @@ private:
 
     void garbageCode70() { // #6747
         ASSERT_THROW(checkCode("{ } __attribute__((constructor)) void"), InternalError);
+    }
+
+    void garbageCode71() { // #6748
+        ASSERT_THROW(checkCode("( ) { } typedef void noattr_t ( ) ; noattr_t __attribute__ ( )"), InternalError);
     }
 
     void garbageValueFlow() {
