@@ -112,6 +112,7 @@ private:
         TEST_CASE(garbageCode71);
         TEST_CASE(garbageCode72);
         TEST_CASE(garbageCode73);
+        TEST_CASE(garbageCode74);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -623,6 +624,10 @@ private:
 
     void garbageCode73() { // #6750
         ASSERT_THROW(checkCode("typedef int IRT[2]; IRT&"), InternalError);
+    }
+
+    void garbageCode74() { // #6751
+        checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator");
     }
 
     void garbageValueFlow() {

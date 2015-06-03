@@ -1061,7 +1061,9 @@ void Tokenizer::simplifyTypedef()
                 // check for operator typedef
                 /** @todo add support for multi-token operators */
                 else if (tok2->str() == "operator" &&
+                         tok2->next() &&
                          tok2->next()->str() == typeName->str() &&
+                         tok2->linkAt(2) &&
                          tok2->strAt(2) == "(" &&
                          Token::Match(tok2->linkAt(2), ") const| {")) {
                     // check for qualifier
