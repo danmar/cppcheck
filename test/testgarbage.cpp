@@ -113,6 +113,8 @@ private:
         TEST_CASE(garbageCode72);
         TEST_CASE(garbageCode73);
         TEST_CASE(garbageCode74);
+        TEST_CASE(garbageCode75);
+        TEST_CASE(garbageCode76);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -628,6 +630,14 @@ private:
 
     void garbageCode74() { // #6751
         checkCode("_lenraw(const char* digits) { } typedef decltype(sizeof(0)) { } operator");
+    }
+
+    void garbageCode75() { // #6753
+        checkCode("{ { void foo() { struct }; { }; } }; struct S { } f =", "test.c");
+    }
+
+    void garbageCode76() { // #6754
+        checkCode(" ( ) ( ) { ( ) [ ] } TEST ( ) { ( _broadcast_f32x4 ) ( ) ( ) ( ) ( ) if ( ) ( ) ; } E mask = ( ) [ ] ( ) res1.x =");
     }
 
     void garbageValueFlow() {

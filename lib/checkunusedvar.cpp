@@ -440,7 +440,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             tok = tok->next();
 
         if (Token::Match(tok, "(| &| %name%") ||
-            Token::Match(tok->next(), "< const| struct|union| %type% *| > ( &| %name%")) {
+            (tok && Token::Match(tok->next(), "< const| struct|union| %type% *| > ( &| %name%"))) {
             bool addressOf = false;
 
             if (Token::Match(tok, "%var% ."))
@@ -504,7 +504,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
 
             // check if variable is local
             unsigned int varid2 = tok->varId();
-            Variables::VariableUsage* var2 = variables.find(varid2);
+            const Variables::VariableUsage* var2 = variables.find(varid2);
 
             if (var2) { // local variable (alias or read it)
                 if (var1->_type == Variables::pointer || var1->_type == Variables::pointerArray) {
@@ -599,9 +599,9 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     // check for alias to struct member
     // char c[10]; a.b = c;
     else if (Token::Match(tok->tokAt(-2), "%name% .")) {
-        if (tok->tokAt(2)->varId()) {
-            unsigned int varid2 = tok->tokAt(2)->varId();
-            Variables::VariableUsage *var2 = variables.find(varid2);
+        if (tok->tokAt(2) && tok->tokAt(2)->varId()) {
+            const unsigned int varid2 = tok->tokAt(2)->varId();
+            const Variables::VariableUsage *var2 = variables.find(varid2);
 
             // struct member aliased to local variable
             if (var2 && (var2->_type == Variables::array ||
@@ -616,7 +616,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     // Possible pointer alias
     else if (Token::Match(tok, "%name% = %name% ;")) {
         const unsigned int varid2 = tok->tokAt(2)->varId();
-        Variables::VariableUsage *var2 = variables.find(varid2);
+        const Variables::VariableUsage *var2 = variables.find(varid2);
         if (var2 && (var2->_type == Variables::array ||
                      var2->_type == Variables::pointer)) {
             variables.use(varid2,tok);
