@@ -115,6 +115,8 @@ private:
         TEST_CASE(garbageCode74);
         TEST_CASE(garbageCode75);
         TEST_CASE(garbageCode76);
+		TEST_CASE(garbageCode77);
+		TEST_CASE(garbageCode78);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -638,6 +640,14 @@ private:
 
     void garbageCode76() { // #6754
         checkCode(" ( ) ( ) { ( ) [ ] } TEST ( ) { ( _broadcast_f32x4 ) ( ) ( ) ( ) ( ) if ( ) ( ) ; } E mask = ( ) [ ] ( ) res1.x =");
+    }
+
+	void garbageCode77() { // #6755
+        checkCode("void foo (int **p) { { { };>= } } unsigned *d = (b b--) --*d");
+    }
+
+	void garbageCode78() { // #6756
+        checkCode("( ) { [ ] } ( ) { } const_array_of_int ( ) { } typedef int A [ ] [ ] ; A a = { { } { } }");
     }
 
     void garbageValueFlow() {

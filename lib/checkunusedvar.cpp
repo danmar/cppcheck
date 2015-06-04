@@ -957,7 +957,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             // checked for chained assignments
             if (tok != start && equal && equal->str() == "=") {
-                unsigned int varId = tok->varId();
+                const unsigned int varId = tok->varId();
                 Variables::VariableUsage *var = variables.find(varId);
 
                 if (var && var->_type != Variables::reference) {
@@ -977,7 +977,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     tok = tok->link()->next();
             }
 
-            unsigned int varid = tok->varId();
+            const unsigned int varid = tok->varId();
             const Variables::VariableUsage *var = variables.find(varid);
 
             if (var) {
@@ -1061,7 +1061,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 if (tok2->varId()) {
                     if (tok2->strAt(1) == "=")
                         variables.write(tok2->varId(), tok);
-                    else if (tok2->next()->isAssignmentOp())
+                    else if (tok2->next() && tok2->next()->isAssignmentOp())
                         variables.use(tok2->varId(), tok);
                     else
                         variables.read(tok2->varId(), tok);

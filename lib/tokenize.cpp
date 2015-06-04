@@ -1529,6 +1529,8 @@ void Tokenizer::simplifyTypedef()
 
                     simplifyType = false;
                 }
+				if (!tok2)
+					break;
             }
 
             if (tok->str() == ";")
