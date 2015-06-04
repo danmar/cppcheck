@@ -117,6 +117,7 @@ private:
         TEST_CASE(garbageCode76);
 		TEST_CASE(garbageCode77);
 		TEST_CASE(garbageCode78);
+		TEST_CASE(garbageCode79);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -648,6 +649,10 @@ private:
 
 	void garbageCode78() { // #6756
         checkCode("( ) { [ ] } ( ) { } const_array_of_int ( ) { } typedef int A [ ] [ ] ; A a = { { } { } }");
+    }
+
+	void garbageCode79() { // #6757
+        ASSERT_THROW(checkCode("{ } { } typedef void ( func_type ) ( ) ; func_type & ( )"), InternalError);
     }
 
     void garbageValueFlow() {

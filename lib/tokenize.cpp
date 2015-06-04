@@ -541,7 +541,8 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
                     return nullptr;
 
                 if (tok2->str() == "(" &&
-                    tok2->link()->next()->str() == "(") {
+                    tok2->link()->next() &&
+					tok2->link()->next()->str() == "(") {
                     tok2 = tok2->link();
 
                     if (tok2->next()->str() == "(")
