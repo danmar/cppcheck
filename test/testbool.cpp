@@ -155,6 +155,15 @@ private:
               "                       ctx->q_chroma_intra_matrix;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Boolean value assigned to pointer.\n", errout.str());
+
+        // ticket #6665
+        check("void pivot_big(char *first, int compare(const void *, const void *)) {\n"
+              "  char *a = first, *b = first + 1, *c = first + 2;\n"
+              "  char* m1 = compare(a, b) < 0\n"
+              "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
+              "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
+              "}", /*experimental=*/false, "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assignBoolToFloat() {
