@@ -45,17 +45,30 @@ void CheckString::stringLiteralWrite()
             if (!str)
                 continue;
             if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
-                stringLiteralWriteError(tok);
+                stringLiteralWriteError(tok, str);
             else if (Token::Match(tok->previous(), "* %var% ="))
-                stringLiteralWriteError(tok);
+                stringLiteralWriteError(tok, str);
         }
     }
 }
 
-void CheckString::stringLiteralWriteError(const Token *tok)
+void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValue)
 {
-    reportError(tok, Severity::error, "stringLiteralWrite",
-                "Modifying string literal directly or indirectly is undefined behaviour");
+    std::list<const Token *> callstack;
+    callstack.push_back(tok);
+    if (strValue)
+        callstack.push_back(strValue);
+
+    std::string errmsg("Modifying string literal");
+    if (strValue) {
+        std::string s = strValue->strValue();
+        if (s.size() > 15U)
+            s = s.substr(0,13) + "..";
+        errmsg += " \"" + s + "\"";
+    }
+    errmsg += " directly or indirectly is undefined behaviour";
+
+    reportError(callstack, Severity::error, "stringLiteralWrite", errmsg);
 }
 
 //---------------------------------------------------------------------------
