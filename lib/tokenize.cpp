@@ -542,7 +542,7 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
 
                 if (tok2->str() == "(" &&
                     tok2->link()->next() &&
-					tok2->link()->next()->str() == "(") {
+                    tok2->link()->next()->str() == "(") {
                     tok2 = tok2->link();
 
                     if (tok2->next()->str() == "(")
@@ -552,8 +552,7 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
                 // skip over typedef parameter
                 if (tok2->next() && tok2->next()->str() == "(") {
                     tok2 = tok2->next()->link();
-                    if (!tok2->next())
-                    {
+                    if (!tok2->next()) {
                         syntaxError(tok2);
                         return nullptr;
                     }
@@ -1530,8 +1529,8 @@ void Tokenizer::simplifyTypedef()
 
                     simplifyType = false;
                 }
-				if (!tok2)
-					break;
+                if (!tok2)
+                    break;
             }
 
             if (tok->str() == ";")
