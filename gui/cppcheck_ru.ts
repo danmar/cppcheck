@@ -387,12 +387,12 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="566"/>
         <source>&amp;Filter</source>
-        <translation>Фильтры</translation>
+        <translation>Фильтр</translation>
     </message>
     <message>
         <location filename="main.ui" line="569"/>
         <source>Filter results</source>
-        <translation>Результат фильтрации</translation>
+        <translation>Результаты фильтрации</translation>
     </message>
     <message>
         <location filename="main.ui" line="585"/>
@@ -1342,7 +1342,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="resultsview.cpp" line="286"/>
         <location filename="resultsview.cpp" line="294"/>
         <source>Failed to read the report.</source>
-        <translation>Не удалост прочитать отчет.</translation>
+        <translation>Не удалось прочитать отчет.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="331"/>
@@ -1587,7 +1587,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="stats.ui" line="145"/>
         <location filename="statsdialog.cpp" line="101"/>
         <source>Previous Scan</source>
-        <translation>Последние сканирование</translation>
+        <translation>Последнее сканирование</translation>
     </message>
     <message>
         <location filename="stats.ui" line="151"/>
@@ -1776,7 +1776,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 
 %1
 
-Язык пользовательского интерфейса был сброшен на английский. Откройте Настройки-диалог для выбора любой из доступных языков.</translation>
+Язык пользовательского интерфейса был сброшен на английский. Откройте Настройки-диалог для выбора любого из доступных языков.</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="141"/>
