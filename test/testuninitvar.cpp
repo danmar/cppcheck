@@ -2871,7 +2871,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: Factory\n", errout.str());
     }
 
-    void uninitvar_operator() { // Ticket #6680
+    void uninitvar_operator() { // Ticket #6463, #6680
         checkUninitVar2("struct Source { Source& operator>>(int& i) { i = 0; return *this; } };\n"
                         "struct Sink { int v; };\n"
                         "Source foo;\n"
@@ -2887,6 +2887,13 @@ private:
                         "  foo >> s2.v >> n;\n" // Initialized by operator>>
                         "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized struct member: s.v\n", errout.str());
+
+        checkUninitVar2("struct Fred { int a; };\n"
+                        "void foo() {\n"
+                        "  Fred fred;\n"
+                        "  std::cin >> fred.a;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Handling of function calls
