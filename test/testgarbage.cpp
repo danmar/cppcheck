@@ -118,6 +118,8 @@ private:
         TEST_CASE(garbageCode77);
         TEST_CASE(garbageCode78);
         TEST_CASE(garbageCode79);
+        TEST_CASE(garbageCode80);
+        TEST_CASE(garbageCode81);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -653,6 +655,14 @@ private:
 
     void garbageCode79() { // #6757
         ASSERT_THROW(checkCode("{ } { } typedef void ( func_type ) ( ) ; func_type & ( )"), InternalError);
+    }
+
+    void garbageCode80() { // #6759
+        ASSERT_THROW(checkCode("( ) { ; ( ) ; ( * ) [ ] ; [ ] = ( ( ) ( ) h ) ! ( ( ) ) } { ; } { } head heads [ ] = ; = & heads [ 2 ]"), InternalError);
+    }
+
+    void garbageCode81() { // #6760
+        ASSERT_THROW(checkCode("{ } [ ] { ( ) } { } typedef void ( *fptr1 ) ( ) const"), InternalError);
     }
 
     void garbageValueFlow() {

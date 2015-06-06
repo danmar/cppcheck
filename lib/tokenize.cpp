@@ -922,6 +922,10 @@ void Tokenizer::simplifyTypedef()
                 }
                 tok = specEnd->next();
             }
+            if (!tok)   {
+                syntaxError(specEnd);
+                return;
+            }
             if (tok->str() == ")")
                 tok = tok->next();
         }
@@ -1219,7 +1223,7 @@ void Tokenizer::simplifyTypedef()
                     bool inSizeof = false;
 
                     // check for derived class: class A : some_typedef {
-                    bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+                    const bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A
@@ -3687,6 +3691,10 @@ bool Tokenizer::simplifyTokenList2()
             if (tok->next()->varId()) {
                 if (pod.find(tok->next()->varId()) == pod.end()) {
                     tok = tok->tokAt(5);
+                    if (!tok) {
+                        syntaxError(tok);
+                        return false;
+                    }
                     continue;
                 }
             }
