@@ -1537,6 +1537,10 @@ void Tokenizer::simplifyTypedef()
                     break;
             }
 
+            if (!tok) {
+                syntaxError(nullptr);
+                return;
+            }
             if (tok->str() == ";")
                 done = true;
             else if (tok->str() == ",") {

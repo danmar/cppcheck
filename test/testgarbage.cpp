@@ -120,6 +120,7 @@ private:
         TEST_CASE(garbageCode79);
         TEST_CASE(garbageCode80);
         TEST_CASE(garbageCode81);
+        TEST_CASE(garbageCode82);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -569,8 +570,9 @@ private:
         ASSERT_THROW(checkCode("{ } if () try { } catch (...) B::~B { }"), InternalError);
     }
 
-    void garbageCode58() { // #6732
+    void garbageCode58() { // #6732, #6762
         //ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
+        //ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
     }
 
     void garbageCode59() { // #6735
@@ -663,6 +665,10 @@ private:
 
     void garbageCode81() { // #6760
         ASSERT_THROW(checkCode("{ } [ ] { ( ) } { } typedef void ( *fptr1 ) ( ) const"), InternalError);
+    }
+
+    void garbageCode82() { // #6761
+        ASSERT_THROW(checkCode("p(\"Hello \" 14) _yn(const size_t) typedef bool pfunk (*pfunk)(const size_t)"), InternalError);
     }
 
     void garbageValueFlow() {
