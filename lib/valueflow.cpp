@@ -1548,6 +1548,7 @@ static bool valueFlowForLoop2(const Token *tok,
                               std::map<unsigned int, MathLib::bigint> *memory2,
                               std::map<unsigned int, MathLib::bigint> *memoryAfter)
 {
+    // for ( firstExpression ; secondExpression ; thirdExpression )
     const Token *firstExpression  = tok->next()->astOperand2()->astOperand1();
     const Token *secondExpression = tok->next()->astOperand2()->astOperand2()->astOperand1();
     const Token *thirdExpression = tok->next()->astOperand2()->astOperand2()->astOperand2();

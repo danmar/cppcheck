@@ -4263,7 +4263,7 @@ private:
         ASSERT_EQUALS("'\\0' ;", tok("\"hello\"[5] ;"));
         ASSERT_EQUALS("'\\0' ;", tok("\"\"[0] ;"));
         ASSERT_EQUALS("'\\0' ;", tok("\"\\0\"[0] ;"));
-        ASSERT_EQUALS("'\\n' ;", tok("\"hello\\nworld\"[5] ;"));
+        ASSERT_EQUALS("'\n' ;", tok("\"hello\\nworld\"[5] ;"));
         ASSERT_EQUALS("'w' ;", tok("\"hello\nworld\"[6] ;"));
         ASSERT_EQUALS("\"hello\" [ 7 ] ;", tok("\"hello\"[7] ;"));
         ASSERT_EQUALS("\"hello\" [ -1 ] ;", tok("\"hello\"[-1] ;"));

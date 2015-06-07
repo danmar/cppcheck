@@ -282,11 +282,28 @@ private:
 
     void strValue() const {
         Token tok(0);
+
         tok.str("\"\"");
         ASSERT_EQUALS("", tok.strValue());
 
         tok.str("\"0\"");
         ASSERT_EQUALS("0", tok.strValue());
+
+        tok.str("\"a\\n\"");
+        ASSERT_EQUALS("a\n", tok.strValue());
+
+        tok.str("\"a\\r\"");
+        ASSERT_EQUALS("a\r", tok.strValue());
+
+        tok.str("\"a\\t\"");
+        ASSERT_EQUALS("a\t", tok.strValue());
+
+        tok.str("\"\\\\\"");
+        ASSERT_EQUALS("\\", tok.strValue());
+
+        tok.str("\"a\\0\"");
+        ASSERT_EQUALS("a", tok.strValue());
+
     }
 
 
