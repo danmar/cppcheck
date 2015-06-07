@@ -32,7 +32,6 @@ class MatchCompiler:
 
     def _reset(self):
         self._rawMatchFunctions = []
-        self._matchStrs = {}
         self._matchFunctionCache = {}
 
     def _generateCacheSignature(
@@ -81,16 +80,6 @@ class MatchCompiler:
 
         self._matchFunctionCache[signature] = id
 
-    def _insertMatchStr(self, look_for):
-        prefix = 'matchStr'
-
-        # Add entry if needed
-        if look_for not in self._matchStrs:
-            pos = len(self._matchStrs) + 1
-            self._matchStrs[look_for] = pos
-
-        return prefix + str(self._matchStrs[look_for])
-
     def _compileCmd(self, tok):
         if tok == '%any%':
             return 'true'
@@ -107,9 +96,9 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->type() == Token::eBitOp && tok->str()==' + self._insertMatchStr('|') + ')/* | */'
+            return '(tok->type() == Token::eBitOp && tok->str()==MatchCompiler::makeConstString("|") )'
         elif tok == '%oror%':
-            return '(tok->type() == Token::eLogicalOp && tok->str()==' + self._insertMatchStr('||') + ')/* || */'
+            return '(tok->type() == Token::eLogicalOp && tok->str()==MatchCompiler::makeConstString("||"))'
         elif tok == '%str%':
             return '(tok->type()==Token::eString)'
         elif tok == '%type%':
@@ -126,7 +115,7 @@ class MatchCompiler:
             print("unhandled:" + tok)
 
         return (
-            '(tok->str()==' + self._insertMatchStr(tok) + ')/* ' + tok + ' */'
+            '(tok->str()==MatchCompiler::makeConstString("' + tok + '"))'
         )
 
     def _compilePattern(self, pattern, nr, varid,
@@ -164,8 +153,7 @@ class MatchCompiler:
 
             # [abc]
             if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[
-                    1:-1] + '", tok->str()[0]))\n'
+                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
                 ret += '        ' + returnStatement
 
             # a|b|c
@@ -200,8 +188,7 @@ class MatchCompiler:
 
             # !!a
             elif tok[0:2] == "!!":
-                ret += '    if (tok && tok->str() == ' + self._insertMatchStr(
-                    tok[2:]) + ')/* ' + tok[2:] + ' */\n'
+                ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
                 ret += '        ' + returnStatement
                 gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
 
@@ -271,6 +258,23 @@ class MatchCompiler:
             pos += 1
 
         return None
+
+    def _isInString(self, line, pos1):
+        pos = 0
+        inString = False
+        while pos != pos1:
+            if inString:
+                if line[pos] == '\\':
+                    pos += 1
+                elif line[pos] == '"':
+                    inString = False
+            else:
+                if line[pos] == '\\':
+                    pos += 1
+                elif line[pos] == '"':
+                    inString = True
+            pos += 1
+        return inString 
 
     def _parseStringComparison(self, line, pos1):
         startPos = 0
@@ -505,7 +509,7 @@ class MatchCompiler:
 
         return (
             line[:start_pos] + functionName + str(
-                findMatchNumber) + '(' + tok + more_args + ')' + line[start_pos + end_pos:]
+                findMatchNumber) + '(' + tok + more_args + ') ' + line[start_pos + end_pos:]
         )
 
     def _replaceTokenFindMatch(self, line):
@@ -576,10 +580,11 @@ class MatchCompiler:
 
     def _replaceCStrings(self, line):
         while True:
-            match = re.search('str\(\) *(==|!=) *"', line)
+            match = re.search('(==|!=) *"', line)
             if not match:
-                match = re.search('strAt\(.+?\) *(==|!=) *"', line)
-            if not match:
+                break
+
+            if self._isInString(line, match.start()):
                 break
 
             res = self._parseStringComparison(line, match.start())
@@ -589,8 +594,9 @@ class MatchCompiler:
             startPos = res[0]
             endPos = res[1]
             text = line[startPos + 1:endPos - 1]
-            line = line[:startPos] + self._insertMatchStr(text) + line[endPos:]
-
+            line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' + text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
+        line = line.replace('MatchCompiler::makeConstStringBegin', 'MatchCompiler::makeConstString("')
+        line = line.replace('MatchCompiler::makeConstStringEnd', '")')
         return line
 
     def convertFile(self, srcname, destname):
@@ -602,6 +608,7 @@ class MatchCompiler:
 
         header = '#include "token.h"\n'
         header += '#include "errorlogger.h"\n'
+        header += '#include "matchcompiler.h"\n'
         header += '#include <string>\n'
         header += '#include <cstring>\n'
         # header += '#include <iostream>\n'
@@ -619,19 +626,13 @@ class MatchCompiler:
 
             code += line
 
-        # Compute string list
-        stringList = ''
-        for match in sorted(self._matchStrs, key=self._matchStrs.get):
-            stringList += 'static const std::string matchStr' + \
-                str(self._matchStrs[match]) + '("' + match + '");\n'
-
         # Compute matchFunctions
         strFunctions = ''
         for function in self._rawMatchFunctions:
             strFunctions += function
 
         fout = open(destname, 'wt')
-        fout.write(header + stringList + strFunctions + code)
+        fout.write(header + strFunctions + code)
         fout.close()
 
 
