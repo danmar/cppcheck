@@ -361,6 +361,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
         for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
             arraySize *= arrayInfo.num(i);
 
+        // dimension is 0 or unknown => bailout
+        if (arraySize == 0)
+            return;
+
         const Token *charSizeToken = nullptr;
         if (checkMinSizes(*minsizes, &ftok, (std::size_t)arraySize, &charSizeToken, _settings))
             bufferOverrunError(callstack, arrayInfo.varname());

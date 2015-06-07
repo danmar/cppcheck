@@ -3261,6 +3261,15 @@ private:
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n" // #6668 - unknown size
+              "  char a[LEN];\n"
+              "  void f();\n"
+              "};"
+              "void Foo::f() {\n"
+              "  mysprintf(a, \"abcd\");\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void minsize_mul() {
