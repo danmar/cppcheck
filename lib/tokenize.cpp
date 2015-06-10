@@ -6176,14 +6176,18 @@ void Tokenizer::simplifyIfSameInnerCondition()
 }
 
 // Binary operators simplification map
-static const std::pair<std::string, std::string> cAlternativeTokens_[] = {
-    std::make_pair("and", "&&"), std::make_pair("and_eq", "&="), std::make_pair("bitand", "&"),
-    std::make_pair("bitor", "|"), std::make_pair("not_eq", "!="), std::make_pair("or", "||"),
-    std::make_pair("or_eq", "|="), std::make_pair("xor", "^"), std::make_pair("xor_eq", "^=")
-};
-
-static const std::map<std::string, std::string> cAlternativeTokens(cAlternativeTokens_,
-        cAlternativeTokens_ + sizeof(cAlternativeTokens_)/sizeof(*cAlternativeTokens_));
+namespace {
+    static const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
+            << std::make_pair("and", "&&")
+            << std::make_pair("and_eq", "&=")
+            << std::make_pair("bitand", "&")
+            << std::make_pair("bitor", "|")
+            << std::make_pair("not_eq", "!=")
+            << std::make_pair("or", "||")
+            << std::make_pair("or_eq", "|=")
+            << std::make_pair("xor", "^")
+            << std::make_pair("xor_eq", "^=") ;
+}
 
 // Simplify the C alternative tokens:
 //  and      =>     &&
@@ -7995,12 +7999,8 @@ void Tokenizer::simplifyEnum()
     }
 }
 
-void Tokenizer::simplifyStd()
-{
-    if (isC())
-        return;
-
-    const static std::set<std::string> f = make_container< std::set<std::string> > () <<
+namespace {
+    static const std::set<std::string> f = make_container< std::set<std::string> > () <<
                                            "strcat" <<
                                            "strcpy" <<
                                            "strncat" <<
@@ -8008,6 +8008,13 @@ void Tokenizer::simplifyStd()
                                            "free" <<
                                            "malloc" <<
                                            "strdup";
+}
+
+void Tokenizer::simplifyStd()
+{
+    if (isC())
+        return;
+
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "std")
@@ -9281,21 +9288,23 @@ void Tokenizer::simplifyAttribute()
     }
 }
 
+namespace {
+    static const std::set<std::string> keywords = make_container< std::set<std::string> >()
+            << "volatile"
+            << "inline"
+            << "_inline"
+            << "__inline"
+            << "__forceinline"
+            << "register"
+            << "__restrict"
+            << "__restrict__" ;
+}
 // Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
-    std::set<std::string> keywords;
-    keywords.insert("volatile");
-    keywords.insert("inline");
-    keywords.insert("_inline");
-    keywords.insert("__inline");
-    keywords.insert("__forceinline");
-    keywords.insert("register");
-    keywords.insert("__restrict");
-    keywords.insert("__restrict__");
 
     // FIXME: There is a risk that "keywords" are removed by mistake. This
     // code should be fixed so it doesn't remove variables etc. Nonstandard
@@ -9592,13 +9601,7 @@ void Tokenizer::simplifyBuiltinExpect()
     }
 }
 
-
-// Add std:: in front of std classes, when using namespace std; was given
-void Tokenizer::simplifyNamespaceStd()
-{
-    if (!isCPP())
-        return;
-
+namespace {
     // Types and objects in std namespace that are neither functions nor templates
     static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
             "string"<< "wstring"<< "u16string"<< "u32string" <<
@@ -9643,6 +9646,15 @@ void Tokenizer::simplifyNamespaceStd()
             "min"<< "max"<< "min_element"<< "max_element"<< "lexicographical_compare"<< "next_permutation"<< "prev_permutation" <<
             "advance"<< "back_inserter"<< "distance"<< "front_inserter"<< "inserter" <<
             "make_pair"<< "make_shared"<< "make_tuple";
+}
+
+
+// Add std:: in front of std classes, when using namespace std; was given
+void Tokenizer::simplifyNamespaceStd()
+{
+    if (!isCPP())
+        return;
+
     const bool isCPP11  = _settings->standards.cpp == Standards::CPP11;
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
@@ -9743,14 +9755,7 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
     }
 }
 
-void Tokenizer::simplifyMicrosoftStringFunctions()
-{
-    // skip if not Windows
-    if (_settings->platformType != Settings::Win32A &&
-        _settings->platformType != Settings::Win32W &&
-        _settings->platformType != Settings::Win64)
-        return;
-
+namespace {
     struct triplet {
         triplet(const char* t, const char* m="", const char* u="") : tchar(t), mbcs(m), unicode(u) {}
         bool operator <(const triplet& rhs) const {
@@ -9758,7 +9763,8 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         }
         std::string tchar, mbcs, unicode;
     };
-    const static std::set<triplet> apis = make_container< std::set<triplet> >() <<
+
+    static const std::set<triplet> apis = make_container< std::set<triplet> >() <<
                                           triplet("_topen", "open", "_wopen") <<
                                           triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
                                           triplet("_tfopen", "fopen", "_wfopen") <<
@@ -9792,6 +9798,15 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
                                           triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
                                           triplet("_stscanf_s", "sscanf_s", "swscanf_s")
                                           ;
+}
+
+void Tokenizer::simplifyMicrosoftStringFunctions()
+{
+    // skip if not Windows
+    if (_settings->platformType != Settings::Win32A &&
+        _settings->platformType != Settings::Win32W &&
+        _settings->platformType != Settings::Win64)
+        return;
 
     const bool ansi = _settings->platformType == Settings::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {

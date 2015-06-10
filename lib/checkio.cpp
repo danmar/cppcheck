@@ -1522,12 +1522,13 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
     }
 }
 
-
+namespace {
+    static const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
+    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
+}
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-    static const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
-    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
 
     if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
@@ -1580,8 +1581,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     return false;
 }
 
-bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
-{
+namespace {
     static const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
             "array" << "bitset" << "deque" << "forward_list" <<
             "hash_map" << "hash_multimap" << "hash_set" <<
@@ -1589,8 +1589,10 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
             "priority_queue" << "queue" << "set" << "stack" <<
             "unordered_map" << "unordered_multimap" << "unordered_multiset" << "unordered_set" << "vector"
             ;
-    static const std::set<std::string> stl_string= make_container< std::set<std::string> >() <<
-            "string" << "u16string" << "u32string" << "wstring";
+}
+
+bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
+{
 
     if (tok && tok->variable()) {
         const Variable* variable = tok->variable();

@@ -226,8 +226,7 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.");
 }
 
-void CheckStl::mismatchingContainers()
-{
+namespace {
     static const char* const algorithm2_strings[] = { // func(begin1, end1
         "adjacent_find", "all_of", "any_of", "binary_search", "copy", "copy_if", "count", "count_if", "equal", "equal_range",
         "find", "find_if", "find_if_not", "for_each", "generate", "is_heap", "is_heap_until", "is_partitioned",
@@ -256,6 +255,10 @@ void CheckStl::mismatchingContainers()
     static const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
     static const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
     static const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
+}
+
+void CheckStl::mismatchingContainers()
+{
 
     // Check if different containers are used in various calls of standard functions
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -1036,14 +1039,17 @@ static bool isLocal(const Token *tok)
     return var && !var->isStatic() && var->isLocal();
 }
 
-void CheckStl::string_c_str()
-{
-    const bool printInconclusive = _settings->inconclusive;
-    const bool printPerformance = _settings->isEnabled("performance");
+namespace {
     static const std::set<std::string> stl_string = make_container< std::set<std::string> >() <<
             "string" <<  "u16string" <<  "u32string" <<  "wstring" ;
     static const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
             "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
+}
+
+void CheckStl::string_c_str()
+{
+    const bool printInconclusive = _settings->inconclusive;
+    const bool printPerformance = _settings->isEnabled("performance");
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
@@ -1340,6 +1346,15 @@ void CheckStl::autoPointerMallocError(const Token *tok, const std::string& alloc
     reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose);
 }
 
+namespace {
+    static const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
+            "deque" <<  "forward_list" <<  "list" <<
+            "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
+            "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
+            "unordered_set" <<  "vector" <<  "wstring";
+
+}
+
 void CheckStl::uselessCalls()
 {
     const bool printPerformance = _settings->isEnabled("performance");
@@ -1347,13 +1362,6 @@ void CheckStl::uselessCalls()
     if (!printPerformance && !printWarning)
         return;
 
-    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() <<
-            "string" << "u16string" << "u32string" << "wstring";
-    static const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
-            "deque" <<  "forward_list" <<  "list" <<
-            "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
-            "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
-            "unordered_set" <<  "vector" <<  "wstring";
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1531,6 +1539,13 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, bool map, s
     }
 }
 
+namespace {
+    static const std::set<std::string> MAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
+            "map" << "multimap" << "unordered_map" << "unordered_multimap" ;
+    static const std::set<std::string> NONMAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
+            "deque" << "forward_list" << "list" << "multiset" << "queue" << "set" << "stack" << "string" << "unordered_multiset" << "unordered_set" << "vector";
+}
+
 void CheckStl::readingEmptyStlContainer()
 {
     if (!_settings->isEnabled("style"))
@@ -1541,11 +1556,6 @@ void CheckStl::readingEmptyStlContainer()
 
     std::set<unsigned int> empty_map; // empty std::map-like instances of STL containers
     std::set<unsigned int> empty_nonmap; // empty non-std::map-like instances of STL containers
-
-    static const std::set<std::string> MAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
-            "map" << "multimap" << "unordered_map" << "unordered_multimap" ;
-    static const std::set<std::string> NONMAP_STL_CONTAINERS = make_container< std::set<std::string> >() <<
-            "deque" << "forward_list" << "list" << "multiset" << "queue" << "set" << "stack" << "string" << "unordered_multiset" << "unordered_set" << "vector";
 
     const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
 

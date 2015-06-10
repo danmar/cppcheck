@@ -111,15 +111,17 @@ void Token::update_property_info()
     update_property_isStandardType();
 }
 
+namespace {
+    static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
+            "bool" << "char" << "char16_t" << "char32_t" << "double" << "float" << "int" << "long" << "short" << "size_t" << "void" << "wchar_t";
+}
+
 void Token::update_property_isStandardType()
 {
     isStandardType(false);
 
     if (_str.size() < 3)
         return;
-
-    static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
-            "bool" << "char" << "char16_t" << "char32_t" << "double" << "float" << "int" << "long" << "short" << "size_t" << "void" << "wchar_t";
 
     if (stdTypes.find(_str)!=stdTypes.end()) {
         isStandardType(true);
