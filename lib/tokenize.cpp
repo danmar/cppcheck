@@ -602,7 +602,7 @@ void Tokenizer::simplifyTypedef()
                 // Skip typedefs inside parentheses (#2453 and #4002)
                 tok = tok->next();
             } else if (Token::Match(tok, "class|struct|namespace %any%") &&
-                       (!tok->previous() || (tok->previous() && tok->previous()->str() != "enum"))) {
+                       (!tok->previous() || tok->previous()->str() != "enum")) {
                 isNamespace = (tok->str() == "namespace");
                 hasClass = true;
                 className = tok->next()->str();

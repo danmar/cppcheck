@@ -1982,7 +1982,7 @@ void CheckOther::checkMisusedScopedObject()
                 && Token::Match(tok->linkAt(2), ") ; !!}")
                 && symbolDatabase->isClassOrStruct(tok->next()->str())
                 && (!tok->next()->function() || // is not a function on this scope
-                    (tok->next()->function() && tok->next()->function()->isConstructor()))) { // or is function in this scope and it's a ctor
+                    tok->next()->function()->isConstructor())) { // or is function in this scope and it's a ctor
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
