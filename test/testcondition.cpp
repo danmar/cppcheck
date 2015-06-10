@@ -1281,6 +1281,60 @@ private:
               "    if (x = b < 0 ? 1 : 2) {}\n" // don't simplify and verify this code
               "}", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int y = rand(), z = rand();\n"
+              "    if (y || (!y && z));\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+        check("void f() {\n"
+              "    int y = rand(), z = rand();\n"
+              "    if (y || !y && z);\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+        check("void f() {\n"
+              "    if (!a || a && b) {}\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+
+        check("void f() {\n"
+              "    if (!tok->next()->function() || \n"
+              "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next().function(). 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+        check("void f() {\n"
+              "    if (!tok->next()->function() || \n"
+              "        (!tok->next()->function() && tok->next()->function()->isConstructor()));\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (!tok->next()->function() || \n"
+              "        (!tok2->next()->function() && tok->next()->function()->isConstructor()));\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (!tok->next(1)->function(1) || \n"
+              "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next(1).function(1). 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+        check("void f() {\n"
+              "    if (!tok->next()->function(1) || \n"
+              "        (tok->next()->function(2) && tok->next()->function()->isConstructor()));\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   int y = rand(), z = rand();\n"
+              "   if (y==0 || y!=0 && z);\n"
+              "}", false);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
     }
 
 // clarify conditions with bitwise operator and comparison
