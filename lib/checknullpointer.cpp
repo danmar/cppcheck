@@ -136,6 +136,12 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     }
 }
 
+namespace {
+    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
+            "fstream" << "ifstream" << "iostream" << "istream" <<
+            "istringstream" << "ofstream" << "ostream" << "ostringstream" <<
+            "stringstream" << "wistringstream" << "wostringstream" << "wstringstream";
+}
 
 /**
  * Is there a pointer dereference? Everything that should result in
@@ -148,11 +154,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
  */
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 {
-    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
-            "fstream" << "ifstream" << "iostream" << "istream" <<
-            "istringstream" << "ofstream" << "ostream" << "ostringstream" <<
-            "stringstream" << "wistringstream" << "wostringstream" << "wstringstream";
-
     unknown = false;
 
     const Token* parent = tok->astParent();
@@ -373,13 +374,16 @@ void CheckNullPointer::nullPointer()
     nullPointerByDeRefAndChec();
 }
 
+namespace {
+    static const std::set<std::string> stl_istream = make_container< std::set<std::string> >() <<
+            "fstream" << "ifstream" << "iostream" << "istream" <<
+            "istringstream" << "stringstream" << "wistringstream" << "wstringstream";
+}
+
 /** Dereferencing null constant (simplified token list) */
 void CheckNullPointer::nullConstantDereference()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
-            "fstream" << "ifstream" << "iostream" << "istream" <<
-            "istringstream" << "stringstream" << "wistringstream" << "wstringstream";
 
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
@@ -436,7 +440,7 @@ void CheckNullPointer::nullConstantDereference()
                     nullPointerError(tok);
                 if (tok2 && tok2->varId() != 0) {
                     const Variable *var = tok2->variable();
-                    if (var && var->isStlType(stl_stream))
+                    if (var && var->isStlType(stl_istream))
                         nullPointerError(tok);
                 }
             }

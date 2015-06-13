@@ -1827,6 +1827,11 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
+namespace {
+    // The container contains the STL types whose operator[] is not a const.
+    static const std::set<std::string> stl_containers_not_const = make_container< std::set<std::string> >() << "map" << "unordered_map";
+}
+
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
     // if the function doesn't have any assignment nor function call,
@@ -1856,7 +1861,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         return false;
             }
 
-            const Token* jumpBackToken = 0;
+            const Token* jumpBackToken = nullptr;
             const Token *lastVarTok = tok1;
             const Token *end = tok1;
             for (;;) {
@@ -1867,9 +1872,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 } else if (end->strAt(1) == "[") {
                     if (end->varId()) {
                         const Variable *var = end->variable();
-                        // The container contains the STL types whose operator[] is not a const.
-                        static const std::set<std::string> stl_containers = make_container< std::set<std::string> >() << "map" << "unordered_map";
-                        if (var && var->isStlType(stl_containers))
+                        if (var && var->isStlType(stl_containers_not_const))
                             return false;
                     }
                     if (!jumpBackToken)
@@ -2109,7 +2112,7 @@ void CheckClass::checkPureVirtualFunctionCall()
     std::map<const Function *, std::list<const Token *> > callsPureVirtualFunctionMap;
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        if (scope->function == 0 || !scope->function->hasBody() ||
+        if (scope->function == nullptr || !scope->function->hasBody() ||
             !(scope->function->isConstructor() ||
               scope->function->isDestructor()))
             continue;
