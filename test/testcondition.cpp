@@ -48,6 +48,7 @@ private:
         TEST_CASE(incorrectLogicOperator7); // opposite expressions: (expr || !expr)
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
+        TEST_CASE(testBug5895);
 
         TEST_CASE(modulo);
 
@@ -656,7 +657,6 @@ private:
               "    if (x == 1.0 && x == 3.0)\n"
               "        a++;\n"
               "}");
-        //ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1.0 && x == 3.0.\n", errout.str());
         ASSERT_EQUALS("", errout.str()); // float comparisons with == and != are not checked right now - such comparison is a bad idea
 
         check("void f(float x) {\n"
@@ -1407,6 +1407,14 @@ private:
               "    return *this;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testBug5895() {
+        check("void png_parse(uint64_t init, int buf_size) {\n"
+              "    if (init == 0x89504e470d0a1a0a || init == 0x8a4d4e470d0a1a0a)\n"
+              "        ;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Redundant condition: If init == 9894494448401390090, the comparison init == 9965707617509186058 is always true.\n", errout.str());
     }
 };
 
