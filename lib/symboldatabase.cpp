@@ -206,7 +206,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
 
         // using namespace
-        else if (Token::Match(tok, "using namespace ::| %type% ;|::")) {
+        else if (_tokenizer->isCPP() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
@@ -622,7 +622,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // friend class declaration?
-                else if (Token::Match(tok, "friend class| ::| %any% ;|::")) {
+                else if (_tokenizer->isCPP() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
                     Type::FriendInfo friendInfo;
 
                     // save the name start
@@ -644,6 +644,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // fill this in after parsing is complete
                     friendInfo.type = 0;
 
+                    if (!scope->definedType) {
+                        _tokenizer->syntaxError(tok);
+                        return;
+                    }
                     scope->definedType->friendList.push_back(friendInfo);
                 }
             } else if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal) {

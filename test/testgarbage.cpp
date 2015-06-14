@@ -121,6 +121,7 @@ private:
         TEST_CASE(garbageCode80);
         TEST_CASE(garbageCode81);
         TEST_CASE(garbageCode82);
+        TEST_CASE(garbageCode83);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -669,6 +670,10 @@ private:
 
     void garbageCode82() { // #6761
         ASSERT_THROW(checkCode("p(\"Hello \" 14) _yn(const size_t) typedef bool pfunk (*pfunk)(const size_t)"), InternalError);
+    }
+
+    void garbageCode83() { // #6771
+        ASSERT_THROW(checkCode("namespace A { class } class A { friend C ; } { } ;"), InternalError);
     }
 
     void garbageValueFlow() {
