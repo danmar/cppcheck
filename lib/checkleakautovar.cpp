@@ -473,7 +473,7 @@ void CheckLeakAutoVar::functionCall(const Token *tok, VarInfo *varInfo, const Va
         return;
 
     for (const Token *arg = tok->tokAt(2); arg; arg = arg->nextArgument()) {
-        if (arg->str() == "new")
+        if (_tokenizer->isCPP() && arg->str() == "new")
             arg = arg->next();
 
         if (Token::Match(arg, "%var% [-,)]") || Token::Match(arg, "& %var%")) {

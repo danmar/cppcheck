@@ -109,6 +109,7 @@ private:
         TEST_CASE(ptrptr);
 
         TEST_CASE(nestedAllocation);
+        TEST_CASE(testKeywords); // #6767
     }
 
     void check(const char code[], bool cpp = false) {
@@ -1139,14 +1140,23 @@ private:
         check("void QueueDSMCCPacket(unsigned char *data, int length) {\n"
               "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
               "    m_dsmccQueue.enqueue(new DSMCCPacket(dataCopy));\n"
-              "}");
-        ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function DSMCCPacket() should have <use>/<leak-ignore> configuration\n", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function DSMCCPacket() should have <use>/<leak-ignore> configuration\n", errout.str());
 
         check("void QueueDSMCCPacket(unsigned char *data, int length) {\n"
               "    unsigned char *dataCopy = malloc(length * sizeof(unsigned char));\n"
               "    m_dsmccQueue.enqueue(new DSMCCPacket(somethingunrelated));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: dataCopy\n", errout.str());
+    }
+
+    void testKeywords() {
+        check("int main(int argc, char **argv) {\n"
+              "  double *new = malloc(1*sizeof(double));\n"
+              "  free(new);\n"
+              "  return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: dataCopy\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
