@@ -1118,7 +1118,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         check("void foo(int& i) {\n"
               "    i=6;\n"
               "}\n"
@@ -1245,6 +1244,15 @@ private:
               "   if (r < w){\n"
               "       r += 3;\n"
               "       if (r > w) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6574 - another fp when undeclared variable is used
+        check("void foo() {\n"
+              "   if(i) {\n"
+              "       i++;\n"
+              "       if(!i) {}\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());

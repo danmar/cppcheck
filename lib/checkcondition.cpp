@@ -413,7 +413,7 @@ void CheckCondition::oppositeInnerCondition()
 
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<unsigned int> vars; // variables used in condition
-        for (const Token *cond = scope->classDef; cond != scope->classDef->linkAt(1); cond = cond->next()) {
+        for (const Token *cond = scope->classDef->linkAt(1); cond != scope->classDef; cond = cond->previous()) {
             if (cond->varId()) {
                 vars.insert(cond->varId());
                 const Variable *var = cond->variable();
@@ -422,7 +422,7 @@ void CheckCondition::oppositeInnerCondition()
                 nonlocal |= (var && (var->isPointer() || var->isReference()));
             } else if (cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
-                nonlocal |= (cond->astParent() && cond->astParent()->isConstOp());
+                nonlocal |= Token::Match(cond->astParent(), "%cop%|(");
             }
         }
 
