@@ -544,6 +544,25 @@ static bool checkFloatRelation(const std::string &op, const double value1, const
            (op == "<=" && value1 <= value2);
 }
 
+template<class T>
+T getvalue3(const T value1, const T value2)
+{
+    if (std::numeric_limits<T>::is_integer) {
+        const T min = std::min(value1, value2);
+        if (min== std::numeric_limits<T>::max())
+            return min;
+        else
+            return min+1; // see #5895
+    }
+    return (value1 + value2) / (T)2;
+}
+
+template<>
+double getvalue3(const double value1, const double value2)
+{
+    return (value1 + value2) / 2.0f;
+}
+
 
 template<class T>
 static inline T getvalue(const int test, const T value1, const T value2)
@@ -568,15 +587,7 @@ static inline T getvalue(const int test, const T value1, const T value2)
     case 2:
         return value1;
     case 3:
-        if (std::numeric_limits<T>::is_integer) {
-            const T min = std::min(value1, value2);
-            if (min== std::numeric_limits<T>::max())
-                return min;
-            else
-                return min+1; // see #5895
-        } else {
-            return (value1 + value2) / (T)2;
-        }
+        return getvalue3<T>(value1, value2);
     case 4:
         return value2;
     case 5: {
