@@ -132,7 +132,7 @@ void TokenList::addtoken(const std::string & str, const unsigned int lineno, con
     std::string str2;
     if (MathLib::isHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
         std::ostringstream str2stream;
-        str2stream << MathLib::MathLib::toULongNumber(str);
+        str2stream << MathLib::toULongNumber(str);
         str2 = str2stream.str();
     } else if (str.compare(0, 5, "_Bool") == 0) {
         str2 = "bool";
