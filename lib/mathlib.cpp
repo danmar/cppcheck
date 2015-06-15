@@ -527,10 +527,44 @@ bool MathLib::isInt(const std::string & s)
     return isDec(s) || isHex(s) || isOct(s) || isBin(s);
 }
 
+static std::string intsuffix(const std::string & first, const std::string & second)
+{
+    std::string suffix1, suffix2;
+    for (std::size_t i = 1U; i < first.size(); ++i) {
+        char c = first[first.size() - i];
+        if (c == 'l' || c == 'u')
+            c = c - 'a' + 'A';
+        if (c != 'L' && c != 'U')
+            break;
+        suffix1 = c + suffix1;
+    }
+    for (std::size_t i = 1U; i < second.size(); ++i) {
+        char c = second[second.size() - i];
+        if (c == 'l' || c == 'u')
+            c = c - 'a' + 'A';
+        if (c != 'L' && c != 'U')
+            break;
+        suffix2 = c + suffix2;
+    }
+
+    if (suffix1 == "ULL" || suffix2 == "ULL")
+        return "ULL";
+    if (suffix1 == "LL" || suffix2 == "LL")
+        return "LL";
+    if (suffix1 == "UL" || suffix2 == "UL")
+        return "UL";
+    if (suffix1 == "L" || suffix2 == "L")
+        return "L";
+    if (suffix1 == "U" || suffix2 == "U")
+        return "U";
+
+    return suffix1.empty() ? suffix2 : suffix1;
+}
+
 std::string MathLib::add(const std::string & first, const std::string & second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) + toLongNumber(second));
+        return toString(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
     }
 
     double d1 = toDoubleNumber(first);
@@ -548,7 +582,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 std::string MathLib::subtract(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) - toLongNumber(second));
+        return toString(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
     }
 
     if (first == second)
@@ -585,7 +619,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
             throw InternalError(0, "Internal Error: Division overflow");
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
-        return toString(toLongNumber(first) / b);
+        return toString(toLongNumber(first) / b) + intsuffix(first, second);
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
@@ -599,7 +633,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
 std::string MathLib::multiply(const std::string &first, const std::string &second)
 {
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) * toLongNumber(second));
+        return toString(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
 }
@@ -610,7 +644,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
         const bigint b = toLongNumber(second);
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
-        return toString(toLongNumber(first) % b);
+        return toString(toLongNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 }
@@ -634,13 +668,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return MathLib::toString(MathLib::toLongNumber(first) & MathLib::toLongNumber(second));
+        return MathLib::toString(MathLib::toLongNumber(first) & MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     case '|':
-        return MathLib::toString(MathLib::toLongNumber(first) | MathLib::toLongNumber(second));
+        return MathLib::toString(MathLib::toLongNumber(first) | MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     case '^':
-        return MathLib::toString(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second));
+        return MathLib::toString(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     default:
         throw InternalError(0, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
