@@ -620,6 +620,11 @@ public:
      */
     void simplifyAsm();
 
+	/**
+     * asm heuristics, Put ^{} statements in asm()
+     */
+    void simplifyAsm2();
+
     /**
      * Simplify bitfields - the field width is removed as we don't use it.
      */
