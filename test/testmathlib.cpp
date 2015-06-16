@@ -189,6 +189,13 @@ private:
         ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1UL"));
         ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1UL"));
 
+        ASSERT_EQUALS("2UL",  MathLib::add("1",    "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1U",   "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1L",   "1LU"));
+        ASSERT_EQUALS("2UL",  MathLib::add("1UL",  "1LU"));
+        ASSERT_EQUALS("2LL",  MathLib::add("1LL",  "1LU"));
+        ASSERT_EQUALS("2ULL", MathLib::add("1ULL", "1LU"));
+
         ASSERT_EQUALS("2LL",  MathLib::add("1",    "1LL"));
         ASSERT_EQUALS("2LL",  MathLib::add("1U",   "1LL"));
         ASSERT_EQUALS("2LL",  MathLib::add("1L",   "1LL"));
@@ -202,6 +209,13 @@ private:
         ASSERT_EQUALS("2ULL",  MathLib::add("1UL",  "1ULL"));
         ASSERT_EQUALS("2ULL",  MathLib::add("1LL",  "1ULL"));
         ASSERT_EQUALS("2ULL",  MathLib::add("1ULL", "1ULL"));
+
+        ASSERT_EQUALS("2ULL",  MathLib::add("1",    "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1U",   "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1L",   "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1UL",  "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1LL",  "1LLU"));
+        ASSERT_EQUALS("2ULL",  MathLib::add("1ULL", "1LLU"));
     }
 
     void convert() const {

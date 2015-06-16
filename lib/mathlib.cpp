@@ -547,11 +547,13 @@ static std::string intsuffix(const std::string & first, const std::string & seco
         suffix2 = c + suffix2;
     }
 
-    if (suffix1 == "ULL" || suffix2 == "ULL")
+    if (suffix1 == "ULL" || suffix2 == "ULL"
+        || suffix1 == "LLU" || suffix2 == "LLU")
         return "ULL";
     if (suffix1 == "LL" || suffix2 == "LL")
         return "LL";
-    if (suffix1 == "UL" || suffix2 == "UL")
+    if (suffix1 == "UL" || suffix2 == "UL"
+        || suffix1 == "LU" || suffix2 == "LU")
         return "UL";
     if (suffix1 == "L" || suffix2 == "L")
         return "L";

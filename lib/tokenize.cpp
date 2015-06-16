@@ -2036,7 +2036,7 @@ void Tokenizer::simplifySQL()
 
 void Tokenizer::simplifyDebugNew()
 {
-	if (isC())
+    if (isC())
         return;
     if (!_settings->isWindowsPlatform())
         return;
@@ -9694,7 +9694,7 @@ void Tokenizer::simplifyNamespaceStd()
 // Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
 void Tokenizer::simplifyMicrosoftMFC()
 {
-	if (isC())
+    if (isC())
         return;
     // skip if not Windows
     if (!_settings->isWindowsPlatform())
@@ -9890,7 +9890,7 @@ void Tokenizer::simplifyBorland()
 // Remove Qt signals and slots
 void Tokenizer::simplifyQtSignalsSlots()
 {
-	if (isC())
+    if (isC())
         return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // check for emit which can be outside of class
