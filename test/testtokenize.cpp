@@ -5868,11 +5868,11 @@ private:
     void borland() {
         // __closure
         ASSERT_EQUALS("int * a ;",
-                      tokenizeAndStringify("int (__closure *a)();", false));
+			tokenizeAndStringify("int (__closure *a)();", false, true, Settings::Win32A));
 
         // __property
         ASSERT_EQUALS("class Fred { ; __property ; } ;",
-                      tokenizeAndStringify("class Fred { __property int x = { } };", false));
+                      tokenizeAndStringify("class Fred { __property int x = { } };", false, true, Settings::Win32A));
     }
 
     void Qt() {
