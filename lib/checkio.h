@@ -70,7 +70,7 @@ public:
 private:
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings);
+        ArgumentInfo(const Token *arg, const Settings *settings, bool isCPP);
         ~ArgumentInfo();
 
         bool isArrayOrPointer() const;
@@ -86,6 +86,7 @@ private:
         bool element;
         bool _template;
         bool address;
+		bool isCPP;
         Token *tempToken;
 
     private:

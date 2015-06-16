@@ -685,7 +685,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         }
 
                         // Perform type checks
-                        ArgumentInfo argInfo(argListTok, _settings);
+						ArgumentInfo argInfo(argListTok, _settings, _tokenizer->isCPP());
 
                         if (argInfo.typeToken && !argInfo.isLibraryType(_settings)) {
                             if (scan) {
@@ -1375,7 +1375,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings, bool isCPP)
     : variableInfo(0)
     , typeToken(0)
     , functionInfo(0)
@@ -1383,6 +1383,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
     , _template(false)
     , address(false)
     , tempToken(0)
+	, isCPP(isCPP)
 {
     if (tok) {
         if (tok->type() == Token::eString) {
@@ -1443,8 +1444,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings)
                     tok1 = tok1->link();
 
                 // check for some common well known functions
-                else if ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
-                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous()))) {
+                else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
+                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
                     tempToken = new Token(0);
                     tempToken->fileIndex(tok1->fileIndex());
                     tempToken->linenr(tok1->linenr());
@@ -1529,7 +1530,8 @@ namespace {
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-
+	if (!isCPP)
+		return false;
     if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
@@ -1593,7 +1595,8 @@ namespace {
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
-
+	if (!isCPP)
+		return false;
     if (tok && tok->variable()) {
         const Variable* variable = tok->variable();
         if (variable->isStlType(stl_container)) {
