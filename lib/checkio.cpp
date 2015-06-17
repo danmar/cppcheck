@@ -1375,15 +1375,15 @@ void CheckIO::checkWrongPrintfScanfArguments()
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings, bool isCPP)
-    : variableInfo(0)
-    , typeToken(0)
-    , functionInfo(0)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings, bool _isCPP)
+    : variableInfo(nullptr)
+    , typeToken(nullptr)
+    , functionInfo(nullptr)
     , element(false)
     , _template(false)
     , address(false)
-    , tempToken(0)
-    , isCPP(isCPP)
+    , isCPP(_isCPP)
+    , tempToken(nullptr)
 {
     if (tok) {
         if (tok->type() == Token::eString) {
