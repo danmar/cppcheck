@@ -8663,12 +8663,18 @@ private:
     }
 
     void astlambda() const {
-        ASSERT_EQUALS("([(return 0return", testAst("return [](){ return 0; }();"));
-        ASSERT_EQUALS("([(return 0return", testAst("return []() -> int { return 0; }();"));
-        ASSERT_EQUALS("([(return 0return", testAst("return [something]() -> int { return 0; }();"));
-        ASSERT_EQUALS("([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+        // a lambda expression '[x](y){}' is compiled as:
+        // [
+        // `-(
+        //   `-{
+        ASSERT_EQUALS("x{([( ai=", testAst("x([&a](int i){a=i;});"));
 
-        ASSERT_EQUALS("x([= 0return", testAst("x = [](){return 0; };"));
+        ASSERT_EQUALS("{([(return 0return", testAst("return [](){ return 0; }();"));
+        ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
+        ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
+        ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
+
+        ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
     }
 
     void compileLimits() {

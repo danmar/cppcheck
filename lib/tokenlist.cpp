@@ -596,16 +596,15 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [
-                // - Compile the content of the lambda function as separate tree
+                // - Compile the content of the lambda function as separate tree (this is done later)
                 Token* squareBracket = tok;
                 Token* roundBracket = squareBracket->link()->next();
                 Token* curlyBracket = Token::findsimplematch(roundBracket->link()->next(), "{");
                 if (!curlyBracket)
                     break;
-                tok = curlyBracket->next();
-                compileExpression(tok, state);
-                state.op.push(roundBracket);
-                compileUnaryOp(squareBracket, state, nullptr);
+                squareBracket->astOperand1(roundBracket);
+                roundBracket->astOperand1(curlyBracket);
+                state.op.push(squareBracket);
                 tok = curlyBracket->link()->next();
             } else {
                 Token* tok2 = tok;
@@ -947,15 +946,24 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (endToken == tok1)
             return tok1;
 
-        // Compile inner expressions inside inner ({..})
+        // Compile inner expressions inside inner ({..}) and lambda bodies
         for (tok = tok1->next(); tok && tok != endToken; tok = tok ? tok->next() : NULL) {
-            if (!Token::simpleMatch(tok, "( {"))
+            if (tok->str() != "{")
                 continue;
-            if (tok->next() == endToken)
+
+            if (Token::simpleMatch(tok->previous(), "( {"))
+                ;
+            else if (Token::simpleMatch(tok->astParent(), "(") &&
+                     Token::simpleMatch(tok->astParent()->astParent(), "[") &&
+                     tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
+                ;
+            else
+                continue;
+
+            if (Token::simpleMatch(tok->previous(), "( { ."))
                 break;
-            if (Token::simpleMatch(tok, "( { ."))
-                break;
-            const Token * const endToken2 = tok->linkAt(1);
+
+            const Token * const endToken2 = tok->link();
             for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : NULL)
                 tok = createAstAtToken(tok, cpp);
         }
