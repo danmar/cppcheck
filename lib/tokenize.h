@@ -620,7 +620,7 @@ public:
      */
     void simplifyAsm();
 
-	/**
+    /**
      * asm heuristics, Put ^{} statements in asm()
      */
     void simplifyAsm2();

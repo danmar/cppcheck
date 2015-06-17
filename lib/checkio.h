@@ -86,7 +86,7 @@ private:
         bool element;
         bool _template;
         bool address;
-		bool isCPP;
+        bool isCPP;
         Token *tempToken;
 
     private:

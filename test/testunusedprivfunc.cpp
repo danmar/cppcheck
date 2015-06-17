@@ -75,13 +75,13 @@ private:
     }
 
 
-	void check(const char code[], Settings::PlatformType platform = Settings::Unspecified) {
+    void check(const char code[], Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
-		settings.platform(platform);
+        settings.platform(platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -518,7 +518,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-			  "};", Settings::Win32A);
+              "};", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1975,7 +1975,7 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
 
 void Tokenizer::simplifyExternC()
 {
-	if (isC())
+    if (isC())
         return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "extern \"C\" {|")) {
@@ -9492,9 +9492,9 @@ void Tokenizer::simplifyAsm()
     }
 }
 
-void Tokenizer::simplifyAsm2() 
+void Tokenizer::simplifyAsm2()
 {
-	// Put ^{} statements in asm()
+    // Put ^{} statements in asm()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "^ {")) {
             Token * start = tok;
@@ -9849,13 +9849,13 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 // Remove Borland code
 void Tokenizer::simplifyBorland()
 {
-	// skip if not Windows
+    // skip if not Windows
     if (_settings->platformType != Settings::Win32A &&
         _settings->platformType != Settings::Win32W &&
         _settings->platformType != Settings::Win64)
         return;
-	if (isC())
-		return;
+    if (isC())
+        return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "( __closure * %name% )")) {
             tok->deleteNext();

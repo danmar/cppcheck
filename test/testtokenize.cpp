@@ -5868,7 +5868,7 @@ private:
     void borland() {
         // __closure
         ASSERT_EQUALS("int * a ;",
-			tokenizeAndStringify("int (__closure *a)();", false, true, Settings::Win32A));
+                      tokenizeAndStringify("int (__closure *a)();", false, true, Settings::Win32A));
 
         // __property
         ASSERT_EQUALS("class Fred { ; __property ; } ;",

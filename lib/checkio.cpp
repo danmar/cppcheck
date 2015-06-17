@@ -685,7 +685,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                         }
 
                         // Perform type checks
-						ArgumentInfo argInfo(argListTok, _settings, _tokenizer->isCPP());
+                        ArgumentInfo argInfo(argListTok, _settings, _tokenizer->isCPP());
 
                         if (argInfo.typeToken && !argInfo.isLibraryType(_settings)) {
                             if (scan) {
@@ -1383,7 +1383,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     , _template(false)
     , address(false)
     , tempToken(0)
-	, isCPP(isCPP)
+    , isCPP(isCPP)
 {
     if (tok) {
         if (tok->type() == Token::eString) {
@@ -1445,7 +1445,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
 
                 // check for some common well known functions
                 else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
-                         (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
+                                   (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
                     tempToken = new Token(0);
                     tempToken->fileIndex(tok1->fileIndex());
                     tempToken->linenr(tok1->linenr());
@@ -1530,8 +1530,8 @@ namespace {
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
 {
-	if (!isCPP)
-		return false;
+    if (!isCPP)
+        return false;
     if (variableInfo->isStlType(stl_vector)) {
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
@@ -1595,8 +1595,8 @@ namespace {
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
-	if (!isCPP)
-		return false;
+    if (!isCPP)
+        return false;
     if (tok && tok->variable()) {
         const Variable* variable = tok->variable();
         if (variable->isStlType(stl_container)) {
