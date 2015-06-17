@@ -466,7 +466,7 @@ void CheckOther::invalidPointerCast()
             const Variable *var = nullptr;
             bool allocation = false;
             bool ref = false;
-            if (Token::Match(nextTok, "new %type%"))
+            if (_tokenizer->isCPP() && Token::Match(nextTok, "new %type%"))
                 allocation = true;
             else if (Token::Match(nextTok, "%var% !!["))
                 var = nextTok->variable();

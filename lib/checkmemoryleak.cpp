@@ -61,34 +61,33 @@ static unsigned int countParameters(const Token *tok)
  * This list contains function names with const parameters e.g.: atof(const char *)
  * Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
  */
-static const char * const call_func_white_list[] = {
-    "_open", "_wopen", "access", "adjtime", "asctime", "asctime_r", "asprintf", "assert"
-    , "atof", "atoi", "atol", "chdir", "chmod", "chown"
-    , "clearerr", "creat", "ctime", "ctime_r", "execl", "execle"
-    , "execlp", "execv", "execve", "fchmod", "fclose", "fcntl"
-    , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-    , "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "fprintf", "fputc", "fputs", "fread", "free"
-    , "freopen", "fscanf", "fseek", "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello"
-    , "ftruncate", "fwrite", "getc", "getenv","getgrnam", "gethostbyaddr", "gethostbyname", "getnetbyname"
-    , "getopt", "getopt_long", "getprotobyname", "getpwnam", "gets", "getservbyname", "getservbyport"
-    , "glob", "gmtime", "gmtime_r", "if", "index", "inet_addr", "inet_aton", "inet_network", "initgroups", "ioctl"
-    , "link", "localtime", "localtime_r"
-    , "lockf", "lseek", "lstat", "mblen", "mbstowcs", "mbtowc", "memchr", "memcmp", "memcpy", "memmove", "memset"
-    , "mkdir", "mkfifo", "mknod", "mkstemp"
-    , "obstack_printf", "obstack_vprintf", "open", "opendir", "parse_printf_format", "pathconf"
-    , "perror", "popen" ,"posix_fadvise", "posix_fallocate", "pread"
-    , "printf", "psignal", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r"
-    , "readlink", "readv"
-    , "realloc", "regcomp", "remove", "rename", "return", "rewind", "rewinddir", "rindex"
-    , "rmdir" ,"scandir", "scanf", "seekdir"
-    , "setbuf", "setbuffer", "sethostname", "setlinebuf", "setlocale" ,"setvbuf", "sizeof" ,"snprintf", "sprintf", "sscanf"
-    , "stat", "stpcpy", "strcasecmp", "strcat", "strchr", "strcmp", "strcoll"
-    , "strcpy", "strcspn", "strdup", "stricmp", "strlen", "strncasecmp", "strncat", "strncmp"
-    , "strncpy", "strpbrk","strrchr", "strspn", "strstr", "strtod", "strtok", "strtol", "strtoul", "strxfrm", "switch"
-    , "symlink", "sync_file_range", "system", "telldir", "tempnam", "time", "typeid", "unlink"
-    , "utime", "utimes", "vasprintf", "vfprintf", "vfscanf", "vprintf"
-    , "vscanf", "vsnprintf", "vsprintf", "vsscanf", "while", "wordexp","write", "writev"
-};
+static const std::set<std::string> call_func_white_list = make_container < std::set<std::string> > ()
+        << "_open" << "_wopen" << "access" << "adjtime" << "asctime" << "asctime_r" << "asprintf" << "assert"
+        << "atof" << "atoi" << "atol" << "chdir" << "chmod" << "chown"
+        << "clearerr" << "creat" << "ctime" << "ctime_r" << "execl" << "execle"
+        << "execlp" << "execv" << "execve" << "fchmod" << "fclose" << "fcntl"
+        << "fdatasync" << "feof" << "ferror" << "fflush" << "fgetc" << "fgetpos" << "fgets"
+        << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "fprintf" << "fputc" << "fputs" << "fread" << "free"
+        << "freopen" << "fscanf" << "fseek" << "fseeko" << "fsetpos" << "fstat" << "fsync" << "ftell" << "ftello"
+        << "ftruncate" << "fwrite" << "getc" << "getenv" << "getgrnam" << "gethostbyaddr" << "gethostbyname" << "getnetbyname"
+        << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "gets" << "getservbyname" << "getservbyport"
+        << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups" << "ioctl"
+        << "link" << "localtime" << "localtime_r"
+        << "lockf" << "lseek" << "lstat" << "mblen" << "mbstowcs" << "mbtowc" << "memchr" << "memcmp" << "memcpy" << "memmove" << "memset"
+        << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
+        << "obstack_printf" << "obstack_vprintf" << "open" << "opendir" << "parse_printf_format" << "pathconf"
+        << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread"
+        << "printf" << "psignal" << "puts" << "pwrite" << "qsort" << "read" << "readahead" << "readdir" << "readdir_r"
+        << "readlink" << "readv"
+        << "realloc" << "regcomp" << "remove" << "rename" << "return" << "rewind" << "rewinddir" << "rindex"
+        << "rmdir" << "scandir" << "scanf" << "seekdir"
+        << "setbuf" << "setbuffer" << "sethostname" << "setlinebuf" << "setlocale" << "setvbuf" << "sizeof" << "snprintf" << "sprintf" << "sscanf"
+        << "stat" << "stpcpy" << "strcasecmp" << "strcat" << "strchr" << "strcmp" << "strcoll"
+        << "strcpy" << "strcspn" << "strdup" << "stricmp" << "strlen" << "strncasecmp" << "strncat" << "strncmp"
+        << "strncpy" << "strpbrk" << "strrchr" << "strspn" << "strstr" << "strtod" << "strtok" << "strtol" << "strtoul" << "strxfrm" << "switch"
+        << "symlink" << "sync_file_range" << "system" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
+        << "utime" << "utimes" << "vasprintf" << "vfprintf" << "vfscanf" << "vprintf"
+        << "vscanf" << "vsnprintf" << "vsprintf" << "vsscanf" << "while" << "wordexp" << "write" << "writev";
 
 //---------------------------------------------------------------------------
 
@@ -529,9 +528,7 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, boo
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
 {
-    return (std::binary_search(call_func_white_list,
-                               call_func_white_list+sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                               funcname) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()) || (cpp && funcname == "delete"));
+    return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || (settings->library.leakignore.find(funcname) != settings->library.leakignore.end()) || (cpp && funcname == "delete"));
 }
 
 

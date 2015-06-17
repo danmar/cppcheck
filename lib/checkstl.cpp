@@ -227,27 +227,20 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 }
 
 namespace {
-    static const char* const algorithm2_strings[] = { // func(begin1, end1
-        "adjacent_find", "all_of", "any_of", "binary_search", "copy", "copy_if", "count", "count_if", "equal", "equal_range",
-        "find", "find_if", "find_if_not", "for_each", "generate", "is_heap", "is_heap_until", "is_partitioned",
-        "is_permutation", "is_sorted", "is_sorted_until", "lower_bound", "make_heap", "max_element", "minmax_element",
-        "min_element", "mismatch", "move", "move_backward", "next_permutation", "none_of", "partition", "partition_copy",
-        "partition_point", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove", "remove_copy",
-        "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy",
-        "search_n", "shuffle", "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique",
-        "unique_copy", "upper_bound"
-    };
-    static const char* const algorithm22_strings[] = { // func(begin1, end1, begin2, end2
-        "find_end", "find_first_of", "includes", "lexicographical_compare", "merge", "partial_sort_copy",
-        "search", "set_difference", "set_intersection", "set_symmetric_difference", "set_union"
-    };
-    static const char* const algorithm1x1_strings[] = { // func(begin1, x, end1
-        "inplace_merge", "nth_element", "partial_sort", "rotate", "rotate_copy"
-    };
-
-    static const std::set<std::string> algorithm2(algorithm2_strings, &algorithm2_strings[sizeof(algorithm2_strings) / sizeof(*algorithm2_strings)]);
-    static const std::set<std::string> algorithm22(algorithm22_strings, &algorithm22_strings[sizeof(algorithm22_strings) / sizeof(*algorithm22_strings)]);
-    static const std::set<std::string> algorithm1x1(algorithm1x1_strings, &algorithm1x1_strings[sizeof(algorithm1x1_strings) / sizeof(*algorithm1x1_strings)]);
+    const std::set<std::string> algorithm2 = make_container< std::set<std::string> >() // func(begin1, end1
+            << "adjacent_find" << "all_of" << "any_of" << "binary_search" << "copy" << "copy_if" << "count" << "count_if" << "equal" << "equal_range"
+            << "find" << "find_if" << "find_if_not" << "for_each" << "generate" << "is_heap" << "is_heap_until" << "is_partitioned"
+            << "is_permutation" << "is_sorted" << "is_sorted_until" << "lower_bound" << "make_heap" << "max_element" << "minmax_element"
+            << "min_element" << "mismatch" << "move" << "move_backward" << "next_permutation" << "none_of" << "partition" << "partition_copy"
+            << "partition_point" << "pop_heap" << "prev_permutation" << "push_heap" << "random_shuffle" << "remove" << "remove_copy"
+            << "remove_copy_if" << "remove_if" << "replace" << "replace_copy" << "replace_copy_if" << "replace_if" << "reverse" << "reverse_copy"
+            << "search_n" << "shuffle" << "sort" << "sort_heap" << "stable_partition" << "stable_sort" << "swap_ranges" << "transform" << "unique"
+            << "unique_copy" << "upper_bound";
+    const std::set<std::string> algorithm22 = make_container< std::set<std::string> >() // func(begin1 << end1 << begin2 << end2
+            << "find_end" << "find_first_of" << "includes" << "lexicographical_compare" << "merge" << "partial_sort_copy"
+            << "search" << "set_difference" << "set_intersection" << "set_symmetric_difference" << "set_union";
+    const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
+            << "inplace_merge" << "nth_element" << "partial_sort" << "rotate" << "rotate_copy";
 
     static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
     static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";

@@ -433,7 +433,7 @@ private:
                 if (var2->isPointer())
                     checks.push_back(new UninitVar(owner, var2, symbolDatabase, library, isC));
                 else if (var2->typeEndToken()->str() != ">") {
-                    bool stdtype = var2->typeStartToken()->isStandardType(); // TODO: change to isC to handle unknown types better
+                    const bool stdtype = var2->typeStartToken()->isStandardType(); // TODO: change to isC to handle unknown types better
                     if (stdtype && (!var2->isArray() || var2->nameToken()->linkAt(1)->strAt(1) == ";"))
                         checks.push_back(new UninitVar(owner, var2, symbolDatabase, library, isC));
                 }
@@ -571,7 +571,7 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char [") ||
+            if (Token::Match(tok.next(), "= malloc|kmalloc") || (!isC && Token::simpleMatch(tok.next(), "= new char [")) ||
                 (Token::Match(tok.next(), "= %name% (") && library->returnuninitdata.find(tok.strAt(2)) != library->returnuninitdata.end())) {
                 alloc_pointer(checks, tok.varId());
                 if (tok.strAt(3) == "(")

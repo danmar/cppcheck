@@ -22,6 +22,7 @@
 #include "tokenlist.h"
 #include "token.h"
 #include <cstring>
+#include <sstream>
 
 
 class TestTokenList : public TestFixture {
@@ -44,6 +45,13 @@ private:
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("9894494448401390090", tokenlist.front()->str());
+        // that is supposed to break on 32bit
+        //unsigned long numberUL(0);
+        //std::istringstream(tokenlist.front()->str()) >> numberUL;
+        //ASSERT_EQUALS(9894494448401390090U, numberUL);
+        unsigned long long numberULL(0);
+        std::istringstream(tokenlist.front()->str()) >> numberULL;
+        ASSERT_EQUALS(9894494448401390090U, numberULL);
     }
 
     void line1() const {
