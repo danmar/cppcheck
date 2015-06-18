@@ -629,7 +629,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             }
 
             else if (Token::Match(tok, "&&|%oror%")) {
-                if (tok->str() == "||" && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
+                if (printStyle && (tok->str() == "||") && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
                     const Token* tok2 = tok->astOperand2()->astOperand1();
                     if (isOppositeCond(tok->astOperand1(), tok2, _settings->library.functionpure)) {
                         redundantConditionError(tok, tok2->expressionString() + ". 'A && (!A || B)' is equivalent to 'A || B'");
