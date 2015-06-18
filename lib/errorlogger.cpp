@@ -235,7 +235,13 @@ std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
         } else {
             std::ostringstream es;
             // straight cast to (unsigned) doesn't work out.
-            es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << (unsigned)(unsigned char)*from;
+            const unsigned uFrom = (unsigned)(unsigned char)*from;
+#if 0
+            if (uFrom<0x20)
+                es << "\\XXX";
+            else
+#endif
+                es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << uFrom;
             result += es.str();
         }
         ++from;
@@ -270,7 +276,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.OpenElement("error", false);
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
-        printer.PushAttribute("msg", _shortMessage.c_str());
+        printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
         printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
         if (_cwe)
             printer.PushAttribute("cwe", _cwe);

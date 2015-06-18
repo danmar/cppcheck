@@ -220,10 +220,21 @@ private:
     }
 
     void ToXmlV2Encoding() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        ErrorMessage msg(locs, Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", false);
-        const std::string message("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
-        ASSERT_EQUALS(message, msg.toXML(false, 2));
+        {
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+            ErrorMessage msg(locs, Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", false);
+            const std::string message("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
+            ASSERT_EQUALS(message, msg.toXML(false, 2));
+        }
+        {
+            const char code1[]="äöü";
+            const char code2[]="\x12\x00\x00\x01";
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+            ErrorMessage msg1(locs, Severity::error, std::string("Programming error.\nReading \"")+code1+"\"", "errorId", false);
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML(false, 2));
+            ErrorMessage msg2(locs, Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", false);
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML(false, 2));
+        }
     }
 
     void InconclusiveXml() const {
