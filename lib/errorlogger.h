@@ -256,6 +256,8 @@ public:
          */
         static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
 
+        static std::string fixInvalidChars(const std::string& raw);
+
         /** Short message */
         std::string _shortMessage;
 

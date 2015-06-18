@@ -3602,15 +3602,14 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 //---------------------------------------------------------------------------
 
-bool SymbolDatabase::isReservedName(const std::string& iName) const
-{
-    static const std::set<std::string> c_keywords = make_container<std::set<std::string>>() <<
+namespace {
+    const std::set<std::string> c_keywords = make_container<std::set<std::string>>() <<
             "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
             "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
             "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
             "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
             "while";
-    static const std::set<std::string> cpp_keywords = make_container<std::set<std::string>>() <<
+    const std::set<std::string> cpp_keywords = make_container<std::set<std::string>>() <<
             "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
             "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
             "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
@@ -3622,5 +3621,8 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
             "static_cast" << "struct" << "switch" << "template" << "this" << "thread_local" << "throw" <<
             "true" << "try" << "typedef" << "typeid" << "typename" << "union" << "unsigned" << "using" <<
             "virtual" << "void" << "volatile" << "wchar_t" << "while" << "xor" << "xor_eq";
+}
+bool SymbolDatabase::isReservedName(const std::string& iName) const
+{
     return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }

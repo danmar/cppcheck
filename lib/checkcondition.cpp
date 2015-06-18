@@ -24,6 +24,8 @@
 #include "checkother.h"
 #include "symboldatabase.h"
 
+#include <limits>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

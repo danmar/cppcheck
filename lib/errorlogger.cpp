@@ -29,8 +29,6 @@
 #include <sstream>
 #include <vector>
 
-static std::string fixInvalidChars(const std::string& raw);
-
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
 {
@@ -225,8 +223,8 @@ std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
-// See #5300 "Invalid encoding in XML output"
-static std::string fixInvalidChars(const std::string& raw)
+// See #5300 "Invalid encoding in XML output" and  #6431 "Invalid XML created - Invalid encoding of string literal "
+std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
 {
     std::string result;
     result.reserve(raw.length());
