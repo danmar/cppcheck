@@ -63,7 +63,8 @@ public:
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
     void checkRhs(const Token *tok, const Variable &var, Alloc alloc, const std::string &membervar);
     bool isVariableUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
-    static bool isMemberVariableAssignment(const Token *tok, const std::string &membervar);
+    int isFunctionParUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
+    bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
     bool isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const;
 
     /** ValueFlow-based checking for dead pointer usage */

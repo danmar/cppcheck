@@ -1734,53 +1734,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
 
     // Passing variable to function..
     if (Token::Match(vartok->previous(), "[(,] %name% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %name% [,)]")) {
-        // locate start parentheses in function call..
-        unsigned int argumentNumber = 0;
-        const Token *start = vartok;
-        while (start && !Token::Match(start, "[;{}(]")) {
-            if (start->str() == ")")
-                start = start->link();
-            else if (start->str() == ",")
-                ++argumentNumber;
-            start = start->previous();
-        }
-
-        // is this a function call?
-        if (start && Token::Match(start->previous(), "%name% (")) {
-            const bool address(vartok->previous()->str() == "&");
-            // check how function handle uninitialized data arguments..
-            const Function *func = start->previous()->function();
-            if (func) {
-                const Variable *arg = func->getArgumentVar(argumentNumber);
-                if (arg) {
-                    const Token *argStart = arg->typeStartToken();
-                    if (!address && Token::Match(argStart, "struct| %type% [,)]"))
-                        return true;
-                    if (!address && Token::Match(argStart, "struct| %type% %name% [,)]"))
-                        return true;
-                    if (pointer && !address && alloc == NO_ALLOC && Token::Match(argStart, "struct| %type% * %name% [,)]"))
-                        return true;
-                    while (argStart->previous() && argStart->previous()->isName())
-                        argStart = argStart->previous();
-                    if (Token::Match(argStart, "const %type% & %name% [,)]"))
-                        return true;
-                    if ((pointer || address) && alloc == NO_ALLOC && Token::Match(argStart, "const struct| %type% * %name% [,)]"))
-                        return true;
-                    if ((pointer || address) && Token::Match(argStart, "const %type% %name% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
-                        return true;
-                }
-
-            } else if (Token::Match(start->previous(), "if|while|for")) {
-                // control-flow statement reading the variable "by value"
-                return alloc == NO_ALLOC;
-            } else {
-                const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
-                const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
-                if (alloc != NO_ALLOC)
-                    return isnullbad && isuninitbad;
-                return isuninitbad && (!address || isnullbad);
-            }
-        }
+        int use = isFunctionParUsage(vartok, pointer, alloc);
+        if (use >= 0)
+            return use;
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
@@ -1880,7 +1836,70 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     return false;
 }
 
-bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::string &membervar)
+/***
+ * Is function parameter "used" so a "usage of uninitialized variable" can
+ * be written? If parameter is passed "by value" then it is "used". If it
+ * is passed "by reference" then it is not necessarily "used".
+ * @return  -1 => unknown   0 => not used   1 => used
+ */
+int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const
+{
+    if (!Token::Match(vartok->previous(), "[(,]") && !Token::Match(vartok->tokAt(-2), "[(,] &"))
+        return -1;
+
+    // locate start parentheses in function call..
+    unsigned int argumentNumber = 0;
+    const Token *start = vartok;
+    while (start && !Token::Match(start, "[;{}(]")) {
+        if (start->str() == ")")
+            start = start->link();
+        else if (start->str() == ",")
+            ++argumentNumber;
+        start = start->previous();
+    }
+
+    // is this a function call?
+    if (start && Token::Match(start->previous(), "%name% (")) {
+        const bool address(vartok->previous()->str() == "&");
+        // check how function handle uninitialized data arguments..
+        const Function *func = start->previous()->function();
+        if (func) {
+            const Variable *arg = func->getArgumentVar(argumentNumber);
+            if (arg) {
+                const Token *argStart = arg->typeStartToken();
+                if (!address && Token::Match(argStart, "struct| %type% [,)]"))
+                    return 1;
+                if (!address && Token::Match(argStart, "struct| %type% %name% [,)]"))
+                    return 1;
+                if (pointer && !address && alloc == NO_ALLOC && Token::Match(argStart, "struct| %type% * %name% [,)]"))
+                    return 1;
+                while (argStart->previous() && argStart->previous()->isName())
+                    argStart = argStart->previous();
+                if (Token::Match(argStart, "const %type% & %name% [,)]"))
+                    return 1;
+                if ((pointer || address) && alloc == NO_ALLOC && Token::Match(argStart, "const struct| %type% * %name% [,)]"))
+                    return 1;
+                if ((pointer || address) && Token::Match(argStart, "const %type% %name% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
+                    return 1;
+            }
+
+        } else if (Token::Match(start->previous(), "if|while|for")) {
+            // control-flow statement reading the variable "by value"
+            return alloc == NO_ALLOC;
+        } else {
+            const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
+            const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
+            if (alloc != NO_ALLOC)
+                return isnullbad && isuninitbad;
+            return isuninitbad && (!address || isnullbad);
+        }
+    }
+
+    // unknown
+    return -1;
+}
+
+bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::string &membervar) const
 {
     if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar) {
         if (Token::Match(tok->tokAt(3), "[=.[]"))
@@ -1893,7 +1912,10 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             ; // member variable usage
         else if (tok->tokAt(3)->isConstOp())
             ; // member variable usage
-        else
+        else if (Token::Match(tok->previous(), "[(,] %name% . %name% [,)]") &&
+                 1 == isFunctionParUsage(tok, false, NO_ALLOC)) {
+            return false;
+        } else
             return true;
     } else if (tok->strAt(1) == "=")
         return true;
@@ -1933,6 +1955,13 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
 
 bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, Alloc alloc, const std::string &membervar) const
 {
+    if (Token::Match(tok->previous(), "[(,] %name% . %name% [,)]") &&
+        tok->strAt(2) == membervar) {
+        int use = isFunctionParUsage(tok, isPointer, alloc);
+        if (use == 1)
+            return true;
+    }
+
     if (isMemberVariableAssignment(tok, membervar))
         return false;
 
