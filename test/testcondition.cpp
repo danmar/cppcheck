@@ -897,6 +897,16 @@ private:
               "  if (i || !i) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i||!i.\n", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "  if (a>b || a<=b) {}\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a>b||a<=b.\n", "", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "  if (a>b || a<b) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
@@ -1343,6 +1353,11 @@ private:
               "   if (y==0 || y!=0 && z);\n"
               "}", false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+
+        check("void f() {\n"
+              "  if (x>0 || (x<0 && y)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 // clarify conditions with bitwise operator and comparison

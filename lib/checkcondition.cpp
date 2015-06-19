@@ -358,7 +358,13 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 // Detect oppositing inner and outer conditions
 //---------------------------------------------------------------------------
 
-static bool isOppositeCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+/**
+ * Are two conditions opposite
+ * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
+ * @param cond1  condition1
+ * @param cond2  condition2
+ */
+static bool isOppositeCond(bool isNot, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
 {
     if (!cond1 || !cond2)
         return false;
@@ -392,11 +398,11 @@ static bool isOppositeCond(const Token * const cond1, const Token * const cond2,
     return ((comp1 == "==" && comp2 == "!=") ||
             (comp1 == "!=" && comp2 == "==") ||
             (comp1 == "<"  && comp2 == ">=") ||
-            (comp1 == "<"  && comp2 == ">") ||
             (comp1 == "<=" && comp2 == ">") ||
             (comp1 == ">"  && comp2 == "<=") ||
-            (comp1 == ">"  && comp2 == "<") ||
-            (comp1 == ">=" && comp2 == "<"));
+            (comp1 == ">=" && comp2 == "<") ||
+            (!isNot && ((comp1 == "<" && comp2 == ">") ||
+                        (comp1 == ">" && comp2 == "<"))));
 }
 
 void CheckCondition::oppositeInnerCondition()
@@ -488,7 +494,7 @@ void CheckCondition::oppositeInnerCondition()
         const Token *cond1 = scope->classDef->next()->astOperand2();
         const Token *cond2 = ifToken->next()->astOperand2();
 
-        if (isOppositeCond(cond1, cond2, _settings->library.functionpure))
+        if (isOppositeCond(false, cond1, cond2, _settings->library.functionpure))
             oppositeInnerConditionError(scope->classDef, cond2);
     }
 }
@@ -624,7 +630,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                 tok->astOperand1() &&
                 tok->astOperand2() &&
                 (tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
-                isOppositeCond(tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
+                isOppositeCond(true, tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
 
                 const bool alwaysTrue(tok->str() == "||");
                 incorrectLogicOperatorError(tok, tok->expressionString(), alwaysTrue);
@@ -633,7 +639,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             else if (Token::Match(tok, "&&|%oror%")) {
                 if (printStyle && (tok->str() == "||") && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
                     const Token* tok2 = tok->astOperand2()->astOperand1();
-                    if (isOppositeCond(tok->astOperand1(), tok2, _settings->library.functionpure)) {
+                    if (isOppositeCond(true, tok->astOperand1(), tok2, _settings->library.functionpure)) {
                         redundantConditionError(tok, tok2->expressionString() + ". 'A && (!A || B)' is equivalent to 'A || B'");
                     }
                 }
