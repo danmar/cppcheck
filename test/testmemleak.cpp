@@ -6194,6 +6194,7 @@ private:
 
     void run() {
         settings.inconclusive = true;
+        settings.standards.posix = true;
         settings.addEnabled("warning");
 
         LOAD_LIB_2(settings.library, "gtk.cfg");
@@ -6372,6 +6373,13 @@ private:
         check("FOO* factory() {\n"
               "    FOO* foo = new (std::nothrow) FOO;\n"
               "    return foo;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6536
+        check("struct S { S(int) {} };\n"
+              "void foo(int i) {\n"
+              "  S socket(i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
