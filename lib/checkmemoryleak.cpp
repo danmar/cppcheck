@@ -2493,18 +2493,17 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
     return alloc;
 }
 
+namespace {
+    static const std::set<std::string> ignoredFunctions = make_container< std::set<std::string> > ()
+            << "if"
+            << "for"
+            << "while"
+            << "malloc"
+            ;
+}
 
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
-    // This should be in the CheckMemoryLeak base class
-    static std::set<std::string> ignoredFunctions;
-    if (ignoredFunctions.empty()) {
-        ignoredFunctions.insert("if");
-        ignoredFunctions.insert("for");
-        ignoredFunctions.insert("while");
-        ignoredFunctions.insert("malloc");
-    }
-
     // Is struct variable a pointer?
     if (variable->isPointer()) {
         // Check that variable is allocated with malloc

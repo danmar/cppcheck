@@ -31,6 +31,7 @@
 #include "config.h"
 #include "token.h"
 #include "mathlib.h"
+#include "utils.h"
 
 class Tokenizer;
 class Settings;
@@ -1020,23 +1021,6 @@ private:
     /** list for missing types */
     std::list<Type> _blankTypes;
 };
-
-template < typename Cont >
-class make_container {
-public:
-    typedef make_container< Cont > my_type;
-    typedef typename Cont::value_type T;
-    my_type& operator<< (const T& val) {
-        data_.insert(data_.end(), val);
-        return *this;
-    }
-    operator Cont() const {
-        return data_;
-    }
-private:
-    Cont data_;
-};
-
 
 //---------------------------------------------------------------------------
 #endif // symboldatabaseH

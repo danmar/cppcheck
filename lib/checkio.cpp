@@ -93,12 +93,13 @@ struct Filepointer {
     }
 };
 
+namespace {
+    static const std::set<std::string> whitelist = make_container< std::set<std::string> > ()
+            << "clearerr" << "feof" << "ferror" << "fgetpos" << "ftell" << "setbuf" << "setvbuf" << "ungetc" << "ungetwc";
+}
+
 void CheckIO::checkFileUsage()
 {
-    static const char* _whitelist[] = {
-        "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc"
-    };
-    static const std::set<std::string> whitelist(_whitelist, _whitelist + sizeof(_whitelist)/sizeof(*_whitelist));
     const bool windows = _settings->isWindowsPlatform();
     const bool printPortability = _settings->isEnabled("portability");
     const bool printWarnings = _settings->isEnabled("warning");

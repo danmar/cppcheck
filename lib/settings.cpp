@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "path.h"
 #include "preprocessor.h"       // Preprocessor
+#include "utils.h"
 
 #include <fstream>
 #include <set>
@@ -59,6 +60,20 @@ Settings::Settings()
 #endif
 }
 
+namespace {
+    static const std::set<std::string> id = make_container< std::set<std::string> > ()
+                                            << "warning"
+                                            << "style"
+                                            << "performance"
+                                            << "portability"
+                                            << "information"
+                                            << "missingInclude"
+                                            << "unusedFunction"
+#ifdef CHECK_INTERNAL
+                                            << "internal"
+#endif
+                                            ;
+}
 std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
@@ -80,21 +95,6 @@ std::string Settings::addEnabled(const std::string &str)
     }
 
     bool handled = false;
-
-    static std::set<std::string> id;
-    if (id.empty()) {
-        id.insert("warning");
-        id.insert("style");
-        id.insert("performance");
-        id.insert("portability");
-        id.insert("information");
-        id.insert("missingInclude");
-        id.insert("unusedFunction");
-#ifdef CHECK_INTERNAL
-        id.insert("internal");
-#endif
-    }
-
     if (str == "all") {
         std::set<std::string>::const_iterator it;
         for (it = id.begin(); it != id.end(); ++it) {
