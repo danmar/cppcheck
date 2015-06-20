@@ -700,7 +700,7 @@ void CheckOther::checkRedundantAssignment()
                         else if (memAssignments.find(param1->varId()) == memAssignments.end())
                             memAssignments[param1->varId()] = tok;
                         else {
-                            const std::map<unsigned int, const Token*>::iterator it = memAssignments.find(param1->varId());
+                            const std::map<unsigned int, const Token*>::const_iterator it = memAssignments.find(param1->varId());
                             if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantCopyInSwitchError(it->second, tok, param1->str());
                             else if (printPerformance)
@@ -843,7 +843,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
                 std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                std::map<unsigned int, const Token*>::iterator i2 = varsWithBitsSet.find(tok2->varId());
+                std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -2116,8 +2116,8 @@ void CheckOther::checkInvalidFree()
                                      tok->strAt(3) == "(" ? 4 : 1;
                 const unsigned int var1 = tok->tokAt(varIndex)->varId();
                 const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
-                const std::map<unsigned int, bool>::iterator alloc1 = allocatedVariables.find(var1);
-                const std::map<unsigned int, bool>::iterator alloc2 = allocatedVariables.find(var2);
+                const std::map<unsigned int, bool>::const_iterator alloc1 = allocatedVariables.find(var1);
+                const std::map<unsigned int, bool>::const_iterator alloc2 = allocatedVariables.find(var2);
                 if (alloc1 != allocatedVariables.end()) {
                     invalidFreeError(tok, alloc1->second);
                 } else if (alloc2 != allocatedVariables.end()) {

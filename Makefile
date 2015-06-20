@@ -385,7 +385,7 @@ $(SRCDIR)/path.o: lib/path.cpp lib/cxx11emu.h lib/path.h lib/config.h
 $(SRCDIR)/preprocessor.o: lib/preprocessor.cpp lib/cxx11emu.h lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/path.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/preprocessor.o $(SRCDIR)/preprocessor.cpp
 
-$(SRCDIR)/settings.o: lib/settings.cpp lib/cxx11emu.h lib/settings.h lib/config.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/path.h lib/preprocessor.h
+$(SRCDIR)/settings.o: lib/settings.cpp lib/cxx11emu.h lib/settings.h lib/config.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/path.h lib/preprocessor.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/settings.o $(SRCDIR)/settings.cpp
 
 $(SRCDIR)/suppressions.o: lib/suppressions.cpp lib/cxx11emu.h lib/suppressions.h lib/config.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/path.h

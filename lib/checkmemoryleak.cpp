@@ -1206,7 +1206,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // throw..
-        else if (Token::Match(tok, "try|throw|catch")) {
+        else if (tokenizer->isCPP() && Token::Match(tok, "try|throw|catch")) {
             addtoken(&rettail, tok, tok->str());
             if (tok->strAt(1) == "(")
                 tok = tok->next()->link();
