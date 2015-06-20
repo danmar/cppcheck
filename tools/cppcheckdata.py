@@ -196,10 +196,14 @@ class ValueFlow:
 
     class Value:
         intvalue = None
+        tokvalue = None
         condition = None
 
         def __init__(self, element):
-            self.intvalue = int(element.get('intvalue'))
+            self.intvalue = element.get('intvalue')
+            if self.intvalue:
+                self.intvalue = int(self.intvalue)
+            self.tokvalue = element.get('tokvalue')
             self.condition = element.get('condition-line')
             if self.condition:
                 self.condition = int(self.condition)
