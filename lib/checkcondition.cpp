@@ -143,6 +143,9 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                     else if (op == "!=" && (num & num2) != ((bitop=='&') ? num2 : num))
                         assignIfError(assignTok, tok2, condition, true);
                 }
+                if (Token::Match(tok2, "%varid% %op%", varid) && tok2->next()->isAssignmentOp()) {
+                    return true;
+                }
             }
 
             bool ret1 = assignIfParseScope(assignTok, end->tokAt(2), varid, islocal, bitop, num);

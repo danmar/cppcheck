@@ -255,6 +255,22 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a) {\n" // #6662
+              "  int x = a & 1;\n"
+              "  while (x <= 4) {\n"
+              "    if (x != 5) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'x!=5' is always true.\n", errout.str());
+
+        check("void f(int a) {\n" // #6662
+              "  int x = a & 1;\n"
+              "  while ((x += 4) < 10) {\n"
+              "    if (x != 5) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatchingBitAnd() {
