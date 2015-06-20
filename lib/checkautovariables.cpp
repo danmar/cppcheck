@@ -202,11 +202,13 @@ void CheckAutoVariables::autoVariables()
                     errorReturnAddressOfFunctionParameter(tok, tok->strAt(2));
             }
             // Invalid pointer deallocation
-            else if (Token::Match(tok, "free ( %var% ) ;") || (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
+            else if ((Token::Match(tok, "%name% ( %var% ) ;") && _settings->library.dealloc(tok)) ||
+                     (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVarArray(tok))
                     errorInvalidDeallocation(tok);
-            } else if (Token::Match(tok, "free ( & %var% ) ;") || (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
+            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && _settings->library.dealloc(tok)) ||
+                       (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))
                     errorInvalidDeallocation(tok);
