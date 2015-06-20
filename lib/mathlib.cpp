@@ -617,10 +617,10 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         const bigint a = toLongNumber(first);
         const bigint b = toLongNumber(second);
-        if (a == std::numeric_limits<bigint>::min())
-            throw InternalError(0, "Internal Error: Division overflow");
         if (b == 0)
             throw InternalError(0, "Internal Error: Division by zero");
+        if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
+            throw InternalError(0, "Internal Error: Division overflow");
         return toString(toLongNumber(first) / b) + intsuffix(first, second);
     } else if (isNullValue(second)) {
         if (isNullValue(first))

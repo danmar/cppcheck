@@ -139,6 +139,7 @@ private:
         ASSERT_EQUALS("1"   , MathLib::divide("3", "2"));
         ASSERT_THROW(MathLib::divide("123", "0"), InternalError); // throw
         ASSERT_THROW(MathLib::divide("-9223372036854775808", "-1"), InternalError); // #4520 - out of range => throw
+        ASSERT_EQUALS("4611686018427387904",  MathLib::divide("-9223372036854775808", "-2")); // #6679
         MathLib::divide("123", "0.0"); // don't throw
 
         // Unknown action should throw exception
