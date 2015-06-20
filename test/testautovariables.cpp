@@ -34,6 +34,7 @@ private:
         errout.str("");
 
         Settings settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
         settings.inconclusive = inconclusive;
         settings.addEnabled("warning");
         settings.addEnabled("style");
@@ -559,6 +560,26 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #6506
+        check("struct F {\n"
+              "  void free(void*) {}\n"
+              "};\n"
+              "void foo() {\n"
+              "  char c1[1];\n"
+              "  F().free(c1);\n"
+              "  char *c2 = 0;\n"
+              "  F().free(&c2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class foo {\n"
+              "  void free(void* );\n"
+              "  void someMethod() {\n"
+              "    char **dst_copy = NULL;\n"
+              "    free(&dst_copy);\n"
+              "  }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {
