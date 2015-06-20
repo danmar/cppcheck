@@ -3436,7 +3436,7 @@ private:
               "    return 0;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:15]: (error) Instance of 'Lock' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Instance of 'Lock' object is destroyed immediately.\n", errout.str());
     }
 
     void trac3693() {
@@ -3485,7 +3485,7 @@ private:
               "    return 0 ;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'NotAFunction' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'NotAFunction' object is destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectPicksStruct() {
@@ -3496,7 +3496,7 @@ private:
               "    return true ;\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'NotAClass' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'NotAClass' object is destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickIf() {
@@ -3551,7 +3551,7 @@ private:
               "    do_something();\n"
               "}\n"
              );
-        ASSERT_EQUALS("[test.cpp:7]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickUsedObject() {
@@ -3580,7 +3580,7 @@ private:
                             "}\n";
 
         check(code, "test.cpp");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Instance of 'cb_watch_bool' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'cb_watch_bool' object is destroyed immediately.\n", errout.str());
 
         check(code, "test.c");
         ASSERT_EQUALS("", errout.str());
@@ -3627,7 +3627,7 @@ private:
                             "  Foo(char x, int y) { }\n"
                             "};\n";
         check(code, "test.cpp");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
     void testMisusedScopeObjectNoCodeAfter() {

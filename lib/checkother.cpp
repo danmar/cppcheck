@@ -1969,9 +1969,11 @@ void CheckOther::mathfunctionCallWarning(const Token *tok, const std::string& ol
 void CheckOther::checkMisusedScopedObject()
 {
     // Skip this check for .c files
-    if (_tokenizer->isC()) {
+    if (_tokenizer->isC())
         return;
-    }
+
+    if (!_settings->isEnabled("style"))
+        return;
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1993,7 +1995,7 @@ void CheckOther::checkMisusedScopedObject()
 
 void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
 {
-    reportError(tok, Severity::error,
+    reportError(tok, Severity::style,
                 "unusedScopedObject", "Instance of '" + varname + "' object is destroyed immediately.");
 }
 
