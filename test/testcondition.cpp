@@ -49,6 +49,7 @@ private:
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
+        TEST_CASE(testBug5309);
 
         TEST_CASE(modulo);
 
@@ -1438,6 +1439,15 @@ private:
               "        ;\n"
               "}");
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Redundant condition: If init == 9894494448401390090, the comparison init == 9965707617509186058 is always true.\n", errout.str());
+    }
+
+    void testBug5309() {
+        check("extern uint64_t value;\n"
+              "void foo() {\n"
+              "    if( ( value >= 0x7ff0000000000001ULL )\n"
+              "            && ( value <= 0x7fffffffffffffffULL ) );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
