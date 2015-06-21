@@ -3,42 +3,72 @@
 
 from lxml import etree
 
-
+## Token class. Contains information about each token in the source code.
 class Token:
     Id = None
+    ## Token string
     str = None
+    ## Next token in tokenlist. For last token, next is None.
     next = None
+    ## Previous token in tokenlist. For first token, previous is None,
     previous = None
-    scopeId = None
-    scope = None
-    isName = None
-    isNumber = None
-    isInt = None
-    isFloat = None
-    isString = None
-    strlen = None
-    isChar = None
-    isOp = None
-    isArithmeticalOp = None
-    isAssignmentOp = None
-    isComparisonOp = None
-    isLogicalOp = None
     linkId = None
+    ## Linked token in tokenlist. Each '(', '[' and '{' are linked to the
+    # corresponding '}', ']' and ')'. For templates, the '<' is linked to
+    # the corresponding '>'.
     link = None
+    scopeId = None
+    ## Scope information for this token. See the Scope class.
+    scope = None
+    ## Is this token a symbol name
+    isName = False
+    ## Is this token a number, for example 123, 12.34
+    isNumber = False
+    ## Is this token a int value such as 1234
+    isInt = False
+    ## Is this token a int value such as 12.34
+    isFloat = False
+    ## Is this token a string literal such as "hello"
+    isString = False
+    ## string length for string literal
+    strlen = None
+    ## Is this token a char literal such as 'x'
+    isChar = False
+    ## Is this token a operator
+    isOp = False
+    ## Is this token a arithmetic operator
+    isArithmeticalOp = False
+    ## Is this token a assignment operator
+    isAssignmentOp = False
+    ## Is this token a comparison operator
+    isComparisonOp = False
+    ## Is this token a logical operator: && ||
+    isLogicalOp = False
+    ## varId for token, each variable has a unique non-zero id
     varId = None
     variableId = None
+    ## Variable information for this token. See the Variable class.
     variable = None
     functionId = None
+    ## If this token points at a function call, this attribute has the Function information. See the Function class.
     function = None
     valuesId = None
+    ## Possible values of token
     values = None
+    
     astParentId = None
+    ## syntax tree parent
     astParent = None
     astOperand1Id = None
+    ## syntax tree operand1
     astOperand1 = None
     astOperand2Id = None
+    ## syntax tree operand2
     astOperand2 = None
+
+    ## file name
     file = None
+    ## line number
     linenr = None
 
     def __init__(self, element):
