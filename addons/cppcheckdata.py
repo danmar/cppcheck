@@ -162,13 +162,13 @@ class Variable:
     typeStartToken = None
     typeEndTokenId = None
     typeEndToken = None
-    isArgument = None
-    isArray = None
-    isClass = None
-    isLocal = None
-    isPointer = None
-    isReference = None
-    isStatic = None
+    isArgument = False
+    isArray = False
+    isClass = False
+    isLocal = False
+    isPointer = False
+    isReference = False
+    isStatic = False
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -178,13 +178,13 @@ class Variable:
         self.typeStartToken = None
         self.typeEndTokenId = element.get('typeEndToken')
         self.typeEndToken = None
-        self.isArgument = element.get('isArgument')
-        self.isArray = element.get('isArray')
-        self.isClass = element.get('isClass')
-        self.isLocal = element.get('isLocal')
-        self.isPointer = element.get('isPointer')
-        self.isReference = element.get('isReference')
-        self.isStatic = element.get('isStatic')
+        self.isArgument = element.get('isArgument') == 'true'
+        self.isArray = element.get('isArray') == 'true'
+        self.isClass = element.get('isClass') == 'true'
+        self.isLocal = element.get('isLocal') == 'true'
+        self.isPointer = element.get('isPointer') == 'true'
+        self.isReference = element.get('isReference') == 'true'
+        self.isStatic = element.get('isStatic') == 'true'
 
     def setId(self, IdMap):
         self.nameToken = IdMap[self.nameTokenId]
