@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.70 dev</title>
 
-    <date>2015-01-03</date>
+    <date>2015-06-20</date>
   </bookinfo>
 
   <chapter>
@@ -366,8 +366,8 @@ cppcheck -DA --force file.c</programlisting>
           <term><sgmltag>cwe</sgmltag></term>
 
           <listitem>
-            <para>CWE ID for message. This attribute is only used
-	    when the CWE ID for the message is known.</para>
+            <para>CWE ID for message. This attribute is only used when the CWE
+            ID for the message is known.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1192,7 +1192,8 @@ Checking unusedvar.cpp...
 
     <para>To get started writing rules, see the related articles here:</para>
 
-    <para><ulink url="http://sourceforge.net/projects/cppcheck/files/Articles/">http://sourceforge.net/projects/cppcheck/files/Articles/</ulink></para>
+    <para><ulink
+    url="http://sourceforge.net/projects/cppcheck/files/Articles/">http://sourceforge.net/projects/cppcheck/files/Articles/</ulink></para>
 
     <para>The file format for rules is:</para>
 
@@ -1294,53 +1295,172 @@ Checking unusedvar.cpp...
   </chapter>
 
   <chapter>
-    <title>Cppcheck extensions with Python</title>
+    <title>Cppcheck addons</title>
 
-    <para>Using dump files it is possible to write Cppcheck extensions with
-    for instance Python.</para>
+    <para>Cppcheck addons are implemented as standalone scripts or programs.
+    With Cppcheck addons, you can for instance:</para>
 
-    <para>The <literal>cppcheckdata.py</literal> module
-      (<ulink url="http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py">http://github.com/danmar/cppcheck/blob/master/tools/cppcheckdata.py</ulink>)
-    allows you to load such dump file. It contains
-    <literal>Token</literal>/<literal>Variable</literal>/<literal>ValueFlow.Value</literal>/<literal>Scope</literal>
-    classes that are similar to the <literal>C++</literal> classes in
-    <literal>Cppcheck</literal>-core. The doxygen information for the
-    <literal>C++</literal> classes should be somewhat useful for Python
-    developers also.</para>
+    <itemizedlist>
+      <listitem>
+        <para>add extra custom checkers that use sophisticated analysis</para>
+      </listitem>
+
+      <listitem>
+        <para>visualize your code</para>
+      </listitem>
+
+      <listitem>
+        <para>etc</para>
+      </listitem>
+    </itemizedlist>
 
     <section>
-      <title>Simple checker: Division by zero</title>
+      <title>Using Cppcheck addons</title>
 
-      <para>Here is a simple checker:</para>
+      <para>Currently there are two steps to use an addon:</para>
 
-      <programlisting>import cppcheckdata
+      <orderedlist>
+        <listitem>
+          <para>Run Cppcheck to generate dump files</para>
+        </listitem>
 
-data = cppcheckdata.parsedump('1.c.dump')
+        <listitem>
+          <para>Run the addon on the dump files</para>
+        </listitem>
+      </orderedlist>
 
-for token in data.tokenlist:
-    if token.str == '/' or token.str == '%':
-        # Get denominator (2nd operand)
-        den = token.astOperand2
+      <para>The <literal>--dump</literal> flag is used to generate dump files.
+      To generate a dump file for every source file in the foo/ folder:</para>
 
-        # Can denominator be zero?
-        if den.getValue(0):
-            print '[' + token.file + ':' + str(token.linenr) + '] Division by zero'</programlisting>
+      <programlisting>cppcheck --dump foo/</programlisting>
 
-      <para>Example usage:</para>
+      <para>To run a addon script on all dump files in the foo/ folder:</para>
 
-      <para><programlisting>cppcheck --dump 1.c
-python divzero.py</programlisting></para>
+      <programlisting>python addon.py foo/*.dump</programlisting>
+
+      <section>
+        <title>Where to find some Cppcheck addons</title>
+
+        <para>There are a few addons that can be downloaded.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Addons provided by the Cppcheck project, currently just a
+            simple threadsafety checker:
+            <uri>http://github.com/danmar/cppcheck/blob/master/addons</uri></para>
+          </listitem>
+
+          <listitem>
+            <para>ublinter, a project that wants to "lint" for "undefined
+            behaviour": <uri>http://github.com/danmar/ublinter</uri></para>
+          </listitem>
+        </itemizedlist>
+
+        <para>We would be happy to add a link to your addon here (no matter if
+        it's commercial or free).</para>
+      </section>
     </section>
 
     <section>
-      <title>Licensing</title>
+      <title>Writing Cppcheck addons</title>
 
-      <para>The dump file is just a xml file, so it is an open interface
-      without restrictions. You can use it in any way you need.</para>
+      <para>Cppcheck generates dump files in XML format that contains:</para>
 
-      <para>The <literal>cppcheckdata.py</literal> is also free to use. No
-      matter if your project is open source or closed source. Use it for any
-      purpose.</para>
+      <itemizedlist>
+        <listitem>
+          <para>Token list</para>
+        </listitem>
+
+        <listitem>
+          <para>Syntax trees</para>
+        </listitem>
+
+        <listitem>
+          <para>Symbol database (functions, classes, variables, all scopes,
+          ..)</para>
+        </listitem>
+
+        <listitem>
+          <para>Known values (value flow analysis)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Cppcheck can't execute addons directly. There is no direct
+      interface. This means there are not much restrictions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>You can use any licensing you want for your addons</para>
+        </listitem>
+
+        <listitem>
+          <para>You can use an arbitrary script/programming language to write
+          addons</para>
+        </listitem>
+
+        <listitem>
+          <para>The user interface and output is defined by you</para>
+        </listitem>
+
+        <listitem>
+          <para>You can use addons for other use cases than generating
+          warnings</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>For your convenience, Cppcheck provides cppcheckdata.py that you
+      can use to access Cppcheck data from Python. Using this is
+      optional.</para>
+
+      <section>
+        <title>Example 1 - print all tokens</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printtokens(data):
+    for token in data.tokenlist:
+        print(token.str)
+
+for arg in sys.argv[1:]:
+    printtokens(cppcheckdata.parse(arg))</programlisting>
+      </section>
+
+      <section>
+        <title>Example 2 - List all functions</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printfunctions(data):
+    for scope in data.scopes:
+        if scope.type == 'Function':
+            print(scope.className)
+
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
+
+      <section>
+        <title>Example 3 - List all classes</title>
+
+        <para>Script:</para>
+
+        <programlisting>import sys
+import cppcheckdata
+
+def printclasses(data):
+    for scope in data.scopes:
+        if scope.type == 'Class':
+            print(scope.className)
+
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
     </section>
   </chapter>
 
