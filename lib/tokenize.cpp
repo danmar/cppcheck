@@ -1396,6 +1396,10 @@ void Tokenizer::simplifyTypedef()
 
                         // skip over variable name if there
                         if (!inCast) {
+                            if (!tok2 || !tok2->next()) {
+                                syntaxError(nullptr);
+                                return;
+                            }
                             if (tok2->next()->str() != ")")
                                 tok2 = tok2->next();
                         }

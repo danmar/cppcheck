@@ -1,3 +1,4 @@
+
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
@@ -123,6 +124,7 @@ private:
         TEST_CASE(garbageCode82);
         TEST_CASE(garbageCode83);
         TEST_CASE(garbageCode84);
+        TEST_CASE(garbageCode85);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -679,6 +681,10 @@ private:
 
     void garbageCode84() { // #6780
         checkCode("int main ( [ ] ) { " " [ ] ; int i = 0 ; do { } ; } ( [ ] ) { }"); // do not crash
+    }
+
+    void garbageCode85() { // #6784
+        ASSERT_THROW(checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"), InternalError); // do not crash
     }
 
     void garbageValueFlow() {
