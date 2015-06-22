@@ -1435,7 +1435,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
     }
 
     bool bFirstAssignment=false;
-    for (; tok != end; tok = tok->next()) {
+    for (; tok && tok != end; tok = tok->next()) {
         if (tok->str() == "goto")
             return false;
         if (tok->str() == "continue")

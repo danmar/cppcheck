@@ -122,6 +122,7 @@ private:
         TEST_CASE(garbageCode81);
         TEST_CASE(garbageCode82);
         TEST_CASE(garbageCode83);
+        TEST_CASE(garbageCode84);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -674,6 +675,10 @@ private:
 
     void garbageCode83() { // #6771
         ASSERT_THROW(checkCode("namespace A { class } class A { friend C ; } { } ;"), InternalError);
+    }
+
+    void garbageCode84() { // #6780
+        checkCode("int main ( [ ] ) { " " [ ] ; int i = 0 ; do { } ; } ( [ ] ) { }"); // do not crash
     }
 
     void garbageValueFlow() {
