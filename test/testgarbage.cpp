@@ -125,6 +125,7 @@ private:
         TEST_CASE(garbageCode83);
         TEST_CASE(garbageCode84);
         TEST_CASE(garbageCode85);
+        TEST_CASE(garbageCode86);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -685,6 +686,10 @@ private:
 
     void garbageCode85() { // #6784
         ASSERT_THROW(checkCode("{ } { } typedef void ( *VoidFunc() ) ( ) ; VoidFunc"), InternalError); // do not crash
+    }
+
+    void garbageCode86() { // #6785
+        ASSERT_THROW(checkCode("{ } typedef char ( *( X ) ( void) , char ) ;"), InternalError); // do not crash
     }
 
     void garbageValueFlow() {

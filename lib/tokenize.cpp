@@ -973,8 +973,17 @@ void Tokenizer::simplifyTypedef()
             argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
+            if (!argFuncRetStart)
+            {
+                syntaxError(tokOffset);
+                return;
+            }
             argFuncRetEnd = argFuncRetStart->link();
-
+            if (!argFuncRetEnd)
+            {
+                syntaxError(tokOffset);
+                return;
+            }
             tok = argFuncRetEnd->next();
         } else if (Token::Match(tokOffset, "( * ( %type% ) (")) {
             functionRetFuncPtr = true;
@@ -985,8 +994,17 @@ void Tokenizer::simplifyTypedef()
             argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
+            if (!argFuncRetStart)
+            {
+                syntaxError(tokOffset);
+                return;
+            }
             argFuncRetEnd = argFuncRetStart->link();
-
+            if (!argFuncRetEnd)
+            {
+                syntaxError(tokOffset);
+                return;
+            }
             tok = argFuncRetEnd->next();
         }
 
