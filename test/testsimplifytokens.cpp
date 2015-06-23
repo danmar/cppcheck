@@ -3278,8 +3278,7 @@ private:
 
     void enum26() { // ticket #2975 (segmentation fault)
         const char code[] = "enum E {} e enum\n";
-        checkSimplifyEnum(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(checkSimplifyEnum(code), InternalError);
     }
 
     void enum27() { // ticket #3005 (segmentation fault)

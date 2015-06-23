@@ -973,14 +973,12 @@ void Tokenizer::simplifyTypedef()
             argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            if (!argFuncRetStart)
-            {
+            if (!argFuncRetStart) {
                 syntaxError(tokOffset);
                 return;
             }
             argFuncRetEnd = argFuncRetStart->link();
-            if (!argFuncRetEnd)
-            {
+            if (!argFuncRetEnd) {
                 syntaxError(tokOffset);
                 return;
             }
@@ -994,14 +992,12 @@ void Tokenizer::simplifyTypedef()
             argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            if (!argFuncRetStart)
-            {
+            if (!argFuncRetStart) {
                 syntaxError(tokOffset);
                 return;
             }
             argFuncRetEnd = argFuncRetStart->link();
-            if (!argFuncRetEnd)
-            {
+            if (!argFuncRetEnd) {
                 syntaxError(tokOffset);
                 return;
             }
@@ -7537,8 +7533,10 @@ void Tokenizer::simplifyEnum()
             ++classLevel;
         } else if (tok->str() == "enum") {
             Token *temp = tok->next();
-            if (!temp)
+            if (!temp) {
+                syntaxError(tok);
                 break;
+            }
             if (Token::Match(temp, "class|struct"))
                 temp = temp->next();
             if (!temp)

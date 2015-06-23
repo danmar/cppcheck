@@ -212,12 +212,13 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
             }
             if (level > 0) {
                 errorToken=tok;
+                syntaxError(tok);
                 return true;
             }
         }
     }
 
-    return 0;
+    return false;
 }
 
 unsigned int TemplateSimplifier::templateParameters(const Token *tok)
@@ -1421,7 +1422,7 @@ void TemplateSimplifier::simplifyTemplates(
                 templates2.push_back(*iter1);
         }
 
-        for (std::list<Token *>::iterator it = templates2.begin(); it != templates2.end(); ++it) {
+        for (std::list<Token *>::const_iterator it = templates2.begin(); it != templates2.end(); ++it) {
             std::list<Token *>::iterator it1 = std::find(templates.begin(), templates.end(), *it);
             if (it1 != templates.end()) {
                 templates.erase(it1);
@@ -1429,4 +1430,9 @@ void TemplateSimplifier::simplifyTemplates(
             }
         }
     }
+}
+
+void TemplateSimplifier::syntaxError(const Token *tok)
+{
+    throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 }
