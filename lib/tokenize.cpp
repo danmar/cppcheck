@@ -3661,52 +3661,7 @@ bool Tokenizer::simplifyTokenList2()
     simplifyOffsetPointerDereference();
 
     // Replace "&str[num]" => "(str + num)"
-    std::set<unsigned int> pod;
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isStandardType()) {
-            tok = tok->next();
-            while (tok && (tok->str() == "*" || tok->isName())) {
-                if (tok->varId() > 0) {
-                    pod.insert(tok->varId());
-                    break;
-                }
-                tok = tok->next();
-            }
-            if (!tok)
-                break;
-        }
-    }
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%num%|%name%|]|)") &&
-            (Token::Match(tok->next(), "& %name% [ %num%|%name% ] !!["))) {
-            tok = tok->next();
-
-            if (tok->next()->varId()) {
-                if (pod.find(tok->next()->varId()) == pod.end()) {
-                    tok = tok->tokAt(5);
-                    if (!tok) {
-                        syntaxError(tok);
-                        return false;
-                    }
-                    continue;
-                }
-            }
-
-            // '&' => '('
-            tok->str("(");
-
-            tok = tok->next();
-            // '[' => '+'
-            tok->deleteNext();
-            tok->insertToken("+");
-
-            tok = tok->tokAt(3);
-            //remove ']'
-            tok->str(")");
-            Token::createMutualLinks(tok->tokAt(-4), tok);
-        }
-    }
+    simplifyOffsetPointerReference();
 
     removeRedundantAssignment();
 
@@ -3729,6 +3684,14 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyIfAndWhileAssign(); // Could be affected by simplifyIfNot
 
+    // replace strlen(str)
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "strlen ( %str% )")) {
+            tok->str(MathLib::toString(Token::getStrLength(tok->tokAt(2))));
+            tok->deleteNext(3);
+        }
+    }
+
     bool modified = true;
     while (modified) {
         if (_settings->terminated())
@@ -3738,21 +3701,15 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyConditions();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
-
-        // replace strlen(str)
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "strlen ( %str% )")) {
-                tok->str(MathLib::toString(Token::getStrLength(tok->tokAt(2))));
-                tok->deleteNext(3);
-                modified = true;
-            }
-        }
+        modified |= simplifyStrlen();
 
         modified |= removeRedundantConditions();
         modified |= simplifyRedundantParentheses();
         modified |= simplifyConstTernaryOp();
         modified |= simplifyCalculations();
+        validate();
     }
+
 
     // simplify redundant loops
     simplifyWhile0();
@@ -7312,6 +7269,55 @@ void Tokenizer::simplifyOffsetPointerDereference()
     }
 }
 
+void Tokenizer::simplifyOffsetPointerReference()
+{
+    std::set<unsigned int> pod;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isStandardType()) {
+            tok = tok->next();
+            while (tok && (tok->str() == "*" || tok->isName())) {
+                if (tok->varId() > 0) {
+                    pod.insert(tok->varId());
+                    break;
+                }
+                tok = tok->next();
+            }
+            if (!tok)
+                break;
+        }
+    }
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%num%|%name%|]|)") &&
+            (Token::Match(tok->next(), "& %name% [ %num%|%name% ] !!["))) {
+            tok = tok->next();
+
+            if (tok->next()->varId()) {
+                if (pod.find(tok->next()->varId()) == pod.end()) {
+                    tok = tok->tokAt(5);
+                    if (!tok) {
+                        syntaxError(tok);
+                    }
+                    continue;
+                }
+            }
+
+            // '&' => '('
+            tok->str("(");
+
+            tok = tok->next();
+            // '[' => '+'
+            tok->deleteNext();
+            tok->insertToken("+");
+
+            tok = tok->tokAt(3);
+            //remove ']'
+            tok->str(")");
+            Token::createMutualLinks(tok->tokAt(-4), tok);
+        }
+    }
+}
+
 void Tokenizer::simplifyNestedStrcat()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -10415,6 +10421,20 @@ void Tokenizer::simplifyMathExpressions()
             }
         }
     }
+}
+
+bool Tokenizer::simplifyStrlen()
+{
+    // replace strlen(str)
+    bool modified=false;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "strlen ( %str% )")) {
+            tok->str(MathLib::toString(Token::getStrLength(tok->tokAt(2))));
+            tok->deleteNext(3);
+            modified=true;
+        }
+    }
+    return modified;
 }
 
 void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const

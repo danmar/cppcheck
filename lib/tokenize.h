@@ -186,6 +186,12 @@ public:
      */
     void simplifyOffsetPointerDereference();
 
+    /**
+       * Simplify referencing a pointer offset:
+       *     "Replace "&str[num]" => "(str + num)"
+       */
+    void simplifyOffsetPointerReference();
+
     /** Insert array size where it isn't given */
     void arraySize();
 
@@ -690,6 +696,12 @@ public:
     * Remove [[deprecated]] (C++14) from TokenList
     */
     void simplifyDeprecated();
+
+    /**
+     * Replace strlen(str)
+     * @return true if any replacement took place, false else
+     * */
+    bool simplifyStrlen();
 
     /**
      * check for duplicate enum definition
