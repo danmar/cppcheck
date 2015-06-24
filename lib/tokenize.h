@@ -40,6 +40,10 @@ class TimerResults;
 
 /** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class CPPCHECKLIB Tokenizer {
+
+    friend class TestSimplifyTokens;
+    friend class TestSimplifyTypedef;
+    friend class TestTokenizer;
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
@@ -528,6 +532,8 @@ public:
      */
     static std::string simplifyString(const std::string &source);
 
+private:
+
     /**
      * Change "int const x;" into "const int x;"
      */
@@ -586,11 +592,15 @@ public:
      */
     void createLinks2();
 
+public:
+
     /** Syntax error */
     void syntaxError(const Token *tok) const;
 
     /** Syntax error. Example: invalid number of ')' */
     void syntaxError(const Token *tok, char c) const;
+
+private:
 
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok) const;
@@ -729,10 +739,13 @@ public:
 
     void unsupportedTypedef(const Token *tok) const;
 
+public:
+
     /** Was there templates in the code? */
     bool codeWithTemplates() const {
         return _codeWithTemplates;
     }
+
 
     void setSettings(const Settings *settings) {
         _settings = settings;
@@ -758,6 +771,7 @@ public:
     unsigned int varIdCount() const {
         return _varId;
     }
+
 
     /**
      * Simplify e.g. 'return(strncat(temp,"a",1));' into

@@ -3574,6 +3574,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Split up variable declarations.
     simplifyVarDecl(false);
 
+    validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
+
     if (m_timerResults) {
         Timer t("Tokenizer::tokenize::setVarId", _settings->_showtime, m_timerResults);
         setVarId();
