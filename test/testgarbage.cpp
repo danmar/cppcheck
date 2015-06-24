@@ -579,8 +579,8 @@ private:
     }
 
     void garbageCode58() { // #6732, #6762
-        //ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
-        //ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
+        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
+        ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
     }
 
     void garbageCode59() { // #6735
