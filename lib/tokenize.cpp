@@ -5371,7 +5371,10 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
         }
-
+        if (!tok) {
+            syntaxError(tokBegin);
+            return;
+        }
         if (only_k_r_fpar && finishedwithkr) {
             if (Token::Match(tok, "(|[|{")) {
                 tok = tok->link();
