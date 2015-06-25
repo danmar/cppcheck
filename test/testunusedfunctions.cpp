@@ -49,6 +49,7 @@ private:
         TEST_CASE(initializer_list);
         TEST_CASE(member_function_ternary);
         TEST_CASE(boost);
+        TEST_CASE(canBeStatic);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -57,7 +58,7 @@ private:
         TEST_CASE(ignore_declaration); // ignore declaration
     }
 
-    void check(const char code[]) {
+    void check(const char code[], bool function_can_be_static=false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -72,6 +73,7 @@ private:
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
+        checkUnusedFunctions.configureFunctionCanBeStaticTest(function_can_be_static);
         checkUnusedFunctions.check(this);
     }
 
@@ -377,6 +379,58 @@ private:
 
         check("void f(void) {}\n"
               "void (*list[])(void) = {f}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void canBeStatic() {
+        check("int f1()\n"
+              "{\n"
+              "}\n"
+              "int main()\n"
+              "{\n"
+              "    f1();"
+              "}\n", true
+             );
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f1' is used in this file only. It can be made static.\n", errout.str());
+
+        // ensure global static functions don't issue a style warning
+        check("static int f1()\n"
+              "{\n"
+              "}\n"
+              "int main()\n"
+              "{\n"
+              "    f1();"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        // ensure class functions are quiet
+        check("struct Foo {\n"
+              "    void F1() {}\n"
+              "};\n"
+              "int main() {\n"
+              "    Foo foo;\n"
+              "    foo.F1();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        // test that anonymous namespaces are quiet
+        check("namespace {\n"
+              "    void F1() {}\n"
+              "};\n"
+              "int main() {\n"
+              "    F1();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        // declaration has the static keyword, implementation not
+        check("static int f1();\n"
+              "int f1()\n"
+              "{\n"
+              "}\n"
+              "int main()\n"
+              "{\n"
+              "    f1();"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

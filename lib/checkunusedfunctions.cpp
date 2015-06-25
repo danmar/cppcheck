@@ -56,6 +56,14 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         FunctionUsage &usage = _functions[func->name()];
 
+        // Check if function is part of the global scope (standalone function)
+        if (scope->functionOf == NULL && !func->isStaticLocal()) {
+            // make sure function is not part of an anonymous namespace.
+            // Those are preferred over the static keyword in C++
+            if (func->nestedIn && func->nestedIn->type == Scope::eGlobal)
+                usage.isGlobalNonStatic = true;
+        }
+
         if (!usage.lineNumber)
             usage.lineNumber = func->token->linenr();
 
@@ -228,13 +236,9 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
             else
                 filename = func.filename;
             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
-        } else if (! func.usedOtherFile) {
-            /** @todo add error message "function is only used in <file> it can be static" */
-            /*
-            std::ostringstream errmsg;
-            errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
-            _errorLogger->reportErr( errmsg.str() );
-            */
+        } else if (! func.usedOtherFile && function_can_be_static_test) {
+            if (func.isGlobalNonStatic)
+                functionCanBeStaticError(errorLogger, func.filename, func.lineNumber, it->first);
         }
     }
 }
@@ -258,6 +262,25 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         reportError(errmsg);
 }
 
+void CheckUnusedFunctions::functionCanBeStaticError(ErrorLogger * const errorLogger,
+        const std::string &filename, unsigned int lineNumber,
+        const std::string &funcname)
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (!filename.empty()) {
+        ErrorLogger::ErrorMessage::FileLocation fileLoc;
+        fileLoc.setfile(filename);
+        fileLoc.line = lineNumber;
+        locationList.push_back(fileLoc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList, Severity::style, "The function '" + funcname + "' is used in this file only. It can be made static.", "functionCanBeStatic", false);
+    if (errorLogger)
+        errorLogger->reportErr(errmsg);
+    else
+        reportError(errmsg);
+}
+
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     if (settings->isEnabled("unusedFunction") && settings->_jobs == 1)
@@ -270,4 +293,9 @@ void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*>
 {
     (void)fileInfo;
     instance.check(&errorLogger);
+}
+
+void CheckUnusedFunctions::configureFunctionCanBeStaticTest(bool enable)
+{
+    function_can_be_static_test = enable;
 }
