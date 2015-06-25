@@ -320,7 +320,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
                 std::getline(code, line);
 
-                unsigned int row;
+                unsigned int row=0;
                 std::istringstream fiss(line);
                 if (fiss >> row) {
                     // Update the current line number
@@ -955,6 +955,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 ;
             else if (Token::simpleMatch(tok->astParent(), "(") &&
                      Token::simpleMatch(tok->astParent()->astParent(), "[") &&
+                     tok->astParent()->astParent()->astOperand1() &&
                      tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
                 ;
             else
