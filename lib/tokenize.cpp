@@ -954,10 +954,16 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->tokAt(-2);
             argStart = tokOffset;
             argEnd = tokOffset->link();
-
+            if (!argEnd) {
+                syntaxError(arrayStart);
+                return;
+            }
             argFuncRetStart = argEnd->tokAt(2);
             argFuncRetEnd = argFuncRetStart->link();
-
+            if (!argFuncRetEnd) {
+                syntaxError(argFuncRetStart);
+                return;
+            }
             tok = argFuncRetEnd->next();
         }
 
@@ -990,7 +996,10 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->tokAt(-2);
             argStart = tokOffset;
             argEnd = tokOffset->link();
-
+            if (!argEnd) {
+                syntaxError(arrayStart);
+                return;
+            }
             argFuncRetStart = argEnd->tokAt(2);
             if (!argFuncRetStart) {
                 syntaxError(tokOffset);
@@ -1012,6 +1021,10 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset;
             arrayStart = tokOffset->tokAt(2);
             arrayEnd = arrayStart->link();
+            if (!arrayEnd) {
+                syntaxError(arrayStart);
+                return;
+            }
             tok = arrayEnd->next();
         }
 

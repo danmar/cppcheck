@@ -129,6 +129,7 @@ private:
         TEST_CASE(garbageCode87);
         TEST_CASE(garbageCode88);
         TEST_CASE(garbageCode89);
+        TEST_CASE(garbageCode90);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -705,6 +706,10 @@ private:
 
     void garbageCode89() { // #6772
         ASSERT_THROW(checkCode("{ { ( ) } P ( ) ^ { } { } { } ( ) } 0"), InternalError); // do not crash
+    }
+
+    void garbageCode90() { // #6790
+        ASSERT_THROW(checkCode("{ } { } typedef int u_array [[ ] ; typedef u_array & u_array_ref] ( ) { } u_array_ref_gbl_obj0"), InternalError); // do not crash
     }
 
     void garbageValueFlow() {
