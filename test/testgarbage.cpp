@@ -131,6 +131,7 @@ private:
         TEST_CASE(garbageCode89);
         TEST_CASE(garbageCode90);
         TEST_CASE(garbageCode91);
+        TEST_CASE(garbageCode92);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -715,6 +716,10 @@ private:
 
     void garbageCode91() { // #6791
         checkCode("typedef __attribute__((vector_size (16))) { return[ (v2df){ } ;] }"); // do not crash
+    }
+
+    void garbageCode92() { // #6792
+        ASSERT_THROW(checkCode("template < typename _Tp ( ( ) ; _Tp ) , decltype > { } { ( ) ( ) }"), InternalError); // do not crash
     }
 
     void garbageValueFlow() {
