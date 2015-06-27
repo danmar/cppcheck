@@ -18,6 +18,7 @@
 
 #include "mathlib.h"
 #include "testsuite.h"
+#include <clocale>
 
 
 class TestMathLib : public TestFixture {
@@ -311,6 +312,14 @@ private:
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0."));
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("-0.0"));
         ASSERT_EQUALS_DOUBLE(0.0   , MathLib::toDoubleNumber("+0.0"));
+
+        // Ticket #6795
+        std::setlocale(LC_NUMERIC, "de_DE") ||
+        std::setlocale(LC_NUMERIC, "de_DE.ISO8859-1") ||
+        std::setlocale(LC_NUMERIC, "de_DE.ISO8859-15") ||
+        std::setlocale(LC_NUMERIC, "de_DE.UTF8");
+        ASSERT_EQUALS_DOUBLE(10.1  , MathLib::toDoubleNumber("10.1"));
+        std::setlocale(LC_NUMERIC, "");
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0" , MathLib::toString(MathLib::toDoubleNumber("1.0f")));
