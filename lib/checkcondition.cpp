@@ -279,13 +279,13 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
     reportError(tok, Severity::style, "comparisonError", errmsg);
 }
 
-static bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const
 {
     if (!cond1 || !cond2)
         return false;
 
     // same expressions
-    if (isSameExpression(cond1,cond2,constFunctions))
+	if (isSameExpression(_tokenizer, cond1,cond2,constFunctions))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'
@@ -308,7 +308,7 @@ static bool isOverlappingCond(const Token * const cond1, const Token * const con
         if (!num2->isNumber() || MathLib::isNegative(num2->str()))
             return false;
 
-        if (!isSameExpression(expr1,expr2,constFunctions))
+        if (!isSameExpression(_tokenizer, expr1,expr2,constFunctions))
             return false;
 
         const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
@@ -361,22 +361,16 @@ void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
 // Detect oppositing inner and outer conditions
 //---------------------------------------------------------------------------
 
-/**
- * Are two conditions opposite
- * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
- * @param cond1  condition1
- * @param cond2  condition2
- */
-static bool isOppositeCond(bool isNot, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+bool CheckCondition::isOppositeCond(bool isNot, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const
 {
     if (!cond1 || !cond2)
         return false;
 
     if (cond1->str() == "!")
-        return isSameExpression(cond1->astOperand1(), cond2, constFunctions);
+        return isSameExpression(_tokenizer, cond1->astOperand1(), cond2, constFunctions);
 
     if (cond2->str() == "!")
-        return isSameExpression(cond1, cond2->astOperand1(), constFunctions);
+        return isSameExpression(_tokenizer, cond1, cond2->astOperand1(), constFunctions);
 
     if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
         return false;
@@ -385,11 +379,11 @@ static bool isOppositeCond(bool isNot, const Token * const cond1, const Token * 
 
     // condition found .. get comparator
     std::string comp2;
-    if (isSameExpression(cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
-        isSameExpression(cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
+    if (isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
+        isSameExpression(_tokenizer, cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
         comp2 = cond2->str();
-    } else if (isSameExpression(cond1->astOperand1(), cond2->astOperand2(), constFunctions) &&
-               isSameExpression(cond1->astOperand2(), cond2->astOperand1(), constFunctions)) {
+    } else if (isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand2(), constFunctions) &&
+               isSameExpression(_tokenizer, cond1->astOperand2(), cond2->astOperand1(), constFunctions)) {
         comp2 = cond2->str();
         if (comp2[0] == '>')
             comp2[0] = '<';
@@ -693,9 +687,9 @@ void CheckCondition::checkIncorrectLogicOperator()
                 if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
                     continue;
 
-                if (isSameExpression(comp1, comp2, _settings->library.functionpure))
+                if (isSameExpression(_tokenizer, comp1, comp2, _settings->library.functionpure))
                     continue; // same expressions => only report that there are same expressions
-                if (!isSameExpression(expr1, expr2, _settings->library.functionpure))
+                if (!isSameExpression(_tokenizer, expr1, expr2, _settings->library.functionpure))
                     continue;
 
                 const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);

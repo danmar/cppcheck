@@ -129,7 +129,7 @@ void TestFixture::assert_(const char *filename, unsigned int linenr, bool condit
     }
 }
 
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+void TestFixture::_assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
         ++fails_counter;
@@ -154,23 +154,6 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
             errmsg << "_____" << std::endl;
         }
     }
-}
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
-{
-    assertEquals(filename, linenr, std::string(expected), actual, msg);
-}
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
-{
-    assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
-}
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
-{
-    assertEquals(filename, linenr, expected, std::string(actual), msg);
-}
-
-void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
-{
-    assertEquals(filename, linenr, MathLib::toString(expected), MathLib::toString(actual), msg);
 }
 
 void TestFixture::assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg) const

@@ -366,7 +366,7 @@ private:
 
         const struct Library::PodType *type = library.podtype("s16");
         ASSERT_EQUALS(2U,   type ? type->size : 0U);
-        ASSERT_EQUALS(0,    type ? type->sign : '?');
+        ASSERT_EQUALS((char)0,    type ? type->sign : '?');
     }
 
     void container() const {

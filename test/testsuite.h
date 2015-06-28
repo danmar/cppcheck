@@ -51,12 +51,36 @@ protected:
 
     void assert_(const char *filename, unsigned int linenr, bool condition) const;
     void todoAssert(const char *filename, unsigned int linenr, bool condition) const;
+	void _assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const;
 
+	template <typename E, typename A>
+	void assertEquals(const char *filename, unsigned int linenr, const E expected, const A actual, const std::string &msg = emptyString) const {
+		_assertEquals(filename, linenr, MathLib::toString(expected), MathLib::toString(actual), msg);
+	}
+
+	template<>
+	void assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+	{
+		assertEquals(filename, linenr, std::string(expected), actual, msg);
+	}
+	template<>
+	void assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+	{
+		assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
+	}
+	template<>
+	void assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+	{
+		assertEquals(filename, linenr, expected, std::string(actual), msg);
+	}
+/*
     void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     void assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
     void assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
     void assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
     void assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
+	void assertEquals(const char *filename, unsigned int linenr, unsigned long long expected, unsigned long long actual, const std::string &msg = emptyString) const;
+*/
     void assertEqualsDouble(const char *filename, unsigned int linenr, double expected, double actual, const std::string &msg = emptyString) const;
 
     void todoAssertEquals(const char *filename, unsigned int linenr, const std::string &wanted,
