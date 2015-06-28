@@ -72,7 +72,7 @@ private:
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
-        checkUnusedFunctions.check(this);
+        checkUnusedFunctions.check(this, settings);
     }
 
     void incondition() {
@@ -349,8 +349,6 @@ private:
             // Clear the error buffer..
             errout.str("");
 
-            Settings settings;
-
             Tokenizer tokenizer2(&settings, this);
             std::istringstream istr(code);
             tokenizer2.tokenize(istr, fname.str().c_str());
@@ -359,7 +357,7 @@ private:
         }
 
         // Check for unused functions..
-        c.check(this);
+        c.check(this, settings);
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }

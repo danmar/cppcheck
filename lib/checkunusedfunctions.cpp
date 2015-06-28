@@ -209,14 +209,14 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
 
 
-void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
+void CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
 {
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" ||
-            (_settings->isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
+            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
             it->first == "if" ||
             (it->first.compare(0, 8, "operator") == 0 && it->first.size() > 8 && !std::isalnum(it->first[8])))
             continue;
@@ -268,5 +268,5 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
 void CheckUnusedFunctions::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
     (void)fileInfo;
-    check(&errorLogger);
+    check(&errorLogger, settings);
 }
