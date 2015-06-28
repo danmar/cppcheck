@@ -508,7 +508,7 @@ static bool loadDbgHelp()
 {
     hLibDbgHelp = ::LoadLibraryW(L"Dbghelp.dll");
     if (!hLibDbgHelp)
-        return true;
+        return false;
     pStackWalk64 = (fpStackWalk64) ::GetProcAddress(hLibDbgHelp, "StackWalk64");
     pSymGetModuleBase64 = (fpSymGetModuleBase64) ::GetProcAddress(hLibDbgHelp, "SymGetModuleBase64");
     pSymGetSymFromAddr64 = (fpSymGetSymFromAddr64) ::GetProcAddress(hLibDbgHelp, "SymGetSymFromAddr64");
@@ -583,7 +583,7 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
                 "%lu. 0x%08I64X in ",
                 frame, (ULONG64)stack.AddrPC.Offset);
         fputs((const char *)undname, f);
-        fputs("\n", f);
+        fputc('\n', f);
         if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
             break;
     }
@@ -595,20 +595,21 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
 static void writeMemoryErrorDetails(FILE* f, PEXCEPTION_POINTERS ex, const char* description)
 {
     fputs(description, f);
+	fprintf(f, " (instruction: 0x%p) ", ex->ExceptionRecord->ExceptionAddress);
     // Using %p for ULONG_PTR later on, so it must have size identical to size of pointer
     // This is not the universally portable solution but good enough for Win32/64
     C_ASSERT(sizeof(void*) == sizeof(ex->ExceptionRecord->ExceptionInformation[1]));
     switch (ex->ExceptionRecord->ExceptionInformation[0]) {
     case 0:
-        fprintf(f, " reading from 0x%p",
+        fprintf(f, "reading from 0x%p",
                 ex->ExceptionRecord->ExceptionInformation[1]);
         break;
     case 1:
-        fprintf(f, " writing at 0x%p",
+        fprintf(f, "writing to 0x%p",
                 ex->ExceptionRecord->ExceptionInformation[1]);
         break;
     case 8:
-        fprintf(f, " data execution prevention at 0x%p",
+        fprintf(f, "data execution prevention at 0x%p",
                 ex->ExceptionRecord->ExceptionInformation[1]);
         break;
     default:
@@ -695,7 +696,7 @@ static int filterException(int code, PEXCEPTION_POINTERS ex)
                 code);
         break;
     }
-    fputs("\n", f);
+    fputc('\n', f);
     PrintCallstack(f, ex);
     fflush(f);
     return EXCEPTION_EXECUTE_HANDLER;
