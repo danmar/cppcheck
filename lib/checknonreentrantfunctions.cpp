@@ -57,7 +57,7 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
                     continue;
 
                 // Check for "std" or global namespace, ignore other namespaces
-				if (_tokenizer->isCPP() && prev->str() == "::" && prev->previous() && prev->previous()->str() != "std" && prev->previous()->isName())
+                if (_tokenizer->isCPP() && prev->str() == "::" && prev->previous() && prev->previous()->str() != "std" && prev->previous()->isName())
                     continue;
             }
 

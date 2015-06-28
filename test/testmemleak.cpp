@@ -672,7 +672,7 @@ private:
             }
         }
 
-		Tokenizer tokenizer;
+        Tokenizer tokenizer;
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.simplifycode(tokens);
 

@@ -690,7 +690,7 @@ void CppCheck::analyseWholeProgram()
 {
     // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        (*it)->analyseWholeProgram(fileInfo, *this);
+        (*it)->analyseWholeProgram(fileInfo, _settings, *this);
 }
 
 bool CppCheck::unusedFunctionCheckIsEnabled() const

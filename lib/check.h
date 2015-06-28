@@ -97,8 +97,9 @@ public:
         return nullptr;
     }
 
-    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, ErrorLogger &errorLogger) {
+    virtual void analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
         (void)fileInfo;
+        (void)settings;
         (void)errorLogger;
     }
 

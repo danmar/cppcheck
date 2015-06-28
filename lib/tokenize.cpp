@@ -9859,7 +9859,7 @@ namespace {
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-	if (!_settings->isWindowsPlatform())
+    if (!_settings->isWindowsPlatform())
         return;
 
     const bool ansi = _settings->platformType == Settings::Win32A;
@@ -9892,7 +9892,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 void Tokenizer::simplifyBorland()
 {
     // skip if not Windows
-	if (!_settings->isWindowsPlatform())
+    if (!_settings->isWindowsPlatform())
         return;
     if (isC())
         return;
@@ -9909,8 +9909,7 @@ void Tokenizer::simplifyBorland()
             tok = tok->link();
             if (!tok)
                 break;
-        }
-        else if (Token::Match(tok, "class %name% :|{")) {
+        } else if (Token::Match(tok, "class %name% :|{")) {
             while (tok && tok->str() != "{" && tok->str() != ";")
                 tok = tok->next();
             if (!tok)

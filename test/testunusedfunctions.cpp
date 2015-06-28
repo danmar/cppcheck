@@ -57,13 +57,13 @@ private:
         TEST_CASE(ignore_declaration); // ignore declaration
     }
 
-    void check(const char code[]) {
+    void check(const char code[], Settings::PlatformType platform = Settings::Unspecified) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
         settings.addEnabled("style");
-
+        settings.platform(platform);
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -228,10 +228,10 @@ private:
         check("int main() { }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }");
+        check("int _tmain() { }", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
 
-        check("int WinMain() { }");
+        check("int WinMain() { }", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -334,8 +334,8 @@ private:
 
     void multipleFiles() {
         Settings settings;
-		Tokenizer tokenizer(&settings, this);
-		CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
+        Tokenizer tokenizer(&settings, this);
+        CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
 
         // Clear the error buffer..
         errout.str("");
