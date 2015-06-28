@@ -595,7 +595,7 @@ static void PrintCallstack(FILE* f, PEXCEPTION_POINTERS ex)
 static void writeMemoryErrorDetails(FILE* f, PEXCEPTION_POINTERS ex, const char* description)
 {
     fputs(description, f);
-	fprintf(f, " (instruction: 0x%p) ", ex->ExceptionRecord->ExceptionAddress);
+    fprintf(f, " (instruction: 0x%p) ", ex->ExceptionRecord->ExceptionAddress);
     // Using %p for ULONG_PTR later on, so it must have size identical to size of pointer
     // This is not the universally portable solution but good enough for Win32/64
     C_ASSERT(sizeof(void*) == sizeof(ex->ExceptionRecord->ExceptionInformation[1]));
