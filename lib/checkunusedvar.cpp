@@ -94,6 +94,7 @@ public:
 
     private:
         /** No implementation */
+        ScopeGuard();
         ScopeGuard& operator=(const ScopeGuard &);
 
         Variables & _guarded;

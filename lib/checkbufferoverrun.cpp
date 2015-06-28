@@ -1417,6 +1417,8 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
             case 'X':
             case 'i':
                 i_d_x_f_found = true;
+                handleNextParameter = true;
+                break;
             case 'c':
             case 'e':
             case 'E':

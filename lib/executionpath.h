@@ -35,6 +35,7 @@ class SymbolDatabase;
 class CPPCHECKLIB ExecutionPath {
 private:
     /** No implementation */
+    ExecutionPath();
     ExecutionPath& operator=(const ExecutionPath &);
 
 protected:
