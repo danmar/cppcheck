@@ -997,7 +997,7 @@ private:
               "        throw 1;\n"
               "    }\n"
               "    free(p);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char *p, int x) {\n"
@@ -1006,7 +1006,7 @@ private:
               "        throw 1;\n"
               "    }\n"
               "    delete p;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char *p, int x) {\n"
@@ -1015,7 +1015,7 @@ private:
               "        throw 1;\n"
               "    }\n"
               "    delete [] p;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1063,8 +1063,8 @@ private:
         check("void f() {\n"
               "    char *p = malloc(10);\n"
               "    throw 123;\n"
-              "}");
-        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
 
         check("void f() {\n"
               "    char *p;\n"
@@ -1073,7 +1073,7 @@ private:
               "        throw 123;\n"
               "    } catch (...) { }\n"
               "    free(p);\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1155,7 +1155,7 @@ private:
               "  double *new = malloc(1*sizeof(double));\n"
               "  free(new);\n"
               "  return 0;\n"
-              "}");
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 };

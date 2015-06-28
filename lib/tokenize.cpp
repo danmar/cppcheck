@@ -2243,19 +2243,19 @@ static Token *skipTernaryOp(Token *tok)
     return tok;
 }
 
-Token * Tokenizer::startOfFunction(Token * tok)
+Token * Tokenizer::startOfFunction(Token * tok) const
 {
     if (tok && tok->str() == ")") {
         tok = tok->next();
         while (tok && tok->str() != "{") {
-            if (Token::Match(tok, "const|volatile")) {
+            if (isCPP() && Token::Match(tok, "const|volatile")) {
                 tok = tok->next();
-            } else if (tok->str() == "noexcept") {
+            } else if (isCPP() && tok->str() == "noexcept") {
                 tok = tok->next();
                 if (tok && tok->str() == "(") {
                     tok = tok->link()->next();
                 }
-            } else if (tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
+            } else if (isCPP() && tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
                 tok = tok->next()->link()->next();
             }
             // unknown macros ") MACRO {" and ") MACRO(...) {"
@@ -4217,7 +4217,7 @@ void Tokenizer::simplifyFlowControl()
             } else if (Token::Match(tok,"return|goto") ||
                        (Token::Match(tok->previous(), "[;{}] %name% (") &&
                         _settings->library.isnoreturn(tok)) ||
-                       (tok->str() == "throw" && !isC())) {
+                       (isCPP() && tok->str() == "throw")) {
                 //TODO: ensure that we exclude user-defined 'exit|abort|throw', except for 'noreturn'
                 //catch the first ';'
                 for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -9859,9 +9859,7 @@ namespace {
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-    if (_settings->platformType != Settings::Win32A &&
-        _settings->platformType != Settings::Win32W &&
-        _settings->platformType != Settings::Win64)
+	if (!_settings->isWindowsPlatform())
         return;
 
     const bool ansi = _settings->platformType == Settings::Win32A;
@@ -9894,9 +9892,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 void Tokenizer::simplifyBorland()
 {
     // skip if not Windows
-    if (_settings->platformType != Settings::Win32A &&
-        _settings->platformType != Settings::Win32W &&
-        _settings->platformType != Settings::Win64)
+	if (!_settings->isWindowsPlatform())
         return;
     if (isC())
         return;
@@ -9914,7 +9910,6 @@ void Tokenizer::simplifyBorland()
             if (!tok)
                 break;
         }
-
         else if (Token::Match(tok, "class %name% :|{")) {
             while (tok && tok->str() != "{" && tok->str() != ";")
                 tok = tok->next();

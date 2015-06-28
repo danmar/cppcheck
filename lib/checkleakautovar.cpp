@@ -158,7 +158,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Deallocation and then dereferencing pointer..
         if (tok->varId() > 0) {
-            const std::map<unsigned int, VarInfo::AllocInfo>::iterator var = alloctype.find(tok->varId());
+            const std::map<unsigned int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(tok->varId());
             if (var != alloctype.end()) {
                 if (var->second.status == VarInfo::DEALLOC && (!Token::Match(tok, "%name% =") || tok->strAt(-1) == "*")) {
                     deallocUseError(tok, tok->str());
@@ -373,7 +373,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // throw
-        else if (tok->str() == "throw") {
+        else if (_tokenizer->isCPP() && tok->str() == "throw") {
             bool tryFound = false;
             const Scope* scope = tok->scope();
             while (scope && scope->isExecutable()) {

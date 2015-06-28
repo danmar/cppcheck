@@ -840,7 +840,7 @@ private:
     /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
 
-    static Token * startOfFunction(Token * tok);
+    Token * startOfFunction(Token * tok) const;
     static Token * startOfExecutableScope(Token * tok) {
         return const_cast<Token*>(startOfExecutableScope(const_cast<const Token *>(tok)));
     }

@@ -672,7 +672,8 @@ private:
             }
         }
 
-        CheckMemoryLeakInFunction checkMemoryLeak(nullptr, &settings, this);
+		Tokenizer tokenizer;
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.simplifycode(tokens);
 
         return list.front()->stringifyList(0, false);

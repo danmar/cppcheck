@@ -1736,7 +1736,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     if (Token::Match(vartok->previous(), "[(,] %name% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %name% [,)]")) {
         const int use = isFunctionParUsage(vartok, pointer, alloc);
         if (use >= 0)
-            return use;
+            return (use>0);
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {

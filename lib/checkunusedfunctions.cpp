@@ -51,7 +51,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             continue;
 
         // Don't care about templates
-        if (func->retDef->str() == "template")
+		if (tokenizer.isCPP() && func->retDef->str() == "template")
             continue;
 
         FunctionUsage &usage = _functions[func->name()];
@@ -216,8 +216,7 @@ void CheckUnusedFunctions::check(ErrorLogger * const errorLogger)
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" ||
-            it->first == "WinMain" ||
-            it->first == "_tmain" ||
+			(_settings->isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
             it->first == "if" ||
             (it->first.compare(0, 8, "operator") == 0 && it->first.size() > 8 && !std::isalnum(it->first[8])))
             continue;

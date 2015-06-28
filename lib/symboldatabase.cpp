@@ -659,7 +659,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     const Token* scopeBegin = argStart->link()->next();
                     if (scopeBegin->isName()) { // Jump behind 'const' or unknown Macro
                         scopeBegin = scopeBegin->next();
-                        if (scopeBegin->str() == "throw")
+                        if (_tokenizer->isCPP() && scopeBegin->str() == "throw")
                             scopeBegin = scopeBegin->next();
 
                         if (scopeBegin->link() && scopeBegin->str() == "(") // Jump behind unknown macro of type THROW(...)

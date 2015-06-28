@@ -333,7 +333,9 @@ private:
     }
 
     void multipleFiles() {
-        CheckUnusedFunctions c;
+        Settings settings;
+		Tokenizer tokenizer(&settings, this);
+		CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
 
         // Clear the error buffer..
         errout.str("");
@@ -349,11 +351,11 @@ private:
 
             Settings settings;
 
-            Tokenizer tokenizer(&settings, this);
+            Tokenizer tokenizer2(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, fname.str().c_str());
+            tokenizer2.tokenize(istr, fname.str().c_str());
 
-            c.parseTokens(tokenizer, "someFile.c", &settings);
+            c.parseTokens(tokenizer2, "someFile.c", &settings);
         }
 
         // Check for unused functions..
