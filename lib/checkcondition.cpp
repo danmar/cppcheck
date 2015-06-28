@@ -285,7 +285,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         return false;
 
     // same expressions
-	if (isSameExpression(_tokenizer, cond1,cond2,constFunctions))
+    if (isSameExpression(_tokenizer, cond1,cond2,constFunctions))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'

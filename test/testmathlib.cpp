@@ -264,11 +264,11 @@ private:
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.E-1"));
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
-		
-		ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
-		ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
-		ASSERT_EQUALS(9894494448401390090, MathLib::toULongNumber("0x89504e470d0a1a0a"));
-		ASSERT_EQUALS(9965707617509186058, MathLib::toULongNumber("0x8a4d4e470d0a1a0a"));
+
+        ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
+        ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
+        ASSERT_EQUALS(9894494448401390090ULL, MathLib::toULongNumber("0x89504e470d0a1a0a"));
+        ASSERT_EQUALS(9965707617509186058ULL, MathLib::toULongNumber("0x8a4d4e470d0a1a0a"));
 
         // zero input
         ASSERT_EQUALS(0    , MathLib::toULongNumber("0"));
@@ -286,7 +286,12 @@ private:
         ASSERT_EQUALS(5U, MathLib::toULongNumber("0b101"));
 
         // from long long
-        ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
+        /*
+        * ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
+         * This does not work in a portable way!
+         * While it succeds on 32bit Visual Studio it fails on Linux 64bit because it is greater than 0x7FFFFFFFFFFFFFFF (=LLONG_MAX)
+               */
+
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
 
         // -----------------

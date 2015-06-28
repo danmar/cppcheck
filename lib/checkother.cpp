@@ -83,12 +83,12 @@ bool isSameExpression(const Tokenizer *tokenizer, const Token *tok1, const Token
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
-	if (tokenizer->isCPP()) {
-		if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
-			tok1 = tok1->astOperand2();
-		if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
-			tok2 = tok2->astOperand2();
-	}
+    if (tokenizer->isCPP()) {
+        if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
+            tok1 = tok1->astOperand2();
+        if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
+            tok2 = tok2->astOperand2();
+    }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
@@ -197,13 +197,13 @@ void CheckOther::checkCastIntToCharAndBack()
                 if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
                     checkCastIntToCharAndBackError(tok, tok->strAt(2));
                 }
-			} else if (_tokenizer->isCPP() && Token::Match(tok, "EOF %comp% ( %var% = std :: cin . get (") || Token::Match(tok, "EOF %comp% ( %var% = cin . get (")) {
+            } else if (_tokenizer->isCPP() && (Token::Match(tok, "EOF %comp% ( %var% = std :: cin . get (") || Token::Match(tok, "EOF %comp% ( %var% = cin . get ("))) {
                 tok = tok->tokAt(3);
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
                     checkCastIntToCharAndBackError(tok, "cin.get");
                 }
-            } else if (_tokenizer->isCPP() && Token::Match(tok, "%var% = std :: cin . get (") || Token::Match(tok, "%var% = cin . get (")) {
+            } else if (_tokenizer->isCPP() && (Token::Match(tok, "%var% = std :: cin . get (") || Token::Match(tok, "%var% = cin . get ("))) {
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
                     vars[tok->varId()] = "cin.get";
