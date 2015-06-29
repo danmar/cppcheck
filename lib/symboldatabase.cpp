@@ -54,8 +54,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if (Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
-            tok->strAt(-1) != "friend") {
+        if ((_tokenizer->isCPP() && Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") && tok->strAt(-1) != "friend")
+            || (_tokenizer->isC() && Token::Match(tok, "struct|union| %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
@@ -105,7 +105,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 }
 
                 // definition may be different than declaration
-                if (tok->str() == "class") {
+                if (_tokenizer->isCPP() && tok->str() == "class") {
                     access[new_scope] = Private;
                     new_scope->type = Scope::eClass;
                 } else if (tok->str() == "struct") {

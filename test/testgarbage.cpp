@@ -132,6 +132,7 @@ private:
         TEST_CASE(garbageCode90);
         TEST_CASE(garbageCode91);
         TEST_CASE(garbageCode92);
+        TEST_CASE(garbageCode93);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -511,6 +512,7 @@ private:
 
     void garbageCode40() { // #6620
         checkCode("{ ( ) () { virtual } ; { } E } A { : { } ( ) } * const ( ) const { }");
+        ASSERT_THROW(checkCode("{ ( ) () { virtual } ; { } E } A { : { } ( ) } * const ( ) const { }", "test.c"), InternalError);
     }
 
     void garbageCode41() { // #6685
@@ -720,6 +722,10 @@ private:
 
     void garbageCode92() { // #6792
         ASSERT_THROW(checkCode("template < typename _Tp ( ( ) ; _Tp ) , decltype > { } { ( ) ( ) }"), InternalError); // do not crash
+    }
+
+    void garbageCode93() { // #6800
+        checkCode(" namespace A { } class A{ { }} class A : T ;", "test.c"); // do not crash
     }
 
     void garbageValueFlow() {
