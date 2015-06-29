@@ -38,13 +38,11 @@ class CPPCHECKLIB CheckNonReentrantFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckNonReentrantFunctions */
     CheckNonReentrantFunctions() : Check(myName()) {
-        initNonReentrantFunctions();
     }
 
     /** This constructor is used when running checks. */
     CheckNonReentrantFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {
-        initNonReentrantFunctions();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
@@ -57,52 +55,15 @@ public:
 
 private:
 
-    /* function name / error message */
-    std::map<std::string,std::string> _nonReentrantFunctions;
+	static std::string generateErrorMessage(const std::string& function);
 
-    /** init nonreentrant functions list ' */
-    void initNonReentrantFunctions() {
-        static const char * const non_reentrant_functions_list[] = {
-            "localtime", "gmtime", "strtok", "gethostbyname", "gethostbyaddr", "getservbyname"
-            , "getservbyport", "crypt", "ttyname", "gethostbyname2"
-            , "getprotobyname", "getnetbyname", "getnetbyaddr", "getrpcbyname", "getrpcbynumber", "getrpcent"
-            , "ctermid", "readdir", "getlogin", "getpwent", "getpwnam", "getpwuid", "getspent"
-            , "fgetspent", "getspnam", "getgrnam", "getgrgid", "getnetgrent", "tempnam", "fgetpwent"
-            , "fgetgrent", "ecvt", "gcvt", "getservent", "gethostent", "getgrent", "fcvt"
-        };
-
-        // generate messages
-        for (unsigned int i = 0; i < (sizeof(non_reentrant_functions_list) / sizeof(char *)); ++i) {
-            std::string strMsg("Non reentrant function '");
-            strMsg+=non_reentrant_functions_list[i];
-            strMsg+= "' called. For threadsafe applications it is recommended to use the reentrant replacement function '";
-            strMsg+=non_reentrant_functions_list[i];
-            strMsg+="_r'.";
-            _nonReentrantFunctions[non_reentrant_functions_list[i]] = strMsg;
-        }
-    }
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
-        CheckNonReentrantFunctions c(0, settings, errorLogger);
-
-        std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
-        for (; it!=itend; ++it) {
-            c.reportError(0, Severity::portability, "nonreentrantFunctions"+it->first, it->second);
-        }
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
 
     static std::string myName() {
         return "Non reentrant functions";
     }
 
-    std::string classInfo() const {
-        std::string info = "Warn if any of these non reentrant functions are used:\n";
-        std::map<std::string,std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
-        for (; it!=itend; ++it) {
-            info += "- " + it->first + "\n";
-        }
-        return info;
-    }
+    std::string classInfo() const;
 };
 /// @}
 //---------------------------------------------------------------------------

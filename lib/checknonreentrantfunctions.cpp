@@ -31,6 +31,21 @@ namespace {
     CheckNonReentrantFunctions instance;
 }
 
+namespace {
+    const std::set<std::string> _nonReentrantFunctions = make_container< std::set<std::string> > ()
+             << "localtime" << "gmtime" << "strtok" << "gethostbyname" << "gethostbyaddr" << "getservbyname"
+             << "getservbyport" << "crypt" << "ttyname" << "gethostbyname2"
+             << "getprotobyname" << "getnetbyname" << "getnetbyaddr" << "getrpcbyname" << "getrpcbynumber" << "getrpcent"
+             << "ctermid" << "readdir" << "getlogin" << "getpwent" << "getpwnam" << "getpwuid" << "getspent"
+             << "fgetspent" << "getspnam" << "getgrnam" << "getgrgid" << "getnetgrent" << "tempnam" << "fgetpwent"
+             << "fgetgrent" << "ecvt" << "gcvt" << "getservent" << "gethostent" << "getgrent" << "fcvt" ;
+}
+
+std::string CheckNonReentrantFunctions::generateErrorMessage(const std::string& function) {
+    return std::string("Non reentrant function '") + function + "' called. " +
+		"For threadsafe applications it is recommended to use the reentrant replacement function '" + function + "_r'.";
+}
+
 void CheckNonReentrantFunctions::nonReentrantFunctions()
 {
     if (!_settings->standards.posix || !_settings->isEnabled("portability"))
@@ -46,7 +61,7 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
                 continue;
 
             // Check for non-reentrant function name
-            std::map<std::string, std::string>::const_iterator it = _nonReentrantFunctions.find(tok->str());
+            std::set<std::string>::const_iterator it = _nonReentrantFunctions.find(tok->str());
             if (it == _nonReentrantFunctions.end())
                 continue;
 
@@ -62,8 +77,26 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
             }
 
             // Only affecting multi threaded code, therefore this is "portability"
-            reportError(tok, Severity::portability, "nonreentrantFunctions" + it->first, it->second);
+            reportError(tok, Severity::portability, "nonreentrantFunctions" + *it, generateErrorMessage(*it));
         }
     }
 }
 //---------------------------------------------------------------------------
+
+void CheckNonReentrantFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    CheckNonReentrantFunctions c(0, settings, errorLogger);
+
+    std::set<std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
+    for (; it!=itend; ++it) {
+        c.reportError(0, Severity::portability, "nonreentrantFunctions"+*it, generateErrorMessage(*it));
+    }
+}
+
+std::string CheckNonReentrantFunctions::classInfo() const {
+    std::string info = "Warn if any of these non reentrant functions are used:\n";
+    std::set<std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
+    for (; it!=itend; ++it) {
+        info += "- " + *it + "\n";
+    }
+    return info;
+}

@@ -1090,7 +1090,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                                          "Check (BufferOverrun::checkGlobalAndLocalVariable)",
                                          tok->progressValue());
 
-            if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
+            if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]")) {
                 size = MathLib::toLongNumber(tok->strAt(6));
                 type = tok->strAt(4);
                 var = tok->next()->variable();
@@ -1098,7 +1098,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (size < 0) {
                     negativeMemoryAllocationSizeError(tok->next()->next());
                 }
-            } else if (Token::Match(tok, "[*;{}] %var% = new %type% ( %num%|%name% )")) {
+            } else if (_tokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% ( %num%|%name% )")) {
                 size = 1;
                 type = tok->strAt(4);
                 var = tok->next()->variable();
