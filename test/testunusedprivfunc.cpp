@@ -722,7 +722,7 @@ private:
               "    C a;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:10]: (style) Unused private function: 'InfiniteA::foo'\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void staticVariable() {

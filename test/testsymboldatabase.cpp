@@ -260,6 +260,7 @@ private:
         TEST_CASE(functionPrototype); // ticket #5867
 
         TEST_CASE(lambda); // ticket #5867
+		TEST_CASE(circularDependencies); // 6298
     }
 
     void array() const {
@@ -2914,6 +2915,21 @@ private:
             ASSERT_EQUALS(Scope::eLambda, scope->type);
         }
     }
+	// #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
+	void circularDependencies() {
+		check("template<template<class> class E,class D> class C : E<D> {\n"
+					"	public:\n"
+					"		int f();\n"
+					"};\n"
+					"class E : C<D,int> {\n"
+					"	public:\n"
+					"		int f() { return C< ::D,int>::f(); }\n"
+					"};\n"
+					"int main() {\n"
+					"	E c;\n"
+					"	c.f();\n"
+					"}");
+	}
 };
 
 REGISTER_TEST(TestSymbolDatabase)

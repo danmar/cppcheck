@@ -122,7 +122,14 @@ public:
     * @param anchestors list of anchestors. For internal usage only, clients should not supply this argument.
     * @return true if there is a circular dependency
     */
-    bool hasCircularDependencies(std::set<BaseInfo>* anchestors = 0) const;
+    bool hasCircularDependencies(std::set<BaseInfo>* anchestors = nullptr) const;
+
+	/**
+    * Check for dependency
+    * @param anchestor potential anchestor
+    * @return true if there is a dependency
+    */
+	bool findDependency(const Type* anchestor) const;
 };
 
 /** @brief Information about a member variable. */
