@@ -142,7 +142,7 @@ private:
         TEST_CASE(templateSimplifierCrashes);
     }
 
-	std::string checkCode(const char code[], const std::string filename = "test.cpp") {
+	std::string checkCode(const char code[], const std::string& filename = "test.cpp") {
 		// double the tests - run each example as C as well as C++
 		const std::string alternatefilename = (filename=="test.c") ? "test.cpp" : "test.c";
 		// run alternate check first. It should only ensure stability
