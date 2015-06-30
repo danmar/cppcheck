@@ -332,7 +332,7 @@ int main(int argc, char **argv)
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
-                                "-Woverloaded-virtual "
+//                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wshadow "
