@@ -55,7 +55,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                                          tok->progressValue());
         // Locate next class
         if ((_tokenizer->isCPP() && Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") && tok->strAt(-1) != "friend")
-            || (_tokenizer->isC() && Token::Match(tok, "struct|union| %name% {"))) {
+            || (_tokenizer->isC() && Token::Match(tok, "struct|union %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
@@ -3603,13 +3603,13 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 //---------------------------------------------------------------------------
 
 namespace {
-    const std::set<std::string> c_keywords = make_container<std::set<std::string>>() <<
+    const std::set<std::string> c_keywords = make_container< std::set<std::string> >() <<
             "auto" << "break" << "case" << "char" << "const" << "continue" << "default" << "do" <<
             "double" << "else" << "enum" << "extern" << "float" << "for" << "goto" << "if" << "inline" <<
             "int" << "long" << "register" << "restrict" << "return" << "short" << "signed" << "sizeof" <<
             "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
             "while";
-    const std::set<std::string> cpp_keywords = make_container<std::set<std::string>>() <<
+    const std::set<std::string> cpp_keywords = make_container< std::set<std::string> >() <<
             "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
             "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
             "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
