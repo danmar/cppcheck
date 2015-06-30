@@ -1436,6 +1436,8 @@ const Token *Token::getValueTokenDeadPointer() const
         const Variable * const var = vartok->variable();
         if (var->isStatic() || var->isReference())
             continue;
+		if (!var->scope())
+			return nullptr; // #6804
         if (var->scope()->type == Scope::eUnion && var->scope()->nestedIn == this->scope())
             continue;
         // variable must be in same function (not in subfunction)
