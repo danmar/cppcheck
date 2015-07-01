@@ -135,6 +135,8 @@ private:
         TEST_CASE(garbageCode93);
         TEST_CASE(garbageCode94);
         TEST_CASE(garbageCode95);
+        TEST_CASE(garbageCode96);
+        TEST_CASE(garbageCode97);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -749,6 +751,14 @@ private:
 
     void garbageCode95() { // #6804
         checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }");    // do not crash
+    }
+
+    void garbageCode96() { // #6807
+        ASSERT_THROW(checkCode("typedef J J[ ; typedef ( ) ( ) { ; } typedef J J ;] ( ) ( J cx ) { n } ;"), InternalError);
+    }
+
+    void garbageCode97() { // #6808
+        ASSERT_THROW(checkCode("namespace A {> } class A{ { }} class A : T< ;"), InternalError);
     }
 
     void garbageValueFlow() {

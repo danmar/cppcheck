@@ -96,6 +96,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                 // only create base list for classes and structures
                 if (new_scope->isClassOrStruct()) {
                     // goto initial '{'
+                    if (!new_scope->definedType) {
+                        _tokenizer->syntaxError(nullptr); // #6808
+                    }
                     tok2 = new_scope->definedType->initBaseInfo(tok, tok2);
 
                     // make sure we have valid code
