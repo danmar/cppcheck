@@ -918,7 +918,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
                         // skip nothrow
                         if (_tokenizer->isCPP() && (Token::simpleMatch(type, "( nothrow )") ||
-                            Token::simpleMatch(type, "( std :: nothrow )")))
+                                                    Token::simpleMatch(type, "( std :: nothrow )")))
                             type = type->link()->next();
 
                         // is it a user defined type?

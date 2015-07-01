@@ -124,12 +124,12 @@ public:
     */
     bool hasCircularDependencies(std::set<BaseInfo>* anchestors = nullptr) const;
 
-	/**
+    /**
     * Check for dependency
     * @param anchestor potential anchestor
     * @return true if there is a dependency
     */
-	bool findDependency(const Type* anchestor) const;
+    bool findDependency(const Type* anchestor) const;
 };
 
 /** @brief Information about a member variable. */

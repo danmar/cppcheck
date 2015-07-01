@@ -33,17 +33,18 @@ namespace {
 
 namespace {
     const std::set<std::string> _nonReentrantFunctions = make_container< std::set<std::string> > ()
-             << "localtime" << "gmtime" << "strtok" << "gethostbyname" << "gethostbyaddr" << "getservbyname"
-             << "getservbyport" << "crypt" << "ttyname" << "gethostbyname2"
-             << "getprotobyname" << "getnetbyname" << "getnetbyaddr" << "getrpcbyname" << "getrpcbynumber" << "getrpcent"
-             << "ctermid" << "readdir" << "getlogin" << "getpwent" << "getpwnam" << "getpwuid" << "getspent"
-             << "fgetspent" << "getspnam" << "getgrnam" << "getgrgid" << "getnetgrent" << "tempnam" << "fgetpwent"
-             << "fgetgrent" << "ecvt" << "gcvt" << "getservent" << "gethostent" << "getgrent" << "fcvt" ;
+            << "localtime" << "gmtime" << "strtok" << "gethostbyname" << "gethostbyaddr" << "getservbyname"
+            << "getservbyport" << "crypt" << "ttyname" << "gethostbyname2"
+            << "getprotobyname" << "getnetbyname" << "getnetbyaddr" << "getrpcbyname" << "getrpcbynumber" << "getrpcent"
+            << "ctermid" << "readdir" << "getlogin" << "getpwent" << "getpwnam" << "getpwuid" << "getspent"
+            << "fgetspent" << "getspnam" << "getgrnam" << "getgrgid" << "getnetgrent" << "tempnam" << "fgetpwent"
+            << "fgetgrent" << "ecvt" << "gcvt" << "getservent" << "gethostent" << "getgrent" << "fcvt" ;
 }
 
-std::string CheckNonReentrantFunctions::generateErrorMessage(const std::string& function) {
+std::string CheckNonReentrantFunctions::generateErrorMessage(const std::string& function)
+{
     return std::string("Non reentrant function '") + function + "' called. " +
-		"For threadsafe applications it is recommended to use the reentrant replacement function '" + function + "_r'.";
+           "For threadsafe applications it is recommended to use the reentrant replacement function '" + function + "_r'.";
 }
 
 void CheckNonReentrantFunctions::nonReentrantFunctions()
@@ -83,7 +84,8 @@ void CheckNonReentrantFunctions::nonReentrantFunctions()
 }
 //---------------------------------------------------------------------------
 
-void CheckNonReentrantFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+void CheckNonReentrantFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
     CheckNonReentrantFunctions c(0, settings, errorLogger);
 
     std::set<std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
@@ -92,7 +94,8 @@ void CheckNonReentrantFunctions::getErrorMessages(ErrorLogger *errorLogger, cons
     }
 }
 
-std::string CheckNonReentrantFunctions::classInfo() const {
+std::string CheckNonReentrantFunctions::classInfo() const
+{
     std::string info = "Warn if any of these non reentrant functions are used:\n";
     std::set<std::string>::const_iterator it(_nonReentrantFunctions.begin()), itend(_nonReentrantFunctions.end());
     for (; it!=itend; ++it) {

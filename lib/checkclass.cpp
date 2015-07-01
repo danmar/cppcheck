@@ -1764,7 +1764,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     }
 
     // not found in this class
-    if (!scope->definedType->derivedFrom.empty() && !scope->definedType->hasCircularDependencies()) {
+    if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
         for (std::size_t i = 0; i < scope->definedType->derivedFrom.size(); ++i) {
             // find the base class
@@ -1794,7 +1794,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom && derivedFrom->classScope && !derivedFrom->hasCircularDependencies()) {
+            if (derivedFrom && derivedFrom->classScope) {
                 if (isMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }
@@ -1817,7 +1817,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
             const Type *derivedFrom = scope->definedType->derivedFrom[i].type;
 
             // find the function in the base class
-            if (derivedFrom && derivedFrom->classScope && !derivedFrom->hasCircularDependencies()) {
+            if (derivedFrom && derivedFrom->classScope) {
                 if (isConstMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }

@@ -134,7 +134,7 @@ private:
         TEST_CASE(garbageCode92);
         TEST_CASE(garbageCode93);
         TEST_CASE(garbageCode94);
-		TEST_CASE(garbageCode95);
+        TEST_CASE(garbageCode95);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -142,18 +142,17 @@ private:
         TEST_CASE(templateSimplifierCrashes);
     }
 
-	std::string checkCode(const char code[], const std::string& filename = "test.cpp") {
-		// double the tests - run each example as C as well as C++
-		const std::string alternatefilename = (filename=="test.c") ? "test.cpp" : "test.c";
-		// run alternate check first. It should only ensure stability
-		try {
-			checkCodeInternal(code, alternatefilename);
-		}
-		catch(InternalError& ) {
-		}
+    std::string checkCode(const char code[], const std::string& filename = "test.cpp") {
+        // double the tests - run each example as C as well as C++
+        const std::string alternatefilename = (filename=="test.c") ? "test.cpp" : "test.c";
+        // run alternate check first. It should only ensure stability
+        try {
+            checkCodeInternal(code, alternatefilename);
+        } catch (InternalError&) {
+        }
 
-		return checkCodeInternal(code, filename);
-	}
+        return checkCodeInternal(code, filename);
+    }
 
     std::string checkCodeInternal(const char code[], const std::string& filename) {
         errout.str("");
@@ -170,7 +169,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-		tokenizer.tokenize(istr, filename.c_str());
+        tokenizer.tokenize(istr, filename.c_str());
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -749,7 +748,7 @@ private:
     }
 
     void garbageCode95() { // #6804
-        checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }");	 // do not crash
+        checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }");    // do not crash
     }
 
     void garbageValueFlow() {

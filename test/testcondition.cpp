@@ -1455,7 +1455,7 @@ private:
               "        ;\n"
               "}");
 #ifdef _MSC_VER
-		ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 #else
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Redundant condition: If init == 9894494448401390090, the comparison init == 9965707617509186058 is always true.\n", errout.str());
 #endif

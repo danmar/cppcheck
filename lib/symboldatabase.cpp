@@ -845,15 +845,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
             // finish filling in base class info
             for (unsigned int i = 0; i < it->derivedFrom.size(); ++i) {
-				const Type* found = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
-				if (found && found->findDependency(&(*it))) {
-						// circular dependency
-						//_tokenizer->syntaxError(nullptr);
-				}
-				else {
-					it->derivedFrom[i].type = found;
-				}
-			}
+                const Type* found = findType(it->derivedFrom[i].nameTok, it->enclosingScope);
+                if (found && found->findDependency(&(*it))) {
+                    // circular dependency
+                    //_tokenizer->syntaxError(nullptr);
+                } else {
+                    it->derivedFrom[i].type = found;
+                }
+            }
         }
 
         // fill in friend info
@@ -2062,14 +2061,15 @@ bool Type::hasCircularDependencies(std::set<BaseInfo>* anchestors) const
     return false;
 }
 
-bool Type::findDependency(const Type* anchestor) const {
-	if (this==anchestor)
-		return true;
-	for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-		if (parent->type && parent->type->findDependency(anchestor))
-			return true;
-	}
-	return false;
+bool Type::findDependency(const Type* anchestor) const
+{
+    if (this==anchestor)
+        return true;
+    for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
+        if (parent->type && parent->type->findDependency(anchestor))
+            return true;
+    }
+    return false;
 }
 
 bool Variable::arrayDimensions(const Library* lib)

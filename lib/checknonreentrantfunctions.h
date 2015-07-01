@@ -55,7 +55,7 @@ public:
 
 private:
 
-	static std::string generateErrorMessage(const std::string& function);
+    static std::string generateErrorMessage(const std::string& function);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
 
