@@ -253,6 +253,13 @@ private:
         ASSERT_EQUALS(4, values.front().intvalue);
         ASSERT_EQUALS(16, values.back().intvalue);
 
+        // ? :
+        code = "x = y ? 2 : 3;\n";
+        values = tokenValues(code,"?");
+        ASSERT_EQUALS(2U, values.size());
+        ASSERT_EQUALS(2, values.front().intvalue);
+        ASSERT_EQUALS(3, values.back().intvalue);
+
         // function call => calculation
         code  = "void f(int x) {\n"
                 "    a = x + 8;\n"

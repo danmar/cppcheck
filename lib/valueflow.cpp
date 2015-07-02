@@ -329,6 +329,40 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         setTokenValue(parent,value);
     }
 
+    else if (parent->str() == ":") {
+        setTokenValue(parent,value);
+    }
+
+    else if (parent->str() == "?") {
+        // is condition only depending on 1 variable?
+        std::stack<const Token*> tokens;
+        tokens.push(parent->astOperand1());
+        std::set<unsigned int> variables;  // used variables
+        while (!tokens.empty()) {
+            const Token *t = tokens.top();
+            tokens.pop();
+            if (!t)
+                continue;
+            tokens.push(t->astOperand1());
+            tokens.push(t->astOperand2());
+            if (t->varId()) {
+                variables.insert(t->varId());
+                if (variables.size() > 1U || value.varId != 0U)
+                    return;
+            } else if (t->str() == "(" && Token::Match(t->previous(), "%name%"))
+                return; // function call
+        }
+
+        ValueFlow::Value v(value);
+
+        if (!variables.empty()) {
+            v.varId = *(variables.begin());
+            return;
+        }
+
+        setTokenValue(parent, v);
+    }
+
     // Calculations..
     else if (parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
         std::list<ValueFlow::Value>::const_iterator value1, value2;
