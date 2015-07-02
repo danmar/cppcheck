@@ -355,10 +355,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
         ValueFlow::Value v(value);
 
-        if (!variables.empty()) {
+        if (!variables.empty())
             v.varId = *(variables.begin());
-            return;
-        }
 
         setTokenValue(parent, v);
     }

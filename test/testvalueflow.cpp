@@ -260,6 +260,12 @@ private:
         ASSERT_EQUALS(2, values.front().intvalue);
         ASSERT_EQUALS(3, values.back().intvalue);
 
+        code = "void f(int a) { x = a ? 2 : 3; }\n";
+        values = tokenValues(code,"?");
+        ASSERT_EQUALS(2U, values.size());
+        ASSERT_EQUALS(2, values.front().intvalue);
+        ASSERT_EQUALS(3, values.back().intvalue);
+
         // function call => calculation
         code  = "void f(int x) {\n"
                 "    a = x + 8;\n"
