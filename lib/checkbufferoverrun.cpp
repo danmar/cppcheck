@@ -31,6 +31,7 @@
 #include <list>
 #include <cassert>     // <- assert
 #include <cstdlib>
+#include <stack>
 
 //---------------------------------------------------------------------------
 
@@ -978,6 +979,32 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 // Negative size in array declarations
 //---------------------------------------------------------------------------
 
+static bool isVLAIndex(const Token *index)
+{
+    std::stack<const Token *> tokens;
+    tokens.push(index);
+    while (!tokens.empty()) {
+        const Token *tok = tokens.top();
+        tokens.pop();
+        if (!tok)
+            continue;
+        if (tok->varId() != 0U)
+            return true;
+        if (tok->str() == "?") {
+            // this is a VLA index if both expressions around the ":" is VLA index
+            if (tok->astOperand2() &&
+                tok->astOperand2()->str() == ":" &&
+                isVLAIndex(tok->astOperand2()->astOperand1()) &&
+                isVLAIndex(tok->astOperand2()->astOperand2()))
+                return true;
+            continue;
+        }
+        tokens.push(tok->astOperand1());
+        tokens.push(tok->astOperand2());
+    }
+    return false;
+}
+
 void CheckBufferOverrun::negativeArraySize()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
@@ -989,9 +1016,9 @@ void CheckBufferOverrun::negativeArraySize()
         if (!Token::Match(nameToken, "%var% [") || !nameToken->next()->astOperand2())
             continue;
         const ValueFlow::Value *sz = nameToken->next()->astOperand2()->getValueLE(-1,_settings);
-        if (!sz)
-            continue;
-        negativeArraySizeError(nameToken);
+        // don't warn about constant negative index because that is a compiler error
+        if (sz && isVLAIndex(nameToken->next()->astOperand2()))
+            negativeArraySizeError(nameToken);
     }
 }
 

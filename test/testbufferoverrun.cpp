@@ -3820,6 +3820,13 @@ private:
               "}\n"
               "void x() { f(-100); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", errout.str());
+
+        // don't warn for constant sizes -> this is a compiler error so this is used for static assertions for instance
+        check("int x, y;\n"
+              "int a[-1];\n"
+              "int b[x?1:-1];\n"
+              "int c[x?y:-1];\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void garbage1() {
