@@ -1202,6 +1202,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code,3U,0));
         ASSERT_EQUALS(true, testValueOfX(code,3U,0x80));
+
+        code = "int f(int a) {\n"
+               "  int x = a & 0x80 ? 1 : 2;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code,3U,0));
+        ASSERT_EQUALS(false, testValueOfX(code,3U,0x80));
     }
 
     void valueFlowForLoop() {
