@@ -159,7 +159,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
-    _cwe = (unsigned)MathLib::toULongNumber(results[2]);
+    _cwe = MathLib::toULongNumber(results[2]);
     _shortMessage = results[3];
     _verboseMessage = results[4];
 
@@ -235,7 +235,7 @@ std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
         } else {
             std::ostringstream es;
             // straight cast to (unsigned) doesn't work out.
-            const unsigned uFrom = (unsigned)(unsigned char)*from;
+            const unsigned uFrom = (unsigned char)*from;
 #if 0
             if (uFrom<0x20)
                 es << "\\XXX";

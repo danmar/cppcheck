@@ -1525,9 +1525,9 @@ static void execute(const Token *expr,
         const std::string strValue = val.tokvalue->strValue();
         MathLib::bigint index = 0;
         execute(expr->astOperand2(), programMemory, &index, error);
-        if (index >= 0 && index < (int)strValue.size())
+        if (index >= 0 && index < strValue.size())
             *result = strValue[index];
-        else if (index == (int)strValue.size())
+        else if (index == strValue.size())
             *result = 0;
         else
             *error = true;
