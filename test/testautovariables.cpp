@@ -201,7 +201,27 @@ private:
               "    char a;\n"
               "    ab->a = &a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB {\n"
+              "    char *a;\n"
+              "};\n"
+              "void foo(struct AB *ab)\n"
+              "{\n"
+              "    char a;\n"
+              "    ab->a = &a;\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB {\n"
+              "    char *a;\n"
+              "};\n"
+              "void foo(struct AB *ab)\n"
+              "{\n"
+              "    char a;\n"
+              "    ab->a = &a;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar6() { // ticket #2931
@@ -217,7 +237,27 @@ private:
               "    char a[10];\n"
               "    x->str = a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X {\n"
+              "    char *str;\n"
+              "};\n"
+              "void foo(struct X *x)\n"
+              "{\n"
+              "    char a[10];\n"
+              "    x->str = a;\n"
+              "}", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X {\n"
+              "    char *str;\n"
+              "};\n"
+              "void foo(struct X *x)\n"
+              "{\n"
+              "    char a[10];\n"
+              "    x->str = a;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:7]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar7() { // ticket #3066
