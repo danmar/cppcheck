@@ -159,8 +159,7 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive) {
-                    const Variable * var1 = tok->next()->variable();
-                    if (var1 && var1->isArgument() && var1->isPointer()) {
+                    if (isPtrArg(tok->next())) {
                         const Token * const var2tok = tok->tokAt(6);
                         if (isAutoVar(var2tok) && checkRvalueExpression(var2tok))
                             errorAutoVariableAssignment(tok->next(), true);
@@ -170,8 +169,7 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive) {
-                    const Variable * var1 = tok->next()->variable();
-                    if (var1 && var1->isArgument() && var1->isPointer()) {
+                    if (isPtrArg(tok->next())) {
                         if (isAutoVarArray(tok->tokAt(5)))
                             errorAutoVariableAssignment(tok->next(), true);
                     }
