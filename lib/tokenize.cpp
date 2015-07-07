@@ -7593,22 +7593,15 @@ void Tokenizer::simplifyEnum()
             if (tok->next()->str() == ":") {
                 tok = tok->next();
 
-                if (!tok->next() || !tok->next()->isName()) {
-                    syntaxError(tok);
-                    return; // can't recover
-                }
+                typeTokenStart = tok->next();
+                typeTokenEnd = 0;
 
-                tok = tok->next();
-                typeTokenStart = tok;
-                typeTokenEnd = typeTokenStart;
-
-                while (typeTokenEnd->next() && (typeTokenEnd->next()->str() == "::" ||
-                                                Token::Match(typeTokenEnd->next(), "%type%"))) {
-                    typeTokenEnd = typeTokenEnd->next();
+                while (tok->next() && Token::Match(tok->next(), "::|%type%")) {
+                    typeTokenEnd = tok->next();
                     tok = tok->next();
                 }
 
-                if (!tok->next()) {
+                if (!tok->next() || !typeTokenEnd) {
                     syntaxError(tok);
                     return; // can't recover
                 }
