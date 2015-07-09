@@ -138,15 +138,19 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
+    const std::string::size_type strLen = str.size();
+    std::string::size_type numTrailingNotDigit = 0; // Number of trailing characters that are not digits
     if (isHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
     else if (isNullValue(str))
         return 0.0;
-    else if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
-        return std::strtod(str.c_str(), 0);
+    else if (isFloat(str)) { // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
+        while (!isdigit(str[strLen - numTrailingNotDigit - 1]))
+            ++numTrailingNotDigit;
+    }
     // otherwise, convert to double
-    std::istringstream istr(str);
+    std::istringstream istr(str.substr(0, strLen - numTrailingNotDigit));
     double ret;
     istr >> ret;
     return ret;
