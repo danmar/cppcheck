@@ -120,7 +120,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     if (isFloat(str)) {
         // Things are going to be less precise now: the value can't be represented in the bigint type.
         // Use min/max values as an approximation. See #5843
-        const double doubleval = std::atof(str.c_str());
+        const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<bigint>::max())
             return std::numeric_limits<bigint>::max();
         else if (doubleval < (double)std::numeric_limits<bigint>::min())
@@ -143,10 +143,14 @@ double MathLib::toDoubleNumber(const std::string &str)
     // nullcheck
     else if (isNullValue(str))
         return 0.0;
+#ifdef __clang__
     else if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
+        // TODO : handle locale
         return std::strtod(str.c_str(), 0);
+#endif
     // otherwise, convert to double
     std::istringstream istr(str);
+    istr.imbue(std::locale::classic());
     double ret;
     istr >> ret;
     return ret;
