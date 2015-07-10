@@ -33,6 +33,35 @@
 
 class CPPCHECKLIB MathLib {
 public:
+    /** @brief value class */
+    class value {
+    private:
+        long long intValue;
+        double doubleValue;
+        enum { INT, LONG, LONGLONG, FLOAT } type;
+        bool isUnsigned;
+
+        void promote(const value &v);
+
+    public:
+        value(const std::string &s);
+        std::string str() const;
+        bool isInt() const {
+            return type != FLOAT;
+        }
+        bool isFloat() const {
+            return type == FLOAT;
+        }
+
+        double getDoubleValue() const {
+            return isFloat() ? doubleValue : (double)intValue;
+        }
+
+        static value calc(char op, const value &v1, const value &v2);
+        int compare(const value &v) const;
+        value add(int v) const;
+    };
+
     typedef long long bigint;
     typedef unsigned long long biguint;
 
@@ -83,6 +112,15 @@ public:
      */
     static bool isOctalDigit(char c);
 };
+
+MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator-(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator*(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator/(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator%(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator&(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator|(const MathLib::value &v1, const MathLib::value &v2);
+MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 
 template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
 

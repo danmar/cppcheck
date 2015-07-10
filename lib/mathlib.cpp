@@ -25,6 +25,227 @@
 #include <cctype>
 #include <limits>
 
+
+MathLib::value::value(const std::string &s) :
+    intValue(0), doubleValue(0), isUnsigned(false)
+{
+    if (MathLib::isFloat(s)) {
+        type = MathLib::value::FLOAT;
+        doubleValue = MathLib::toDoubleNumber(s);
+        return;
+    }
+
+    if (!MathLib::isInt(s))
+        throw InternalError(0, "Invalid value");
+
+    type = MathLib::value::INT;
+    intValue = MathLib::toLongNumber(s);
+
+    // read suffix
+    if (s.size() >= 2U) {
+        for (std::size_t i = s.size() - 1U; i > 0U; --i) {
+            char c = s[i];
+            if (c == 'u' || c == 'U')
+                isUnsigned = true;
+            else if (c == 'l' || c == 'L') {
+                if (type == MathLib::value::INT)
+                    type = MathLib::value::LONG;
+                else if (type == MathLib::value::LONG)
+                    type = MathLib::value::LONGLONG;
+            }
+        }
+    }
+}
+
+std::string MathLib::value::str() const
+{
+    std::ostringstream ostr;
+    if (type == MathLib::value::FLOAT) {
+        if (std::isnan(doubleValue))
+            return "nan.0";
+        if (std::isinf(doubleValue))
+            return (doubleValue > 0) ? "inf.0" : "-inf.0";
+        ostr.precision(9);
+        ostr << std::fixed << doubleValue;
+
+        // remove trailing zeros
+        std::string ret(ostr.str());
+        std::string::size_type pos = ret.size() - 1U;
+        while (ret[pos] == '0')
+            pos--;
+        if (ret[pos] == '.')
+            ++pos;
+
+        return ret.substr(0, pos+1);
+    }
+
+    ostr << intValue;
+    if (isUnsigned)
+        ostr << "U";
+    if (type == MathLib::value::LONG)
+        ostr << "L";
+    else if (type == MathLib::value::LONGLONG)
+        ostr << "LL";
+    return ostr.str();
+}
+
+void MathLib::value::promote(const MathLib::value &v)
+{
+    if (isInt() && v.isInt()) {
+        if (type < v.type) {
+            type = v.type;
+            isUnsigned = v.isUnsigned;
+        } else if (type == v.type) {
+            isUnsigned |= v.isUnsigned;
+        }
+    } else if (!isFloat()) {
+        isUnsigned = false;
+        doubleValue = intValue;
+        type = MathLib::value::FLOAT;
+    }
+}
+
+
+MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const MathLib::value &v2)
+{
+    value temp(v1);
+    temp.promote(v2);
+    if (temp.isFloat()) {
+        switch (op) {
+        case '+':
+            temp.doubleValue += v2.getDoubleValue();
+            break;
+        case '-':
+            temp.doubleValue -= v2.getDoubleValue();
+            break;
+        case '*':
+            temp.doubleValue *= v2.getDoubleValue();
+            break;
+        case '/':
+            temp.doubleValue /= v2.getDoubleValue();
+            break;
+        case '%':
+        case '&':
+        case '|':
+        case '^':
+            throw InternalError(0, "Invalid calculation");
+        default:
+            throw InternalError(0, "Unhandled calculation");
+        }
+    } else if (temp.isUnsigned) {
+        switch (op) {
+        case '+':
+            temp.intValue += (unsigned long long)v2.intValue;
+            break;
+        case '-':
+            temp.intValue -= (unsigned long long)v2.intValue;
+            break;
+        case '*':
+            temp.intValue *= (unsigned long long)v2.intValue;
+            break;
+        case '/':
+            if (v2.intValue == 0)
+                throw InternalError(0, "Internal Error: Division by zero");
+            if (v1.intValue == std::numeric_limits<bigint>::min() && std::abs(v2.intValue)<=1)
+                throw InternalError(0, "Internal Error: Division overflow");
+            temp.intValue /= (unsigned long long)v2.intValue;
+            break;
+        case '%':
+            if (v2.intValue == 0)
+                throw InternalError(0, "Internal Error: Division by zero");
+            temp.intValue %= (unsigned long long)v2.intValue;
+            break;
+        case '&':
+            temp.intValue &= (unsigned long long)v2.intValue;
+            break;
+        case '|':
+            temp.intValue |= (unsigned long long)v2.intValue;
+            break;
+        case '^':
+            temp.intValue ^= (unsigned long long)v2.intValue;
+            break;
+        default:
+            throw InternalError(0, "Unhandled calculation");
+        }
+    } else {
+        switch (op) {
+        case '+':
+            temp.intValue += v2.intValue;
+            break;
+        case '-':
+            temp.intValue -= v2.intValue;
+            break;
+        case '*':
+            temp.intValue *= v2.intValue;
+            break;
+        case '/':
+            if (v2.intValue == 0)
+                throw InternalError(0, "Internal Error: Division by zero");
+            if (v1.intValue == std::numeric_limits<bigint>::min() && std::abs(v2.intValue)<=1)
+                throw InternalError(0, "Internal Error: Division overflow");
+            temp.intValue /= v2.intValue;
+            break;
+        case '%':
+            if (v2.intValue == 0)
+                throw InternalError(0, "Internal Error: Division by zero");
+            temp.intValue %= v2.intValue;
+            break;
+        case '&':
+            temp.intValue &= v2.intValue;
+            break;
+        case '|':
+            temp.intValue |= v2.intValue;
+            break;
+        case '^':
+            temp.intValue ^= v2.intValue;
+            break;
+        default:
+            throw InternalError(0, "Unhandled calculation");
+        }
+    }
+    return temp;
+}
+
+
+int MathLib::value::compare(const MathLib::value &v) const
+{
+    value temp(*this);
+    temp.promote(v);
+
+    if (temp.isFloat()) {
+        if (temp.doubleValue < v.getDoubleValue())
+            return -1;
+        if (temp.doubleValue > v.getDoubleValue())
+            return 1;
+        return 0;
+    }
+
+    if (temp.isUnsigned) {
+        if ((unsigned long long)intValue < (unsigned long long)v.intValue)
+            return -1;
+        if ((unsigned long long)intValue > (unsigned long long)v.intValue)
+            return 1;
+        return 0;
+    }
+
+    if (intValue < v.intValue)
+        return -1;
+    if (intValue > v.intValue)
+        return 1;
+    return 0;
+}
+
+MathLib::value MathLib::value::add(int v) const
+{
+    MathLib::value temp(*this);
+    if (temp.isInt())
+        temp.intValue += v;
+    else
+        temp.doubleValue += v;
+    return temp;
+}
+
+
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -767,4 +988,44 @@ bool MathLib::isNullValue(const std::string &str)
 bool MathLib::isOctalDigit(char c)
 {
     return (c >= '0' && c <= '7');
+}
+
+MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('+',v1,v2);
+}
+
+MathLib::value operator-(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('-',v1,v2);
+}
+
+MathLib::value operator*(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('*',v1,v2);
+}
+
+MathLib::value operator/(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('/',v1,v2);
+}
+
+MathLib::value operator%(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('%',v1,v2);
+}
+
+MathLib::value operator&(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('&',v1,v2);
+}
+
+MathLib::value operator|(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('|',v1,v2);
+}
+
+MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2)
+{
+    return MathLib::value::calc('^',v1,v2);
 }
