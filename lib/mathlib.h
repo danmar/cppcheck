@@ -44,7 +44,7 @@ public:
         void promote(const value &v);
 
     public:
-        value(const std::string &s);
+        explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {
             return type != FLOAT;
