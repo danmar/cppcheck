@@ -354,6 +354,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         }
 
         ValueFlow::Value v(value);
+        v.conditional = true;
 
         if (!variables.empty())
             v.varId = *(variables.begin());
@@ -897,6 +898,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if (tok3->varId() == varid) {
                     for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it)
                         setTokenValue(tok3, *it);
+                } else if (Token::Match(tok3, "%oror%|&&|?")) {
                     break;
                 }
             }
@@ -1143,9 +1145,20 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             {
+                // Is variable usage protected by && || ?:
+                const Token *tok3 = tok2;
+                const Token *parent = tok3->astParent();
+                while (parent && !Token::Match(parent, "%oror%|&&|:")) {
+                    tok3 = parent;
+                    parent = parent->astParent();
+                }
+                const bool conditional = parent && (parent->str() == ":" || parent->astOperand2() == tok3);
+
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = values.begin(); it != values.end(); ++it)
-                    setTokenValue(tok2, *it);
+                for (it = values.begin(); it != values.end(); ++it) {
+                    if (!conditional || !it->conditional)
+                        setTokenValue(tok2, *it);
+                }
             }
 
             // increment/decrement

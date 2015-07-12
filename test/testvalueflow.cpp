@@ -913,6 +913,12 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
 
+        code = "void f(int a) {\n" // #6826
+               "    int x = a ? a : 87;\n"
+               "    if (a && x) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 87));
+
         // pointer/reference to x
         code = "int f(void) {\n"
                "  int x = 2;\n"
