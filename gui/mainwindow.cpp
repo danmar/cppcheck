@@ -711,6 +711,7 @@ void MainWindow::CheckDone()
 
     // Notify user - if the window is not active - that check is ready
     QApplication::alert(this, 3000);
+    ShowStatistics();
 }
 
 void MainWindow::CheckLockDownUI()
