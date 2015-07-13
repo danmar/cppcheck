@@ -46,6 +46,7 @@ private:
         TEST_CASE(incorrectLogicOperator5); // complex expressions
         TEST_CASE(incorrectLogicOperator6); // char literals
         TEST_CASE(incorrectLogicOperator7); // opposite expressions: (expr || !expr)
+        TEST_CASE(incorrectLogicOperator8); // !
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -924,6 +925,13 @@ private:
               "  if (a>b || a<b) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator8() { // opposite expressions
+        check("void f(int i) {\n"
+              "  if (!(i!=10) && !(i!=20)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: !(i != 10) && !(i != 20).\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

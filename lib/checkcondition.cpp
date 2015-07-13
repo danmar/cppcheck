@@ -606,6 +606,36 @@ static inline T getvalue(const int test, const T value1, const T value2)
     return 0;
 }
 
+static bool parseComparison(const Token *comp, bool *not1, std::string *op, std::string *value, const Token **expr)
+{
+    *not1 = false;
+    while (comp && comp->str() == "!") {
+        *not1 = !(*not1);
+        comp = comp->astOperand1();
+    }
+
+    if (!comp || !comp->isComparisonOp() || !comp->astOperand1() || !comp->astOperand2())
+        return false;
+
+    if (comp->astOperand1()->isLiteral()) {
+        *op = invertOperatorForOperandSwap(comp->str());
+        *value = comp->astOperand1()->str();
+        *expr = comp->astOperand2();
+    } else if (comp->astOperand2()->isLiteral()) {
+        *op = comp->str();
+        *value = comp->astOperand2()->str();
+        *expr = comp->astOperand1();
+    } else {
+        return false;
+    }
+
+    // Only float and int values are currently handled
+    if (!MathLib::isInt(*value) && !MathLib::isFloat(*value))
+        return false;
+
+    return true;
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = _settings->isEnabled("style");
@@ -619,142 +649,124 @@ void CheckCondition::checkIncorrectLogicOperator()
         const Scope * scope = symbolDatabase->functionScopes[ii];
 
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Opposite comparisons
-            if (Token::Match(tok, "%oror%|&&") &&
-                tok->astOperand1() &&
-                tok->astOperand2() &&
-                (tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
+            if (!Token::Match(tok, "%oror%|&&") || !tok->astOperand1() || !tok->astOperand2())
+                continue;
+
+            // Opposite comparisons around || or && => always true or always false
+            if ((tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
                 isOppositeCond(true, tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
 
                 const bool alwaysTrue(tok->str() == "||");
                 incorrectLogicOperatorError(tok, tok->expressionString(), alwaysTrue);
+                continue;
             }
 
-            else if (Token::Match(tok, "&&|%oror%")) {
-                if (printStyle && (tok->str() == "||") && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
-                    const Token* tok2 = tok->astOperand2()->astOperand1();
-                    if (isOppositeCond(true, tok->astOperand1(), tok2, _settings->library.functionpure)) {
-                        redundantConditionError(tok, tok2->expressionString() + ". 'A && (!A || B)' is equivalent to 'A || B'");
-                    }
+
+            // 'A && (!A || B)' is equivalent with 'A || B'
+            if (printStyle && (tok->str() == "||") && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
+                const Token* tok2 = tok->astOperand2()->astOperand1();
+                if (isOppositeCond(true, tok->astOperand1(), tok2, _settings->library.functionpure)) {
+                    redundantConditionError(tok, tok2->expressionString() + ". 'A && (!A || B)' is equivalent to 'A || B'");
+                    continue;
                 }
-                // Comparison #1 (LHS)
-                const Token *comp1 = tok->astOperand1();
-                if (comp1 && comp1->str() == tok->str())
-                    comp1 = comp1->astOperand2();
+            }
 
-                // Comparison #2 (RHS)
-                const Token *comp2 = tok->astOperand2();
+            // Comparison #1 (LHS)
+            const Token *comp1 = tok->astOperand1();
+            if (comp1 && comp1->str() == tok->str())
+                comp1 = comp1->astOperand2();
 
-                if (!comp1 || !comp1->isComparisonOp() || !comp1->astOperand1() || !comp1->astOperand2())
-                    continue;
-                if (!comp2 || !comp2->isComparisonOp() || !comp2->astOperand1() || !comp2->astOperand2())
-                    continue;
+            // Comparison #2 (RHS)
+            const Token *comp2 = tok->astOperand2();
 
-                std::string op1, value1;
-                const Token *expr1;
-                if (comp1->astOperand1()->isLiteral()) {
-                    op1 = invertOperatorForOperandSwap(comp1->str());
-                    value1 = comp1->astOperand1()->str();
-                    expr1 = comp1->astOperand2();
-                } else if (comp1->astOperand2()->isLiteral()) {
-                    op1 = comp1->str();
-                    value1 = comp1->astOperand2()->str();
-                    expr1 = comp1->astOperand1();
+            // Parse LHS
+            bool not1;
+            std::string op1, value1;
+            const Token *expr1;
+            if (!parseComparison(comp1, &not1, &op1, &value1, &expr1))
+                continue;
+
+            // Parse RHS
+            bool not2;
+            std::string op2, value2;
+            const Token *expr2;
+            if (!parseComparison(comp2, &not2, &op2, &value2, &expr2))
+                continue;
+
+            if (isSameExpression(_tokenizer, comp1, comp2, _settings->library.functionpure))
+                continue; // same expressions => only report that there are same expressions
+            if (!isSameExpression(_tokenizer, expr1, expr2, _settings->library.functionpure))
+                continue;
+
+            const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
+
+            // don't check floating point equality comparisons. that is bad
+            // and deserves different warnings.
+            if (isfloat && (op1 == "==" || op1 == "!=" || op2 == "==" || op2 == "!="))
+                continue;
+
+            const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
+            const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
+            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toLongNumber(value1);
+            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toLongNumber(value2);
+            const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1)||(std::numeric_limits<MathLib::bigint>::max()==i2);
+            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toLongNumber(value1) : 0;
+            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toLongNumber(value2) : 0;
+            // evaluate if expression is always true/false
+            bool alwaysTrue = true, alwaysFalse = true;
+            bool firstTrue = true, secondTrue = true;
+            for (int test = 1; test <= 5; ++test) {
+                // test:
+                // 1 => testvalue is less than both value1 and value2
+                // 2 => testvalue is value1
+                // 3 => testvalue is between value1 and value2
+                // 4 => testvalue value2
+                // 5 => testvalue is larger than both value1 and value2
+                bool result1, result2;
+                if (isfloat) {
+                    const double testvalue = getvalue<double>(test, d1, d2);
+                    result1 = checkFloatRelation(op1, testvalue, d1);
+                    result2 = checkFloatRelation(op2, testvalue, d2);
+                } else if (useUnsignedInt) {
+                    const MathLib::biguint testvalue = getvalue<MathLib::biguint>(test, u1, u2);
+                    result1 = checkIntRelation(op1, testvalue, u1);
+                    result2 = checkIntRelation(op2, testvalue, u2);
                 } else {
-                    continue;
+                    const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
+                    result1 = checkIntRelation(op1, testvalue, i1);
+                    result2 = checkIntRelation(op2, testvalue, i2);
                 }
-
-                std::string op2, value2;
-                const Token *expr2;
-                if (comp2->astOperand1()->isLiteral()) {
-                    op2 = invertOperatorForOperandSwap(comp2->str());
-                    value2 = comp2->astOperand1()->str();
-                    expr2 = comp2->astOperand2();
-                } else if (comp2->astOperand2()->isLiteral()) {
-                    op2 = comp2->str();
-                    value2 = comp2->astOperand2()->str();
-                    expr2 = comp2->astOperand1();
+                if (not1)
+                    result1 = !result1;
+                if (not2)
+                    result2 = !result2;
+                if (tok->str() == "&&") {
+                    alwaysTrue &= (result1 && result2);
+                    alwaysFalse &= !(result1 && result2);
                 } else {
-                    continue;
+                    alwaysTrue &= (result1 || result2);
+                    alwaysFalse &= !(result1 || result2);
                 }
+                firstTrue &= !(!result1 && result2);
+                secondTrue &= !(result1 && !result2);
+            }
 
-                // Only float and int values are currently handled
-                if (!MathLib::isInt(value1) && !MathLib::isFloat(value1))
-                    continue;
-                if (!MathLib::isInt(value2) && !MathLib::isFloat(value2))
-                    continue;
-
-                if (isSameExpression(_tokenizer, comp1, comp2, _settings->library.functionpure))
-                    continue; // same expressions => only report that there are same expressions
-                if (!isSameExpression(_tokenizer, expr1, expr2, _settings->library.functionpure))
-                    continue;
-
-                const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
-
-                // don't check floating point equality comparisons. that is bad
-                // and deserves different warnings.
-                if (isfloat && (op1 == "==" || op1 == "!=" || op2 == "==" || op2 == "!="))
-                    continue;
-
-                const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
-                const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
-                const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toLongNumber(value1);
-                const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toLongNumber(value2);
-                const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1)||(std::numeric_limits<MathLib::bigint>::max()==i2);
-                const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toLongNumber(value1) : 0;
-                const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toLongNumber(value2) : 0;
-                // evaluate if expression is always true/false
-                bool alwaysTrue = true, alwaysFalse = true;
-                bool firstTrue = true, secondTrue = true;
-                for (int test = 1; test <= 5; ++test) {
-                    // test:
-                    // 1 => testvalue is less than both value1 and value2
-                    // 2 => testvalue is value1
-                    // 3 => testvalue is between value1 and value2
-                    // 4 => testvalue value2
-                    // 5 => testvalue is larger than both value1 and value2
-                    bool result1, result2;
-                    if (isfloat) {
-                        const double testvalue = getvalue<double>(test, d1, d2);
-                        result1 = checkFloatRelation(op1, testvalue, d1);
-                        result2 = checkFloatRelation(op2, testvalue, d2);
-                    } else if (useUnsignedInt) {
-                        const MathLib::biguint testvalue = getvalue<MathLib::biguint>(test, u1, u2);
-                        result1 = checkIntRelation(op1, testvalue, u1);
-                        result2 = checkIntRelation(op2, testvalue, u2);
-                    } else {
-                        const MathLib::bigint testvalue = getvalue<MathLib::bigint>(test, i1, i2);
-                        result1 = checkIntRelation(op1, testvalue, i1);
-                        result2 = checkIntRelation(op2, testvalue, i2);
-                    }
-                    if (tok->str() == "&&") {
-                        alwaysTrue &= (result1 && result2);
-                        alwaysFalse &= !(result1 && result2);
-                    } else {
-                        alwaysTrue &= (result1 || result2);
-                        alwaysFalse &= !(result1 || result2);
-                    }
-                    firstTrue &= !(!result1 && result2);
-                    secondTrue &= !(result1 && !result2);
-                }
-
-                const std::string cond1str = (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1;
-                const std::string cond2str = (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2;
-                if (printWarning && (alwaysTrue || alwaysFalse)) {
-                    const std::string text = cond1str + " " + tok->str() + " " + cond2str;
-                    incorrectLogicOperatorError(tok, text, alwaysTrue);
-                } else if (printStyle && secondTrue) {
-                    const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                             " is always " + (secondTrue ? "true" : "false") + ".";
-                    redundantConditionError(tok, text);
-                } else if (printStyle && firstTrue) {
-                    //const std::string text = "The comparison " + cond1str + " is always " +
-                    //                         (firstTrue ? "true" : "false") + " when " +
-                    //                         cond2str + ".";
-                    const std::string text = "If " + cond2str + ", the comparison " + cond1str +
-                                             " is always " + (firstTrue ? "true" : "false") + ".";
-                    redundantConditionError(tok, text);
-                }
+            const std::string cond1str = std::string(not1?"!(":"") + (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1 + std::string(not1?")":"");
+            const std::string cond2str = std::string(not2?"!(":"") + (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2 + std::string(not2?")":"");
+            if (printWarning && (alwaysTrue || alwaysFalse)) {
+                const std::string text = cond1str + " " + tok->str() + " " + cond2str;
+                incorrectLogicOperatorError(tok, text, alwaysTrue);
+            } else if (printStyle && secondTrue) {
+                const std::string text = "If " + cond1str + ", the comparison " + cond2str +
+                                         " is always " + (secondTrue ? "true" : "false") + ".";
+                redundantConditionError(tok, text);
+            } else if (printStyle && firstTrue) {
+                //const std::string text = "The comparison " + cond1str + " is always " +
+                //                         (firstTrue ? "true" : "false") + " when " +
+                //                         cond2str + ".";
+                const std::string text = "If " + cond2str + ", the comparison " + cond1str +
+                                         " is always " + (firstTrue ? "true" : "false") + ".";
+                redundantConditionError(tok, text);
             }
         }
     }
