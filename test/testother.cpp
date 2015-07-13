@@ -3414,6 +3414,23 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", "", errout.str());
 
+        check("class V\n"
+              "{\n"
+              "public:\n"
+              "    V()\n"
+              "    {\n"
+              "        x = y = z = 0.0;\n"
+              "    }\n"
+              "    V( double x, const double y, const double &z )\n"
+              "    {\n"
+              "        x = x; y = y; z = z;\n"
+              "    }\n"
+              "    double x, y, z;\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Redundant assignment of 'x' to itself.\n"
+                      "[test.cpp:10]: (warning) Redundant assignment of 'y' to itself.\n"
+                      "[test.cpp:10]: (warning) Redundant assignment of 'z' to itself.\n", errout.str());
+
     }
 
     void trac1132() {
