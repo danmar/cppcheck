@@ -156,6 +156,7 @@ private:
         TEST_CASE(varidclass15);  // initializer list
         TEST_CASE(varidclass16);  // #4577
         TEST_CASE(varidclass17);  // #6073
+        TEST_CASE(varidclass18);
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
         TEST_CASE(varidnamespace1);
@@ -2538,6 +2539,23 @@ private:
                                 "4: int j@3 ; j@3 = i@2 ;\n"
                                 "5: }\n"
                                 "6: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidclass18() {
+        const char code[] = "class A {\n"
+                            "    int a;\n"
+                            "    int b;\n"
+                            "    A();\n"
+                            "};\n"
+                            "A::A() : a{0} { b = 1; }";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class A {\n"
+                                "2: int a@1 ;\n"
+                                "3: int b@2 ;\n"
+                                "4: A ( ) ;\n"
+                                "5: } ;\n"
+                                "6: A :: A ( ) : a@1 { 0 } { b@2 = 1 ; }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
