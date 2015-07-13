@@ -3427,7 +3427,7 @@ private:
               "    }\n"
               "    double x, y, z;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Redundant assignment of 'x' to itself.\n"
+        TODO_ASSERT_EQUALS("", "[test.cpp:10]: (warning) Redundant assignment of 'x' to itself.\n"
                       "[test.cpp:10]: (warning) Redundant assignment of 'y' to itself.\n"
                       "[test.cpp:10]: (warning) Redundant assignment of 'z' to itself.\n", errout.str());
 
