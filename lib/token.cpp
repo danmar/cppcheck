@@ -1103,8 +1103,11 @@ void Token::astOperand1(Token *tok)
         _astOperand1->_astParent = nullptr;
     // goto parent operator
     if (tok) {
-        while (tok->_astParent)
+        while (tok->_astParent) {
+            if (tok->_astParent == this) // #6838 avoid hang on garbage code
+                throw InternalError(this, "Internal error. oken::astOperand1() recursive dependency.");
             tok = tok->_astParent;
+        }
         tok->_astParent = this;
     }
     _astOperand1 = tok;
@@ -1116,8 +1119,11 @@ void Token::astOperand2(Token *tok)
         _astOperand2->_astParent = nullptr;
     // goto parent operator
     if (tok) {
-        while (tok->_astParent)
+        while (tok->_astParent) {
+            if (tok->_astParent == this) // #6838 avoid hang on garbage code
+                throw InternalError(this, "Internal error. oken::astOperand1() recursive dependency.");
             tok = tok->_astParent;
+        }
         tok->_astParent = this;
     }
     _astOperand2 = tok;

@@ -137,6 +137,7 @@ private:
         TEST_CASE(garbageCode95);
         TEST_CASE(garbageCode96);
         TEST_CASE(garbageCode97);
+        TEST_CASE(garbageCode98);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -759,6 +760,12 @@ private:
 
     void garbageCode97() { // #6808
         ASSERT_THROW(checkCode("namespace A {> } class A{ { }} class A : T< ;"), InternalError);
+    }
+
+    void garbageCode98() { // #6838
+        ASSERT_THROW(checkCode("for (cocon To::ta@Taaaaaforconst oken aaaaaaaaaaaa5Dl()\n"
+                               "const unsiged in;\n"
+                               "fon *tok = f);.s(Token i = d-)L;"), InternalError);
     }
 
     void garbageValueFlow() {
