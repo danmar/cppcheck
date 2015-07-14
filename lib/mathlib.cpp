@@ -26,6 +26,18 @@
 #include <limits>
 
 
+#if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
+#define ISINF(x)      (!_finite(x))
+#define ISNAN(x)      (_isnan(x))
+#elif defined(__INTEL_COMPILER)
+#define ISINF(x)      (isinf(x))
+#define ISNAN(x)      (isnan(x))
+#else  // Use C++11 functions
+#define ISINF(x)      (std::isinf(x))
+#define ISNAN(x)      (std::isnan(x))
+#endif
+
+
 MathLib::value::value(const std::string &s) :
     intValue(0), doubleValue(0), isUnsigned(false)
 {
@@ -61,10 +73,11 @@ std::string MathLib::value::str() const
 {
     std::ostringstream ostr;
     if (type == MathLib::value::FLOAT) {
-        if (std::isnan(doubleValue))
+        if (ISNAN(doubleValue))
             return "nan.0";
-        if (std::isinf(doubleValue))
+        if (ISINF(doubleValue))
             return (doubleValue > 0) ? "inf.0" : "-inf.0";
+
         ostr.precision(9);
         ostr << std::fixed << doubleValue;
 
