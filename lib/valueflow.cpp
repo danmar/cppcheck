@@ -455,6 +455,13 @@ static void valueFlowNumber(TokenList *tokenlist)
         if (tok->isNumber() && MathLib::isInt(tok->str()))
             setTokenValue(tok, ValueFlow::Value(MathLib::toLongNumber(tok->str())));
     }
+
+    if (tokenlist->isCPP()) {
+        for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true"))
+                setTokenValue(tok, ValueFlow::Value(tok->str() == "true"));
+        }
+    }
 }
 
 static void valueFlowString(TokenList *tokenlist)

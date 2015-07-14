@@ -151,12 +151,9 @@ private:
     }
 
     void valueFlowNumber() {
-        const char *code;
-
-        code  = "void f() {\n"
-                "    x = 123;\n"
-                "}";
-        ASSERT_EQUALS(123, valueOfTok(code, "123").intvalue);
+        ASSERT_EQUALS(123, valueOfTok("x=123;",   "123").intvalue);
+        ASSERT_EQUALS(0,   valueOfTok("x=false;", "false").intvalue);
+        ASSERT_EQUALS(1,   valueOfTok("x=true;",  "true").intvalue);
     }
 
     void valueFlowString() {
