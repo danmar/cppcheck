@@ -6008,8 +6008,31 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Member variable 's' is initialized by itself.\n", errout.str());
 
         checkSelfInitialization("class Fred {\n"
+                                "    int x;\n"
+                                "    Fred(int x);\n"
+                                "};\n"
+                                "Fred::Fred(int x) : x(x) { }\n"
+								);
+        ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    int x;\n"
+                                "    Fred(int x);\n"
+                                "};\n"
+                                "Fred::Fred(int x) : x{x} { }\n"
+								);
+        ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
                                 "    std::string s;\n"
                                 "    Fred(const std::string& s) : s(s) {\n"
+                                "    }\n"
+                                "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSelfInitialization("class Fred {\n"
+                                "    std::string s;\n"
+                                "    Fred(const std::string& s) : s{s} {\n"
                                 "    }\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
