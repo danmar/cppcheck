@@ -2931,15 +2931,15 @@ void Tokenizer::setVarId()
                     }
 
                     // constructor with initializer list
-                    if (Token::Match(tok2, ") : %name% (")) {
+                    if (Token::Match(tok2, ") : %name% (|{")) {
                         Token *tok3 = tok2;
                         do {
                             Token *vartok = tok3->tokAt(2);
                             if (varlist[classname].find(vartok->str()) != varlist[classname].end())
                                 vartok->varId(varlist[classname][vartok->str()]);
                             tok3 = tok3->linkAt(3);
-                        } while (Token::Match(tok3, ") [:,] %name% ("));
-                        if (Token::simpleMatch(tok3, ") {")) {
+                        } while (Token::Match(tok3, ")|} [:,] %name% (|{"));
+                        if (Token::Match(tok3, ")|} {")) {
                             setVarIdClassFunction(classname, tok2, tok3->next()->link(), varlist[classname], &structMembers, &_varId);
                         }
                     }
