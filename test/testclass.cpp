@@ -6012,7 +6012,7 @@ private:
                                 "    Fred(int x);\n"
                                 "};\n"
                                 "Fred::Fred(int x) : x(x) { }\n"
-								);
+                               );
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("class Fred {\n"
@@ -6020,7 +6020,7 @@ private:
                                 "    Fred(int x);\n"
                                 "};\n"
                                 "Fred::Fred(int x) : x{x} { }\n"
-								);
+                               );
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("class Fred {\n"
