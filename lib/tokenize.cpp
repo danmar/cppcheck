@@ -7597,11 +7597,16 @@ void Tokenizer::simplifyEnum()
                 typeTokenEnd = 0;
 
                 while (tok->next() && Token::Match(tok->next(), "::|%type%")) {
+                    // Ticket #6810: Avoid infinite loop upon invalid enum definition
+                    if (enumType && enumType->str() == tok->strAt(1)) {
+                        typeTokenEnd = 0;
+                        break;
+                    }
                     typeTokenEnd = tok->next();
                     tok = tok->next();
                 }
 
-                if (!tok->next() || !typeTokenEnd) {
+                if (!tok->next() || tok->str() == "::" || !typeTokenEnd) {
                     syntaxError(tok);
                     return; // can't recover
                 }

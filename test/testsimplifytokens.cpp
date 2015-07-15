@@ -3188,6 +3188,13 @@ private:
             ASSERT_EQUALS(expected, checkSimplifyEnum(code, false)); // Compile as C code: enum has name 'class'
             checkSimplifyEnum(code, true); // Compile as C++ code: Don't crash
         }
+
+        {
+            // Ticket #6810
+            ASSERT_THROW(checkSimplifyEnum("enum x : enum x {} :"), InternalError);
+            ASSERT_THROW(checkSimplifyEnum("enum x : enum x {} () :"), InternalError);
+            ASSERT_THROW(checkSimplifyEnum("enum x : :: {} () :"), InternalError);
+        }
     }
 
     void enum16() { // ticket #1988
