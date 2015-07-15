@@ -263,16 +263,26 @@ private:
         // #3585
         const char code[] = "class x y { };";
 
-        errout.str("");
-
-        Settings settings;
-        settings.addEnabled("information");
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.c");
-        tokenizer.simplifyTokenList2();
-
-        ASSERT_EQUALS("[test.c:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
+        {
+            errout.str("");
+            Settings settings;
+            settings.addEnabled("information");
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.c");
+            tokenizer.simplifyTokenList2();
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            errout.str("");
+            Settings settings;
+            settings.addEnabled("information");
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.simplifyTokenList2();
+            ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
+        }
     }
 
     void syntax_case_default() {

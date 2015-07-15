@@ -52,13 +52,7 @@ namespace {
     };
 }
 
-/**
- * is token pointing at function head?
- * @param tok         A '(' or ')' token in a possible function head
- * @param endsWith    string after function head
- * @return token matching with endsWith if syntax seems to be a function head else nullptr
- */
-static const Token * isFunctionHead(const Token *tok, const std::string &endsWith)
+const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
 {
     if (tok->str() == "(")
         tok = tok->link();
@@ -68,7 +62,7 @@ static const Token * isFunctionHead(const Token *tok, const std::string &endsWit
             tok = tok->next();
         return (endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
-    if (Token::Match(tok, ") const| throw (")) {
+    if (isCPP() && Token::Match(tok, ") const| throw (")) {
         tok = tok->next();
         while (tok->isName())
             tok = tok->next();
@@ -341,7 +335,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 duplicateDeclarationError(*tokPtr, name, "union");
                                 return false;
                             }
-                        } else if (tok->previous()->str() == "class") {
+                        } else if (isCPP() && tok->previous()->str() == "class") {
                             if (tok->next()->str() != ";") {
                                 duplicateTypedefError(*tokPtr, name, "class");
                                 return true;
@@ -1091,7 +1085,8 @@ void Tokenizer::simplifyTypedef()
 
                 // check for operator typedef
                 /** @todo add support for multi-token operators */
-                else if (tok2->str() == "operator" &&
+                else if (isCPP() &&
+                         tok2->str() == "operator" &&
                          tok2->next() &&
                          tok2->next()->str() == typeName->str() &&
                          tok2->linkAt(2) &&
@@ -1109,7 +1104,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for member functions
-                else if (Token::Match(tok2, ") const| {")) {
+                else if (isCPP() && Token::Match(tok2, ") const| {")) {
                     const Token *func = tok2->link()->previous();
                     if (!func)
                         continue;
@@ -1132,7 +1127,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for entering a new namespace
-                else if (Token::Match(tok2, "namespace %any% {")) {
+                else if (isCPP() && Token::Match(tok2, "namespace %any% {")) {
                     if (classLevel < spaceInfo.size() &&
                         spaceInfo[classLevel].isNamespace &&
                         spaceInfo[classLevel].className == tok2->next()->str()) {
@@ -1162,7 +1157,7 @@ void Tokenizer::simplifyTypedef()
                     // member function class variables don't need qualification
                     if (!(inMemberFunc && tok2->str() == typeName->str()) && pattern.find("::") != std::string::npos) { // has a "something ::"
                         Token *start = tok2;
-                        size_t count = 0;
+                        std::size_t count = 0;
                         int back = int(classLevel) - 1;
                         bool good = true;
                         // check for extra qualification
@@ -3478,7 +3473,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     }
 
     // class x y {
-    if (_settings->isEnabled("information")) {
+    if (isCPP() && _settings->isEnabled("information")) {
         for (const Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "class %type% %type% [:{]")) {
                 unhandled_macro_class_x_y(tok);
@@ -4184,7 +4179,7 @@ void Tokenizer::simplifyFlowControl()
         if (!Token::simpleMatch(begin, ") {") && !Token::Match(begin, ") %name% {"))
             continue;
 
-        Token *end = begin->linkAt(1+(begin->next()->str() == "{" ? 0 : 1));
+        Token* end = begin->linkAt(1+(begin->next()->str() == "{" ? 0 : 1));
         unsigned int indentlevel = 0;
         bool stilldead = false;
 
@@ -4983,7 +4978,7 @@ void Tokenizer::simplifyCasts()
             if (tok->isName() && tok->str() != "return")
                 break;
 
-            if (tok->strAt(-1) == "operator")
+            if (isCPP() && tok->strAt(-1) == "operator")
                 break;
 
             // Remove cast..
@@ -5237,7 +5232,7 @@ void Tokenizer::simplifyFunctionPointers()
             Token::Match(tok, "static_cast < %type% %type%| *| *| ( * ) (")) {
             Token *tok1 = tok;
 
-            if (tok1->str() == "static_cast")
+            if (isCPP() && tok1->str() == "static_cast")
                 tok1 = tok1->next();
 
             tok1 = tok1->next();
@@ -6599,7 +6594,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
 
     bool ret = false;
 
-    Token* bailOutFromLoop = 0;
+    Token* bailOutFromLoop = nullptr;
     int indentlevel3 = indentlevel;
     bool ret3 = false;
     for (; tok3; tok3 = tok3->next()) {
@@ -6704,7 +6699,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 break;
             } else if (tok3 == bailOutFromLoop) {
                 // We have skipped the loop
-                bailOutFromLoop = 0;
+                bailOutFromLoop = nullptr;
                 continue;
             }
 
@@ -7759,7 +7754,7 @@ void Tokenizer::simplifyEnum()
 
                 std::stack<std::set<std::string> > shadowId;  // duplicate ids in inner scope
                 bool simplify = false;
-                EnumValue *ev = nullptr;
+                const EnumValue *ev = nullptr;
 
                 for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "}") {
@@ -7850,7 +7845,7 @@ void Tokenizer::simplifyEnum()
                         const Token* tok3 = tok2;
                         while (tok3->strAt(1) == "::")
                             tok3 = tok3->tokAt(2);
-                        std::map<std::string, EnumValue>::iterator it = enumValues.find(tok3->str());
+                        std::map<std::string, EnumValue>::const_iterator it = enumValues.find(tok3->str());
                         if (it != enumValues.end()) {
                             simplify = true;
                             ev = &(it->second);
@@ -8735,7 +8730,7 @@ void Tokenizer::simplifyComma()
             tok->str(";");
         }
 
-        if (Token::Match(tok->tokAt(-2), "delete %name% , %name% ;") &&
+        if (isCPP() && Token::Match(tok->tokAt(-2), "delete %name% , %name% ;") &&
             tok->next()->varId() != 0) {
             // Handle "delete a, b;" - convert to delete a; b;
             tok->str(";");
@@ -10005,7 +10000,7 @@ void Tokenizer::createSymbolDatabase()
 void Tokenizer::deleteSymbolDatabase()
 {
     delete _symbolDatabase;
-    _symbolDatabase = 0;
+    _symbolDatabase = nullptr;
 }
 
 static bool operatorEnd(const Token * tok)

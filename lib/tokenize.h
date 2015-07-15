@@ -535,6 +535,14 @@ public:
 private:
 
     /**
+     * is token pointing at function head?
+     * @param tok         A '(' or ')' token in a possible function head
+     * @param endsWith    string after function head
+     * @return token matching with endsWith if syntax seems to be a function head else nullptr
+     */
+    const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
+
+    /**
      * Change "int const x;" into "const int x;"
      */
     void simplifyConst();
