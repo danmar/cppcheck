@@ -1,5 +1,9 @@
 version: 1.69.{build}
 
+environment:
+- VisualStudioVersion: 11.0
+- VisualStudioVersion: 12.0
+
 configuration:
 - Debug
 - Release
