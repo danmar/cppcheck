@@ -138,6 +138,8 @@ private:
         TEST_CASE(garbageCode96);
         TEST_CASE(garbageCode97);
         TEST_CASE(garbageCode98);
+        TEST_CASE(garbageCode99);
+        TEST_CASE(garbageCode100);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -766,6 +768,17 @@ private:
         ASSERT_THROW(checkCode("for (cocon To::ta@Taaaaaforconst oken aaaaaaaaaaaa5Dl()\n"
                                "const unsiged in;\n"
                                "fon *tok = f);.s(Token i = d-)L;"), InternalError);
+    }
+
+    void garbageCode99() { // #6726
+        ASSERT_THROW(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
+                               "i, :: a :: b integer, } foo2(x) :: j(:) \n"
+                               "b type(*), d(:), a x :: end d(..), foo end\n"
+                               "foo4 b d(..), a a x type(*), b foo2 b"), InternalError);
+    }
+
+    void garbageCode100() { // #6840
+        checkCode("( ) { ( i< ) } int foo ( ) { int i ; ( for ( i => 1 ) ; ) }");
     }
 
     void garbageValueFlow() {

@@ -1099,13 +1099,14 @@ std::string Token::stringifyList(bool varid) const
 
 void Token::astOperand1(Token *tok)
 {
+    const Token* const root = tok;
     if (_astOperand1)
         _astOperand1->_astParent = nullptr;
     // goto parent operator
     if (tok) {
         while (tok->_astParent) {
-            if (tok->_astParent == this) // #6838 avoid hang on garbage code
-                throw InternalError(this, "Internal error. oken::astOperand1() recursive dependency.");
+            if (tok->_astParent == this || tok->_astParent == root) // #6838/#6726 avoid hang on garbage code
+                throw InternalError(this, "Internal error. Token::astOperand1() cyclic dependency.");
             tok = tok->_astParent;
         }
         tok->_astParent = this;
@@ -1115,13 +1116,15 @@ void Token::astOperand1(Token *tok)
 
 void Token::astOperand2(Token *tok)
 {
+    const Token* const root = tok;
     if (_astOperand2)
         _astOperand2->_astParent = nullptr;
     // goto parent operator
     if (tok) {
         while (tok->_astParent) {
-            if (tok->_astParent == this) // #6838 avoid hang on garbage code
-                throw InternalError(this, "Internal error. oken::astOperand1() recursive dependency.");
+            //std::cout << tok << " -> " << tok->_astParent ;
+            if (tok->_astParent == this || tok->_astParent == root) // #6838/#6726 avoid hang on garbage code
+                throw InternalError(this, "Internal error. Token::astOperand2() cyclic dependency.");
             tok = tok->_astParent;
         }
         tok->_astParent = this;
