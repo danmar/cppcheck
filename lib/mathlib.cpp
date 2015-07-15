@@ -803,6 +803,9 @@ static std::string intsuffix(const std::string & first, const std::string & seco
 
 std::string MathLib::add(const std::string & first, const std::string & second)
 {
+#ifdef TEST_MATHLIB_VALUE
+    return (value(first) + value(second)).str();
+#else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
     }
@@ -817,10 +820,14 @@ std::string MathLib::add(const std::string & first, const std::string & second)
         d1 *= 10.0;
 
     return toString(d1 + d2);
+#endif
 }
 
 std::string MathLib::subtract(const std::string &first, const std::string &second)
 {
+#ifdef TEST_MATHLIB_VALUE
+    return (value(first) - value(second)).str();
+#else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
     }
@@ -838,20 +845,31 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
         d1 *= 10.0;
 
     return toString(d1 - d2);
+#endif
 }
 
 std::string MathLib::incdec(const std::string & var, const std::string & op)
 {
+#ifdef TEST_MATHLIB_VALUE
+    if (op == "++")
+        return value(var).add(1).str();
+    else if (op == "--")
+        return value(var).add(-1).str();
+#else
     if (op == "++")
         return MathLib::add(var, "1");
     else if (op == "--")
         return MathLib::subtract(var, "1");
+#endif
 
     throw InternalError(0, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
 }
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
+#ifdef TEST_MATHLIB_VALUE
+    return (value(first) / value(second)).str();
+#else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         const bigint a = toLongNumber(first);
         const bigint b = toLongNumber(second);
@@ -863,23 +881,29 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
-        const int sign_first = (isPositive(first)) ? 1 : -1;
-        const int sign_second = (isPositive(second)) ? 1 : -1;
-        return (sign_first*sign_second == 1) ? "inf.0" : "-inf.0";
+        return isPositive(first) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
+#endif
 }
 
 std::string MathLib::multiply(const std::string &first, const std::string &second)
 {
+#ifdef TEST_MATHLIB_VALUE
+    return (value(first) * value(second)).str();
+#else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         return toString(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
+#endif
 }
 
 std::string MathLib::mod(const std::string &first, const std::string &second)
 {
+#ifdef TEST_MATHLIB_VALUE
+    return (value(first) % value(second)).str();
+#else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
         const bigint b = toLongNumber(second);
         if (b == 0)
@@ -887,6 +911,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
         return toString(toLongNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
+#endif
 }
 
 std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
