@@ -1292,6 +1292,16 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #6313 - false postive: opposite conditions in nested if blocks when condition changed
+        check("void Foo::Bar() {\n"
+              "   if(var){\n"
+              "      --var;\n"
+              "      if(!var){}\n"
+              "      else {}\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #5874 - array
         check("void testOppositeConditions2() {\n"
               "  int array[2] = { 0, 0 };\n"
@@ -1303,7 +1313,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-// clarify conditions with = and comparison
+    // clarify conditions with = and comparison
     void clarifyCondition1() {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n" // don't simplify and verify this code
