@@ -374,6 +374,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
+                    if (value1->valueKind == value2->valueKind)
+                        result.valueKind = value1->valueKind;
                     switch (parent->str()[0]) {
                     case '+':
                         result.intvalue = value1->intvalue + value2->intvalue;
@@ -452,14 +454,20 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 static void valueFlowNumber(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (tok->isNumber() && MathLib::isInt(tok->str()))
-            setTokenValue(tok, ValueFlow::Value(MathLib::toLongNumber(tok->str())));
+        if (tok->isNumber() && MathLib::isInt(tok->str())) {
+            ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
+            value.valueKind = ValueFlow::Value::Known;
+            setTokenValue(tok, value);
+        }
     }
 
     if (tokenlist->isCPP()) {
         for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true"))
-                setTokenValue(tok, ValueFlow::Value(tok->str() == "true"));
+            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
+                ValueFlow::Value value(tok->str() == "true");
+                value.valueKind = ValueFlow::Value::Known;
+                setTokenValue(tok, value);
+            }
         }
     }
 }
@@ -470,6 +478,7 @@ static void valueFlowString(TokenList *tokenlist)
         if (tok->type() == Token::eString) {
             ValueFlow::Value strvalue;
             strvalue.tokvalue = tok;
+            strvalue.valueKind = ValueFlow::Value::Known;
             setTokenValue(tok, strvalue);
         }
     }
@@ -1054,8 +1063,11 @@ static bool valueFlowForward(Token * const               startToken,
 
             // Set "conditional" flag for all values
             std::list<ValueFlow::Value>::iterator it;
-            for (it = values.begin(); it != values.end(); ++it)
+            for (it = values.begin(); it != values.end(); ++it) {
                 it->conditional = true;
+                if (it->valueKind == ValueFlow::Value::Known)
+                    it->valueKind = ValueFlow::Value::Possible;
+            }
 
             if (Token::simpleMatch(tok2,"} else {"))
                 tok2 = tok2->linkAt(2);

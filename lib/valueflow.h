@@ -30,8 +30,8 @@ class Settings;
 namespace ValueFlow {
     class Value {
     public:
-        explicit Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
-        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false) {}
+        explicit Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
 
         /** int value */
         long long intvalue;
@@ -56,6 +56,18 @@ namespace ValueFlow {
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
+
+        /** How known is this value */
+        enum ValueKind {
+            /** This value is possible, other unlisted values may also be possible */
+            Possible,
+            /** Only listed values are possible */
+            Known,
+            /** Max value. Greater values are impossible. */
+            Max,
+            /** Min value. Smaller values are impossible. */
+            Min
+        } valueKind;
     };
 
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);

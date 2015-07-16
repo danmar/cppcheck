@@ -65,6 +65,8 @@ private:
         TEST_CASE(valueFlowFunctionReturn);
 
         TEST_CASE(valueFlowFunctionDefaultParameter);
+
+        TEST_CASE(knownValue);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -1511,6 +1513,40 @@ private:
                "    continuous_src_time(std::complex<double> f, double st = 0.0, double et = infinity) {}\n"
                "};";
         testValueOfX(code, 2U, 2); // Don't crash (#6494)
+    }
+
+    void knownValue() {
+        const char *code;
+        ValueFlow::Value value;
+
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Known, valueOfTok("x = 1;", "1").valueKind);
+
+        // after assignment
+        code = "void f() {\n"
+               "  int x = 1;\n"
+               "  return x + 2;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(3, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Known, value.valueKind);
+
+        code = "void f() {\n"
+               "  int x;\n"
+               "  if (ab) { x = 7; }\n"
+               "  return x + 2;\n" // <- possible value
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(9, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+
+        // after condition
+        code = "int f(int x) {\n"
+               "  if (x == 4) {}\n"
+               "  return x + 1;\n" // <- possible value
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(5, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
     }
 };
 
