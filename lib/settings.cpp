@@ -94,7 +94,6 @@ std::string Settings::addEnabled(const std::string &str)
         return addEnabled(str.substr(prevPos));
     }
 
-    bool handled = false;
     if (str == "all") {
         std::set<std::string>::const_iterator it;
         for (it = id.begin(); it != id.end(); ++it) {
@@ -108,7 +107,7 @@ std::string Settings::addEnabled(const std::string &str)
         if (str == "information") {
             _enabled.insert("missingInclude");
         }
-    } else if (!handled) {
+    } else {
         if (str.empty())
             return std::string("cppcheck: --enable parameter is empty");
         else
