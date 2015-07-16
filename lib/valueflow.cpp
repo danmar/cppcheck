@@ -1878,6 +1878,13 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                     continue;
                 }
             }
+
+            // passed values are not "known"..
+            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
+                if (it->valueKind == ValueFlow::Value::Known)
+                    it->valueKind = ValueFlow::Value::Possible;
+            }
+
             valueFlowInjectParameter(tokenlist, errorLogger, settings, arg, functionScope, argvalues);
         }
     }

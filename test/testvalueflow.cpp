@@ -1556,6 +1556,13 @@ private:
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(5, value.intvalue);
         ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+
+        // function
+        code = "int f(int x) { return x + 1; }\n" // <- possible value
+               "void a() { f(12); }\b";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(13, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
     }
 };
 
