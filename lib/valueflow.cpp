@@ -1002,8 +1002,11 @@ static bool valueFlowForward(Token * const               startToken,
                 for (it = values.begin(); it != values.end();) {
                     if (it->condition || it->conditional)
                         values.erase(it++);
-                    else
+                    else {
+                        if (it->valueKind == ValueFlow::Value::Known)
+                            it->valueKind = ValueFlow::Value::Possible;
                         ++it;
+                    }
                 }
             }
 

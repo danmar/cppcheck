@@ -1548,6 +1548,24 @@ private:
         ASSERT_EQUALS(9, value.intvalue);
         ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
 
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (cond) {\n"
+               "      x = 1;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  if (!x) {}\n"  // <- possible value
+               "}";
+        std::list<ValueFlow::Value> values = tokenValues(code, "!");
+        bool possible = false;
+        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            if (it->valueKind == ValueFlow::Value::Possible)
+                possible = true;
+        }
+        ASSERT_EQUALS(true, possible);
+
         // after condition
         code = "int f(int x) {\n"
                "  if (x == 4) {}\n"
