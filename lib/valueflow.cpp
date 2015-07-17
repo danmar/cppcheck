@@ -367,6 +367,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         ValueFlow::Value v(value);
         v.conditional = true;
 
+        if (v.valueKind == ValueFlow::Value::Known)
+            v.valueKind = ValueFlow::Value::Possible;
+
         if (!variables.empty())
             v.varId = *(variables.begin());
 
