@@ -932,6 +932,23 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
+            // if known variable is changed in loop body, change it to a possible value..
+            if (tok2->str() != "if") {
+                bool isChanged = false;
+                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                    if (it->valueKind == ValueFlow::Value::Known) {
+                        if (!isChanged) {
+                            const Token *bodyStart = tok2->linkAt(1)->next();
+                            if (!isVariableChanged(bodyStart, bodyStart->link(), varid))
+                                break;
+                            isChanged = true;
+                        }
+
+                        it->valueKind = ValueFlow::Value::Possible;
+                    }
+                }
+            }
+
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
                 if (tok3->varId() == varid) {
