@@ -62,6 +62,8 @@ private:
         TEST_CASE(clarifyCondition4);     // ticket #3110
         TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
         TEST_CASE(clarifyCondition6);     // #3818
+
+        TEST_CASE(alwaysTrue);
     }
 
     void check(const char code[], bool validate=true, const char* filename = "test.cpp") {
@@ -1486,6 +1488,15 @@ private:
               "            && ( value <= 0x7fffffffffffffffULL ) );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrue() {
+        check("void f() {\n" // #4842
+              "  int x = 0;\n"
+              "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
+              "  if (!x) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition !x is always true\n", errout.str());
     }
 };
 
