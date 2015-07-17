@@ -572,6 +572,11 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
                 continue;
             }
 
+            if (tok->str() == "(") { // Ticket #6835
+                tok = tok->link();
+                continue;
+            }
+
             if (tok->str() == "<" && templateParameters(tok))
                 ++templateParmDepth;
 
