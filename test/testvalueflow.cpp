@@ -1577,6 +1577,14 @@ private:
         ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
 
         code = "void f() {\n"
+               "  static int x = 0;\n"
+               "  return x + 1;\n" // <- possible value
+               "}\n";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+
+        code = "void f() {\n"
                "  int x = 0;\n"
                "  do {\n"
                "    if (!x) { x = y; }\n" // <- possible value

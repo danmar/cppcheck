@@ -1318,8 +1318,17 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand2() || tok->astOperand2()->values.empty())
                 continue;
 
-            const std::list<ValueFlow::Value>& values = tok->astOperand2()->values;
+            std::list<ValueFlow::Value> values = tok->astOperand2()->values;
             const bool constValue = tok->astOperand2()->isNumber();
+
+            // Static variable initialisation?
+            if (var->isStatic() && var->nameToken() == tok->astOperand1()) {
+                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                    if (it->valueKind == ValueFlow::Value::ValueKind::Known)
+                        it->valueKind = ValueFlow::Value::ValueKind::Possible;
+                }
+            }
+
             valueFlowForward(tok, endOfVarScope, var, varid, values, constValue, tokenlist, errorLogger, settings);
         }
     }
