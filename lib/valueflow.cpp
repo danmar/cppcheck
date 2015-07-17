@@ -286,8 +286,8 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
     return false;
 }
 
-/** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, const ValueFlow::Value &value)
+/** Add token value. Return true if value is added. */
+static bool addValue(Token *tok, const ValueFlow::Value &value)
 {
     // if value already exists, don't add it again
     std::list<ValueFlow::Value>::iterator it;
@@ -305,20 +305,31 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         // same value, but old value is inconclusive so replace it
         if (it->inconclusive && !value.inconclusive) {
             *it = value;
+            if (it->varId == 0)
+                it->varId = tok->varId();
             break;
         }
 
         // Same value already exists, don't  add new value
-        return;
+        return false;
     }
 
+    // Add value
     if (it == tok->values.end()) {
-        tok->values.push_back(value);
-        it = tok->values.end();
-        --it;
-        if (it->varId == 0)
-            it->varId = tok->varId();
+        ValueFlow::Value v(value);
+        if (v.varId == 0)
+            v.varId = tok->varId();
+        tok->values.push_back(v);
     }
+
+    return true;
+}
+
+/** set ValueFlow value and perform calculations if possible */
+static void setTokenValue(Token* tok, const ValueFlow::Value &value)
+{
+    if (!addValue(tok,value))
+        return;
 
     Token *parent = const_cast<Token*>(tok->astParent());
     if (!parent)
