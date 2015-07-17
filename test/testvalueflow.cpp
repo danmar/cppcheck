@@ -1576,6 +1576,16 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
 
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "  do {\n"
+               "    if (!x) { x = y; }\n" // <- possible value
+               "  } while (count < 10);\n"
+               "}";
+        value = valueOfTok(code, "!");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+
         // after condition
         code = "int f(int x) {\n"
                "  if (x == 4) {}\n"

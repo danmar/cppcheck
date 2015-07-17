@@ -850,6 +850,25 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
     valueFlowAST(const_cast<Token*>(tok->astOperand2()), varid, value);
 }
 
+/** if known variable is changed in loop body, change it to a possible value */
+static void handleKnownValuesInLoop(const Token                 *loopBodyStart,
+                                    std::list<ValueFlow::Value> *values,
+                                    unsigned int                varid)
+{
+    bool isChanged = false;
+    for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
+        if (it->valueKind == ValueFlow::Value::Known) {
+            if (!isChanged) {
+                if (!isVariableChanged(loopBodyStart, loopBodyStart->link(), varid))
+                    break;
+                isChanged = true;
+            }
+
+            it->valueKind = ValueFlow::Value::Possible;
+        }
+    }
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -926,6 +945,10 @@ static bool valueFlowForward(Token * const               startToken,
             }
         }
 
+        else if (Token::simpleMatch(tok2, "do {")) {
+            handleKnownValuesInLoop(tok2->next(), &values, varid);
+        }
+
         // conditional block of code that assigns variable..
         else if (Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
@@ -936,21 +959,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // if known variable is changed in loop body, change it to a possible value..
-            if (tok2->str() != "if") {
-                bool isChanged = false;
-                for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                    if (it->valueKind == ValueFlow::Value::Known) {
-                        if (!isChanged) {
-                            const Token *bodyStart = tok2->linkAt(1)->next();
-                            if (!isVariableChanged(bodyStart, bodyStart->link(), varid))
-                                break;
-                            isChanged = true;
-                        }
-
-                        it->valueKind = ValueFlow::Value::Possible;
-                    }
-                }
-            }
+            handleKnownValuesInLoop(tok2->linkAt(1)->next(), &values, varid);
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {
