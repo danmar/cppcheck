@@ -1938,11 +1938,18 @@ static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDataba
         for (std::size_t arg = function->minArgCount(); arg < function->argCount(); arg++) {
             const Variable* var = function->getArgumentVar(arg);
             if (var && var->hasDefault() && Token::Match(var->nameToken(), "%var% = %num%|%str% [,)]")) {
-                const Token* valueTok = var->nameToken()->tokAt(2);
-                if (valueTok->values.empty())
-                    continue;
-                const_cast<Token*>(valueTok)->values.front().defaultArg = true;
-                valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, valueTok->values);
+                const std::list<ValueFlow::Value> &values = var->nameToken()->tokAt(2)->values;
+                std::list<ValueFlow::Value> argvalues;
+                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+                    ValueFlow::Value v(*it);
+                    v.defaultArg = true;
+                    if (v.valueKind == ValueFlow::Value::Known)
+                        v.valueKind = ValueFlow::Value::Possible;
+                    if (v.valueKind == ValueFlow::Value::Possible)
+                        argvalues.push_back(v);
+                }
+                if (!argvalues.empty())
+                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
             }
         }
     }
