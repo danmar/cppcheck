@@ -140,6 +140,7 @@ private:
         TEST_CASE(garbageCode98);
         TEST_CASE(garbageCode99);
         TEST_CASE(garbageCode100);
+        TEST_CASE(garbageCode101); // #6835
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -789,6 +790,13 @@ private:
 
     void garbageCode100() { // #6840
         checkCode("( ) { ( i< ) } int foo ( ) { int i ; ( for ( i => 1 ) ; ) }");
+    }
+
+    void garbageCode101() { // #6835
+        // Reported case
+        checkCode("template < class , =( , int) X = 1 > struct A { } ( ) { = } [ { } ] ( ) { A < void > 0 }");
+        // Reduced case
+        checkCode("template < class =( , ) X = 1> struct A {}; A<void> a;");
     }
 
     void garbageValueFlow() {
