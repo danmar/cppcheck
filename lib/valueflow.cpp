@@ -378,10 +378,14 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
     // Calculations..
     else if (parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
+        const bool known = ((parent->astOperand1()->values.size() == 1U &&
+                             parent->astOperand1()->values.front().valueKind == ValueFlow::Value::ValueKind::Known) ||
+                            (parent->astOperand2()->values.size() == 1U &&
+                             parent->astOperand2()->values.front().valueKind == ValueFlow::Value::ValueKind::Known));
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
-                if (value1->varId == 0U || value2->varId == 0U ||
+                if (known || value1->varId == 0U || value2->varId == 0U ||
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;

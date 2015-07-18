@@ -218,12 +218,7 @@ private:
 
     void valueFlowCalculations() {
         const char *code;
-        /*
-                code  = "void f() {\n"
-                        "    x = 123+456;\n"
-                        "}";
-                ASSERT_EQUALS(579, valueOfTok(code, "+").intvalue);
-        */
+
         code  = "void f(int x) {\n"
                 "    a = x+456;\n"
                 "    if (x==123) {}"
@@ -251,6 +246,14 @@ private:
         ASSERT_EQUALS(2U, values.size());
         ASSERT_EQUALS(4, values.front().intvalue);
         ASSERT_EQUALS(16, values.back().intvalue);
+
+        // addition of different variables with known values
+        code = "int f(int x) {\n"
+               "  int a = 1;\n"
+               "  while (x!=3) { x+=a; }\n"
+               "  return x/a;\n"
+               "}\n";
+        ASSERT_EQUALS(3, valueOfTok(code, "/").intvalue);
 
         // ? :
         code = "x = y ? 2 : 3;\n";
