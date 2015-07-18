@@ -1175,6 +1175,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("<class... T> x;"));
         ASSERT_EQUALS(0U, templateParameters("<class, typename T...> x;")); // Invalid syntax
         ASSERT_EQUALS(2U, templateParameters("<class, typename... T> x;"));
+        ASSERT_EQUALS(2U, templateParameters("<int(&)(), class> x;"));
+        ASSERT_EQUALS(3U, templateParameters("<char, int(*)(), bool> x;"));
         TODO_ASSERT_EQUALS(1U, 0U, templateParameters("<int...> x;")); // Mishandled valid syntax
         TODO_ASSERT_EQUALS(2U, 0U, templateParameters("<class, typename...> x;")); // Mishandled valid syntax
     }
