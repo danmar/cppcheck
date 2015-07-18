@@ -276,6 +276,9 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
             if (Token::Match(tok, "%name% ="))
                 return true;
 
+            if (Token::Match(tok->tokAt(-2), "[(,] & %var% [,)]"))
+                return true; // TODO: check if function parameter is const
+
             const Token *parent = tok->astParent();
             while (Token::Match(parent, ".|::"))
                 parent = parent->astParent();

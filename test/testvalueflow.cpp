@@ -1572,7 +1572,7 @@ private:
         code = "void f() {\n"
                "  int x = 0;\n"
                "  while (!x) {\n" // <- possible value
-               "    x = dostuff();\n"
+               "    scanf(\"%d\", &x);\n"
                "  }\n"
                "}";
         value = valueOfTok(code, "!");
