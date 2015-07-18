@@ -692,6 +692,7 @@ private:
         ASSERT_EQUALS("void f ( ) { int p ; if ( ! p ) { } }", tok("void f(){int p; if ((p) == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { int * p ; * p = 1 ; }", tok("void f(){int *p; *(p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } p = 1 ; }", tok("void f(){int p; if ( p ) { } (p) = 1;}"));
+        ASSERT_EQUALS("void f ( ) { a . b ; }", tok("void f ( ) { ( & a ) -> b ; }")); // Ticket #5776
 
         // keep parentheses..
         ASSERT_EQUALS("b = a ;", tok("b = (char)a;"));
