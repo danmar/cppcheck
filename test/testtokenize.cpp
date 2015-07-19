@@ -474,6 +474,7 @@ private:
 
         TEST_CASE(sizeofAddParentheses);
         TEST_CASE(incompleteTernary); // #6659
+        TEST_CASE(noreturn); // #5783
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Unspecified, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8771,6 +8772,31 @@ private:
                             "}";
 
         tokenizeAndStringify(code, true);
+    }
+
+    // see #5783
+    void noreturn() {
+        const char code[] = "void myassert() {\n"
+                            "  exit(1);\n"
+                            "}\n"
+                            "void f(char *buf) {\n"
+                            "  if(i==0) {\n"
+                            "    free(buf);\n"
+                            "    myassert();\n"
+                            "  }\n"
+                            "  free(buf);\n"
+                            "}\n";
+        Settings settings;
+
+        // tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        const Token * func = Token::findsimplematch(tokenizer.tokens(), "myassert");
+
+        TODO_ASSERT(func && func->isAttributeNoreturn());
+
     }
 };
 

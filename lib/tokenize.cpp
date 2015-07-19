@@ -1730,7 +1730,7 @@ bool Tokenizer::tokenize(std::istream &code,
     _configuration = configuration;
 
     if (!list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths))) {
-        cppcheckError(0);
+        cppcheckError(nullptr);
         return false;
     }
 
@@ -1768,7 +1768,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     {
         std::istringstream istr(code);
         if (!list.createTokens(istr)) {
-            cppcheckError(0);
+            cppcheckError(nullptr);
             return false;
         }
     }
@@ -8773,9 +8773,10 @@ void Tokenizer::simplifyComma()
                     break;
                 }
             }
-
+            if (!startFrom)
+                // to be very sure...
+                return;
             std::size_t commaCounter = 0;
-
             for (Token *tok2 = startFrom->next(); tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";") {
                     endAt = tok2;
