@@ -3547,15 +3547,6 @@ private:
                         "    x = a.m;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
-
-        // Ticket #5776
-        checkUninitVar2("typedef struct { int a, b; } AB;\n"
-                        "void f(void) {\n"
-                        "  AB ab;\n"
-                        "  ab.a = 1;\n"
-                        "  return (&ab)->b;\n"
-                        "}", "test.c");
-        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
     }
 
     void uninitvar2_while() {
