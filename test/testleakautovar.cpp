@@ -314,7 +314,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void deallocuse7() {  // #6467, #6469, #6473
+    void deallocuse7() {  // #6467, #6469, #6473, #6648
         check("struct Foo { int* ptr; };\n"
               "void f(Foo* foo) {\n"
               "    delete foo->ptr;\n"
@@ -348,6 +348,13 @@ private:
               "    foo->ptr = new Foo;\n"
               "    foo->ptr->func();\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(void (*conv)(char**)) {\n"
+              "  char * ptr=(char*)malloc(42);\n"
+              "  free(ptr);\n"
+              "  (*conv)(&ptr);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
