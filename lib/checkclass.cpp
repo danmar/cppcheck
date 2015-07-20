@@ -1424,6 +1424,8 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope) const
 
 bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
 {
+    if (!rhs)
+        return false;
     const Token *last = func->functionScope->classEnd;
     for (const Token *tok = func->functionScope->classStart; tok && tok != last; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
