@@ -495,6 +495,16 @@ private:
               "    while (fclose(a)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout.str());
+
+        // #6823
+        check("void foo() {\n"
+              "    FILE f[2];\n"
+              "    f[0] = fopen(\"1\", \"w\");\n"
+              "    f[1] = fopen(\"2\", \"w\");\n"
+              "    fclose(f[0]);\n"
+              "    fclose(f[1]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void fileIOwithoutPositioning() {

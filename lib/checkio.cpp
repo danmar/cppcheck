@@ -251,7 +251,7 @@ void CheckIO::checkFileUsage()
                 while (Token::Match(fileTok, "%name% ."))
                     fileTok = fileTok->tokAt(2);
 
-                if (!fileTok || !fileTok->varId())
+                if (!fileTok || !fileTok->varId() || fileTok->strAt(1) == "[")
                     continue;
 
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
