@@ -141,6 +141,7 @@ private:
         TEST_CASE(simplifyTypedef108); // ticket #4777
         TEST_CASE(simplifyTypedef109); // ticket #1823 - rvalue reference
         TEST_CASE(simplifyTypedef110); // ticket #6268
+        TEST_CASE(simplifyTypedef111); // ticket #6345
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2372,6 +2373,39 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tok(code, true, Settings::Unspecified, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef111() {     // ticket #6345
+        const char code1[] = "typedef typename A B;\n"
+                             "typedef typename B C;\n"
+                             "typename C c;\n";
+        const char expected1[] = "typename A c ;";
+        ASSERT_EQUALS(expected1, tok(code1));
+
+        const char code2[] = "typedef typename A B;\n"
+                             "typedef typename B C;\n"
+                             "C c;\n";
+        const char expected2[] = "typename A c ;";
+        ASSERT_EQUALS(expected2, tok(code2));
+
+        const char code3[] = "typedef typename A B;\n"
+                             "typedef B C;\n"
+                             "C c;\n";
+        const char expected3[] = "typename A c ;";
+        ASSERT_EQUALS(expected3, tok(code3));
+
+        const char code4[] = "typedef A B;\n"
+                             "typedef typename B C;\n"
+                             "C c;\n";
+        const char expected4[] = "typename A c ;";
+        ASSERT_EQUALS(expected4, tok(code4));
+
+        const char code5[] = "typedef A B;\n"
+                             "typedef B C;\n"
+                             "C c;\n";
+        const char expected5[] = "A c ;";
+        ASSERT_EQUALS(expected5, tok(code5));
+
     }
 
     void simplifyTypedefFunction1() {

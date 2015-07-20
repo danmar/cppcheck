@@ -1266,6 +1266,11 @@ void Tokenizer::simplifyTypedef()
                         Token::simpleMatch(tok2->tokAt(-2), "operator const"))
                         inOperator = true;
 
+                    if (typeStart->str() == "typename" && tok2->strAt(-1)=="typename") {
+                        // Remove one typename if it is already contained in the goal
+                        typeStart = typeStart->next();
+                    }
+
                     // skip over class or struct in derived class declaration
                     bool structRemoved = false;
                     if (isDerived && Token::Match(typeStart, "class|struct")) {
