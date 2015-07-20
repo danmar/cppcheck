@@ -1141,6 +1141,10 @@ static bool valueFlowForward(Token * const               startToken,
                 if (scope && scope->type == Scope::eSwitch) {
                     tok2 = const_cast<Token *>(scope->classEnd);
                     --indentlevel;
+                    for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
+                        if (it->valueKind == ValueFlow::Value::ValueKind::Known)
+                            it->valueKind = ValueFlow::Value::ValueKind::Possible;
+                    }
                     continue;
                 }
             }

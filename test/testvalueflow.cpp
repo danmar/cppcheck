@@ -1527,6 +1527,18 @@ private:
         testValueOfX(code, 2U, 2); // Don't crash (#6494)
     }
 
+    bool isNotKnownValues(const char code[], const char str[]) {
+        const std::list<ValueFlow::Value> values = tokenValues(code, str);
+        bool possible = false;
+        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            if (it->valueKind == ValueFlow::Value::Known)
+                return false;
+            if (it->valueKind == ValueFlow::Value::Possible)
+                possible = true;
+        }
+        return possible;
+    }
+
     void knownValue() {
         const char *code;
         ValueFlow::Value value;
@@ -1561,13 +1573,18 @@ private:
                "  }\n"
                "  if (!x) {}\n"  // <- possible value
                "}";
-        std::list<ValueFlow::Value> values = tokenValues(code, "!");
-        bool possible = false;
-        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            if (it->valueKind == ValueFlow::Value::Possible)
-                possible = true;
-        }
-        ASSERT_EQUALS(true, possible);
+        ASSERT(isNotKnownValues(code, "!"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "  switch (state) {\n"
+               "  case 1:\n"
+               "    x = 1;\n"
+               "    break;\n"
+               "  }\n"
+               "  if (!x) {}\n"  // <- possible value
+               "}";
+        ASSERT(isNotKnownValues(code, "!"));
 
         code = "void f() {\n"
                "  int x = 0;\n"
