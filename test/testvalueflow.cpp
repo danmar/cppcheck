@@ -60,6 +60,8 @@ private:
 
         TEST_CASE(valueFlowAfterCondition);
 
+        TEST_CASE(valueFlowSwitchVariable);
+
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
         TEST_CASE(valueFlowFunctionReturn);
@@ -1226,6 +1228,20 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code,3U,0));
         ASSERT_EQUALS(false, testValueOfX(code,3U,0x80));
+    }
+
+    void valueFlowSwitchVariable() {
+        const char *code;
+        code = "void f(int x) {\n"
+               "    a = x;\n"  // <- x can be 14
+               "    switch (x) {\n"
+               "    case 14: a=x; break;\n"  // <- x is 14
+               "    };\n"
+               "    a = x;\n"  // <- x can be 14
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 14));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 14));
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 14));
     }
 
     void valueFlowForLoop() {
