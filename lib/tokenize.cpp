@@ -4500,7 +4500,7 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
             tokAfterCondition=tokCondition->link();
         else
             tokAfterCondition=nullptr;
-        if (!tokAfterCondition) {
+        if (!tokAfterCondition || tokAfterCondition->strAt(1) == "]") {
             // Bad condition
             syntaxError(tok);
             return nullptr;

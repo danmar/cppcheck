@@ -142,6 +142,7 @@ private:
         TEST_CASE(garbageCode100);
         TEST_CASE(garbageCode101); // #6835
         TEST_CASE(garbageCode102); // #6846
+        TEST_CASE(garbageCode103); // #6824
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -802,6 +803,10 @@ private:
 
     void garbageCode102() { // #6846
         checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }");
+    }
+
+    void garbageCode103() { // #6824
+        ASSERT_THROW(checkCode("a f(r) int * r; { { int s[2]; [f(s); if () ]  } }"), InternalError);
     }
 
     void garbageValueFlow() {
