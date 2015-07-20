@@ -297,6 +297,18 @@ private:
                        "");
         ASSERT_EQUALS("", errout.str());
 
+        // suppress uninitvar inline, with asm before (#6813)
+        (this->*check)("void f() {\n"
+                       "    __asm {\n"
+                       "        foo\n"
+                       "    }"
+                       "    int a;\n"
+                       "    // cppcheck-suppress uninitvar\n"
+                       "    a++;\n"
+                       "}",
+                       "");
+        ASSERT_EQUALS("", errout.str());
+
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"

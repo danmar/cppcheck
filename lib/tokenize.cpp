@@ -9528,6 +9528,8 @@ void Tokenizer::simplifyAsm()
 
         // insert "asm ( "instruction" )"
         tok->str("asm");
+        if (tok->strAt(1) != ";" && tok->strAt(1) != "{")
+            tok->insertToken(";");
         tok->insertToken(")");
         tok->insertToken("\"" + instruction + "\"");
         tok->insertToken("(");

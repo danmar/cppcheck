@@ -588,8 +588,11 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         } else if ((i == 0 || std::isspace((unsigned char)str[i-1])) && str.compare(i, 5, "__asm") == 0) {
             while (i < str.size() && (std::isalpha((unsigned char)str[i]) || str[i] == '_'))
                 code << str[i++];
-            while (i < str.size() && std::isspace((unsigned char)str[i]))
+            while (i < str.size() && std::isspace((unsigned char)str[i])) {
+                if (str[i] == '\n')
+                    lineno++;
                 code << str[i++];
+            }
             if (str[i] == '{') {
                 // Ticket 4873: Extract comments from the __asm / __asm__'s content
                 std::string asmBody;
@@ -599,6 +602,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         if (backslashN != std::string::npos) // Ticket #4922: Don't go in infinite loop or crash if there is no '\n'
                             i = backslashN;
                     }
+                    if (str[i] == '\n')
+                        lineno++;
                     asmBody += str[i++];
                 }
                 code << removeComments(asmBody, filename);
