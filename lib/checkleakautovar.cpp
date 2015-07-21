@@ -329,7 +329,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         tokens.push(tok3->astOperand2());
                         continue;
                     }
-                    if (tok3->str() == "(" && !tok3->astOperand2()->varId()) {
+                    if (tok3->str() == "(" &&
+                        tok3->astOperand2() &&
+                        tok3->astOperand2()->isConstOp()) {
                         tokens.push(tok3->astOperand2());
                         continue;
                     }
