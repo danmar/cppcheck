@@ -248,7 +248,7 @@ void CheckClass::checkExplicitConstructors()
             //  2) Constructor is not declared as explicit
             //  3) It is not a copy/move constructor of non-abstract class
             //  4) Constructor is not marked as delete (programmer can mark the default constructor as deleted, which is ok)
-            if (!func->isConstructor() || func->isDelete())
+            if (!func->isConstructor() || func->isDelete() || (!func->hasBody() && func->access == Private))
                 continue;
 
             if (!func->isExplicit() && func->argCount() == 1) {

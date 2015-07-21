@@ -198,54 +198,61 @@ private:
     }
 
     void explicitConstructors() {
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class() = delete; \n"
-                                  "    Class(const Class& other) { } \n"
-                                  "    Class(Class&& other) { } \n"
-                                  "    explicit Class(int i) { } \n"
-                                  "    explicit Class(const std::string&) { } \n"
-                                  "    Class(int a, int b) { } \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class() = delete;\n"
+                                  "    Class(const Class& other) { }\n"
+                                  "    Class(Class&& other) { }\n"
+                                  "    explicit Class(int i) { }\n"
+                                  "    explicit Class(const std::string&) { }\n"
+                                  "    Class(int a, int b) { }\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class() = delete; \n"
-                                  "    explicit Class(const Class& other) { } \n"
-                                  "    explicit Class(Class&& other) { } \n"
-                                  "    virtual int i() = 0; \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class() = delete;\n"
+                                  "    explicit Class(const Class& other) { }\n"
+                                  "    explicit Class(Class&& other) { }\n"
+                                  "    virtual int i() = 0;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class() = delete; \n"
-                                  "    Class(const Class& other) = delete; \n"
-                                  "    Class(Class&& other) = delete; \n"
-                                  "    virtual int i() = 0; \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class() = delete;\n"
+                                  "    Class(const Class& other) = delete;\n"
+                                  "    Class(Class&& other) = delete;\n"
+                                  "    virtual int i() = 0;\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class(int i) { } \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class(int i) { }\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n", errout.str());
 
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class(const Class& other) { } \n"
-                                  "    virtual int i() = 0; \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class(const Class& other) { }\n"
+                                  "    virtual int i() = 0;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
 
-        checkExplicitConstructors("class Class \n"
-                                  "{ \n"
-                                  "    Class(Class&& other) { } \n"
-                                  "    virtual int i() = 0; \n"
+        checkExplicitConstructors("class Class {\n"
+                                  "    Class(Class&& other) { }\n"
+                                  "    virtual int i() = 0;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
+
+        // #6585
+        checkExplicitConstructors("class Class {\n"
+                                  "    private: Class(const Class&);\n"
+                                  "    virtual int i() = 0;\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Class {\n"
+                                  "    public: Class(const Class&);\n"
+                                  "    virtual int i() = 0;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Abstract class 'Class' has a copy/move constructor that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
