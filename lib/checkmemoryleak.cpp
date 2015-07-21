@@ -517,11 +517,13 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 }
 
 
-bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, bool endpar)
+bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid)
 {
-    const std::string end(endpar ? " &&|)" : " [;)&|]");
-    return bool(Token::Match(tok, ("! %varid%" + end).c_str(), varid) ||
-                Token::Match(tok, ("! ( %varid% )" + end).c_str(), varid));
+    if (!tok)
+        return false;
+    if (Token::Match(tok, "&&|;"))
+        return notvar(tok->astOperand1(),varid) || notvar(tok->astOperand2(),varid);
+    return tok->str() == "!" && tok->astOperand1()->varId() == varid;
 }
 
 
@@ -987,7 +989,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     // Make sure the "use" will not be added
                     tok = tok->next()->link();
                     continue;
-                } else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varid, true)) {
+                } else if (Token::simpleMatch(tok, "if (") && notvar(tok->next()->astOperand2(), varid)) {
                     addtoken(&rettail, tok, "if(!var)");
 
                     // parse the if-body.
@@ -1113,7 +1115,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 addtoken(&rettail, tok, "while(var)");
                 tok = end;
                 continue;
-            } else if (varid && Token::simpleMatch(tok, "while (") && notvar(tok->tokAt(2), varid, true)) {
+            } else if (varid && Token::simpleMatch(tok, "while (") && notvar(tok->next()->astOperand2(), varid)) {
                 addtoken(&rettail, tok, "while(!var)");
                 tok = end;
                 continue;
@@ -1121,14 +1123,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             addtoken(&rettail, tok, "loop");
 
-            if (varid > 0) {
-                for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != end; tok2 = tok2->next()) {
-                    if (notvar(tok2, varid)) {
-                        addtoken(&rettail, tok2, "!var");
-                        break;
-                    }
-                }
-            }
+            if (varid > 0 && notvar(tok->next()->astOperand2(), varid))
+                addtoken(&rettail, tok, "!var");
 
             continue;
         }
