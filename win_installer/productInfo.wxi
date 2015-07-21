@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?define ProductName = "Cppcheck 1.70 dev" ?>
+  <?define ProductName = "Cppcheck $(var.Platform) 1.70 dev" ?>
   <?define ProductNameShort = "Cppcheck" ?>
   <?define ProductVersion = "1.69.99" ?>
 

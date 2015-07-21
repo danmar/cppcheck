@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?ifndef Platform ?> <!-- if platform NOT defined -->
-    <?define Platform = "x86" ?>
-  <?endif ?>
-
   <?define CliBuildDir = "..\bin" ?>
   <?define GuiBuildDir = "..\bin" ?>
   <?define TranslationsDir = "..\gui" ?>
