@@ -621,19 +621,29 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
         comp = comp->astOperand1();
     }
 
-    if (!comp || !comp->isComparisonOp() || !comp->astOperand1() || !comp->astOperand2())
+    if (!comp)
         return false;
 
-    if (comp->astOperand1()->isLiteral()) {
+    if (!comp->isComparisonOp() || !comp->astOperand1() || !comp->astOperand2()) {
+        *op = "!=";
+        *value = "0";
+        *expr = comp;
+    } else if (comp->astOperand1()->isLiteral()) {
+        if (comp->astOperand1()->isExpandedMacro())
+            return false;
         *op = invertOperatorForOperandSwap(comp->str());
         *value = comp->astOperand1()->str();
         *expr = comp->astOperand2();
     } else if (comp->astOperand2()->isLiteral()) {
+        if (comp->astOperand2()->isExpandedMacro())
+            return false;
         *op = comp->str();
         *value = comp->astOperand2()->str();
         *expr = comp->astOperand1();
     } else {
-        return false;
+        *op = "!=";
+        *value = "0";
+        *expr = comp;
     }
 
     // Only float and int values are currently handled
@@ -641,6 +651,21 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
         return false;
 
     return true;
+}
+
+static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
+{
+    if (expr1->astParent()->isComparisonOp())
+        return std::string(not1 ? "!(" : "") +
+               (expr1->isName() ? expr1->str() : std::string("EXPR")) +
+               " " +
+               op +
+               " " +
+               value1 +
+               (not1 ? ")" : "");
+
+    return std::string(not1 ? "!" : "") +
+           (expr1->isName() ? expr1->str() : std::string("EXPR"));
 }
 
 void CheckCondition::checkIncorrectLogicOperator()
@@ -758,8 +783,8 @@ void CheckCondition::checkIncorrectLogicOperator()
                 secondTrue &= !(result1 && !result2);
             }
 
-            const std::string cond1str = std::string(not1?"!(":"") + (expr1->isName() ? expr1->str() : "EXPR") + " " + op1 + " " + value1 + std::string(not1?")":"");
-            const std::string cond2str = std::string(not2?"!(":"") + (expr2->isName() ? expr2->str() : "EXPR") + " " + op2 + " " + value2 + std::string(not2?")":"");
+            const std::string cond1str = conditionString(not1, expr1, op1, value1);
+            const std::string cond2str = conditionString(not2, expr2, op2, value2);
             if (printWarning && (alwaysTrue || alwaysFalse)) {
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                 incorrectLogicOperatorError(tok, text, alwaysTrue);
