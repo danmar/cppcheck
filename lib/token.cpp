@@ -1241,28 +1241,26 @@ static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out
 
 void Token::printAst(bool verbose, bool xml, std::ostream &out) const
 {
-    bool title = false;
-
-    bool print = true;
+    std::set<const Token *> printed;
     for (const Token *tok = this; tok; tok = tok->next()) {
-        if (print && tok->_astOperand1) {
-            if (!title && !xml)
+        if (!tok->_astParent && tok->_astOperand1) {
+            if (printed.empty() && !xml)
                 out << "\n\n##AST" << std::endl;
-            title = true;
+            else if (printed.find(tok) != printed.end())
+                continue;
+            printed.insert(tok);
+
             if (xml) {
                 out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr() << "\">" << std::endl;
-                astStringXml(tok->astTop(), 2U, out);
+                astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astTop()->astStringVerbose(0,0) << std::endl;
+                out << tok->astStringVerbose(0,0) << std::endl;
             else
-                out << tok->astTop()->astString(" ") << std::endl;
-            print = false;
+                out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
                 tok = tok->link();
         }
-        if (Token::Match(tok, "[;{}]"))
-            print = true;
     }
 }
 
