@@ -26,6 +26,7 @@
 #include "symboldatabase.h"
 
 #include <iostream>
+#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -137,6 +138,34 @@ void CheckLeakAutoVar::check()
 
         ret(scope->classEnd, varInfo);
     }
+}
+
+static bool isVariableComparison(const Token *tok, const std::string &comp, const char rhs[], const Token **vartok)
+{
+    *vartok = nullptr;
+    if (tok->isComparisonOp()) {
+        if (Token::Match(tok->astOperand1(), rhs)) {
+            // Invert comparator
+            std::string s = tok->str();
+            if (s[0] == '>')
+                s[1] = '<';
+            else if (s[0] == '>')
+                s[1] = '<';
+            if (s == comp) {
+                *vartok = tok->astOperand2();
+            }
+        } else if (Token::Match(tok->astOperand2(), rhs) && tok->str() == comp) {
+            *vartok = tok->astOperand1();
+        }
+    } else if (comp == "!=" && rhs == std::string("0")) {
+        *vartok = tok;
+    } else if (comp == "==" && rhs == std::string("0")) {
+        if (tok->str() == "!")
+            *vartok = tok->astOperand1();
+    }
+    if ((*vartok) && (*vartok)->varId() == 0U)
+        *vartok = nullptr;
+    return (*vartok != nullptr);
 }
 
 void CheckLeakAutoVar::checkScope(const Token * const startToken,
@@ -287,26 +316,40 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 VarInfo varInfo1(*varInfo);  // VarInfo for if code
                 VarInfo varInfo2(*varInfo);  // VarInfo for else code
 
-                if (Token::Match(tok->next(), "( %var% )")) {
-                    varInfo2.erase(tok->tokAt(2)->varId());
-                    if (notzero.find(tok->tokAt(2)->varId()) != notzero.end())
-                        varInfo2.clear();
-                } else if (Token::Match(tok->next(), "( ! %var% )|&&")) {
-                    varInfo1.erase(tok->tokAt(3)->varId());
-                } else if (Token::Match(tok->next(), "( %name% ( ! %var% ) )|&&")) {
-                    varInfo1.erase(tok->tokAt(5)->varId());
-                } else if (Token::Match(tok->next(), "( %var% < 0 )|&&")) {
-                    varInfo1.erase(tok->tokAt(2)->varId());
-                } else if (Token::Match(tok->next(), "( 0 > %var% )|&&")) {
-                    varInfo1.erase(tok->tokAt(4)->varId());
-                } else if (Token::Match(tok->next(), "( %var% > 0 )|&&")) {
-                    varInfo2.erase(tok->tokAt(2)->varId());
-                } else if (Token::Match(tok->next(), "( 0 < %var% )|&&")) {
-                    varInfo2.erase(tok->tokAt(4)->varId());
-                } else if (Token::Match(tok->next(), "( %var% == -1 )|&&")) {
-                    varInfo1.erase(tok->tokAt(2)->varId());
-                } else if (Token::Match(tok->next(), "( -1 == %var% )|&&")) {
-                    varInfo1.erase(tok->tokAt(4)->varId());
+                // parse condition
+                std::stack<const Token *> tokens;
+                tokens.push(tok->next()->astOperand2());
+                while (!tokens.empty()) {
+                    const Token *tok3 = tokens.top();
+                    tokens.pop();
+                    if (!tok3)
+                        continue;
+                    if (tok3->str() == "&&") {
+                        tokens.push(tok3->astOperand1());
+                        tokens.push(tok3->astOperand2());
+                        continue;
+                    }
+                    if (tok3->str() == "(" && !tok3->astOperand2()->varId()) {
+                        tokens.push(tok3->astOperand2());
+                        continue;
+                    }
+
+                    const Token *vartok = nullptr;
+                    if (isVariableComparison(tok3, "!=", "0", &vartok)) {
+                        varInfo2.erase(vartok->varId());
+                        if (notzero.find(vartok->varId()) != notzero.end())
+                            varInfo2.clear();
+                    } else if (isVariableComparison(tok3, "==", "0", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    } else if (Token::Match(tok->next(), "( %name% ( ! %var% ) )|&&")) {
+                        varInfo1.erase(tok->tokAt(5)->varId());
+                    } else if (isVariableComparison(tok3, "<", "0", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    } else if (isVariableComparison(tok3, ">", "0", &vartok)) {
+                        varInfo2.erase(vartok->varId());
+                    } else if (isVariableComparison(tok3, "==", "-1", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    }
                 }
 
                 checkScope(tok2->next(), &varInfo1, notzero);
