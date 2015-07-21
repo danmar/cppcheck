@@ -1581,6 +1581,13 @@ private:
 
         code = "void f() {\n"
                "  int x = 0;\n"
+               "  if (y) { dostuff(x); }\n"
+               "  if (!x) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "!"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
                "  for (int i = 0; i < 10; i++) {\n"
                "    if (cond) {\n"
                "      x = 1;\n"
