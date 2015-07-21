@@ -3703,7 +3703,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
     simplifyIfNot();
-    simplifyIfNotNull();
     simplifyIfSameInnerCondition();
     simplifyNestedStrcat();
     simplifyFuncInWhile();
@@ -6068,63 +6067,6 @@ void Tokenizer::simplifyIfNot()
         }
     }
 }
-
-
-void Tokenizer::simplifyIfNotNull()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        Token *deleteFrom = nullptr;
-
-        // Remove 'x = x != 0;'
-        if (Token::simpleMatch(tok, "=")) {
-            if (Token::Match(tok->tokAt(-2), "[;{}] %name%")) {
-                const std::string& varname(tok->previous()->str());
-
-                if (Token::simpleMatch(tok->next(), (varname + " != 0 ;").c_str()) ||
-                    Token::simpleMatch(tok->next(), ("0 != " + varname + " ;").c_str())) {
-                    tok = tok->tokAt(-2);
-                    tok->deleteNext(6);
-                }
-            }
-            continue;
-        }
-
-        if (Token::Match(tok, "==|!= ("))
-            tok = tok->linkAt(1);
-
-        if (Token::Match(tok, "(|&&|%oror%")) {
-            tok = tok->next();
-
-            if (!tok)
-                break;
-
-            if (Token::Match(tok, "0 != %name%|(")) {
-                deleteFrom = tok->previous();
-                if (tok->tokAt(2))
-                    tok->tokAt(2)->isPointerCompare(true);
-            }
-
-            else if (Token::Match(tok, "%name% != 0")) {
-                deleteFrom = tok;
-                tok->isPointerCompare(true);
-                tok->isExpandedMacro(tok->isExpandedMacro() || tok->tokAt(2)->isExpandedMacro());
-            }
-
-            else if (Token::Match(tok, "%name% .|:: %name% != 0")) {
-                tok = tok->tokAt(2);
-                deleteFrom = tok;
-                tok->isPointerCompare(true);
-                tok->isExpandedMacro(tok->isExpandedMacro() || tok->tokAt(2)->isExpandedMacro());
-            }
-        }
-
-        if (deleteFrom) {
-            Token::eraseTokens(deleteFrom, deleteFrom->tokAt(3));
-            tok = deleteFrom;
-        }
-    }
-}
-
 
 void Tokenizer::simplifyIfSameInnerCondition()
 {

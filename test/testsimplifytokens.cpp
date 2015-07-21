@@ -99,7 +99,6 @@ private:
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(simplifyIfNot);
-        TEST_CASE(simplifyIfNotNull);
 
         TEST_CASE(combine_wstrings);
 
@@ -1685,13 +1684,6 @@ private:
         ASSERT_EQUALS("if ( ! x ) { ; }", tok("if((x==0));"));
         ASSERT_EQUALS("if ( ( ! x ) && ! y ) { ; }", tok("if((x==0) && y==0);"));
         ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", tok("if(!(fclose(fd) == 0));"));
-    }
-
-    void simplifyIfNotNull() {
-        const char code[] = "void f(int x) {\n"
-                            "    x = (x != 0);\n"
-                            "}";
-        ASSERT_EQUALS("void f ( int x ) { }", tok(code, true));
     }
 
     void not1() {

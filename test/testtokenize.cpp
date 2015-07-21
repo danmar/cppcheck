@@ -127,8 +127,6 @@ private:
         TEST_CASE(forAddBraces1);
         TEST_CASE(forAddBraces2); // #5088
 
-        TEST_CASE(pointers_condition);
-
         TEST_CASE(simplifyKnownVariables1);
         TEST_CASE(simplifyKnownVariables2);
         TEST_CASE(simplifyKnownVariables3);
@@ -1081,47 +1079,6 @@ private:
         // 'asm ( ) ;' should be in the same line
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );", true));
     }
-
-
-    void pointers_condition() {
-        ASSERT_EQUALS("( p )", tokenizeAndStringify("( p != NULL )", true));
-        ASSERT_EQUALS("( p )", tokenizeAndStringify("( NULL != p )", true));
-        ASSERT_EQUALS("( this . p )", tokenizeAndStringify("( this->p != NULL )", true));
-        ASSERT_EQUALS("( this . p )", tokenizeAndStringify("( NULL != this->p )", true));
-        ASSERT_EQUALS("( Foo :: p )", tokenizeAndStringify("( Foo::p != NULL )", true));
-        ASSERT_EQUALS("( Foo :: p )", tokenizeAndStringify("( NULL != Foo::p )", true));
-
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == NULL )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( NULL == p )", true));
-        ASSERT_EQUALS("( ! this . p )", tokenizeAndStringify("( this->p == NULL )", true));
-        ASSERT_EQUALS("( ! this . p )", tokenizeAndStringify("( NULL == this->p )", true));
-        ASSERT_EQUALS("( ! Foo :: p )", tokenizeAndStringify("( Foo::p == NULL )", true));
-        ASSERT_EQUALS("( ! Foo :: p )", tokenizeAndStringify("( NULL == Foo::p )", true));
-
-        ASSERT_EQUALS("( p1 || ! p2 )", tokenizeAndStringify("( p1 != NULL || p2 == NULL )", true));
-        ASSERT_EQUALS("( p1 && ! p2 )", tokenizeAndStringify("( p1 != NULL && p2 == NULL )", true));
-        ASSERT_EQUALS("a & & b", tokenizeAndStringify("a & &b", true));
-
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == false )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0 )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == '\\0' )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0L )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0UL )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0ul )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0l )", true));
-
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( false == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0 == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( '\\0' == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0L == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0UL == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0ul == p )", true));
-        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0l == p )", true));
-
-        // not pointer
-        ASSERT_EQUALS("( x != ( y != 0 ) )", tokenizeAndStringify("( x != ( y != 0 ) )", false));
-    }
-
 
     void ifAddBraces1() {
         const char code[] = "void f()\n"

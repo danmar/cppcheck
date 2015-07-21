@@ -1389,7 +1389,7 @@ private:
               "   int y = rand(), z = rand();\n"
               "   if (y==0 || y!=0 && z);\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y!=0. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
               "  if (x>0 || (x<0 && y)) {}\n"

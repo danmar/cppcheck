@@ -305,13 +305,6 @@ public:
      */
     void simplifyIfNot();
 
-    /**
-     * simplify if-not NULL
-     * Example: "if(0!=x);" => "if(x);"
-     * Special case: 'x = (0 != x);' is removed.
-     */
-    void simplifyIfNotNull();
-
     /** @brief simplify if (a) { if (a) */
     void simplifyIfSameInnerCondition();
 

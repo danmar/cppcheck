@@ -366,11 +366,18 @@ bool CheckCondition::isOppositeCond(bool isNot, const Token * const cond1, const
     if (!cond1 || !cond2)
         return false;
 
-    if (cond1->str() == "!")
+    if (cond1->str() == "!") {
+        if (cond2->str() == "!=") {
+            if (cond2->astOperand1()->str() == "0")
+                return isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand2(), constFunctions);
+            if (cond2->astOperand2()->str() == "0")
+                return isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand1(), constFunctions);
+        }
         return isSameExpression(_tokenizer, cond1->astOperand1(), cond2, constFunctions);
+    }
 
     if (cond2->str() == "!")
-        return isSameExpression(_tokenizer, cond1, cond2->astOperand1(), constFunctions);
+        return isOppositeCond(isNot, cond2, cond1, constFunctions);
 
     if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
         return false;
