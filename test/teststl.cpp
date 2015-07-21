@@ -296,6 +296,20 @@ private:
               "    std::vector<int>::iterator it = std::find_first_of(ints1.begin(), ints1.end(), ints2.begin(), ints2.end());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6839
+        check("void f(const std::wstring& a, const std::wstring& b) {\n"
+              "    const std::string tp1 = std::string(a.begin(), b.end());\n"
+              "    const std::wstring tp2 = std::string(b.begin(), a.end());\n"
+              "    const std::u16string tp3(a.begin(), b.end());\n"
+              "    const std::u32string tp4(b.begin(), a.end());\n"
+              "    const std::string fp1 = std::string(a.begin(), a.end());\n"
+              "    const std::string tp2(a.begin(), a.end());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Iterators of different containers are used together.\n"
+                      "[test.cpp:3]: (error) Iterators of different containers are used together.\n"
+                      "[test.cpp:4]: (error) Iterators of different containers are used together.\n"
+                      "[test.cpp:5]: (error) Iterators of different containers are used together.\n", errout.str());
     }
 
     void iterator9() {
