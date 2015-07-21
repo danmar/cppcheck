@@ -3702,12 +3702,11 @@ bool Tokenizer::simplifyTokenList2()
     simplifyErrNoInWhile();
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
-    simplifyIfNot();
     simplifyIfSameInnerCondition();
     simplifyNestedStrcat();
     simplifyFuncInWhile();
 
-    simplifyIfAndWhileAssign(); // Could be affected by simplifyIfNot
+    simplifyIfAndWhileAssign();
 
     // replace strlen(str)
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -5871,7 +5870,9 @@ void Tokenizer::simplifyIfAndWhileAssign()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok->next(), "if|while ( !| (| %name% =") &&
-            !Token::Match(tok->next(), "if|while ( !| (| %name% . %name% ="))
+            !Token::Match(tok->next(), "if|while ( !| (| %name% . %name% =") &&
+            !Token::Match(tok->next(), "if|while ( 0 == (| %name% =") &&
+            !Token::Match(tok->next(), "if|while ( 0 == (| %name% . %name% ="))
             continue;
 
         // simplifying a "while(cond) { }" condition ?
@@ -5885,9 +5886,9 @@ void Tokenizer::simplifyIfAndWhileAssign()
         tok->deleteNext();
 
         // Remember if there is a "!" or not. And delete it if there are.
-        const bool isNot(tok->strAt(2) == "!");
+        const bool isNot(Token::Match(tok->tokAt(2), "!|0"));
         if (isNot)
-            tok->next()->deleteNext();
+            tok->next()->deleteNext((tok->strAt(2) == "0") ? 2 : 1);
 
         // Delete parentheses.. and remember how many there are with
         // their links.
@@ -6003,66 +6004,6 @@ void Tokenizer::simplifyVariableMultipleAssign()
                 tok2->next()->insertToken(";");
                 tok2->next()->insertToken(value);
                 tok2 = tok2->tokAt(4);
-            }
-        }
-    }
-}
-
-
-void Tokenizer::simplifyIfNot()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|&&|%oror%")) {
-            tok = tok->next();
-            while (tok && tok->str() == "(")
-                tok = tok->next();
-
-            if (!tok)
-                break;
-
-            if (Token::Match(tok, "0|false == %name%|(")) {
-                tok->deleteNext();
-                tok->str("!");
-            }
-
-            else if (Token::Match(tok, "%name% == 0|false")) {
-                tok->deleteNext(2);
-                tok = tok->previous();
-                tok->insertToken("!");
-                tok = tok->next();
-            }
-
-            else if (Token::Match(tok, "%name% .|:: %name% == 0|false")) {
-                tok = tok->previous();
-                tok->insertToken("!");
-                tok = tok->tokAt(4);
-                tok->deleteNext(2);
-            }
-
-            else if (Token::Match(tok, "* %name% == 0|false")) {
-                tok = tok->previous();
-                tok->insertToken("!");
-                tok = tok->tokAt(3);
-                tok->deleteNext(2);
-            }
-        }
-
-        else if (tok->link() && Token::Match(tok, ") == 0|false")) {
-            // if( foo(x) == 0 )
-            if (Token::Match(tok->link()->tokAt(-2), "( %name%")) {
-                tok->deleteNext(2);
-                tok->link()->previous()->insertToken(tok->link()->previous()->str());
-                tok->link()->tokAt(-2)->str("!");
-            }
-
-            // if( (x) == 0 )
-            else if (tok->link()->strAt(-1) == "(") {
-                tok->deleteNext(2);
-                tok->link()->insertToken("(");
-                tok->link()->str("!");
-                Token *temp = tok->link();
-                Token::createMutualLinks(tok->link()->next(), tok);
-                temp->link(0);
             }
         }
     }

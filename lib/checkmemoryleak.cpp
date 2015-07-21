@@ -517,13 +517,30 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 }
 
 
-bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid)
+static bool notvar(const Token *tok, unsigned int varid)
 {
     if (!tok)
         return false;
     if (Token::Match(tok, "&&|;"))
         return notvar(tok->astOperand1(),varid) || notvar(tok->astOperand2(),varid);
-    return tok->str() == "!" && tok->astOperand1()->varId() == varid;
+
+    if (tok->str() == "!")
+        tok = tok->astOperand1();
+    else if (tok->str() == "==") {
+        if (Token::simpleMatch(tok->astOperand1(), "0"))
+            tok = tok->astOperand2();
+        else if (Token::simpleMatch(tok->astOperand2(), "0"))
+            tok = tok->astOperand1();
+        else
+            return false;
+    } else {
+        return false;
+    }
+
+    while (tok && tok->str() == ".")
+        tok = tok->astOperand2();
+
+    return tok && tok->varId() == varid;
 }
 
 
@@ -1040,15 +1057,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             dep = true;
                     }
 
-                    if (Token::Match(tok, "if ( ! %varid% &&", varid)) {
+                    if (notvar(tok->next()->astOperand2(), varid))
                         addtoken(&rettail, tok, "if(!var)");
-                    } else if (tok->next() &&
-                               tok->next()->link() &&
-                               Token::Match(tok->next()->link()->tokAt(-3), "&& ! %varid%", varid)) {
-                        addtoken(&rettail, tok, "if(!var)");
-                    } else {
+                    else
                         addtoken(&rettail, tok, (dep ? "ifv" : "if"));
-                    }
 
                     tok = tok->next()->link();
                     continue;
@@ -2579,7 +2591,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                 }
 
                 // failed allocation => skip code..
-                else if (Token::Match(tok3, "if ( ! %var% . %varid% )", structmemberid)) {
+                else if (Token::simpleMatch(tok3, "if (") &&
+                         notvar(tok3->next()->astOperand2(), structmemberid)) {
                     // Goto the ")"
                     tok3 = tok3->next()->link();
 

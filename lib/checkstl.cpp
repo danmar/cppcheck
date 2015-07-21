@@ -750,7 +750,7 @@ static bool if_findCompare(const Token * const tokBack)
     if (!tok)
         return true;
     if (tok->isComparisonOp())
-        return true;
+        return (!tok->astOperand1()->isNumber() && !tok->astOperand2()->isNumber());
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
     if (tok->str() == ".")
@@ -773,11 +773,7 @@ void CheckStl::if_find()
         if ((i->type != Scope::eIf && i->type != Scope::eWhile) || !i->classDef)
             continue;
 
-        const Token* tok = i->classDef->next();
-        if (tok->str() == "if")
-            tok = tok->next();
-
-        for (const Token* const end = tok->link(); tok != end; tok = (tok == end) ? end : tok->next()) {
+        for (const Token *tok = i->classDef; tok->str() != "{"; tok = tok->next()) {
             const Token* funcTok = nullptr;
             const Library::Container* container = nullptr;
 

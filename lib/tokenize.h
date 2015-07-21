@@ -299,12 +299,6 @@ public:
      */
     void simplifyVariableMultipleAssign();
 
-    /**
-     * simplify if-not
-     * Example: "if(0==x);" => "if(!x);"
-     */
-    void simplifyIfNot();
-
     /** @brief simplify if (a) { if (a) */
     void simplifyIfSameInnerCondition();
 

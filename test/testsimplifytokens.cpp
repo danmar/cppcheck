@@ -97,9 +97,6 @@ private:
         TEST_CASE(doWhileAssign); // varid
         TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
 
-        // "if(0==x)" => "if(!x)"
-        TEST_CASE(simplifyIfNot);
-
         TEST_CASE(combine_wstrings);
 
         // Simplify "not" to "!" (#345)
@@ -364,7 +361,7 @@ private:
 
 
     void cast() {
-        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (p == (char *)0);"));
+        ASSERT_EQUALS("if ( p == 0 ) { ; }", tok("if (p == (char *)0);"));
         ASSERT_EQUALS("return str ;", tok("return (char *)str;"));
 
         ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
@@ -372,7 +369,7 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
         ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
         ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
-        ASSERT_EQUALS("if ( ! p ) { ; }", tok("if (p == (char *)(char *)0);"));
+        ASSERT_EQUALS("if ( p == 0 ) { ; }", tok("if (p == (char *)(char *)0);"));
 
         // no simplification as the cast may be important here. see #2897 for example
         ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
@@ -684,11 +681,11 @@ private:
         ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
         ASSERT_EQUALS("return p ;", tok("return (p);"));
-        ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
-        ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*p == 0) {}}"));
+        ASSERT_EQUALS("void f ( ) { int * p ; if ( * p == 0 ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
+        ASSERT_EQUALS("void f ( ) { int * p ; if ( * p == 0 ) { } }", tok("void f(){int *p; if (*p == 0) {}}"));
         ASSERT_EQUALS("void f ( int & p ) { p = 1 ; }", tok("void f(int &p) {(p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p [ 10 ] ; p [ 0 ] = 1 ; }", tok("void f(){int p[10]; (p)[0] = 1;}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( ! p ) { } }", tok("void f(){int p; if ((p) == 0) {}}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( p == 0 ) { } }", tok("void f(){int p; if ((p) == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { int * p ; * p = 1 ; }", tok("void f(){int *p; *(p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } p = 1 ; }", tok("void f(){int p; if ( p ) { } (p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { a . b ; }", tok("void f ( ) { ( & a ) -> b ; }")); // Ticket #5776
@@ -824,7 +821,7 @@ private:
                                     "else { "
                                     "if ( g == 2 ) "
                                     "{ "
-                                    "if ( ! f ) { coo ( ) ; } "
+                                    "if ( f == 0 ) { coo ( ) ; } "
                                     "else { "
                                     "if ( f == 1 ) "
                                     "{ "
@@ -1592,7 +1589,7 @@ private:
                                "{ "
                                "FILE * f ; "
                                "f = fopen ( \"foo\" , \"r\" ) ; "
-                               "if ( ! f ) "
+                               "if ( f == 0 ) "
                                "{ "
                                "return -1 ; "
                                "} "
@@ -1671,19 +1668,6 @@ private:
                       tok("char *s; do { } while (0 == (s=new char[10]));"));
         // #4911
         ASSERT_EQUALS("; do { current = f ( ) ; } while ( ( current ) != 0 ) ;", simplifyIfAndWhileAssign(";do { } while((current=f()) != NULL);"));
-    }
-
-    void simplifyIfNot() {
-        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(0==x);"));
-        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if(x==0);"));
-        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if(0==(a=b));"));
-        ASSERT_EQUALS("if ( ! a && b ( ) ) { ; }", tok("if( 0 == a && b() );"));
-        ASSERT_EQUALS("if ( b ( ) && ! a ) { ; }", tok("if( b() && 0 == a );"));
-        ASSERT_EQUALS("if ( ! ( a = b ) ) { ; }", tok("if((a=b)==0);"));
-        ASSERT_EQUALS("if ( ! x . y ) { ; }", tok("if(x.y==0);"));
-        ASSERT_EQUALS("if ( ! x ) { ; }", tok("if((x==0));"));
-        ASSERT_EQUALS("if ( ( ! x ) && ! y ) { ; }", tok("if((x==0) && y==0);"));
-        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) ) { ; }", tok("if(!(fclose(fd) == 0));"));
     }
 
     void not1() {
