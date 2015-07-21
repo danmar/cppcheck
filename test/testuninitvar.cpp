@@ -1705,6 +1705,15 @@ private:
                         "    strchr(s.c_str(), ',');\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6717
+        checkUninitVarB("void f() {\n"
+                        "    struct thing { int value; };\n"
+                        "    thing it;\n"
+                        "    int& referenced_int = it.value;\n"
+                        "    referenced_int = 123;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_return() {

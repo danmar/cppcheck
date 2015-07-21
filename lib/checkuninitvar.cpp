@@ -1965,7 +1965,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
     if (isMemberVariableAssignment(tok, membervar))
         return false;
 
-    if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar)
+    if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference()))
         return true;
     else if (!isPointer && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
