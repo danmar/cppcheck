@@ -3586,8 +3586,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // then unsimplified function calls etc remain. These have the
     // "wrong" syntax. So this function will just fix so that the
     // syntax is corrected.
-    if (!isC())
+    if (!isC()) {
+        validate(); // #6847 - invalid code
         TemplateSimplifier::cleanupAfterSimplify(list.front());
+    }
 
     // Simplify pointer to standard types (C only)
     simplifyPointerToStandardType();
@@ -3642,13 +3644,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     elseif();
 
-    // Simplify nameless rValue references - named ones are simplified later
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&& [,)]")) {
-            tok->str("&");
-            tok->insertToken("&");
-        }
-    }
+    SimplifyNamelessRValueReferences();
+
 
     validate();
     return true;
@@ -10493,6 +10490,17 @@ void Tokenizer::setPodTypes()
                     continue;
                 tok->isStandardType(true);
             }
+        }
+    }
+}
+
+void Tokenizer::SimplifyNamelessRValueReferences()
+{
+    // Simplify nameless rValue references - named ones are simplified later
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "&& [,)]")) {
+            tok->str("&");
+            tok->insertToken("&");
         }
     }
 }
