@@ -1033,16 +1033,6 @@ void CheckOther::checkSuspiciousEqualityComparison()
                 if (Token::Match(closeParen->tokAt(-2), "== %any%"))
                     suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
-                // Equality comparisons with 0 are simplified to negation. For instance,
-                // (x == 0) is simplified to (!x), so also check for suspicious negation
-                // in the initialization or increment-decrement parts of the for() loop.
-                // For example:
-                //    for (!i; i < 10; i++)
-                if (Token::Match(openParen->next(), "! %name%"))
-                    suspiciousEqualityComparisonError(openParen->next());
-                if (Token::Match(closeParen->tokAt(-2), "! %name%"))
-                    suspiciousEqualityComparisonError(closeParen->tokAt(-2));
-
                 // Skip over for() loop conditions because "for (;running==1;)"
                 // is a bit strange, but not necessarily incorrect.
                 tok = closeParen;
@@ -1826,25 +1816,11 @@ void CheckOther::zerodivError(const Token *tok, bool inconclusive)
 void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive)
 {
     std::list<const Token *> callstack;
-    while (Token::Match(tokcond, "(|%oror%|&&"))
-        tokcond = tokcond->next();
     if (tokcond && tokdiv) {
         callstack.push_back(tokcond);
         callstack.push_back(tokdiv);
     }
-    std::string condition;
-    if (!tokcond) {
-        // getErrorMessages
-    } else if (Token::Match(tokcond, "%num% <|<=")) {
-        condition = tokcond->strAt(2) + ((tokcond->strAt(1) == "<") ? ">" : ">=") + tokcond->str();
-    } else if (tokcond->isComparisonOp()) {
-        condition = tokcond->expressionString();
-    } else {
-        if (tokcond->str() == "!")
-            condition = tokcond->next()->str() + "==0";
-        else
-            condition = tokcond->str() + "!=0";
-    }
+    const std::string condition(tokcond ? tokcond->expressionString() : "");
     const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
     reportError(callstack, Severity::warning, "zerodivcond", "Either the condition '"+condition+"' is useless or there is division by zero at line " + linenr + ".", 0U, inconclusive);
 }
