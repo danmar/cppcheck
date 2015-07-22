@@ -284,7 +284,7 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
                 while (parent && parent->str() == ",")
                     parent = parent->astParent();
                 if (parent && parent->str() == "(") {
-                    if (parent->astOperand1()->isName() && !parent->astOperand1()->function())
+                    if (parent->astOperand1() && parent->astOperand1()->isName() && !parent->astOperand1()->function())
                         return true;
                     // TODO: check if function parameter is non-const reference etc..
                 }

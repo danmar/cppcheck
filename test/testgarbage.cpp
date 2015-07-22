@@ -144,6 +144,7 @@ private:
         TEST_CASE(garbageCode102); // #6846
         TEST_CASE(garbageCode103); // #6824
         TEST_CASE(garbageCode104); // #6847
+        TEST_CASE(garbageCode105); // #6859
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -812,6 +813,10 @@ private:
 
     void garbageCode104() { // #6847
         ASSERT_THROW(checkCode("template < Types > struct S {> ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) } { ( )> >} { ( ) { } } ( ) { ( ) }"), InternalError);
+    }
+
+    void garbageCode105() { // #6859
+        checkCode("void foo (int i) { int a , for (a 1; a( < 4; a++) if (a) (b b++) (b);) n++; }");
     }
 
     void garbageValueFlow() {
