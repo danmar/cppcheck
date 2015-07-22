@@ -1459,6 +1459,52 @@ const Token *Token::getValueTokenDeadPointer() const
     return nullptr;
 }
 
+
+const Token * Token::findVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok)
+{
+    if (!tok)
+        return nullptr;
+
+    if (tok->str() == "&&") {
+        const Token *ret = findVariableComparison(tok->astOperand1(), comp, rhs, vartok);
+        if (!ret)
+            ret = findVariableComparison(tok->astOperand2(), comp, rhs, vartok);
+        return ret;
+    }
+
+    if (tok->str() == "(" && tok->astOperand2() && Token::Match(tok->astOperand1(), "UNLIKELY|LIKELY"))
+        return findVariableComparison(tok->astOperand2(), comp, rhs, vartok);
+
+    const Token *ret = nullptr;
+    if (tok->isComparisonOp()) {
+        if (tok->astOperand1() && tok->astOperand1()->str() == rhs) {
+            // Invert comparator
+            std::string s = tok->str();
+            if (s[0] == '>')
+                s[0] = '<';
+            else if (s[0] == '<')
+                s[0] = '>';
+            if (s == comp) {
+                ret = tok->astOperand2();
+            }
+        } else if (tok->str() == comp && tok->astOperand2() && tok->astOperand2()->str() == rhs) {
+            ret = tok->astOperand1();
+        }
+    } else if (comp == "!=" && rhs == std::string("0")) {
+        ret = tok;
+    } else if (comp == "==" && rhs == std::string("0")) {
+        if (tok->str() == "!")
+            ret = tok->astOperand1();
+    }
+    while (ret && ret->str() == ".")
+        ret = ret->astOperand2();
+    if (ret && ret->varId() == 0U)
+        ret = nullptr;
+    if (vartok)
+        *vartok = ret;
+    return ret;
+}
+
 void Token::assignProgressValues(Token *tok)
 {
     unsigned int total_count = 0;

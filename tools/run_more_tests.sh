@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ~/cppcheck/cppcheck -q . 2> 1.txt
 
 

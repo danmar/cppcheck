@@ -711,6 +711,9 @@ public:
 
     const Token *getValueTokenDeadPointer() const;
 
+    /** Recursively search for variable comparison against value */
+    static const Token * findVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
+
 private:
 
     void next(Token *nextToken) {
