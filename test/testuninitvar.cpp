@@ -3129,6 +3129,11 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
+        checkUninitVar2("void f() {\n" // Don't crash
+                        "    int a;\n"
+                        "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
+                        "}\n");
+
         // Unknown => bail out..
         checkUninitVarB("void f(int x) {\n"
                         "    int i;\n"

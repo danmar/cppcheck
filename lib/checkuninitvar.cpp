@@ -1206,7 +1206,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
         return false;
     if (tok->str() == "&" && !tok->astOperand2())
         return false;
-    if (Token::Match(tok, "%cop%|:"))
+    if (tok->isConstOp())
         return isVariableUsed(tok->astOperand1(),var) || isVariableUsed(tok->astOperand2(),var);
     return (tok->varId() == var.declarationId());
 }
@@ -1458,6 +1458,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         if (tok->str() == "?") {
+            if (!tok->astOperand2())
+                return true;
             const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
             const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
             const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
@@ -1503,6 +1505,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     tok = tok->linkAt(1);
 
                 else if (tok->str() == "?") {
+                    if (!tok->astOperand2())
+                        return true;
                     const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
                     const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
                     const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
