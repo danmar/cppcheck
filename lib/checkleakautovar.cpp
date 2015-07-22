@@ -148,9 +148,9 @@ static bool isVariableComparison(const Token *tok, const std::string &comp, cons
             // Invert comparator
             std::string s = tok->str();
             if (s[0] == '>')
-                s[1] = '<';
+                s[0] = '<';
             else if (s[0] == '<')
-                s[1] = '>';
+                s[0] = '>';
             if (s == comp) {
                 *vartok = tok->astOperand2();
             }
