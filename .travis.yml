@@ -37,8 +37,6 @@ script:
   - touch lib/mathlib.cpp
   - touch test/testmathlib.cpp
   - make test -j4
-# run extra tests
-  - tools/generate_and_run_more_tests.sh
 # compile gui
   - cd gui
   - qmake
@@ -49,6 +47,8 @@ script:
   - touch /tmp/cppcheck.cppcheck
   - ./cppcheck --error-exitcode=1 -Ilib --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions . -j 2 |& tee /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
+# run extra tests
+  - tools/generate_and_run_more_tests.sh
 # check test/cfg
   - make checkcfg
   - cd ./gui
