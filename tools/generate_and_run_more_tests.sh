@@ -5,9 +5,12 @@
 
 set -e
 
+echo testleakautovar
+tools/run_more_tests.sh test/testleakautovar.cpp
+
 echo testmemleak
 tools/run_more_tests.sh test/testmemleak.cpp
 
-echo testleakautovar
-tools/run_more_tests.sh test/testleakautovar.cpp
+echo testnullpointer
+tools/run_more_tests.sh test/testnullpointer.cpp
 
