@@ -9983,6 +9983,9 @@ void Tokenizer::simplifyOperatorName()
                 tok->str("operator" + op);
                 Token::eraseTokens(tok, par);
             }
+
+            if (!op.empty())
+                tok->isOperator(true);
         }
     }
 

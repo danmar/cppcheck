@@ -176,6 +176,7 @@ private:
         TEST_CASE(uninitVarPointer);       // ticket #3801
         TEST_CASE(uninitConstVar);
         TEST_CASE(constructors_crash1);    // ticket #5641
+        TEST_CASE(classWithOperatorInName);// ticket #2827
     }
 
 
@@ -3188,6 +3189,15 @@ private:
               "  C() _STLP_NOTHROW {}\n"
               "  C(const C&) _STLP_NOTHROW {}\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void classWithOperatorInName() { // ticket #2827
+        check("class operatorX {\n"
+              "  int mValue;\n"
+              "public:\n"
+              "  operatorX() : mValue(0) {}\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 };

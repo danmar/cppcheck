@@ -374,6 +374,12 @@ public:
     void isAttributeNothrow(bool value) {
         setFlag(fIsAttributeNothrow, value);
     }
+    bool isOperator() const {
+        return getFlag(fIsOperator);
+    }
+    void isOperator(bool value) {
+        setFlag(fIsOperator, value);
+    }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
@@ -777,7 +783,8 @@ private:
         fIsAttributeConst       = (1 << 11), // __attribute__((const))
         fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
         fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 14)  // __attribute__((used))
+        fIsAttributeUsed        = (1 << 14), // __attribute__((used))
+        fIsOperator             = (1 << 15)  // operator=, etc
     };
 
     unsigned int _flags;
