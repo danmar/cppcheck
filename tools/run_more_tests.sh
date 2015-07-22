@@ -3,6 +3,10 @@
 
 set -e
 
+python tools/extracttests.py --code=test1 $1
+
+cd test1
+
 ../cppcheck -q . 2> 1.txt
 
 
@@ -89,4 +93,6 @@ sed  -ri 's/([(&][ ]*)(\-?[0-9]+)[ ]*\!=[ ]*([a-z]+)([ ]*[&)])/\1\3!=\2\4/' *.cp
 ../cppcheck -q . 2> 2.txt && diff 1.txt 2.txt
 
 
+cd ..
 
+rm -rf test1
