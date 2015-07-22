@@ -2776,10 +2776,7 @@ void Tokenizer::setVarId()
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.
                     if (isCPP() &&
-                        prev2->str().size() >= 9 &&
-                        prev2->str().compare(0, 8, "operator") == 0 &&
-                        prev2->str()[8] != '_' &&
-                        !std::isalnum(prev2->str()[8]))
+                        prev2->isOperatorKeyword())
                         continue;
 
                     const Token *tok3 = tok2->next();
@@ -9985,7 +9982,7 @@ void Tokenizer::simplifyOperatorName()
             }
 
             if (!op.empty())
-                tok->isOperator(true);
+                tok->isOperatorKeyword(true);
         }
     }
 

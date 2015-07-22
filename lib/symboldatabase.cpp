@@ -347,7 +347,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         function.nestedIn = scope;
 
                         // operator function
-                        if (function.tokenDef->isOperator()) {
+                        if (function.tokenDef->isOperatorKeyword()) {
                             function.isOperator(true);
 
                             // 'operator =' is special
