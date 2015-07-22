@@ -38,7 +38,7 @@ script:
   - touch test/testmathlib.cpp
   - make test -j4
 # run extra tests
-  - tools/generate_and_run_tests.sh
+  - tools/generate_and_run_more_tests.sh
 # compile gui
   - cd gui
   - qmake
