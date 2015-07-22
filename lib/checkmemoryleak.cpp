@@ -527,6 +527,17 @@ static bool notvar(const Token *tok, unsigned int varid)
     return vartok && (vartok->varId() == varid);
 }
 
+static bool ifvar(const Token *tok, unsigned int varid, const std::string &comp, const std::string &rhs)
+{
+    if (!Token::simpleMatch(tok, "if ("))
+        return false;
+    const Token * const condition = tok->next()->astOperand2();
+    if (!condition || condition->str() == "&&")
+        return false;
+    const Token *vartok = nullptr;
+    Token::findVariableComparison(condition, comp, rhs, &vartok);
+    return (vartok && vartok->varId() == varid);
+}
 
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
@@ -967,30 +978,28 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // if else switch
             if (Token::simpleMatch(tok, "if (")) {
                 if (alloctype == Fd) {
-                    if (Token::Match(tok, "if ( 0|-1 <=|< %varid% )", varid) ||
-                        Token::Match(tok, "if ( %varid% >|>= 0|-1 )", varid) ||
-                        Token::Match(tok, "if ( %varid% != -1 )", varid) ||
-                        Token::Match(tok, "if ( -1 != %varid% )", varid)) {
+                    if (ifvar(tok, varid, ">",  "-1") ||
+                        ifvar(tok, varid, ">=", "0") ||
+                        ifvar(tok, varid, ">",  "0") ||
+                        ifvar(tok, varid, "!=", "-1")) {
                         addtoken(&rettail, tok, "if(var)");
                         tok = tok->next()->link();
                         continue;
-                    } else if (Token::Match(tok, "if ( %varid% == -1 )", varid) ||
-                               Token::Match(tok, "if ( -1 == %varid% )", varid) ||
-                               Token::Match(tok, "if ( %varid% < 0 )", varid) ||
-                               Token::Match(tok, "if ( 0 > %varid% )", varid)) {
+                    } else if (ifvar(tok, varid, "==", "-1") ||
+                               ifvar(tok, varid, "<", "0")) {
                         addtoken(&rettail, tok, "if(!var)");
                         tok = tok->next()->link();
                         continue;
                     }
                 }
 
-                if (Token::Match(tok, "if ( %varid% )", varid)) {
+                if (ifvar(tok, varid, "!=", "0")) {
                     addtoken(&rettail, tok, "if(var)");
 
                     // Make sure the "use" will not be added
                     tok = tok->next()->link();
                     continue;
-                } else if (Token::simpleMatch(tok, "if (") && notvar(tok->next()->astOperand2(), varid)) {
+                } else if (ifvar(tok, varid, "==", "0")) {
                     addtoken(&rettail, tok, "if(!var)");
 
                     // parse the if-body.
@@ -2589,7 +2598,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                 }
 
                 // succeeded allocation
-                else if (Token::Match(tok3, "if ( %var% . %varid% ) {", structmemberid)) {
+                else if (ifvar(tok3, structmemberid, "!=", "0")) {
                     // goto the ")"
                     tok3 = tok3->next()->link();
 
