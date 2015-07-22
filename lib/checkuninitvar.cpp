@@ -1200,6 +1200,17 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
     }
 }
 
+static bool isVariableUsed(const Token *tok, const Variable& var)
+{
+    if (!tok)
+        return false;
+    if (tok->str() == "&" && !tok->astOperand2())
+        return false;
+    if (Token::Match(tok, "%cop%|:"))
+        return isVariableUsed(tok->astOperand1(),var) || isVariableUsed(tok->astOperand2(),var);
+    return (tok->varId() == var.declarationId());
+}
+
 bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar)
 {
     const bool suppressErrors(possibleInit && *possibleInit);
@@ -1446,8 +1457,18 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
-        // bailout on ternary operator. TODO: This can be solved much better. For example, if the variable is not accessed in the branches of the ternary operator, we could just continue.
         if (tok->str() == "?") {
+            const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
+            const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
+            const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
+            if (err) {
+                if (*alloc != NO_ALLOC)
+                    uninitdataError(tok, var.nameToken()->str());
+                else
+                    uninitvarError(tok, var.nameToken()->str());
+            }
+
+            // Todo: skip expression if there is no error
             return true;
         }
 
@@ -1481,11 +1502,18 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
                     tok = tok->linkAt(1);
 
-                else if (tok->str() == "?")
-                    // TODO: False negatives when "?:" is used.
-                    // Fix the tokenizer and then remove this bailout.
-                    // The tokenizer should replace "return x?y:z;" with "if(x)return y;return z;"
+                else if (tok->str() == "?") {
+                    const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
+                    const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
+                    const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
+                    if (err) {
+                        if (*alloc != NO_ALLOC)
+                            uninitdataError(tok, var.nameToken()->str());
+                        else
+                            uninitvarError(tok, var.nameToken()->str());
+                    }
                     return true;
+                }
 
                 tok = tok->next();
             }
@@ -1888,6 +1916,8 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             return alloc == NO_ALLOC;
         } else {
             const bool isnullbad = _settings->library.isnullargbad(start->previous(), argumentNumber + 1);
+            if (!address && isnullbad && alloc == NO_ALLOC)
+                return true;
             const bool isuninitbad = _settings->library.isuninitargbad(start->previous(), argumentNumber + 1);
             if (alloc != NO_ALLOC)
                 return isnullbad && isuninitbad;

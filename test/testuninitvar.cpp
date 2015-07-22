@@ -1004,7 +1004,7 @@ private:
                         "    char *c1;\n"
                         "    c1=strcpy(c1,\"test\");\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c1\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c1\n", errout.str());
 
         checkUninitVarB("void f(char *c1)\n"
                         "{\n"
@@ -2357,12 +2357,6 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVarB("int f(int a) {\n"
-                        "    int result;\n"
-                        "    foo() ? result = 1 : result = 0;\n"
-                        "}");
-        ASSERT_EQUALS("", errout.str());
-
         // = { .. }
         checkUninitVarB("int f() {\n"
                         "    int a;\n"
@@ -3120,16 +3114,13 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // TODO: False negative when "?:" is used
-        // This should probably be fixed in the tokenizer by changing
-        // "return x?y:z;" to "if(x)return y;return z;"
         checkUninitVar2("int f(int x) {\n"
                         "    int a;\n"
                         "    if (x)\n"
                         "        a = p;\n"
                         "    return y ? 2*a : 3*a;\n"
                         "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
         // Unknown => bail out..
         checkUninitVarB("void f(int x) {\n"
