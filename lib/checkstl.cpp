@@ -408,7 +408,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
             if (tok2->str() == "}") {
                 if (indentlevel > 0U)
                     --indentlevel;
-                else if (Token::Match(tok2, "} else {"))
+                else if (Token::simpleMatch(tok2, "} else {"))
                     tok2 = tok2->linkAt(2);
                 continue;
             }
