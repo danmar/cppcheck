@@ -1,0 +1,7 @@
+int main()
+{
+   int x=15;
+   printf("%d %d %d %d",x=1,x<20,x*1,x>10);
+   return 0;
+}
+Output : 1 1 1 1
