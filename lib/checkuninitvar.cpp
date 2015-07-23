@@ -1485,10 +1485,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     }
 
                     // Use variable
-                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
+                    else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
                         uninitvarError(tok, tok->str(), *alloc);
-                        return true;
-                    }
 
                     else
                         // assume that variable is assigned
@@ -1547,10 +1545,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
                     uninitvarError(tok, tok->str(), *alloc);
-                    return true;
-                }
 
                 else {
                     if (tok->strAt(1) == "=")
