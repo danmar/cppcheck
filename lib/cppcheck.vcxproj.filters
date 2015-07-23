@@ -65,9 +65,6 @@
     <ClCompile Include="errorlogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="executionpath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mathlib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -191,9 +188,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="errorlogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="executionpath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mathlib.h">

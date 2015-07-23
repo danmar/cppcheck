@@ -35,7 +35,6 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkvaarg.h \
            $${BASEPATH}cppcheck.h \
            $${BASEPATH}errorlogger.h \
-           $${BASEPATH}executionpath.h \
            $${BASEPATH}library.h \
            $${BASEPATH}mathlib.h \
            $${BASEPATH}path.h \
@@ -80,7 +79,6 @@ SOURCES += $${BASEPATH}check.cpp \
            $${BASEPATH}checkvaarg.cpp \
            $${BASEPATH}cppcheck.cpp \
            $${BASEPATH}errorlogger.cpp \
-           $${BASEPATH}executionpath.cpp \
            $${BASEPATH}library.cpp \
            $${BASEPATH}mathlib.cpp \
            $${BASEPATH}path.cpp \
