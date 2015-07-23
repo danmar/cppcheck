@@ -93,7 +93,9 @@ private:
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckNullPointer c(0, settings, errorLogger);
-        c.nullPointerError(0, "pointer");
+        c.nullPointerError(0);
+        c.nullPointerError(0, "pointer", false, true);
+        c.nullPointerError(0, "pointer", nullptr);
     }
 
     /** Name of check */

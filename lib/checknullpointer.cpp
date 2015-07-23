@@ -467,7 +467,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 {
     if (defaultArg) {
         if (_settings->isEnabled("warning"))
-            reportError(tok, Severity::warning, "nullPointer", "Possible null pointer dereference if the default parameter value is used: " + varname, 0U, inconclusive);
+            reportError(tok, Severity::warning, "nullPointerDefaultArg", "Possible null pointer dereference if the default parameter value is used: " + varname, 0U, inconclusive);
     } else
         reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname, 0U, inconclusive);
 }
@@ -478,5 +478,5 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     callstack.push_back(tok);
     callstack.push_back(nullCheck);
     const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
-    reportError(callstack, Severity::warning, "nullPointer", errmsg, 0U, inconclusive);
+    reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, 0U, inconclusive);
 }
