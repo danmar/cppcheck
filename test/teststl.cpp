@@ -72,6 +72,7 @@ private:
         TEST_CASE(eraseAssignByFunctionCall);
         TEST_CASE(eraseErase);
         TEST_CASE(eraseByValue);
+        TEST_CASE(eraseIf);
         TEST_CASE(eraseOnVector);
 
         TEST_CASE(pushback1);
@@ -1037,6 +1038,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void eraseIf() {
+        // #4816
+        check("void func(std::list<std::string> strlist) {\n"
+              "    for (std::list<std::string>::iterator str = strlist.begin(); str != strlist.end(); str++) {\n"
+              "        if (func2(*str)) {\n"
+              "    	       strlist.erase(str);\n"
+              "            if (strlist.empty())\n"
+              "                 return;\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Iterator 'str' used after element has been erased.\n", errout.str());
+    }
 
     void eraseOnVector() {
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
