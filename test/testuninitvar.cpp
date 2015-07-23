@@ -1009,12 +1009,10 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        // TODO: write a proper testcase, this can not be compiled
-        checkUninitVar2("struct X { int x; };\n"
-                        "void f() {\n"
+        checkUninitVar2("void f() {\n"
                         "  X var;\n"
                         "  memset(var, 0, sizeof(var));\n"
-                        "}");
+                        "}", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
