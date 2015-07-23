@@ -2023,7 +2023,7 @@ void Tokenizer::simplifyExternC()
     if (isC())
         return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "extern \"C\")) {
+        if (Token::simpleMatch(tok, "extern \"C\"")) {
             if (tok->strAt(2) == "{") {
                 tok->linkAt(2)->deleteThis();
                 tok->deleteNext(2);
