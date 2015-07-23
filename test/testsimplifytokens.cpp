@@ -833,6 +833,23 @@ private:
                                     "}";
             ASSERT_EQUALS(tok(expected), tok(src));
         }
+
+        // Ticket #6860 - lambdas
+        {
+            const char src[] = "( []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() )";
+            const char expected[] = "\n\n##file 0\n1: ( [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) )\n";
+            ASSERT_EQUALS(expected, elseif(src));
+        }
+        {
+            const char src[] = "[ []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() ]";
+            const char expected[] = "\n\n##file 0\n1: [ [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) ]\n";
+            ASSERT_EQUALS(expected, elseif(src));
+        }
+        {
+            const char src[] = "= { []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() }";
+            const char expected[] = "\n\n##file 0\n1: = { [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) }\n";
+            ASSERT_EQUALS(expected, elseif(src));
+        }
     }
 
 
