@@ -19,6 +19,7 @@
 #include "testsuite.h"
 #include "filelister.h"
 #include "settings.h"
+#include "pathmatch.h"
 #include <fstream>
 
 #ifndef _WIN32
@@ -76,8 +77,9 @@ private:
     void recursiveAddFiles() const {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
-        std::set<std::string> extra;
-        FileLister::recursiveAddFiles(files, ".", extra);
+        std::vector<std::string> masks;
+        PathMatch matcher(masks);
+        FileLister::recursiveAddFiles(files, ".", matcher);
 
         // In case there are leading "./"..
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {

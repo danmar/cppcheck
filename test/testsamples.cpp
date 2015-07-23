@@ -20,6 +20,7 @@
 #include "testsuite.h"
 #include "cppcheckexecutor.h"
 #include "path.h"
+#include "pathmatch.h"
 #include <fstream>
 #include <cstring>
 #include <algorithm>
@@ -40,10 +41,12 @@ private:
         REDIRECT;
 
         std::map<std::string, std::size_t> files;
+        const std::vector<std::string> masks;
+        const PathMatch matcher(masks);
 #ifdef _WIN32
-        FileLister::recursiveAddFiles(files, "..\\samples");
+        FileLister::recursiveAddFiles(files, "..\\samples", matcher);
 #else
-        FileLister::recursiveAddFiles(files, "samples");
+        FileLister::recursiveAddFiles(files, "samples", matcher);
 #endif
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
             CLEAR_REDIRECT_ERROUT;

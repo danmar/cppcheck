@@ -145,7 +145,6 @@ public:
      */
     static bool isCPP(const std::string &extensionInLowerCase);
 
-private:
     /**
      * @brief Is filename a header based on file extension
      * @param path filename to check. path info is optional
