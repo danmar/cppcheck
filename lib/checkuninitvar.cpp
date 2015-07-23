@@ -1058,7 +1058,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
 {
     for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
         if ((_tokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Type::True) ||
-            i->isStatic() || i->isExtern() || i->isArray() || i->isReference())
+            i->isStatic() || i->isExtern() || i->isReference())
             continue;
 
         // don't warn for try/catch exception variable
@@ -1077,18 +1077,33 @@ void CheckUninitVar::checkScope(const Scope* scope)
             continue;
         }
 
+        if (i->isArray()) {
+            const Token *tok = i->nameToken()->next();
+            while (Token::simpleMatch(tok->link(), "] ["))
+                tok = tok->link()->next();
+            if (Token::simpleMatch(tok->link(), "] ="))
+                continue;
+        }
+
         bool stdtype = _tokenizer->isC();
         const Token* tok = i->typeStartToken();
         for (; tok && tok->str() != ";" && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType())
                 stdtype = true;
         }
+        if (i->isArray() && !stdtype)
+            continue;
 
         while (tok && tok->str() != ";")
             tok = tok->next();
         if (!tok)
             continue;
 
+        if (i->isArray()) {
+            Alloc alloc = ARRAY;
+            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");
+            continue;
+        }
         if (stdtype || i->isPointer()) {
             Alloc alloc = NO_ALLOC;
             checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, "");

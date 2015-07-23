@@ -57,7 +57,7 @@ public:
     void check();
     void checkScope(const Scope* scope);
     void checkStruct(const Token *tok, const Variable &structvar);
-    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL };
+    enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
     bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
@@ -96,10 +96,10 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
-        if (alloc == NO_ALLOC)
-            uninitvarError(tok, varname);
-        else
+        if (alloc == NO_CTOR_CALL || alloc == CTOR_CALL)
             uninitdataError(tok, varname);
+        else
+            uninitvarError(tok, varname);
     }
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 

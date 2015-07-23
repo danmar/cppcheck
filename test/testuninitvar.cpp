@@ -1248,19 +1248,17 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
-        checkUninitVar("int f()\n"
-                       "{\n"
-                       "    char a[10];\n"
-                       "    char c = *a;\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+        checkUninitVar2("int f() {\n"
+                        "    char a[10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
-        checkUninitVar("int f()\n"
-                       "{\n"
-                       "    char a[SIZE+10];\n"
-                       "    char c = *a;\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+        checkUninitVar2("int f() {\n"
+                        "    char a[SIZE+10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
         checkUninitVarB("int f()\n"
                         "{\n"
@@ -1304,26 +1302,23 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char s[20];\n"
-                       "    strcpy(s2, s);\n"
-                       "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+        checkUninitVar2("void f() {\n"
+                        "    char s[20];\n"
+                        "    strcpy(s2, s);\n"
+                        "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: s\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char s[20];\n"
-                       "    strcat(s, \"abc\");\n"
-                       "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+        checkUninitVar2("void f() {\n"
+                        "    char s[20];\n"
+                        "    strcat(s, \"abc\");\n"
+                        "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: s\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char s[20];\n"
-                       "    strchr(s, ' ');\n"
-                       "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+        checkUninitVar2("void f() {\n"
+                        "    char s[20];\n"
+                        "    strchr(s, ' ');\n"
+                        "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: s\n", errout.str());
 
         checkUninitVarB("void foo()\n"
                         "{\n"
@@ -1393,12 +1388,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // ticket #3344
-        checkUninitVar("void f(){\n"
-                       "   char *strMsg = \"This is a message\";\n"
-                       "   char *buffer=(char*)malloc(128*sizeof(char));\n"
-                       "   strcpy(strMsg,buffer);\n"
-                       "   free(buffer);\n"
-                       "}");
+        checkUninitVar2("void f(){\n"
+                        "   char *strMsg = \"This is a message\";\n"
+                        "   char *buffer=(char*)malloc(128*sizeof(char));\n"
+                        "   strcpy(strMsg,buffer);\n"
+                        "   free(buffer);\n"
+                        "}", "test.cpp", false);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: buffer\n", errout.str());
 
         // #3845
@@ -1420,10 +1415,10 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
-        checkUninitVar2("int foo() {\n"
-                        "    int a[2][2];\n"
-                        "    return a[0][1];\n"
-                        "}");
+        checkUninitVar("int foo() {\n"
+                       "    int a[2][2];\n"
+                       "    return a[0][1];\n"
+                       "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", "", errout.str());
 
         // # 4740
@@ -1436,25 +1431,17 @@ private:
 
     // alloc..
     void uninitvar_alloc() {
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char *s = malloc(100);\n"
-                       "    strcat(s, \"abc\");\n"
-                       "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
+        checkUninitVar2("void f() {\n"
+                        "    char *s = malloc(100);\n"
+                        "    strcat(s, \"abc\");\n"
+                        "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char *s = malloc(100);\n"
-                       "    perror(s);\n"
-                       "};");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
-
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char *s1 = new char[10];\n"
-                       "    char *s2 = new char[strlen(s1)];\n"
-                       "};");
+        checkUninitVar2("void f()\n"
+                        "{\n"
+                        "    char *s1 = new char[10];\n"
+                        "    char *s2 = new char[strlen(s1)];\n"
+                        "};");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s1\n", errout.str());
 
         checkUninitVar("void f()\n"
