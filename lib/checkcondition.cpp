@@ -78,6 +78,34 @@ void CheckCondition::assignIf()
     }
 }
 
+static bool isParameterChanged(const Token *partok)
+{
+    bool addressOf = Token::Match(partok, "[(,] &");
+    unsigned int argumentNumber = 0;
+    const Token *ftok;
+    for (ftok = partok; ftok && ftok->str() != "("; ftok = ftok->previous()) {
+        if (ftok->str() == ")")
+            ftok = ftok->link();
+        else if (argumentNumber == 0U && ftok->str() == "&")
+            addressOf = true;
+        else if (ftok->str() == ",")
+            argumentNumber++;
+    }
+    ftok = ftok ? ftok->previous() : nullptr;
+    if (!(ftok && ftok->function()))
+        return true;
+    if (ftok->function()->isConst())
+        return false;
+    const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
+    if (!par)
+        return true;
+    if (par->isConst())
+        return false;
+    if (addressOf || par->isReference() || par->isPointer())
+        return true;
+    return false;
+}
+
 /** parse scopes recursively */
 bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                                         const Token * const startTok,
@@ -99,22 +127,8 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
         }
         if (Token::Match(tok2, "++|-- %varid%", varid) || Token::Match(tok2, "%varid% ++|--", varid))
             return true;
-        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid)) {
-            unsigned int argumentNumber = 0;
-            const Token *ftok;
-            for (ftok = tok2; ftok && ftok->str() != "("; ftok = ftok->previous()) {
-                if (ftok->str() == ")")
-                    ftok = ftok->link();
-                else if (ftok->str() == ",")
-                    argumentNumber++;
-            }
-            ftok = ftok ? ftok->previous() : nullptr;
-            if (!(ftok && ftok->function()))
-                return true;
-            const Variable *par = ftok->function()->getArgumentVar(argumentNumber);
-            if (par == nullptr || par->isReference() || par->isPointer())
-                return true;
-        }
+        if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid) && isParameterChanged(tok2))
+            return true;
         if (tok2->str() == "}")
             return false;
         if (Token::Match(tok2, "break|continue|return"))
@@ -467,28 +481,8 @@ void CheckCondition::oppositeInnerCondition()
                     if (!function || !function->isConst())
                         break;
                 }
-                if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
-                    // is variable unchanged? default is false..
-                    bool unchanged = false;
-
-                    // locate start parentheses in function call..
-                    unsigned int argumentNumber = 0;
-                    const Token *start = tok->previous();
-                    while (start && start->str() == ",") {
-                        start = start->astParent();
-                        ++argumentNumber;
-                    }
-
-                    start = start ? start->previous() : nullptr;
-                    if (start && start->function()) {
-                        const Variable *arg = start->function()->getArgumentVar(argumentNumber);
-                        if (arg && !arg->isPointer() && !arg->isReference())
-                            unchanged = true;
-                    }
-
-                    if (!unchanged)
-                        break;
-                }
+                if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
+                    break;
             }
         }
         if (!ifToken)
