@@ -117,7 +117,6 @@ private:
         // Check code..
         CheckUninitVar check(&tokenizer, &settings, this);
         check.check();
-        check.executionPaths();
     }
 
     void uninitvar1() {
@@ -1516,7 +1515,7 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVarB("struct StgStrm {\n"
+        checkUninitVar2("struct StgStrm {\n"
                         "    StgIo& rIo;\n"
                         "    StgStrm(StgIo&);\n"
                         "    virtual sal_Int32 Write();\n"
@@ -1527,7 +1526,7 @@ private:
                         "        pNewStrm = new StgStrm(rIo);\n"
                         "    pNewStrm->Write();\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: pNewStrm\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: pNewStrm\n", "", errout.str());
 
         // #6450 - calling a member function is allowed if memory was allocated by new
         checkUninitVarB("struct EMFPFont {\n"

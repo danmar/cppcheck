@@ -48,7 +48,6 @@ public:
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
-        checkUninitVar.executionPaths();
         checkUninitVar.check();
         checkUninitVar.deadPointer();
     }
@@ -88,9 +87,6 @@ public:
     void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     void analyseFunctions(const Tokenizer *tokenizer, std::set<std::string> &f) const;
-
-    /** @brief new type of check: check execution paths */
-    void executionPaths();
 
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
