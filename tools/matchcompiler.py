@@ -599,7 +599,7 @@ class MatchCompiler:
         line = line.replace('MatchCompiler::makeConstStringEnd', '")')
         return line
 
-    def convertFile(self, srcname, destname):
+    def convertFile(self, srcname, destname, line_directive):
         self._reset()
 
         fin = open(srcname, "rt")
@@ -631,25 +631,17 @@ class MatchCompiler:
         for function in self._rawMatchFunctions:
             strFunctions += function
 
+        lineno = ''
+        if line_directive:
+            lineno = '#line 1 "' + srcname + '"\n'
+
         fout = open(destname, 'wt')
-        fout.write(header + strFunctions + code)
+        fout.write(header + strFunctions + lineno + code)
         fout.close()
 
 
 def main():
     # Main program
-    build_dir = 'build'
-
-    # Check if we are invoked from the right place
-    if not os.path.exists('lib') and not os.path.exists('samples'):
-        print('Please invoke from the top level cppcheck source dir. Example: tools/matchcompiler.py')
-        sys.exit(-1)
-
-    # Create build directory if needed
-    if not os.path.exists(build_dir):
-        os.makedirs(build_dir)
-    if not os.path.isdir(build_dir):
-        raise Exception(build_dir + ' is not a directory')
 
     # Argument handling
     parser = argparse.ArgumentParser(
@@ -658,15 +650,49 @@ def main():
                         help='verify compiled matches against on-the-fly parser. Slow!')
     parser.add_argument('--show-skipped', action='store_true', default=False,
                         help='show skipped (non-static) patterns')
+    parser.add_argument('--read-dir', default="lib", 
+                        help='directory from which files are read')
+    parser.add_argument('--write-dir', default="build",
+                        help='directory into which files are written')
+    parser.add_argument('--prefix', default="",
+                        help='prefix for build files')
+    parser.add_argument('--line', action='store_true', default=False,
+                        help='add line directive to input files into build files')
+    parser.add_argument('file', nargs='*',
+                        help='file to complile')
     args = parser.parse_args()
+    lib_dir = args.read_dir
+    build_dir = args.write_dir
+    line_directive = args.line
+    files = args.file
+
+    # Check if we are invoked from the right place
+    if not os.path.exists(lib_dir):
+        print('Directory "' + lib_dir + '"not found.')
+        sys.exit(-1)
+
+    # Create build directory if needed
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    if not os.path.isdir(build_dir):
+        raise Exception(build_dir + ' is not a directory')
 
     mc = MatchCompiler(verify_mode=args.verify,
                        show_skipped=args.show_skipped)
 
-    # convert all lib/*.cpp files
-    for f in glob.glob('lib/*.cpp'):
-        print(f + ' => ' + build_dir + '/' + f[4:])
-        mc.convertFile(f, build_dir + '/' + f[4:])
+    if not files:
+        # select all *.cpp files in lib_dir
+        for f in glob.glob(lib_dir + '/*.cpp'):
+            files.append(f[len(lib_dir)+1:])
+
+    # convert files
+    for fi in files:
+        pi = lib_dir + '/' + fi
+        fo = args.prefix + fi
+        po = build_dir + '/' + fo
+        print(pi + ' => ' + po)
+        mc.convertFile(pi, po, line_directive)
 
 if __name__ == '__main__':
     main()
+

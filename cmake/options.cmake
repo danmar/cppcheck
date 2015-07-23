@@ -23,6 +23,18 @@ option(ANALYZE_DATAFLOW     "Clang dynamic analyzer: general dynamic dataflow an
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
 option(WARNINGS_ANSI_ISO    "Issue all the mandatory diagnostics Listed in C standard"      ON)
 
+set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compliler")
+set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
+if (USE_MATCHCOMPILER STREQUAL "Auto")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(USE_MATCHCOMPILER_OPT "On")
+    else()
+        set(USE_MATCHCOMPILER_OPT "Off")
+    endif()
+else()
+    set(USE_MATCHCOMPILER_OPT ${USE_MATCHCOMPILER})
+endif()
+
 option(BUILD_SHARED_LIBS    "Build shared libraries"                                        ON)
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
