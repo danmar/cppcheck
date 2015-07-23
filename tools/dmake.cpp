@@ -26,6 +26,7 @@
 #include <sstream>
 
 #include "../cli/filelister.h"
+#include "../cli/pathmatch.h"
 
 static std::string builddir(std::string filename)
 {
@@ -91,7 +92,9 @@ static void getCppFiles(std::vector<std::string> &files, const std::string &path
 {
     std::map<std::string,size_t> filemap;
     const std::set<std::string> extra;
-    FileLister::addFiles(filemap, path, extra, recursive);
+    const std::vector<std::string> masks;
+    const PathMatch matcher(masks);
+    FileLister::addFiles(filemap, path, extra, recursive, matcher);
 
     // add *.cpp files to the "files" vector..
     for (std::map<std::string,size_t>::const_iterator it = filemap.begin(); it != filemap.end(); ++it) {
