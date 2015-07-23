@@ -2087,11 +2087,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // using uninitialized function pointer..
-        checkUninitVar("void foo()\n"
-                       "{\n"
-                       "    void (*f)();\n"
-                       "    f();\n"
-                       "}");
+        checkUninitVar2("void foo()\n"
+                        "{\n"
+                        "    void (*f)();\n"
+                        "    f();\n"
+                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
 
         checkUninitVarB("void foo() {\n"
@@ -2192,11 +2192,11 @@ private:
                          "}").c_str());
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int *p;\n"
-                        "    a(*p);\n"
-                        "}").c_str());
+        checkUninitVar2((funca +
+                         "void b() {\n"
+                         "    int *p;\n"
+                         "    a(*p);\n"
+                         "}").c_str());
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
     }
 
