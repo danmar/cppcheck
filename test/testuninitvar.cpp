@@ -603,11 +603,11 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char *s = malloc(100);\n"
-                       "    *s += 10;\n"
-                       "}");
+        checkUninitVar2("void f()\n"
+                        "{\n"
+                        "    char *s = malloc(100);\n"
+                        "    *s += 10;\n"
+                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: s\n", errout.str());
 
         checkUninitVar("void f()\n"
@@ -919,12 +919,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // ? :
-        checkUninitVar("static void foo(int v)\n"
-                       "{\n"
-                       "    int x;\n"
-                       "    x = v <= 0 ? -1 : x;\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+        checkUninitVar2("static void foo(int v) {\n"
+                        "    int x;\n"
+                        "    x = v <= 0 ? -1 : x;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVarB("void foo()\n"
                         "{\n"
@@ -1723,19 +1722,17 @@ private:
 
     void uninitvar_return() {
 
-        checkUninitVar("static int foo()\n"
-                       "{\n"
-                       "    int ret;\n"
-                       "    return ret;\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: ret\n", errout.str());
+        checkUninitVar2("static int foo() {\n"
+                        "    int ret;\n"
+                        "    return ret;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: ret\n", errout.str());
 
-        checkUninitVar("static int foo()\n"
-                       "{\n"
-                       "    int ret;\n"
-                       "    return ret+5;\n"
-                       "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: ret\n", errout.str());
+        checkUninitVar2("static int foo() {\n"
+                        "    int ret;\n"
+                        "    return ret+5;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: ret\n", errout.str());
 
         checkUninitVarB("static int foo() {\n"
                         "    int ret;\n"
@@ -1750,16 +1747,16 @@ private:
                             "}");
             ASSERT_EQUALS("", errout.str());
 
-            checkUninitVar("static int foo() {\n"
-                           "    int ret;\n"
-                           "    return cin >> ret;\n"
-                           "}\n", "test.c");
+            checkUninitVar2("static int foo() {\n"
+                            "    int ret;\n"
+                            "    return cin >> ret;\n"
+                            "}\n", "test.c");
             ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
         }
 
         // Ticket #6341- False negative
         {
-            checkUninitVarB("wchar_t f() { int i; return btowc(i); }");
+            checkUninitVar2("wchar_t f() { int i; return btowc(i); }");
             ASSERT_EQUALS("[test.cpp:1]: (error) Uninitialized variable: i\n", errout.str());
 
             checkUninitVarB("wchar_t f(int i) { return btowc(i); }");
@@ -1780,8 +1777,7 @@ private:
 
         // Ticket #5412 - False negative
         {
-            checkUninitVarB("void f(bool b)\n"
-                            "{\n"
+            checkUninitVar2("void f(bool b) {\n"
                             "    double f;\n"
                             "    if (b)   {  }\n"
                             "    else  {\n"
@@ -1789,11 +1785,10 @@ private:
                             "    }\n"
                             "    printf (\"%f\",f);\n"
                             "}\n");
-            ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: f\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: f\n", errout.str());
 
             // Check for potential FP
-            checkUninitVarB("void f(bool b)\n"
-                            "{\n"
+            checkUninitVarB("void f(bool b) {\n"
                             "    double f;\n"
                             "    if (b)   { f = 1.0 }\n"
                             "    else  {\n"
@@ -1805,10 +1800,10 @@ private:
         }
 
         // Ticket #2146 - False negative
-        checkUninitVar("int f(int x) {\n"
-                       "    int y;\n"
-                       "    return x ? 1 : y;\n"
-                       "}");
+        checkUninitVar2("int f(int x) {\n"
+                        "    int y;\n"
+                        "    return x ? 1 : y;\n"
+                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: y\n", errout.str());
 
         // Ticket #3106 - False positive
@@ -1819,10 +1814,10 @@ private:
                             "}");
             ASSERT_EQUALS("", errout.str());
 
-            checkUninitVar("int f() {\n"
-                           "    int i;\n"
-                           "    return x() ? i : 0;\n"
-                           "}");
+            checkUninitVar2("int f() {\n"
+                            "    int i;\n"
+                            "    return x() ? i : 0;\n"
+                            "}");
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
         }
 

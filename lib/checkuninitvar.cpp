@@ -1069,11 +1069,11 @@ void CheckUninitVar::checkScope(const Scope* scope)
             continue;
 
         if (Token::Match(i->nameToken(), "%name% =")) { // Variable is initialized, but Rhs might be not
-            checkRhs(i->nameToken(), *i, NO_ALLOC, "");
+            checkRhs(i->nameToken(), *i, NO_ALLOC, 0U, "");
             continue;
         }
         if (Token::Match(i->nameToken(), "%name% ) (") && Token::simpleMatch(i->nameToken()->linkAt(2), ") =")) { // Function pointer is initialized, but Rhs might be not
-            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, "");
+            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, 0U, "");
             continue;
         }
 
@@ -1463,12 +1463,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
             const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
             const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
-            if (err) {
-                if (*alloc != NO_ALLOC)
-                    uninitdataError(tok, var.nameToken()->str());
-                else
-                    uninitvarError(tok, var.nameToken()->str());
-            }
+            if (err)
+                uninitvarError(tok, var.nameToken()->str(), *alloc);
 
             // Todo: skip expression if there is no error
             return true;
@@ -1490,10 +1486,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
                     // Use variable
                     else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
-                        if (*alloc != NO_ALLOC)
-                            uninitdataError(tok, tok->str());
-                        else
-                            uninitvarError(tok, tok->str());
+                        uninitvarError(tok, tok->str(), *alloc);
+                        return true;
                     }
 
                     else
@@ -1510,12 +1504,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
                     const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
                     const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
-                    if (err) {
-                        if (*alloc != NO_ALLOC)
-                            uninitdataError(tok, var.nameToken()->str());
-                        else
-                            uninitvarError(tok, var.nameToken()->str());
-                    }
+                    if (err)
+                        uninitvarError(tok, var.nameToken()->str(), *alloc);
                     return true;
                 }
 
@@ -1545,7 +1535,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             if (!membervar.empty()) {
                 if (isMemberVariableAssignment(tok, membervar)) {
-                    checkRhs(tok, var, *alloc, membervar);
+                    checkRhs(tok, var, *alloc, number_of_if, membervar);
                     return true;
                 }
 
@@ -1558,15 +1548,13 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             } else {
                 // Use variable
                 if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
-                    if (*alloc != NO_ALLOC)
-                        uninitdataError(tok, tok->str());
-                    else
-                        uninitvarError(tok, tok->str());
+                    uninitvarError(tok, tok->str(), *alloc);
+                    return true;
                 }
 
                 else {
                     if (tok->strAt(1) == "=")
-                        checkRhs(tok, var, *alloc, "");
+                        checkRhs(tok, var, *alloc, number_of_if, "");
 
                     // assume that variable is assigned
                     return true;
@@ -1599,7 +1587,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
             if (isVariableUsage(tok, var.isPointer(), alloc)) {
                 if (suppressErrors)
                     continue;
-                uninitvarError(tok, tok->str());
+                uninitvarError(tok, tok->str(), alloc);
             }
             return true;
         }
@@ -1684,7 +1672,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
 
     if (!suppressErrors && usetok) {
         if (membervar.empty())
-            uninitvarError(usetok, usetok->str());
+            uninitvarError(usetok, usetok->str(), alloc);
         else
             uninitStructMemberError(usetok, usetok->str() + "." + membervar);
         return true;
@@ -1693,7 +1681,7 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
     return false;
 }
 
-void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc, const std::string &membervar)
+void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc, unsigned int number_of_if, const std::string &membervar)
 {
     bool rhs = false;
     unsigned int indent = 0;
@@ -1702,7 +1690,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             rhs = true;
         else if (rhs && tok->varId() == var.declarationId()) {
             if (membervar.empty() && isVariableUsage(tok, var.isPointer(), alloc))
-                uninitvarError(tok, tok->str());
+                uninitvarError(tok, tok->str(), alloc);
             else if (!membervar.empty() && isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
                 uninitStructMemberError(tok, tok->str() + "." + membervar);
 
@@ -1714,6 +1702,13 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             if (indent == 0)
                 break;
             --indent;
+        } else if (tok->str() == "?" && tok->astOperand2()) {
+            const bool used1 = isVariableUsed(tok->astOperand2()->astOperand1(), var);
+            const bool used0 = isVariableUsed(tok->astOperand2()->astOperand2(), var);
+            const bool err = (number_of_if == 0) ? (used1 || used0) : (used1 && used0);
+            if (err)
+                uninitvarError(tok, var.nameToken()->str(), alloc);
+            break;
         } else if (Token::simpleMatch(tok, "sizeof ("))
             tok = tok->next()->link();
     }

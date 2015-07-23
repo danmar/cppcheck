@@ -61,7 +61,7 @@ public:
     bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar);
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
-    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, const std::string &membervar);
+    void checkRhs(const Token *tok, const Variable &var, Alloc alloc, unsigned int number_of_if, const std::string &membervar);
     bool isVariableUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
     int isFunctionParUsage(const Token *vartok, bool ispointer, Alloc alloc) const;
     bool isMemberVariableAssignment(const Token *tok, const std::string &membervar) const;
@@ -95,6 +95,12 @@ public:
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
+    void uninitvarError(const Token *tok, const std::string &varname, Alloc alloc) {
+        if (alloc == NO_ALLOC)
+            uninitvarError(tok, varname);
+        else
+            uninitdataError(tok, varname);
+    }
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
     /** testrunner: (don't abort() when assertion fails, just write error message) */
