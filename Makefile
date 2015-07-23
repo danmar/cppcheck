@@ -252,8 +252,8 @@ check:	all
 checkcfg:	cppcheck
 	./test/cfg/runtests.sh
 
-dmake:	tools/dmake.o cli/filelister.o lib/path.o
-	$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o lib/path.o -Ilib $(LDFLAGS)
+dmake:	tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o
+	$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)
 	./dmake
 
 reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
