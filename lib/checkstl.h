@@ -92,6 +92,7 @@ public:
      * it is bad to dereference it after the erase.
      */
     void erase();
+    void eraseCheckLoopVar(const Scope &scope, const Variable *var);
 
 
     /**
