@@ -37,12 +37,12 @@ class Variable;
 class CPPCHECKLIB CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
-    CheckUninitVar() : Check(myName()), testrunner(false) {
+    CheckUninitVar() : Check(myName()) {
     }
 
     /** @brief This constructor is used when running checks. */
     CheckUninitVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), testrunner(false) {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     /** @brief Run checks against the simplified token list */
@@ -98,9 +98,6 @@ public:
             uninitvarError(tok, varname);
     }
     void uninitStructMemberError(const Token *tok, const std::string &membername);
-
-    /** testrunner: (don't abort() when assertion fails, just write error message) */
-    bool testrunner;
 
 private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {

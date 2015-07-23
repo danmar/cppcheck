@@ -151,14 +151,6 @@ public:
     void readingEmptyStlContainer();
 
 private:
-
-    /**
-     * Helper function used by the 'erase' function
-     * This function parses a loop
-     * @param it iterator token
-     */
-    void eraseCheckLoop(const Token *it);
-
     void readingEmptyStlContainer_parseUsage(const Token* tok, bool map, std::set<unsigned int>& empty, bool noerror);
 
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
