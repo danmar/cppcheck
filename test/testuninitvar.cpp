@@ -67,6 +67,7 @@ private:
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
+        TEST_CASE(uninitvar_ternaryexpression); // #4683
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -3763,6 +3764,20 @@ private:
         // analysis failed. varid 0.
         checkUninitVar("void *vlc_custom_create (vlc_object_t *parent, size_t length, const char *typename) {\n"
                        "  assert (length >= sizeof (vlc_object_t));\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_ternaryexpression() { // #4683
+        checkUninitVar("struct B { int asd; };\n"
+                       "int f() {\n"
+                       "    int a=0;\n"
+                       "    struct B *b;\n"
+                       "    if (x) {\n"
+                       "        a = 1;\n"
+                       "        b = p;\n"
+                       "    }\n"
+                       "    return a ? b->asd : 0;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
