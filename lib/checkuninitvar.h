@@ -80,14 +80,6 @@ public:
         std::set<std::string>  functionCalls;
     };
 
-    /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
-
-    /** @brief Analyse all file infos for all TU */
-    void analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
-
-    void analyseFunctions(const Tokenizer *tokenizer, std::set<std::string> &f) const;
-
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);

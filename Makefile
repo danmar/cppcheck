@@ -321,7 +321,7 @@ $(SRCDIR)/checkio.o: lib/checkio.cpp lib/cxx11emu.h lib/checkio.h lib/check.h li
 $(SRCDIR)/checkleakautovar.o: lib/checkleakautovar.cpp lib/cxx11emu.h lib/checkleakautovar.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/checkmemoryleak.h lib/symboldatabase.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkleakautovar.o $(SRCDIR)/checkleakautovar.cpp
 
-$(SRCDIR)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/cxx11emu.h lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/utils.h lib/checkuninitvar.h
+$(SRCDIR)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/cxx11emu.h lib/checkmemoryleak.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o $(SRCDIR)/checkmemoryleak.o $(SRCDIR)/checkmemoryleak.cpp
 
 $(SRCDIR)/checknonreentrantfunctions.o: lib/checknonreentrantfunctions.cpp lib/cxx11emu.h lib/checknonreentrantfunctions.h lib/config.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/utils.h

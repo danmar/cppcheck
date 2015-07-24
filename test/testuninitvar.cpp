@@ -1809,39 +1809,7 @@ private:
         ASSERT_EQUALS(errout.str(), "");
     }
 
-    std::string analyseFunctions(const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        std::set<std::string> f;
-        const CheckUninitVar check((const Tokenizer *)0, (const Settings *)0, (ErrorLogger *)0);
-        check.analyseFunctions(&tokenizer, f);
-
-        std::string ret;
-        for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)
-            ret += (ret.empty() ? "" : " ") + *it;
-        return ret;
-    }
-
     void uninitvar_func() {
-        // function analysis..
-        ASSERT_EQUALS("foo", analyseFunctions("void foo(int x) { }"));
-        ASSERT_EQUALS("foo", analyseFunctions("void foo(int x);"));
-        ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
-        ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
-        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char* oldname, const char* newname);")); // Ticket #914
-        ASSERT_EQUALS("rename", analyseFunctions("int rename (const char oldname[], const char newname[]);"));
-        ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
-        ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
-        // TODO: it's ok to pass a valid pointer to "foo". See #2775 and #2946
-        TODO_ASSERT_EQUALS("foo", "", analyseFunctions("void foo(Fred *fred) { fred->x = 0; }"));
-        ASSERT_EQUALS("", analyseFunctions("void foo(int *x) { x[0] = 0; }"));
-
         // function calls..
         checkUninitVar("void assignOne(int &x)\n"
                        "{ x = 1; }\n"

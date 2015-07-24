@@ -2675,16 +2675,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
 
 
-#include "checkuninitvar.h" // CheckUninitVar::analyse
-
 void CheckMemoryLeakNoVar::check()
 {
-    std::set<std::string> uvarFunctions;
-    {
-        const CheckUninitVar c(_tokenizer, _settings, _errorLogger);
-        c.analyseFunctions(_tokenizer, uvarFunctions);
-    }
-
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     // only check functions
@@ -2720,10 +2712,6 @@ void CheckMemoryLeakNoVar::check()
                                     functionName == "realloc")
                                     break;
                                 if (CheckMemoryLeakInFunction::test_white_list(functionName, _settings, tokenizer->isCPP())) {
-                                    functionCallLeak(tok2, tok2->strAt(1), functionName);
-                                    break;
-                                }
-                                if (uvarFunctions.find(functionName) != uvarFunctions.end()) {
                                     functionCallLeak(tok2, tok2->strAt(1), functionName);
                                     break;
                                 }
