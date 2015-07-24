@@ -154,7 +154,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
     bool internalErrorFound(false);
     try {
-        Preprocessor preprocessor(&_settings, this);
+        Preprocessor preprocessor(_settings, this);
         std::list<std::string> configurations;
         std::string filedata;
 
@@ -289,7 +289,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
 {
     // Preprocess file..
-    Preprocessor preprocessor(&_settings, this);
+    Preprocessor preprocessor(_settings, this);
     std::list<std::string> configurations;
     std::string filedata;
     preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);

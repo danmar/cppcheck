@@ -8653,7 +8653,7 @@ private:
 
         // Preprocess file..
         Settings settings;
-        Preprocessor preprocessor(&settings);
+        Preprocessor preprocessor(settings);
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(raw_code);

@@ -54,7 +54,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
+    Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
 
     static bool missingIncludeFlag;
     static bool missingSystemIncludeFlag;
@@ -268,7 +268,7 @@ private:
      */
     void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
 
-    Settings *_settings;
+    Settings& _settings;
     ErrorLogger *_errorLogger;
 
     /** filename for cpp/c file - useful when reporting errors */

@@ -183,7 +183,7 @@ private:
         settings->experimental = experimental;
 
         // Preprocess file..
-        Preprocessor preprocessor(settings);
+        Preprocessor preprocessor(*settings);
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(raw_code);
@@ -237,7 +237,7 @@ private:
 
         // Preprocess file..
         SimpleSuppressor logger(settings, this);
-        Preprocessor preprocessor(&settings, &logger);
+        Preprocessor preprocessor(settings, &logger);
         std::list<std::string> configurations;
         std::string filedata = "";
         std::istringstream fin(precode);

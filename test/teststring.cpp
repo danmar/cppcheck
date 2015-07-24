@@ -80,7 +80,7 @@ private:
         settings.addEnabled("warning");
 
         // Preprocess file..
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::list<std::string> configurations;
         std::string filedata;
         std::istringstream fin(precode);

@@ -6453,7 +6453,7 @@ private:
         errout.str("");
 
         // Preprocess...
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istrpreproc(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istrpreproc, actual, "test.c");
@@ -6507,7 +6507,7 @@ private:
         errout.str("");
 
         // Preprocess...
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istrpreproc(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istrpreproc, actual, "test.c");
