@@ -785,7 +785,7 @@ std::string Preprocessor::removeParentheses(const std::string &str)
     std::ostringstream ret;
     std::string line;
     while (std::getline(istr, line)) {
-        if ((line[0] == '#') && (line.compare(0, 3, "#if") == 0 || line.compare(0, 5, "#elif") == 0)) {
+        if (line.compare(0, 3, "#if") == 0 || line.compare(0, 5, "#elif") == 0) {
             std::string::size_type pos;
             pos = 0;
             while ((pos = line.find(" (", pos)) != std::string::npos)
