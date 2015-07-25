@@ -159,7 +159,8 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
     _id = results[0];
     _severity = Severity::fromString(results[1]);
-    _cwe = MathLib::toULongNumber(results[2]);
+    std::istringstream scwe(results[2]);
+    scwe >> _cwe;
     _shortMessage = results[3];
     _verboseMessage = results[4];
 
