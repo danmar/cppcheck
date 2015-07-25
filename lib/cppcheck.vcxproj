@@ -36,7 +36,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
-    <ClCompile Include="check.cpp" />
+    <ClCompile Include="check.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="check64bit.cpp" />
     <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
@@ -257,6 +266,9 @@
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -279,6 +291,9 @@
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -301,6 +316,9 @@
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -321,6 +339,9 @@
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -349,6 +370,10 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -379,6 +404,10 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -410,6 +439,10 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -439,6 +472,10 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
