@@ -287,17 +287,17 @@ private:
     void quietshort() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-q", "file.cpp"};
-        settings._errorsOnly = false;
+        settings.quiet = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings._errorsOnly);
+        ASSERT_EQUALS(true, settings.quiet);
     }
 
     void quietlong() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--quiet", "file.cpp"};
-        settings._errorsOnly = false;
+        settings.quiet = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings._errorsOnly);
+        ASSERT_EQUALS(true, settings.quiet);
     }
 
     void defines_noarg() {

@@ -34,7 +34,7 @@ Settings::Settings()
       inconclusive(false),
       jointSuppressionReport(false),
       experimental(false),
-      _errorsOnly(false),
+      quiet(false),
       _inlineSuppressions(false),
       _verbose(false),
       _force(false),

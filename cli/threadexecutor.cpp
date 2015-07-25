@@ -259,7 +259,7 @@ unsigned int ThreadExecutor::check()
 
                             _fileCount++;
                             processedsize += size;
-                            if (!_settings._errorsOnly)
+                            if (!_settings.quiet)
                                 CppCheckExecutor::reportStatus(_fileCount, _files.size(), processedsize, totalfilesize);
 
                             close(*rp);
@@ -447,7 +447,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
         threadExecutor->_processedSize += fileSize;
         threadExecutor->_processedFiles++;
-        if (!threadExecutor->_settings._errorsOnly) {
+        if (!threadExecutor->_settings.quiet) {
             EnterCriticalSection(&threadExecutor->_reportSync);
             CppCheckExecutor::reportStatus(threadExecutor->_processedFiles, threadExecutor->_totalFiles, threadExecutor->_processedSize, threadExecutor->_totalFileSize);
             LeaveCriticalSection(&threadExecutor->_reportSync);

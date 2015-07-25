@@ -115,10 +115,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             if (FileLister::isDirectory(path))
                 ++iter;
             else {
-                // If the include path is not found, warn user (unless --quiet
-                // was used) and remove the non-existing path from the list.
-                if (!settings._errorsOnly)
-                    std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
+                // If the include path is not found, warn user and remove the non-existing path from the list.
+                std::cout << "cppcheck: warning: Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings._includePaths.erase(iter);
             }
         }
@@ -790,7 +788,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                 || !_settings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
-                if (!settings._errorsOnly)
+                if (!settings.quiet)
                     reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
                 c++;
             }
@@ -802,7 +800,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
             if (_settings->library.markupFile(i->first) && _settings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
-                if (!settings._errorsOnly)
+                if (!settings.quiet)
                     reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
                 c++;
             }

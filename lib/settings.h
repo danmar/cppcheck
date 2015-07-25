@@ -86,7 +86,7 @@ public:
     bool experimental;
 
     /** @brief Is --quiet given? */
-    bool _errorsOnly;
+    bool quiet;
 
     /** @brief Is --inline-suppr given? */
     bool _inlineSuppressions;

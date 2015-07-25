@@ -331,7 +331,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Only print something when there are errors
         else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
-            _settings->_errorsOnly = true;
+            _settings->quiet = true;
 
         // Append userdefined code to checked source code
         else if (std::strncmp(argv[i], "--append=", 9) == 0) {
@@ -947,7 +947,7 @@ void CmdLineParser::PrintHelp()
               "                          * native\n"
               "                                 Unspecified platform. Type sizes of host system\n"
               "                                 are assumed, but no further assumptions.\n"
-              "    -q, --quiet          Only print error messages.\n"
+              "    -q, --quiet          Do not show progress reports.\n"
               "    -rp, --relative-paths\n"
               "    -rp=<paths>, --relative-paths=<paths>\n"
               "                         Use relative paths in output. When given, <paths> are\n"
