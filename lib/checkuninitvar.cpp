@@ -278,12 +278,14 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             // checking if a not-zero variable is zero => bail out
             unsigned int condVarId = 0, condVarValue = 0;
-            if (Token::Match(tok, "if ( %name% )")) {
-                std::map<unsigned int,int>::const_iterator it = variableValue.find(tok->tokAt(2)->varId());
+            const Token *condVarTok = nullptr;
+            if (Token::simpleMatch(tok, "if (") &&
+                Token::isVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
+                std::map<unsigned int,int>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second == NOT_ZERO)
                     return true;   // this scope is not fully analysed => return true
                 else {
-                    condVarId = tok->tokAt(2)->varId();
+                    condVarId = condVarTok->varId();
                     condVarValue = NOT_ZERO;
                 }
             }
