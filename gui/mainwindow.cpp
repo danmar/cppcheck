@@ -647,7 +647,7 @@ Settings MainWindow::GetCppcheckSettings()
     result.addEnabled("missingInclude");
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
-    result._errorsOnly = false;
+    result.quiet = false;
     result._verbose = true;
     result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result._xml = false;
