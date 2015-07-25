@@ -2744,7 +2744,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true, bool verify = true) {
+    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -2760,12 +2760,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-        if (verify && str1 != str2)
-            warnUnsimplified(str1, str2);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
@@ -3962,8 +3957,7 @@ private:
                    "    if( m_d != 0 )\n"
                    "        return m_iRealVal / m_d;\n"
                    "    return dRet;\n"
-                   "};", nullptr, true, false
-                  );
+                   "};", nullptr, true);
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'A::dGetValue' can be const.\n", errout.str());
     }
 

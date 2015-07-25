@@ -167,7 +167,7 @@ private:
         TEST_CASE(test_isSameExpression);
     }
 
-    void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0, bool verify = true) {
+    void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -200,11 +200,7 @@ private:
         checkOther.runChecks(&tokenizer, settings, this);
 
         if (runSimpleChecks) {
-            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
             tokenizer.simplifyTokenList2();
-            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-            if (verify && str1 != str2)
-                warnUnsimplified(str1, str2);
             checkOther.runSimplifiedChecks(&tokenizer, settings, this);
         }
     }
@@ -415,13 +411,13 @@ private:
         check("void f(int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x == 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is useless or there is division by zero at line 2.\n", errout.str());
 
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x != 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
 
         // function call
@@ -438,7 +434,7 @@ private:
               "  int y = 17 / x;\n"
               "  x = some+calculation;\n"
               "  if (x != 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         {
@@ -449,7 +445,7 @@ private:
                   "  int y = 17 / x;\n"
                   "  do_something();\n"
                   "  if (x != 0) {}\n"
-                  "}", nullptr, false, true, true, nullptr, false);
+                  "}");
             ASSERT_EQUALS("", errout.str());
 
             // function is called. but don't care, variable is local
@@ -459,7 +455,7 @@ private:
                   "  int y = 17 / x;\n"
                   "  do_something();\n"
                   "  if (x != 0) {}\n"
-                  "}", nullptr, false, true, true, nullptr, false);
+                  "}");
             ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
         }
 
@@ -474,7 +470,7 @@ private:
               "void f() {\n"
               "  int y = 17 / x;\n"
               "  while (y || x == 0) { x--; }\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // ticket 5033 segmentation fault (valid code) in CheckOther::checkZeroDivisionOrUselessCondition
@@ -497,19 +493,19 @@ private:
         check("int f(int d) {\n"
               "  int r = (a?b:c) / d;\n"
               "  if (d == 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is useless or there is division by zero at line 2.\n", errout.str());
 
         check("int f(int a) {\n"
               "  int r = a ? 1 / a : 0;\n"
               "  if (a == 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("int f(int a) {\n"
               "  int r = (a == 0) ? 0 : 1 / a;\n"
               "  if (a == 0) {}\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3220,7 +3216,7 @@ private:
               "    for (i == 0; i < 10; i ++) {\n"
               "        c ++;\n"
               "    }\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
         check("void foo(int c) {\n"
@@ -3277,7 +3273,7 @@ private:
               "    for (int i = (x == 0) ? 0 : 5; i < 10; i ++) {\n"
               "        x++;\n"
               "    }\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int x) {\n"
@@ -3359,7 +3355,7 @@ private:
         check("void f(int x) {\n"
               "    x = (x != 0);"
               "    func(x);\n"
-              "}", nullptr, false, true, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // ticket #3001 - false positive
@@ -3759,12 +3755,12 @@ private:
     void clarifyCalculation() {
         check("int f(char c) {\n"
               "    return 10 * (c == 0) ? 1 : 2;\n"
-              "}", nullptr, false, false, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 10 * (c == 0) ? 1 : 2);\n"
-              "}", nullptr, false, false, true, nullptr, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '*' and '?'.\n", errout.str());
 
         check("void f() {\n"
@@ -4297,7 +4293,7 @@ private:
 
         check("void foo() {\n"
               "    if ((mystrcmp(a, b) == 0) || (mystrcmp(a, b) == 0)) {}\n"
-              "}", "test.cpp", false, false, true, &settings, false);
+              "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"

@@ -49,11 +49,7 @@ private:
         checkAutoVariables.assignFunctionArg();
 
         if (runSimpleChecks) {
-            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
             tokenizer.simplifyTokenList2();
-            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-            if (str1 != str2)
-                warnUnsimplified(str1, str2);
 
             // Check auto variables
             checkAutoVariables.autoVariables();

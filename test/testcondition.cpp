@@ -66,7 +66,7 @@ private:
         TEST_CASE(alwaysTrue);
     }
 
-    void check(const char code[], bool validate=true, const char* filename = "test.cpp") {
+    void check(const char code[], const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -81,15 +81,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         checkCondition.runChecks(&tokenizer, &settings, this);
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
-
-        // Ensure that the test case is not bad.
-        if (validate && str1 != str2) {
-            warnUnsimplified(str1, str2);
-        }
     }
 
     void assignAndCompare() {
@@ -380,15 +373,8 @@ private:
 
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings, this);
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
         checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
-
-        // Ensure that the test case is not bad.
-        if (str1 != str2) {
-            warnUnsimplified(str1, str2);
-        }
     }
     void duplicateIf() {
         check("void f(int a, int &b) {\n"
@@ -468,19 +454,19 @@ private:
         check("void f(WIDGET *widget) {\n"
               "  if (dynamic_cast<BUTTON*>(widget)){}\n"
               "  else if (dynamic_cast<LABEL*>(widget)){}\n"
-              "}",false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n" // #6482
               "  if (x & 1) {}\n"
               "  else if (x == 0) {}\n"
-              "}",false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
               "  if (x & 15) {}\n"
               "  else if (x == 40) {}\n"
-              "}",false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
@@ -899,7 +885,7 @@ private:
     void incorrectLogicOperator4() {
         check("void f(int x) {\n"
               "  if (x && x != $0) {}\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1329,7 +1315,7 @@ private:
     void clarifyCondition1() {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n" // don't simplify and verify this code
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment + comparison); Clarify expression with parentheses.\n", errout.str());
 
         check("void f(int i) {\n"
@@ -1344,61 +1330,61 @@ private:
 
         check("void f() {\n"
               "    if (x = b < 0 ? 1 : 2) {}\n" // don't simplify and verify this code
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    int y = rand(), z = rand();\n"
               "    if (y || (!y && z));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
               "    int y = rand(), z = rand();\n"
               "    if (y || !y && z);\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
               "    if (!a || a && b) {}\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
 
         check("void f() {\n"
               "    if (!tok->next()->function() || \n"
               "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next().function(). 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function() || \n"
               "        (!tok->next()->function() && tok->next()->function()->isConstructor()));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function() || \n"
               "        (!tok2->next()->function() && tok->next()->function()->isConstructor()));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next(1)->function(1) || \n"
               "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok.next(1).function(1). 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function(1) || \n"
               "        (tok->next()->function(2) && tok->next()->function()->isConstructor()));\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "   int y = rand(), z = rand();\n"
               "   if (y==0 || y!=0 && z);\n"
-              "}", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y!=0. 'A && (!A || B)' is equivalent to 'A || B'\n", errout.str());
 
         check("void f() {\n"
@@ -1438,15 +1424,15 @@ private:
         check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { a(x<y|z,0); }", true, "test.c");  // filename is c => there are never templates
+        check("void f() { a(x<y|z,0); }", "test.c");  // filename is c => there are never templates
         ASSERT_EQUALS("[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
 
-        check("class A<B&,C>;", true, "test.cpp");
+        check("class A<B&,C>;", "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    if (result != (char *)&inline_result) { }\n" // don't simplify and verify cast
-              "}", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

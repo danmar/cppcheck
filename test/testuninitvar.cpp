@@ -75,7 +75,7 @@ private:
         TEST_CASE(deadPointer);
     }
 
-    void checkUninitVar(const char code[], const char fname[] = "test.cpp", bool verify = true, bool debugwarnings = false) {
+    void checkUninitVar(const char code[], const char fname[] = "test.cpp", bool debugwarnings = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -86,11 +86,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
 
-        const std::string str1(tokenizer.tokens()->stringifyList(0, true));
         tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0, true));
-        if (verify && str1 != str2)
-            warnUnsimplified(str1, str2);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
@@ -3439,7 +3435,7 @@ private:
         checkUninitVar("void f() {\n" // #4911 - bad simplification => don't crash
                        "    int a;\n"
                        "    do { a=do_something() } while (a);\n"
-                       "}\n", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
+                       "}\n", "test.cpp", /*debugwarnings=*/true);
         ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable a stopping on }\n", errout.str());
 
         checkUninitVar("void f() {\n"
@@ -3758,7 +3754,7 @@ private:
                        "  struct flex_array *group;\n"
                        "  struct cgroup_taskset tset = { };\n"
                        "  do { } while_each_thread(leader, tsk);\n"
-                       "}", "test.cpp", /*verify=*/true, /*debugwarnings=*/false);
+                       "}", "test.cpp", /*debugwarnings=*/false);
         ASSERT_EQUALS("", errout.str());
 
         // --debug-warnings mode => Debug warning
@@ -3768,7 +3764,7 @@ private:
                        "  struct flex_array *group;\n"
                        "  struct cgroup_taskset tset = { };\n"
                        "  do { } while_each_thread(leader, tsk);\n"
-                       "}", "test.cpp", /*verify=*/true, /*debugwarnings=*/true);
+                       "}", "test.cpp", /*debugwarnings=*/true);
         ASSERT_EQUALS("[test.cpp:6]: (debug) assertion failed '} while ('\n", errout.str());
     }
 

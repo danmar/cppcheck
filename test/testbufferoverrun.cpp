@@ -31,7 +31,7 @@ public:
 
 private:
 
-    void check(const char code[], bool experimental = true, const char filename[] = "test.cpp", bool verify = true) {
+    void check(const char code[], bool experimental = true, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -46,18 +46,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
-
-        // Assign variable ids
         tokenizer.simplifyTokenList2();
-
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-
-        // Ensure that the test case is not bad.
-        if (verify && str1 != str2) {
-            warnUnsimplified(str1, str2);
-        }
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
@@ -1845,7 +1834,7 @@ private:
               "        }\n"
               "        a[i - 1] = 0;\n"
               "    }\n"
-              "}", true, "test.cpp", false);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -2049,21 +2038,21 @@ private:
         check("void f() {\n"
               "    char str[3];\n"
               "    str[((unsigned char)3) - 1] = 0;\n"
-              "}", false, "test.cpp", false);
+              "}", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"  // #5416 FP
               "    char *str[3];\n"
               "    do_something(&str[0][5]);\n"
-              "}", false, "test.cpp", false);
+              "}", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("class X { static const int x[100]; };\n" // #6070
-              "const int X::x[100] = {0};", false, "test.cpp", false);
+              "const int X::x[100] = {0};", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace { class X { static const int x[100]; };\n" // #6232
-              "const int X::x[100] = {0}; }", false, "test.cpp", false);
+              "const int X::x[100] = {0}; }", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2647,7 +2636,7 @@ private:
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
               "  p = (unsigned char *) buf + sizeof (buf);\n"
-              "}", false, "6350.c", false);
+              "}", false, "6350.c");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2856,7 +2845,7 @@ private:
         check("void f() {\n"
               "    int *tab4 = malloc(20 * sizeof(int));\n"
               "    tab4[20] = 0;\n"
-              "}", false, "test.cpp", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
 
         // ticket #1134
@@ -2864,7 +2853,7 @@ private:
               "    int *x, i;\n"
               "    x = malloc(10 * sizeof(int));\n"
               "    x[10] = 0;\n"
-              "}", false, "test.cpp", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
@@ -2874,7 +2863,7 @@ private:
               "  tab4 = malloc(21 * sizeof(int));\n"
               "  tab4[20] = 0;\n"
               "  free(tab4);\n"
-              "}", false, "test.cpp", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
@@ -2883,7 +2872,7 @@ private:
               "  tab4 = realloc(tab4,21 * sizeof(int));\n"
               "  tab4[20] = 0;\n"
               "  free(tab4);\n"
-              "}", false, "test.cpp", false);
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
