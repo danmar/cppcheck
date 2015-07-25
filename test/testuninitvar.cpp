@@ -68,6 +68,7 @@ private:
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
         TEST_CASE(uninitvar_ternaryexpression); // #4683
+        TEST_CASE(trac_4871);
 
         TEST_CASE(syntax_error); // Ticket #5073
 
@@ -3742,6 +3743,25 @@ private:
                        "        b = p;\n"
                        "    }\n"
                        "    return a ? b->asd : 0;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void trac_4871() { // #4871
+        checkUninitVar("void pickup(int a) {\n"
+                       "bool using_planner_action;\n"
+                       "if (a)   {\n"
+                       "  using_planner_action = false;\n"
+                       "}\n"
+                       "else {\n"
+                       "  try\n"
+                       "  {}\n"
+                       "  catch (std::exception &ex) {\n"
+                       "    return;\n"
+                       "  }\n"
+                       "  using_planner_action = true;\n"
+                       "}\n"
+                       "if (using_planner_action) {}\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
