@@ -288,19 +288,38 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 VarInfo varInfo1(*varInfo);  // VarInfo for if code
                 VarInfo varInfo2(*varInfo);  // VarInfo for else code
 
-                const Token *vartok = nullptr;
-                if (Token::findVariableComparison(tok->next()->astOperand2(), "!=", "0", &vartok)) {
-                    varInfo2.erase(vartok->varId());
-                    if (notzero.find(vartok->varId()) != notzero.end())
-                        varInfo2.clear();
-                } else if (Token::findVariableComparison(tok->next()->astOperand2(), "==", "0", &vartok)) {
-                    varInfo1.erase(vartok->varId());
-                } else if (Token::findVariableComparison(tok->next()->astOperand2(), "<", "0", &vartok)) {
-                    varInfo1.erase(vartok->varId());
-                } else if (Token::findVariableComparison(tok->next()->astOperand2(), ">", "0", &vartok)) {
-                    varInfo2.erase(vartok->varId());
-                } else if (Token::findVariableComparison(tok->next()->astOperand2(), "==", "-1", &vartok)) {
-                    varInfo1.erase(vartok->varId());
+                // Recursively scan variable comparisons in condition
+                std::stack<const Token *> tokens;
+                tokens.push(tok->next()->astOperand2());
+                while (!tokens.empty()) {
+                    const Token *tok3 = tokens.top();
+                    tokens.pop();
+                    if (!tok3)
+                        continue;
+                    if (tok3->str() == "&&") {
+                        tokens.push(tok3->astOperand1());
+                        tokens.push(tok3->astOperand2());
+                        continue;
+                    }
+                    if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
+                        tokens.push(tok3->astOperand2());
+                        continue;
+                    }
+
+                    const Token *vartok = nullptr;
+                    if (Token::isVariableComparison(tok3, "!=", "0", &vartok)) {
+                        varInfo2.erase(vartok->varId());
+                        if (notzero.find(vartok->varId()) != notzero.end())
+                            varInfo2.clear();
+                    } else if (Token::isVariableComparison(tok3, "==", "0", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    } else if (Token::isVariableComparison(tok3, "<", "0", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    } else if (Token::isVariableComparison(tok3, ">", "0", &vartok)) {
+                        varInfo2.erase(vartok->varId());
+                    } else if (Token::isVariableComparison(tok3, "==", "-1", &vartok)) {
+                        varInfo1.erase(vartok->varId());
+                    }
                 }
 
                 checkScope(tok2->next(), &varInfo1, notzero);

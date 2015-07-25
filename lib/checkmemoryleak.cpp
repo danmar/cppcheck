@@ -519,11 +519,13 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 
 static bool notvar(const Token *tok, unsigned int varid)
 {
+    if (!tok)
+        return false;
     if (Token::Match(tok, "&&|;"))
         return notvar(tok->astOperand1(),varid) || notvar(tok->astOperand2(),varid);
-
-    const Token *vartok = Token::findVariableComparison(tok, "==", "0");
-
+    if (tok->str() == "(" && Token::Match(tok->astOperand1(), "UNLIKELY|LIKELY"))
+        return notvar(tok->astOperand2(), varid);
+    const Token *vartok = Token::isVariableComparison(tok, "==", "0");
     return vartok && (vartok->varId() == varid);
 }
 
@@ -531,11 +533,13 @@ static bool ifvar(const Token *tok, unsigned int varid, const std::string &comp,
 {
     if (!Token::simpleMatch(tok, "if ("))
         return false;
-    const Token * const condition = tok->next()->astOperand2();
+    const Token *condition = tok->next()->astOperand2();
+    if (condition && condition->str() == "(" && Token::Match(condition->astOperand1(), "UNLIKELY|LIKELY"))
+        condition = condition->astOperand2();
     if (!condition || condition->str() == "&&")
         return false;
-    const Token *vartok = nullptr;
-    Token::findVariableComparison(condition, comp, rhs, &vartok);
+
+    const Token *vartok = Token::isVariableComparison(condition, comp, rhs);
     return (vartok && vartok->varId() == varid);
 }
 

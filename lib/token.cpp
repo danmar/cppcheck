@@ -1460,20 +1460,10 @@ const Token *Token::getValueTokenDeadPointer() const
 }
 
 
-const Token * Token::findVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok)
+const Token * Token::isVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok)
 {
     if (!tok)
         return nullptr;
-
-    if (tok->str() == "&&") {
-        const Token *ret = findVariableComparison(tok->astOperand1(), comp, rhs, vartok);
-        if (!ret)
-            ret = findVariableComparison(tok->astOperand2(), comp, rhs, vartok);
-        return ret;
-    }
-
-    if (tok->str() == "(" && tok->astOperand2() && Token::Match(tok->astOperand1(), "UNLIKELY|LIKELY"))
-        return findVariableComparison(tok->astOperand2(), comp, rhs, vartok);
 
     const Token *ret = nullptr;
     if (tok->isComparisonOp()) {

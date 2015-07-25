@@ -869,6 +869,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("char * f(size_t size) {"
+              "    void *p = malloc(1);"
+              "    if (!p && size != 0)"
+              "        return NULL;"
+              "    return p;"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    char *p = malloc(10);\n"
               "    if (p) { } else { return; }\n"
