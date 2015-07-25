@@ -380,9 +380,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
 
         ValueFlow::Value v(value);
         v.conditional = true;
-
-        if (v.valueKind == ValueFlow::Value::Known)
-            v.valueKind = ValueFlow::Value::Possible;
+        v.changeKnownToPossible();
 
         if (!variables.empty())
             v.varId = *(variables.begin());
@@ -393,9 +391,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     // Calculations..
     else if (parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
         const bool known = ((parent->astOperand1()->values.size() == 1U &&
-                             parent->astOperand1()->values.front().valueKind == ValueFlow::Value::ValueKind::Known) ||
+                             parent->astOperand1()->values.front().isKnown()) ||
                             (parent->astOperand2()->values.size() == 1U &&
-                             parent->astOperand2()->values.front().valueKind == ValueFlow::Value::ValueKind::Known));
+                             parent->astOperand2()->values.front().isKnown()));
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
@@ -500,7 +498,7 @@ static void valueFlowNumber(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->isNumber() && MathLib::isInt(tok->str())) {
             ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
-            value.valueKind = ValueFlow::Value::Known;
+            value.setKnown();
             setTokenValue(tok, value);
         }
     }
@@ -509,7 +507,7 @@ static void valueFlowNumber(TokenList *tokenlist)
         for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
             if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
                 ValueFlow::Value value(tok->str() == "true");
-                value.valueKind = ValueFlow::Value::Known;
+                value.setKnown();
                 setTokenValue(tok, value);
             }
         }
@@ -522,7 +520,7 @@ static void valueFlowString(TokenList *tokenlist)
         if (tok->type() == Token::eString) {
             ValueFlow::Value strvalue;
             strvalue.tokvalue = tok;
-            strvalue.valueKind = ValueFlow::Value::Known;
+            strvalue.setKnown();
             setTokenValue(tok, strvalue);
         }
     }
@@ -893,14 +891,14 @@ static void handleKnownValuesInLoop(const Token                 *loopBodyStart,
 {
     bool isChanged = false;
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
-        if (it->valueKind == ValueFlow::Value::Known) {
+        if (it->isKnown()) {
             if (!isChanged) {
                 if (!isVariableChanged(loopBodyStart, loopBodyStart->link(), varid))
                     break;
                 isChanged = true;
             }
 
-            it->valueKind = ValueFlow::Value::Possible;
+            it->setPossible();
         }
     }
 }
@@ -1079,8 +1077,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (it->condition || it->conditional)
                         values.erase(it++);
                     else {
-                        if (it->valueKind == ValueFlow::Value::Known)
-                            it->valueKind = ValueFlow::Value::Possible;
+                        it->changeKnownToPossible();
                         ++it;
                     }
                 }
@@ -1156,8 +1153,7 @@ static bool valueFlowForward(Token * const               startToken,
             std::list<ValueFlow::Value>::iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 it->conditional = true;
-                if (it->valueKind == ValueFlow::Value::Known)
-                    it->valueKind = ValueFlow::Value::Possible;
+                it->changeKnownToPossible();
             }
 
             if (Token::simpleMatch(tok2,"} else {"))
@@ -1171,8 +1167,7 @@ static bool valueFlowForward(Token * const               startToken,
                     tok2 = const_cast<Token *>(scope->classEnd);
                     --indentlevel;
                     for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                        if (it->valueKind == ValueFlow::Value::ValueKind::Known)
-                            it->valueKind = ValueFlow::Value::ValueKind::Possible;
+                        it->changeKnownToPossible();
                     }
                     continue;
                 }
@@ -1364,8 +1359,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Static variable initialisation?
             if (var->isStatic() && var->nameToken() == tok->astOperand1()) {
                 for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
-                    if (it->valueKind == ValueFlow::Value::ValueKind::Known)
-                        it->valueKind = ValueFlow::Value::ValueKind::Possible;
+                    it->changeKnownToPossible();
                 }
             }
 
@@ -2019,8 +2013,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
 
             // passed values are not "known"..
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
-                if (it->valueKind == ValueFlow::Value::Known)
-                    it->valueKind = ValueFlow::Value::Possible;
+                it->changeKnownToPossible();
             }
 
             valueFlowInjectParameter(tokenlist, errorLogger, settings, arg, functionScope, argvalues);
@@ -2047,9 +2040,8 @@ static void valueFlowFunctionDefaultParameter(TokenList *tokenlist, SymbolDataba
                 for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
                     ValueFlow::Value v(*it);
                     v.defaultArg = true;
-                    if (v.valueKind == ValueFlow::Value::Known)
-                        v.valueKind = ValueFlow::Value::Possible;
-                    if (v.valueKind == ValueFlow::Value::Possible)
+                    v.changeKnownToPossible();
+                    if (v.isPossible())
                         argvalues.push_back(v);
                 }
                 if (!argvalues.empty())

@@ -1547,9 +1547,9 @@ private:
         const std::list<ValueFlow::Value> values = tokenValues(code, str);
         bool possible = false;
         for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            if (it->valueKind == ValueFlow::Value::Known)
+            if (it->isKnown())
                 return false;
-            if (it->valueKind == ValueFlow::Value::Possible)
+            if (it->isPossible())
                 possible = true;
         }
         return possible;
@@ -1559,7 +1559,7 @@ private:
         const char *code;
         ValueFlow::Value value;
 
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Known, valueOfTok("x = 1;", "1").valueKind);
+        ASSERT(valueOfTok("x = 1;", "1").isKnown());
 
         // after assignment
         code = "void f() {\n"
@@ -1568,7 +1568,7 @@ private:
                "}";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(3, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Known, value.valueKind);
+        ASSERT(value.isKnown());
 
         code = "void f() {\n"
                "  int x;\n"
@@ -1577,7 +1577,7 @@ private:
                "}";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(9, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
 
         code = "void f() {\n"
                "  int x = 0;\n"
@@ -1617,7 +1617,7 @@ private:
                "}";
         value = valueOfTok(code, "!");
         ASSERT_EQUALS(1, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
 
         code = "void f() {\n"
                "  static int x = 0;\n"
@@ -1625,7 +1625,7 @@ private:
                "}\n";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(1, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
 
         code = "void f() {\n"
                "  int x = 0;\n"
@@ -1635,7 +1635,7 @@ private:
                "}";
         value = valueOfTok(code, "!");
         ASSERT_EQUALS(1, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
 
         // after condition
         code = "int f(int x) {\n"
@@ -1644,14 +1644,14 @@ private:
                "}";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(5, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
 
         // function
         code = "int f(int x) { return x + 1; }\n" // <- possible value
                "void a() { f(12); }\b";
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(13, value.intvalue);
-        ASSERT_EQUALS(ValueFlow::Value::ValueKind::Possible, value.valueKind);
+        ASSERT(value.isPossible());
     }
 };
 

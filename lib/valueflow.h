@@ -68,6 +68,27 @@ namespace ValueFlow {
             /** Min value. Smaller values are impossible. */
             Min
         } valueKind;
+
+        void setKnown() {
+            valueKind = ValueKind::Known;
+        }
+
+        bool isKnown() const {
+            return valueKind == ValueKind::Known;
+        }
+
+        void setPossible() {
+            valueKind = ValueKind::Possible;
+        }
+
+        bool isPossible() const {
+            return valueKind == ValueKind::Possible;
+        }
+
+        void changeKnownToPossible() {
+            if (isKnown())
+                valueKind = ValueKind::Possible;
+        }
     };
 
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);

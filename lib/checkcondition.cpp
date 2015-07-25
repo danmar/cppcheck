@@ -975,7 +975,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (tok->values.size() != 1U)
                 continue;
-            if (tok->values.front().valueKind != ValueFlow::Value::Known)
+            if (!tok->values.front().isKnown())
                 continue;
 
             if (tok->astParent() && Token::Match(tok->astParent()->previous(), "%name% ("))
