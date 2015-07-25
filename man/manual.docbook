@@ -563,7 +563,7 @@ uninitvar</programlisting>
 
         <para>You can use the suppressions file like this:</para>
 
-        <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
+        <programlisting>cppcheck --suppressions-list=suppressions.txt src/</programlisting>
       </section>
     </section>
 
