@@ -361,6 +361,7 @@ private:
         TEST_CASE(c_code);
 
         TEST_CASE(gnucfg);
+        TEST_CASE(trac3991);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -4268,6 +4269,22 @@ private:
                             "}";
         check(code, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void trac3991() {
+        check("int read_chunk_data(char **buffer) {\n"
+              "  *buffer = (char *)malloc(chunk->size);\n"
+              "  if (*buffer == NULL)\n"
+              "    return -1;\n"
+              "  return 0;\n"
+              "}\n"
+              "void printf_chunk_recursive() {\n"
+              "  UINT8 *data = NULL;\n"
+              "  int avierr = read_chunk_data(&data);\n"
+              "  if (avierr == 0)\n"
+              "    free(data);\n"
+              "}", nullptr, true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
