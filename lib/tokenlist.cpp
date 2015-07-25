@@ -303,8 +303,8 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
         } else if (std::strchr("+-", ch) &&
                    CurrentToken.length() > 0 &&
                    std::isdigit((unsigned char)CurrentToken[0]) &&
-                   (CurrentToken[CurrentToken.length()-1] == 'e' ||
-                    CurrentToken[CurrentToken.length()-1] == 'E') &&
+                   (CurrentToken.back() == 'e' ||
+                    CurrentToken.back() == 'E') &&
                    !MathLib::isHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {

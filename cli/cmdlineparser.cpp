@@ -80,7 +80,7 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
                 PathName = Path::removeQuotationMarks(PathName);
 
                 // If path doesn't end with / or \, add it
-                if (PathName[PathName.length()-1] != '/')
+                if (PathName.back() != '/')
                     PathName += '/';
 
                 PathNames->push_back(PathName);
@@ -450,7 +450,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             path = Path::removeQuotationMarks(path);
 
             // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/')
+            if (path.back() != '/')
                 path += '/';
 
             _settings->_includePaths.push_back(path);
@@ -504,7 +504,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 if (FileLister::isDirectory(path)) {
                     // If directory name doesn't end with / or \, add it
-                    if (path[path.length()-1] != '/')
+                    if (path.back() != '/')
                         path += '/';
                 }
                 _ignoredPaths.push_back(path);

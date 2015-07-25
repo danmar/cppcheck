@@ -201,7 +201,7 @@ void FileLister::addFiles2(std::set<std::string> &seen_paths,
 {
     std::ostringstream oss;
     oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
+    if (path.length() > 0 && path.back() == '/')
         oss << "*";
 
     glob_t glob_results;
@@ -220,7 +220,7 @@ void FileLister::addFiles2(std::set<std::string> &seen_paths,
         if (seen_paths.find(absolute_path) != seen_paths.end())
             continue;
 
-        if (filename[filename.length()-1] != '/') {
+        if (filename.back() != '/') {
             // File
 
             if ((Path::sameFileName(path,filename) || Path::acceptFile(filename, extra)) && !ignored.Match(filename)) {

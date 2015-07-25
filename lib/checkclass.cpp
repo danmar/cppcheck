@@ -1686,7 +1686,7 @@ void CheckClass::checkConst()
                         continue;
                 } else if (func->isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
                     const std::string& opName = func->tokenDef->str();
-                    if (opName.compare(8, 5, "const") != 0 && opName[opName.size()-1] == '&')
+                    if (opName.compare(8, 5, "const") != 0 && opName.back() == '&')
                         continue;
                 } else {
                     // don't warn for unknown types..

@@ -355,7 +355,7 @@ std::string Preprocessor::preprocessCleanupDirectives(const std::string &process
         // Trim lines..
         if (!line.empty() && line[0] == ' ')
             line.erase(0, line.find_first_not_of(" "));
-        if (!line.empty() && line[line.size()-1] == ' ')
+        if (!line.empty() && line.back() == ' ')
             line.erase(line.find_last_not_of(" ") + 1);
 
         // Preprocessor
@@ -1460,7 +1460,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             while (cfg.length() > 0 && cfg[0] == ';')
                 cfg.erase(0, 1);
 
-            while (cfg.length() > 0 && cfg[cfg.length()-1] == ';')
+            while (cfg.length() > 0 && cfg.back() == ';')
                 cfg.erase(cfg.length() - 1);
 
             std::string::size_type pos = 0;
@@ -2496,7 +2496,7 @@ static void getparams(const std::string &line,
         // spaces are only added if needed
         else if (line[pos] == ' ') {
             // Add space only if it is needed
-            if (par.size() && std::isalnum((unsigned char)par[par.length()-1])) {
+            if (par.size() && std::isalnum((unsigned char)par.back())) {
                 par += ' ';
             }
         }
@@ -2563,7 +2563,7 @@ private:
         for (std::size_t ipar = 0; ipar < params1.size(); ++ipar) {
             const std::string s(innerMacroName + "(");
             const std::string param(params1[ipar]);
-            if (param.compare(0,s.length(),s)==0 && param[param.length()-1]==')') {
+            if (param.compare(0,s.length(),s)==0 && param.back() == ')') {
                 std::vector<std::string> innerparams;
                 std::string::size_type pos = s.length() - 1;
                 unsigned int num = 0;

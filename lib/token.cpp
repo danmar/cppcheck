@@ -70,9 +70,9 @@ void Token::update_property_info()
                 _type = eName;
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             _type = eNumber;
-        else if (_str.length() > 1 && _str[0] == '"' && _str[_str.length()-1] == '"')
+        else if (_str.length() > 1 && _str[0] == '"' && _str.back() == '"')
             _type = eString;
-        else if (_str.length() > 1 && _str[0] == '\'' && _str[_str.length()-1] == '\'')
+        else if (_str.length() > 1 && _str[0] == '\'' && _str.back() == '\'')
             _type = eChar;
         else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
                  (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))
