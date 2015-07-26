@@ -259,6 +259,7 @@ private:
         TEST_CASE(removeUnnecessaryQualification14);
         TEST_CASE(removeUnnecessaryQualification15);
         TEST_CASE(removeUnnecessaryQualification16);
+        TEST_CASE(removeUnnecessaryQualification17);
 
         TEST_CASE(simplifyVarDecl1); // ticket # 2682 segmentation fault
         TEST_CASE(simplifyVarDecl2); // ticket # 2834 segmentation fault
@@ -4130,6 +4131,21 @@ private:
                             "};\n";
         tok(code, false);
         ASSERT_EQUALS("[test.cpp:3]: (portability) The extra qualification 'Fred::' is unnecessary and is considered an error by many compilers.\n", errout.str());
+    }
+
+    void removeUnnecessaryQualification17() { // #6628 False positive: The extra qualification 'namespace::' is unnecessary and is considered an error by many compilers.
+        const char code[] = "namespace my_application {\n"
+                            "  std::string version();\n"
+                            "}\n"
+                            "namespace my_application_test {\n"
+                            "  class my_application {\n"
+                            "    void version() {\n"
+                            "        std::string version = ::my_application::version();\n"
+                            "    }\n"
+                            "  };\n"
+                            "}";
+        tok(code, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyVarDecl1() { // ticket # 2682 segmentation fault
