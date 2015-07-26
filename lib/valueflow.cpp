@@ -993,6 +993,13 @@ static bool valueFlowForward(Token * const               startToken,
             }
         }
 
+        if (Token::Match(tok2, "[;{}] %name% :")) {
+            for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
+                it->changeKnownToPossible();
+            tok2 = tok2->tokAt(2);
+            continue;
+        }
+
         if (Token::Match(tok2, "sizeof|typeof|typeid ("))
             tok2 = tok2->linkAt(1);
 

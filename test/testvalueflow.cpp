@@ -1651,6 +1651,15 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT(value.isPossible());
 
+        code = "void f() {\n"
+               "  int x = 0;\n"
+               "a:\n"
+               "  a = x + 1;\n" // <- possible value
+               "}";
+        value = valueOfTok(code, "+");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isPossible());
+
         // after condition
         code = "int f(int x) {\n"
                "  if (x == 4) {}\n"
