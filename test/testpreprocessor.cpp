@@ -3666,9 +3666,9 @@ private:
             std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
 
             // the 1,2,4 should be in the result
-            actual.erase(0, actual.find("1"));
-            while (actual.find("\n") != std::string::npos)
-                actual.erase(actual.find("\n"),1);
+            actual.erase(0, actual.find('1'));
+            while (actual.find('\n') != std::string::npos)
+                actual.erase(actual.find('\n'), 1);
             ASSERT_EQUALS("124", actual);
         }
 
