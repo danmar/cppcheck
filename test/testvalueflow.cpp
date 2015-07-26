@@ -726,6 +726,17 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        // lambda
+        code = "void f() {\n"
+               "    int x = 0;\n"
+               "    Q q = [&]() {\n"
+               "        if (x > 0) {}\n"
+               "        x++;\n"
+               "    };\n"
+               "    dosomething(q);\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"

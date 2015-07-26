@@ -1367,6 +1367,18 @@ static bool valueFlowForward(Token * const               startToken,
                     it->inconclusive = true;
             }
         }
+
+        // Lambda function
+        if (Token::simpleMatch(tok2, "= [") &&
+            Token::simpleMatch(tok2->linkAt(1), "] (") &&
+            Token::simpleMatch(tok2->linkAt(1)->linkAt(1), ") {")) {
+            const Token *bodyStart = tok2->linkAt(1)->linkAt(1)->next();
+            if (isVariableChanged(bodyStart, bodyStart->link(), varid)) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "valueFlowForward, " + var->name() + " is changed in lambda function");
+                return false;
+            }
+        }
     }
     return true;
 }
