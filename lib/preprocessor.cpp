@@ -2583,7 +2583,7 @@ public:
      * e.g. "A(x) foo(x);"
      */
     PreprocessorMacro(const std::string &macro, const Settings* settings)
-        : _macro(macro), tokenlist(settings) {
+        : tokenlist(settings), _macro(macro) {
 
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro);
