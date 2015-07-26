@@ -404,10 +404,15 @@ template<> std::string MathLib::toString(double value)
 
 bool MathLib::isFloat(const std::string &s)
 {
+    return isDecimalFloat(s) || isFloatHex(s);
+}
+
+bool MathLib::isDecimalFloat(const std::string &s)
+{
     if (s.empty())
         return false;
     enum State {
-        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, F, L
+        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
     } state = START;
     for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
         switch (state) {
@@ -451,9 +456,9 @@ bool MathLib::isFloat(const std::string &s)
             if (*it=='e' || *it=='E')
                 state=E;
             else if (*it=='f' || *it=='F')
-                state=F;
+                state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=L;
+                state=SUFFIX_L;
             else if (std::isdigit(*it))
                 state=BASE_DIGITS2;
             else
@@ -463,9 +468,9 @@ bool MathLib::isFloat(const std::string &s)
             if (*it=='e' || *it=='E')
                 state=E;
             else if (*it=='f' || *it=='F')
-                state=F;
+                state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=L;
+                state=SUFFIX_L;
             else if (!std::isdigit(*it))
                 return false;
             break;
@@ -485,33 +490,32 @@ bool MathLib::isFloat(const std::string &s)
             break;
         case MANTISSA_DIGITS:
             if (*it=='f' || *it=='F')
-                state=F;
+                state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
-                state=L;
+                state=SUFFIX_L;
             else if (!std::isdigit(*it))
                 return false;
             break;
-        case F:
+        case SUFFIX_F:
             return false;
-        case L:
+        case SUFFIX_L:
             return false;
         }
     }
-    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==F || state==L);
+    return (state==BASE_DIGITS2 || state==MANTISSA_DIGITS || state==TRAILING_DECIMAL || state==SUFFIX_F || state==SUFFIX_L);
 }
 
 bool MathLib::isNegative(const std::string &s)
 {
-    // remember position
-    std::string::size_type n = 0;
-    // eat up whitespace
-    while (std::isspace(s[n])) ++n;
-    // every negative number has a negative sign
-    return (s[n] == '-');
+    if (s.empty())
+        return false;
+    return (s[0] == '-');
 }
 
 bool MathLib::isPositive(const std::string &s)
 {
+    if (s.empty())
+        return false;
     return !MathLib::isNegative(s);
 }
 

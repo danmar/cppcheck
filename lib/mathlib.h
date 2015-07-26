@@ -77,6 +77,7 @@ public:
 
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);
+    static bool isDecimalFloat(const std::string &str);
     static bool isNegative(const std::string &str);
     static bool isPositive(const std::string &str);
     static bool isDec(const std::string & str);
