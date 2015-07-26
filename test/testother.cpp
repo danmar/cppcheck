@@ -42,6 +42,7 @@ private:
         TEST_CASE(zeroDiv6);
         TEST_CASE(zeroDiv7);  // #4930
         TEST_CASE(zeroDiv8);
+        TEST_CASE(zeroDiv9);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -393,6 +394,20 @@ private:
               "  return 4 / a;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv9() {
+        // #6403 FP zerodiv - inside protecting if-clause
+        check("void foo() {\n"
+              "  double fStepHelp = 0;\n"
+              "   if( (rOuterValue >>= fStepHelp) ) {\n"
+              "     if( fStepHelp != 0.0) {\n"
+              "       double fStepMain = 0;\n"
+              "       sal_Int32 nIntervalCount = static_cast< sal_Int32 >(fStepMain / fStepHelp);\n"
+              "    }\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDivCond() {
