@@ -1312,7 +1312,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            out << "  " << tok->str() << ' ' << (tok->values.front().isKnown() ? "= " : ": ");
+            out << "  " << tok->str() << (tok->values.front().isKnown() ? " always " : " possible ");
             if (tok->values.size() > 1U)
                 out << '{';
         }
