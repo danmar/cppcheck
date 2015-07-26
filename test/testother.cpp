@@ -168,7 +168,7 @@ private:
         TEST_CASE(test_isSameExpression);
     }
 
-    void check(const char raw_code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -182,14 +182,6 @@ private:
         settings->addEnabled("performance");
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
-
-        // Preprocess file..
-        Preprocessor preprocessor(*settings);
-        std::list<std::string> configurations;
-        std::string filedata = "";
-        std::istringstream fin(raw_code);
-        preprocessor.preprocess(fin, filedata, configurations, "", settings->_includePaths);
-        const std::string code = preprocessor.getcode(filedata, "", "");
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
