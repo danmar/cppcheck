@@ -37,7 +37,7 @@ private:
         TEST_CASE(isValidIntegerSuffix);
         TEST_CASE(isnegative);
         TEST_CASE(ispositive);
-        TEST_CASE(isDecimalFloat);
+        TEST_CASE(isFloat);
         TEST_CASE(isDecimalFloat);
         TEST_CASE(isGreater)
         TEST_CASE(isGreaterEqual)
@@ -563,6 +563,7 @@ private:
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1P-1"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0xcc.ccccccccccdp-11"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x3.243F6A88p+03"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0xA.Fp-10"));
 
         ASSERT_EQUALS(false, MathLib::isFloatHex("0"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0x"));
@@ -725,10 +726,10 @@ private:
     }
 
     void isFloat() const {
-        ASSERT_EQUALS(false, MathLib::isDecimalFloat(""));
-        ASSERT_EQUALS(false , MathLib::isDecimalFloat("0.f"));
-        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0.f"));
-        ASSERT_EQUALS(true , MathLib::isDecimalFloat("0xA.Fp-10"));
+        ASSERT_EQUALS(false, MathLib::isFloat(""));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0xA.Fp-10"));
     }
 
     void isDecimalFloat() const {
