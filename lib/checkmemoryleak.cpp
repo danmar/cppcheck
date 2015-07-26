@@ -543,6 +543,23 @@ static bool ifvar(const Token *tok, unsigned int varid, const std::string &comp,
     return (vartok && vartok->varId() == varid);
 }
 
+static bool alwaysTrue(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->values.size() == 1U &&
+        tok->values.front().intvalue != 0 &&
+        tok->values.front().isKnown())
+        return true;
+    if (tok->str() == "||")
+        return alwaysTrue(tok->astOperand1()) || alwaysTrue(tok->astOperand2());
+    if (tok->str() == "true")
+        return true;
+    return (tok->isComparisonOp() &&
+            tok->values.size() == 1U &&
+            tok->values.front().isKnown() &&
+            tok->values.front().intvalue != 0);
+}
 
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
 {
@@ -1090,7 +1107,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         else if ((tok->str() == "for") || (tok->str() == "while")) {
             const Token* const end = tok->linkAt(1);
 
-            if (Token::simpleMatch(tok, "while ( true )") ||
+            if ((Token::simpleMatch(tok, "while (") && alwaysTrue(tok->next()->astOperand2())) ||
                 Token::simpleMatch(tok, "for ( ; ; )")) {
                 addtoken(&rettail, tok, "while1");
                 tok = end;

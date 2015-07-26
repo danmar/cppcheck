@@ -389,7 +389,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     }
 
     // Calculations..
-    else if (parent->isArithmeticalOp() && parent->astOperand1() && parent->astOperand2()) {
+    else if ((parent->isArithmeticalOp() || parent->isComparisonOp()) &&
+             parent->astOperand1() &&
+             parent->astOperand2()) {
         const bool known = ((parent->astOperand1()->values.size() == 1U &&
                              parent->astOperand1()->values.front().isKnown()) ||
                             (parent->astOperand2()->values.size() == 1U &&
@@ -430,6 +432,39 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                             break;
                         result.intvalue = value1->intvalue % value2->intvalue;
                         setTokenValue(parent, result);
+                        break;
+                    case '=':
+                        if (parent->str() == "==") {
+                            result.intvalue = value1->intvalue == value2->intvalue;
+                            setTokenValue(parent, result);
+                        }
+                        break;
+                    case '!':
+                        if (parent->str() == "!=") {
+                            result.intvalue = value1->intvalue != value2->intvalue;
+                            setTokenValue(parent, result);
+                        }
+                        break;
+                    case '>':
+                        if (parent->str() == ">")
+                            result.intvalue = value1->intvalue > value2->intvalue;
+                        else if (parent->str() == ">=")
+                            result.intvalue = value1->intvalue >= value2->intvalue;
+                        else
+                            break;
+                        setTokenValue(parent, result);
+                        break;
+                    case '<':
+                        if (parent->str() == "<")
+                            result.intvalue = value1->intvalue < value2->intvalue;
+                        else if (parent->str() == "<=")
+                            result.intvalue = value1->intvalue <= value2->intvalue;
+                        else
+                            break;
+                        setTokenValue(parent, result);
+                        break;
+                    default:
+                        // unhandled operator, do nothing
                         break;
                     }
                 }
