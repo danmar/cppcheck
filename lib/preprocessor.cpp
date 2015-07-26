@@ -2945,6 +2945,9 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
     std::istringstream istr(code);
     std::string line;
     while (getlines(istr, line)) {
+        if (line.empty())
+            continue;
+
         // Preprocessor directive
         if (line[0] == '#') {
             // defining a macro..
