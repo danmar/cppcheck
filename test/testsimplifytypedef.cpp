@@ -142,6 +142,7 @@ private:
         TEST_CASE(simplifyTypedef109); // ticket #1823 - rvalue reference
         TEST_CASE(simplifyTypedef110); // ticket #6268
         TEST_CASE(simplifyTypedef111); // ticket #6345
+        TEST_CASE(simplifyTypedef112); // ticket #6048
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2406,6 +2407,25 @@ private:
         const char expected5[] = "A c ;";
         ASSERT_EQUALS(expected5, tok(code5));
 
+    }
+
+    void simplifyTypedef112() {     // ticket #6048
+        const char code[] = "template<\n"
+                            "typename DataType,\n"
+                            "typename SpaceType,\n"
+                            "typename TrafoConfig>\n"
+                            "class AsmTraits1 {\n"
+                            "    typedef typename SpaceType::TrafoType TrafoType;\n"
+                            "    typedef typename TrafoType::ShapeType ShapeType;\n"
+                            "    typedef typename TrafoType::template Evaluator<ShapeType, DataType>::Type TrafoEvaluator;\n"
+                            "    enum  {\n"
+                            "      domain_dim = TrafoEvaluator::domain_dim,\n"
+                            "    };\n"
+                            "};";
+
+        const char expected[] = "template < typename DataType , typename SpaceType , typename TrafoConfig > class AsmTraits1 { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1() {
