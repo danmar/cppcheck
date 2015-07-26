@@ -221,6 +221,20 @@ private:
     void valueFlowCalculations() {
         const char *code;
 
+        // Different operators
+        ASSERT_EQUALS(5, valueOfTok("3 +  (a ? b : 2);", "+").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("3 -  (a ? b : 2);", "-").intvalue);
+        ASSERT_EQUALS(6, valueOfTok("3 *  (a ? b : 2);", "*").intvalue);
+        ASSERT_EQUALS(6, valueOfTok("13 / (a ? b : 2);", "/").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("13 % (a ? b : 2);", "%").intvalue);
+        ASSERT_EQUALS(0, valueOfTok("3 == (a ? b : 2);", "==").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("3 != (a ? b : 2);", "!=").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("3 >  (a ? b : 2);", ">").intvalue);
+        ASSERT_EQUALS(1, valueOfTok("3 >= (a ? b : 2);", ">=").intvalue);
+        ASSERT_EQUALS(0, valueOfTok("3 <  (a ? b : 2);", "<").intvalue);
+        ASSERT_EQUALS(0, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
+
+        // calculation using 1,2 variables/values
         code  = "void f(int x) {\n"
                 "    a = x+456;\n"
                 "    if (x==123) {}"

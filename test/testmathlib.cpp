@@ -569,8 +569,8 @@ private:
         ASSERT_EQUALS(false, MathLib::isFloatHex("+0x"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("-0x"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0x"));
-	ASSERT_EQUALS(false, MathLib::isFloatHex("0x."));
-	ASSERT_EQUALS(false, MathLib::isFloatHex("0XP"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x."));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0XP"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0xx"));
     }
 
