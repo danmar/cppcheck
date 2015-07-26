@@ -130,7 +130,7 @@ void TokenList::addtoken(const std::string & str, const unsigned int lineno, con
 
     // Replace hexadecimal value with decimal
     std::string str2;
-    if (MathLib::isHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
+    if (MathLib::isIntHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
         std::ostringstream str2stream;
         str2stream << MathLib::toULongNumber(str);
         str2 = str2stream.str();
@@ -305,7 +305,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
                    std::isdigit((unsigned char)CurrentToken[0]) &&
                    (CurrentToken.back() == 'e' ||
                     CurrentToken.back() == 'E') &&
-                   !MathLib::isHex(CurrentToken)) {
+                   !MathLib::isIntHex(CurrentToken)) {
             // Don't separate doubles "4.2e+10"
         } else if (CurrentToken.empty() && ch == '.' && std::isdigit((unsigned char)code.peek())) {
             // tokenize .125 into 0.125

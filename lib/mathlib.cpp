@@ -262,7 +262,7 @@ MathLib::value MathLib::value::add(int v) const
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
-    if (isHex(str)) {
+    if (isIntHex(str)) {
         if (str[0] == '-') {
             biguint ret = 0;
             std::istringstream istr(str);
@@ -316,7 +316,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
-    if (isHex(str)) {
+    if (isIntHex(str)) {
         if (str[0] == '-') {
             bigint ret = 0;
             std::istringstream istr(str);
@@ -372,7 +372,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (isHex(str))
+    if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
     else if (isNullValue(str))
@@ -555,14 +555,14 @@ bool MathLib::isOct(const std::string& s)
             if (isOctalDigit(*it))
                 state = DIGITS;
             else
-                return isValidSuffix(it,s.end());
+                return isValidIntegerSuffix(it,s.end());
             break;
         }
     }
     return state == DIGITS;
 }
 
-bool MathLib::isHex(const std::string& s)
+bool MathLib::isIntHex(const std::string& s)
 {
     enum Status {
         START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS
@@ -599,14 +599,82 @@ bool MathLib::isHex(const std::string& s)
             if (isxdigit(*it))
                 state = DIGITS;
             else
-                return isValidSuffix(it,s.end());
+                return isValidIntegerSuffix(it,s.end());
             break;
         }
     }
     return state == DIGITS;
 }
 
-bool MathLib::isValidSuffix(std::string::const_iterator it, std::string::const_iterator end)
+bool MathLib::isFloatHex(const std::string& s)
+{
+    enum Status {
+        START, PLUSMINUS, HEX_PREFIX, WHOLE_NUMBER_DIGIT, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_DIGIT, EXPONENT_DIGITS
+    } state = START;
+    for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        switch (state) {
+        case START:
+            if (*it == '+' || *it == '-')
+                state = PLUSMINUS;
+            else if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case PLUSMINUS:
+            if (*it == '0')
+                state = HEX_PREFIX;
+            else
+                return false;
+            break;
+        case HEX_PREFIX:
+            if (*it == 'x' || *it == 'X')
+                state = WHOLE_NUMBER_DIGIT;
+            else
+                return false;
+            break;
+        case WHOLE_NUMBER_DIGIT:
+            if (isxdigit(*it))
+                state = WHOLE_NUMBER_DIGITS;
+            else
+                return false;
+            break;
+        case WHOLE_NUMBER_DIGITS:
+            if (isxdigit(*it))
+                state = WHOLE_NUMBER_DIGITS;
+            else if (*it=='.')
+                state = FRACTION;
+            else if (*it=='p' || *it=='P')
+                state = EXPONENT_DIGIT;
+            else
+                return false;
+            break;
+        case FRACTION:
+            if (isxdigit(*it))
+                state = FRACTION;
+            else if (*it=='p' || *it=='P')
+                state = EXPONENT_DIGIT;
+            break;
+        case EXPONENT_DIGIT:
+            if (isxdigit(*it))
+                state = EXPONENT_DIGITS;
+            else if (*it=='+' || *it=='-')
+                state = EXPONENT_DIGITS;
+            else
+                return false;
+            break;
+        case EXPONENT_DIGITS:
+            if (isxdigit(*it))
+                state = EXPONENT_DIGITS;
+            else
+                return *it=='f'||*it=='F'||*it=='l'||*it=='L';
+            break;
+        }
+    }
+    return state==EXPONENT_DIGITS;
+}
+
+bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end)
 {
     enum {START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64} state = START;
     for (; it != end; ++it) {
@@ -721,7 +789,7 @@ bool MathLib::isBin(const std::string& s)
             if (*it == '0' || *it == '1')
                 state = DIGITS;
             else
-                return isValidSuffix(it,s.end());
+                return isValidIntegerSuffix(it,s.end());
             break;
         }
     }
@@ -753,7 +821,7 @@ bool MathLib::isDec(const std::string & s)
             if (isdigit(*it))
                 state = DIGIT;
             else
-                return isValidSuffix(it,s.end());
+                return isValidIntegerSuffix(it,s.end());
             break;
         }
     }
@@ -762,7 +830,7 @@ bool MathLib::isDec(const std::string & s)
 
 bool MathLib::isInt(const std::string & s)
 {
-    return isDec(s) || isHex(s) || isOct(s) || isBin(s);
+    return isDec(s) || isIntHex(s) || isOct(s) || isBin(s);
 }
 
 static std::string intsuffix(const std::string & first, const std::string & second)
