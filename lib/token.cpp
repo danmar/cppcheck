@@ -1311,8 +1311,11 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         else if (line != tok->linenr())
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
-        if (!xml)
-            out << "  " << tok->str() << ":{";
+        if (!xml) {
+            out << "  " << tok->str() << ' ' << (tok->values.front().isKnown() ? "= " : ": ");
+            if (tok->values.size() > 1U)
+                out << '{';
+        }
         for (std::list<ValueFlow::Value>::const_iterator it=tok->values.begin(); it!=tok->values.end(); ++it) {
             if (xml) {
                 out << "      <value ";
@@ -1322,6 +1325,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "intvalue=\"" << it->intvalue << '\"';
                 if (it->condition)
                     out << " condition-line=\"" << it->condition->linenr() << '\"';
+                if (it->isKnown())
+                    out << " known=\"true\"";
+                else if (it->isPossible())
+                    out << " possible=\"true\"";
                 out << "/>" << std::endl;
             }
 
@@ -1336,8 +1343,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         }
         if (xml)
             out << "    </values>" << std::endl;
+        else if (tok->values.size() > 1U)
+            out << '}' << std::endl;
         else
-            out << "}" << std::endl;
+            out << std::endl;
     }
     if (xml)
         out << "  </valueflow>" << std::endl;
