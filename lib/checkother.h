@@ -79,6 +79,7 @@ public:
         checkOther.checkCommaSeparatedReturn();
         checkOther.checkIgnoredReturnValue();
         checkOther.checkRedundantPointerOp();
+        checkOther.checkZeroDivision();
 
         // --check-library : functions with nonmatching configuration
         checkOther.checkLibraryMatchFunctions();
@@ -96,7 +97,6 @@ public:
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.invalidFunctionUsage();
-        checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
 
         checkOther.checkMisusedScopedObject();

@@ -53,6 +53,10 @@ bool astIsFloat(const Token *tok, bool unknown)
         return tok->variable()->isFloatingType();
     }
 
+    // cast
+    if (Token::Match(tok, "( const| float|double )"))
+        return true;
+
     if (tok->isOp())
         return false;
 

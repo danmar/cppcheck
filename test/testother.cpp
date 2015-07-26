@@ -266,6 +266,16 @@ private:
               "    cout << 1. / 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    cout << 42 / (double)0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    cout << 42 / (float)0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDiv2() {
