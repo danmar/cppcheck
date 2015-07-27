@@ -48,6 +48,7 @@ public:
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
+        checkCondition.oppositeInnerCondition();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -56,7 +57,6 @@ public:
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
-        checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkModuloAlwaysTrueFalse();
         checkCondition.alwaysTrueFalse();

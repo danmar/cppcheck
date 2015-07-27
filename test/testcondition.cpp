@@ -1309,6 +1309,23 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6227 - FP caused by simplifications of casts and known variables
+        check("void foo(A *a) {\n"
+              "   if(a) {\n"
+              "       B *b = dynamic_cast<B*>(a);\n"
+              "       if(!b) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int a) {\n"
+              "   if(a) {\n"
+              "       int b = a;\n"
+              "       if(!b) {}\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
     // clarify conditions with = and comparison
