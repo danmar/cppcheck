@@ -517,7 +517,9 @@ static void compileTerm(Token *&tok, AST_state& state)
 
     if (tok->isLiteral()) {
         state.op.push(tok);
-        tok = tok->next();
+        do {
+            tok = tok->next();
+        } while (Token::Match(tok, "%name%|%str%"));
     } else if (tok->isName() && tok->str() != "case") {
         if (tok->str() == "return") {
             compileUnaryOp(tok, state, compileExpression);
@@ -529,9 +531,13 @@ static void compileTerm(Token *&tok, AST_state& state)
             while (tok->next() && tok->next()->isName())
                 tok = tok->next();
             state.op.push(tok);
-            if (tok->next() && tok->linkAt(1) && Token::Match(tok, "%name% <"))
+            if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
             tok = tok->next();
+            if (Token::Match(tok, "%str%")) {
+                while (Token::Match(tok, "%name%|%str%"))
+                    tok = tok->next();
+            }
         }
     } else if (tok->str() == "{") {
         if (!state.inArrayAssignment && tok->strAt(-1) != "=") {

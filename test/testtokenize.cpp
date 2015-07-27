@@ -8431,6 +8431,10 @@ private:
 
         ASSERT_EQUALS("a*b***", testAst("*a * **b;")); // Correctly distinguish between unary and binary operator*
 
+        // strings
+        ASSERT_EQUALS("f\"A\"1,(",testAst("f(\"A\" B, 1);"));
+        ASSERT_EQUALS("fA1,(",testAst("f(A \"B\", 1);"));
+
         // for
         ASSERT_EQUALS("for;;(", testAst("for(;;)"));
         ASSERT_EQUALS("fora0=a8<a++;;(", testAst("for(a=0;a<8;a++)"));
