@@ -3094,6 +3094,12 @@ private:
               "  mymemset(temp, \"abc\", 4);\n"
               "}", settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #6816 - fp when array has known string value
+              "    const char c[10] = \"c\";\n"
+              "    mymemset(c, 0, 10);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void minsize_sizeof() {

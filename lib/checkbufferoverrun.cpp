@@ -1593,6 +1593,8 @@ void CheckBufferOverrun::checkStringArgument()
             for (const Token *argtok = tok->tokAt(2); argtok; argtok = argtok->nextArgument(), argnr++) {
                 if (!Token::Match(argtok, "%name%|%str% ,|)"))
                     continue;
+                if (argtok->variable() && !argtok->variable()->isPointer())
+                    continue;
                 const Token *strtoken = argtok->getValueTokenMinStrSize();
                 if (!strtoken)
                     continue;
