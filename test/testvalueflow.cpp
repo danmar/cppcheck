@@ -204,18 +204,22 @@ private:
         const char *code;
 
         code  = "void f() {\n"
-                "    const int a[] = {43,23,12};\n"
-                "    int x = a[0];\n"
+                "    const int x[] = {43,23,12};\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 43));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "{ 43 , 23 , 12 }"));
 
         code  = "void f() {\n"
-                "    const char abcd[] = \"abcd\";\n"
-                "    int x = abcd[2];\n"
+                "    const char x[] = \"abcd\";\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 'c'));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "\"abcd\""));
+
+        code  = "void f() {\n"
+                "    char x[32] = \"abcd\";\n"
+                "    return x;\n"
+                "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\""));
     }
 
     void valueFlowCalculations() {
