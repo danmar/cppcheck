@@ -2020,8 +2020,10 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
             if (Token::Match(tok, "case %num% :")) {
                 std::list<ValueFlow::Value> values;
                 values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
-                while (Token::Match(tok->tokAt(3), "case %num% :")) {
+                while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
                     tok = tok->tokAt(3);
+                    if (!tok->isName())
+                        tok = tok->next();
                     values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
