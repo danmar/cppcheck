@@ -1202,11 +1202,29 @@ static bool valueFlowForward(Token * const               startToken,
                 tok2 = tok2->linkAt(2);
         }
 
-        else if (indentlevel <= 0 && Token::Match(tok2, "break|continue|goto")) {
+        else if (Token::Match(tok2, "break|continue|goto")) {
+            const Scope *scope = tok2->scope();
+            if (indentlevel > 0) {
+                const Token *tok3 = tok2->tokAt(2);
+                int indentlevel2 = indentlevel;
+                while (indentlevel2 > 0 &&
+                       tok3->str() == "}" &&
+                       Token::Match(tok3->link()->previous(), "!!)")) {
+                    indentlevel2--;
+                    tok3 = tok3->next();
+                    if (tok3 && tok3->str() == ";")
+                        tok3 = tok3->next();
+                }
+                if (indentlevel2 > 0)
+                    continue;
+                scope = tok3->scope();
+                indentlevel = 0;
+            }
             if (tok2->str() == "break") {
-                const Scope *scope = tok2->scope();
                 if (scope && scope->type == Scope::eSwitch) {
                     tok2 = const_cast<Token *>(scope->classEnd);
+                    if (tok2 == endToken)
+                        break;
                     --indentlevel;
                     for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
                         it->changeKnownToPossible();
