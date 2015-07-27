@@ -4572,104 +4572,104 @@ void Tokenizer::simplifyCompoundAssignment()
     // Simplify compound assignments:
     // "a+=b" => "a = a + b"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] (| *| (| %name%")) {
-            // backup current token..
-            Token * const tok1 = tok;
+        if (!Token::Match(tok, "[;{}] (| *| (| %name%"))
+            continue;
+        // backup current token..
+        Token * const tok1 = tok;
 
-            if (tok->next()->str() == "*")
-                tok = tok->next();
+        if (tok->next()->str() == "*")
+            tok = tok->next();
 
-            if (tok->next() && tok->next()->str() == "(") {
-                tok = tok->next()->link()->next();
-            } else {
-                // variable..
-                tok = tok->tokAt(2);
-                while (Token::Match(tok, ". %name%") ||
-                       Token::Match(tok, "[|(")) {
-                    if (tok->str() == ".")
-                        tok = tok->tokAt(2);
-                    else {
-                        // goto "]" or ")"
-                        tok = tok->link();
+        if (tok->next() && tok->next()->str() == "(") {
+            tok = tok->next()->link()->next();
+        } else {
+            // variable..
+            tok = tok->tokAt(2);
+            while (Token::Match(tok, ". %name%") ||
+                   Token::Match(tok, "[|(")) {
+                if (tok->str() == ".")
+                    tok = tok->tokAt(2);
+                else {
+                    // goto "]" or ")"
+                    tok = tok->link();
 
-                        // goto next token..
-                        tok = tok ? tok->next() : 0;
-                    }
+                    // goto next token..
+                    tok = tok ? tok->next() : 0;
                 }
             }
-            if (!tok)
-                break;
+        }
+        if (!tok)
+            break;
 
-            // Is current token at a compound assignment: +=|-=|.. ?
-            const std::string &str = tok->str();
-            std::string op;  // operator used in assignment
-            if (tok->isAssignmentOp() && str.size() == 2)
-                op = str.substr(0, 1);
-            else if (tok->isAssignmentOp() && str.size() == 3)
-                op = str.substr(0, 2);
-            else {
-                tok = tok1;
-                continue;
+        // Is current token at a compound assignment: +=|-=|.. ?
+        const std::string &str = tok->str();
+        std::string op;  // operator used in assignment
+        if (tok->isAssignmentOp() && str.size() == 2)
+            op = str.substr(0, 1);
+        else if (tok->isAssignmentOp() && str.size() == 3)
+            op = str.substr(0, 2);
+        else {
+            tok = tok1;
+            continue;
+        }
+
+        // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
+        if (Token::Match(tok, "+=|-= 0 ;") ||
+            Token::simpleMatch(tok, "|= 0 ;") ||
+            Token::Match(tok, "*=|/= 1 ;")) {
+            tok = tok1;
+            while (tok->next()->str() != ";")
+                tok->deleteNext();
+        } else {
+            // Enclose the rhs in parentheses..
+            if (!Token::Match(tok->tokAt(2), "[;)]")) {
+                // Only enclose rhs in parentheses if there is some operator
+                bool someOperator = false;
+                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(")
+                        tok2 = tok2->link();
+
+                    if (Token::Match(tok2->next(), "[;)]")) {
+                        if (someOperator) {
+                            tok->insertToken("(");
+                            tok2->insertToken(")");
+                            Token::createMutualLinks(tok->next(), tok2->next());
+                        }
+                        break;
+                    }
+
+                    someOperator |= (tok2->isOp() || tok2->str() == "?");
+                }
             }
 
-            // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
-            if (Token::Match(tok, "+=|-= 0 ;") ||
-                Token::simpleMatch(tok, "|= 0 ;") ||
-                Token::Match(tok, "*=|/= 1 ;")) {
-                tok = tok1;
-                while (tok->next()->str() != ";")
-                    tok->deleteNext();
-            } else {
-                // Enclose the rhs in parentheses..
-                if (!Token::Match(tok->tokAt(2), "[;)]")) {
-                    // Only enclose rhs in parentheses if there is some operator
-                    bool someOperator = false;
-                    for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                        if (tok2->str() == "(")
-                            tok2 = tok2->link();
+            // simplify the compound assignment..
+            tok->str("=");
+            tok->insertToken(op);
 
-                        if (Token::Match(tok2->next(), "[;)]")) {
-                            if (someOperator) {
-                                tok->insertToken("(");
-                                tok2->insertToken(")");
-                                Token::createMutualLinks(tok->next(), tok2->next());
-                            }
-                            break;
-                        }
-
-                        someOperator |= (tok2->isOp() || tok2->str() == "?");
-                    }
-                }
-
-                // simplify the compound assignment..
-                tok->str("=");
-                tok->insertToken(op);
-
-                std::stack<Token *> tokend;
-                for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
-                    // Don't duplicate ++ and --. Put preincrement in lhs. Put
-                    // postincrement in rhs.
-                    if (tok2->type() == Token::eIncDecOp) {
-                        // pre increment/decrement => don't copy
-                        if (tok2->next()->isName()) {
-                            continue;
-                        }
-
-                        // post increment/decrement => move from lhs to rhs
-                        tok->insertToken(tok2->str());
-                        tok2->deleteThis();
+            std::stack<Token *> tokend;
+            for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
+                // Don't duplicate ++ and --. Put preincrement in lhs. Put
+                // postincrement in rhs.
+                if (tok2->type() == Token::eIncDecOp) {
+                    // pre increment/decrement => don't copy
+                    if (tok2->next()->isName()) {
                         continue;
                     }
 
-                    // Copy token from lhs to rhs
+                    // post increment/decrement => move from lhs to rhs
                     tok->insertToken(tok2->str());
-                    tok->next()->varId(tok2->varId());
-                    if (Token::Match(tok->next(), "]|)"))
-                        tokend.push(tok->next());
-                    else if (Token::Match(tok->next(), "(|[")) {
-                        Token::createMutualLinks(tok->next(), tokend.top());
-                        tokend.pop();
-                    }
+                    tok2->deleteThis();
+                    continue;
+                }
+
+                // Copy token from lhs to rhs
+                tok->insertToken(tok2->str());
+                tok->next()->varId(tok2->varId());
+                if (Token::Match(tok->next(), "]|)|}"))
+                    tokend.push(tok->next());
+                else if (Token::Match(tok->next(), "(|[|{")) {
+                    Token::createMutualLinks(tok->next(), tokend.top());
+                    tokend.pop();
                 }
             }
         }

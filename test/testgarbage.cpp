@@ -582,7 +582,7 @@ private:
     }
 
     void garbageCode49() { // #6715
-        ASSERT_THROW(checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }"), InternalError);
+        checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }");
     }
 
     void garbageCode50() { // #6718
@@ -735,7 +735,7 @@ private:
     }
 
     void garbageCode87() { // #6788
-        ASSERT_THROW(checkCode("((X (128))) (int a) { v[ = {} (x 42) a] += }"), InternalError); // do not crash
+        checkCode("((X (128))) (int a) { v[ = {} (x 42) a] += }"); // do not crash
     }
 
     void garbageCode88() { // #6786
