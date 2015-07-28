@@ -145,6 +145,8 @@ private:
         TEST_CASE(garbageCode103); // #6824
         TEST_CASE(garbageCode104); // #6847
         TEST_CASE(garbageCode105); // #6859
+        TEST_CASE(garbageCode106);
+        TEST_CASE(garbageCode107);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -818,6 +820,15 @@ private:
     void garbageCode105() { // #6859
         checkCode("void foo (int i) { int a , for (a 1; a( < 4; a++) if (a) (b b++) (b);) n++; }");
     }
+
+    void garbageCode106() { // #6880
+        ASSERT_THROW(checkCode("[ ] typedef typedef b_array b_array_ref [ ; ] ( ) b_array_ref b_array_ref_gbl_obj0 { ; { b_array_ref b_array_ref_gbl_obj0 } }"), InternalError);
+    }
+
+    void garbageCode107() { // #6881
+        ASSERT_THROW(checkCode("enum { val = 1{ }; { const} }; { } Bar { const int A = val const } ;"), InternalError);
+    }
+
 
     void garbageValueFlow() {
         // #6089

@@ -226,6 +226,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
         const Token * end = tok->next();
 
         if (end->str() == "[") {
+            if (!end->link())
+                syntaxError(end); // #6680 invalid code
             end = end->link()->next();
         } else if (end->str() == ",") {
             // check for derived class
@@ -5526,8 +5528,11 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
-                            if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0)
+                            if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
                                 tok2 = tok2->findClosingBracket();
+                            }
+                            if (!tok2)
+                                syntaxError(nullptr); // #6881 invalid code
                             tok2 = tok2->next();
                         }
                         if (tok2 && tok2->str() == ";")
