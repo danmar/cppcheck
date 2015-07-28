@@ -1067,7 +1067,7 @@ private:
     void valueFlowAfterCondition() {
         const char *code;
 
-        // if
+        // in if
         code = "void f(int x) {\n"
                "    if (x == 123) {\n"
                "        a = x;\n"
@@ -1082,7 +1082,7 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 123));
 
-        // else
+        // in else
         code = "void f(int x) {\n"
                "    if (x == 123) {}\n"
                "    else a = x;\n"
@@ -1094,6 +1094,16 @@ private:
                "    else a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        // after if
+        code = "void f(int x) {\n"
+               "    if (x == 10) {\n"
+               "        x++;\n"
+               "    }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 10));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 5U, 11));
 
         // !
         code = "void f(int x) {\n"

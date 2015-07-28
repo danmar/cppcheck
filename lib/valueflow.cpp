@@ -1558,12 +1558,19 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         startToken = top->link()->linkAt(1)->tokAt(2);
                 }
 
-                bool ok = true;
-                if (startToken)
-                    ok = valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings);
+                if (startToken) {
+                    if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings))
+						continue;
+					if (isVariableChanged(startToken, startToken->link(), varid)) {
+                        // TODO: The endToken should not be startToken->link() in the valueFlowForward call
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, startToken->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
+						continue;
+					}
+                }
 
                 // After conditional code..
-                if (ok && Token::simpleMatch(top->link(), ") {")) {
+                if (Token::simpleMatch(top->link(), ") {")) {
                     Token *after = top->link()->linkAt(1);
                     std::string unknownFunction;
                     if (settings->library.isScopeNoReturn(after, &unknownFunction)) {
