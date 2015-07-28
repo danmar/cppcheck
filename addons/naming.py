@@ -1,5 +1,11 @@
 #/usr/bin/python
+#
 # cppcheck addon for naming conventions
+#
+# Example usage (variable name must start with lowercase, function name must start with uppercase):
+# $ cppcheck --dump path-to-src/
+# $ python addons/naming.py --var='[a-z].*' --function='[A-Z].*' path-to-src/*.dump
+#
 
 import cppcheckdata
 import sys
@@ -27,7 +33,8 @@ for arg in sys.argv[1:]:
       if not res:
         reportError(var.typeStartToken, 'style', 'Variable ' + var.nameToken.str + ' violates naming convention')
   if RE_FUNCTIONNAME:
-    for function in data.functions:
-      res = re.match(RE_FUNCTIONNAME, function.name)
-      if not res:
-        reportError(function.tokenDef, 'style', 'Function ' + function.name + ' violates naming convention')
+    for scope in data.scopes:
+      if scope.type == 'Function':
+        res = re.match(RE_FUNCTIONNAME, scope.className)
+        if not res:
+          reportError(scope.classStart, 'style', 'Function ' + scope.className + ' violates naming convention')
