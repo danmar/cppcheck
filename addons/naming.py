@@ -30,4 +30,4 @@ for arg in sys.argv[1:]:
     for function in data.functions:
       res = re.match(RE_FUNCTIONNAME, function.name)
       if not res:
-        reportError(var.typeStartToken, 'style', 'Function ' + function.name + ' violates naming convention')
+        reportError(function.tokenDef, 'style', 'Function ' + function.name + ' violates naming convention')

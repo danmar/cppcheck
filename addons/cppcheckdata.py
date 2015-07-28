@@ -171,10 +171,13 @@ class Function:
     Id = None
     argument = None
     argumentId = None
+    tokenDef = None
+    tokenDefId = None
     name = None
 
     def __init__(self, element):
         self.Id = element.get('id')
+        self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
         self.argument = {}
         self.argumentId = {}
@@ -184,7 +187,7 @@ class Function:
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
             self.argument[argnr] = IdMap[argid]
-
+        self.tokenDef = IdMap[self.tokenDefId]
 
 class Variable:
     Id = None
