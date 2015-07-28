@@ -2471,7 +2471,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << '\"';
+                    out << "        <function id=\"" << &*function << "\" name=\"" << function->name() << '\"';
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {

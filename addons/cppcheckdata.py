@@ -171,9 +171,11 @@ class Function:
     Id = None
     argument = None
     argumentId = None
+    name = None
 
     def __init__(self, element):
         self.Id = element.get('id')
+        self.name = element.get('name')
         self.argument = {}
         self.argumentId = {}
         for arg in element:
