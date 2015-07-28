@@ -27,6 +27,7 @@
 Settings::Settings()
     : _terminate(false),
       debug(false),
+      debugnormal(false),
       debugwarnings(false),
       debugFalsePositive(false),
       dump(false),

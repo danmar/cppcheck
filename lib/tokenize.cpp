@@ -1757,6 +1757,8 @@ bool Tokenizer::tokenize(std::istream &code,
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
 
+        printDebugOutput(1);
+
         return true;
     }
     return false;
@@ -3785,15 +3787,18 @@ bool Tokenizer::simplifyTokenList2()
     if (_settings->terminated())
         return false;
 
-    printDebugOutput();
+    printDebugOutput(2);
 
     return true;
 }
 //---------------------------------------------------------------------------
 
-void Tokenizer::printDebugOutput() const
+void Tokenizer::printDebugOutput(unsigned int simplification) const
 {
-    if (_settings->debug) {
+    const bool debug = (simplification != 1U && _settings->debug) ||
+                       (simplification != 2U && _settings->debugnormal);
+
+    if (debug) {
         list.front()->printOut(0, list.getFiles());
 
         if (_settings->_xml)
@@ -3815,7 +3820,7 @@ void Tokenizer::printDebugOutput() const
             std::cout << "</debug>" << std::endl;
     }
 
-    if (_settings->debugwarnings) {
+    if (simplification == 2U && _settings->debugwarnings) {
         printUnknownTypes();
 
         // #5054 - the typeStartToken() should come before typeEndToken()
@@ -8235,13 +8240,13 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 
 void Tokenizer::syntaxError(const Token *tok) const
 {
-    printDebugOutput();
+    printDebugOutput(0);
     throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 }
 
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
-    printDebugOutput();
+    printDebugOutput(0);
     throw InternalError(tok,
                         std::string("Invalid number of character (") + c + ") " +
                         "when these macros are defined: '" + _configuration + "'.",
@@ -8262,7 +8267,7 @@ void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    printDebugOutput();
+    printDebugOutput(0);
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 /**

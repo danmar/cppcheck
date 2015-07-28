@@ -57,6 +57,9 @@ public:
     /** @brief Is --debug given? */
     bool debug;
 
+    /** @brief Is --debug-normal given? */
+    bool debugnormal;
+
     /** @brief Is --debug-warnings given? */
     bool debugwarnings;
 

@@ -755,7 +755,12 @@ public:
     void createSymbolDatabase();
     void deleteSymbolDatabase();
 
-    void printDebugOutput() const;
+    /** print --debug output if debug flags match the simplification:
+     * 0=unknown/both simplifications
+     * 1=1st simplifications
+     * 2=2nd simplifications
+     */
+    void printDebugOutput(unsigned int simplification) const;
 
     void dump(std::ostream &out) const;
 
