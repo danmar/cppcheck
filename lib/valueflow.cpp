@@ -1560,13 +1560,13 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
 
                 if (startToken) {
                     if (!valueFlowForward(startToken->next(), startToken->link(), var, varid, values, true, tokenlist, errorLogger, settings))
-						continue;
-					if (isVariableChanged(startToken, startToken->link(), varid)) {
+                        continue;
+                    if (isVariableChanged(startToken, startToken->link(), varid)) {
                         // TODO: The endToken should not be startToken->link() in the valueFlowForward call
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, startToken->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
-						continue;
-					}
+                        continue;
+                    }
                 }
 
                 // After conditional code..
