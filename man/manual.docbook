@@ -168,7 +168,8 @@ Checking path/file2.cpp...
           <term>information</term>
 
           <listitem>
-            <para>Informational messages about checking problems.</para>
+            <para>Configuration problems. The recommendation is to only enable
+            these during configuration.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -196,8 +197,8 @@ cppcheck --enable=information file.c
 # using the old xml format.
 cppcheck --enable=style file.c
 
-# enable warning and information messages
-cppcheck --enable=warning,information file.c
+# enable warning and performance messages
+cppcheck --enable=warning,performance file.c
 
 # enable unusedFunction checking. This is not enabled by --enable=style
 # because it doesn't work well on libraries.
@@ -1345,8 +1346,7 @@ Checking unusedvar.cpp...
 
         <itemizedlist>
           <listitem>
-            <para>Addons provided by the Cppcheck project, currently just a
-            simple threadsafety checker:
+            <para>Addons provided by the Cppcheck project:
             <uri>http://github.com/danmar/cppcheck/blob/master/addons</uri></para>
           </listitem>
 
