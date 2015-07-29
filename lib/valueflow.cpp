@@ -920,7 +920,8 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
 }
 
 /** if known variable is changed in loop body, change it to a possible value */
-static void handleKnownValuesInLoop(const Token                 *loopBodyStart,
+static void handleKnownValuesInLoop(const Token                 *startToken,
+                                    const Token                 *endToken,
                                     std::list<ValueFlow::Value> *values,
                                     unsigned int                varid)
 {
@@ -928,7 +929,7 @@ static void handleKnownValuesInLoop(const Token                 *loopBodyStart,
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
         if (it->isKnown()) {
             if (!isChanged) {
-                if (!isVariableChanged(loopBodyStart, loopBodyStart->link(), varid))
+                if (!isVariableChanged(startToken, endToken, varid))
                     break;
                 isChanged = true;
             }
@@ -1022,7 +1023,11 @@ static bool valueFlowForward(Token * const               startToken,
         }
 
         else if (Token::simpleMatch(tok2, "do {")) {
-            handleKnownValuesInLoop(tok2->next(), &values, varid);
+            const Token *start = tok2->next();
+            const Token *end   = start->link();
+            if (Token::simpleMatch(end, "} while ("))
+                end = end->linkAt(2);
+            handleKnownValuesInLoop(start, end, &values, varid);
         }
 
         // conditional block of code that assigns variable..
@@ -1035,7 +1040,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // if known variable is changed in loop body, change it to a possible value..
-            handleKnownValuesInLoop(tok2->linkAt(1)->next(), &values, varid);
+            handleKnownValuesInLoop(tok2, tok2->linkAt(1)->linkAt(1), &values, varid);
 
             // Set values in condition
             for (Token* tok3 = tok2->tokAt(2); tok3 != tok2->next()->link(); tok3 = tok3->next()) {

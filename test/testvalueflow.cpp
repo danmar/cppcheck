@@ -1666,6 +1666,12 @@ private:
         ASSERT(value.isPossible());
 
         code = "void f() {\n"
+               "  int x = 0;\n"
+               "  do { } while (++x < 12);\n" // <- possible value
+               "}";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
                "  static int x = 0;\n"
                "  return x + 1;\n" // <- possible value
                "}\n";
