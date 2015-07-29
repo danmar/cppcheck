@@ -977,6 +977,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->values.front().isKnown())
                 continue;
+            if (tok->isExpandedMacro())
+                continue;
 
             if (tok->astParent() && Token::Match(tok->astParent()->previous(), "%name% ("))
                 alwaysTrueFalseError(tok, tok->values.front().intvalue != 0);

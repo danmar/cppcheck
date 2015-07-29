@@ -1510,6 +1510,14 @@ private:
               "  if (!x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition !x is always true\n", errout.str());
+
+        // Avoid FP when condition comes from macro
+        check("void f() {\n"
+              "  int x = 0;\n"
+              "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
+              "  if ($!x) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
