@@ -1834,7 +1834,6 @@ void CheckOther::zerodivcondError(const Token *tokcond, const Token *tokdiv, boo
         callstack.push_back(tokcond);
         callstack.push_back(tokdiv);
     }
-    const std::string condition(tokcond ? tokcond->expressionString() : "");
     const std::string linenr(MathLib::toString(tokdiv ? tokdiv->linenr() : 0));
     reportError(callstack, Severity::warning, "zerodivcond", ValueFlow::eitherTheConditionIsRedundant(tokcond) + " or there is division by zero at line " + linenr + ".", 0U, inconclusive);
 }
