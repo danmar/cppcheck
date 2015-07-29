@@ -1381,8 +1381,10 @@ static bool valueFlowForward(Token * const               startToken,
             }
             if (inconclusive) {
                 std::list<ValueFlow::Value>::iterator it;
-                for (it = values.begin(); it != values.end(); ++it)
+                for (it = values.begin(); it != values.end(); ++it) {
                     it->inconclusive = true;
+                    it->changeKnownToPossible();
+                }
             }
         }
 

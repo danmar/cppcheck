@@ -1620,6 +1620,13 @@ private:
 
         code = "void f() {\n"
                "  int x = 0;\n"
+               "  fred.dostuff(x);\n"
+               "  if (x < 0) {}\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
                "  if (y) { dostuff(x); }\n"
                "  if (!x) {}\n"
                "}\n";
