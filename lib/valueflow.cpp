@@ -2034,11 +2034,13 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
             if (Token::Match(tok, "case %num% :")) {
                 std::list<ValueFlow::Value> values;
                 values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
+                values.back().condition = tok;
                 while (Token::Match(tok->tokAt(3), ";| case %num% :")) {
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
                     values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
+                    values.back().condition = tok;
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
                     valueFlowReverse(tokenlist,
@@ -2221,4 +2223,21 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowSubFunction(tokenlist, errorLogger, settings);
     valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
+}
+
+
+std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
+{
+    if (!condition)
+        return "Either the condition is redundant";
+    if (condition->str() == "case") {
+        std::string expr;
+        for (const Token *tok = condition; tok && tok->str() != ":"; tok = tok->next()) {
+            expr += tok->str();
+            if (Token::Match(tok, "%name%|%num% %name%|%num%"))
+                expr += ' ';
+        }
+        return "Either the switch case '" + expr + "' is redundant";
+    }
+    return "Either the condition '" + condition->expressionString() + "' is redundant";
 }

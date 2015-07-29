@@ -128,6 +128,26 @@ private:
         return false;
     }
 
+    bool testConditionalValueOfX(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                std::list<ValueFlow::Value>::const_iterator it;
+                for (it = tok->values.begin(); it != tok->values.end(); ++it) {
+                    if (it->intvalue == value && !it->tokvalue && it->condition)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     void bailout(const char code[]) {
         Settings settings;
         settings.debugwarnings = true;
@@ -1278,9 +1298,9 @@ private:
                "    };\n"
                "    a = x;\n"  // <- x can be 14
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 2U, 14));
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 14));
-        ASSERT_EQUALS(true, testValueOfX(code, 6U, 14));
+        ASSERT_EQUALS(true, testConditionalValueOfX(code, 2U, 14));
+        ASSERT_EQUALS(true, testConditionalValueOfX(code, 4U, 14));
+        ASSERT_EQUALS(true, testConditionalValueOfX(code, 6U, 14));
     }
 
     void valueFlowForLoop() {

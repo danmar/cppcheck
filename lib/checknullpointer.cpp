@@ -477,6 +477,6 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     std::list<const Token*> callstack;
     callstack.push_back(tok);
     callstack.push_back(nullCheck);
-    const std::string errmsg("Possible null pointer dereference: " + varname + " - otherwise it is redundant to check it against null.");
+    const std::string errmsg(ValueFlow::eitherTheConditionIsRedundant(nullCheck) + " or there is possible null pointer dereference: " + varname + ".");
     reportError(callstack, Severity::warning, "nullPointerRedundantCheck", errmsg, 0U, inconclusive);
 }

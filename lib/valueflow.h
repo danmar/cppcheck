@@ -21,6 +21,8 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include <string>
+
 class Token;
 class TokenList;
 class SymbolDatabase;
@@ -92,6 +94,8 @@ namespace ValueFlow {
     };
 
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
+
+    std::string eitherTheConditionIsRedundant(const Token *condition);
 }
 
 #endif // valueflowH

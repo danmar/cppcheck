@@ -422,25 +422,25 @@ private:
               "  int y = 17 / x;\n"
               "  if (x > 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>0' is useless or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>0' is redundant or there is division by zero at line 2.\n", errout.str());
 
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x >= 1) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>=1' is useless or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x>=1' is redundant or there is division by zero at line 2.\n", errout.str());
 
         check("void f(int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x == 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is useless or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x==0' is redundant or there is division by zero at line 2.\n", errout.str());
 
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
               "  if (x != 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'x!=0' is redundant or there is division by zero at line 2.\n", errout.str());
 
         // function call
         check("void f1(int x, int y) { c=x/y; }\n"
@@ -448,7 +448,7 @@ private:
               "    f1(123,y);\n"
               "    if (y>0){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is useless or there is division by zero at line 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n", errout.str());
 
         // avoid false positives when variable is changed after division
         check("void f() {\n"
@@ -478,7 +478,7 @@ private:
                   "  do_something();\n"
                   "  if (x != 0) {}\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is useless or there is division by zero at line 4.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (warning) Either the condition 'x!=0' is redundant or there is division by zero at line 4.\n", errout.str());
         }
 
         check("void do_something(int value);\n"
@@ -516,7 +516,7 @@ private:
               "  int r = (a?b:c) / d;\n"
               "  if (d == 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is useless or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is redundant or there is division by zero at line 2.\n", errout.str());
 
         check("int f(int a) {\n"
               "  int r = a ? 1 / a : 0;\n"

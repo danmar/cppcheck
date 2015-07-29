@@ -65,20 +65,6 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
 
 void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<ValueFlow::Value> &index)
 {
-    std::ostringstream errmsg;
-
-    errmsg << "Array '" << arrayInfo.varname();
-    for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
-        errmsg << "[" << arrayInfo.num(i) << "]";
-    if (index.size() == 1)
-        errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
-    else {
-        errmsg << "' index " << arrayInfo.varname();
-        for (std::size_t i = 0; i < index.size(); ++i)
-            errmsg << "[" << index[i].intvalue << "]";
-        errmsg << " out of bounds.";
-    }
-
     const Token *condition = nullptr;
     for (std::size_t i = 0; i < index.size(); ++i) {
         if (condition == nullptr)
@@ -88,12 +74,38 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
     if (condition != nullptr) {
         if (!_settings->isEnabled("warning"))
             return;
-        errmsg << " Otherwise condition '" << condition->expressionString() << "' is redundant.";
+
+        std::ostringstream errmsg;
+        errmsg << ValueFlow::eitherTheConditionIsRedundant(condition) << " or the array '" << arrayInfo.varname();
+        for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
+            errmsg << "[" << arrayInfo.num(i) << "]";
+        if (index.size() == 1)
+            errmsg << "' is accessed at index " << index[0].intvalue << ", which is out of bounds.";
+        else {
+            errmsg << "' index " << arrayInfo.varname();
+            for (std::size_t i = 0; i < index.size(); ++i)
+                errmsg << "[" << index[i].intvalue << "]";
+            errmsg << " is out of bounds.";
+        }
+
         std::list<const Token *> callstack;
         callstack.push_back(tok);
         callstack.push_back(condition);
         reportError(callstack, Severity::warning, "arrayIndexOutOfBoundsCond", errmsg.str(), 0U, false);
     } else {
+        std::ostringstream errmsg;
+        errmsg << "Array '" << arrayInfo.varname();
+        for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
+            errmsg << "[" << arrayInfo.num(i) << "]";
+        if (index.size() == 1)
+            errmsg << "' accessed at index " << index[0].intvalue << ", which is out of bounds.";
+        else {
+            errmsg << "' index " << arrayInfo.varname();
+            for (std::size_t i = 0; i < index.size(); ++i)
+                errmsg << "[" << index[i].intvalue << "]";
+            errmsg << " out of bounds.";
+        }
+
         reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str());
     }
 }

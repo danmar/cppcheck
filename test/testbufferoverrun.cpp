@@ -2033,7 +2033,16 @@ private:
               "    str[i] = 0;\n"
               "    if (i==10) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Array 'str[3]' accessed at index 10, which is out of bounds. Otherwise condition 'i==10' is redundant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'i==10' is redundant or the array 'str[3]' is accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    char str[3];\n"
+              "    str[i] = 0;\n"
+              "    switch (i) {\n"
+              "    case 10: break;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Either the switch case 'case 10' is redundant or the array 'str[3]' is accessed at index 10, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "    char str[3];\n"
