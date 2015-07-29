@@ -34,27 +34,37 @@ namespace {
 
 bool astIsFloat(const Token *tok, bool unknown)
 {
-    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
-        return astIsFloat(tok->astOperand2(), unknown);
-
-    if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(),unknown))
-        return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
-        return true;
-
+    // TODO: handle arrays
     if (tok->isNumber())
         return MathLib::isFloat(tok->str());
 
     if (tok->isName()) {
-        // TODO: check function calls, struct members, arrays, etc also
-        if (!tok->variable())
-            return unknown;
+        if (tok->variable())
+            return tok->variable()->isFloatingType();
 
-        return tok->variable()->isFloatingType();
+        return unknown;
+    }
+    if (tok->str() == "(") {
+        // cast
+        if (Token::Match(tok, "( const| float|double )"))
+            return true;
+
+        // Function call
+        if (tok->previous()->function())
+            return Token::Match(tok->previous()->function()->retDef, "float|double");
+
+        if (tok->strAt(-1) == "sizeof")
+            return false;
+
+        return unknown;
     }
 
-    // cast
-    if (Token::Match(tok, "( const| float|double )"))
+    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
+        return astIsFloat(tok->astOperand2(), unknown);
+
+    if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(), unknown))
+        return true;
+    if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
         return true;
 
     if (tok->isOp())
@@ -105,7 +115,7 @@ bool isSameExpression(const Tokenizer *tokenizer, const Token *tok1, const Token
         return false;
     if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
         return false;
-    if (tok1->isName() && tok1->next()->str() == "(") {
+    if (tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
         if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end() && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
         else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())

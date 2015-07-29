@@ -4224,6 +4224,21 @@ private:
               "    static_assert(FourInEnumOne == FourInEnumTwo, "");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int a, int b) {\n"
+              "    if (sizeof(a) == sizeof(a)) { }\n"
+              "    if (sizeof(a) == sizeof(b)) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+
+        check("float bar(int) __attribute__((pure));\n"
+              "char foo(int) __attribute__((pure));\n"
+              "int test(int a, int b) {\n"
+              "    if (bar(a) == bar(a)) { }\n"
+              "    if (unknown(a) == unknown(a)) { }\n"
+              "    if (foo(a) == foo(a)) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '=='.\n", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
