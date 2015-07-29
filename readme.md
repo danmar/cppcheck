@@ -26,10 +26,12 @@ When building the command line tool, [PCRE](http://www.pcre.org/) is optional. I
 
 There are multiple compilation choices:
 * qmake - cross platform build tool
-* Windows: Visual Studio (VS 2010 and above) or Qt Creator or MinGW
+* cmake - cross platform build tool
+* Windows: Visual Studio (VS 2010 and above)
+* Windows: Qt Creator + mingw
 * gnu make
-* g++ 4.4 (and above)
-* clang++ 2.9 (and above)
+* g++ 4.6 (or later)
+* clang++
 
 ### qmake
 
@@ -43,14 +45,9 @@ make
 
 ### Visual Studio
 
-Use the cppcheck.sln file. The rules are normally enabled.
+Use the cppcheck.sln file. The file is configured for Visual Studio 2013, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
 
-To compile with rules (PCRE dependency):
-* the PCRE dll is needed. It can be downloaded from [here](http://cppcheck.sourceforge.net/pcre-8.10-vs.zip).
-
-To compile without rules (no dependencies):
-* remove the preprocessor define `HAVE_RULES` from the project
-* remove the pcre.lib from the project
+To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /extlibs then.
 
 ### Qt Creator + MinGW
 
