@@ -935,10 +935,10 @@ private:
 
     void incorrectLogicOperator9() { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
         check("class MyType;\n"
-        "class OtherType;\n"
-        "void foo (OtherType* obj) { \n"
-        "    assert((!obj) || dynamic_cast<MyType*>(obj));\n"
-        "}");
+              "class OtherType;\n"
+              "void foo (OtherType* obj) { \n"
+              "    assert((!obj) || dynamic_cast<MyType*>(obj));\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1526,6 +1526,13 @@ private:
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
               "  if ($!x) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int x = 0;\n"
+              "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
+              "  if ($x != $0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

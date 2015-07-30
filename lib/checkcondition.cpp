@@ -25,6 +25,7 @@
 #include "symboldatabase.h"
 
 #include <limits>
+#include <stack>
 
 //---------------------------------------------------------------------------
 
@@ -977,11 +978,29 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->values.front().isKnown())
                 continue;
-            if (tok->isExpandedMacro())
+            if (!tok->astParent() || !Token::Match(tok->astParent()->previous(), "%name% ("))
                 continue;
 
-            if (tok->astParent() && Token::Match(tok->astParent()->previous(), "%name% ("))
-                alwaysTrueFalseError(tok, tok->values.front().intvalue != 0);
+            // Don't warn when there are expanded macros..
+            bool isExpandedMacro = false;
+            std::stack<const Token*> tokens;
+            tokens.push(tok);
+            while (!tokens.empty()) {
+                const Token *tok2 = tokens.top();
+                tokens.pop();
+                if (!tok2)
+                    continue;
+                tokens.push(tok2->astOperand1());
+                tokens.push(tok2->astOperand2());
+                if (tok2->isExpandedMacro()) {
+                    isExpandedMacro = true;
+                    break;
+                }
+            }
+            if (isExpandedMacro)
+                continue;
+
+            alwaysTrueFalseError(tok, tok->values.front().intvalue != 0);
         }
     }
 }
