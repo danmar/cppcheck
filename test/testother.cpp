@@ -36,7 +36,6 @@ private:
 
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
-        TEST_CASE(zeroDiv3);
         TEST_CASE(zeroDiv4);
         TEST_CASE(zeroDiv5);
         TEST_CASE(zeroDiv6);
@@ -288,21 +287,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void zeroDiv3() {
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
-
-        // #4929 - if there is a user function with the name "div" don't warn
-        check("void div(int a, int b);\n"
-              "void f() {\n"
-              "   div (1,0);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void zeroDiv4() {
         check("void f()\n"
               "{\n"
@@ -328,18 +312,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
 
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0L);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0x5);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         // Don't warn about floating points (gcc doesn't warn either)
         // and floating points are handled differently than integers.
         check("void f()\n"
@@ -351,19 +323,6 @@ private:
         check("void f()\n"
               "{\n"
               "   long a = b / 0.5;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // Don't warn about 0.0
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0.0);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "   div_t divresult = div (1,0.5);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
