@@ -784,15 +784,15 @@ void CheckCondition::checkIncorrectLogicOperator()
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                 incorrectLogicOperatorError(tok, text, alwaysTrue);
             } else if (printStyle && secondTrue) {
-                const std::string text = "If " + cond1str + ", the comparison " + cond2str +
-                                         " is always " + (secondTrue ? "true" : "false") + ".";
+                const std::string text = "If '" + cond1str + "', the comparison '" + cond2str +
+                                         "' is always " + (secondTrue ? "true" : "false") + ".";
                 redundantConditionError(tok, text);
             } else if (printStyle && firstTrue) {
                 //const std::string text = "The comparison " + cond1str + " is always " +
                 //                         (firstTrue ? "true" : "false") + " when " +
                 //                         cond2str + ".";
-                const std::string text = "If " + cond2str + ", the comparison " + cond1str +
-                                         " is always " + (firstTrue ? "true" : "false") + ".";
+                const std::string text = "If '" + cond2str + "', the comparison '" + cond1str +
+                                         "' is always " + (firstTrue ? "true" : "false") + ".";
                 redundantConditionError(tok, text);
             }
         }
