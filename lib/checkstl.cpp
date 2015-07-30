@@ -395,7 +395,9 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
     for (const Token *tok = scope.classStart; tok != scope.classEnd; tok = tok->next()) {
         if (tok->str() != "(")
             continue;
-        if (!Token::Match(tok->tokAt(-4), "!!= %name% . erase ( ++| %varid% )", var->declarationId()))
+        if (!Token::Match(tok->tokAt(-2), ". erase ( ++| %varid% )", var->declarationId()))
+            continue;
+        if (Token::simpleMatch(tok->astParent(), "="))
             continue;
         // Iterator is invalid..
         unsigned int indentlevel = 0U;

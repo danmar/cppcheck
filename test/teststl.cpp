@@ -674,6 +674,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    std::list<int>::iterator i;\n"
+              "    while (i != x.y.end())\n"
+              "        i = x.y.erase(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #2101
         check("void f(vector< list<int> > &ints, unsigned int i)\n"
               "{\n"
