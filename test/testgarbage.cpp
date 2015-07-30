@@ -147,6 +147,7 @@ private:
         TEST_CASE(garbageCode105); // #6859
         TEST_CASE(garbageCode106);
         TEST_CASE(garbageCode107);
+        TEST_CASE(garbageCode108);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -827,6 +828,10 @@ private:
 
     void garbageCode107() { // #6881
         ASSERT_THROW(checkCode("enum { val = 1{ }; { const} }; { } Bar { const int A = val const } ;"), InternalError);
+    }
+
+    void garbageCode108() { //  #6895 "segmentation fault (invalid code) in CheckCondition::isOppositeCond"
+        checkCode("A( ) { } bool f( ) { ( ) F; ( ) { ( == ) if ( !=< || ( !A( ) && r[2] ) ) ( !A( ) ) ( ) } }");
     }
 
 

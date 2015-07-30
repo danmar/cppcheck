@@ -383,9 +383,9 @@ bool CheckCondition::isOppositeCond(bool isNot, const Token * const cond1, const
 
     if (cond1->str() == "!") {
         if (cond2->str() == "!=") {
-            if (cond2->astOperand1()->str() == "0")
+            if (cond2->astOperand1() && cond2->astOperand1()->str() == "0")
                 return isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand2(), constFunctions);
-            if (cond2->astOperand2()->str() == "0")
+            if (cond2->astOperand2() && cond2->astOperand2()->str() == "0")
                 return isSameExpression(_tokenizer, cond1->astOperand1(), cond2->astOperand1(), constFunctions);
         }
         return isSameExpression(_tokenizer, cond1->astOperand1(), cond2, constFunctions);
