@@ -1519,7 +1519,7 @@ private:
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
               "  if (!x) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition !x is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"

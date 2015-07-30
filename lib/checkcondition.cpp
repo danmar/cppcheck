@@ -1012,5 +1012,5 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, bool knownResult)
     reportError(tok,
                 Severity::style,
                 "knownConditionTrueFalse",
-                "Condition " + expr + " is always " + (knownResult ? "true" : "false"));
+                "Condition '" + expr + "' is always " + (knownResult ? "true" : "false"));
 }
