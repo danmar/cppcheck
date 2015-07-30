@@ -1797,28 +1797,20 @@ void CheckOther::checkZeroDivision()
     const bool printInconclusive = _settings->inconclusive;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
-            MathLib::isInt(tok->strAt(4)) &&
-            MathLib::toLongNumber(tok->strAt(4)) == 0L) {
-            if (tok->str() == "div") {
-                if (tok->strAt(-1) == ".")
-                    continue;
-                if (tok->variable() || tok->function())
-                    continue;
-            }
-            zerodivError(tok,false);
-        } else if (Token::Match(tok, "[/%]") && tok->astOperand2() && !astIsFloat(tok,false)) {
-            // Value flow..
-            const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
-            if (value) {
-                if (!printInconclusive && value->inconclusive)
-                    continue;
-                if (value->condition == nullptr)
-                    zerodivError(tok, value->inconclusive);
-                else if (printWarnings)
-                    zerodivcondError(value->condition,tok,value->inconclusive);
-            }
-        }
+        if (!Token::Match(tok, "[/%]") || !tok->astOperand2())
+            continue;
+        if (astIsFloat(tok,false))
+            continue;
+        // Value flow..
+        const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
+        if (!value)
+            continue;
+        if (!printInconclusive && value->inconclusive)
+            continue;
+        if (value->condition == nullptr)
+            zerodivError(tok, value->inconclusive);
+        else if (printWarnings)
+            zerodivcondError(value->condition,tok,value->inconclusive);
     }
 }
 
