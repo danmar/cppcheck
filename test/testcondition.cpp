@@ -47,6 +47,7 @@ private:
         TEST_CASE(incorrectLogicOperator6); // char literals
         TEST_CASE(incorrectLogicOperator7); // opposite expressions: (expr || !expr)
         TEST_CASE(incorrectLogicOperator8); // !
+        TEST_CASE(incorrectLogicOperator9);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -930,6 +931,15 @@ private:
               "  if (!(i!=10) && !(i!=20)) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: !(i != 10) && !(i != 20).\n", errout.str());
+    }
+
+    void incorrectLogicOperator9() { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
+        check("class MyType;\n"
+        "class OtherType;\n"
+        "void foo (OtherType* obj) { \n"
+        "    assert((!obj) || dynamic_cast<MyType*>(obj));\n"
+        "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

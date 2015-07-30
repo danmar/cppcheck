@@ -49,6 +49,7 @@ public:
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
         checkCondition.oppositeInnerCondition();
+        checkCondition.checkIncorrectLogicOperator();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -57,7 +58,6 @@ public:
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
-        checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkModuloAlwaysTrueFalse();
         checkCondition.alwaysTrueFalse();
     }
