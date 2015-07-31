@@ -92,6 +92,7 @@ private:
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
         TEST_CASE(nullpointer_internal_error); // #5080
+        TEST_CASE(ticket6505);
     }
 
     void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
@@ -2441,6 +2442,22 @@ private:
               "    for (j = 0; j < b[0].a->size; ++j) {\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ticket6505() {
+        check("void foo(MythSocket *socket) {\n"
+              "  bool do_write=false;\n"
+              "  if (socket) {\n"
+              "    do_write=something();\n"
+              "  }\n"
+              "  if (do_write) {\n"
+              "    socket->func();\n"
+              "  }\n"
+              "}\n"
+              "void bar() {\n"
+              "  foo(0);\n"
+              "}\n", true, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 };
