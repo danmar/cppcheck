@@ -3777,10 +3777,7 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "* const"))
-            tok->deleteNext();
-    }
+    simplifyPointerConst();
 
     list.createAst();
 
@@ -3792,6 +3789,14 @@ bool Tokenizer::simplifyTokenList2()
     printDebugOutput(2);
 
     return true;
+}
+//---------------------------------------------------------------------------
+void Tokenizer::simplifyPointerConst()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "* const %name%|*"))
+            tok->deleteNext();
+    }
 }
 //---------------------------------------------------------------------------
 

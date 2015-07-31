@@ -148,6 +148,8 @@ private:
         TEST_CASE(garbageCode106);
         TEST_CASE(garbageCode107);
         TEST_CASE(garbageCode108);
+        TEST_CASE(garbageCode109);
+        TEST_CASE(garbageCode110);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -833,6 +835,15 @@ private:
     void garbageCode108() { //  #6895 "segmentation fault (invalid code) in CheckCondition::isOppositeCond"
         checkCode("A( ) { } bool f( ) { ( ) F; ( ) { ( == ) if ( !=< || ( !A( ) && r[2] ) ) ( !A( ) ) ( ) } }");
     }
+
+    void garbageCode109() { //  #6900 "segmentation fault (invalid code) in CheckStl::runSimplifiedChecks"
+        checkCode("( *const<> (( ) ) { } ( *const ( ) ( ) ) { } ( * const<> ( size_t )) ) { } ( * const ( ) ( ) ) { }");
+    }
+
+    void garbageCode110() { //  #6902 "segmentation fault (invalid code) in CheckStl::string_c_str"
+        checkCode("( *const<> ( size_t ) ; foo ) { } * ( *const ( size_t ) ( ) ;> foo )< { }");
+    }
+
 
 
     void garbageValueFlow() {

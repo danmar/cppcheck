@@ -277,6 +277,12 @@ public:
      */
     void simplifyCompoundAssignment();
 
+
+    /**
+     * Simplify "* const" to "*"
+     */
+    void simplifyPointerConst();
+
     /**
      * Simplify the location of "static" and "const" qualifiers in
      * a variable declaration or definition.
