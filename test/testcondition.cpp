@@ -1521,6 +1521,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition !x is always true\n", errout.str());
 
+        check("void f() {\n" // #6898 (Token::expressionString)
+              "  int x = 0;\n"
+              "  A(x++ == 1);\n"
+              "  A(x++ == 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition x++==2 is always false\n", errout.str());
+
         // Avoid FP when condition comes from macro
         check("void f() {\n"
               "  int x = 0;\n"

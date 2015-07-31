@@ -1191,7 +1191,8 @@ std::string Token::expressionString() const
 {
     const Token * const top = this;
     const Token *start = top;
-    while (start->astOperand1() && (start->astOperand2() || Token::simpleMatch(start, "( )")))
+    while (start->astOperand1() &&
+           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )")))
         start = start->astOperand1();
     const Token *end = top;
     while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
@@ -1208,7 +1209,6 @@ std::string Token::expressionString() const
             ret += " ";
     }
     return ret + end->str();
-
 }
 
 static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out)
