@@ -8253,7 +8253,7 @@ void Tokenizer::syntaxError(const Token *tok, char c) const
 {
     printDebugOutput(0);
     throw InternalError(tok,
-                        std::string("Invalid number of character (") + c + ") " +
+                        std::string("Invalid number of character '") + c + "' " +
                         "when these macros are defined: '" + _configuration + "'.",
                         InternalError::SYNTAX);
 }
