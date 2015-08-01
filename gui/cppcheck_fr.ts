@@ -684,6 +684,22 @@ Options:
         <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print the Current Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Pre&amp;view...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open a Print Preview Dialog for the Current Results</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -983,6 +999,10 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Open containing folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1030,6 +1050,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No errors found, nothing to print.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

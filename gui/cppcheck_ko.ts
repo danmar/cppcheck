@@ -732,6 +732,22 @@ Options:
         <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print the Current Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Pre&amp;view...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open a Print Preview Dialog for the Current Results</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -1037,6 +1053,10 @@ Please select the directory where file is located.</source>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Open containing folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1084,6 +1104,14 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No errors found, nothing to print.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
