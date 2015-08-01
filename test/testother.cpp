@@ -299,15 +299,30 @@ private:
               "{\n"
               "   long a = b / 0x0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(long b)\n"
+              "{\n"
+              "   long a = b / 0x0;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "   long a = b / 0L;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(long b)\n"
+              "{\n"
+              "   long a = b / 0L;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
 
         check("void f()\n"
+              "{\n"
+              "   long a = b / 0ul;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(long b)\n"
               "{\n"
               "   long a = b / 0ul;\n"
               "}");
@@ -333,6 +348,11 @@ private:
               "{ { {\n"
               "   long a = b / 0;\n"
               "} } }");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(long b)\n"
+              "{ { {\n"
+              "   long a = b / 0;\n"
+              "} } }");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
@@ -341,11 +361,22 @@ private:
               "{ { {\n"
               "   int a = b % 0;\n"
               "} } }");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int b)\n"
+              "{ { {\n"
+              "   int a = b % 0;\n"
+              "} } }");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDiv7() {
+        // unknown types for x and y --> do not warn
         check("void f() {\n"
+              "  int a = x/2*3/0;\n"
+              "  int b = y/2*3%0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x, int y) {\n"
               "  int a = x/2*3/0;\n"
               "  int b = y/2*3%0;\n"
               "}");
@@ -482,12 +513,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // ?:
+        // Unknown types for b and c --> do not warn
         check("int f(int d) {\n"
               "  int r = (a?b:c) / d;\n"
               "  if (d == 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'd==0' is redundant or there is division by zero at line 2.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("int f(int a) {\n"
               "  int r = a ? 1 / a : 0;\n"

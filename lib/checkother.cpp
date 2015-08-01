@@ -32,6 +32,46 @@ namespace {
     CheckOther instance;
 }
 
+bool astIsIntegral(const Token *tok, bool unknown)
+{
+    // TODO: handle arrays
+    if (tok->isNumber())
+        return MathLib::isInt(tok->str());
+
+    if (tok->isName()) {
+        if (tok->variable())
+            return tok->variable()->isIntegralType();
+
+        return unknown;
+    }
+    if (tok->str() == "(") {
+        // cast
+        if (Token::Match(tok, "( const| float|double )"))
+            return false;
+
+        // Function call
+        if (tok->previous()->function()) {
+            if (Token::Match(tok->previous()->function()->retDef, "float|double"))
+                return false;
+            else if (Token::Match(tok->previous()->function()->retDef, "bool|char|short|int|long"))
+                return true;
+        }
+
+        if (tok->strAt(-1) == "sizeof")
+            return true;
+
+        return unknown;
+    }
+
+    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
+        return astIsIntegral(tok->astOperand2(), unknown);
+
+    if (tok->astOperand1() && tok->str() != "?")
+        return astIsIntegral(tok->astOperand1(), unknown);
+
+    return unknown;
+}
+
 bool astIsFloat(const Token *tok, bool unknown)
 {
     // TODO: handle arrays
@@ -1799,7 +1839,7 @@ void CheckOther::checkZeroDivision()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "[/%]") || !tok->astOperand1() || !tok->astOperand2())
             continue;
-        if (astIsFloat(tok,false))
+        if (!astIsIntegral(tok,false))
             continue;
         if (tok->astOperand1()->isNumber()) {
             if (MathLib::isFloat(tok->astOperand1()->str()))
@@ -1807,10 +1847,9 @@ void CheckOther::checkZeroDivision()
         } else if (tok->astOperand1()->isName()) {
             if (tok->astOperand1()->variable() && !tok->astOperand1()->variable()->isIntegralType())
                 continue;
-        } else {
+        } else if (!tok->astOperand1()->isArithmeticalOp()) {
             continue;
         }
-
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
         if (!value)
