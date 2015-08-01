@@ -150,10 +150,9 @@ def scanarchive(filepath, jobs):
 # boost #3654 (?)
 # flite #5975
 # insight#5184
-# valgrind #6151
 #
 
-    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight' or filename[:8] == 'valgrind':
+    if filename[:5] == 'flite' or filename[:5] == 'boost' or filename[:7] == 'insight':
         results = open('results.txt', 'at')
         results.write('fixme: skipped package to avoid hang\n')
         results.close()
@@ -169,6 +168,7 @@ def scanarchive(filepath, jobs):
          '-D__GCC__',
          '--enable=style',
          '--error-exitcode=0',
+         '--exception-handling',
          jobs,
          '.'],
         stdout=subprocess.PIPE,
