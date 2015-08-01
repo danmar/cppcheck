@@ -152,6 +152,7 @@ private:
         TEST_CASE(garbageCode110);
         TEST_CASE(garbageCode111);
         TEST_CASE(garbageCode112);
+        TEST_CASE(garbageCode113);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -854,7 +855,9 @@ private:
         ASSERT_THROW(checkCode("enum { FOO = ( , ) } {{ }}>> enum { FOO< = ( ) } { { } } ;"), InternalError);
     }
 
-
+    void garbageCode113() { //  #6858
+        checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }");
+    }
 
     void garbageValueFlow() {
         // #6089
