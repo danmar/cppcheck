@@ -1797,10 +1797,20 @@ void CheckOther::checkZeroDivision()
     const bool printInconclusive = _settings->inconclusive;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "[/%]") || !tok->astOperand2())
+        if (!Token::Match(tok, "[/%]") || !tok->astOperand1() || !tok->astOperand2())
             continue;
         if (astIsFloat(tok,false))
             continue;
+        if (tok->astOperand1()->isNumber()) {
+            if (MathLib::isFloat(tok->astOperand1()->str()))
+                continue;
+        } else if (tok->astOperand1()->isName()) {
+            if (tok->astOperand1()->variable() && !tok->astOperand1()->variable()->isIntegralType())
+                continue;
+        } else {
+            continue;
+        }
+
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);
         if (!value)

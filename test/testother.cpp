@@ -42,6 +42,7 @@ private:
         TEST_CASE(zeroDiv7);  // #4930
         TEST_CASE(zeroDiv8);
         TEST_CASE(zeroDiv9);
+        TEST_CASE(zeroDiv10);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -372,6 +373,17 @@ private:
               "       sal_Int32 nIntervalCount = static_cast< sal_Int32 >(fStepMain / fStepHelp);\n"
               "    }\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv10() {
+        // #5402 false positive: (error) Division by zero -- with boost::format
+        check("int main() {\n"
+              "  std::cout\n"
+              "    << boost::format(\" %d :: %s <> %s\") % 0 % \"a\" % \"b\"\n"
+              "    << std::endl;\n"
+              "  return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
