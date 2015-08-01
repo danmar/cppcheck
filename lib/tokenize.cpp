@@ -7530,8 +7530,8 @@ void Tokenizer::simplifyEnum()
             for (; tok1 && tok1 != end; tok1 = tok1->next()) {
                 if (tok1->str() == "(") {
                     tok1 = tok1->link();
-					if (!tok1)
-						syntaxError(nullptr); // #6909
+                    if (!tok1)
+                        syntaxError(nullptr); // #6909
                     continue;
                 }
 

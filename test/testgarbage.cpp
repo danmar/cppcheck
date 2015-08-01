@@ -151,7 +151,7 @@ private:
         TEST_CASE(garbageCode109);
         TEST_CASE(garbageCode110);
         TEST_CASE(garbageCode111);
-		TEST_CASE(garbageCode112);
+        TEST_CASE(garbageCode112);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -850,7 +850,7 @@ private:
         ASSERT_THROW(checkCode("enum { FOO = 1( ,) } {{ FOO }} ;"), InternalError);
     }
 
-	void garbageCode112() { //  #6909
+    void garbageCode112() { //  #6909
         ASSERT_THROW(checkCode("enum { FOO = ( , ) } {{ }}>> enum { FOO< = ( ) } { { } } ;"), InternalError);
     }
 
