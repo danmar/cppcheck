@@ -3513,16 +3513,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Put ^{} statements in asm()
     simplifyAsm2();
 
-    // When the assembly code has been cleaned up, no @ is allowed
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            tok = tok->link();
-        else if (tok->str()[0] == '@') {
-            list.deallocateTokens();
-            return false;
-        }
-    }
-
     // convert platform dependent types to standard types
     // 32 bits: size_t -> unsigned long
     // 64 bits: size_t -> unsigned long long
@@ -9474,6 +9464,17 @@ void Tokenizer::simplifyAsm2()
                 start->tokAt(3)->link(start->next());
                 tok = start->tokAt(4);
             }
+        }
+    }
+    // When the assembly code has been cleaned up, no @ is allowed
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "(") {
+            tok = tok->link();
+            if (!tok)
+                syntaxError(nullptr);
+        } else if (tok->str()[0] == '@') {
+            list.deallocateTokens();
+            syntaxError(nullptr);
         }
     }
 }

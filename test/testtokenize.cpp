@@ -682,7 +682,7 @@ private:
                             "-(Foo *)foo: (Bar *)bar\n"
                             "{ }\n"
                             "@end\n";
-        ASSERT_EQUALS("", tokenizeAndStringify(code));
+        ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
     // Ticket #2361: 0X10 => 16

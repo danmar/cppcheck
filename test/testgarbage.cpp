@@ -150,6 +150,7 @@ private:
         TEST_CASE(garbageCode108);
         TEST_CASE(garbageCode109);
         TEST_CASE(garbageCode110);
+        TEST_CASE(garbageCode111);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -842,6 +843,10 @@ private:
 
     void garbageCode110() { //  #6902 "segmentation fault (invalid code) in CheckStl::string_c_str"
         checkCode("( *const<> ( size_t ) ; foo ) { } * ( *const ( size_t ) ( ) ;> foo )< { }");
+    }
+
+    void garbageCode111() { //  #6907
+        ASSERT_THROW(checkCode("enum { FOO = 1( ,) } {{ FOO }} ;"), InternalError);
     }
 
 
