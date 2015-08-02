@@ -5425,6 +5425,40 @@ private:
             ASSERT_EQUALS("return doSomething ( X ) , 0 ;", tokenizeAndStringify(code, false));
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char code[] = "const int x(1);"
+                                "const int y(2);"
+                                "const int z((x+1)*y);"
+                                "f(z);";
+            ASSERT_EQUALS("f ( 4 ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "const int x(1);"
+                                "const int y(2);"
+                                "const int z((x+1)*y);"
+                                "f(&z);";
+            ASSERT_EQUALS("const int z ( 4 ) ; f ( & z ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "const bool x(true);"
+                                "const bool y(!x);"
+                                "f(y);";
+            ASSERT_EQUALS("f ( false ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "const bool x(true);"
+                                "const bool y(!x);"
+                                "f(&y);";
+            ASSERT_EQUALS("const bool y ( false ) ; f ( & y ) ;", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyInitVar2() {

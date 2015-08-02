@@ -2803,7 +2803,11 @@ void Tokenizer::setVarId()
                                 if (rhs)
                                     continue;
 
-                                if (tok3->isLiteral() || (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) || tok3->isOp() || notstart.find(tok3->str()) != notstart.end()) {
+                                if (tok3->isLiteral() ||
+                                    (tok3->isName() && (variableId.find(tok3->str()) != variableId.end())) ||
+                                    tok3->isOp() ||
+                                    tok3->str() == "(" ||
+                                    notstart.find(tok3->str()) != notstart.end()) {
                                     decl = true;
                                     break;
                                 }
