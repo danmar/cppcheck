@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkcondition.h"
+#include "astutils.h"
 #include "checkother.h"
 #include "symboldatabase.h"
 

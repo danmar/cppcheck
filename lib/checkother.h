@@ -35,10 +35,6 @@ bool isSameExpression(const Tokenizer *tokenizer, const Token *tok1, const Token
 
 bool isWithoutSideEffects(const Tokenizer *tokenizer, const Token* tok);
 
-/** Is expression of floating point type? */
-bool astIsFloat(const Token *tok, bool unknown);
-
-
 /// @addtogroup Checks
 /// @{
 

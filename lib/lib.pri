@@ -6,6 +6,7 @@ include($$PWD/../externals/tinyxml/tinyxml.pri)
 BASEPATH = ../lib/
 INCLUDEPATH += ../externals/tinyxml
 HEADERS += $${BASEPATH}check.h \
+           $${BASEPATH}astutils.h \
            $${BASEPATH}check.h \
            $${BASEPATH}check64bit.h \
            $${BASEPATH}checkassert.h \
@@ -50,7 +51,8 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}valueflow.h \
 
 
-SOURCES += $${BASEPATH}check.cpp \
+SOURCES += $${BASEPATH}astutils.cpp \
+           $${BASEPATH}check.cpp \
            $${BASEPATH}check64bit.cpp \
            $${BASEPATH}checkassert.cpp \
            $${BASEPATH}checkautovariables.cpp \

@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "astutils.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
 
@@ -32,86 +33,6 @@ namespace {
     CheckOther instance;
 }
 
-bool astIsIntegral(const Token *tok, bool unknown)
-{
-    // TODO: handle arrays
-    if (tok->isNumber())
-        return MathLib::isInt(tok->str());
-
-    if (tok->isName()) {
-        if (tok->variable())
-            return tok->variable()->isIntegralType();
-
-        return unknown;
-    }
-    if (tok->str() == "(") {
-        // cast
-        if (Token::Match(tok, "( const| float|double )"))
-            return false;
-
-        // Function call
-        if (tok->previous()->function()) {
-            if (Token::Match(tok->previous()->function()->retDef, "float|double"))
-                return false;
-            else if (Token::Match(tok->previous()->function()->retDef, "bool|char|short|int|long"))
-                return true;
-        }
-
-        if (tok->strAt(-1) == "sizeof")
-            return true;
-
-        return unknown;
-    }
-
-    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
-        return astIsIntegral(tok->astOperand2(), unknown);
-
-    if (tok->astOperand1() && tok->str() != "?")
-        return astIsIntegral(tok->astOperand1(), unknown);
-
-    return unknown;
-}
-
-bool astIsFloat(const Token *tok, bool unknown)
-{
-    // TODO: handle arrays
-    if (tok->isNumber())
-        return MathLib::isFloat(tok->str());
-
-    if (tok->isName()) {
-        if (tok->variable())
-            return tok->variable()->isFloatingType();
-
-        return unknown;
-    }
-    if (tok->str() == "(") {
-        // cast
-        if (Token::Match(tok, "( const| float|double )"))
-            return true;
-
-        // Function call
-        if (tok->previous()->function())
-            return Token::Match(tok->previous()->function()->retDef, "float|double");
-
-        if (tok->strAt(-1) == "sizeof")
-            return false;
-
-        return unknown;
-    }
-
-    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
-        return astIsFloat(tok->astOperand2(), unknown);
-
-    if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(), unknown))
-        return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
-        return true;
-
-    if (tok->isOp())
-        return false;
-
-    return unknown;
-}
 
 bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
 {
