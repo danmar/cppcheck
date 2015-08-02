@@ -421,9 +421,9 @@ private:
     }
 
     void zeroDiv11() {
-        check("void f() {\n"
-              "  int res = (1+2)/0;\n"
-              "  int res = (1*2)/0;\n"
+        check("void f(int a) {\n"
+              "  int res = (a+2)/0;\n"
+              "  int res = (a*2)/0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
                       "[test.cpp:3]: (error) Division by zero.\n", errout.str());
