@@ -341,6 +341,26 @@ private:
             ASSERT_EQUALS(2, values.front().intvalue);
             ASSERT_EQUALS(22, values.back().intvalue);
         }
+
+        // Comparison of string
+        values = tokenValues("f(\"xyz\" == \"xyz\");", "=="); // implementation defined
+        ASSERT_EQUALS(0U, values.size()); // <- no value
+
+        values = tokenValues("f(\"xyz\" == 0);", "==");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+
+        values = tokenValues("f(0 == \"xyz\");", "==");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+
+        values = tokenValues("f(\"xyz\" != 0);", "!=");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.front().intvalue);
+
+        values = tokenValues("f(0 != \"xyz\");", "!=");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.front().intvalue);
     }
 
     void valueFlowBeforeCondition() {
