@@ -85,6 +85,15 @@ private:
               "  someList << 300;\n"
               "}", &settings);
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6793
+        check("template<int I> int foo(int x) { return x << I; }\n"
+              "const int f = foo<31>(1);\n"
+              "const int g = foo<100>(1);\n"
+              "template<int I> int hoo(int x) { return x << 32; }\n"
+              "const int h = hoo<100>(1);", &settings);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
+                      "[test.cpp:1]: (error) Shifting 32-bit value by 100 bits is undefined behaviour\n", errout.str());
     }
 
     void checkIntegerOverflow() {
