@@ -398,9 +398,13 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                              parent->astOperand2()->values.front().isKnown()));
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
+            if (value1->tokvalue && (!parent->isComparisonOp() || value1->tokvalue->type() != Token::eString))
+                continue;
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
+                if (value2->tokvalue && (!parent->isComparisonOp() || value2->tokvalue->type() != Token::eString || value1->tokvalue))
+                    continue;
                 if (known || value1->varId == 0U || value2->varId == 0U ||
-                    (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
+                    (value1->varId == value2->varId && value1->varvalue == value2->varvalue && !value1->tokvalue && !value2->tokvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1->condition ? value1->condition : value2->condition;
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
@@ -435,17 +439,25 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                         break;
                     case '=':
                         if (parent->str() == "==") {
-                            result.intvalue = value1->intvalue == value2->intvalue;
+                            if (value1->tokvalue || value2->tokvalue)
+                                result.intvalue = 0;
+                            else
+                                result.intvalue = value1->intvalue == value2->intvalue;
                             setTokenValue(parent, result);
                         }
                         break;
                     case '!':
                         if (parent->str() == "!=") {
-                            result.intvalue = value1->intvalue != value2->intvalue;
+                            if (value1->tokvalue || value2->tokvalue)
+                                result.intvalue = 1;
+                            else
+                                result.intvalue = value1->intvalue != value2->intvalue;
                             setTokenValue(parent, result);
                         }
                         break;
                     case '>':
+                        if (value1->tokvalue || value2->tokvalue)
+                            break;
                         if (parent->str() == ">")
                             result.intvalue = value1->intvalue > value2->intvalue;
                         else if (parent->str() == ">=")
@@ -455,6 +467,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                         setTokenValue(parent, result);
                         break;
                     case '<':
+                        if (value1->tokvalue || value2->tokvalue)
+                            break;
                         if (parent->str() == "<")
                             result.intvalue = value1->intvalue < value2->intvalue;
                         else if (parent->str() == "<=")
