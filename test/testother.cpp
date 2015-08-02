@@ -43,6 +43,7 @@ private:
         TEST_CASE(zeroDiv8);
         TEST_CASE(zeroDiv9);
         TEST_CASE(zeroDiv10);
+        TEST_CASE(zeroDiv11);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -415,6 +416,20 @@ private:
               "    << boost::format(\" %d :: %s <> %s\") % 0 % \"a\" % \"b\"\n"
               "    << std::endl;\n"
               "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv11() {
+        check("void f() {\n"
+              "  int res = (1+2)/0;\n"
+              "  int res = (1*2)/0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n"
+                      "[test.cpp:3]: (error) Division by zero.\n", errout.str());
+        check("void f() {\n"
+              "  int res = (a+2)/0;\n"
+              "  int res = (a*2)/0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
