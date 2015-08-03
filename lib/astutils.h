@@ -22,12 +22,35 @@
 #define astutilsH
 //---------------------------------------------------------------------------
 
-#include "symboldatabase.h"
-#include "token.h"
+#include <set>
+#include <string>
 
+class Token;
+class Tokenizer;
+
+/** Is expression a 'signed char' if no promotion is used */
+bool astIsSignedChar(const Token *tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
+
+/** Is given syntax tree a variable comparison against value */
+const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
+
+bool isSameExpression(bool cpp, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
+
+/**
+ * Are two conditions opposite
+ * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
+ * @param cpp    c++ file
+ * @param cond1  condition1
+ * @param cond2  condition2
+ */
+bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions);
+
+bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions);
+
+bool isWithoutSideEffects(bool cpp, const Token* tok);
 
 #endif // astutilsH

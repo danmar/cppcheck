@@ -100,13 +100,6 @@ public:
 private:
 
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const;
-    /**
-     * Are two conditions opposite
-     * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
-     * @param cond1  condition1
-     * @param cond2  condition2
-     */
-    bool isOppositeCond(bool isNot, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
     void badBitmaskCheckError(const Token *tok);

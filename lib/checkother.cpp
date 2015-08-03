@@ -34,109 +34,6 @@ namespace {
 }
 
 
-bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
-{
-    if (!tok)
-        return true;
-    if (tok->isName() && tok->next()->str() == "(") {
-        if (!tok->function() && !Token::Match(tok->previous(), ".|::") && constFunctions.find(tok->str()) == constFunctions.end())
-            return false;
-        else if (tok->function() && !tok->function()->isConst())
-            return false;
-    }
-    if (tok->type() == Token::eIncDecOp)
-        return false;
-    // bailout when we see ({..})
-    if (tok->str() == "{")
-        return false;
-    return isConstExpression(tok->astOperand1(),constFunctions) && isConstExpression(tok->astOperand2(),constFunctions);
-}
-
-bool isSameExpression(const Tokenizer *tokenizer, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions)
-{
-    if (tok1 == nullptr && tok2 == nullptr)
-        return true;
-    if (tok1 == nullptr || tok2 == nullptr)
-        return false;
-    if (tokenizer->isCPP()) {
-        if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
-            tok1 = tok1->astOperand2();
-        if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
-            tok2 = tok2->astOperand2();
-    }
-    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str()) {
-        if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
-            (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
-            return isSameExpression(tokenizer, tok1->astOperand1(), tok2->astOperand2(), constFunctions) &&
-                   isSameExpression(tokenizer, tok1->astOperand2(), tok2->astOperand1(), constFunctions);
-        }
-        return false;
-    }
-    if (tok1->str() == "." && tok1->originalName() != tok2->originalName())
-        return false;
-    if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
-        return false;
-    if (tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
-        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && constFunctions.find(tok1->str()) == constFunctions.end() && !tok1->isAttributeConst() && !tok1->isAttributePure())
-            return false;
-        else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
-            return false;
-    }
-    // templates/casts
-    if ((Token::Match(tok1, "%name% <") && tok1->next()->link()) ||
-        (Token::Match(tok2, "%name% <") && tok2->next()->link())) {
-
-        // non-const template function that is not a dynamic_cast => return false
-        if (Token::simpleMatch(tok1->next()->link(), "> (") &&
-            !(tok1->function() && tok1->function()->isConst()) &&
-            tok1->str() != "dynamic_cast")
-            return false;
-
-        // some template/cast stuff.. check that the template arguments are same
-        const Token *t1 = tok1->next();
-        const Token *t2 = tok2->next();
-        const Token *end1 = t1->link();
-        const Token *end2 = t2->link();
-        while (t1 && t2 && t1 != end1 && t2 != end2) {
-            if (t1->str() != t2->str())
-                return false;
-            t1 = t1->next();
-            t2 = t2->next();
-        }
-        if (t1 != end1 || t2 != end2)
-            return false;
-    }
-    if (tok1->type() == Token::eIncDecOp || tok1->isAssignmentOp())
-        return false;
-    // bailout when we see ({..})
-    if (tok1->str() == "{")
-        return false;
-    if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
-        const Token *t1 = tok1->next();
-        const Token *t2 = tok2->next();
-        while (t1 && t2 && t1->str() == t2->str() && (t1->isName() || t1->str() == "*")) {
-            t1 = t1->next();
-            t2 = t2->next();
-        }
-        if (!t1 || !t2 || t1->str() != ")" || t2->str() != ")")
-            return false;
-    }
-    bool noncommuative_equals =
-        isSameExpression(tokenizer, tok1->astOperand1(), tok2->astOperand1(), constFunctions);
-    noncommuative_equals = noncommuative_equals &&
-                           isSameExpression(tokenizer, tok1->astOperand2(), tok2->astOperand2(), constFunctions);
-
-    if (noncommuative_equals)
-        return true;
-
-    const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
-    bool commuative_equals = commutative &&
-                             isSameExpression(tokenizer, tok1->astOperand2(), tok2->astOperand1(), constFunctions);
-    commuative_equals = commuative_equals &&
-                        isSameExpression(tokenizer, tok1->astOperand1(), tok2->astOperand2(), constFunctions);
-
-    return commuative_equals;
-}
 
 //----------------------------------------------------------------------------------
 // The return value of fgetc(), getc(), ungetc(), getchar() etc. is an integer value.
@@ -1572,31 +1469,6 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 //---------------------------------------------------------------------------
 // Check usage of char variables..
 //---------------------------------------------------------------------------
-static bool isChar(const Variable* var)
-{
-    return (var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
-}
-
-static bool isSignedChar(const Variable* var)
-{
-    return (isChar(var) && !var->typeStartToken()->isUnsigned());
-}
-
-static bool astIsSignedChar(const Token *tok)
-{
-    if (!tok)
-        return false;
-    if (tok->str() == "*" && tok->astOperand1() && !tok->astOperand2()) {
-        const Variable *var = tok->astOperand1()->variable();
-        if (!var || !var->isPointer())
-            return false;
-        const Token *type = var->typeStartToken();
-        while (type && type->str() == "const")
-            type = type->next();
-        return (type && type->str() == "char" && !type->isUnsigned());
-    }
-    return isSignedChar(tok->variable());
-}
 
 void CheckOther::checkCharVariable()
 {
@@ -2134,20 +2006,6 @@ namespace {
     }
 }
 
-bool isWithoutSideEffects(const Tokenizer *tokenizer, const Token* tok)
-{
-    if (!tokenizer->isCPP())
-        return true;
-
-    while (tok && tok->astOperand2() && tok->astOperand2()->str() != "(")
-        tok = tok->astOperand2();
-    if (tok && tok->varId()) {
-        const Variable* var = tok->variable();
-        return var && (!var->isClass() || var->isPointer() || var->isStlType());
-    }
-    return true;
-}
-
 void CheckOther::checkDuplicateExpression()
 {
     if (!_settings->isEnabled("style"))
@@ -2170,8 +2028,8 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(_tokenizer, tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
-                    if (isWithoutSideEffects(_tokenizer, tok->astOperand1())) {
+                if (isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
+                    if (isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
                         if (assignment)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
@@ -2189,16 +2047,16 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer, tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, tok->astOperand2()))
+                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer->isCPP(), tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
-                            if (isSameExpression(_tokenizer, ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, ast1->astOperand1()))
+                            if (isSameExpression(_tokenizer->isCPP(), ast1->astOperand1(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), ast1->astOperand1()))
                                 // TODO: warn if variables are unchanged. See #5683
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
                                 ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                            else if (isSameExpression(_tokenizer, ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer, ast1->astOperand2()))
+                            else if (isSameExpression(_tokenizer->isCPP(), ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), ast1->astOperand2()))
                                 duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
                             if (!isConstExpression(ast1->astOperand2(), _settings->library.functionpure))
                                 break;
@@ -2207,7 +2065,7 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                if (isSameExpression(_tokenizer, tok->astOperand1(), tok->astOperand2(), temp))
+                if (isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), temp))
                     duplicateExpressionTernaryError(tok);
             }
         }

@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkuninitvar.h"
+#include "astutils.h"
 #include "mathlib.h"
 #include "checknullpointer.h"   // CheckNullPointer::parseFunctionCall
 #include "symboldatabase.h"
@@ -280,7 +281,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             unsigned int condVarId = 0, condVarValue = 0;
             const Token *condVarTok = nullptr;
             if (Token::simpleMatch(tok, "if (") &&
-                Token::isVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
+                astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 std::map<unsigned int,int>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second == NOT_ZERO)
                     return true;   // this scope is not fully analysed => return true

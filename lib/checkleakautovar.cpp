@@ -24,6 +24,7 @@
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
 #include "tokenize.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 
 #include <iostream>
 #include <stack>
@@ -307,17 +308,17 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
 
                     const Token *vartok = nullptr;
-                    if (Token::isVariableComparison(tok3, "!=", "0", &vartok)) {
+                    if (astIsVariableComparison(tok3, "!=", "0", &vartok)) {
                         varInfo2.erase(vartok->varId());
                         if (notzero.find(vartok->varId()) != notzero.end())
                             varInfo2.clear();
-                    } else if (Token::isVariableComparison(tok3, "==", "0", &vartok)) {
+                    } else if (astIsVariableComparison(tok3, "==", "0", &vartok)) {
                         varInfo1.erase(vartok->varId());
-                    } else if (Token::isVariableComparison(tok3, "<", "0", &vartok)) {
+                    } else if (astIsVariableComparison(tok3, "<", "0", &vartok)) {
                         varInfo1.erase(vartok->varId());
-                    } else if (Token::isVariableComparison(tok3, ">", "0", &vartok)) {
+                    } else if (astIsVariableComparison(tok3, ">", "0", &vartok)) {
                         varInfo2.erase(vartok->varId());
-                    } else if (Token::isVariableComparison(tok3, "==", "-1", &vartok)) {
+                    } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
                         varInfo1.erase(vartok->varId());
                     }
                 }

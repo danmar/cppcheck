@@ -28,13 +28,6 @@
 class Function;
 class Variable;
 
-bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions);
-
-/** Is expressions same? */
-bool isSameExpression(const Tokenizer *tokenizer, const Token *tok1, const Token *tok2, const std::set<std::string> &constFunctions);
-
-bool isWithoutSideEffects(const Tokenizer *tokenizer, const Token* tok);
-
 /// @addtogroup Checks
 /// @{
 

@@ -717,9 +717,6 @@ public:
 
     const Token *getValueTokenDeadPointer() const;
 
-    /** Is given syntax tree a variable comparison against value */
-    static const Token * isVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
-
 private:
 
     void next(Token *nextToken) {
