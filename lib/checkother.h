@@ -83,6 +83,7 @@ public:
 
         // --check-library : functions with nonmatching configuration
         checkOther.checkLibraryMatchFunctions();
+        checkOther.checkInterlockedDecrement();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -238,6 +239,10 @@ public:
     /** @brief --check-library: warn for unconfigured function calls */
     void checkLibraryMatchFunctions();
 
+    void checkInterlockedDecrement();
+
+	void checkNewAfterDelete();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -293,6 +298,7 @@ private:
     void commaSeparatedReturnError(const Token *tok);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
+    void raceAfterInterlockedDecrementError(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -306,6 +312,7 @@ private:
         c.invalidPointerCastError(0, "float", "double", false);
         c.negativeBitwiseShiftError(0);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
+        c.raceAfterInterlockedDecrementError(0);
 
         //performance
         c.redundantCopyError(0, "varname");
@@ -368,6 +375,7 @@ private:
                "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "- invalid input values for functions\n"
+               "- race condition with non-interlocked access after InterlockedDecrement() call\n"
 
                // warning
                "- either division by zero or useless condition\n"
