@@ -642,11 +642,33 @@ void CheckCondition::checkIncorrectLogicOperator()
             }
 
 
-            // 'A && (!A || B)' is equivalent with 'A || B'
-            if (printStyle && (tok->str() == "||") && tok->astOperand1() && tok->astOperand2() && tok->astOperand2()->str() == "&&") {
+            // 'A && (!A || B)' is equivalent with 'A && B'
+            // 'A || (!A && B)' is equivalent with 'A || B'
+            if (printStyle && tok->astOperand1() && tok->astOperand2() &&
+                ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
+                 (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
                 const Token* tok2 = tok->astOperand2()->astOperand1();
                 if (isOppositeCond(true, _tokenizer->isCPP(), tok->astOperand1(), tok2, _settings->library.functionpure)) {
-                    redundantConditionError(tok, tok2->expressionString() + ". 'A && (!A || B)' is equivalent to 'A || B'");
+                    std::string expr1(tok->astOperand1()->expressionString());
+                    std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
+                    std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
+
+                    if (expr1.length() + expr2.length() + expr3.length() > 50U) {
+                        if (expr1[0] == '!' && expr2[0] != '!') {
+                            expr1 = "!A";
+                            expr2 = "A";
+                        } else {
+                            expr1 = "!A";
+                            expr2 = "A";
+                        }
+
+                        expr3 = "B";
+                    }
+
+                    const std::string cond1 = expr1 + " " + tok->str() + " (" + expr2 + " " + tok->astOperand2()->str() + " " + expr3 + ")";
+                    const std::string cond2 = expr1 + " " + tok->str() + " " + expr3;
+
+                    redundantConditionError(tok, tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'");
                     continue;
                 }
             }
