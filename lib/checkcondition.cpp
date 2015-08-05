@@ -658,8 +658,8 @@ void CheckCondition::checkIncorrectLogicOperator()
                             expr1 = "!A";
                             expr2 = "A";
                         } else {
-                            expr1 = "!A";
-                            expr2 = "A";
+                            expr1 = "A";
+                            expr2 = "!A";
                         }
 
                         expr3 = "B";
