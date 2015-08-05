@@ -896,15 +896,14 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
     // is this a function call?
     if (start && Token::Match(start->previous(), "%name% (")) {
         const bool address(vartok->previous()->str() == "&");
+        const bool array(vartok->variable() && vartok->variable()->isArray());
         // check how function handle uninitialized data arguments..
         const Function *func = start->previous()->function();
         if (func) {
             const Variable *arg = func->getArgumentVar(argumentNumber);
             if (arg) {
                 const Token *argStart = arg->typeStartToken();
-                if (!address && Token::Match(argStart, "struct| %type% [,)]"))
-                    return 1;
-                if (!address && Token::Match(argStart, "struct| %type% %name% [,)]"))
+                if (!address && !array && Token::Match(argStart, "struct| %type% %name%| [,)]"))
                     return 1;
                 if (pointer && !address && alloc == NO_ALLOC && Token::Match(argStart, "struct| %type% * %name% [,)]"))
                     return 1;

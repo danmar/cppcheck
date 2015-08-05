@@ -1336,6 +1336,14 @@ private:
                        "    int **b = a[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6869 - FP when passing uninit array to function
+        checkUninitVar("void bar(PSTR x);\n"
+                       "void foo() {\n"
+                       "  char x[10];\n"
+                       "  bar(x);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..
