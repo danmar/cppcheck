@@ -366,8 +366,10 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         for (std::list<Suppressions::SuppressionEntry>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
             if (i2->id == "unmatchedSuppression") {
                 if ((i2->file == "*" || i2->file == i->file) &&
-                    (i2->line == 0 || i2->line == i->line))
+                    (i2->line == 0 || i2->line == i->line)) {
                     suppressed = true;
+                    break;
+                }
             }
         }
 
