@@ -4137,6 +4137,9 @@ private:
         check("int f(int x) { return x+x; }");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int x) { while (x+=x) ; }");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo() {\n"
               "    if (a && b && b) {}\n"
               "}");
