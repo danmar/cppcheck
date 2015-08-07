@@ -400,9 +400,9 @@ void CheckCondition::oppositeInnerCondition()
                 nonlocal |= (var && (!var->isLocal() || var->isStatic()) && !var->isArgument());
                 // TODO: if var is pointer check what it points at
                 nonlocal |= (var && (var->isPointer() || var->isReference()));
-            } else if (cond->isName()) {
+            } else if (!nonlocal && cond->isName()) {
                 // varid is 0. this is possibly a nonlocal variable..
-                nonlocal |= Token::Match(cond->astParent(), "%cop%|(");
+                nonlocal = Token::Match(cond->astParent(), "%cop%|(");
             }
         }
 
@@ -429,8 +429,8 @@ void CheckCondition::oppositeInnerCondition()
                 if (Token::Match(tok->previous(), "++|--|& %name%"))
                     break;
                 if (tok->variable() &&
-                    Token::Match(tok, "%name% . %name% (") &&
-                    !tok->variable()->isConst()) {
+                    !tok->variable()->isConst() &&
+                    Token::Match(tok, "%name% . %name% (")) {
                     const Function* function = tok->tokAt(2)->function();
                     if (!function || !function->isConst())
                         break;
