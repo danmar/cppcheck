@@ -230,7 +230,7 @@ public:
 
     void checkInterlockedDecrement();
 
-	void checkNewAfterDelete();
+    void checkNewAfterDelete();
 
 private:
     // Error messages..
