@@ -526,7 +526,6 @@ void CheckIO::checkWrongPrintfScanfArguments()
 
             const Token* argListTok = 0; // Points to first va_list argument
             const Token* formatStringTok = 0; // Points to format string token
-            std::string formatString;
 
             bool scan = false;
             bool scanf_s = false;
@@ -589,10 +588,10 @@ void CheckIO::checkWrongPrintfScanfArguments()
                 continue;
             }
 
-            if (formatStringTok)
-                formatString = formatStringTok->str();
-            else
+            if (!formatStringTok)
                 continue;
+
+            const std::string& formatString = formatStringTok->str();
 
             // Count format string parameters..
             unsigned int numFormat = 0;
@@ -600,7 +599,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
             bool percent = false;
             const Token* argListTok2 = argListTok;
             std::set<unsigned int> parameterPositionsUsed;
-            for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
+            for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
                 if (*i == '%') {
                     percent = !percent;
                 } else if (percent && *i == '[') {
