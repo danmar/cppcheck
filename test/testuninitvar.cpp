@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tokenize.h"
-#include "checkuninitvar.h"
 #include "testsuite.h"
+#include "checkuninitvar.h"
+#include "tokenize.h"
+#include "settings.h"
 
 
 class TestUninitVar : public TestFixture {
@@ -33,6 +34,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
+        TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
         TEST_CASE(uninitvar_bitop);     // using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
         TEST_CASE(uninitvar_arrays);    // arrays
@@ -54,7 +56,6 @@ private:
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
         TEST_CASE(uninitvar5);          // #3861
-        TEST_CASE(uninitvar6);          // handling unknown types in C and C++ files
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
         TEST_CASE(uninitvar2_structmembers); // struct members
@@ -641,6 +642,58 @@ private:
                        "    int i = 0;\n"
                        "    int j{ i };\n"
                        "    return j;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Handling of unknown types. Assume they are POD in C.
+    void uninitvar_decl() {
+        const char code[] = "void f() {\n"
+                            "    dfs a;\n"
+                            "    return a;\n"
+                            "}";
+
+        // Assume dfs is a non POD type if file is C++
+        checkUninitVar(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        // Assume dfs is a POD type if file is C
+        checkUninitVar(code, "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        const char code2[] = "struct AB { int a,b; };\n"
+                             "void f() {\n"
+                             "    struct AB ab;\n"
+                             "    return ab;\n"
+                             "}";
+        checkUninitVar(code2, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar(code2, "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
+
+        // Ticket #3890 - False positive for std::map
+        checkUninitVar("void f() {\n"
+                       "    std::map<int,bool> x;\n"
+                       "    return x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #3906 - False positive for std::vector pointer
+        checkUninitVar("void f() {\n"
+                       "    std::vector<int> *x = NULL;\n"
+                       "    return x;\n"
+                       "}", "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6701 - Variable name is a POD type according to cfg
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def format=\"1\">"
+                               "  <podtype name=\"_tm\"/>"
+                               "</def>";
+        settings.library.loadxmldata(xmldata, sizeof(xmldata));
+        checkUninitVar("void f() {\n"
+                       "  Fred _tm;\n"
+                       "  _tm.dostuff();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2554,20 +2607,6 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        // Ticket #3890 - False positive for std::map
-        checkUninitVar("void f() {\n"
-                       "    std::map<int,bool> x;\n"
-                       "    return x;\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #3906 - False positive for std::vector pointer
-        checkUninitVar("void f() {\n"
-                       "    std::vector<int> *x = NULL;\n"
-                       "    return x;\n"
-                       "}", "test.cpp", false);
-        ASSERT_EQUALS("", errout.str());
-
         // &
         checkUninitVar("void f() {\n"  // #4426 - address of uninitialized variable
                        "    int a,b;\n"
@@ -2626,32 +2665,6 @@ private:
                        "    a << 1;\n"  // there might be a operator<<
                        "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    // Handling of unknown types. Assume they are POD in C.
-    void uninitvar6() {
-        const char code[] = "void f() {\n"
-                            "    dfs a;\n"
-                            "    return a;\n"
-                            "}";
-
-        // Assume dfs is a non POD type if file is C++
-        checkUninitVar(code, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
-
-        // Assume dfs is a POD type if file is C
-        checkUninitVar(code, "test.c");
-        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: a\n", errout.str());
-
-        const char code2[] = "struct AB { int a,b; };\n"
-                             "void f() {\n"
-                             "    struct AB ab;\n"
-                             "    return ab;\n"
-                             "}";
-        checkUninitVar(code2, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
-        checkUninitVar(code2, "test.c");
-        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
     }
 
     void uninitvar7() {
