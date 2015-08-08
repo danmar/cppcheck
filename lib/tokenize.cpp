@@ -3456,7 +3456,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove Borland stuff..
     simplifyBorland();
 
-    // Remove __builtin_expect, likely and unlikely
+    // Remove __builtin_expect
     simplifyBuiltinExpect();
 
     if (hasEnumsWithTypedef()) {
@@ -9537,31 +9537,25 @@ void Tokenizer::simplifyBitfields()
 }
 
 
-// Remove __builtin_expect(...), likely(...), and unlikely(...)
+// Remove __builtin_expect(...)
 void Tokenizer::simplifyBuiltinExpect()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok->next(), "__builtin_expect (")) {
-            // Count parentheses for tok2
-            const Token* end = tok->linkAt(2);
-            for (Token *tok2 = tok->tokAt(3); tok2 != end; tok2 = tok2->next()) {
-                if (tok2->str() == "(") {
-                    tok2 = tok2->link();
-                } else if (tok2->str() == ",") {
-                    if (Token::Match(tok2, ", %num% )")) {
-                        tok->deleteNext();
-                        tok2->deleteNext();
-                        tok2->deleteThis();
-                    }
-                    break;
+        if (!Token::simpleMatch(tok->next(), "__builtin_expect ("))
+            continue;
+        // Count parentheses for tok2
+        const Token* end = tok->linkAt(2);
+        for (Token *tok2 = tok->tokAt(3); tok2 != end; tok2 = tok2->next()) {
+            if (tok2->str() == "(") {
+                tok2 = tok2->link();
+            } else if (tok2->str() == ",") {
+                if (Token::Match(tok2, ", %num% )")) {
+                    tok->deleteNext();
+                    tok2->deleteNext();
+                    tok2->deleteThis();
                 }
+                break;
             }
-        } else if (Token::Match(tok->next(), "likely|unlikely (")) {
-            // remove closing ')'
-            tok->linkAt(2)->deleteThis();
-
-            // remove "likely|unlikely ("
-            tok->deleteNext(2);
         }
     }
 }

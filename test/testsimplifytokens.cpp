@@ -856,10 +856,7 @@ private:
 
     void ifa_ifa() {
         ASSERT_EQUALS("int a ; if ( a ) { { ab } cd }", tok("int a ; if (a) { if (a) { ab } cd }", true));
-        ASSERT_EQUALS("int a ; if ( a ) { { ab } cd }", tok("int a ; if (unlikely(a)) { if (a) { ab } cd }", true));
     }
-
-
 
 
     unsigned int sizeofFromTokenizer(const char type[]) {
@@ -3857,8 +3854,6 @@ private:
         ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() override ; };", true));
         ASSERT_EQUALS("class C { int f ( ) ; } ;", tok("class C { int f() final ; };", true));
         ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }", true));
-        ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
-        ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
         ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
         ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", "test.c"));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", "test.c"));

@@ -295,7 +295,7 @@ private:
         TEST_CASE(syntax_error_templates_3); // Ticket #5605, #5759, #5762, #5774
         TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
 
-        TEST_CASE(removeKeywords);
+        TEST_CASE(simplifyBuiltinExpect);
 
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
@@ -4355,7 +4355,7 @@ private:
                              "};");
     }
 
-    void removeKeywords() {
+    void simplifyBuiltinExpect() {
         const char code[] = "if (__builtin_expect(!!(x), 1));";
         ASSERT_EQUALS("if ( ! ! x ) { ; }", tokenizeAndStringify(code, true));
     }

@@ -650,7 +650,7 @@ private:
     void simplifyBitfields();
 
     /**
-     * Remove __builtin_expect(...), likely(...), and unlikely(...)
+     * Remove __builtin_expect(...)
      */
     void simplifyBuiltinExpect();
 
