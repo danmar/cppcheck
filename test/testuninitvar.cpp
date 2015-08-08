@@ -1254,6 +1254,26 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        // array usage in ?: (tests that the isVariableUsed() works)
+        checkUninitVar("void f() {\n"
+                       "    char a[10], *p;\n"
+                       "    p = c?a:0;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    char a[10], c;\n"
+                       "    c = *(x?a:0);\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    char a[10], c;\n"
+                       "    strcpy(dest, x?a:\"\");\n"
+                       "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        // passing array to library functions
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char c[50] = \"\";\n"
