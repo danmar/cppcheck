@@ -130,6 +130,7 @@ void CheckAutoVariables::assignFunctionArg()
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "[;{}] %var% =|++|--") &&
                 isNonReferenceArg(tok->next()) &&
+                !Token::Match(tok->tokAt(2), "= %varid% ;", tok->next()->varId()) &&
                 !variableIsUsedInScope(Token::findsimplematch(tok->tokAt(2), ";"), tok->next()->varId(), scope) &&
                 !Token::findsimplematch(tok, "goto", scope->classEnd)) {
                 if (tok->next()->variable()->isPointer() && printWarning)

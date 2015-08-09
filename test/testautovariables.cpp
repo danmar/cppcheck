@@ -263,6 +263,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
+        check("void foo(char* p) {\n" // don't warn for self assignment, there is another warning for this
+              "  p = p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(char* p) {\n"
               "    if (!p) p = buf;\n"
               "    *p = 0;\n"
