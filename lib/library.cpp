@@ -178,119 +178,17 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (name_char == nullptr)
                 return Error(MISSING_ATTRIBUTE, "name");
             std::string name = name_char;
-
-            for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
-                const std::string functionnodename = functionnode->Name();
-                if (functionnodename == "noreturn")
-                    _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
-                else if (functionnodename == "pure")
-                    functionpure.insert(name);
-                else if (functionnodename == "const") {
-                    functionconst.insert(name);
-                    functionpure.insert(name); // a constant function is pure
-                } else if (functionnodename == "leak-ignore")
-                    leakignore.insert(name);
-                else if (functionnodename == "use-retval")
-                    useretval.insert(name);
-                else if (functionnodename == "arg" && functionnode->Attribute("nr") != nullptr) {
-                    const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
-                    const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
-                    bool notbool = false;
-                    bool notnull = false;
-                    bool notuninit = false;
-                    bool formatstr = false;
-                    bool strz = false;
-                    std::string& valid = argumentChecks[name][nr].valid;
-                    std::list<ArgumentChecks::MinSize>& minsizes = argumentChecks[name][nr].minsizes;
-                    for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
-                        const std::string argnodename = argnode->Name();
-                        if (argnodename == "not-bool")
-                            notbool = true;
-                        else if (argnodename == "not-null")
-                            notnull = true;
-                        else if (argnodename == "not-uninit")
-                            notuninit = true;
-                        else if (argnodename == "formatstr")
-                            formatstr = true;
-                        else if (argnodename == "strz")
-                            strz = true;
-                        else if (argnodename == "valid") {
-                            // Validate the validation expression
-                            const char *p = argnode->GetText();
-                            bool error = false;
-                            bool range = false;
-                            for (; *p; p++) {
-                                if (std::isdigit(*p))
-                                    error |= (*(p+1) == '-');
-                                else if (*p == ':')
-                                    error |= range;
-                                else if (*p == '-')
-                                    error |= (!std::isdigit(*(p+1)));
-                                else if (*p == ',')
-                                    range = false;
-                                else
-                                    error = true;
-
-                                range |= (*p == ':');
-                            }
-                            if (error)
-                                return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
-
-                            // Set validation expression
-                            valid = argnode->GetText();
-                        }
-
-                        else if (argnodename == "minsize") {
-                            const char *typeattr = argnode->Attribute("type");
-                            if (!typeattr)
-                                return Error(MISSING_ATTRIBUTE, "type");
-
-                            ArgumentChecks::MinSize::Type type;
-                            if (strcmp(typeattr,"strlen")==0)
-                                type = ArgumentChecks::MinSize::STRLEN;
-                            else if (strcmp(typeattr,"argvalue")==0)
-                                type = ArgumentChecks::MinSize::ARGVALUE;
-                            else if (strcmp(typeattr,"sizeof")==0)
-                                type = ArgumentChecks::MinSize::SIZEOF;
-                            else if (strcmp(typeattr,"mul")==0)
-                                type = ArgumentChecks::MinSize::MUL;
-                            else
-                                return Error(BAD_ATTRIBUTE_VALUE, typeattr);
-
-                            const char *argattr  = argnode->Attribute("arg");
-                            if (!argattr)
-                                return Error(MISSING_ATTRIBUTE, "arg");
-                            if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
-                                return Error(BAD_ATTRIBUTE_VALUE, argattr);
-
-                            minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
-                            if (type == ArgumentChecks::MinSize::MUL) {
-                                const char *arg2attr  = argnode->Attribute("arg2");
-                                if (!arg2attr)
-                                    return Error(MISSING_ATTRIBUTE, "arg2");
-                                if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
-                                    return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
-                                minsizes.back().arg2 = arg2attr[0] - '0';
-                            }
-                        }
-
-                        else
-                            unknown_elements.insert(argnodename);
-                    }
-                    argumentChecks[name][nr].notbool   = notbool;
-                    argumentChecks[name][nr].notnull   = notnull;
-                    argumentChecks[name][nr].notuninit = notuninit;
-                    argumentChecks[name][nr].formatstr = formatstr;
-                    argumentChecks[name][nr].strz      = strz;
-                } else if (functionnodename == "ignorefunction") {
-                    _ignorefunction.insert(name);
-                } else if (functionnodename == "formatstr") {
-                    const tinyxml2::XMLAttribute* scan = functionnode->FindAttribute("scan");
-                    const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
-                    _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
-                } else
-                    unknown_elements.insert(functionnodename);
+            while (name.find(",") != std::string::npos) {
+                const std::string::size_type pos = name.find(",");
+                const Error &err = loadFunction(node, name.substr(0,pos), unknown_elements);
+                if (err.errorcode != ErrorCode::OK)
+                    return err;
+                name.erase(0,pos+1);
             }
+
+            const Error &err = loadFunction(node, name, unknown_elements);
+            if (err.errorcode != ErrorCode::OK)
+                return err;
         }
 
         else if (nodename == "reflection") {
@@ -577,6 +475,126 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 str += ", ";
         }
         return Error(UNKNOWN_ELEMENT, str);
+    }
+    return Error(OK);
+}
+
+Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements)
+{
+    if (name.empty())
+        return Error(OK);
+
+    for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
+        const std::string functionnodename = functionnode->Name();
+        if (functionnodename == "noreturn")
+            _noreturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
+        else if (functionnodename == "pure")
+            functionpure.insert(name);
+        else if (functionnodename == "const") {
+            functionconst.insert(name);
+            functionpure.insert(name); // a constant function is pure
+        } else if (functionnodename == "leak-ignore")
+            leakignore.insert(name);
+        else if (functionnodename == "use-retval")
+            useretval.insert(name);
+        else if (functionnodename == "arg" && functionnode->Attribute("nr") != nullptr) {
+            const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
+            const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
+            bool notbool = false;
+            bool notnull = false;
+            bool notuninit = false;
+            bool formatstr = false;
+            bool strz = false;
+            std::string& valid = argumentChecks[name][nr].valid;
+            std::list<ArgumentChecks::MinSize>& minsizes = argumentChecks[name][nr].minsizes;
+            for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
+                const std::string argnodename = argnode->Name();
+                if (argnodename == "not-bool")
+                    notbool = true;
+                else if (argnodename == "not-null")
+                    notnull = true;
+                else if (argnodename == "not-uninit")
+                    notuninit = true;
+                else if (argnodename == "formatstr")
+                    formatstr = true;
+                else if (argnodename == "strz")
+                    strz = true;
+                else if (argnodename == "valid") {
+                    // Validate the validation expression
+                    const char *p = argnode->GetText();
+                    bool error = false;
+                    bool range = false;
+                    for (; *p; p++) {
+                        if (std::isdigit(*p))
+                            error |= (*(p+1) == '-');
+                        else if (*p == ':')
+                            error |= range;
+                        else if (*p == '-')
+                            error |= (!std::isdigit(*(p+1)));
+                        else if (*p == ',')
+                            range = false;
+                        else
+                            error = true;
+
+                        range |= (*p == ':');
+                    }
+                    if (error)
+                        return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
+
+                    // Set validation expression
+                    valid = argnode->GetText();
+                }
+
+                else if (argnodename == "minsize") {
+                    const char *typeattr = argnode->Attribute("type");
+                    if (!typeattr)
+                        return Error(MISSING_ATTRIBUTE, "type");
+
+                    ArgumentChecks::MinSize::Type type;
+                    if (strcmp(typeattr,"strlen")==0)
+                        type = ArgumentChecks::MinSize::STRLEN;
+                    else if (strcmp(typeattr,"argvalue")==0)
+                        type = ArgumentChecks::MinSize::ARGVALUE;
+                    else if (strcmp(typeattr,"sizeof")==0)
+                        type = ArgumentChecks::MinSize::SIZEOF;
+                    else if (strcmp(typeattr,"mul")==0)
+                        type = ArgumentChecks::MinSize::MUL;
+                    else
+                        return Error(BAD_ATTRIBUTE_VALUE, typeattr);
+
+                    const char *argattr  = argnode->Attribute("arg");
+                    if (!argattr)
+                        return Error(MISSING_ATTRIBUTE, "arg");
+                    if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                        return Error(BAD_ATTRIBUTE_VALUE, argattr);
+
+                    minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
+                    if (type == ArgumentChecks::MinSize::MUL) {
+                        const char *arg2attr  = argnode->Attribute("arg2");
+                        if (!arg2attr)
+                            return Error(MISSING_ATTRIBUTE, "arg2");
+                        if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                            return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
+                        minsizes.back().arg2 = arg2attr[0] - '0';
+                    }
+                }
+
+                else
+                    unknown_elements.insert(argnodename);
+            }
+            argumentChecks[name][nr].notbool   = notbool;
+            argumentChecks[name][nr].notnull   = notnull;
+            argumentChecks[name][nr].notuninit = notuninit;
+            argumentChecks[name][nr].formatstr = formatstr;
+            argumentChecks[name][nr].strz      = strz;
+        } else if (functionnodename == "ignorefunction") {
+            _ignorefunction.insert(name);
+        } else if (functionnodename == "formatstr") {
+            const tinyxml2::XMLAttribute* scan = functionnode->FindAttribute("scan");
+            const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
+            _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
+        } else
+            unknown_elements.insert(functionnodename);
     }
     return Error(OK);
 }

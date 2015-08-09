@@ -292,23 +292,32 @@ private:
     void function_namespace() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"Foo::foo\">\n"
+                               "  <function name=\"Foo::foo,bar\">\n"
                                "    <noreturn>false</noreturn>\n"
                                "  </function>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
 
-        TokenList tokenList(nullptr);
-        std::istringstream istr("Foo::foo();");
-        tokenList.createTokens(istr);
-
         Library library;
         library.load(doc);
         ASSERT(library.use.empty());
         ASSERT(library.leakignore.empty());
         ASSERT(library.argumentChecks.empty());
-        ASSERT(library.isnotnoreturn(tokenList.front()->tokAt(2)));
+
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("Foo::foo();");
+            tokenList.createTokens(istr);
+            ASSERT(library.isnotnoreturn(tokenList.front()->tokAt(2)));
+        }
+
+        {
+            TokenList tokenList(nullptr);
+            std::istringstream istr("bar();");
+            tokenList.createTokens(istr);
+            ASSERT(library.isnotnoreturn(tokenList.front()));
+        }
     }
 
     void memory() const {

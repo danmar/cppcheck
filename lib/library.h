@@ -33,6 +33,7 @@
 class TokenList;
 namespace tinyxml2 {
     class XMLDocument;
+    class XMLElement;
 }
 
 /// @addtogroup Core
@@ -379,6 +380,9 @@ public:
     }
 
 private:
+    // load a <function> xml node
+    Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
+
     class ExportedFunctions {
     public:
         void addPrefix(const std::string& prefix) {
