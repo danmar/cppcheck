@@ -608,12 +608,27 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     return false;
 }
 
+static std::string functionName(const Token *ftok)
+{
+    if (Token::simpleMatch(ftok->previous(), "."))
+        return "";
+    if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
+        return ftok->str();
+    std::string ret(ftok->str());
+    ftok = ftok->tokAt(-2);
+    while (Token::Match(ftok, "%name% ::")) {
+        ret = ftok->str() + "::" + ret;
+        ftok = ftok->tokAt(-2);
+    }
+    return ret;
+}
+
 const Library::ArgumentChecks * Library::getarg(const Token *ftok, int argnr) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
     std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it1;
-    it1 = argumentChecks.find(ftok->str());
+    it1 = argumentChecks.find(functionName(ftok));
     if (it1 == argumentChecks.end())
         return nullptr;
     const std::map<int,ArgumentChecks>::const_iterator it2 = it1->second.find(argnr);
@@ -678,12 +693,13 @@ const Library::Container* Library::detectContainer(const Token* typeStart) const
     }
     return nullptr;
 }
+
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
     // methods are not library functions
     // called from tokenizer, ast is not created properly yet
-    if (Token::Match(ftok->previous(),"::|."))
+    if (Token::Match(ftok->previous(),"."))
         return true;
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
@@ -701,7 +717,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
         else if (tok->link() && Token::Match(tok, "<|(|["))
             tok = tok->link();
     }
-    const std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it = argumentChecks.find(ftok->str());
+    const std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it = argumentChecks.find(functionName(ftok));
     if (it == argumentChecks.end())
         return (callargs != 0);
     int args = 0;
@@ -720,7 +736,7 @@ bool Library::isnoreturn(const Token *ftok) const
         return true;
     if (isNotLibraryFunction(ftok))
         return false;
-    std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
+    std::map<std::string, bool>::const_iterator it = _noreturn.find(functionName(ftok));
     return (it != _noreturn.end() && it->second);
 }
 
@@ -730,7 +746,7 @@ bool Library::isnotnoreturn(const Token *ftok) const
         return false;
     if (isNotLibraryFunction(ftok))
         return false;
-    std::map<std::string, bool>::const_iterator it = _noreturn.find(ftok->str());
+    std::map<std::string, bool>::const_iterator it = _noreturn.find(functionName(ftok));
     return (it != _noreturn.end() && !it->second);
 }
 
