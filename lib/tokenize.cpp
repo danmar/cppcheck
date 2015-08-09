@@ -9588,21 +9588,21 @@ void Tokenizer::simplifyNamespaceStd()
 
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
-        if (Token::Match(tok, "%name% (") && !Token::Match(tok->previous(), ".|::") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
-            insert = true;
-        else if (Token::Match(tok, "%name% <") && !Token::Match(tok->previous(), ".|::") && stdTemplates.find(tok->str()) != stdTemplates.end())
-            insert = true;
-        else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && !Token::Match(tok->previous(), ".|::") && stdTypes.find(tok->str()) != stdTypes.end())
-            insert = true;
+        if (!Token::Match(tok->previous(), ".|::")) {
+            if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
+                insert = true;
+            else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
+                insert = true;
+            else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
+                insert = true;
+        }
 
         if (insert) {
             tok->previous()->insertToken("std");
             tok->previous()->linenr(tok->linenr()); // For stylistic reasons we put the std:: in the same line as the following token
             tok->previous()->fileIndex(tok->fileIndex());
             tok->previous()->insertToken("::");
-        }
-
-        else if (isCPP11 && Token::Match(tok, "!!:: tr1 ::"))
+        } else if (isCPP11 && Token::Match(tok, "!!:: tr1 ::"))
             tok->next()->str("std");
     }
 
