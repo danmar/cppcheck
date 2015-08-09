@@ -699,7 +699,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
 {
     // methods are not library functions
     // called from tokenizer, ast is not created properly yet
-    if (Token::Match(ftok->previous(),"."))
+    if (Token::simpleMatch(ftok->previous(),"."))
         return true;
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
