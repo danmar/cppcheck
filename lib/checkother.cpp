@@ -313,8 +313,8 @@ void CheckOther::invalidPointerCast()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            const Token* toTok = 0;
-            const Token* nextTok = 0;
+            const Token* toTok = nullptr;
+            const Token* nextTok = nullptr;
             // Find cast
             if (Token::Match(tok, "( const| %type% %type%| const| * )")) {
                 toTok = tok->next();
@@ -349,7 +349,7 @@ void CheckOther::invalidPointerCast()
                 ref = true;
             }
 
-            const Token* fromTok = 0;
+            const Token* fromTok = nullptr;
 
             if (allocation) {
                 fromTok = nextTok->next();
@@ -476,11 +476,11 @@ void CheckOther::checkRedundantAssignment()
         std::map<unsigned int, const Token*> memAssignments;
         std::map<unsigned int, std::set<unsigned int> > membervars;
         std::set<unsigned int> initialized;
-        const Token* writtenArgumentsEnd = 0;
+        const Token* writtenArgumentsEnd = nullptr;
 
         for (const Token* tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
             if (tok == writtenArgumentsEnd)
-                writtenArgumentsEnd = 0;
+                writtenArgumentsEnd = nullptr;
 
             if (tok->str() == "?" && tok->astOperand2()) {
                 tok = Token::findmatch(tok->astOperand2(), ";|}");
@@ -608,27 +608,21 @@ void CheckOther::checkRedundantAssignment()
 
 void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok1);
-    callstack.push_back(tok2);
+    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::performance, "redundantCopy",
                 "Buffer '" + var + "' is being written before its old content has been used.");
 }
 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok1);
-    callstack.push_back(tok2);
+    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::warning, "redundantCopyInSwitch",
                 "Buffer '" + var + "' is being written before its old content has been used. 'break;' missing?");
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok1);
-    callstack.push_back(tok2);
+    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     if (inconclusive)
         reportError(callstack, Severity::performance, "redundantAssignment",
                     "Variable '" + var + "' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
@@ -640,9 +634,7 @@ void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, 
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(tok1);
-    callstack.push_back(tok2);
+    const std::list<const Token *> callstack = make_container< std::list<const Token *> >() << tok1 << tok2;
     reportError(callstack, Severity::warning, "redundantAssignInSwitch",
                 "Variable '" + var + "' is reassigned a value before the old one has been used. 'break;' missing?");
 }
@@ -1881,9 +1873,7 @@ void CheckOther::checkDuplicateBranch()
 
 void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok2);
-    toks.push_back(tok1);
+    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
 
     reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
@@ -2008,7 +1998,9 @@ namespace {
 
 void CheckOther::checkDuplicateExpression()
 {
-    if (!_settings->isEnabled("style"))
+    const bool styleEnabled=_settings->isEnabled("style");
+    const bool warningEnabled=_settings->isEnabled("warning");
+    if (!styleEnabled && !warningEnabled)
         return;
 
     // Parse all executing scopes..
@@ -2031,7 +2023,7 @@ void CheckOther::checkDuplicateExpression()
                 if (isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library.functionpure)) {
                     if (isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
-                        if (assignment)
+                        if (assignment && warningEnabled)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
                         else {
                             if (_tokenizer->isCPP() && _settings->standards.cpp==Standards::CPP11 && tok->str() == "==") {
@@ -2043,11 +2035,12 @@ void CheckOther::checkDuplicateExpression()
                                     continue;
                                 }
                             }
-                            duplicateExpressionError(tok, tok, tok->str());
+                            if (styleEnabled)
+                                duplicateExpressionError(tok, tok, tok->str());
                         }
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer->isCPP(), tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand2()))
+                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer->isCPP(), tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
@@ -2056,7 +2049,7 @@ void CheckOther::checkDuplicateExpression()
                                 // TODO: warn if variables are unchanged. See #5683
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
                                 ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                            else if (isSameExpression(_tokenizer->isCPP(), ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), ast1->astOperand2()))
+                            else if (styleEnabled && isSameExpression(_tokenizer->isCPP(), ast1->astOperand2(), tok->astOperand2(), _settings->library.functionpure) && isWithoutSideEffects(_tokenizer->isCPP(), ast1->astOperand2()))
                                 duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
                             if (!isConstExpression(ast1->astOperand2(), _settings->library.functionpure))
                                 break;
@@ -2064,7 +2057,7 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 }
-            } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
+            } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), temp))
                     duplicateExpressionTernaryError(tok);
             }
@@ -2074,9 +2067,7 @@ void CheckOther::checkDuplicateExpression()
 
 void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok2);
-    toks.push_back(tok1);
+    const std::list<const Token *> toks = make_container< std::list<const Token *> >() << tok2 << tok1;
 
     reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
@@ -2616,4 +2607,3 @@ void CheckOther::raceAfterInterlockedDecrementError(const Token* tok)
     reportError(tok, Severity::error, "raceAfterInterlockedDecrement",
                 "Race condition: non-interlocked access after InterlockedDecrement(). Use InterlockedDecrement() return value instead.");
 }
-
