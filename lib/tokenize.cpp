@@ -3799,7 +3799,7 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
     const bool debug = (simplification != 1U && _settings->debug) ||
                        (simplification != 2U && _settings->debugnormal);
 
-    if (debug) {
+    if (debug && list.front()) {
         list.front()->printOut(0, list.getFiles());
 
         if (_settings->_xml)
