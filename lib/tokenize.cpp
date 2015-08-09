@@ -1911,19 +1911,15 @@ void Tokenizer::combineOperators()
                 tok->deleteNext();
                 continue;
             }
-        }
-
-        else if (tok->str() == ">>" && tok->next()->str() == "=") {
-            tok->str(">>=");
-            tok->deleteNext();
-        }
-
-        else if (tok->str() == "<<" && tok->next()->str() == "=") {
-            tok->str("<<=");
-            tok->deleteNext();
-        }
-
-        else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
+        } else if (tok->next()->str() == "=") {
+            if (tok->str() == ">>") {
+                tok->str(">>=");
+                tok->deleteNext();
+            } else if (tok->str() == "<<") {
+                tok->str("<<=");
+                tok->deleteNext();
+            }
+        } else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
             if (Token::Match(tok, "private|protected|public|__published")) {
                 tok->str(tok->str() + ":");
                 tok->deleteNext();
