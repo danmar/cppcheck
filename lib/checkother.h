@@ -230,8 +230,6 @@ public:
 
     void checkInterlockedDecrement();
 
-    void checkNewAfterDelete();
-
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
