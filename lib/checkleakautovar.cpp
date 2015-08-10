@@ -248,8 +248,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 continue;
 
             // allocation?
-            if (Token::Match(tok->tokAt(2), "%type% (")) {
-                int i = _settings->library.alloc(tok->tokAt(2));
+            if (tok->next()->astOperand2() && Token::Match(tok->next()->astOperand2()->previous(), "%type% (")) {
+                int i = _settings->library.alloc(tok->next()->astOperand2()->previous());
                 if (i > 0) {
                     alloctype[tok->varId()].type = i;
                     alloctype[tok->varId()].status = VarInfo::ALLOC;
