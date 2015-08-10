@@ -650,11 +650,6 @@ private:
     void simplifyBitfields();
 
     /**
-     * Remove __builtin_expect(...)
-     */
-    void simplifyBuiltinExpect();
-
-    /**
      * Remove unnecessary member qualification
      */
     void removeUnnecessaryQualification();

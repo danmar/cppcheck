@@ -3452,9 +3452,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove Borland stuff..
     simplifyBorland();
 
-    // Remove __builtin_expect
-    simplifyBuiltinExpect();
-
     if (hasEnumsWithTypedef()) {
         // #2449: syntax error: enum with typedef in it
         list.deallocateTokens();
@@ -6038,7 +6035,7 @@ void Tokenizer::simplifyIfSameInnerCondition()
 
 // Binary operators simplification map
 namespace {
-    static const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
+    const std::map<std::string, std::string> cAlternativeTokens = make_container< std::map<std::string, std::string> >()
             << std::make_pair("and", "&&")
             << std::make_pair("and_eq", "&=")
             << std::make_pair("bitand", "&")
@@ -7909,14 +7906,14 @@ void Tokenizer::simplifyEnum()
 }
 
 namespace {
-    static const std::set<std::string> f = make_container< std::set<std::string> > () <<
-                                           "strcat" <<
-                                           "strcpy" <<
-                                           "strncat" <<
-                                           "strncpy" <<
-                                           "free" <<
-                                           "malloc" <<
-                                           "strdup";
+    const std::set<std::string> f = make_container< std::set<std::string> > () <<
+                                    "strcat" <<
+                                    "strcpy" <<
+                                    "strncat" <<
+                                    "strncpy" <<
+                                    "free" <<
+                                    "malloc" <<
+                                    "strdup";
 }
 
 void Tokenizer::simplifyStd()
@@ -9199,15 +9196,15 @@ void Tokenizer::simplifyAttribute()
 }
 
 namespace {
-    static const std::set<std::string> keywords = make_container< std::set<std::string> >()
-            << "volatile"
-            << "inline"
-            << "_inline"
-            << "__inline"
-            << "__forceinline"
-            << "register"
-            << "__restrict"
-            << "__restrict__" ;
+    const std::set<std::string> keywords = make_container< std::set<std::string> >()
+                                           << "volatile"
+                                           << "inline"
+                                           << "_inline"
+                                           << "__inline"
+                                           << "__forceinline"
+                                           << "register"
+                                           << "__restrict"
+                                           << "__restrict__" ;
 }
 // Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
@@ -9533,59 +9530,36 @@ void Tokenizer::simplifyBitfields()
 }
 
 
-// Remove __builtin_expect(...)
-void Tokenizer::simplifyBuiltinExpect()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok->next(), "__builtin_expect ("))
-            continue;
-        // Count parentheses for tok2
-        const Token* end = tok->linkAt(2);
-        for (Token *tok2 = tok->tokAt(3); tok2 != end; tok2 = tok2->next()) {
-            if (tok2->str() == "(") {
-                tok2 = tok2->link();
-            } else if (tok2->str() == ",") {
-                if (Token::Match(tok2, ", %num% )")) {
-                    tok->deleteNext();
-                    tok2->deleteNext();
-                    tok2->deleteThis();
-                }
-                break;
-            }
-        }
-    }
-}
-
 namespace {
     // Types and objects in std namespace that are neither functions nor templates
-    static const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
-            "string"<< "wstring"<< "u16string"<< "u32string" <<
-            "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
-            "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
-            "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
-            "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
-            "exception"<< "bad_exception"<< "bad_alloc" <<
-            "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
-            "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
-            "locale" <<
-            "cout"<< "cerr"<< "clog"<< "cin" <<
-            "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
-            "endl"<< "ends"<< "flush" <<
-            "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
-            "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
-            "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
-            "dec"<< "hex"<< "oct" <<
-            "fixed"<< "scientific" <<
-            "internal"<< "left"<< "right" <<
-            "fpos"<< "streamoff"<< "streampos"<< "streamsize";
+    const std::set<std::string> stdTypes = make_container<std::set<std::string> >() <<
+                                           "string"<< "wstring"<< "u16string"<< "u32string" <<
+                                           "iostream"<< "ostream"<< "ofstream"<< "ostringstream" <<
+                                           "istream"<< "ifstream"<< "istringstream"<< "fstream"<< "stringstream" <<
+                                           "wstringstream"<< "wistringstream"<< "wostringstream"<< "wstringbuf" <<
+                                           "stringbuf"<< "streambuf"<< "ios"<< "filebuf"<< "ios_base" <<
+                                           "exception"<< "bad_exception"<< "bad_alloc" <<
+                                           "logic_error"<< "domain_error"<< "invalid_argument_"<< "length_error" <<
+                                           "out_of_range"<< "runtime_error"<< "range_error"<< "overflow_error"<< "underflow_error" <<
+                                           "locale" <<
+                                           "cout"<< "cerr"<< "clog"<< "cin" <<
+                                           "wcerr"<< "wcin"<< "wclog"<< "wcout" <<
+                                           "endl"<< "ends"<< "flush" <<
+                                           "boolalpha"<< "noboolalpha"<< "showbase"<< "noshowbase" <<
+                                           "showpoint"<< "noshowpoint"<< "showpos"<< "noshowpos" <<
+                                           "skipws"<< "noskipws"<< "unitbuf"<< "nounitbuf"<< "uppercase"<< "nouppercase" <<
+                                           "dec"<< "hex"<< "oct" <<
+                                           "fixed"<< "scientific" <<
+                                           "internal"<< "left"<< "right" <<
+                                           "fpos"<< "streamoff"<< "streampos"<< "streamsize";
 
-    static const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
+    const std::set<std::string> stdTemplates = make_container<std::set<std::string> >() <<
             "array"<< "basic_string"<< "bitset"<< "deque"<< "list"<< "map"<< "multimap" <<
             "priority_queue"<< "queue"<< "set"<< "multiset"<< "stack"<< "vector"<< "pair" <<
             "iterator"<< "iterator_traits" <<
             "unordered_map"<< "unordered_multimap"<< "unordered_set"<< "unordered_multiset" <<
             "tuple"<< "function";
-    static const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
+    const std::set<std::string> stdFunctions = make_container<std::set<std::string> >() <<
             "getline" <<
             "for_each"<< "find"<< "find_if"<< "find_end"<< "find_first_of" <<
             "adjacent_find"<< "count"<< "count_if"<< "mismatch"<< "equal"<< "search"<< "search_n" <<
@@ -9721,40 +9695,40 @@ namespace {
         std::string tchar, mbcs, unicode;
     };
 
-    static const std::set<triplet> apis = make_container< std::set<triplet> >() <<
-                                          triplet("_topen", "open", "_wopen") <<
-                                          triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
-                                          triplet("_tfopen", "fopen", "_wfopen") <<
-                                          triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
-                                          triplet("_tfreopen", "freopen", "_wfreopen") <<
-                                          triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
-                                          triplet("_tcscat", "strcat", "wcscat") <<
-                                          triplet("_tcschr", "strchr", "wcschr") <<
-                                          triplet("_tcscmp", "strcmp", "wcscmp") <<
-                                          triplet("_tcsdup", "strdup", "wcsdup") <<
-                                          triplet("_tcscpy", "strcpy", "wcscpy") <<
-                                          triplet("_tcslen", "strlen", "wcslen") <<
-                                          triplet("_tcsncat", "strncat", "wcsncat") <<
-                                          triplet("_tcsncpy", "strncpy", "wcsncpy") <<
-                                          triplet("_tcsnlen", "strnlen", "wcsnlen") <<
-                                          triplet("_tcsrchr", "strrchr", "wcsrchr") <<
-                                          triplet("_tcsstr", "strstr", "wcsstr") <<
-                                          triplet("_tcstok", "strtok", "wcstok") <<
-                                          triplet("_ftprintf", "fprintf", "fwprintf") <<
-                                          triplet("_tprintf", "printf", "wprintf") <<
-                                          triplet("_stprintf", "sprintf", "swprintf") <<
-                                          triplet("_sntprintf", "_snprintf", "_snwprintf") <<
-                                          triplet("_ftscanf", "fscanf", "fwscanf") <<
-                                          triplet("_tscanf", "scanf", "wscanf") <<
-                                          triplet("_stscanf", "sscanf", "swscanf") <<
-                                          triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
-                                          triplet("_tprintf_s", "printf_s", "wprintf_s") <<
-                                          triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
-                                          triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
-                                          triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
-                                          triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
-                                          triplet("_stscanf_s", "sscanf_s", "swscanf_s")
-                                          ;
+    const std::set<triplet> apis = make_container< std::set<triplet> >() <<
+                                   triplet("_topen", "open", "_wopen") <<
+                                   triplet("_tsopen_s", "_sopen_s", "_wsopen_s") <<
+                                   triplet("_tfopen", "fopen", "_wfopen") <<
+                                   triplet("_tfopen_s", "fopen_s", "_wfopen_s") <<
+                                   triplet("_tfreopen", "freopen", "_wfreopen") <<
+                                   triplet("_tfreopen_s", "freopen_s", "_wfreopen_s") <<
+                                   triplet("_tcscat", "strcat", "wcscat") <<
+                                   triplet("_tcschr", "strchr", "wcschr") <<
+                                   triplet("_tcscmp", "strcmp", "wcscmp") <<
+                                   triplet("_tcsdup", "strdup", "wcsdup") <<
+                                   triplet("_tcscpy", "strcpy", "wcscpy") <<
+                                   triplet("_tcslen", "strlen", "wcslen") <<
+                                   triplet("_tcsncat", "strncat", "wcsncat") <<
+                                   triplet("_tcsncpy", "strncpy", "wcsncpy") <<
+                                   triplet("_tcsnlen", "strnlen", "wcsnlen") <<
+                                   triplet("_tcsrchr", "strrchr", "wcsrchr") <<
+                                   triplet("_tcsstr", "strstr", "wcsstr") <<
+                                   triplet("_tcstok", "strtok", "wcstok") <<
+                                   triplet("_ftprintf", "fprintf", "fwprintf") <<
+                                   triplet("_tprintf", "printf", "wprintf") <<
+                                   triplet("_stprintf", "sprintf", "swprintf") <<
+                                   triplet("_sntprintf", "_snprintf", "_snwprintf") <<
+                                   triplet("_ftscanf", "fscanf", "fwscanf") <<
+                                   triplet("_tscanf", "scanf", "wscanf") <<
+                                   triplet("_stscanf", "sscanf", "swscanf") <<
+                                   triplet("_ftprintf_s", "fprintf_s", "fwprintf_s") <<
+                                   triplet("_tprintf_s", "printf_s", "wprintf_s") <<
+                                   triplet("_stprintf_s", "sprintf_s", "swprintf_s") <<
+                                   triplet("_sntprintf_s", "_snprintf_s", "_snwprintf_s") <<
+                                   triplet("_ftscanf_s", "fscanf_s", "fwscanf_s") <<
+                                   triplet("_tscanf_s", "scanf_s", "wscanf_s") <<
+                                   triplet("_stscanf_s", "sscanf_s", "swscanf_s")
+                                   ;
 }
 
 void Tokenizer::simplifyMicrosoftStringFunctions()
