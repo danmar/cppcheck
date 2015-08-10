@@ -127,13 +127,10 @@ void nullpointer(int value){
   // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strstr(0,0);
-  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtoul(0,0,0);
-  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtoull(0,0,0);
-  // cppcheck-suppress ignoredReturnValue
   // cppcheck-suppress nullPointer
   strtol(0,0,0);
 
