@@ -9,23 +9,30 @@ else # assume we are in repo root
 	DIR=./test/cfg/
 fi
 
+# Cppcheck options
+CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr'
+
 # Compiler settings
 CXX=g++
+CXX_OPT='-fsyntax-only'
 CC=gcc
 CC_OPT='-Wno-nonnull -fsyntax-only'
 
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
-${CPPCHECK} --check-library --library=posix --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}posix.c
+${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
 
 # gnu.c
 ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
-${CPPCHECK} --check-library --library=gnu --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr ${DIR}gnu.c
-
-# windows.cpp
-#${CXX} -fsyntax-only ${DIR}windows.cpp
-${CPPCHECK} --check-library --library=windows --enable=information --enable=style --error-exitcode=1 --inline-suppr ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
-${CPPCHECK} --check-library --enable=information --error-exitcode=1 --enable=style --suppress=missingIncludeSystem --inline-suppr ${DIR}std.c
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
+${CXX} ${CXX_OPT} ${DIR}std.cpp
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
+
+# windows.cpp
+#${CXX} -fsyntax-only ${DIR}windows.cpp
+${CPPCHECK} --check-library --enable=information --enable=style --error-exitcode=1 --inline-suppr --library=windows ${DIR}windows.cpp
+
