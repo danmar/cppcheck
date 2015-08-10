@@ -679,6 +679,21 @@ static std::string functionName(const Token *ftok)
     return ret;
 }
 
+/** get allocation id for function */
+int Library::alloc(const Token *tok) const
+{
+    const std::string funcname = functionName(tok);
+    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getid(_alloc, funcname);
+}
+
+/** get deallocation id for function */
+int Library::dealloc(const Token *tok) const
+{
+    const std::string funcname = functionName(tok);
+    return isNotLibraryFunction(tok) && argumentChecks.find(funcname) != argumentChecks.end() ? 0 : getid(_dealloc, funcname);
+}
+
+
 const Library::ArgumentChecks * Library::getarg(const Token *ftok, int argnr) const
 {
     if (isNotLibraryFunction(ftok))
