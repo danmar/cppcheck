@@ -218,7 +218,6 @@ private:
         TEST_CASE(simplifyFunctionParametersErrors);
 
         TEST_CASE(removeParentheses1);       // Ticket #61
-        TEST_CASE(removeParentheses2);
         TEST_CASE(removeParentheses3);
         TEST_CASE(removeParentheses4);       // Ticket #390
         TEST_CASE(removeParentheses5);       // Ticket #392
@@ -294,8 +293,6 @@ private:
         TEST_CASE(syntax_error_templates_2);
         TEST_CASE(syntax_error_templates_3); // Ticket #5605, #5759, #5762, #5774
         TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
-
-        TEST_CASE(simplifyBuiltinExpect);
 
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
@@ -3200,16 +3197,6 @@ private:
         ASSERT_EQUALS("void foo ( ) { free ( p ) ; }", tokenizeAndStringify(code, true));
     }
 
-    void removeParentheses2() {
-        const char code[] = "void foo()"
-                            "{"
-                            "    if (__builtin_expect((s == NULL), 0))"
-                            "        return;"
-                            "}";
-
-        ASSERT_EQUALS("void foo ( ) { if ( s == 0 ) { return ; } }", tokenizeAndStringify(code));
-    }
-
     void removeParentheses3() {
         {
             const char code[] = "void foo()"
@@ -4353,11 +4340,6 @@ private:
                              "template <bool BT> static bool foo(int) { return true; } "
                              "void bar() { bool b = foo<true>(0); }"
                              "};");
-    }
-
-    void simplifyBuiltinExpect() {
-        const char code[] = "if (__builtin_expect(!!(x), 1));";
-        ASSERT_EQUALS("if ( ! ! x ) { ; }", tokenizeAndStringify(code, true));
     }
 
     void simplifyKeyword() {

@@ -21,4 +21,8 @@ void leakReturnValNotUsed() {
    // cppcheck-suppress ignoredReturnValue
    // cppcheck-suppress nullPointer
    strcasestr("test", NULL);
+   
+   // 
+   if (42 == __builtin_expect(42, 0))
+     return;
 }
