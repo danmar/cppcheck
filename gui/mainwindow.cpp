@@ -1113,6 +1113,8 @@ void MainWindow::CheckProject(Project *project)
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
+    else if (rootpath.startsWith("."))
+        mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
 
