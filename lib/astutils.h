@@ -35,6 +35,17 @@ bool astIsIntegral(const Token *tok, bool unknown);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
 
+/**
+ * Get canonical type of expression. const/static/etc are not included and neither *&.
+ * For example:
+ * Expression type      Return
+ * std::string          std::string
+ * int *                int
+ * static const int     int
+ * std::vector<T>       std::vector
+ */
+std::string astCanonicalType(const Token *expr);
+
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 

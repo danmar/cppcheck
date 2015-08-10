@@ -23,6 +23,7 @@
 #include "mathlib.h"
 #include "token.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 
 #include <string>
 #include <algorithm>
@@ -626,8 +627,45 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     return false;
 }
 
+static std::string functionName(const Token *ftok, bool *error)
+{
+    if (!ftok) {
+        *error = true;
+        return "";
+    }
+    if (ftok->isName())
+        return ftok->str();
+    if (ftok->str() == "::") {
+        if (!ftok->astOperand2())
+            return functionName(ftok->astOperand1(), error);
+        return functionName(ftok->astOperand1(),error) + "::" + functionName(ftok->astOperand2(),error);
+    }
+    if (ftok->str() == "." && ftok->astOperand1()) {
+        const std::string type = astCanonicalType(ftok->astOperand1());
+        if (type.empty()) {
+            *error = true;
+            return "";
+        }
+
+        return type + "::" + functionName(ftok->astOperand2(),error);
+    }
+    *error = true;
+    return "";
+}
+
 static std::string functionName(const Token *ftok)
 {
+    if (!Token::Match(ftok, "%name% ("))
+        return "";
+
+    // Lookup function name using AST..
+    if (ftok->astParent()) {
+        bool error = false;
+        std::string ret = functionName(ftok->next()->astOperand1(), &error);
+        return error ? std::string() : ret;
+    }
+
+    // Lookup function name without using AST..
     if (Token::simpleMatch(ftok->previous(), "."))
         return "";
     if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
@@ -715,10 +753,6 @@ const Library::Container* Library::detectContainer(const Token* typeStart) const
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
-    // methods are not library functions
-    // called from tokenizer, ast is not created properly yet
-    if (Token::simpleMatch(ftok->previous(),"."))
-        return true;
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
 

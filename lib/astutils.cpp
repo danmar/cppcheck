@@ -131,6 +131,24 @@ bool astIsFloat(const Token *tok, bool unknown)
     return unknown;
 }
 
+std::string astCanonicalType(const Token *expr)
+{
+    if (!expr)
+        return "";
+    if (expr->variable()) {
+        const Variable *var = expr->variable();
+        std::string ret;
+        for (const Token *type = var->typeStartToken(); Token::Match(type,"%name%|::") && type != var->nameToken(); type = type->next()) {
+            if (!Token::Match(type, "const|static"))
+                ret += type->str();
+        }
+        return ret;
+
+    }
+    // TODO: handle expressions
+    return "";
+}
+
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok)
 {
     if (!tok)
