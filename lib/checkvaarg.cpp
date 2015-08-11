@@ -146,5 +146,5 @@ void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::str
 void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() inbetween.");
+                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.");
 }

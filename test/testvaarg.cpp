@@ -207,7 +207,7 @@ private:
               "    va_start(arg_ptr, szBuffer);\n"
               "    va_end(arg_ptr);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'arg_ptr' without va_end() inbetween.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'arg_ptr' without va_end() in between.\n", errout.str());
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list vl1;\n"
@@ -215,7 +215,7 @@ private:
               "    va_copy(vl1, vl1);\n"
               "    va_end(vl1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'vl1' without va_end() inbetween.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) va_start() or va_copy() called subsequently on 'vl1' without va_end() in between.\n", errout.str());
 
         check("void Format(char* szFormat, char (*szBuffer)[_Size], ...) {\n"
               "    va_list arg_ptr;\n"
