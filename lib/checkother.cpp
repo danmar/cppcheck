@@ -2092,7 +2092,7 @@ void CheckOther::selfAssignmentError(const Token *tok, const std::string &varnam
 // Check is a comparison of two variables leads to condition, which is
 // always true or false.
 // For instance: int a = 1; if(isless(a,a)){...}
-// In this case isless(a,a) evaluates always to false.
+// In this case isless(a,a) always evaluates to false.
 //
 // Reference:
 // - http://www.cplusplus.com/reference/cmath/
@@ -2131,7 +2131,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* to
 {
     const std::string strResult = result ? "true" : "false";
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
-                "Comparison of two identical variables with " + functionName + "(" + varName + "," + varName + ") evaluates always to " + strResult + ".\n"
+                "Comparison of two identical variables with " + functionName + "(" + varName + "," + varName + ") always evaluates to " + strResult + ".\n"
                 "The function " + functionName + " is designed to compare two variables. Calling this function with one variable (" + varName + ") "
                 "for both parameters leads to a statement which is always " + strResult + ".");
 }
