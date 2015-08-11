@@ -36,12 +36,13 @@ Library::Error Library::load(const char exename[], const char path[])
 {
     if (std::strchr(path,',') != nullptr) {
         std::string p(path);
-        while (p.find(",") != std::string::npos) {
-            const std::string::size_type pos = p.find(",");
+        std::string::size_type pos = p.find(',');
+        while (pos != std::string::npos) {
             const Error &e = load(exename, p.substr(0,pos).c_str());
             if (e.errorcode != OK)
                 return e;
             p = p.substr(pos+1);
+            pos = p.find(',');
         }
         if (!p.empty())
             return load(exename, p.c_str());
@@ -111,11 +112,11 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         return Error(UNSUPPORTED_FORMAT, rootnode->Name());
 
     const char* format_string = rootnode->Attribute("format");
-    int format = 1;
+    int format = 1; // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
     if (format_string)
         format = atoi(format_string);
 
-    if (format > 1)
+    if (format > 2 || format <= 0)
         return Error(UNSUPPORTED_FORMAT);
 
     std::set<std::string> unknown_elements;
