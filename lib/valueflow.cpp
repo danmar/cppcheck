@@ -1354,9 +1354,6 @@ static bool valueFlowForward(Token * const               startToken,
 
             // increment/decrement
             if (Token::Match(tok2->previous(), "++|-- %name%") || Token::Match(tok2, "%name% ++|--")) {
-                const bool pre   = Token::Match(tok2->previous(), "++|--");
-                Token * const op = pre ? tok2->previous() : tok2->next();
-                const bool inc   = (op->str() == "++");
                 std::list<ValueFlow::Value>::iterator it;
                 // Erase values that are not int values..
                 for (it = values.begin(); it != values.end();) {
@@ -1370,6 +1367,9 @@ static bool valueFlowForward(Token * const               startToken,
                         bailout(tokenlist, errorLogger, tok2, "increment/decrement of " + tok2->str());
                     return false;
                 }
+                const bool pre   = Token::Match(tok2->previous(), "++|--");
+                Token * const op = pre ? tok2->previous() : tok2->next();
+                const bool inc   = (op->str() == "++");
                 // Perform increment/decrement..
                 for (it = values.begin(); it != values.end(); ++it) {
                     if (!pre)
