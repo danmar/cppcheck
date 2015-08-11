@@ -30,6 +30,14 @@ public:
         data_.insert(data_.end(), val);
         return *this;
     }
+    my_type& operator<< (T&& val) {
+        data_.insert(data_.end(), val);
+        return *this;
+    }
+    my_type& operator<< (const char* val) {
+        data_.insert(data_.end(), val);
+        return *this;
+    }
     operator Cont() const {
         return data_;
     }
