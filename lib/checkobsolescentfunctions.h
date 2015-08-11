@@ -45,7 +45,6 @@ public:
     /** This constructor is used when running checks. */
     CheckObsoleteFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {
-        initObsoleteFunctions();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
@@ -58,9 +57,9 @@ public:
 
 private:
     /* function name / error message */
-    std::map<std::string, std::string> _obsoleteStandardFunctions;
-    std::map<std::string, std::string> _obsoletePosixFunctions;
-    std::map<std::string, std::string> _obsoleteC99Functions;
+    static std::map<std::string, std::string> _obsoleteStandardFunctions;
+    static std::map<std::string, std::string> _obsoletePosixFunctions;
+    static std::map<std::string, std::string> _obsoleteC99Functions;
 
     /** init obsolete functions list ' */
     void initObsoleteFunctions() {
@@ -125,10 +124,12 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckObsoleteFunctions c(0, settings, errorLogger);
 
-        std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
-        for (; it!=itend; ++it) {
-            c.reportError(0, Severity::style, "obsoleteFunctions"+it->first, it->second);
-        }
+        for (std::map<std::string, std::string>::const_iterator it = _obsoleteStandardFunctions.begin(); it != _obsoleteStandardFunctions.end(); ++it)
+            c.reportError(0, Severity::style, "obsoleteFunctions" + it->first, it->second);
+        for (std::map<std::string, std::string>::const_iterator it = _obsoleteC99Functions.begin(); it != _obsoleteC99Functions.end(); ++it)
+            c.reportError(0, Severity::style, "obsoleteFunctions" + it->first, it->second);
+        for (std::map<std::string, std::string>::const_iterator it = _obsoletePosixFunctions.begin(); it != _obsoletePosixFunctions.end(); ++it)
+            c.reportError(0, Severity::style, "obsoleteFunctions" + it->first, it->second);
     }
 
     static std::string myName() {
@@ -137,10 +138,12 @@ private:
 
     std::string classInfo() const {
         std::string info = "Warn if any of these obsolete functions are used:\n";
-        std::map<std::string,std::string>::const_iterator it(_obsoletePosixFunctions.begin()), itend(_obsoletePosixFunctions.end());
-        for (; it!=itend; ++it) {
+        for (std::map<std::string, std::string>::const_iterator it = _obsoleteStandardFunctions.begin(); it != _obsoleteStandardFunctions.end(); ++it)
             info += "- " + it->first + "\n";
-        }
+        for (std::map<std::string, std::string>::const_iterator it = _obsoleteC99Functions.begin(); it != _obsoleteC99Functions.end(); ++it)
+            info += "- " + it->first + "\n";
+        for (std::map<std::string, std::string>::const_iterator it = _obsoletePosixFunctions.begin(); it != _obsoletePosixFunctions.end(); ++it)
+            info += "- " + it->first + "\n";
         return info;
     }
 };

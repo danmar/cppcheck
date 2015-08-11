@@ -251,8 +251,10 @@ private:
         check("void f(char * str)\n"
               "{\n"
               "    char *x = std::gets(str);\n"
+              "    char *y = gets(str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
+                      "[test.cpp:4]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
     }
 
     // multiple use

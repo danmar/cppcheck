@@ -25,6 +25,10 @@
 
 //---------------------------------------------------------------------------
 
+std::map<std::string, std::string> CheckObsoleteFunctions::_obsoleteStandardFunctions;
+std::map<std::string, std::string> CheckObsoleteFunctions::_obsoletePosixFunctions;
+std::map<std::string, std::string> CheckObsoleteFunctions::_obsoleteC99Functions;
+
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -39,19 +43,11 @@ void CheckObsoleteFunctions::obsoleteFunctions()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const bool cStandard = _settings->standards.c >= Standards::C99 ;
 
-    // Functions defined somewhere?
-    for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
-        _obsoleteStandardFunctions.erase(scope->className);
-        _obsoletePosixFunctions.erase(scope->className);
-        _obsoleteC99Functions.erase(scope->className);
-    }
-
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (tok->isName() && tok->varId()==0 && (tok->next() && tok->next()->str() == "(") &&
-                (!Token::Match(tok->previous(), ".|::") || Token::simpleMatch(tok->tokAt(-2), "std ::"))) {
+            if (tok->isName() && tok->varId()==0 && (!tok->function() || !tok->function()->hasBody()) && tok->strAt(1) == "(" &&
+                tok->strAt(-1) != "." && (!Token::Match(tok->tokAt(-2), "%name% ::") || Token::simpleMatch(tok->tokAt(-2), "std ::"))) {
 
                 std::map<std::string,std::string>::const_iterator it = _obsoleteStandardFunctions.find(tok->str());
                 if (it != _obsoleteStandardFunctions.end()) {
