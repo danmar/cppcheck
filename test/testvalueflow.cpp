@@ -1283,6 +1283,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 5));
 
+        code = "void f(int x) {\n" // #6730
+               "  if (x == 5) {\n"
+               "    if (z) continue; else throw e;\n"
+               "  }\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 5));
+
         // TODO: float
         code = "void f(float x) {\n"
                "  if (x == 0.5) {}\n"

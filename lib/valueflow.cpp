@@ -262,7 +262,7 @@ static bool isReturn(const Token *tok)
             return true;
         // return/goto statement
         prev = prev->previous();
-        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw"))
+        while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))
             prev = prev->previous();
         return prev && prev->isName();
     }
