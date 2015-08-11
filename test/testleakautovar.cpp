@@ -1068,10 +1068,13 @@ private:
 
     void test5() { // unknown type
         check("void f() { Fred *p = malloc(10); }", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Memory leak: p\n", errout.str());
 
         check("void f() { Fred *p = malloc(10); }", false);
         ASSERT_EQUALS("[test.c:1]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() { Fred *p = new Fred; }", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throw1() { // 3987 - Execution reach a 'throw'
