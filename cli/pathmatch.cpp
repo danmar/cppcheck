@@ -17,6 +17,7 @@
  */
 
 #include "pathmatch.h"
+#include "path.h"
 #include <algorithm>
 #include <ctype.h>
 
@@ -36,7 +37,7 @@ bool PathMatch::Match(const std::string &path) const
     for (std::vector<std::string>::const_iterator iterMask = _masks.begin(); iterMask != _masks.end(); ++iterMask) {
         const std::string& mask(*iterMask);
 
-        std::string findpath(path);
+        std::string findpath = Path::fromNativeSeparators(path);
         if (!_caseSensitive)
             std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
 
