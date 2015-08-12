@@ -2032,11 +2032,11 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
         if (!Token::Match(scope->classDef, "switch ( %var% ) {"))
             continue;
         const Token *vartok = scope->classDef->tokAt(2);
-        if (!vartok->variable())
+        const Variable *var = vartok->variable();
+        if (!var)
             continue;
 
         // bailout: global non-const variables
-        const Variable *var = vartok->variable();
         if (!(var->isLocal() || var->isArgument()) && !var->isConst()) {
             if (settings->debugwarnings)
                 bailout(tokenlist, errorLogger, vartok, "switch variable " + var->name() + " is global");
