@@ -316,12 +316,12 @@ private:
     }
 
     void readCode2() {
-        const char code[] = "R\"( \" /* abc */ \n)\";";
+        const char code[] = "R\"( \" \\ ' /* abc */ \n)\";";
         Settings settings;
         Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
-        ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n;", codestr);
+        ASSERT_EQUALS("\" \\\" \\\\ ' /* abc */ \\n\"\n;", codestr);
     }
 
     void readCode3() {

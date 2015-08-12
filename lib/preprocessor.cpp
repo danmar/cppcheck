@@ -690,7 +690,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             else if (str.compare(i,2,"R\"")==0) {
                 std::string delim;
                 for (std::string::size_type i2 = i+2; i2 < str.length(); ++i2) {
-                    if (i2 > 16 ||
+                    if (i2 > 16 + i ||
                         std::isspace(str[i2]) ||
                         std::iscntrl(str[i2]) ||
                         str[i2] == ')' ||
@@ -713,7 +713,9 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                         } else if (std::iscntrl((unsigned char)str[p]) ||
                                    std::isspace((unsigned char)str[p])) {
                             code << " ";
-                        } else if (str[p] == '\"' || str[p] == '\'') {
+                        } else if (str[p] == '\\') {
+                            code << "\\\\";
+                        } else if (str[p] == '\"') {
                             code << "\\" << (char)str[p];
                         } else {
                             code << (char)str[p];
