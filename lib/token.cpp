@@ -1202,6 +1202,33 @@ std::string Token::expressionString() const
         }
         end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
     }
+
+    // move start to lpar in such expression: '(*it).x'
+    int par = 0;
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->str() == "(")
+            ++par;
+        else if (tok->str() == ")") {
+            if (par == 0)
+                start = tok->link();
+            else
+                --par;
+        }
+    }
+
+    // move end to rpar in such expression: '2>(x+1)'
+    par = 0;
+    for (const Token *tok = end; tok != start; tok = tok->previous()) {
+        if (tok->str() == ")")
+            ++par;
+        else if (tok->str() == "(") {
+            if (par == 0)
+                end = tok->link();
+            else
+                --par;
+        }
+    }
+
     std::string ret;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         ret += tok->str();

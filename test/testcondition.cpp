@@ -1418,6 +1418,17 @@ private:
               "  if (x>0 || (x<0 && y)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Test Token::expressionString, TODO move this test
+        check("void f() {\n"
+              "  if (!dead || (dead && (*it).ticks > 0)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: dead. '!dead || (dead && (*it).ticks>0)' is equivalent to '!dead || (*it).ticks>0'\n", errout.str());
+
+        check("void f() {\n"
+              "  if (!x || (x && (2>(y-1)))) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: x. '!x || (x && 2>(y-1))' is equivalent to '!x || 2>(y-1)'\n", errout.str());
     }
 
 // clarify conditions with bitwise operator and comparison
