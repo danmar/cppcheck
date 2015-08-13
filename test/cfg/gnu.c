@@ -9,20 +9,21 @@
 
 #include <string.h>
 
-void leakReturnValNotUsed() {
-   // cppcheck-suppress unreadVariable
-   char* ptr = (char*)strdupa("test");
-   // cppcheck-suppress ignoredReturnValue
-   strdupa("test");
-   // cppcheck-suppress unreadVariable
-   char* ptr2 = (char*)strndupa("test", 1);
-   // cppcheck-suppress ignoredReturnValue
-   strndupa("test", 1);
-   // cppcheck-suppress ignoredReturnValue
-   // cppcheck-suppress nullPointer
-   strcasestr("test", NULL);
-   
-   // 
-   if (42 == __builtin_expect(42, 0))
-     return;
+void leakReturnValNotUsed()
+{
+    // cppcheck-suppress unreadVariable
+    char* ptr = (char*)strdupa("test");
+    // cppcheck-suppress ignoredReturnValue
+    strdupa("test");
+    // cppcheck-suppress unreadVariable
+    char* ptr2 = (char*)strndupa("test", 1);
+    // cppcheck-suppress ignoredReturnValue
+    strndupa("test", 1);
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress nullPointer
+    strcasestr("test", NULL);
+
+    //
+    if (42 == __builtin_expect(42, 0))
+        return;
 }

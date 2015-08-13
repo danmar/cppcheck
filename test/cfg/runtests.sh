@@ -10,7 +10,7 @@ else # assume we are in repo root
 fi
 
 # Cppcheck options
-CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr'
+CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++

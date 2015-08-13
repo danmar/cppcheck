@@ -10,16 +10,52 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
+#include <cctype>
 
-void bufferAccessOutOf(void) {
-  char a[5];
-  std::strcpy(a,"abcd");
-  // cppcheck-suppress bufferAccessOutOfBounds
-  // cppcheck-suppress redundantCopy
-  std::strcpy(a, "abcde");
-  // cppcheck-suppress redundantCopy
-  std::strncpy(a,"abcde",5);
-  // cppcheck-suppress bufferAccessOutOfBounds
-  // cppcheck-suppress redundantCopy
-  std::strncpy(a,"abcde",6);
+void bufferAccessOutOfBounds(void)
+{
+    char a[5];
+    std::strcpy(a,"abcd");
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress redundantCopy
+    std::strcpy(a, "abcde");
+    // cppcheck-suppress redundantCopy
+    std::strncpy(a,"abcde",5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress redundantCopy
+    std::strncpy(a,"abcde",6);
+}
+
+void uninitvar(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::abs(i);
+
+    // cppcheck-suppress uninitvar
+    std::isalnum(i);
+    // cppcheck-suppress uninitvar
+    std::isalpha(i);
+    // cppcheck-suppress uninitvar
+    std::iscntrl(i);
+    // cppcheck-suppress uninitvar
+    std::isdigit(i);
+    // cppcheck-suppress uninitvar
+    std::isgraph(i);
+    // cppcheck-suppress uninitvar
+    std::islower(i);
+    // cppcheck-suppress uninitvar
+    std::isprint(i);
+    // cppcheck-suppress uninitvar
+    std::isspace(i);
+    // cppcheck-suppress uninitvar
+    std::isupper(i);
+    // cppcheck-suppress uninitvar
+    std::isxdigit(i);
+
+    const struct tm *tm;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress obsoleteFunctionsasctime
+    std::asctime(tm);
 }
