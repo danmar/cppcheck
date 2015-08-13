@@ -3,6 +3,7 @@ set -e
 make clean
 rm -rf coverage_report
 make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage"
+test/cfg/runtests.sh
 gcov lib/*.cpp -o lib/
 lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
 lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
