@@ -37,7 +37,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="mEditDefines"/>
+          <widget class="QLineEdit" name="mEditDefines">
+           <property name="toolTip">
+            <string>Defines must be separated by a semicolon ';'</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
