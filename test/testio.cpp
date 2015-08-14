@@ -44,7 +44,6 @@ private:
 
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
-        TEST_CASE(testScanf3);
         TEST_CASE(testScanf4); // #ticket 2553
 
         TEST_CASE(testScanfArgument);
@@ -700,20 +699,6 @@ private:
               "    scanf(\"%*[^~]\");\n" // Ignore input
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout.str());
-    }
-
-    void testScanf3() {
-        check("void foo() {\n"
-              "    scanf(\"%d\", &a);\n"
-              "    scanf(\"%n\", &a);\n" // No warning on %n, since it doesn't expect user input
-              "    scanf(\"%c\", &c);\n" // No warning on %c; it expects only one character
-              "}", false, true, Settings::Unspecified);
-        ASSERT_EQUALS("[test.cpp:2]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.\n", errout.str());
-
-        check("void foo() {\n"
-              "    scanf(\"%d\", &a);\n"
-              "}", false, true, Settings::Win32A);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void testScanf4() { // ticket #2553

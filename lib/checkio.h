@@ -102,7 +102,7 @@ private:
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
     void seekOnAppendedFileError(const Token *tok);
-    void invalidScanfError(const Token *tok, bool portability);
+    void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
                                         unsigned int numFormat,
@@ -133,8 +133,7 @@ private:
         c.writeReadOnlyFileError(0);
         c.useClosedFileError(0);
         c.seekOnAppendedFileError(0);
-        c.invalidScanfError(0, false);
-        c.invalidScanfError(0, true);
+        c.invalidScanfError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
         c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
