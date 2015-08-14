@@ -98,6 +98,7 @@ private:
         TEST_CASE(returnReference7);
         TEST_CASE(returnReferenceLiteral);
         TEST_CASE(returnReferenceCalculation);
+        TEST_CASE(returnReferenceLambda);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -954,6 +955,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void returnReferenceLambda() {
+        // #6787
+        check("const Item& foo(const Container& items) const {\n"
+              "    return bar(items.begin(), items.end(),\n"
+              "    [](const Item& lhs, const Item& rhs) {\n"
+              "        return false;\n"
+              "    });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void testglobalnamespace() {
         check("class SharedPtrHolder\n"
