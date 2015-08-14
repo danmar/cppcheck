@@ -815,18 +815,20 @@ void CheckClass::initializationListUsage()
                 break;
             if (Token::Match(tok, "try|do {"))
                 break;
-            if (Token::Match(tok, "%var% = %any%")) {
+            if (Token::Match(tok, "%var% = %any%") && tok->strAt(-1) != "*") {
                 const Variable* var = tok->variable();
                 if (var && var->scope() == owner && !var->isStatic()) {
+                    if (var->isPointer() || var->isReference() || (!var->type() && !var->isStlStringType() && !(Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::"))))
+                        continue;
+
                     bool allowed = true;
                     for (const Token* tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                        if (tok2->varId()) {
-                            const Variable* var2 = tok2->variable();
-                            if (var2 && var2->scope() == owner &&
-                                tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
+                        const Variable* var2 = tok2->variable();
+                        if (var2) {
+                            if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
                                 allowed = false;
                                 break;
-                            } else if (var2 && (var2->isArray() && var2->isLocal())) { // Can't initialize with a local array
+                            } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
                                 allowed = false;
                                 break;
                             }
@@ -840,8 +842,8 @@ void CheckClass::initializationListUsage()
                     }
                     if (!allowed)
                         continue;
-                    if (!var->isPointer() && !var->isReference() && (var->type() || var->isStlStringType() || (Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::"))))
-                        suggestInitializationList(tok, tok->str());
+
+                    suggestInitializationList(tok, tok->str());
                 }
             }
         }

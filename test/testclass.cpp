@@ -5958,6 +5958,14 @@ private:
                                      "    }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class B {\n" // #5640
+                                     "    std::shared_ptr<A> _d;\n"
+                                     "    B(const B& other) : _d(std::make_shared<A>()) {\n"
+                                     "        *_d = *other._d;\n"
+                                     "    }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

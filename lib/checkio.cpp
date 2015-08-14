@@ -415,28 +415,28 @@ void CheckIO::invalidScanf()
 void CheckIO::invalidScanfError(const Token *tok)
 {
 
-        reportError(tok, Severity::warning,
-                    "invalidscanf", "scanf without field width limits can crash with huge input data.\n"
-                    "scanf without field width limits can crash with huge input data. Add a field width "
-                    "specifier to fix this problem:\n"
-                    "    %s => %20s\n"
-                    "\n"
-                    "Sample program that can crash:\n"
-                    "\n"
-                    "#include <stdio.h>\n"
-                    "int main()\n"
-                    "{\n"
-                    "    char c[5];\n"
-                    "    scanf(\"%s\", c);\n"
-                    "    return 0;\n"
-                    "}\n"
-                    "\n"
-                    "Typing in 5 or more characters may make the program crash. The correct usage "
-                    "here is 'scanf(\"%4s\", c);', as the maximum field width does not include the "
-                    "terminating null byte.\n"
-                    "Source: http://linux.die.net/man/3/scanf\n"
-                    "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c"
-                   );
+    reportError(tok, Severity::warning,
+                "invalidscanf", "scanf without field width limits can crash with huge input data.\n"
+                "scanf without field width limits can crash with huge input data. Add a field width "
+                "specifier to fix this problem:\n"
+                "    %s => %20s\n"
+                "\n"
+                "Sample program that can crash:\n"
+                "\n"
+                "#include <stdio.h>\n"
+                "int main()\n"
+                "{\n"
+                "    char c[5];\n"
+                "    scanf(\"%s\", c);\n"
+                "    return 0;\n"
+                "}\n"
+                "\n"
+                "Typing in 5 or more characters may make the program crash. The correct usage "
+                "here is 'scanf(\"%4s\", c);', as the maximum field width does not include the "
+                "terminating null byte.\n"
+                "Source: http://linux.die.net/man/3/scanf\n"
+                "Source: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/libkern/stdio/scanf.c"
+               );
 }
 
 //---------------------------------------------------------------------------
