@@ -71,6 +71,7 @@ private:
         TEST_CASE(nullpointer26); // #3589
         TEST_CASE(nullpointer27); // #6568
         TEST_CASE(nullpointer28); // #6491
+        TEST_CASE(nullpointer29); // #5238
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1303,6 +1304,23 @@ private:
               "}\n"
               "int main(){f(0);}\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: s\n", errout.str());
+    }
+
+    void nullpointer29() { // #5238
+        check("struct SomeStruct\n"
+              "{\n"
+              "    bool item;\n"
+              "};\n"
+              "bool f1(bool bFlag)\n"
+              "{\n"
+              "    SomeStruct *s = 0;\n"
+              "    if (bFlag)\n"
+              "    {\n"
+              "        s = new SomeStruct;\n"
+              "    }\n"
+              "    return s != 0 || (s != 0 && !s->item);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:12]: (warning) Either the condition 's!=0' is redundant or there is possible null pointer dereference: s.\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
