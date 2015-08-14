@@ -86,6 +86,7 @@ private:
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
         TEST_CASE(template55);  // #6604 - simplify "const const" to "const" in template instantiations
+        TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -994,6 +995,43 @@ private:
                 "    }\n"
                 "};\n"
                 "A<int> a(0);"));
+    }
+
+    void template_enum() {
+        const char code1[] = "template <class T>\n"
+                             "struct Unconst {\n"
+                             "    typedef T type;\n"
+                             "};\n"
+                             "template <class T>\n"
+                             "struct Unconst<const T> {\n"
+                             "    typedef T type;\n"
+                             "};\n"
+                             "template <class T>\n"
+                             "struct Unconst<const T&> {\n"
+                             "    typedef T& type;\n"
+                             "};\n"
+                             "template <class T>\n"
+                             "struct Unconst<T* const> {\n"
+                             "    typedef T* type;\n"
+                             "};\n"
+                             "template <class T1, class T2>\n"
+                             "struct type_equal {\n"
+                             "    enum {  value = 0   };\n"
+                             "};\n"
+                             "template <class T>\n"
+                             "struct type_equal<T, T> {\n"
+                             "    enum {  value = 1   };\n"
+                             "};\n"
+                             "template<class T>\n"
+                             "struct template_is_const\n"
+                             "{\n"
+                             "    enum {value = !type_equal<T, typename Unconst<T>::type>::value  };\n"
+                             "};";
+        const char expected1[]="template < class T > struct Unconst { } ; template < class T > struct type_equal<T,T> { } ;"
+                               "template < class T > struct template_is_const { } ; struct type_equal<T,T> { } ; struct Unconst<constT*const> { } ;"
+                               "struct Unconst<constT&*const> { } ; struct Unconst<T*const*const> { } ; struct Unconst<T*const> { } ; struct Unconst<T*const> { } ;"
+                               "struct Unconst<T*const> { } ; struct Unconst<constT&><};template<T> { } ; struct Unconst<constT><};template<T> { } ;";
+        ASSERT_EQUALS(expected1, tok(code1));
     }
 
     void template_default_parameter() {

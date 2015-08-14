@@ -496,7 +496,7 @@ public:
      *   ...
      *   const char *str[] = {"string", "wstring"};
      *   sVar->isStlType(str) == true
-     * @param stlTypes set of stl types
+     * @param stlType stl type
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     bool isStlType(const std::string& stlType) const {
