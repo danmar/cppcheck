@@ -72,6 +72,7 @@ private:
         TEST_CASE(nullpointer27); // #6568
         TEST_CASE(nullpointer28); // #6491
         TEST_CASE(nullpointer29); // #5238
+        TEST_CASE(nullpointer30); // #6392
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1321,6 +1322,21 @@ private:
               "    return s != 0 || (s != 0 && !s->item);\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:12]: (warning) Either the condition 's!=0' is redundant or there is possible null pointer dereference: s.\n", errout.str());
+    }
+
+    void nullpointer30() { // #6392
+        check("void f(std::vector<std::string> *values)\n"
+              "{\n"
+              "  values->clear();\n"
+              "  if (values) \n"
+              "  {\n"
+              "    for (int i = 0; i < values->size(); ++i)\n"
+              "    {\n"
+              "      values->push_back(\"test\");\n"
+              "    }\n"
+              "  }\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning, inconclusive) Either the condition 'if(values)' is redundant or there is possible null pointer dereference: values.\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
