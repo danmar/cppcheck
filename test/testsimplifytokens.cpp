@@ -194,6 +194,7 @@ private:
         TEST_CASE(enum41); // ticket #5212 (valgrind errors during enum simplification)
         TEST_CASE(enum42); // ticket #5182 (template function call in enum value)
         TEST_CASE(enum43); // lhs in assignment
+        TEST_CASE(enum44);
         TEST_CASE(enumscope1); // ticket #3949
         TEST_CASE(duplicateDefinition); // ticket #3565
         TEST_CASE(invalid_enum); // #5600
@@ -3407,6 +3408,16 @@ private:
         const char code[] = "enum { A, B };\n"
                             "A = 1;";
         ASSERT_EQUALS("A = 1 ;", checkSimplifyEnum(code));
+    }
+
+    void enum44() {
+        const char code1[] = "enum format_t { YYYYMMDD = datemask_traits< datemask<'Y', 'Y', 'Y', 'Y', '/', 'M', 'M', '/', 'D', 'D'> >::value, };\n"
+                             "YYYYMMDD;";
+        ASSERT_EQUALS("( datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ) ;", checkSimplifyEnum(code1));
+
+        const char code2[] = "enum format_t { YYYYMMDD = datemask_traits< datemask<'Y', 'Y', 'Y', 'Y', '/', 'M', 'M', '/', 'D', 'D'>>::value, };\n"
+                             "YYYYMMDD;";
+        ASSERT_EQUALS("( datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ) ;", checkSimplifyEnum(code2));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function

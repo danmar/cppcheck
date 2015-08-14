@@ -7585,18 +7585,11 @@ void Tokenizer::simplifyEnum()
                             if (Token::Match(enumValueEnd, "(|[")) {
                                 enumValueEnd = enumValueEnd->link();
                                 continue;
-                            } else if (isCPP() && Token::Match(enumValueEnd, "%type% <") && TemplateSimplifier::templateParameters(enumValueEnd->next()) > 1U) {
-                                Token *endtoken = enumValueEnd->next();
-                                do {
-                                    endtoken = endtoken->next();
-                                    if (Token::Match(endtoken, "*|,|::|typename"))
-                                        endtoken = endtoken->next();
-                                    if (endtoken->str() == "<" && TemplateSimplifier::templateParameters(endtoken))
-                                        endtoken = endtoken->findClosingBracket();
-                                } while (Token::Match(endtoken, "%name%|%num% *| [,>]") || Token::Match(endtoken, "%name%|%num% ::|< %any%"));
-                                if (endtoken->str() == ">") {
+                            } else if (isCPP() && Token::Match(enumValueEnd, "%type% <") && TemplateSimplifier::templateParameters(enumValueEnd->next()) >= 1U) {
+                                Token *endtoken = enumValueEnd->next()->findClosingBracket();
+                                if (endtoken) {
                                     enumValueEnd = endtoken;
-                                    if (Token::simpleMatch(endtoken, "> ( )"))
+                                    if (Token::Match(endtoken, ">|>> ( )"))
                                         enumValueEnd = enumValueEnd->next();
                                 } else {
                                     syntaxError(enumValueEnd);
@@ -8796,7 +8789,7 @@ void Tokenizer::simplifyConst()
             tok->swapWithNext();
         } else if (Token::Match(tok, "%type% const") &&
                    (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
-                   tok->str().find(":") == std::string::npos &&
+                   tok->str().find(':') == std::string::npos &&
                    tok->str() != "operator") {
             tok->swapWithNext();
         }
