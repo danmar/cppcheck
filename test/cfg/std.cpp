@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cctype>
+#include <complex>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -32,6 +33,11 @@ void uninitvar(void)
     int i;
     // cppcheck-suppress uninitvar
     std::abs(i);
+
+    double d;
+    const std::complex<double> dc(d,d);
+    // cppcheck-suppress uninitvar
+    std::proj(dc);
 
     // cppcheck-suppress uninitvar
     std::isalnum(i);

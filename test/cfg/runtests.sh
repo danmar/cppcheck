@@ -14,7 +14,7 @@ CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitco
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only'
+CXX_OPT='-fsyntax-only -std=c++0x'
 CC=gcc
 CC_OPT='-Wno-nonnull -fsyntax-only'
 
