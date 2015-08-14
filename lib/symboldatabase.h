@@ -975,13 +975,6 @@ public:
         return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
     }
 
-    bool isClassOrStruct(const std::string &type) const {
-        for (std::list<Type>::const_iterator i = typeList.begin(); i != typeList.end(); ++i)
-            if (i->name() == type)
-                return true;
-        return false;
-    }
-
     const Variable *getVariableFromVarId(std::size_t varId) const {
         return _variableList.at(varId);
     }

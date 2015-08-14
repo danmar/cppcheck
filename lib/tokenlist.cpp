@@ -196,7 +196,7 @@ void TokenList::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
         dest->varId(src->varId());
-        dest->type(src->type());
+        dest->tokType(src->tokType());
         dest->flags(src->flags());
         src  = src->next();
         --n;
@@ -400,7 +400,7 @@ unsigned long long TokenList::calculateChecksum() const
 {
     unsigned long long checksum = 0;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->type());
+        const unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->tokType());
         unsigned int subchecksum2 = 0;
         for (std::size_t i = 0; i < tok->str().size(); i++)
             subchecksum2 += (unsigned int)tok->str()[i];
@@ -582,7 +582,7 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 {
     if (!tok->previous()
         || ((Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
-            && (tok->previous()->type() != Token::eIncDecOp || tok->type() == Token::eIncDecOp)))
+            && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
 
     return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1));
@@ -592,7 +592,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
 {
     compileScope(tok, state);
     while (tok) {
-        if (tok->type() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
+        if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);
         } else if (tok->str() == "." && tok->strAt(1) != "*") {
             if (tok->strAt(1) == ".") {
@@ -651,7 +651,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
 {
     compilePrecedence2(tok, state);
     while (tok) {
-        if ((Token::Match(tok, "[+-!~*&]") || tok->type() == Token::eIncDecOp) &&
+        if ((Token::Match(tok, "[+-!~*&]") || tok->tokType() == Token::eIncDecOp) &&
             isPrefixUnary(tok, state.cpp)) {
             if (Token::Match(tok, "* [*,)]")) {
                 Token* tok2 = tok;

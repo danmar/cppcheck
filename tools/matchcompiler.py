@@ -86,7 +86,7 @@ class MatchCompiler:
         elif tok == '%bool%':
             return 'tok->isBoolean()'
         elif tok == '%char%':
-            return '(tok->type()==Token::eChar)'
+            return '(tok->tokType()==Token::eChar)'
         elif tok == '%comp%':
             return 'tok->isComparisonOp()'
         elif tok == '%num%':
@@ -96,11 +96,11 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->type() == Token::eBitOp && tok->str()==MatchCompiler::makeConstString("|") )'
+            return '(tok->tokType() == Token::eBitOp && tok->str()==MatchCompiler::makeConstString("|") )'
         elif tok == '%oror%':
-            return '(tok->type() == Token::eLogicalOp && tok->str()==MatchCompiler::makeConstString("||"))'
+            return '(tok->tokType() == Token::eLogicalOp && tok->str()==MatchCompiler::makeConstString("||"))'
         elif tok == '%str%':
-            return '(tok->type()==Token::eString)'
+            return '(tok->tokType()==Token::eString)'
         elif tok == '%type%':
             return (
                 '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'

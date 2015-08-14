@@ -878,12 +878,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (tok->str() == "(")
                 tok = tok->next();
 
-            if (tok->type() == Token::eIncDecOp) {
+            if (tok->tokType() == Token::eIncDecOp) {
                 pre = true;
                 tok = tok->next();
             }
 
-            if (tok->next()->type() == Token::eIncDecOp)
+            if (tok->next()->tokType() == Token::eIncDecOp)
                 post = true;
 
             const unsigned int varid1 = tok->varId();
@@ -1049,7 +1049,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // ++|--
-        else if (tok->next() && tok->next()->type() == Token::eIncDecOp && tok->next()->astOperand1() && tok->next()->astOperand1()->varId()) {
+        else if (tok->next() && tok->next()->tokType() == Token::eIncDecOp && tok->next()->astOperand1() && tok->next()->astOperand1()->varId()) {
             if (tok->next()->astParent())
                 variables.use(tok->next()->astOperand1()->varId(), tok);
             else

@@ -296,7 +296,7 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
             const Token *parent = tok->astParent();
             while (Token::Match(parent, ".|::"))
                 parent = parent->astParent();
-            if (parent && parent->type() == Token::eIncDecOp)
+            if (parent && parent->tokType() == Token::eIncDecOp)
                 return true;
         }
     }
@@ -401,10 +401,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                              parent->astOperand2()->values.front().isKnown()));
         std::list<ValueFlow::Value>::const_iterator value1, value2;
         for (value1 = parent->astOperand1()->values.begin(); value1 != parent->astOperand1()->values.end(); ++value1) {
-            if (value1->tokvalue && (!parent->isComparisonOp() || value1->tokvalue->type() != Token::eString))
+            if (value1->tokvalue && (!parent->isComparisonOp() || value1->tokvalue->tokType() != Token::eString))
                 continue;
             for (value2 = parent->astOperand2()->values.begin(); value2 != parent->astOperand2()->values.end(); ++value2) {
-                if (value2->tokvalue && (!parent->isComparisonOp() || value2->tokvalue->type() != Token::eString || value1->tokvalue))
+                if (value2->tokvalue && (!parent->isComparisonOp() || value2->tokvalue->tokType() != Token::eString || value1->tokvalue))
                     continue;
                 if (known || value1->varId == 0U || value2->varId == 0U ||
                     (value1->varId == value2->varId && value1->varvalue == value2->varvalue && !value1->tokvalue && !value2->tokvalue)) {
@@ -517,7 +517,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
-                    if (value1->tokvalue->type() == Token::eString) {
+                    if (value1->tokvalue->tokType() == Token::eString) {
                         const std::string s = value1->tokvalue->strValue();
                         const MathLib::bigint index = value2->intvalue;
                         if (index >= 0 && index < s.size()) {
@@ -569,7 +569,7 @@ static void valueFlowNumber(TokenList *tokenlist)
 static void valueFlowString(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (tok->type() == Token::eString) {
+        if (tok->tokType() == Token::eString) {
             ValueFlow::Value strvalue;
             strvalue.tokvalue = tok;
             strvalue.setKnown();

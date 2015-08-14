@@ -44,7 +44,7 @@ void CheckAssert::assertWithSideEffects()
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             checkVariableAssignment(tmp);
 
-            if (tmp->type() == Token::eFunction) {
+            if (tmp->tokType() == Token::eFunction) {
                 const Function* f = tmp->function();
 
                 if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst())
@@ -54,7 +54,7 @@ void CheckAssert::assertWithSideEffects()
                     if (!scope) continue;
 
                     for (const Token *tok2 = scope->classStart; tok2 != scope->classEnd; tok2 = tok2->next()) {
-                        if (tok2->type() != Token::eAssignmentOp && tok2->type() != Token::eIncDecOp)
+                        if (tok2->tokType() != Token::eAssignmentOp && tok2->tokType() != Token::eIncDecOp)
                             continue;
 
                         const Variable* var = tok2->previous()->variable();
@@ -113,7 +113,7 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok)
         return;
 
     // assignment
-    if (assignTok->isAssignmentOp() || assignTok->type() == Token::eIncDecOp) {
+    if (assignTok->isAssignmentOp() || assignTok->tokType() == Token::eIncDecOp) {
         if (prevVar->isConst())
             return;
 

@@ -305,8 +305,6 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
 // return temporary?
 bool CheckAutoVariables::returnTemporary(const Token *tok) const
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-
     bool func = false;     // Might it be a function call?
     bool retref = false;   // is there such a function that returns a reference?
     bool retvalue = false; // is there such a function that returns a value?
@@ -330,7 +328,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
                 else
                     retref = true; // Assume that a reference is returned
             } else {
-                if (symbolDatabase->isClassOrStruct(start->str()))
+                if (start->type())
                     retvalue = true;
                 else
                     retref = true;
@@ -338,7 +336,7 @@ bool CheckAutoVariables::returnTemporary(const Token *tok) const
         }
         func = true;
     }
-    if (!func && symbolDatabase->isClassOrStruct(tok->str()))
+    if (!func && tok->type())
         return true;
 
     return bool(!retref && retvalue);

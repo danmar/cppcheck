@@ -41,7 +41,7 @@ void CheckInternal::checkTokenMatchPatterns()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->type() != Token::eString)
+        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -89,7 +89,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->type() != Token::eString)
+        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -171,7 +171,7 @@ void CheckInternal::checkMissingPercentCharacter()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->type() != Token::eString)
+        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -226,7 +226,7 @@ void CheckInternal::checkUnknownPattern()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->type() != Token::eString)
+        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();
@@ -286,7 +286,7 @@ void CheckInternal::checkExtraWhitespace()
 
         // Get pattern string
         const Token *pattern_tok = tok->tokAt(4)->nextArgument();
-        if (!pattern_tok || pattern_tok->type() != Token::eString)
+        if (!pattern_tok || pattern_tok->tokType() != Token::eString)
             continue;
 
         const std::string pattern = pattern_tok->strValue();

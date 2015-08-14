@@ -238,7 +238,7 @@ bool isSameExpression(bool cpp, const Token *tok1, const Token *tok2, const std:
         if (t1 != end1 || t2 != end2)
             return false;
     }
-    if (tok1->type() == Token::eIncDecOp || tok1->isAssignmentOp())
+    if (tok1->tokType() == Token::eIncDecOp || tok1->isAssignmentOp())
         return false;
     // bailout when we see ({..})
     if (tok1->str() == "{")
@@ -328,7 +328,7 @@ bool isConstExpression(const Token *tok, const std::set<std::string> &constFunct
         else if (tok->function() && !tok->function()->isConst())
             return false;
     }
-    if (tok->type() == Token::eIncDecOp)
+    if (tok->tokType() == Token::eIncDecOp)
         return false;
     // bailout when we see ({..})
     if (tok->str() == "{")

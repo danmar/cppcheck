@@ -127,7 +127,7 @@ void CheckOther::clarifyCalculation()
             // ? operator where lhs is arithmetical expression
             if (tok->str() != "?" || !tok->astOperand1() || !tok->astOperand1()->isCalculation())
                 continue;
-            if (!tok->astOperand1()->isArithmeticalOp() && tok->astOperand1()->type() != Token::eBitOp)
+            if (!tok->astOperand1()->isArithmeticalOp() && tok->astOperand1()->tokType() != Token::eBitOp)
                 continue;
 
             // Is code clarified by parentheses already?
@@ -267,7 +267,7 @@ void CheckOther::warningOldStylePointerCast()
                 continue;
 
             // Is "type" a class?
-            if (_tokenizer->getSymbolDatabase()->isClassOrStruct(typeTok->str()))
+            if (typeTok->type())
                 cstyleCastError(tok);
         }
     }
@@ -497,7 +497,7 @@ void CheckOther::checkRedundantAssignment()
             } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
                 varAssignments.clear();
                 memAssignments.clear();
-            } else if (tok->type() == Token::eVariable && !Token::Match(tok, "%name% (")) {
+            } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
                 // Set initialization flag
                 if (!Token::Match(tok, "%var% ["))
                     initialized.insert(tok->varId());
@@ -550,7 +550,7 @@ void CheckOther::checkRedundantAssignment()
                         varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                     eraseMemberAssignments(tok->varId(), membervars, varAssignments);
-                } else if (tok->next()->type() == Token::eIncDecOp || (tok->previous()->type() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
+                } else if (tok->next()->tokType() == Token::eIncDecOp || (tok->previous()->tokType() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
                     varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                     eraseMemberAssignments(tok->varId(), membervars, varAssignments);
@@ -1220,7 +1220,7 @@ void CheckOther::checkVariableScope()
         const Token* tok = var->nameToken()->next();
         if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) {
             tok = tok->tokAt(3);
-            if (!tok->isNumber() && tok->type() != Token::eString && tok->type() != Token::eChar && !tok->isBoolean())
+            if (!tok->isNumber() && tok->tokType() != Token::eString && tok->tokType() != Token::eChar && !tok->isBoolean())
                 continue;
         }
         bool reduce = true;
@@ -1797,9 +1797,9 @@ void CheckOther::checkMisusedScopedObject()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "[;{}] %name% (")
+            if ((tok->next()->type() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
+                && Token::Match(tok, "[;{}] %name% (")
                 && Token::Match(tok->linkAt(2), ") ; !!}")
-                && symbolDatabase->isClassOrStruct(tok->next()->str())
                 && (!tok->next()->function() || // is not a function on this scope
                     tok->next()->function()->isConstructor())) { // or is function in this scope and it's a ctor
                 tok = tok->next();

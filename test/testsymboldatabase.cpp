@@ -1866,9 +1866,6 @@ private:
                       "class Bar;\n"
                       "class Sub;\n");
         ASSERT(db && db->typeList.size() == 5);
-        ASSERT(db && db->isClassOrStruct("Foo"));
-        ASSERT(db && db->isClassOrStruct("Bar"));
-        ASSERT(db && db->isClassOrStruct("Sub"));
         if (!db || db->typeList.size() < 5)
             return;
         std::list<Type>::const_iterator i = db->typeList.begin();
@@ -1938,9 +1935,6 @@ private:
                       "    struct Barney barney;\n"
                       "};\n");
         ASSERT(db && db->typeList.size() == 3);
-        ASSERT(db && db->isClassOrStruct("Fred"));
-        ASSERT(db && db->isClassOrStruct("Wilma"));
-        ASSERT(db && db->isClassOrStruct("Barney"));
         if (!db || db->typeList.size() != 3)
             return;
         std::list<Type>::const_iterator i = db->typeList.begin();

@@ -768,7 +768,7 @@ void CheckStl::size()
 
                 // check for using as boolean expression
                 else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
-                         (tok->previous()->type() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
+                         (tok->previous()->tokType() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
                     if (isCpp03ContainerSizeSlow(tok1))
                         sizeError(tok1);
                 }

@@ -1043,11 +1043,8 @@ void CheckClass::checkMemset()
                 if (typeTok && typeTok->str() == "(")
                     typeTok = typeTok->next();
 
-                if (!type) {
-                    const Type* t = symbolDatabase->findVariableType(scope, typeTok);
-                    if (t)
-                        type = t->classScope;
-                }
+                if (!type && typeTok->type())
+                    type = typeTok->type()->classScope;
 
                 if (type) {
                     std::list<const Scope *> parsedTypes;
@@ -1693,7 +1690,7 @@ void CheckClass::checkConst()
                 } else {
                     // don't warn for unknown types..
                     // LPVOID, HDC, etc
-                    if (previous->isUpperCaseName() && previous->str().size() > 2 && !symbolDatabase->isClassOrStruct(previous->str()))
+                    if (previous->str().size() > 2 && !previous->type() && previous->isUpperCaseName())
                         continue;
                 }
 
@@ -1854,13 +1851,13 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             const Token* lhs = tok1->tokAt(-1);
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
-                if (lhs->type() == Token::eAssignmentOp && lhs->previous()->variable()) {
+                if (lhs->tokType() == Token::eAssignmentOp && lhs->previous()->variable()) {
                     if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
                         return false;
                 }
             } else {
                 const Variable* v2 = lhs->previous()->variable();
-                if (lhs->type() == Token::eAssignmentOp && v2)
+                if (lhs->tokType() == Token::eAssignmentOp && v2)
                     if (!v2->isConst() && v2->isReference() && lhs == v2->nameToken()->next())
                         return false;
             }
@@ -1900,7 +1897,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             // Assignment
-            else if (end->next()->type() == Token::eAssignmentOp)
+            else if (end->next()->tokType() == Token::eAssignmentOp)
                 return (false);
 
             // Streaming
@@ -1910,7 +1907,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return (false);
 
             // ++/--
-            else if (end->next()->type() == Token::eIncDecOp || tok1->previous()->type() == Token::eIncDecOp)
+            else if (end->next()->tokType() == Token::eIncDecOp || tok1->previous()->tokType() == Token::eIncDecOp)
                 return (false);
 
 

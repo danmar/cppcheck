@@ -30,6 +30,7 @@
 #include "mathlib.h"
 
 class Scope;
+class Type;
 class Function;
 class Variable;
 class Settings;
@@ -222,59 +223,59 @@ public:
      **/
     static std::string getCharAt(const Token *tok, std::size_t index);
 
-    Type type() const {
-        return _type;
+    Token::Type tokType() const {
+        return _tokType;
     }
-    void type(Type t) {
-        _type = t;
+    void tokType(Token::Type t) {
+        _tokType = t;
     }
     void isKeyword(bool kwd) {
         if (kwd)
-            _type = eKeyword;
-        else if (_type == eKeyword)
-            _type = eName;
+            _tokType = eKeyword;
+        else if (_tokType == eKeyword)
+            _tokType = eName;
     }
     bool isKeyword() const {
-        return _type == eKeyword;
+        return _tokType == eKeyword;
     }
     bool isName() const {
-        return _type == eName || _type == eType || _type == eVariable || _type == eFunction || _type == eKeyword ||
-               _type == eBoolean; // TODO: "true"/"false" aren't really a name...
+        return _tokType == eName || _tokType == eType || _tokType == eVariable || _tokType == eFunction || _tokType == eKeyword ||
+               _tokType == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
     bool isUpperCaseName() const;
     bool isLiteral() const {
-        return _type == eNumber || _type == eString || _type == eChar ||
-               _type == eBoolean || _type == eLiteral;
+        return _tokType == eNumber || _tokType == eString || _tokType == eChar ||
+               _tokType == eBoolean || _tokType == eLiteral;
     }
     bool isNumber() const {
-        return _type == eNumber;
+        return _tokType == eNumber;
     }
     bool isOp() const {
         return (isConstOp() ||
                 isAssignmentOp() ||
-                _type == eIncDecOp);
+                _tokType == eIncDecOp);
     }
     bool isConstOp() const {
         return (isArithmeticalOp() ||
-                _type == eLogicalOp ||
-                _type == eComparisonOp ||
-                _type == eBitOp);
+                _tokType == eLogicalOp ||
+                _tokType == eComparisonOp ||
+                _tokType == eBitOp);
     }
     bool isExtendedOp() const {
         return isConstOp() ||
-               _type == eExtendedOp;
+               _tokType == eExtendedOp;
     }
     bool isArithmeticalOp() const {
-        return _type == eArithmeticalOp;
+        return _tokType == eArithmeticalOp;
     }
     bool isComparisonOp() const {
-        return _type == eComparisonOp;
+        return _tokType == eComparisonOp;
     }
     bool isAssignmentOp() const {
-        return _type == eAssignmentOp;
+        return _tokType == eAssignmentOp;
     }
     bool isBoolean() const {
-        return _type == eBoolean;
+        return _tokType == eBoolean;
     }
     bool isUnaryPreOp() const;
 
@@ -464,7 +465,7 @@ public:
     void varId(unsigned int id) {
         _varId = id;
         if (id != 0)
-            _type = eVariable;
+            _tokType = eVariable;
         else
             update_property_info();
     }
@@ -576,16 +577,16 @@ public:
     void function(const Function *f) {
         _function = f;
         if (f)
-            _type = eFunction;
-        else if (_type == eFunction)
-            _type = eName;
+            _tokType = eFunction;
+        else if (_tokType == eFunction)
+            _tokType = eName;
     }
 
     /**
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return _type == eFunction ? _function : 0;
+        return _tokType == eFunction ? _function : 0;
     }
 
     /**
@@ -595,16 +596,35 @@ public:
     void variable(const Variable *v) {
         _variable = v;
         if (v || _varId)
-            _type = eVariable;
-        else if (_type == eVariable)
-            _type = eName;
+            _tokType = eVariable;
+        else if (_tokType == eVariable)
+            _tokType = eName;
     }
 
     /**
      * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return _type == eVariable ? _variable : 0;
+        return _tokType == eVariable ? _variable : 0;
+    }
+
+    /**
+    * Associate this token with given type
+    * @param t Type to be associated
+    */
+    void type(const ::Type *t) {
+        _type = t;
+        if (t)
+            _tokType = eType;
+        else if (_tokType == eType)
+            _tokType = eName;
+    }
+
+    /**
+    * @return a pointer to the type associated with this token.
+    */
+    const ::Type *type() const {
+        return _tokType == eType ? _type : 0;
     }
 
     /**
@@ -751,6 +771,7 @@ private:
     union {
         const Function *_function;
         const Variable *_variable;
+        const ::Type* _type;
     };
 
     unsigned int _varId;
@@ -763,7 +784,7 @@ private:
      */
     unsigned int _progressValue;
 
-    Type _type;
+    Token::Type _tokType;
 
     enum {
         fIsUnsigned             = (1 << 0),

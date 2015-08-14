@@ -44,7 +44,7 @@ Token::Token(Token **t) :
     _fileIndex(0),
     _linenr(0),
     _progressValue(0),
-    _type(eNone),
+    _tokType(eNone),
     _flags(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
@@ -62,32 +62,32 @@ void Token::update_property_info()
 {
     if (!_str.empty()) {
         if (_str == "true" || _str == "false")
-            _type = eBoolean;
+            _tokType = eBoolean;
         else if (_str[0] == '_' || std::isalpha((unsigned char)_str[0])) { // Name
             if (_varId)
-                _type = eVariable;
-            else if (_type != eVariable && _type != eFunction && _type != eType && _type != eKeyword)
-                _type = eName;
+                _tokType = eVariable;
+            else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
+                _tokType = eName;
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
-            _type = eNumber;
+            _tokType = eNumber;
         else if (_str.length() > 1 && _str[0] == '"' && _str.back() == '"')
-            _type = eString;
+            _tokType = eString;
         else if (_str.length() > 1 && _str[0] == '\'' && _str.back() == '\'')
-            _type = eChar;
+            _tokType = eChar;
         else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
                  (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))
-            _type = eAssignmentOp;
+            _tokType = eAssignmentOp;
         else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
-            _type = eExtendedOp;
+            _tokType = eExtendedOp;
         else if (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos))
-            _type = eArithmeticalOp;
+            _tokType = eArithmeticalOp;
         else if (_str.size() == 1 && _str.find_first_of("&|^~") != std::string::npos)
-            _type = eBitOp;
+            _tokType = eBitOp;
         else if (_str.size() <= 2 &&
                  (_str == "&&" ||
                   _str == "||" ||
                   _str == "!"))
-            _type = eLogicalOp;
+            _tokType = eLogicalOp;
         else if (_str.size() <= 2 && !_link &&
                  (_str == "==" ||
                   _str == "!=" ||
@@ -95,17 +95,17 @@ void Token::update_property_info()
                   _str == "<=" ||
                   _str == ">"  ||
                   _str == ">="))
-            _type = eComparisonOp;
+            _tokType = eComparisonOp;
         else if (_str.size() == 2 &&
                  (_str == "++" ||
                   _str == "--"))
-            _type = eIncDecOp;
+            _tokType = eIncDecOp;
         else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (_link && _str.find_first_of("<>") != std::string::npos)))
-            _type = eBracket;
+            _tokType = eBracket;
         else
-            _type = eOther;
+            _tokType = eOther;
     } else {
-        _type = eNone;
+        _tokType = eNone;
     }
 
     update_property_isStandardType();
@@ -125,7 +125,7 @@ void Token::update_property_isStandardType()
 
     if (stdTypes.find(_str)!=stdTypes.end()) {
         isStandardType(true);
-        _type = eType;
+        _tokType = eType;
     }
 }
 
@@ -151,10 +151,10 @@ void Token::concatStr(std::string const& b)
 
 std::string Token::strValue() const
 {
-    assert(_type == eString);
+    assert(_tokType == eString);
     std::string ret(_str.substr(1, _str.length() - 2));
     std::string::size_type pos = 0U;
-    while ((pos = ret.find("\\",pos)) != std::string::npos) {
+    while ((pos = ret.find('\\', pos)) != std::string::npos) {
         ret.erase(pos,1U);
         if (ret[pos] >= 'a') {
             if (ret[pos] == 'n')
@@ -192,7 +192,7 @@ void Token::swapWithNext()
         Token temp(0);
 
         temp._str = _next->_str;
-        temp._type = _next->_type;
+        temp._tokType = _next->_tokType;
         temp._flags = _next->_flags;
         temp._varId = _next->_varId;
         temp._fileIndex = _next->_fileIndex;
@@ -204,7 +204,7 @@ void Token::swapWithNext()
         temp._progressValue = _next->_progressValue;
 
         _next->_str = _str;
-        _next->_type = _type;
+        _next->_tokType = _tokType;
         _next->_flags = _flags;
         _next->_varId = _varId;
         _next->_fileIndex = _fileIndex;
@@ -216,7 +216,7 @@ void Token::swapWithNext()
         _next->_progressValue = _progressValue;
 
         _str = temp._str;
-        _type = temp._type;
+        _tokType = temp._tokType;
         _flags = temp._flags;
         _varId = temp._varId;
         _fileIndex = temp._fileIndex;
@@ -233,7 +233,7 @@ void Token::deleteThis()
 {
     if (_next) { // Copy next to this and delete next
         _str = _next->_str;
-        _type = _next->_type;
+        _tokType = _next->_tokType;
         _flags = _next->_flags;
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
@@ -242,6 +242,7 @@ void Token::deleteThis()
         _scope = _next->_scope;
         _function = _next->_function;
         _variable = _next->_variable;
+        _type = _next->_type;
         if (_next->_originalName) {
             _originalName = _next->_originalName;
             _next->_originalName = nullptr;
@@ -253,7 +254,7 @@ void Token::deleteThis()
         deleteNext();
     } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
         _str = _previous->_str;
-        _type = _previous->_type;
+        _tokType = _previous->_tokType;
         _flags = _previous->_flags;
         _varId = _previous->_varId;
         _fileIndex = _previous->_fileIndex;
@@ -262,6 +263,7 @@ void Token::deleteThis()
         _scope = _previous->_scope;
         _function = _previous->_function;
         _variable = _previous->_variable;
+        _type = _previous->_type;
         if (_previous->_originalName) {
             _originalName = _previous->_originalName;
             _previous->_originalName = nullptr;
@@ -406,7 +408,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
         // Character (%char%)
         if (haystack[0] == 'h') {
             haystack += 4;
-            if (tok->type() == Token::eChar)
+            if (tok->tokType() == Token::eChar)
                 return 1;
         }
         // Const operator (%cop%)
@@ -427,7 +429,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
         // String (%str%)
     {
         haystack += 4;
-        if (tok->type() == Token::eString)
+        if (tok->tokType() == Token::eString)
             return 1;
     }
     break;
@@ -451,7 +453,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
             // Or (%or%)
             else {
                 haystack += 2;
-                if (tok->type() == Token::eBitOp && tok->str() == "|")
+                if (tok->tokType() == Token::eBitOp && tok->str() == "|")
                     return 1;
             }
         }
@@ -459,7 +461,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, bool emp
         // Oror (%oror%)
         else {
             haystack += 4;
-            if (tok->type() == Token::eLogicalOp && tok->str() == "||")
+            if (tok->tokType() == Token::eLogicalOp && tok->str() == "||")
                 return 1;
         }
     }
@@ -683,7 +685,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 std::size_t Token::getStrLength(const Token *tok)
 {
     assert(tok != nullptr);
-    assert(tok->_type == eString);
+    assert(tok->_tokType == eString);
 
     std::size_t len = 0;
     std::string::const_iterator it = tok->str().begin() + 1U;
@@ -710,7 +712,7 @@ std::size_t Token::getStrLength(const Token *tok)
 
 std::size_t Token::getStrSize(const Token *tok)
 {
-    assert(tok != nullptr && tok->type() == eString);
+    assert(tok != nullptr && tok->tokType() == eString);
     const std::string &str = tok->str();
     unsigned int sizeofstring = 1U;
     for (unsigned int i = 1U; i < str.size() - 1U; i++) {
@@ -1007,7 +1009,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
         else if (isSigned())
             os << "signed ";
         if (isLong()) {
-            if (_type == eString || _type == eChar)
+            if (_tokType == eString || _tokType == eChar)
                 os << "L";
             else
                 os << "long ";
@@ -1015,7 +1017,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
     }
     if (macro && isExpandedMacro())
         os << "$";
-    if (_str[0] != '\"' || _str.find("\0") == std::string::npos)
+    if (_str[0] != '\"' || _str.find('\0') == std::string::npos)
         os << _str;
     else {
         for (std::size_t i = 0U; i < _str.size(); ++i) {
@@ -1427,7 +1429,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::size_t minsize = ~0U;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->tokvalue && it->tokvalue->type() == Token::eString) {
+        if (it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
                 minsize = size;
@@ -1444,7 +1446,7 @@ const Token *Token::getValueTokenMaxStrLength() const
     std::size_t maxlength = 0U;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = values.begin(); it != values.end(); ++it) {
-        if (it->tokvalue && it->tokvalue->type() == Token::eString) {
+        if (it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
                 maxlength = length;

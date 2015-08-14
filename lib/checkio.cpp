@@ -168,7 +168,7 @@ void CheckIO::checkFileUsage()
                     tok->strAt(-1) == "=") {
                     if (tok->str() != "tmpfile") {
                         const Token* modeTok = tok->tokAt(2)->nextArgument();
-                        if (modeTok && modeTok->type() == Token::eString)
+                        if (modeTok && modeTok->tokType() == Token::eString)
                             mode = modeTok->strValue();
                     } else
                         mode = "wb+";
@@ -176,7 +176,7 @@ void CheckIO::checkFileUsage()
                     operation = Filepointer::OPEN;
                 } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
-                    if (modeTok && modeTok->type() == Token::eString)
+                    if (modeTok && modeTok->tokType() == Token::eString)
                         mode = modeTok->strValue();
                     fileTok = tok->tokAt(3);
                     operation = Filepointer::OPEN;
@@ -380,7 +380,7 @@ void CheckIO::invalidScanf()
                 formatToken = tok->tokAt(2);
             else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
                 const Token* nextArg = tok->tokAt(2)->nextArgument();
-                if (nextArg && nextArg->type() == Token::eString)
+                if (nextArg && nextArg->tokType() == Token::eString)
                     formatToken = nextArg;
                 else
                     continue;
@@ -678,7 +678,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                                     invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo);
                                             }
                                         }
-                                        if (argListTok && argListTok->type() != Token::eString &&
+                                        if (argListTok && argListTok->tokType() != Token::eString &&
                                             argInfo.isKnownType() && argInfo.isArrayOrPointer() &&
                                             (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
                                              argInfo.typeToken->strAt(-1) == "const")) {
@@ -706,7 +706,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'X':
                                     case 'o':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                         else if (argInfo.isKnownType()) {
                                             if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
@@ -783,7 +783,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'd':
                                     case 'i':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, false);
                                         else if (argInfo.isKnownType()) {
                                             if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
@@ -856,7 +856,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         break;
                                     case 'u':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidScanfArgTypeError_int(tok, numFormat, specifier, &argInfo, true);
                                         else if (argInfo.isKnownType()) {
                                             if (!Token::Match(argInfo.typeToken, "char|short|int|long")) {
@@ -937,7 +937,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'G':
                                     case 'a':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidScanfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                         else if (argInfo.isKnownType()) {
                                             if (!Token::Match(argInfo.typeToken, "float|double")) {
@@ -1022,7 +1022,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                 while (!done) {
                                     switch (*i) {
                                     case 's':
-                                        if (argListTok->type() != Token::eString &&
+                                        if (argListTok->tokType() != Token::eString &&
                                             argInfo.isKnownType() && !argInfo.isArrayOrPointer()) {
                                             if (!Token::Match(argInfo.typeToken, "char|wchar_t")) {
                                                 if (!(!argInfo.isArrayOrPointer() && argInfo.element))
@@ -1032,7 +1032,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         done = true;
                                         break;
                                     case 'n':
-                                        if ((argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->type() == Token::eString)
+                                        if ((argInfo.isKnownType() && (!argInfo.isArrayOrPointer() || argInfo.typeToken->strAt(-1) == "const")) || argListTok->tokType() == Token::eString)
                                             invalidPrintfArgTypeError_n(tok, numFormat, &argInfo);
                                         done = true;
                                         break;
@@ -1041,7 +1041,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'X':
                                     case 'o':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidPrintfArgTypeError_int(tok, numFormat, specifier, &argInfo);
                                         else if (argInfo.isKnownType()) {
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
@@ -1103,7 +1103,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'd':
                                     case 'i':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString) {
+                                        if (argInfo.typeToken->tokType() == Token::eString) {
                                             invalidPrintfArgTypeError_sint(tok, numFormat, specifier, &argInfo);
                                         } else if (argInfo.isKnownType()) {
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
@@ -1169,7 +1169,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         break;
                                     case 'u':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString) {
+                                        if (argInfo.typeToken->tokType() == Token::eString) {
                                             invalidPrintfArgTypeError_uint(tok, numFormat, specifier, &argInfo);
                                         } else if (argInfo.isKnownType()) {
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
@@ -1229,7 +1229,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                         done = true;
                                         break;
                                     case 'p':
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
                                         else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
                                             invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
@@ -1241,7 +1241,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
                                     case 'g':
                                     case 'G':
                                         specifier += *i;
-                                        if (argInfo.typeToken->type() == Token::eString)
+                                        if (argInfo.typeToken->tokType() == Token::eString)
                                             invalidPrintfArgTypeError_float(tok, numFormat, specifier, &argInfo);
                                         else if (argInfo.isKnownType()) {
                                             if (argInfo.isArrayOrPointer() && !argInfo.element) {
@@ -1362,11 +1362,11 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     , tempToken(nullptr)
 {
     if (tok) {
-        if (tok->type() == Token::eString) {
+        if (tok->tokType() == Token::eString) {
             typeToken = tok;
             return;
-        } else if (tok->str() == "&" || tok->type() == Token::eVariable ||
-                   tok->type() == Token::eFunction || Token::Match(tok, "%type% ::") ||
+        } else if (tok->str() == "&" || tok->tokType() == Token::eVariable ||
+                   tok->tokType() == Token::eFunction || Token::Match(tok, "%type% ::") ||
                    (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
                     Token::simpleMatch(tok->linkAt(1), "> (") &&
                     Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
@@ -1382,7 +1382,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
             }
             while (Token::Match(tok, "%type% ::"))
                 tok = tok->tokAt(2);
-            if (!tok || !(tok->type() == Token::eVariable || tok->type() == Token::eFunction))
+            if (!tok || !(tok->tokType() == Token::eVariable || tok->tokType() == Token::eFunction))
                 return;
             const Token *varTok = nullptr;
             const Token *tok1 = tok->next();
@@ -1390,7 +1390,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                 if (tok1->str() == "," || tok1->str() == ")") {
                     if (tok1->previous()->str() == "]") {
                         varTok = tok1->linkAt(-1)->previous();
-                        if (varTok->str() == ")" && varTok->link()->previous()->type() == Token::eFunction) {
+                        if (varTok->str() == ")" && varTok->link()->previous()->tokType() == Token::eFunction) {
                             const Function * function = varTok->link()->previous()->function();
                             if (function && function->retDef) {
                                 typeToken = function->retDef;
@@ -1401,7 +1401,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                             }
                             return;
                         }
-                    } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->type() == Token::eFunction) {
+                    } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->tokType() == Token::eFunction) {
                         const Function * function = tok1->linkAt(-1)->previous()->function();
                         if (function && function->retDef) {
                             typeToken = function->retDef;
@@ -1467,7 +1467,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                     }
 
                     return;
-                } else if (!(tok1->str() == "." || tok1->type() == Token::eVariable || tok1->type() == Token::eFunction))
+                } else if (!(tok1->str() == "." || tok1->tokType() == Token::eVariable || tok1->tokType() == Token::eFunction))
                     return;
             }
 
@@ -1875,7 +1875,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
     if (argInfo) {
         os << "\'";
         const Token *type = argInfo->typeToken;
-        if (type->type() == Token::eString) {
+        if (type->tokType() == Token::eString) {
             if (type->isLong())
                 os << "const wchar_t *";
             else

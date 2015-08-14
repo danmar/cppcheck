@@ -319,7 +319,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
                 if ((std::size_t)sz > arraySize)
                     error = true;
-            } else if (argtok->type() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
+            } else if (argtok->tokType() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
                 *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
             break;
         case Library::ArgumentChecks::MinSize::MUL:
@@ -352,7 +352,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
         }
         break;
         case Library::ArgumentChecks::MinSize::SIZEOF:
-            if (argtok->type() == Token::eString && Token::getStrLength(argtok) >= arraySize)
+            if (argtok->tokType() == Token::eString && Token::getStrLength(argtok) >= arraySize)
                 error = true;
             break;
         case Library::ArgumentChecks::MinSize::NONE:
@@ -1470,13 +1470,13 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
                 break;
             case 'd':
                 i_d_x_f_found = true;
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() != Token::eString)
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->tokType() != Token::eString)
                     parameterLength = (*paramIter)->str().length();
 
                 handleNextParameter = true;
                 break;
             case 's':
-                if (paramIter != parameters.end() && *paramIter && (*paramIter)->type() == Token::eString)
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->tokType() == Token::eString)
                     parameterLength = Token::getStrLength(*paramIter);
 
                 handleNextParameter = true;
@@ -1765,7 +1765,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
                     return;
 
                 // skip comparison
-                if (tok->type() == Token::eComparisonOp)
+                if (tok->tokType() == Token::eComparisonOp)
                     tok = tok->tokAt(2);
 
                 if (!tok)

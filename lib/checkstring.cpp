@@ -151,16 +151,16 @@ void CheckString::checkSuspiciousStringCompare()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->type() != Token::eComparisonOp)
+            if (tok->tokType() != Token::eComparisonOp)
                 continue;
 
             const Token* varTok = tok->astOperand1();
             const Token* litTok = tok->astOperand2();
             if (!varTok || !litTok)  // <- failed to create AST for comparison
                 continue;
-            if (varTok->type() == Token::eString || varTok->type() == Token::eNumber)
+            if (varTok->tokType() == Token::eString || varTok->tokType() == Token::eNumber)
                 std::swap(varTok, litTok);
-            else if (litTok->type() != Token::eString && litTok->type() != Token::eNumber)
+            else if (litTok->tokType() != Token::eString && litTok->tokType() != Token::eNumber)
                 continue;
 
             // Pointer addition?
@@ -176,7 +176,7 @@ void CheckString::checkSuspiciousStringCompare()
             }
 
             if (varTok->str() == "*") {
-                if (!_tokenizer->isC() || varTok->astOperand2() != nullptr || litTok->type() != Token::eString)
+                if (!_tokenizer->isC() || varTok->astOperand2() != nullptr || litTok->tokType() != Token::eString)
                     continue;
                 varTok = varTok->astOperand1();
             }
@@ -192,7 +192,7 @@ void CheckString::checkSuspiciousStringCompare()
                 varTok = varTok->astParent();
             const std::string varname = varTok->expressionString();
 
-            if (litTok->type() == Token::eString) {
+            if (litTok->tokType() == Token::eString) {
                 if (_tokenizer->isC() || (var && var->isArrayOrPointer()))
                     suspiciousStringCompareError(tok, varname);
             } else if (litTok->originalName() == "'\\0'" && var && var->isPointer()) {
@@ -232,8 +232,8 @@ void CheckString::strPlusChar()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->str() == "+") {
-                if (tok->astOperand1() && (tok->astOperand1()->type() == Token::eString)) { // string literal...
-                    if (tok->astOperand2() && (tok->astOperand2()->type() == Token::eChar || isChar(tok->astOperand2()->variable()))) // added to char variable or char constant
+                if (tok->astOperand1() && (tok->astOperand1()->tokType() == Token::eString)) { // string literal...
+                    if (tok->astOperand2() && (tok->astOperand2()->tokType() == Token::eChar || isChar(tok->astOperand2()->variable()))) // added to char variable or char constant
                         strPlusCharError(tok);
                 }
             }

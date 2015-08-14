@@ -85,13 +85,13 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
             argListTok = secondParam;
         } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf|fwprintf|fwscanf|swscanf")) {
             const Token* formatStringTok = secondParam; // Find second parameter (format string)
-            if (formatStringTok && formatStringTok->type() == Token::eString) {
+            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find third parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }
         } else if (Token::Match(&tok, "snprintf|fnprintf|swprintf") && secondParam) {
             const Token* formatStringTok = secondParam->nextArgument(); // Find third parameter (format string)
-            if (formatStringTok && formatStringTok->type() == Token::eString) {
+            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
                 argListTok = formatStringTok->nextArgument(); // Find fourth parameter (first argument of va_args)
                 formatString = formatStringTok->strValue();
             }

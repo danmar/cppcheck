@@ -1225,6 +1225,14 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         }
     }
 
+    // Set type pointers
+    for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
+        if (!tok->isName() || tok->varId() || tok->function())
+            continue;
+
+        const_cast<Token *>(tok)->type(findVariableType(tok->scope(), tok));
+    }
+
     // Set variable pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (tok->varId())
@@ -1287,9 +1295,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
 SymbolDatabase::~SymbolDatabase()
 {
-    // Clear scope, function, and variable pointers
+    // Clear scope, type, function and variable pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         const_cast<Token *>(tok)->scope(0);
+        const_cast<Token *>(tok)->type(0);
         const_cast<Token *>(tok)->function(0);
         const_cast<Token *>(tok)->variable(0);
     }

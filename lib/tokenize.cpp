@@ -134,7 +134,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (!type || type->str().empty())
         return 0;
 
-    if (type->type() == Token::eString)
+    if (type->tokType() == Token::eString)
         return static_cast<unsigned int>(Token::getStrLength(type) + 1);
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
@@ -163,7 +163,7 @@ Token *Tokenizer::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2 = tok2->next();
         tok2->fileIndex(commonFileIndex);
         tok2->linenr(linenrs);
-        tok2->type(tok->type());
+        tok2->tokType(tok->tokType());
         tok2->flags(tok->flags());
         tok2->varId(tok->varId());
 
@@ -1935,7 +1935,7 @@ void Tokenizer::combineStrings()
     for (Token *tok = list.front();
          tok;
          tok = tok->next()) {
-        while (tok->str() == "L" && tok->next() && tok->next()->type() == Token::eString) {
+        while (tok->str() == "L" && tok->next() && tok->next()->tokType() == Token::eString) {
             // Combine 'L "string"'
             tok->str(tok->next()->str());
             tok->deleteNext();
@@ -1951,7 +1951,7 @@ void Tokenizer::combineStrings()
             continue;
 
         tok->str(simplifyString(tok->str()));
-        while (tok->next() && tok->next()->type() == Token::eString) {
+        while (tok->next() && tok->next()->tokType() == Token::eString) {
             tok->next()->str(simplifyString(tok->next()->str()));
 
             // Two strings after each other, combine them
@@ -2007,7 +2007,7 @@ void Tokenizer::simplifyNull()
 void Tokenizer::concatenateNegativeNumberAndAnyPositive()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->type() == Token::eIncDecOp)
+        if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->tokType() == Token::eIncDecOp)
             continue;
         if (tok->next()->str() == "+")
             tok->deleteNext();
@@ -3893,9 +3893,9 @@ void Tokenizer::dump(std::ostream &out) const
                 out << " isInt=\"True\"";
             if (MathLib::isFloat(tok->str()))
                 out << " isFloat=\"True\"";
-        } else if (tok->type() == Token::eString)
+        } else if (tok->tokType() == Token::eString)
             out << " type=\"string\" strlen=\"" << Token::getStrLength(tok) << '\"';
-        else if (tok->type() == Token::eChar)
+        else if (tok->tokType() == Token::eChar)
             out << " type=\"char\"";
         else if (tok->isBoolean())
             out << " type=\"boolean\"";
@@ -3907,7 +3907,7 @@ void Tokenizer::dump(std::ostream &out) const
                 out << " isAssignmentOp=\"True\"";
             else if (tok->isComparisonOp())
                 out << " isComparisonOp=\"True\"";
-            else if (tok->type() == Token::eLogicalOp)
+            else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"True\"";
         }
         if (tok->link())
@@ -4499,8 +4499,8 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         tokAfterCondition=tokAfterCondition->next();
     }
     if (!tokAfterCondition ||
-        ((tokAfterCondition->type()==Token::eBracket ||
-          tokAfterCondition->type()==Token::eExtendedOp)&&
+        ((tokAfterCondition->tokType()==Token::eBracket ||
+          tokAfterCondition->tokType()==Token::eExtendedOp)&&
          Token::Match(tokAfterCondition,")|}|>|,"))) {
         // No tokens left where to add braces around
         return tok;
@@ -4532,11 +4532,11 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
             // Look for ; to add own closing brace after it
             while (tokEnd &&
                    tokEnd->str()!=";" &&
-                   !((tokEnd->type()==Token::eBracket ||
-                      tokEnd->type()==Token::eExtendedOp)&&
+                   !((tokEnd->tokType()==Token::eBracket ||
+                      tokEnd->tokType()==Token::eExtendedOp)&&
                      Token::Match(tokEnd,")|}|>"))) {
-                if (tokEnd->type()==Token::eBracket ||
-                    (tokEnd->type()==Token::eExtendedOp && tokEnd->str()=="(")) {
+                if (tokEnd->tokType()==Token::eBracket ||
+                    (tokEnd->tokType()==Token::eExtendedOp && tokEnd->str()=="(")) {
                     Token *tokInnerCloseBraket=tokEnd->link();
                     if (!tokInnerCloseBraket) {
                         // Inner bracket does not close
@@ -4649,7 +4649,7 @@ void Tokenizer::simplifyCompoundAssignment()
             for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
                 // Don't duplicate ++ and --. Put preincrement in lhs. Put
                 // postincrement in rhs.
-                if (tok2->type() == Token::eIncDecOp) {
+                if (tok2->tokType() == Token::eIncDecOp) {
                     // pre increment/decrement => don't copy
                     if (tok2->next()->isName()) {
                         continue;
@@ -5693,7 +5693,7 @@ void Tokenizer::simplifyPlatformTypes()
                                     _settings->platformType == Settings::Win32W ? "win32W" : "win64";
 
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (tok->type() != Token::eType && tok->type() != Token::eName)
+            if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
                 continue;
 
             const Library::PlatformType * const platformtype = _settings->library.platform_type(tok->str(), platform_type);
@@ -5703,7 +5703,7 @@ void Tokenizer::simplifyPlatformTypes()
                 if (tok->strAt(-1) == "::") {
                     const Token * tok1 = tok->tokAt(-2);
                     // skip when non-global namespace defined
-                    if (tok1 && tok1->type() == Token::eName)
+                    if (tok1 && tok1->tokType() == Token::eName)
                         continue;
                     tok = tok->tokAt(-1);
                     tok->deleteThis();
