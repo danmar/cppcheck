@@ -83,11 +83,11 @@ private:
         const Variable *variableInfo;
         const Token *typeToken;
         const Function *functionInfo;
+        Token *tempToken;
         bool element;
         bool _template;
         bool address;
         bool isCPP;
-        Token *tempToken;
 
     private:
         ArgumentInfo(const ArgumentInfo &); // not implemented

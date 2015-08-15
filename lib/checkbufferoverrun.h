@@ -202,7 +202,7 @@ public:
         };
 
         /* key:arrayName */
-        std::map<std::string, struct ArrayUsage> arrayUsage;
+        std::map<std::string, ArrayUsage> arrayUsage;
 
         /* key:arrayName, data:arraySize */
         std::map<std::string, MathLib::bigint>  arraySize;
@@ -240,8 +240,7 @@ private:
 public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckBufferOverrun c(0, settings, errorLogger);
-        std::vector<MathLib::bigint> indexes;
-        indexes.push_back(2);
+        const std::vector<MathLib::bigint> indexes(2, 1);
         c.arrayIndexOutOfBoundsError(0, ArrayInfo(0, "array", 1, 2), indexes);
         c.bufferOverrunError(0, std::string("buffer"));
         c.strncatUsageError(0);

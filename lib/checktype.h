@@ -71,8 +71,6 @@ public:
     /** @brief %Check for implicit long cast of int result */
     void checkLongCast();
 private:
-    bool isUnsigned(const Variable *var) const;
-    static bool isSigned(const Variable *var);
 
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);

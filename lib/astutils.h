@@ -26,7 +26,6 @@
 #include <string>
 
 class Token;
-class Tokenizer;
 
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);

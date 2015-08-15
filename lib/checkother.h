@@ -143,9 +143,6 @@ public:
     /** @brief %Check zero division*/
     void checkZeroDivision();
 
-    /** @brief %Check zero division / useless condition */
-    void checkZeroDivisionOrUselessCondition();
-
     /** @brief Check for NaN (not-a-number) in an arithmetic expression */
     void checkNanInArithmeticExpression();
 
@@ -175,9 +172,6 @@ public:
 
     /** @brief %Check for invalid 2nd parameter of memset() */
     void checkMemsetInvalid2ndParam();
-
-    /** @brief %Check for suspicious code where multiple if have the same expression (e.g "if (a) { } else if (a) { }") */
-    void checkDuplicateIf();
 
     /** @brief %Check for suspicious code where if and else branch are the same (e.g "if (a) b = true; else b = true;") */
     void checkDuplicateBranch();
@@ -237,7 +231,6 @@ private:
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
-    void redundantGetAndSetUserIdError(const Token *tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
@@ -265,12 +258,9 @@ private:
     void memsetZeroBytesError(const Token *tok, const std::string &varname);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
-    void duplicateIfError(const Token *tok1, const Token *tok2);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateExpressionTernaryError(const Token *tok);
-    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -397,7 +387,6 @@ private:
                "- testing if unsigned variable is negative/positive\n"
                "- Suspicious use of ; at the end of 'if/for/while' statement.\n"
                "- Array filled incompletely using memset/memcpy/memmove.\n"
-               "- redundant get and set function of user id (--std=posix).\n"
                "- NaN (not a number) value used in arithmetic expression.\n"
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
