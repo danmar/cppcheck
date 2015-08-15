@@ -498,7 +498,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
         } else if (functionnodename == "leak-ignore")
             leakignore.insert(name);
         else if (functionnodename == "use-retval")
-            useretval.insert(name);
+            _useretval.insert(name);
         else if (functionnodename == "arg" && functionnode->Attribute("nr") != nullptr) {
             const bool bAnyArg = strcmp(functionnode->Attribute("nr"),"any")==0;
             const int nr = (bAnyArg) ? -1 : atoi(functionnode->Attribute("nr"));
@@ -796,6 +796,11 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
             return args > callargs;
     }
     return args != callargs;
+}
+
+bool Library::isUseRetVal(const Token* ftok) const
+{
+    return (_useretval.find(functionName(ftok)) != _useretval.end());
 }
 
 bool Library::isnoreturn(const Token *ftok) const

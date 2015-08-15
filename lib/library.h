@@ -119,10 +119,12 @@ public:
     std::set<std::string> leakignore;
     std::set<std::string> functionconst;
     std::set<std::string> functionpure;
-    std::set<std::string> useretval;
 
     // returns true if ftok is not a library function
     bool isNotLibraryFunction(const Token *ftok) const;
+
+
+    bool isUseRetVal(const Token* ftok) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -435,6 +437,7 @@ private:
     };
     int allocid;
     std::set<std::string> _files;
+    std::set<std::string> _useretval;
     std::map<std::string, int> _alloc; // allocation functions
     std::map<std::string, int> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?

@@ -6122,7 +6122,7 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <function name=\"mystrcmp\">\n"
+                               "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
                                "    <use-retval/>\n"
                                "    <arg nr=\"1\"/>\n"
                                "    <arg nr=\"2\"/>\n"
@@ -6134,6 +6134,11 @@ private:
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
+
+        check("void foo() {\n"
+              "  foo::mystrcmp(a, b);\n"
               "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
@@ -6156,6 +6161,11 @@ private:
 
         check("void foo() {\n"
               "    return mystrcmp(a, b);\n"
+              "}", "test.cpp", false, false, true, &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    return foo::mystrcmp(a, b);\n"
               "}", "test.cpp", false, false, true, &settings);
         ASSERT_EQUALS("", errout.str());
 

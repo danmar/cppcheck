@@ -2506,14 +2506,22 @@ void CheckOther::checkIgnoredReturnValue()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->strAt(-1) == "." || tok->next()->astOperand1() != tok)
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->strAt(-1) == ".")
                 continue;
 
-            if (!tok->scope()->isExecutable())
+            if (!tok->scope()->isExecutable()) {
                 tok = tok->scope()->classEnd;
+                continue;
+            }
 
-            if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.useretval.find(tok->str()) != _settings->library.useretval.end())
+            const Token* parent = tok;
+            while (parent->astParent() && parent->astParent()->str() == "::")
+                parent = parent->astParent();
+            if (tok->next()->astOperand1() != parent)
+                continue;
+
+            if (!tok->next()->astParent() && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok))
                 ignoredReturnValueError(tok, tok->str());
         }
     }
