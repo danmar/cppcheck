@@ -53,7 +53,7 @@ static bool astGetSizeSign(const Settings *settings, const Token *tok, unsigned 
         return !tok->astOperand2() || astGetSizeSign(settings, tok->astOperand2(), size, sign);
     }
     if (tok->isNumber() && MathLib::isInt(tok->str())) {
-        if (tok->str().find("L") != std::string::npos)
+        if (tok->str().find('L') != std::string::npos)
             return false;
         MathLib::bigint value = MathLib::toLongNumber(tok->str());
         unsigned int sz;

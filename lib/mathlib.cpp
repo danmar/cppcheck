@@ -397,7 +397,7 @@ template<> std::string MathLib::toString(double value)
     result << value;
     if (result.str() == "-0")
         return "0.0";
-    if (result.str().find(".") == std::string::npos)
+    if (result.str().find('.') == std::string::npos)
         return result.str() + ".0";
     return result.str();
 }

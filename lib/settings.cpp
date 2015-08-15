@@ -78,10 +78,10 @@ namespace {
 std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
-    if (str.find(",") != std::string::npos) {
+    if (str.find(',') != std::string::npos) {
         std::string::size_type prevPos = 0;
         std::string::size_type pos = 0;
-        while ((pos = str.find(",", pos)) != std::string::npos) {
+        while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
                 return std::string("cppcheck: --enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));

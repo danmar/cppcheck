@@ -3192,8 +3192,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 if (MathLib::isInt(arguments[j]->str())) {
                     if (arguments[j]->str().find("ll") != std::string::npos ||
                         arguments[j]->str().find("LL") != std::string::npos) {
-                        if (arguments[j]->str().find("u") != std::string::npos ||
-                            arguments[j]->str().find("U") != std::string::npos) {
+                        if (arguments[j]->str().find('u') != std::string::npos ||
+                            arguments[j]->str().find('U') != std::string::npos) {
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 funcarg->typeStartToken()->isLong() &&
                                 funcarg->typeStartToken()->isUnsigned()) {
@@ -3206,10 +3206,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                                 same++;
                             }
                         }
-                    } else if (arguments[j]->str().find("l") != std::string::npos ||
-                               arguments[j]->str().find("L") != std::string::npos) {
-                        if (arguments[j]->str().find("u") != std::string::npos ||
-                            arguments[j]->str().find("U") != std::string::npos) {
+                    } else if (arguments[j]->str().find('l') != std::string::npos ||
+                               arguments[j]->str().find('L') != std::string::npos) {
+                        if (arguments[j]->str().find('u') != std::string::npos ||
+                            arguments[j]->str().find('U') != std::string::npos) {
                             if (funcarg->typeStartToken()->str() == "long" &&
                                 !funcarg->typeStartToken()->isLong() &&
                                 funcarg->typeStartToken()->isUnsigned()) {
@@ -3222,8 +3222,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                                 same++;
                             }
                         }
-                    } else if (arguments[j]->str().find("u") != std::string::npos ||
-                               arguments[j]->str().find("U") != std::string::npos) {
+                    } else if (arguments[j]->str().find('u') != std::string::npos ||
+                               arguments[j]->str().find('U') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "int" &&
                             funcarg->typeStartToken()->isUnsigned()) {
                             same++;
@@ -3239,13 +3239,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         }
                     }
                 } else {
-                    if (arguments[j]->str().find("f") != std::string::npos ||
-                        arguments[j]->str().find("F") != std::string::npos) {
+                    if (arguments[j]->str().find('f') != std::string::npos ||
+                        arguments[j]->str().find('F') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "float") {
                             same++;
                         }
-                    } else if (arguments[j]->str().find("l") != std::string::npos ||
-                               arguments[j]->str().find("L") != std::string::npos) {
+                    } else if (arguments[j]->str().find('l') != std::string::npos ||
+                               arguments[j]->str().find('L') != std::string::npos) {
                         if (funcarg->typeStartToken()->str() == "double" &&
                             funcarg->typeStartToken()->isLong())  {
                             same++;
@@ -3344,8 +3344,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
         if (currScope) {
             while (currScope && !Token::Match(tok1, "%type% :: %any% (")) {
-                currScope = currScope->findRecordInNestedList(tok1->strAt(2));
                 tok1 = tok1->tokAt(2);
+                currScope = currScope->findRecordInNestedList(tok1->str());
             }
 
             tok1 = tok1->tokAt(2);

@@ -66,11 +66,11 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
             // is a line number..
 
             // Get position of last colon
-            const std::string::size_type pos = file.rfind(":");
+            const std::string::size_type pos = file.rfind(':');
 
             // if a colon is found and there is no dot after it..
             if (pos != std::string::npos &&
-                file.find(".", pos) == std::string::npos) {
+                file.find('.', pos) == std::string::npos) {
                 // Try to parse out the line number
                 try {
                     std::istringstream istr1(file.substr(pos+1));

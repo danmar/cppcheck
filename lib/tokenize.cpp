@@ -1506,14 +1506,14 @@ void Tokenizer::simplifyTypedef()
                         }
                     } else if (typeOf) {
                         tok2 = copyTokens(tok2, argStart, argEnd);
-                    } else if (tok2->tokAt(2) && tok2->strAt(2) == "[") {
-                        while (tok2->tokAt(2) && tok2->strAt(2) == "[") {
+                    } else if (tok2->strAt(2) == "[") {
+                        do {
                             if (!tok2->linkAt(2)) {
                                 syntaxError(tok2); // #6807
                                 return;
                             }
                             tok2 = tok2->linkAt(2)->previous();
-                        }
+                        } while (tok2->strAt(2) == "[");
                     }
 
                     if (arrayStart && arrayEnd) {
@@ -2864,9 +2864,10 @@ void Tokenizer::setVarId()
     if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "%name% :: %name%")) {
-                if (tok2->strAt(3) == "(")
+                const std::string& str3 = tok2->strAt(3);
+                if (str3 == "(")
                     allMemberFunctions.push_back(tok2);
-                else if (tok2->strAt(3) != "::" && tok2->strAt(-1) != "::") // Support only one depth
+                else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
                     allMemberVars.push_back(tok2);
             }
         }

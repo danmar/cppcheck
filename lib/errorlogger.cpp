@@ -88,7 +88,7 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // The summary and verbose message are separated by a newline
     // If there is no newline then both the summary and verbose messages
     // are the given message
-    const std::string::size_type pos = msg.find("\n");
+    const std::string::size_type pos = msg.find('\n');
     if (pos == std::string::npos) {
         _shortMessage = msg;
         _verboseMessage = msg;

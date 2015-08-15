@@ -1224,24 +1224,24 @@ void CheckUnusedVar::checkStructMemberUsage()
             structname.clear();
 
         if (!structname.empty() && Token::Match(tok, "[{;]")) {
-            // Declaring struct variable..
-            std::string varname;
-
             // declaring a POD variable?
             if (!tok->next()->isStandardType())
                 continue;
 
+            // Declaring struct variable..
+            const std::string* varname;
+
             if (Token::Match(tok->next(), "%type% %name% [;[]"))
-                varname = tok->strAt(2);
+                varname = &tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% %type%|* %name% [;[]"))
-                varname = tok->strAt(3);
+                varname = &tok->strAt(3);
             else if (Token::Match(tok->next(), "%type% %type% * %name% [;[]"))
-                varname = tok->strAt(4);
+                varname = &tok->strAt(4);
             else
                 continue;
 
             // Check if the struct variable is used anywhere in the file
-            const std::string usagePattern(". " + varname);
+            const std::string usagePattern(". " + *varname);
             bool used = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next()) {
                 if (Token::simpleMatch(tok2, usagePattern.c_str())) {
@@ -1251,7 +1251,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             }
 
             if (! used) {
-                unusedStructMemberError(tok->next(), structname, varname);
+                unusedStructMemberError(tok->next(), structname, *varname);
             }
         }
     }
