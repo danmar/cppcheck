@@ -32,36 +32,36 @@ void uninitvar(void)
 {
     int i;
     // cppcheck-suppress uninitvar
-    std::abs(i);
+    (void)std::abs(i);
 
     double d;
     const std::complex<double> dc(d,d);
     // cppcheck-suppress uninitvar
-    std::proj(dc);
+    (void)std::proj(dc);
 
     // cppcheck-suppress uninitvar
-    std::isalnum(i);
+    (void)std::isalnum(i);
     // cppcheck-suppress uninitvar
-    std::isalpha(i);
+    (void)std::isalpha(i);
     // cppcheck-suppress uninitvar
-    std::iscntrl(i);
+    (void)std::iscntrl(i);
     // cppcheck-suppress uninitvar
-    std::isdigit(i);
+    (void)std::isdigit(i);
     // cppcheck-suppress uninitvar
-    std::isgraph(i);
+    (void)std::isgraph(i);
     // cppcheck-suppress uninitvar
-    std::islower(i);
+    (void)std::islower(i);
     // cppcheck-suppress uninitvar
-    std::isprint(i);
+    (void)std::isprint(i);
     // cppcheck-suppress uninitvar
-    std::isspace(i);
+    (void)std::isspace(i);
     // cppcheck-suppress uninitvar
-    std::isupper(i);
+    (void)std::isupper(i);
     // cppcheck-suppress uninitvar
-    std::isxdigit(i);
+    (void)std::isxdigit(i);
 
     const struct tm *tm;
     // cppcheck-suppress uninitvar
     // cppcheck-suppress obsoleteFunctionsasctime
-    std::asctime(tm);
+    (void)std::asctime(tm);
 }
