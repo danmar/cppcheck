@@ -14,6 +14,7 @@
 #include <cctype>
 #include <complex>
 #include <cassert>
+#include <cwchar>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -225,4 +226,13 @@ void uninitvar_asinh(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)std::asinh(ld);
+}
+
+void uninitvar_wcsftime(wchar_t* ptr)
+{
+    size_t maxsize;
+    wchar_t* format;
+    struct tm* timeptr;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
 }

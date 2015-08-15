@@ -4172,7 +4172,7 @@ private:
               "  return 0;\n"
               "}"
              );
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: buff\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: buff\n", errout.str());
     }
 
     void trac2540() {
