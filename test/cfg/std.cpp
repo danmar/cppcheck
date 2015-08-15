@@ -236,3 +236,33 @@ void uninitvar_wcsftime(wchar_t* ptr)
     // cppcheck-suppress uninitvar
     (void)std::wcsftime(ptr, maxsize, format, timeptr);
 }
+
+void uninitvar_tan(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::tan(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::tan(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::tan(ld);
+}
+
+void uninitvar_tanh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::tanh(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::tanh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::tanh(ld);
+}

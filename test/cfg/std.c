@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <tgmath.h> // frexp
+#include <wchar.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -401,12 +402,14 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
+#if 0
 void uninitvar_assert(void)
 {
     int i;
     // cppcheck-suppress uninitvar
     assert(i);
 }
+#endif
 
 void uninitvar_sqrt(void)
 {
@@ -556,6 +559,60 @@ void uninitvar_casinh(void)
     long double complex ldc;
     // cppcheck-suppress uninitvar
     (void)casinhl(ldc);
+}
+
+void uninitvar_wcsftime(wchar_t* ptr)
+{
+    size_t maxsize;
+    wchar_t* format;
+    struct tm* timeptr;
+    // cppcheck-suppress uninitvar
+    (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+void uninitvar_tan(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)tanf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)tan(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)tanl(ld);
+}
+
+void uninitvar_ctan(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvars
+    (void)ctanf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)ctan(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)ctanl(ldc);
+}
+
+void uninitvar_tanh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)tanhf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)tanh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)tanhl(ld);
 }
 
 void ignoreretrn(void)
