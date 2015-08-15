@@ -800,7 +800,8 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
 
 bool Library::isUseRetVal(const Token* ftok) const
 {
-    return (_useretval.find(functionName(ftok)) != _useretval.end());
+    return (!isNotLibraryFunction(ftok) &&
+            _useretval.find(functionName(ftok)) != _useretval.end());
 }
 
 bool Library::isnoreturn(const Token *ftok) const
