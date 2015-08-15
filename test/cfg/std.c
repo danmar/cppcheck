@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <tgmath.h> // frexp
 #include <wchar.h>
+#include <fenv.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -588,7 +589,7 @@ void uninitvar_tan(void)
 void uninitvar_ctan(void)
 {
     float complex fd;
-    // cppcheck-suppress uninitvars
+    // cppcheck-suppress uninitvar
     (void)ctanf(fd);
 
     double complex dc;
@@ -613,6 +614,28 @@ void uninitvar_tanh(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)tanhl(ld);
+}
+
+void uninitvar_ctanh(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)ctanhf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)ctanh(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)ctanhl(ldc);
+}
+
+void uninitvar_feclearexcept(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    feclearexcept(i);
 }
 
 void ignoreretrn(void)
