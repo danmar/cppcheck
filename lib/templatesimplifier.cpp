@@ -1160,7 +1160,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         result = (op1 >= op2) ? "1" : "0";
                     else if (cmp == "<")
                         result = (op1 < op2) ? "1" : "0";
-                    else if (cmp == ">")
+                    else
                         result = (op1 > op2) ? "1" : "0";
 
                     tok->str(result);

@@ -1355,11 +1355,11 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     : variableInfo(nullptr)
     , typeToken(nullptr)
     , functionInfo(nullptr)
+    , tempToken(nullptr)
     , element(false)
     , _template(false)
     , address(false)
     , isCPP(_isCPP)
-    , tempToken(nullptr)
 {
     if (tok) {
         if (tok->tokType() == Token::eString) {
