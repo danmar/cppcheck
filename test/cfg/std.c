@@ -333,6 +333,231 @@ void uninit_putchar(void)
     putchar(c);
 }
 
+void uninitvar_cproj(void) // #6939
+{
+    float complex fc;
+    // cppcheck-suppress uninitvar
+    (void)cprojf(fc);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)cproj(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)cprojl(ldc);
+}
+
+void uninitvar_creal(void)
+{
+    float complex fc;
+    // cppcheck-suppress uninitvar
+    (void)crealf(fc);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)creal(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)creall(ldc);
+}
+
+void uninitvar_acos(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)acosf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)acos(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)acosl(ld);
+}
+
+void uninitvar_acosh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)acoshf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)acosh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)acoshl(ld);
+}
+
+void uninitvar_asctime(void)
+{
+    const struct tm *tm;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress obsoleteFunctionsasctime
+    (void)asctime(tm);
+}
+
+void uninitvar_assert(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    assert(i);
+}
+
+void uninitvar_sqrt(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)sqrtf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)sqrt(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)sqrtl(ld);
+}
+
+void uninitvar_csqrt(void)
+{
+    float complex fc;
+    // cppcheck-suppress uninitvar
+    (void)csqrtf(fc);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)csqrt(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)csqrtl(ldc);
+}
+
+void uninitvar_sinh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)sinhf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)sinh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)sinhl(ld);
+}
+
+void uninitvar_sin(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)sinf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)sin(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)sinl(ld);
+}
+
+void uninitvar_csin(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)csinf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)csin(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)csinl(ldc);
+}
+
+void uninitvar_csinh(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)csinhf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)csinh(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)csinhl(ldc);
+}
+
+void uninitvar_asin(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)asinf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)asin(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)asinl(ld);
+}
+
+void uninitvar_casin(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)casinf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)casin(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)casinl(ldc);
+}
+
+void uninitvar_asinh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)asinhf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)asinh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)asinhl(ld);
+}
+
+void uninitvar_casinh(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)casinhf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)casinh(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)casinhl(ldc);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
