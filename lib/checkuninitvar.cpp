@@ -826,23 +826,6 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "= %name% ;|%cop%"))
         return true;
 
-    if (Token::Match(vartok->previous(), "? %name%")) {
-        // this is only variable usage if variable is either:
-        // * unconditionally uninitialized
-        // * used in both rhs and lhs of ':' operator
-        bool rhs = false;
-        for (const Token *tok2 = vartok; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-            else if (tok2->str() == ":")
-                rhs = true;
-            else if (Token::Match(tok2, "[)];,{}=]"))
-                break;
-            else if (rhs && tok2->varId() == vartok->varId())
-                return true;
-        }
-    }
-
     bool unknown = false;
     if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
         // pointer is allocated - dereferencing it is ok.
