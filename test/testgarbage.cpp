@@ -49,12 +49,12 @@ private:
         TEST_CASE(garbageCode7);
         TEST_CASE(garbageCode8); // #5511
         TEST_CASE(garbageCode9); // #5604
-        TEST_CASE(garbageCode10);  // #6127
+        TEST_CASE(garbageCode10); // #6127
         TEST_CASE(garbageCode11);
         TEST_CASE(garbageCode12);
-        TEST_CASE(garbageCode13);  // Ticket #2607 - crash
-        TEST_CASE(garbageCode14);  // Ticket #5595 - crash
-        TEST_CASE(garbageCode15);  // Ticket #5203
+        TEST_CASE(garbageCode13); // #2607
+        TEST_CASE(garbageCode14); // #5595
+        TEST_CASE(garbageCode15); // #5203
         TEST_CASE(garbageCode16);
         TEST_CASE(garbageCode17);
         TEST_CASE(garbageCode18);
@@ -63,7 +63,7 @@ private:
         TEST_CASE(garbageCode21);
         TEST_CASE(garbageCode22);
         TEST_CASE(garbageCode23);
-        TEST_CASE(garbageCode24);  // Ticket #6361 - crash
+        TEST_CASE(garbageCode24); // #6361
         TEST_CASE(garbageCode25);
         TEST_CASE(garbageCode26);
         TEST_CASE(garbageCode27);
@@ -153,6 +153,11 @@ private:
         TEST_CASE(garbageCode111);
         TEST_CASE(garbageCode112);
         TEST_CASE(garbageCode113);
+        TEST_CASE(garbageCode114);
+        TEST_CASE(garbageCode115); // #5506
+        TEST_CASE(garbageCode116); // #5356
+        TEST_CASE(garbageCode117); // #6121
+        TEST_CASE(garbageCode118); // #5600
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -857,6 +862,36 @@ private:
 
     void garbageCode113() { //  #6858
         checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }");
+    }
+
+    void garbageCode114() { // #2118
+        ASSERT_THROW(checkCode("Q_GLOBAL_STATIC_WITH_INITIALIZER(Qt4NodeStaticData, qt4NodeStaticData, {\n"
+                               "    for (unsigned i = 0 ; i < count; i++) {\n"
+                               "    }\n"
+                               "});"), InternalError);
+    }
+
+    void garbageCode115() { // #5506
+        checkCode("A template < int { int = -1 ; } template < int N > struct B { int [ A < N > :: zero ] ;  } ; B < 0 > b ;");
+    }
+
+    void garbageCode116() { // #5356
+        checkCode("struct template<int { = }; > struct B { }; B < 0 > b;");
+    }
+
+    void garbageCode117() { // #6121
+        ASSERT_THROW(checkCode("enum E { f = {} };\n"
+                               "int a = f;"), InternalError);
+    }
+
+    void garbageCode118() { // #5600 - missing include causes invalid enum
+        ASSERT_THROW(checkCode("enum {\n"
+                               "    NUM_OPCODES = \n"
+                               // #include "definition"
+                               "};\n"
+                               "struct bytecode {};\n"
+                               "jv jq_next() { opcode = ((opcode) +NUM_OPCODES);\n"
+                               "}"), InternalError);
     }
 
     void garbageValueFlow() {
