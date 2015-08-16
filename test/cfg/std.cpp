@@ -266,3 +266,78 @@ void uninitvar_tanh(void)
     // cppcheck-suppress uninitvar
     (void)std::tanh(ld);
 }
+
+void uninitvar_atan(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::atan(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::atan(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::atan(ld);
+}
+
+void uninitvar_tgamma(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::tgamma(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::tgamma(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::tgamma(ld);
+}
+
+void uninitvar_trunc(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::trunc(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::trunc(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::trunc(ld);
+}
+
+void uninitvar_atanh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::atanh(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::atanh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::atanh(ld);
+}
+
+void uninitvar_atan2(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::atan2(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::atan2(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::atan2(ld1,ld2);
+}

@@ -638,6 +638,161 @@ void uninitvar_feclearexcept(void)
     feclearexcept(i);
 }
 
+void uninitvar_fegetexceptflag(fexcept_t* flagp)
+{
+    int excepts;
+    // cppcheck-suppress uninitvar
+    (void)fegetexceptflag(flagp, excepts);
+}
+
+void uninitvar_feraiseexcept(void)
+{
+    int excepts;
+    // cppcheck-suppress uninitvar
+    (void)feraiseexcept(excepts);
+}
+
+void uninitvar_fesetenv(void)
+{
+    fenv_t* envp;
+    // cppcheck-suppress uninitvar
+    (void)fesetenv(envp);
+}
+
+void uninitvar_fesetexceptflag(void)
+{
+    fexcept_t* flagp;
+    int excepts;
+    // cppcheck-suppress uninitvar
+    (void)fesetexceptflag(flagp, excepts);
+}
+
+void uninitvar_fesetround(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)fesetround(i);
+}
+
+void uninitvar_fetestexcept(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)fetestexcept(i);
+}
+
+void uninitvar_feupdateenv(void)
+{
+    fenv_t* envp;
+    // cppcheck-suppress uninitvar
+    (void)feupdateenv(envp);
+}
+
+void uninitvar_atan(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)atanf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)atan(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)atanl(ld);
+}
+
+void uninitvar_catan(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)catanf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)catan(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)catanl(ldc);
+}
+
+void uninitvar_tgamma(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)tgammaf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)tgamma(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)tgammal(ld);
+}
+
+void uninitvar_trunc(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)truncf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)trunc(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)truncl(ld);
+}
+
+void uninitvar_atanh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)atanhf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)atanh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)atanhl(ld);
+}
+
+void uninitvar_catanh(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)catanhf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)catanh(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)catanhl(ldc);
+}
+
+void uninitvar_atan2(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)atan2f(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)atan2(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)atan2l(ld1,ld2);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
