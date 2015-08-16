@@ -26,12 +26,12 @@
  * Cppcheck is a simple tool for static analysis of C/C++ code.
  *
  * When you write a checker you have access to:
- *  - %Token list = the tokenized code
- *  - Syntax tree = Syntax tree of each expression
- *  - SymbolDatabase = Information about all types/variables/functions/etc
+ *  - %Token list - the tokenized code
+ *  - Syntax tree - Syntax tree of each expression
+ *  - %SymbolDatabase - Information about all types/variables/functions/etc
  *    in the current translation unit
- *  - Library = Information about functions
- *  - Value flow analysis => possible values for each token
+ *  - Library - Configuration of functions/types
+ *  - Value flow analysis - Context sensitive analysis that determine possible values for each token
  *
  * Use --debug on the command line to see debug output for the token list
  * and the syntax tree. If both --debug and --verbose is used, the symbol
@@ -48,8 +48,15 @@ void CheckOther::checkZeroDivision()
     // Iterate through all tokens in the token list
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "/ 0"))
-            reportError(tok, Severity::error, "zerodiv", "Division by zero");
+        // is this a division or modulo?
+        if (Token::Match(tok, "[/%]")) {
+            // try to get value '0' of rhs
+            const ValueFlow::Value *value = tok->astOperand2()->getValue(0);
+
+            // if 'value' is not NULL, rhs can be zero.
+            if (value)
+                reportError(tok, Severity::error, "zerodiv", "Division by zero");
+        }
     }
 }
  @endcode
