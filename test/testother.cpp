@@ -3186,13 +3186,6 @@ private:
               "    per_state_info() : enter(0), exit(0), events(0) {}\n"
               "};", nullptr, false, false, false);
         ASSERT_EQUALS("", errout.str());
-
-        // Garbage code - don't crash
-        check("namespace pr16989 {\n"
-              "    class C {\n"
-              "        C tpl_mem(T *) { return }\n"
-              "    };\n"
-              "}");
     }
 
 
@@ -3813,12 +3806,6 @@ private:
         check("void f() {\n"
               "    return (2*a)?b:c;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // Ticket #2585 - segmentation fault for invalid code
-        check("abcdef?""?<"
-              "123456?""?>"
-              "+?""?=");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char c) {\n"
@@ -6051,12 +6038,6 @@ private:
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return c<int,\nint>::b;\n"
-              "}", nullptr, true, false, false);
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #4927 Segfault in CheckOther::checkCommaSeparatedReturn() on invalid code
-        check("int main() {\n"
-              "   return 0\n"
               "}", nullptr, true, false, false);
         ASSERT_EQUALS("", errout.str());
 

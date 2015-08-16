@@ -45,7 +45,6 @@ private:
         TEST_CASE(iterator11);
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
-        TEST_CASE(iterator14); // #5598 invalid code causing a crash
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -451,11 +450,6 @@ private:
               "    while (!z && it!=t.end())\n"
               "        v++it;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void iterator14() {
-        check(" { { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };");
         ASSERT_EQUALS("", errout.str());
     }
 

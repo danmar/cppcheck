@@ -158,6 +158,11 @@ private:
         TEST_CASE(garbageCode116); // #5356
         TEST_CASE(garbageCode117); // #6121
         TEST_CASE(garbageCode118); // #5600
+        TEST_CASE(garbageCode119); // #5598
+        TEST_CASE(garbageCode120); // #4927
+        TEST_CASE(garbageCode121); // #2585
+        TEST_CASE(garbageCode122); // #6303
+        TEST_CASE(garbageCode123);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -165,9 +170,11 @@ private:
         TEST_CASE(templateSimplifierCrashes);
     }
 
-    std::string checkCode(const char code[], const std::string& filename = "test.cpp") {
+    std::string checkCode(const char code[], bool cpp = true) {
         // double the tests - run each example as C as well as C++
-        const std::string alternatefilename = (filename=="test.c") ? "test.cpp" : "test.c";
+        const char* filename = cpp ? "test.cpp" : "test.c";
+        const char* alternatefilename = cpp ? "test.c" : "test.cpp";
+
         // run alternate check first. It should only ensure stability
         try {
             checkCodeInternal(code, alternatefilename);
@@ -177,7 +184,7 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const char code[], const std::string& filename) {
+    std::string checkCodeInternal(const char code[], const char* filename) {
         errout.str("");
 
         Settings settings;
@@ -192,7 +199,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename.c_str());
+        tokenizer.tokenize(istr, filename);
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -281,10 +288,11 @@ private:
         // #3585
         const char code[] = "class x y { };";
 
+        Settings settings;
+        settings.addEnabled("information");
+
         {
             errout.str("");
-            Settings settings;
-            settings.addEnabled("information");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.c");
@@ -293,8 +301,6 @@ private:
         }
         {
             errout.str("");
-            Settings settings;
-            settings.addEnabled("information");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
@@ -668,7 +674,7 @@ private:
     }
 
     void garbageCode67() { // #6744
-        checkCode("&g[0]; { (g[0] 0) } =", "test.c");
+        checkCode("&g[0]; { (g[0] 0) } =", false);
     }
 
     void garbageCode68() { // #6745
@@ -700,7 +706,7 @@ private:
     }
 
     void garbageCode75() { // #6753
-        checkCode("{ { void foo() { struct }; { }; } }; struct S { } f =", "test.c");
+        checkCode("{ { void foo() { struct }; { }; } }; struct S { } f =", false);
     }
 
     void garbageCode76() { // #6754
@@ -772,7 +778,7 @@ private:
     }
 
     void garbageCode93() { // #6800
-        checkCode(" namespace A { } class A{ { }} class A : T ;", "test.c"); // do not crash
+        checkCode(" namespace A { } class A{ { }} class A : T ;", false); // do not crash
     }
 
     void garbageCode94() { // #6803
@@ -894,6 +900,39 @@ private:
                                "}"), InternalError);
     }
 
+    void garbageCode119() { // #5598
+        checkCode("{ { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };");
+    }
+
+    void garbageCode120() { // #4927
+        checkCode("int main() {\n"
+                  "   return 0\n"
+                  "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageCode121() { // #2585
+        checkCode("abcdef?""?<"
+                  "123456?""?>"
+                  "+?""?=");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void garbageCode122() { // #6303
+        checkCode("void foo() {\n"
+                  "char *a = malloc(10);\n"
+                  "a[0]\n"
+                  "}");
+    }
+
+    void garbageCode123() {
+        checkCode("namespace pr16989 {\n"
+                  "    class C {\n"
+                  "        C tpl_mem(T *) { return }\n"
+                  "    };\n"
+                  "}");
+    }
+
     void garbageValueFlow() {
         // #6089
         const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
@@ -939,7 +978,7 @@ private:
     }
 
     void templateSimplifierCrashes() {
-        checkCode( //5950
+        checkCode( // #5950
             "struct A { \n"
             "  template <class T> operator T*();\n"
             "}; \n"
@@ -961,7 +1000,7 @@ private:
             "  }\n"
             "}\n");
 
-        checkCode( // 6034
+        checkCode( // #6034
             "template<template<typename...> class T, typename... Args>\n"
             "struct foo<T<Args...> > {\n"
             "    const bool value = true;\n"
@@ -976,9 +1015,9 @@ private:
             "}\n"
         );
 
-        checkCode(" > template < . > struct Y < T > { = } ;\n"); //6108
+        checkCode(" > template < . > struct Y < T > { = } ;\n"); // #6108
 
-        checkCode( // 6117
+        checkCode( // #6117
             "template <typename ...> struct something_like_tuple\n"
             "{};\n"
             "template <typename, typename> struct is_last {\n"
@@ -997,7 +1036,7 @@ private:
             "SA ((is_last<int, something_like_tuple_t>::value == false));\n"
         );
 
-        checkCode( //6225
+        checkCode( // #6225
             "template <typename...>\n"
             "void templ_fun_with_ty_pack() {}\n"
             " \n"
@@ -1007,6 +1046,17 @@ private:
             "        using AliasA = A<T>;\n"
             "}\n"
         );
+
+        // #3449
+        ASSERT_EQUALS("template < typename T > struct A ;\n"
+                      "struct B { template < typename T > struct C } ;\n"
+                      "{ } ;",
+                      checkCode("template<typename T> struct A;\n"
+                                "struct B { template<typename T> struct C };\n"
+                                "{};"));
+
+        // #4169
+        checkCode("volatile true , test < test < #ifdef __ppc__ true ,");
     }
 };
 

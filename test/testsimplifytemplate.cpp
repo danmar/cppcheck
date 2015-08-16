@@ -59,7 +59,6 @@ private:
         TEST_CASE(template26);  // #2721 - passing 'char[2]' as template parameter
         TEST_CASE(template27);  // #3350 - removing unused template in macro call
         TEST_CASE(template28);
-        TEST_CASE(template29);  // #3449 - don't crash for garbage code
         TEST_CASE(template30);  // #3529 - template < template < ..
         TEST_CASE(template31);  // #4010 - reference type
         TEST_CASE(template32);  // #3818 - mismatching template not handled well
@@ -95,7 +94,6 @@ private:
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
-        TEST_CASE(templateParameters1);  // #4169 - segmentation fault
 
         TEST_CASE(templateNamePosition);
     }
@@ -659,14 +657,6 @@ private:
         ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } ; class Fred<int,Fred<int,int>> { } ;", tok(code));
     }
 
-    void template29() {
-        // #3449 - garbage code (don't segfault)
-        const char code[] = "template<typename T> struct A;\n"
-                            "struct B { template<typename T> struct C };\n"
-                            "{};";
-        ASSERT_EQUALS("template < typename T > struct A ; struct B { template < typename T > struct C } ; { } ;", tok(code));
-    }
-
     void template30() {
         // #3529 - template < template < ..
         const char code[] = "template<template<class> class A, class B> void f(){}";
@@ -1214,13 +1204,6 @@ private:
         ASSERT_EQUALS(3U, templateParameters("<char, int(*)(), bool> x;"));
         TODO_ASSERT_EQUALS(1U, 0U, templateParameters("<int...> x;")); // Mishandled valid syntax
         TODO_ASSERT_EQUALS(2U, 0U, templateParameters("<class, typename...> x;")); // Mishandled valid syntax
-    }
-
-    void templateParameters1() {
-        // #4169 - segmentation fault (invalid code)
-        const char code[] = "volatile true , test < test < #ifdef __ppc__ true ,";
-        // do not crash on invalid code
-        ASSERT_EQUALS(0, templateParameters(code));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

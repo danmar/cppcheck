@@ -234,8 +234,6 @@ private:
 
         TEST_CASE(negativeMemoryAllocationSizeError) // #389
         TEST_CASE(negativeArraySize);
-
-        TEST_CASE(garbage1) // #6303
     }
 
 
@@ -3804,14 +3802,6 @@ private:
               "int a[-1];\n"
               "int b[x?1:-1];\n"
               "int c[x?y:-1];\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void garbage1() {
-        check("void foo() {\n"
-              "char *a = malloc(10);\n"
-              "a[0]\n"
-              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
