@@ -34,25 +34,33 @@ public:
     ~LibraryDialog();
 
     struct Function {
+        Function() : noreturn(false), gccPure(false), gccConst(false),
+            leakignore(false), useretval(false) {
+        }
+
         QString name;
-        bool noreturn = false;
-        bool gccPure = false;
-        bool gccConst = false;
-        bool leakignore = false;
-        bool useretval = false;
+        bool noreturn;
+        bool gccPure;
+        bool gccConst;
+        bool leakignore;
+        bool useretval;
         struct {
             QString scan;
             QString secure;
         } formatstr;
         struct Arg {
+            Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
+                formatstr(false), strz(false) {
+            }
+
             QString name;
-            unsigned int nr = 0;
+            unsigned int nr;
             static const unsigned int ANY;
-            bool notbool = false;
-            bool notnull = false;
-            bool notuninit = false;
-            bool formatstr = false;
-            bool strz = false;
+            bool notbool;
+            bool notnull;
+            bool notuninit;
+            bool formatstr;
+            bool strz;
             QString valid;
             struct {
                 QString type;

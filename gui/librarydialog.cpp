@@ -50,19 +50,6 @@ void LibraryDialog::updateui()
     }
 }
 
-
-QStringList getFunctions(QFile &file)
-{
-    QStringList ret;
-
-    QDomDocument doc;
-    if (!doc.setContent(&file))
-        return ret;
-
-
-    return ret;
-}
-
 static LibraryDialog::Function::Arg loadFunctionArg(const QDomElement &functionArgElement)
 {
     LibraryDialog::Function::Arg arg;
