@@ -654,7 +654,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
         if ((Token::Match(tok, "[+-!~*&]") || tok->tokType() == Token::eIncDecOp) &&
             isPrefixUnary(tok, state.cpp)) {
             if (Token::Match(tok, "* [*,)]")) {
-                Token* tok2 = tok;
+                Token* tok2 = tok->next();
                 while (tok2->next() && tok2->str() == "*")
                     tok2 = tok2->next();
                 if (Token::Match(tok2, "[>),]")) {
@@ -736,7 +736,7 @@ static void compileMulDiv(Token *&tok, AST_state& state)
     while (tok) {
         if (Token::Match(tok, "[/%]") || (tok->str() == "*" && !tok->astOperand1())) {
             if (Token::Match(tok, "* [*,)]")) {
-                Token* tok2 = tok;
+                Token* tok2 = tok->next();
                 while (tok2->next() && tok2->str() == "*")
                     tok2 = tok2->next();
                 if (Token::Match(tok2, "[>),]")) {

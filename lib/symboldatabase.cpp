@@ -1246,10 +1246,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
             Token *tok2 = tok->next();
             // Locate "]"
-            if (tok->next()->str() == "[") {
-                while (tok2 && tok2->str() == "[")
-                    tok2 = tok2->link()->next();
-            }
+            while (tok2 && tok2->str() == "[")
+                tok2 = tok2->link()->next();
 
             Token *membertok = nullptr;
             if (Token::Match(tok2, ". %name%"))
@@ -1571,37 +1569,27 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         }
 
         // definition missing variable name
-        else if (first->next()->str() == "," && second->next()->str() != ",") {
+        else if ((first->next()->str() == "," && second->next()->str() != ",") ||
+                 (first->next()->str() == ")" && second->next()->str() != ")")) {
             second = second->next();
             // skip default value assignment
             if (second->next()->str() == "=") {
-                while (!Token::Match(second->next(), ",|)"))
+                do {
                     second = second->next();
-            }
-        } else if (first->next()->str() == ")" && second->next()->str() != ")") {
-            second = second->next();
-            // skip default value assignment
-            if (second->next()->str() == "=") {
-                while (!Token::Match(second->next(), ",|)"))
-                    second = second->next();
+                } while (!Token::Match(second->next(), ",|)"));
             }
         } else if (first->next()->str() == "[" && second->next()->str() != "[")
             second = second->next();
 
         // function missing variable name
-        else if (second->next()->str() == "," && first->next()->str() != ",") {
+        else if ((second->next()->str() == "," && first->next()->str() != ",") ||
+                 (second->next()->str() == ")" && first->next()->str() != ")")) {
             first = first->next();
             // skip default value assignment
             if (first->next()->str() == "=") {
-                while (!Token::Match(first->next(), ",|)"))
+                do {
                     first = first->next();
-            }
-        } else if (second->next()->str() == ")" && first->next()->str() != ")") {
-            first = first->next();
-            // skip default value assignment
-            if (first->next()->str() == "=") {
-                while (!Token::Match(first->next(), ",|)"))
-                    first = first->next();
+                } while (!Token::Match(first->next(), ",|)"));
             }
         } else if (second->next()->str() == "[" && first->next()->str() != "[")
             first = first->next();
@@ -1632,8 +1620,9 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                 short_path.resize(short_path.size() - 4);
 
                 // remove last name
-                while (!short_path.empty() && short_path[short_path.size() - 1] != ' ')
-                    short_path.resize(short_path.size() - 1);
+                std::string::size_type lastSpace = short_path.find_last_of(' ');
+                if (lastSpace != std::string::npos)
+                    short_path.resize(lastSpace+1);
 
                 param = short_path + first->next()->str();
                 if (Token::Match(second->next(), param.c_str())) {
@@ -2611,11 +2600,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             // skip default values
             if (tok->str() == "=") {
-                while (tok->str() != "," && tok->str() != ")") {
+                do {
                     if (tok->link() && Token::Match(tok, "[{[(<]"))
                         tok = tok->link();
                     tok = tok->next();
-                }
+                } while (tok->str() != "," && tok->str() != ")");
             }
 
             argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));

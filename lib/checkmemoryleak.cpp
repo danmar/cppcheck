@@ -2466,18 +2466,16 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if ((func->type == Function::eFunction || func->type == Function::eOperatorEqual) &&
             func->access == Public && func->hasBody()) {
-            const Token *tok2 = func->token;
-            while (tok2->str() != "{")
-                tok2 = tok2->next();
-            if (Token::Match(tok2, "{|}|; %varid% =", varid)) {
-                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
+            const Token *tok2 = func->functionScope->classStart->next();
+            if (Token::Match(tok2, "%varid% =", varid)) {
+                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(2), varid);
                 if (alloc != CheckMemoryLeak::No)
-                    publicAllocationError(tok2, tok2->strAt(1));
-            } else if (Token::Match(tok2, "{|}|; %type% :: %varid% =", varid) &&
-                       tok2->next()->str() == scope->className) {
-                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(5), varid);
+                    publicAllocationError(tok2, tok2->str());
+            } else if (Token::Match(tok2, "%type% :: %varid% =", varid) &&
+                       tok2->str() == scope->className) {
+                const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(4), varid);
                 if (alloc != CheckMemoryLeak::No)
-                    publicAllocationError(tok2, tok2->strAt(3));
+                    publicAllocationError(tok2, tok2->strAt(2));
             }
         }
     }

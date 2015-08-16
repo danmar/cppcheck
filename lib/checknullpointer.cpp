@@ -61,7 +61,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 
     // Library
     if (library) {
-        const Token *param = tok.tokAt(2);
+        const Token *param = firstParam;
         int argnr = 1;
         while (param) {
             if (Token::Match(param, "%var% ,|)") || (value==0 && Token::Match(param, "0|NULL ,|)"))) {

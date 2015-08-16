@@ -497,6 +497,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (noreturn)
                 *noreturn = true;
 
+            tok = tok->next();
             while (tok && tok->str() != ";") {
                 // variable is seen..
                 if (tok->varId() == var.declarationId()) {

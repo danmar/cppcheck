@@ -471,10 +471,10 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                 MathLib::bigint argsize = _tokenizer->sizeOfType(argument->typeStartToken());
                 if (argsize == 100) // unknown size
                     argsize = 0;
-                while (Token::Match(tok2, "[ %num% ] [,)[]")) {
+                do {
                     argsize *= MathLib::toLongNumber(tok2->strAt(1));
                     tok2 = tok2->tokAt(3);
-                }
+                } while (Token::Match(tok2, "[ %num% ] [,)[]"));
 
                 MathLib::bigint arraysize = arrayInfo.element_size();
                 if (arraysize == 100) // unknown size
@@ -548,7 +548,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
         (declarationId == 0 && Token::Match(tok, (varnames + " [").c_str()))) {
 
-        const Token *tok2 = tok;
+        const Token *tok2 = tok->next();
         while (tok2->str() != "[")
             tok2 = tok2->next();
         valueFlowCheckArrayIndex(tok2, arrayInfo);
@@ -974,7 +974,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 std::size_t charactersAppend = 0;
                 const Token *tok2 = tok;
 
-                while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
+                while (Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
                     charactersAppend += Token::getStrLength(tok2->tokAt(4));
                     if (charactersAppend >= (unsigned int)total_size) {
                         bufferOverrunError(tok2, arrayInfo.varname());
@@ -1085,7 +1085,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         const Variable * const var = symbolDatabase->getVariableFromVarId(i);
         if (var && var->isArray() && var->dimension(0) > 0) {
             const Token *tok = var->nameToken();
-            while (tok && tok->str() != ";") {
+            do {
                 if (tok->str() == "{") {
                     if (Token::simpleMatch(tok->previous(), "= {"))
                         tok = tok->link();
@@ -1093,7 +1093,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                         break;
                 }
                 tok = tok->next();
-            }
+            } while (tok && tok->str() != ";");
             if (!tok)
                 break;
             if (tok->str() == "{")

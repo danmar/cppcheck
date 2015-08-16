@@ -2502,7 +2502,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     // Check if array declaration is valid (#2638)
     // invalid declaration: AAA a[4] = 0;
     if (typeCount >= 2 && executableScope && tok2 && tok2->str() == "[") {
-        const Token *tok3 = tok2;
+        const Token *tok3 = tok2->link()->next();
         while (tok3 && tok3->str() == "[") {
             tok3 = tok3->link()->next();
         }
@@ -4059,6 +4059,7 @@ void Tokenizer::removeRedundantAssignment()
                 // skip local class or struct
                 if (Token::Match(tok2, "class|struct %type% {|:")) {
                     // skip to '{'
+                    tok2 = tok2->tokAt(2);
                     while (tok2 && tok2->str() != "{")
                         tok2 = tok2->next();
 
@@ -4915,10 +4916,10 @@ void Tokenizer::simplifyUndefinedSizeArray()
             tok = tok2->previous();
             Token *end = tok2->next();
             unsigned int count = 0;
-            while (Token::Match(end, "[ ] [;=[]")) {
+            do {
                 end = end->tokAt(2);
                 ++count;
-            }
+            } while (Token::Match(end, "[ ] [;=[]"));
             if (Token::Match(end, "[;=]")) {
                 do {
                     tok2->deleteNext(2);
@@ -6125,7 +6126,7 @@ void Tokenizer::simplifyInitVar()
             if (!tok2->link() || (tok2->link()->strAt(1) == ";" && !Token::simpleMatch(tok2->linkAt(2), ") (")))
                 tok = initVar(tok);
         } else if (Token::Match(tok, "class|struct|union| %type% *| %name% ( &| %any% ) ,")) {
-            Token *tok1 = tok;
+            Token *tok1 = tok->tokAt(5);
             while (tok1->str() != ",")
                 tok1 = tok1->next();
             tok1->str(";");

@@ -936,7 +936,7 @@ void CheckOther::invalidFunctionUsage()
             const Token * const functionToken = tok;
             int argnr = 1;
             const Token *argtok = tok->tokAt(2);
-            while (argtok && argtok->str() != ")") {
+            do {
                 if (Token::Match(argtok,"%num% [,)]")) {
                     if (MathLib::isInt(argtok->str()) &&
                         !_settings->library.isargvalid(functionToken, argnr, MathLib::toLongNumber(argtok->str())))
@@ -958,7 +958,7 @@ void CheckOther::invalidFunctionUsage()
                 }
                 argnr++;
                 argtok = argtok->nextArgument();
-            }
+            } while (argtok && argtok->str() != ")");
         }
     }
 }
@@ -1383,8 +1383,9 @@ void CheckOther::checkCommaSeparatedReturn()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() == "return") {
+            tok = tok->next();
             while (tok && tok->str() != ";") {
-                if (Token::Match(tok, "[([{<]") && tok->link())
+                if (tok->link() && Token::Match(tok, "[([{<]"))
                     tok = tok->link();
 
                 if (!tok->isExpandedMacro() && tok->str() == "," && tok->linenr() != tok->next()->linenr())

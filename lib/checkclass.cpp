@@ -1670,7 +1670,7 @@ void CheckClass::checkConst()
                     if (func->retDef->str() != "const")
                         continue;
                 } else if (Token::Match(previous->previous(), "*|& >")) {
-                    const Token *temp = previous;
+                    const Token *temp = previous->previous();
 
                     bool foundConst = false;
                     while (!Token::Match(temp->previous(), ";|}|{|public:|protected:|private:")) {

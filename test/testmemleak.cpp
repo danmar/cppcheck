@@ -5010,7 +5010,7 @@ private:
               "    A::pd = new char[12];\n"
               "    delete [] A::pd;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
 
         check("class A {\n"
               "private:\n"
@@ -5022,7 +5022,7 @@ private:
               "        delete [] pd;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
 
         check("class A {\n"
               "private:\n"
@@ -5036,7 +5036,7 @@ private:
               "    pd = new char[12];\n"
               "    delete [] pd;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
     }
 
     void class18() {
@@ -5457,7 +5457,7 @@ private:
               "  delete data_;\n"
               "  data_ = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:16]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
+        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
                       "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
 
         check("namespace NS\n"
@@ -5480,7 +5480,7 @@ private:
               "  delete data_;\n"
               "  data_ = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:16]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
+        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
                       "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
     }
 
