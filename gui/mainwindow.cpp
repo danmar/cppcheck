@@ -44,6 +44,7 @@
 #include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"
+#include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
@@ -99,6 +100,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionShowHidden, SIGNAL(triggered()), mUI.mResults, SLOT(ShowHiddenResults()));
     connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(ShowLogView()));
     connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(ShowStatistics()));
+    connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(ShowLibraryEditor()));
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
@@ -1213,6 +1215,12 @@ void MainWindow::ShowStatistics()
     statsDialog.setStatistics(mUI.mResults->GetStatistics());
 
     statsDialog.exec();
+}
+
+void MainWindow::ShowLibraryEditor()
+{
+    LibraryDialog libraryDialog(this);
+    libraryDialog.exec();
 }
 
 void MainWindow::Log(const QString &logline)

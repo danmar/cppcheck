@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -115,6 +115,7 @@
     <addaction name="mActionShowScratchpad"/>
     <addaction name="mActionViewLog"/>
     <addaction name="mActionViewStats"/>
+    <addaction name="mActionLibraryEditor"/>
    </widget>
    <widget class="QMenu" name="mMenuHelp">
     <property name="title">
@@ -700,6 +701,14 @@
    </property>
    <property name="toolTip">
     <string>Open a Print Preview Dialog for the Current Results</string>
+   </property>
+  </action>
+  <action name="mActionLibraryEditor">
+   <property name="text">
+    <string>LibraryEditor...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open library editor</string>
    </property>
   </action>
  </widget>

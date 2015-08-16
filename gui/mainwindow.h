@@ -220,6 +220,12 @@ public slots:
     */
     void ShowStatistics();
 
+    /**
+    * @brief Slot for showing the library editor
+    *
+    */
+    void ShowLibraryEditor();
+
 protected slots:
 
     /**
