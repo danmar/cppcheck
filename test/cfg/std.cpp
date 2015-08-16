@@ -15,6 +15,7 @@
 #include <complex>
 #include <cassert>
 #include <cwchar>
+#include <cfenv>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -353,4 +354,53 @@ void uninitvar_atol(void)
 
     // cppcheck-suppress uninitvar
     (void)std::atoll(c);
+}
+
+void uninitvar_feraiseexcept(void)
+{
+    int excepts;
+    // cppcheck-suppress uninitvar
+    (void)std::feraiseexcept(excepts);
+}
+
+void uninitvar_fesetexceptflag(fexcept_t* flagp)
+{
+    int excepts;
+    // cppcheck-suppress uninitvar
+    (void)std::fesetexceptflag(flagp, excepts);
+}
+
+void uninitvar_feclearexcept(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::feclearexcept(i);
+}
+
+void uninitvar_fesetenv(void)
+{
+    fenv_t* envp;
+    // cppcheck-suppress uninitvar
+    (void)std::fesetenv(envp);
+}
+
+void uninitvar_fesetround(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::fesetround(i);
+}
+
+void uninitvar_fetestexcept(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::fetestexcept(i);
+}
+
+void uninitvar_feupdateenv(void)
+{
+    fenv_t* envp;
+    // cppcheck-suppress uninitvar
+    (void)std::feupdateenv(envp);
 }

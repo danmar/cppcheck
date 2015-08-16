@@ -635,7 +635,7 @@ void uninitvar_feclearexcept(void)
 {
     int i;
     // cppcheck-suppress uninitvar
-    feclearexcept(i);
+    (void)feclearexcept(i);
 }
 
 void uninitvar_fegetexceptflag(fexcept_t* flagp)
@@ -657,14 +657,6 @@ void uninitvar_fesetenv(void)
     fenv_t* envp;
     // cppcheck-suppress uninitvar
     (void)fesetenv(envp);
-}
-
-void uninitvar_fesetexceptflag(void)
-{
-    fexcept_t* flagp;
-    int excepts;
-    // cppcheck-suppress uninitvar
-    (void)fesetexceptflag(flagp, excepts);
 }
 
 void uninitvar_fesetround(void)
