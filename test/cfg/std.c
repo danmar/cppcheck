@@ -793,6 +793,19 @@ void uninitvar_atan2(void)
     (void)atan2l(ld1,ld2);
 }
 
+void uninitvar_atol(void)
+{
+    char * c;
+    // cppcheck-suppress uninitvar
+    (void)atoi(c);
+
+    // cppcheck-suppress uninitvar
+    (void)atol(c);
+
+    // cppcheck-suppress uninitvar
+    (void)atoll(c);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";

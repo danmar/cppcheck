@@ -341,3 +341,16 @@ void uninitvar_atan2(void)
     // cppcheck-suppress uninitvar
     (void)std::atan2(ld1,ld2);
 }
+
+void uninitvar_atol(void)
+{
+    char * c;
+    // cppcheck-suppress uninitvar
+    (void)std::atoi(c);
+
+    // cppcheck-suppress uninitvar
+    (void)std::atol(c);
+
+    // cppcheck-suppress uninitvar
+    (void)std::atoll(c);
+}
