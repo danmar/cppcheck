@@ -108,7 +108,7 @@ endif
 BIN=$(DESTDIR)$(PREFIX)/bin
 
 # For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux
-DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
+DB2MAN?=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
 XP=xsltproc -''-nonet -''-param man.charmap.use.subset "0"
 MAN_SOURCE=man/cppcheck.1.xml
 
