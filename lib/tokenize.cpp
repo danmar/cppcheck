@@ -6315,8 +6315,7 @@ bool Tokenizer::simplifyKnownVariables()
 
             else if (tok2->previous()->str() != "*" && !Token::Match(tok2->tokAt(-2), "* --|++") &&
                      (Token::Match(tok2, "%name% = %bool%|%char%|%num%|%str%|%name% ;") ||
-                      Token::Match(tok2, "%name% [ ] = %str% ;") ||
-                      Token::Match(tok2, "%name% [ %num% ] = %str% ;") ||
+                      Token::Match(tok2, "%name% [ %num%| ] = %str% ;") ||
                       Token::Match(tok2, "%name% = & %name% ;") ||
                       Token::Match(tok2, "%name% = & %name% [ 0 ] ;"))) {
                 const unsigned int varid = tok2->varId();
