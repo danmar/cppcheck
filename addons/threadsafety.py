@@ -8,7 +8,7 @@ import cppcheckdata
 import sys
 
 def reportError(token, severity, msg):
-  sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') ' + msg + '\n')
+  sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') threadsafety.py: ' + msg + '\n')
 
 def checkstatic(data):
   for var in data.variables:

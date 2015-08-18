@@ -20,7 +20,7 @@ for arg in sys.argv[1:]:
     RE_FUNCTIONNAME = arg[11:]
 
 def reportError(token, severity, msg):
-  sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') ' + msg + '\n')
+  sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
 
 for arg in sys.argv[1:]:
   if not arg[-5:]=='.dump':
