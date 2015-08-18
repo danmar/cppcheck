@@ -1,7 +1,7 @@
 # Python module that loads a cppcheck dump
 # License: No restrictions, use this as you need.
 
-from lxml import etree
+import xml.etree.ElementTree as ET
 
 ## Token class. Contains information about each token in the source code.
 class Token:
@@ -266,7 +266,7 @@ class CppcheckData:
         self.variables = []
         self.valueflow = []
 
-        data = etree.parse(filename)
+        data = ET.parse(filename)
         for element in data.getroot():
             if element.tag == 'tokenlist':
                 for token in element:
