@@ -366,7 +366,7 @@ int main(int argc, char **argv)
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
-    fout << "DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
+    fout << "DB2MAN?=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
     fout << "XP=xsltproc -''-nonet -''-param man.charmap.use.subset \"0\"\n";
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
