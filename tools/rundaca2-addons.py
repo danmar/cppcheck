@@ -5,6 +5,7 @@ import pexpect
 import os
 import shutil
 import time
+import sys
 
 PASSWORD = ''
 if len(sys.argv) == 2:
@@ -12,6 +13,9 @@ if len(sys.argv) == 2:
 
 # Upload file to sourceforge web server using scp
 def upload(file_to_upload, destination):
+    if not os.path.isfile(file_to_upload):
+        return
+
     try:
         child = pexpect.spawn(
             'scp ' + file_to_upload + ' upload@trac.cppcheck.net:' + destination)
@@ -51,5 +55,5 @@ foldernum = 0
 while True:
     daca2(foldernum)
     foldernum = foldernum + 1
-    break
+
 
