@@ -1914,10 +1914,8 @@ void Tokenizer::combineStrings()
 
         tok->str(simplifyString(tok->str()));
         while (tok->next() && tok->next()->tokType() == Token::eString) {
-            tok->next()->str(simplifyString(tok->next()->str()));
-
             // Two strings after each other, combine them
-            tok->concatStr(tok->next()->str());
+            tok->concatStr(simplifyString(tok->next()->str()));
             tok->deleteNext();
         }
     }
@@ -4334,6 +4332,7 @@ void Tokenizer::removeRedundantSemicolons()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "(") {
             tok = tok->link();
+            continue;
         }
         for (;;) {
             if (Token::simpleMatch(tok, "; ;")) {
@@ -4962,7 +4961,7 @@ void Tokenizer::simplifyCasts()
 void Tokenizer::simplifyFunctionParameters()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "{|[|(")) {
+        if (tok->link() && Token::Match(tok, "{|[|(")) {
             tok = tok->link();
         }
 
@@ -5243,7 +5242,7 @@ bool Tokenizer::simplifyFunctionReturn()
         else if (Token::Match(tok, "%name% ( ) { return %bool%|%char%|%num%|%str% ; }") && tok->strAt(-1) != "::") {
             const Token* const any = tok->tokAt(5);
 
-            const std::string pattern("(|[|=|%cop% " + tok->str() + " ( ) ;|]|)|%cop%");
+            const std::string pattern("(|[|=|return|%op% " + tok->str() + " ( ) ;|]|)|%cop%");
             for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
                 if (Token::Match(tok2, pattern.c_str())) {
                     tok2 = tok2->next();
@@ -7828,7 +7827,6 @@ void Tokenizer::simplifyStd()
     if (isC())
         return;
 
-
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "std")
             continue;
@@ -8795,7 +8793,6 @@ void Tokenizer::simplifyErrNoInWhile()
 
             // tok is invalid.. move to endpar
             tok = endpar;
-
         }
     }
 }
