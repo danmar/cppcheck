@@ -2215,33 +2215,29 @@ static Token *skipTernaryOp(Token *tok)
 
 Token * Tokenizer::startOfFunction(Token * tok) const
 {
-    if (tok && tok->str() == ")") {
-        tok = tok->next();
-        while (tok && tok->str() != "{") {
-            if (isCPP() && Token::Match(tok, "const|volatile")) {
-                tok = tok->next();
-            } else if (isCPP() && tok->str() == "noexcept") {
-                tok = tok->next();
-                if (tok && tok->str() == "(") {
-                    tok = tok->link()->next();
-                }
-            } else if (isCPP() && tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
-                tok = tok->next()->link()->next();
+    tok = tok->next();
+    while (tok && tok->str() != "{") {
+        if (isCPP() && Token::Match(tok, "const|volatile")) {
+            tok = tok->next();
+        } else if (isCPP() && tok->str() == "noexcept") {
+            tok = tok->next();
+            if (tok && tok->str() == "(") {
+                tok = tok->link()->next();
             }
-            // unknown macros ") MACRO {" and ") MACRO(...) {"
-            else if (tok->isUpperCaseName()) {
-                tok = tok->next();
-                if (tok && tok->str() == "(") {
-                    tok = tok->link()->next();
-                }
-            } else
-                return nullptr;
+        } else if (isCPP() && tok->str() == "throw" && tok->next() && tok->next()->str() == "(") {
+            tok = tok->next()->link()->next();
         }
-
-        return tok;
+        // unknown macros ") MACRO {" and ") MACRO(...) {"
+        else if (tok->isUpperCaseName()) {
+            tok = tok->next();
+            if (tok && tok->str() == "(") {
+                tok = tok->link()->next();
+            }
+        } else
+            return nullptr;
     }
 
-    return nullptr;
+    return tok;
 }
 
 const Token * Tokenizer::startOfExecutableScope(const Token * tok)
@@ -2358,12 +2354,6 @@ void Tokenizer::simplifyTemplates()
 {
     if (isC())
         return;
-
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str()[0] == '=' && tok->str().length() > 2) {
-            std::cout << "BAD TOKEN" << std::endl;
-        }
-    }
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // #2648 - simple fix for sizeof used as template parameter
@@ -3094,12 +3084,6 @@ bool Tokenizer::simplifySizeof()
     bool ret = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() != "sizeof")
-            continue;
-
-        if (!tok->next())
-            break;
-
-        if (tok->strAt(1) == "sizeof")
             continue;
 
         if (Token::simpleMatch(tok->next(), ". . .")) {
@@ -4202,10 +4186,7 @@ bool Tokenizer::removeRedundantConditions()
     bool ret = false;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() != "if")
-            continue;
-
-        if (!Token::Match(tok->next(), "( %bool% ) {"))
+        if (!Token::Match(tok, "if ( %bool% ) {"))
             continue;
 
         // Find matching else
