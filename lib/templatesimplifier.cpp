@@ -118,16 +118,15 @@ void TemplateSimplifier::cleanupAfterSimplify(Token *tokens)
 }
 
 
-bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *tokens, const Token *& errorToken)
+void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates(const Token *tokens)
 {
-    errorToken=nullptr;
     // check for more complicated syntax errors when using templates..
     for (const Token *tok = tokens; tok; tok = tok->next()) {
         // skip executing scopes (ticket #3183)..
         if (Token::simpleMatch(tok, "( {")) {
             tok = tok->link();
             if (!tok)
-                return true;
+                syntaxError(nullptr);
         }
         // skip executing scopes..
         const Token *start = Tokenizer::startOfExecutableScope(tok);
@@ -146,7 +145,7 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
         }
 
         if (!tok)
-            return true;
+            syntaxError(nullptr);
         // not start of statement?
         if (tok->previous() && !Token::Match(tok, "[;{}]"))
             continue;
@@ -210,15 +209,10 @@ bool TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(const Token *toke
                         --level;
                 }
             }
-            if (level > 0) {
-                errorToken=tok;
+            if (level > 0)
                 syntaxError(tok);
-                return true;
-            }
         }
     }
-
-    return false;
 }
 
 unsigned int TemplateSimplifier::templateParameters(const Token *tok)
@@ -292,10 +286,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
 
         // Function pointer or prototype..
         while (Token::Match(tok, "(|[")) {
-            if (!tok->link()) {
+            if (!tok->link())
                 syntaxError(tok);
-                return 0;
-            }
+
             tok = tok->link()->next();
             while (Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
                 tok = tok->next();

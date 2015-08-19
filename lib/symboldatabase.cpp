@@ -647,10 +647,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     // fill this in after parsing is complete
                     friendInfo.type = 0;
 
-                    if (!scope->definedType) {
+                    if (!scope->definedType)
                         _tokenizer->syntaxError(tok);
-                        return;
-                    }
+
                     scope->definedType->friendList.push_back(friendInfo);
                 }
             } else if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal) {
@@ -687,10 +686,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         else {
                             Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
 
-                            if (!function) {
+                            if (!function)
                                 _tokenizer->syntaxError(tok);
-                                continue;
-                            }
 
                             // global functions can't be const but we have tests that are
                             if (Token::Match(argStart->link(), ") const| noexcept")) {

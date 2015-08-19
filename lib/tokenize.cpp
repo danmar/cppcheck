@@ -1806,9 +1806,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
 
 void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
 {
-    const Token *errorTok = nullptr;
-    if (TemplateSimplifier::hasComplicatedSyntaxErrorsInTemplates(list.front(), errorTok))
-        syntaxError(errorTok);
+    TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates(list.front());
 }
 
 void Tokenizer::checkForEnumsWithTypedef()
