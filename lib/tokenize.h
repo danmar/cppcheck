@@ -437,9 +437,6 @@ public:
      */
     bool simplifyFunctionReturn();
 
-    /** Struct initialization */
-    void simplifyStructInit();
-
     /** Struct simplification
      * "struct S { } s;" => "struct S { }; S s;"
      */
@@ -503,9 +500,7 @@ public:
 
     void simplifySQL();
 
-    bool hasEnumsWithTypedef();
-
-    void simplifyDefaultAndDeleteInsideClass();
+    void checkForEnumsWithTypedef();
 
     void findComplicatedSyntaxErrorsInTemplates();
 

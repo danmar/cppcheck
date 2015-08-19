@@ -548,10 +548,9 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
                 // skip over typedef parameter
                 if (tok2->next() && tok2->next()->str() == "(") {
                     tok2 = tok2->next()->link();
-                    if (!tok2->next()) {
+                    if (!tok2->next())
                         syntaxError(tok2);
-                        return nullptr;
-                    }
+
                     if (tok2->next()->str() == "(")
                         tok2 = tok2->next()->link();
                 }
@@ -676,10 +675,9 @@ void Tokenizer::simplifyTypedef()
         Token *namespaceEnd = nullptr;
 
         // check for invalid input
-        if (!tokOffset) {
+        if (!tokOffset)
             syntaxError(tok);
-            return;
-        }
+
 
         if (tokOffset->str() == "::") {
             typeStart = tokOffset;
@@ -735,10 +733,8 @@ void Tokenizer::simplifyTypedef()
             continue; // invalid input
 
         // check for invalid input
-        if (!tokOffset) {
+        if (!tokOffset)
             syntaxError(tok);
-            return;
-        }
 
         // check for template
         if (!isC() && tokOffset->str() == "<") {
@@ -767,10 +763,8 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for invalid input
-        if (!tokOffset) {
+        if (!tokOffset)
             syntaxError(tok);
-            return;
-        }
 
         if (Token::Match(tokOffset, "%type%")) {
             // found the type name
@@ -847,10 +841,8 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // syntax error
-                else {
+                else
                     syntaxError(tok);
-                    return;
-                }
             }
 
             // unhandled typedef, skip it and continue
@@ -903,10 +895,9 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->previous();
             argStart = tokOffset->next();
             argEnd = tokOffset->next()->link();
-            if (!argEnd) {
+            if (!argEnd)
                 syntaxError(argStart);
-                return;
-            }
+
             tok = argEnd->next();
             Token *spec = tok;
             if (Token::Match(spec, "const|volatile")) {
@@ -918,10 +909,9 @@ void Tokenizer::simplifyTypedef()
                 }
                 tok = specEnd->next();
             }
-            if (!tok)   {
+            if (!tok)
                 syntaxError(specEnd);
-                return;
-            }
+
             if (tok->str() == ")")
                 tok = tok->next();
         }
@@ -950,16 +940,14 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->tokAt(-2);
             argStart = tokOffset;
             argEnd = tokOffset->link();
-            if (!argEnd) {
+            if (!argEnd)
                 syntaxError(arrayStart);
-                return;
-            }
+
             argFuncRetStart = argEnd->tokAt(2);
             argFuncRetEnd = argFuncRetStart->link();
-            if (!argFuncRetEnd) {
+            if (!argFuncRetEnd)
                 syntaxError(argFuncRetStart);
-                return;
-            }
+
             tok = argFuncRetEnd->next();
         }
 
@@ -975,15 +963,13 @@ void Tokenizer::simplifyTypedef()
             argEnd = tokOffset->link();
 
             argFuncRetStart = argEnd->tokAt(2);
-            if (!argFuncRetStart) {
+            if (!argFuncRetStart)
                 syntaxError(tokOffset);
-                return;
-            }
+
             argFuncRetEnd = argFuncRetStart->link();
-            if (!argFuncRetEnd) {
+            if (!argFuncRetEnd)
                 syntaxError(tokOffset);
-                return;
-            }
+
             tok = argFuncRetEnd->next();
         } else if (Token::Match(tokOffset, "( * ( %type% ) (")) {
             functionRetFuncPtr = true;
@@ -992,20 +978,17 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset->tokAt(-2);
             argStart = tokOffset;
             argEnd = tokOffset->link();
-            if (!argEnd) {
+            if (!argEnd)
                 syntaxError(arrayStart);
-                return;
-            }
+
             argFuncRetStart = argEnd->tokAt(2);
-            if (!argFuncRetStart) {
+            if (!argFuncRetStart)
                 syntaxError(tokOffset);
-                return;
-            }
+
             argFuncRetEnd = argFuncRetStart->link();
-            if (!argFuncRetEnd) {
+            if (!argFuncRetEnd)
                 syntaxError(tokOffset);
-                return;
-            }
+
             tok = argFuncRetEnd->next();
         }
 
@@ -1017,10 +1000,9 @@ void Tokenizer::simplifyTypedef()
             typeName = tokOffset;
             arrayStart = tokOffset->tokAt(2);
             arrayEnd = arrayStart->link();
-            if (!arrayEnd) {
+            if (!arrayEnd)
                 syntaxError(arrayStart);
-                return;
-            }
+
             tok = arrayEnd->next();
         }
 
@@ -1376,24 +1358,21 @@ void Tokenizer::simplifyTypedef()
                             tok2 = processFunc(tok2, inOperator);
 
                         if (needParen) {
-                            if (!tok2) {
+                            if (!tok2)
                                 syntaxError(nullptr);
-                                return;
-                            }
+
                             tok2->insertToken(")");
                             tok2 = tok2->next();
                             Token::createMutualLinks(tok2, tok3);
                         }
-                        if (!tok2) {
+                        if (!tok2)
                             syntaxError(nullptr);
-                            return;
-                        }
+
                         tok2 = copyTokens(tok2, argStart, argEnd);
                         if (inTemplate) {
-                            if (!tok2) {
+                            if (!tok2)
                                 syntaxError(nullptr);
-                                return;
-                            }
+
                             tok2 = tok2->next();
                         }
 
@@ -1425,10 +1404,9 @@ void Tokenizer::simplifyTypedef()
 
                         // skip over variable name if there
                         if (!inCast) {
-                            if (!tok2 || !tok2->next()) {
+                            if (!tok2 || !tok2->next())
                                 syntaxError(nullptr);
-                                return;
-                            }
+
                             if (tok2->next()->str() != ")")
                                 tok2 = tok2->next();
                         }
@@ -1508,20 +1486,17 @@ void Tokenizer::simplifyTypedef()
                         tok2 = copyTokens(tok2, argStart, argEnd);
                     } else if (tok2->strAt(2) == "[") {
                         do {
-                            if (!tok2->linkAt(2)) {
+                            if (!tok2->linkAt(2))
                                 syntaxError(tok2); // #6807
-                                return;
-                            }
+
                             tok2 = tok2->linkAt(2)->previous();
                         } while (tok2->strAt(2) == "[");
                     }
 
                     if (arrayStart && arrayEnd) {
                         do {
-                            if (!tok2->next()) {
-                                syntaxError(tok2);
-                                return; // can't recover so quit
-                            }
+                            if (!tok2->next())
+                                syntaxError(tok2); // can't recover so quit
 
                             if (!inCast && !inSizeof)
                                 tok2 = tok2->next();
@@ -1537,25 +1512,21 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(2);
                                 else
                                     tok2 = tok2->tokAt(3);
-                                if (!tok2) {
+                                if (!tok2)
                                     syntaxError(nullptr);
-                                    return;
-                                }
+
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
                                 Token::createMutualLinks(tok2, tok3);
                             }
 
-                            if (!tok2->next()) {
-                                syntaxError(tok2);
-                                return; // can't recover so quit
-                            }
+                            if (!tok2->next())
+                                syntaxError(tok2); // can't recover so quit
 
                             tok2 = copyTokens(tok2, arrayStart, arrayEnd);
-                            if (!tok2->next()) {
+                            if (!tok2->next())
                                 syntaxError(tok2);
-                                return;
-                            }
+
                             tok2 = tok2->next();
 
                             if (tok2->str() == "=") {
@@ -1575,10 +1546,9 @@ void Tokenizer::simplifyTypedef()
                     break;
             }
 
-            if (!tok) {
+            if (!tok)
                 syntaxError(nullptr);
-                return;
-            }
+
             if (tok->str() == ";")
                 done = true;
             else if (tok->str() == ",") {
@@ -1736,10 +1706,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     _configuration = configuration;
 
-    if (!list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths))) {
+    if (!list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths)))
         cppcheckError(nullptr);
-        return false;
-    }
 
     if (simplifyTokenList1(FileName)) {
         if (!noSymbolDB_AST) {
@@ -1776,10 +1744,8 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
 
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr)) {
+        if (!list.createTokens(istr))
             cppcheckError(nullptr);
-            return false;
-        }
     }
 
     // Combine strings
@@ -1845,7 +1811,7 @@ void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
         syntaxError(errorTok);
 }
 
-bool Tokenizer::hasEnumsWithTypedef()
+void Tokenizer::checkForEnumsWithTypedef()
 {
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "enum %name% {")) {
@@ -1856,8 +1822,6 @@ bool Tokenizer::hasEnumsWithTypedef()
             tok = tok->link();
         }
     }
-
-    return false;
 }
 
 void Tokenizer::fillTypeSizes()
@@ -2009,9 +1973,11 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->tokType() == Token::eIncDecOp)
             continue;
-        if (tok->next()->str() == "+")
+
+        while (tok->next()->str() == "+")
             tok->deleteNext();
-        else if (Token::Match(tok->next(), "- %num%")) {
+
+        if (Token::Match(tok->next(), "- %num%")) {
             tok->deleteNext();
             tok->next()->str("-" + tok->next()->str());
         }
@@ -2132,14 +2098,11 @@ void Tokenizer::simplifyRedundantConsecutiveBraces()
 
 void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 {
-    // Convert + + into + and + - into -
+    // Convert - - into + and + - into -
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (tok->next()) {
             if (tok->str() == "+") {
-                if (tok->next()->str() == "+") {
-                    tok->deleteNext();
-                    continue;
-                } else if (tok->next()->str()[0] == '-') {
+                if (tok->next()->str()[0] == '-') {
                     tok = tok->next();
                     if (tok->str().size() == 1) {
                         tok = tok->previous();
@@ -2153,10 +2116,7 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
                     continue;
                 }
             } else if (tok->str() == "-") {
-                if (tok->next()->str() == "+") {
-                    tok->deleteNext();
-                    continue;
-                } else if (tok->next()->str()[0] == '-') {
+                if (tok->next()->str()[0] == '-') {
                     tok = tok->next();
                     if (tok->str().size() == 1) {
                         tok = tok->previous();
@@ -2234,8 +2194,6 @@ void Tokenizer::arraySize()
 
 static Token *skipTernaryOp(Token *tok)
 {
-    if (!tok || tok->str() != "?")
-        return tok;
     unsigned int colonlevel = 1;
     while (nullptr != (tok = tok->next())) {
         if (tok->str() == "?") {
@@ -3121,7 +3079,6 @@ bool Tokenizer::simplifySizeof()
                 }
                 if (!tok2) {
                     syntaxError(tok);
-                    return false;
                 }
                 tok = tok2;
             }
@@ -3293,7 +3250,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 tok->deleteNext();
             } else {
                 syntaxError(tok);
-                return false;
             }
         }
     }
@@ -3323,7 +3279,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 tok->next()->isUpperCaseName() &&
                 Token::Match(tok->linkAt(2), ") {|else")) {
                 syntaxError(tok->next());
-                return false;
             }
         }
     }
@@ -3364,8 +3319,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         if (Token::simpleMatch(tok, "> struct {") &&
             Token::simpleMatch(tok->linkAt(2), "} ;")) {
             syntaxError(tok);
-            list.deallocateTokens();
-            return false;
         }
     }
 
@@ -3453,11 +3406,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove Borland stuff..
     simplifyBorland();
 
-    if (hasEnumsWithTypedef()) {
-        // #2449: syntax error: enum with typedef in it
-        list.deallocateTokens();
-        return false;
-    }
+    // #2449: syntax error: enum with typedef in it
+    checkForEnumsWithTypedef();
 
     simplifyDebugNew();
 
@@ -4452,11 +4402,8 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
             // before the "while"
             if (tokEnd) {
                 tokEnd=tokEnd->next();
-                if (!tokEnd) {
-                    // no while return input token
+                if (!tokEnd) // no while
                     syntaxError(tok);
-                    return nullptr;
-                }
             }
         }
     } else if (tok->str()=="if") {
@@ -4466,13 +4413,12 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
         Token * tokEndNext=tokEnd->next();
         if (tokEndNext && tokEndNext->str()=="else") {
             Token * tokEndNextNext=tokEndNext->next();
-            if (tokEndNextNext && tokEndNextNext->str()=="if") {
+            if (tokEndNextNext && tokEndNextNext->str()=="if")
                 // do not change "else if ..." to "else { if ... }"
                 tokEnd=simplifyAddBracesToCommand(tokEndNextNext);
-            } else if (Token::simpleMatch(tokEndNext, "else }")) {
+            else if (Token::simpleMatch(tokEndNext, "else }"))
                 syntaxError(tokEndNext);
-                return nullptr;
-            } else
+            else
                 tokEnd=simplifyAddBracesPair(tokEndNext,false);
         }
     }
@@ -4496,7 +4442,6 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         if (!tokAfterCondition || tokAfterCondition->strAt(1) == "]") {
             // Bad condition
             syntaxError(tok);
-            return nullptr;
         }
         tokAfterCondition=tokAfterCondition->next();
     }
@@ -4518,7 +4463,6 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
         if (!tokEnd) {
             syntaxError(tokAfterCondition);
-            return nullptr;
         }
         tokEnd->insertToken("}");
         Token * tokCloseBrace = tokEnd->next();
@@ -5292,7 +5236,6 @@ void Tokenizer::simplifyFunctionPointers()
         // check that the declaration ends
         if (!tok || !tok->link() || !tok->link()->next()) {
             syntaxError(nullptr);
-            return;
         }
         Token *endTok = tok->link()->next()->link();
         if (!Token::Match(endTok, ") const| ;|,|)|=|[|{"))
@@ -5352,7 +5295,6 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
         }
         if (!tok) {
             syntaxError(tokBegin);
-            return;
         }
         if (only_k_r_fpar && finishedwithkr) {
             if (Token::Match(tok, "(|[|{")) {
@@ -7201,9 +7143,8 @@ void Tokenizer::simplifyOffsetPointerReference()
             if (tok->next()->varId()) {
                 if (pod.find(tok->next()->varId()) == pod.end()) {
                     tok = tok->tokAt(5);
-                    if (!tok) {
+                    if (!tok)
                         syntaxError(tok);
-                    }
                     continue;
                 }
             }
@@ -7448,10 +7389,9 @@ void Tokenizer::simplifyEnum()
             ++classLevel;
         } else if (tok->str() == "enum") {
             Token *temp = tok->next();
-            if (!temp) {
+            if (!temp)
                 syntaxError(tok);
-                break;
-            }
+
             if (Token::Match(temp, "class|struct"))
                 temp = temp->next();
             if (!temp)
@@ -7493,8 +7433,7 @@ void Tokenizer::simplifyEnum()
                 }
 
                 if (!tok->next() || tok->str() == "::" || !typeTokenEnd) {
-                    syntaxError(tok);
-                    return; // can't recover
+                    syntaxError(tok); // can't recover
                 }
             }
 
@@ -7510,7 +7449,6 @@ void Tokenizer::simplifyEnum()
                 continue;
             } else if (tok->next()->str() != "{") {
                 syntaxError(tok->next());
-                return;
             }
 
             Token *tok1 = tok->next();
@@ -7575,10 +7513,8 @@ void Tokenizer::simplifyEnum()
                         enumName = tok1;
                         lastValue = 0;
                         tok1 = tok1->tokAt(2);
-                        if (Token::Match(tok1, ",|{|}")) {
+                        if (Token::Match(tok1, ",|{|}"))
                             syntaxError(tok1);
-                            break;
-                        }
 
                         enumValueStart = tok1;
                         enumValueEnd = tok1;
@@ -7592,10 +7528,8 @@ void Tokenizer::simplifyEnum()
                                     enumValueEnd = endtoken;
                                     if (Token::Match(endtoken, ">|>> ( )"))
                                         enumValueEnd = enumValueEnd->next();
-                                } else {
+                                } else
                                     syntaxError(enumValueEnd);
-                                    return;
-                                }
                             }
 
                             enumValueEnd = enumValueEnd->next();
@@ -9102,15 +9036,13 @@ void Tokenizer::simplifyAttribute()
         while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {
             if (Token::Match(tok->tokAt(2), "( constructor|__constructor__")) {
                 // prototype for constructor is: void func(void);
-                if (!tok->next()->link()->next()) {
+                if (!tok->next()->link()->next())
                     syntaxError(tok);
-                    return;
-                }
+
                 if (tok->next()->link()->next()->str() == "void") { // __attribute__((constructor)) void func() {}
-                    if (!tok->next()->link()->next()->next()) {
+                    if (!tok->next()->link()->next()->next())
                         syntaxError(tok);
-                        return;
-                    }
+
                     tok->next()->link()->next()->next()->isAttributeConstructor(true);
                 } else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((constructor));
                     tok->previous()->link()->previous()->isAttributeConstructor(true);
@@ -9120,10 +9052,9 @@ void Tokenizer::simplifyAttribute()
 
             else if (Token::Match(tok->tokAt(2), "( destructor|__destructor__")) {
                 // prototype for destructor is: void func(void);
-                if (!tok->next()->link()->next()) {
+                if (!tok->next()->link()->next())
                     syntaxError(tok);
-                    return;
-                }
+
                 if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
                     tok->next()->link()->next()->next()->isAttributeDestructor(true);
                 else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));
@@ -9466,7 +9397,6 @@ void Tokenizer::simplifyAsm2()
             if (!tok)
                 syntaxError(nullptr);
         } else if (tok->str()[0] == '@') {
-            list.deallocateTokens();
             syntaxError(nullptr);
         }
     }
