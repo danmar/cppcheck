@@ -263,6 +263,7 @@ class CppcheckData:
     def __init__(self, filename):
         self.tokenlist = []
         self.scopes = []
+        self.functions = []
         self.variables = []
         self.valueflow = []
 
