@@ -2043,20 +2043,6 @@ void Tokenizer::simplifySQL()
     }
 }
 
-void Tokenizer::simplifyDebugNew()
-{
-    if (isC())
-        return;
-    if (!_settings->isWindowsPlatform())
-        return;
-
-    // convert Microsoft DEBUG_NEW macro to new
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "DEBUG_NEW")
-            tok->str("new");
-    }
-}
-
 void Tokenizer::simplifyArrayAccessSyntax()
 {
     // 0[a] -> a[0]
@@ -3368,9 +3354,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove unnecessary member qualification..
     removeUnnecessaryQualification();
 
-    // remove Microsoft MFC..
-    simplifyMicrosoftMFC();
-
     // convert Microsoft memory functions
     simplifyMicrosoftMemoryFunctions();
 
@@ -3388,8 +3371,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // #2449: syntax error: enum with typedef in it
     checkForEnumsWithTypedef();
-
-    simplifyDebugNew();
 
     // Remove __asm..
     simplifyAsm();
@@ -9517,24 +9498,6 @@ void Tokenizer::simplifyNamespaceStd()
     }
 }
 
-
-// Remove Microsoft MFC 'DECLARE_MESSAGE_MAP()'
-void Tokenizer::simplifyMicrosoftMFC()
-{
-    if (isC())
-        return;
-    // skip if not Windows
-    if (!_settings->isWindowsPlatform())
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok->next(), "DECLARE_MESSAGE_MAP ( )")) {
-            tok->deleteNext(3);
-        } else if (Token::Match(tok->next(), "DECLARE_DYNAMIC|DECLARE_DYNAMIC_CLASS|DECLARE_DYNCREATE ( %any% )")) {
-            tok->deleteNext(4);
-        }
-    }
-}
 
 void Tokenizer::simplifyMicrosoftMemoryFunctions()
 {
