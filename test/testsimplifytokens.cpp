@@ -59,7 +59,6 @@ private:
         TEST_CASE(removePreIncrement);
 
         TEST_CASE(elseif1);
-        TEST_CASE(ifa_ifa);     // "if (a) { if (a) .." => "if (a) { if (1) .."
 
         TEST_CASE(sizeof_array);
         TEST_CASE(sizeof5);
@@ -851,11 +850,6 @@ private:
             const char expected[] = "\n\n##file 0\n1: = { [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) }\n";
             ASSERT_EQUALS(expected, elseif(src));
         }
-    }
-
-
-    void ifa_ifa() {
-        ASSERT_EQUALS("int a ; if ( a ) { { ab } cd }", tok("int a ; if (a) { if (a) { ab } cd }", true));
     }
 
 

@@ -3602,7 +3602,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyErrNoInWhile();
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
-    simplifyIfSameInnerCondition();
     simplifyNestedStrcat();
     simplifyFuncInWhile();
 
@@ -5906,31 +5905,6 @@ void Tokenizer::simplifyVariableMultipleAssign()
                 tok2->next()->insertToken(";");
                 tok2->next()->insertToken(value);
                 tok2 = tok2->tokAt(4);
-            }
-        }
-    }
-}
-
-void Tokenizer::simplifyIfSameInnerCondition()
-{
-    // same inner condition
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "if ( %name% ) {")) {
-            const unsigned int varid(tok->tokAt(2)->varId());
-            if (!varid)
-                continue;
-
-            for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "{|}"))
-                    break;
-                if (Token::simpleMatch(tok2, "if (")) {
-                    tok2 = tok2->tokAt(2);
-                    if (Token::Match(tok2, "%varid% )", varid))
-                        tok2->str("true");
-                    else if (Token::Match(tok2, "! %varid% )", varid))
-                        tok2->next()->varId(varid);
-                    break;
-                }
             }
         }
     }

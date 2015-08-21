@@ -305,9 +305,6 @@ public:
      */
     void simplifyVariableMultipleAssign();
 
-    /** @brief simplify if (a) { if (a) */
-    void simplifyIfSameInnerCondition();
-
     /**
      * Simplify the 'C Alternative Tokens'
      * Examples:
