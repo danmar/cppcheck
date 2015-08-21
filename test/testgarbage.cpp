@@ -163,6 +163,7 @@ private:
         TEST_CASE(garbageCode121); // #2585
         TEST_CASE(garbageCode122); // #6303
         TEST_CASE(garbageCode123);
+        TEST_CASE(garbageCode124); // 6948
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -931,6 +932,10 @@ private:
                   "        C tpl_mem(T *) { return }\n"
                   "    };\n"
                   "}");
+    }
+
+    void garbageCode124() {
+        checkCode("+---+");
     }
 
     void garbageValueFlow() {

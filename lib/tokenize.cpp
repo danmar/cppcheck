@@ -1970,7 +1970,7 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
         if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->tokType() == Token::eIncDecOp)
             continue;
 
-        while (tok->next()->str() == "+")
+        while (tok->next() && tok->next()->str() == "+")
             tok->deleteNext();
 
         if (Token::Match(tok->next(), "- %num%")) {
