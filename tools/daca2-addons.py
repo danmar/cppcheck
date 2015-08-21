@@ -230,9 +230,9 @@ if len(archives) == 0:
 print('Sleep for 10 seconds..')
 time.sleep(10)
 
-workdir = os.path.expanduser('~/daca2-addons/')
+workdir = os.path.expanduser('~/daca2/')
 
-print('~/daca2-addons/' + FOLDER)
+print('~/daca2/' + FOLDER)
 if not os.path.isdir(workdir + FOLDER):
     os.makedirs(workdir + FOLDER)
 os.chdir(workdir + FOLDER)
