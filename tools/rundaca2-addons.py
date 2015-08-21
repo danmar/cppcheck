@@ -12,6 +12,8 @@ if len(sys.argv) == 2:
     PASSWORD = sys.argv[1]
 
 # Upload file to sourceforge web server using scp
+
+
 def upload(file_to_upload, destination):
     if not os.path.isfile(file_to_upload):
         return
@@ -28,6 +30,7 @@ def upload(file_to_upload, destination):
         pass
     except pexpect.TIMEOUT:
         pass
+
 
 def daca2(foldernum):
     folders = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -47,13 +50,11 @@ def daca2(foldernum):
     subprocess.call(['mv', 'cppcheck', os.path.expanduser('~/daca2-addons/cppcheck-O2')])
 
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2-addons/'+folder+'/results.txt'), 'evidente/addons-'+folder+'.txt')
+    upload(os.path.expanduser('~/daca2-addons/' + folder + '/results.txt'), 'evidente/addons-' + folder + '.txt')
     subprocess.call(['nice', '--adjustment=19', 'python', os.path.expanduser('~/cppcheck/tools/daca2-addons.py'), 'lib' + folder, '--rev=' + rev])
-    upload(os.path.expanduser('~/daca2-addons/lib'+folder+'/results.txt'), 'evidente/addons-lib'+folder+'.txt')
+    upload(os.path.expanduser('~/daca2-addons/lib' + folder + '/results.txt'), 'evidente/addons-lib' + folder + '.txt')
 
 foldernum = 0
 while True:
     daca2(foldernum)
     foldernum = foldernum + 1
-
-

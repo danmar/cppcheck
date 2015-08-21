@@ -120,6 +120,7 @@ def removeLargeFiles(path):
             if path.find('/clang/INPUTS/') > 0 or statinfo.st_size > 100000:
                 os.remove(g)
 
+
 def dumpfiles(path):
     ret = []
     for g in glob.glob(path + '*'):
@@ -131,6 +132,7 @@ def dumpfiles(path):
         elif os.path.isfile(g) and g[-5:] == '.dump':
             ret.append(g)
     return ret
+
 
 def scanarchive(filepath, jobs):
     # remove all files/folders except results.txt
@@ -199,8 +201,8 @@ def scanarchive(filepath, jobs):
                                    'python',
                                    addon,
                                    dumpfile],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
             comm = p2.communicate()
             results.write(comm[1])
     results.close()

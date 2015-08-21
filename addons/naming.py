@@ -14,27 +14,28 @@ import re
 RE_VARNAME = None
 RE_FUNCTIONNAME = None
 for arg in sys.argv[1:]:
-  if arg[:6]=='--var=':
-    RE_VARNAME = arg[6:]
-  elif arg[:11]=='--function=':
-    RE_FUNCTIONNAME = arg[11:]
+    if arg[:6] == '--var=':
+        RE_VARNAME = arg[6:]
+    elif arg[:11] == '--function=':
+        RE_FUNCTIONNAME = arg[11:]
+
 
 def reportError(token, severity, msg):
-  sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
+    sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
 
 for arg in sys.argv[1:]:
-  if not arg[-5:]=='.dump':
-    continue
-  print('Checking ' + arg + '...')
-  data = cppcheckdata.parsedump(arg)
-  if RE_VARNAME:
-    for var in data.variables:
-      res = re.match(RE_VARNAME, var.nameToken.str)
-      if not res:
-        reportError(var.typeStartToken, 'style', 'Variable ' + var.nameToken.str + ' violates naming convention')
-  if RE_FUNCTIONNAME:
-    for scope in data.scopes:
-      if scope.type == 'Function':
-        res = re.match(RE_FUNCTIONNAME, scope.className)
-        if not res:
-          reportError(scope.classStart, 'style', 'Function ' + scope.className + ' violates naming convention')
+    if not arg[-5:] == '.dump':
+        continue
+    print('Checking ' + arg + '...')
+    data = cppcheckdata.parsedump(arg)
+    if RE_VARNAME:
+        for var in data.variables:
+            res = re.match(RE_VARNAME, var.nameToken.str)
+            if not res:
+                reportError(var.typeStartToken, 'style', 'Variable ' + var.nameToken.str + ' violates naming convention')
+    if RE_FUNCTIONNAME:
+        for scope in data.scopes:
+            if scope.type == 'Function':
+                res = re.match(RE_FUNCTIONNAME, scope.className)
+                if not res:
+                    reportError(scope.classStart, 'style', 'Function ' + scope.className + ' violates naming convention')

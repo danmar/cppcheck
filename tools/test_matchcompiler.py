@@ -137,7 +137,8 @@ class MatchCompilerTest(unittest.TestCase):
 
     def test_parseStringComparison(self):
         input = 'str == "abc"'
-        res = self.mc._parseStringComparison(input, 5)   # offset '5' is chosen as an abritary start offset to look for "
+        # offset '5' is chosen as an abritary start offset to look for
+        res = self.mc._parseStringComparison(input, 5)
         self.assertEqual(2, len(res))
         self.assertEqual('str == MatchCompiler::makeConstString("abc")', input[:res[0]] + "MatchCompiler::makeConstString(" + input[res[0]:res[1]] + ")" + input[res[1]:])
 
