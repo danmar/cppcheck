@@ -25,6 +25,7 @@
 #include <QDomNodeList>
 #include <QSettings>
 #include <QFileDialog>
+#include <QTextStream>
 
 const unsigned int LibraryDialog::Function::Arg::ANY = ~0U;
 
@@ -35,19 +36,12 @@ LibraryDialog::LibraryDialog(QWidget *parent) :
     ui(new Ui::LibraryDialog)
 {
     ui->setupUi(this);
+    ui->buttonSave->setEnabled(false);
 }
 
 LibraryDialog::~LibraryDialog()
 {
     delete ui;
-}
-
-void LibraryDialog::updateui()
-{
-    ui->functions->clear();
-    for (const struct Function &function : functions) {
-        ui->functions->addItem(function.name);
-    }
 }
 
 static LibraryDialog::Function::Arg loadFunctionArg(const QDomElement &functionArgElement)
@@ -141,10 +135,86 @@ void LibraryDialog::openCfg()
         QFile file(selectedFile);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             loadFile(file);
-            updateui();
+
+            mFileName = selectedFile;
+
+            ui->buttonSave->setEnabled(false);
+            ui->functions->clear();
+            foreach (const struct Function &function, functions)
+                ui->functions->addItem(function.name);
+        }
+    }
+}
+
+static QDomElement FunctionElement(QDomDocument &doc, const LibraryDialog::Function &function)
+{
+    QDomElement functionElement = doc.createElement("function");
+    functionElement.setAttribute("name", function.name);
+    if (!function.noreturn) {
+        QDomElement e = doc.createElement("noreturn");
+        e.appendChild(doc.createTextNode("false"));
+        functionElement.appendChild(e);
+    }
+    if (function.useretval)
+        functionElement.appendChild(doc.createElement("useretval"));
+    if (function.leakignore)
+        functionElement.appendChild(doc.createElement("leak-ignore"));
+
+    // Argument info..
+    foreach (const LibraryDialog::Function::Arg &arg, function.args) {
+        QDomElement argElement = doc.createElement("arg");
+        functionElement.appendChild(argElement);
+        if (arg.nr == LibraryDialog::Function::Arg::ANY)
+            argElement.setAttribute("nr", "any");
+        else
+            argElement.setAttribute("nr", arg.nr);
+        if (arg.notbool)
+            argElement.appendChild(doc.createElement("not-bool"));
+        if (arg.notnull)
+            argElement.appendChild(doc.createElement("not-null"));
+        if (arg.notuninit)
+            argElement.appendChild(doc.createElement("not-uninit"));
+        if (arg.strz)
+            argElement.appendChild(doc.createElement("strz"));
+        if (arg.formatstr)
+            argElement.appendChild(doc.createElement("formatstr"));
+
+        if (!arg.valid.isEmpty()) {
+            QDomElement e = doc.createElement("valid");
+            e.appendChild(doc.createTextNode(arg.valid));
+            argElement.appendChild(e);
+        }
+
+        if (!arg.minsize.type.isEmpty()) {
+            QDomElement e = doc.createElement("minsize");
+            e.setAttribute("type", arg.minsize.type);
+            e.setAttribute("arg", arg.minsize.arg);
+            if (!arg.minsize.arg2.isEmpty())
+                e.setAttribute("arg2", arg.minsize.arg2);
+            argElement.appendChild(e);
         }
     }
 
+    return functionElement;
+}
+
+void LibraryDialog::saveCfg()
+{
+    QDomDocument doc;
+    QDomElement root = doc.createElement("def");
+    doc.appendChild(root);
+    root.setAttribute("format","2");
+
+    foreach (const Function &function, functions) {
+        root.appendChild(FunctionElement(doc, function));
+    }
+
+    QFile file(mFileName);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream ts( &file );
+        ts << doc.toString();
+        ui->buttonSave->setEnabled(false);
+    }
 }
 
 void LibraryDialog::selectFunction(int row)
@@ -154,16 +224,29 @@ void LibraryDialog::selectFunction(int row)
     ui->useretval->setChecked(function.useretval);
     ui->leakignore->setChecked(function.leakignore);
     ui->arguments->clear();
-    for (const Function::Arg &arg : function.args) {
+    foreach (const Function::Arg &arg, function.args) {
         QString s("arg");
         if (arg.nr != Function::Arg::ANY)
             s += QString::number(arg.nr);
         if (arg.formatstr)
             s += " formatstr";
-        else if (!arg.strz)
+        else if (arg.strz)
             s += " strz";
         else if (!arg.valid.isNull())
             s += " " + arg.valid;
         ui->arguments->addItem(s);
     }
 }
+
+void LibraryDialog::changeFunction()
+{
+    foreach (const QListWidgetItem *item, ui->functions->selectedItems())
+    {
+        Function &function = functions[ui->functions->row(item)];
+        function.noreturn   = !ui->functionreturn->isChecked();
+        function.useretval  = ui->useretval->isChecked();
+        function.leakignore = ui->leakignore->isChecked();
+    }
+    ui->buttonSave->setEnabled(true);
+}
+

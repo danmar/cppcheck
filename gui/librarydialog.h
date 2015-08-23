@@ -34,7 +34,7 @@ public:
     ~LibraryDialog();
 
     struct Function {
-        Function() : noreturn(false), gccPure(false), gccConst(false),
+        Function() : noreturn(true), gccPure(false), gccConst(false),
             leakignore(false), useretval(false) {
         }
 
@@ -73,7 +73,9 @@ public:
 
 private slots:
     void openCfg();
+    void saveCfg();
     void selectFunction(int row);
+    void changeFunction();
 
 private:
     Ui::LibraryDialog *ui;
@@ -81,6 +83,7 @@ private:
     void updateui();
     bool loadFile(QFile &file);
     QList<struct Function> functions;
+    QString mFileName;
 };
 
 #endif // LIBRARYDIALOG_H
