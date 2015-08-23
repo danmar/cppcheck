@@ -140,8 +140,8 @@ void LibraryDialog::openCfg()
 
             ui->buttonSave->setEnabled(false);
             ui->functions->clear();
-            foreach (const struct Function &function, functions)
-                ui->functions->addItem(function.name);
+            foreach(const struct Function &function, functions)
+            ui->functions->addItem(function.name);
         }
     }
 }
@@ -161,7 +161,7 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryDialog::Funct
         functionElement.appendChild(doc.createElement("leak-ignore"));
 
     // Argument info..
-    foreach (const LibraryDialog::Function::Arg &arg, function.args) {
+    foreach(const LibraryDialog::Function::Arg &arg, function.args) {
         QDomElement argElement = doc.createElement("arg");
         functionElement.appendChild(argElement);
         if (arg.nr == LibraryDialog::Function::Arg::ANY)
@@ -205,13 +205,13 @@ void LibraryDialog::saveCfg()
     doc.appendChild(root);
     root.setAttribute("format","2");
 
-    foreach (const Function &function, functions) {
+    foreach(const Function &function, functions) {
         root.appendChild(FunctionElement(doc, function));
     }
 
     QFile file(mFileName);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream ts( &file );
+        QTextStream ts(&file);
         ts << doc.toString();
         ui->buttonSave->setEnabled(false);
     }
@@ -224,7 +224,7 @@ void LibraryDialog::selectFunction(int row)
     ui->useretval->setChecked(function.useretval);
     ui->leakignore->setChecked(function.leakignore);
     ui->arguments->clear();
-    foreach (const Function::Arg &arg, function.args) {
+    foreach(const Function::Arg &arg, function.args) {
         QString s("arg");
         if (arg.nr != Function::Arg::ANY)
             s += QString::number(arg.nr);
@@ -240,8 +240,7 @@ void LibraryDialog::selectFunction(int row)
 
 void LibraryDialog::changeFunction()
 {
-    foreach (const QListWidgetItem *item, ui->functions->selectedItems())
-    {
+    foreach(const QListWidgetItem *item, ui->functions->selectedItems()) {
         Function &function = functions[ui->functions->row(item)];
         function.noreturn   = !ui->functionreturn->isChecked();
         function.useretval  = ui->useretval->isChecked();
