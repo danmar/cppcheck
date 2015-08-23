@@ -2581,10 +2581,7 @@ private:
                       "    memset(c2, 0, 10);\n"
                       "    memset(c3, 0, 10);\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
     }
 
     void memsetOnStdPodType() { // Ticket #5901
