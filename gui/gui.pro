@@ -107,7 +107,8 @@ HEADERS += aboutdialog.h \
            xmlreport.h \
            xmlreportv1.h \
            xmlreportv2.h \
-    librarydialog.h
+    librarydialog.h \
+    librarydata.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -142,7 +143,8 @@ SOURCES += aboutdialog.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
            xmlreportv2.cpp \
-    librarydialog.cpp
+    librarydialog.cpp \
+    librarydata.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS

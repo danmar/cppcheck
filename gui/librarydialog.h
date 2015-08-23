@@ -22,6 +22,8 @@
 #include <QDialog>
 #include <QFile>
 
+#include "librarydata.h"
+
 namespace Ui {
     class LibraryDialog;
 }
@@ -33,44 +35,6 @@ public:
     explicit LibraryDialog(QWidget *parent = 0);
     ~LibraryDialog();
 
-    struct Function {
-        Function() : noreturn(true), gccPure(false), gccConst(false),
-            leakignore(false), useretval(false) {
-        }
-
-        QString name;
-        bool noreturn;
-        bool gccPure;
-        bool gccConst;
-        bool leakignore;
-        bool useretval;
-        struct {
-            QString scan;
-            QString secure;
-        } formatstr;
-        struct Arg {
-            Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
-                formatstr(false), strz(false) {
-            }
-
-            QString name;
-            unsigned int nr;
-            static const unsigned int ANY;
-            bool notbool;
-            bool notnull;
-            bool notuninit;
-            bool formatstr;
-            bool strz;
-            QString valid;
-            struct {
-                QString type;
-                QString arg;
-                QString arg2;
-            } minsize;
-        };
-        QList<struct Arg> args;
-    };
-
 private slots:
     void openCfg();
     void saveCfg();
@@ -79,10 +43,7 @@ private slots:
 
 private:
     Ui::LibraryDialog *ui;
-
-    void updateui();
-    bool loadFile(QFile &file);
-    QList<struct Function> functions;
+    LibraryData data;
     QString mFileName;
 };
 
