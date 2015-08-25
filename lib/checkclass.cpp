@@ -1010,28 +1010,30 @@ void CheckClass::checkMemset()
                 else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
                     type = findFunctionOf(arg3->scope());
                 } else if (Token::Match(arg1, "&|*|%var%")) {
-                    int derefs = 1;
+                    int numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
                     for (;; arg1 = arg1->next()) {
                         if (arg1->str() == "&")
-                            derefs--;
+                            ++numIndirToVariableType;
                         else if (arg1->str() == "*")
-                            derefs++;
+                            --numIndirToVariableType;
                         else
                             break;
                     }
 
                     const Variable *var = arg1->variable();
                     if (var && arg1->strAt(1) == ",") {
-                        if (var->isPointer()) {
-                            derefs--;
-                            if (var->typeEndToken() && Token::simpleMatch(var->typeEndToken()->previous(), "* *")) // Check if it's a pointer to pointer
-                                derefs--;
+                        if (var->isArrayOrPointer()) {
+                            const Token *endTok = var->typeEndToken();
+                            while (endTok && Token::simpleMatch(endTok, "*")) {
+                                --numIndirToVariableType;
+                                endTok = endTok->previous();
+                            }
                         }
 
                         if (var->isArray())
-                            derefs -= (int)var->dimensions().size();
+                            numIndirToVariableType += (int)var->dimensions().size();
 
-                        if (derefs == 0)
+                        if (numIndirToVariableType == 1)
                             type = var->typeScope();
                     }
                 }
