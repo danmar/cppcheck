@@ -68,6 +68,7 @@ public:
 
 private:
     static bool isPtrArg(const Token *tok);
+    static bool isArrayArg(const Token *tok);
     static bool isRefPtrArg(const Token *tok);
     static bool isNonReferenceArg(const Token *tok);
     static bool isAutoVar(const Token *tok);

@@ -374,7 +374,7 @@ public:
      * @return true if array, false if not
      */
     bool isArray() const {
-        return getFlag(fIsArray);
+        return getFlag(fIsArray) && !getFlag(fIsPointer);
     }
 
     /**
@@ -383,6 +383,14 @@ public:
      */
     bool isPointer() const {
         return getFlag(fIsPointer);
+    }
+
+    /**
+     * Is variable a pointer to an array
+     * @return true if pointer to array, false otherwise
+     */
+    bool isPointerToArray() const {
+        return isPointer() && getFlag(fIsArray);
     }
 
     /**

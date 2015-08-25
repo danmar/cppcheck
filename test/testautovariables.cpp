@@ -328,11 +328,11 @@ private:
 
     void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
         check("struct A {\n"
-              "    char *data[10];\n"
+              "    char (*data)[10];\n"
               "};\n"
               "void foo(char** p) {\n"
               "    struct A a = bar();\n"
-              "    *p = &a.data[0];\n"
+              "    *p = &(*a.data)[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -542,13 +542,13 @@ private:
               "   long *pKoeff[256];\n"
               "   delete[] pKoeff;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
         check("int main() {\n"
               "   long *pKoeff[256];\n"
               "   free (pKoeff);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
         check("void foo() {\n"
               "   const intPtr& intref = Getter();\n"

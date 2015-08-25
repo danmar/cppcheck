@@ -72,8 +72,10 @@ void CheckUninitVar::checkScope(const Scope* scope)
             continue;
         }
 
-        if (i->isArray()) {
+        if (i->isArray() || i->isPointerToArray()) {
             const Token *tok = i->nameToken()->next();
+            if (i->isPointerToArray())
+                tok = tok->next();
             while (Token::simpleMatch(tok->link(), "] ["))
                 tok = tok->link()->next();
             if (Token::simpleMatch(tok->link(), "] ="))

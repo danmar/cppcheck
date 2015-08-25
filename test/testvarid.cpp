@@ -1977,9 +1977,9 @@ private:
 
     void varid_pointerToArray() {
         ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: int * a1@1 [ 10 ] ;\n"
+                      "1: int ( * a1@1 ) [ 10 ] ;\n"
                       "2: void f1 ( ) {\n"
-                      "3: int * a2@2 [ 10 ] ;\n"
+                      "3: int ( * a2@2 ) [ 10 ] ;\n"
                       "4: int ( & a3@3 ) [ 10 ] ;\n"
                       "5: }\n"
                       "6: struct A {\n"

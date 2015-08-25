@@ -2382,7 +2382,9 @@ void CheckOther::checkIncompleteArrayFill()
                     continue;
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                    const unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                    unsigned int size = _tokenizer->sizeOfType(var->typeStartToken());
+                    if (size == 0 && var->typeStartToken()->next()->str() == "*")
+                        size = _settings->sizeof_pointer;
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)
                             incompleteArrayFillError(tok, var->name(), tok->str(), false);

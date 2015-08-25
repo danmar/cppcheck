@@ -6964,12 +6964,6 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "%type% ( * %name% ) [") && tok->previous()->isStandardType()) {
-            tok->link()->deleteThis();
-            tok->deleteThis();
-            ret = true;
-        }
-
         if (Token::Match(tok->previous(), "*|& ( %name% )")) {
             // We may have a variable declaration looking like "type_name *(var_name)"
             Token *tok2 = tok->tokAt(-2);
