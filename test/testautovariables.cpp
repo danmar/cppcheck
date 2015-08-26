@@ -99,6 +99,7 @@ private:
         TEST_CASE(returnReferenceLiteral);
         TEST_CASE(returnReferenceCalculation);
         TEST_CASE(returnReferenceLambda);
+        TEST_CASE(returnReferenceInnerScope);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -962,6 +963,19 @@ private:
               "    [](const Item& lhs, const Item& rhs) {\n"
               "        return false;\n"
               "    });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceInnerScope() {
+        // #6951
+        check("const Callback& make() {\n"
+              "    struct _Wrapper {\n"
+              "        static ulong call(void* o, const void* f, const void*[]) {\n"
+              "            return 1;\n"
+              "        }\n"
+              "    };\n"
+              "    return _make(_Wrapper::call, pmf);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

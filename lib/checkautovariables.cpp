@@ -407,6 +407,11 @@ void CheckAutoVariables::returnReference()
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
             for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+                if (!tok2->scope()->isExecutable()) {
+                    tok2 = tok2->scope()->classEnd;
+                    continue;
+                }
+
                 // Skip over lambdas
                 if (tok2->str() == "[" && tok2->link()->strAt(1) == "(" && tok2->link()->linkAt(1)->strAt(1) == "{")
                     tok2 = tok2->link()->linkAt(1)->linkAt(1);
