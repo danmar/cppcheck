@@ -381,6 +381,12 @@ public:
     void isOperatorKeyword(bool value) {
         setFlag(fIsOperatorKeyword, value);
     }
+    bool isComplex() const {
+        return getFlag(fIsComplex);
+    }
+    void isComplex(bool value) {
+        setFlag(fIsComplex, value);
+    }
 
     static const Token *findsimplematch(const Token *tok, const char pattern[]);
     static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
@@ -802,7 +808,8 @@ private:
         fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
         fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
         fIsAttributeUsed        = (1 << 14), // __attribute__((used))
-        fIsOperatorKeyword      = (1 << 15)  // operator=, etc
+        fIsOperatorKeyword      = (1 << 15), // operator=, etc
+        fIsComplex              = (1 << 16)  // complex/_Complex type
     };
 
     unsigned int _flags;

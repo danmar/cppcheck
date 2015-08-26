@@ -5652,6 +5652,11 @@ void Tokenizer::simplifyStdType()
             tok->isSigned(!isUnsigned);
         }
 
+        else if (Token::Match(tok, "float|double complex|_Complex")) {
+            tok->deleteNext();
+            tok->isComplex(true);
+        }
+
         else if (!Token::Match(tok, "unsigned|signed|char|short|int|long"))
             continue;
 

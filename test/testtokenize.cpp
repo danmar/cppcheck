@@ -4590,6 +4590,11 @@ private:
             const char expected[] = "signed short x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
+        {
+            const char code[] = "float complex x;";
+            const char expected[] = "float x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
     }
 
     void createLinks() {
