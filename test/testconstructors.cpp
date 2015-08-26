@@ -2283,7 +2283,7 @@ private:
               "{\n"
               "public:\n"
               "    John() { }\n"
-              "    A *a[5];\n"
+              "    A (*a)[5];\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'John::a' is not initialized in the constructor.\n", errout.str());
     }

@@ -641,6 +641,14 @@ private:
                        "    return j;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #5646
+        checkUninitVar("float foo() {\n"
+                       "  float source[2] = {3.1, 3.1};\n"
+                       "  float (*sink)[2] = &source;\n"
+                       "  return (*sink)[0];\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Handling of unknown types. Assume they are POD in C.

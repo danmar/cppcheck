@@ -41,6 +41,13 @@ bool CheckAutoVariables::isPtrArg(const Token *tok)
     return (var && var->isArgument() && var->isPointer());
 }
 
+bool CheckAutoVariables::isArrayArg(const Token *tok)
+{
+    const Variable *var = tok->variable();
+
+    return (var && var->isArgument() && var->isArray());
+}
+
 bool CheckAutoVariables::isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
@@ -183,7 +190,7 @@ void CheckAutoVariables::autoVariables()
                         errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") && isPtrArg(tok->next()) && isAutoVar(tok->linkAt(2)->tokAt(3))) {
+            } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") && isArrayArg(tok->next()) && isAutoVar(tok->linkAt(2)->tokAt(3))) {
                 const Token* const varTok = tok->linkAt(2)->tokAt(3);
                 if (checkRvalueExpression(varTok))
                     errorAutoVariableAssignment(tok->next(), false);

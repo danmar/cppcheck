@@ -3300,7 +3300,7 @@ private:
     }
 
     void removeParentheses18() {
-        ASSERT_EQUALS("float * a [ 2 ] ;", tokenizeAndStringify("float(*a)[2];", false));
+        ASSERT_EQUALS("float ( * a ) [ 2 ] ;", tokenizeAndStringify("float(*a)[2];", false));
     }
 
     void removeParentheses19() {

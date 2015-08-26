@@ -1453,7 +1453,7 @@ private:
                             "type4 t4;";
 
         // The expected result..
-        const char expected[] = "char * t1 [ 10 ] ; "
+        const char expected[] = "char ( * t1 ) [ 10 ] ; "
                                 "char ( * ( * tp1 ) [ 2 ] ) [ 10 ] ; "
                                 "char ( & t2 ) [ 10 ] ; "
                                 "char ( & t3 ) [ x ] ; "

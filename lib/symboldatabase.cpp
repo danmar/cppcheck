@@ -1435,6 +1435,9 @@ const Token * Variable::declEndToken() const
 
 void Variable::evaluate(const Library* lib)
 {
+    if (_name)
+        setFlag(fIsArray, arrayDimensions(lib));
+
     const Token* tok = _start;
     while (tok && tok->previous() && tok->previous()->isName())
         tok = tok->previous();
@@ -1448,7 +1451,7 @@ void Variable::evaluate(const Library* lib)
         else if (tok->str() == "const")
             setFlag(fIsConst, true);
         else if (tok->str() == "*") {
-            setFlag(fIsPointer, true);
+            setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
             if (isReference())
@@ -1470,8 +1473,6 @@ void Variable::evaluate(const Library* lib)
     while (_end && _end->previous() && _end->str() == "const")
         _end = _end->previous();
 
-    if (_name)
-        setFlag(fIsArray, arrayDimensions(lib));
     if (_start) {
         setFlag(fIsClass, !_start->isStandardType() && !isPointer() && !isReference());
         setFlag(fIsStlType, Token::simpleMatch(_start, "std ::"));

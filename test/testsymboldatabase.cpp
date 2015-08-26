@@ -496,14 +496,15 @@ private:
 
     void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
-        givenACodeSampleToTokenize arr("A *a[5];");
+        givenACodeSampleToTokenize arr("A (*a)[5];");
         bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
         Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings.library);
-        ASSERT(true == v.isArray());
         ASSERT(true == v.isPointer());
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointerToArray());
         ASSERT(false == v.isReference());
     }
 
