@@ -2074,9 +2074,9 @@ bool Variable::arrayDimensions(const Library* lib)
 {
     const Library::Container* container = lib->detectContainer(_start);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
-        Dimension dimension_;
         const Token* tok = Token::findsimplematch(_start, "<");
         if (tok) {
+            Dimension dimension_;
             tok = tok->next();
             for (int i = 0; i < container->size_templateArgNo && tok; i++) {
                 tok = tok->nextTemplateArgument();
