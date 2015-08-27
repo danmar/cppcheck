@@ -684,7 +684,7 @@ private:
                 "class Fred { "
                 ""
                 "const unsigned int * * get ( ) { return test ; } "
-                "const static unsigned int * test ( const unsigned int * p ) { return p ; } "
+                "static const unsigned int * test ( const unsigned int * p ) { return p ; } "
                 "} ;";
 
             ASSERT_EQUALS(expected, tok(code, false));

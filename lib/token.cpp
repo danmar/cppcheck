@@ -1008,6 +1008,8 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
             os << "unsigned ";
         else if (isSigned())
             os << "signed ";
+        if (isComplex())
+            os << "_Complex ";
         if (isLong()) {
             if (_tokType == eString || _tokType == eChar)
                 os << "L";

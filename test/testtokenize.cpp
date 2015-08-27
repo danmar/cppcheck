@@ -3324,7 +3324,7 @@ private:
         static char  exp[] = "struct S { "
                              "char * a ; "
                              "char & b ; "
-                             "const static char * c ; "
+                             "static const char * c ; "
                              "} ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
@@ -3464,7 +3464,7 @@ private:
             "a = SZ;\n"
             "}\n";
         const char expected[] =
-            "const static char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
+            "static const char str [ 5 ] = \"abcd\" ;\n\nvoid f ( ) {\na = 5 ;\n}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
     }
 
@@ -3746,11 +3746,11 @@ private:
                                 "  unsigned int *foo = &x;"
                                 "}";
             ASSERT_EQUALS("unsigned int x ; "
-                          "const static unsigned int A = 1 ; "
-                          "const static unsigned int B = A ; "
-                          "const static unsigned int C = 0 ; "
-                          "const static unsigned int D = A ; "
-                          "const static unsigned int E = 0 ; "
+                          "static const unsigned int A = 1 ; "
+                          "static const unsigned int B = A ; "
+                          "static const unsigned int C = 0 ; "
+                          "static const unsigned int D = A ; "
+                          "static const unsigned int E = 0 ; "
                           "void f ( ) { "
                           "unsigned int * foo ; "
                           "foo = & x ; "
@@ -4591,8 +4591,33 @@ private:
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
         {
+            const char code[] = "unsigned static short const int i;";
+            const char expected[] = "static const unsigned short i ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
             const char code[] = "float complex x;";
-            const char expected[] = "float x ;";
+            const char expected[] = "_Complex float x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "complex float x;";
+            const char expected[] = "_Complex float x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "complex long double x;";
+            const char expected[] = "_Complex long double x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "long double complex x;";
+            const char expected[] = "_Complex long double x ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "double complex;";
+            const char expected[] = "double complex ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
@@ -8288,12 +8313,12 @@ private:
             "static const signed long long i4 ;\n"
             "static const signed long long i5 ;\n"
             "static const signed long long i6 ;\n"
-            "static const long long signed int i7 ;\n"
-            "static const long long signed int i8 ;\n"
-            "static const signed int long long i9 ;\n"
-            "static const signed int long long i10 ;\n"
-            "static const int signed long long i11 ;\n"
-            "static const int signed long long i12 ;\n"
+            "static const signed long long i7 ;\n"
+            "static const signed long long i8 ;\n"
+            "static const signed long long i9 ;\n"
+            "static const signed long long i10 ;\n"
+            "static const signed long long i11 ;\n"
+            "static const signed long long i12 ;\n"
             "static const signed long long i13 ;\n"
             "static const signed long long i14 ;\n"
             "static const signed long long i15 ;\n"

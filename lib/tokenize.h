@@ -528,11 +528,6 @@ private:
     const Token * isFunctionHead(const Token *tok, const std::string &endsWith) const;
 
     /**
-     * Change "int const x;" into "const int x;"
-     */
-    void simplifyConst();
-
-    /**
      * simplify "while (0)"
      */
     void simplifyWhile0();

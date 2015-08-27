@@ -1754,19 +1754,23 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     // Remove "volatile", "inline", "register", and "restrict"
     simplifyKeyword();
 
+    // Concatenate double sharp: 'a ## b' -> 'ab'
+    concatenateDoubleSharp();
+
+    // Link brackets (, [ and {
+    createLinks();
+
+    // Order keywords "static" and "const"
+    simplifyStaticConst();
+
     // convert platform dependent types to standard types
     // 32 bits: size_t -> unsigned long
     // 64 bits: size_t -> unsigned long long
     simplifyPlatformTypes();
 
     // collapse compound standard types into a single token
-    // unsigned long long int => long _isUnsigned=true,_isLong=true
+    // unsigned long long int => long (with _isUnsigned=true,_isLong=true)
     simplifyStdType();
-
-    // Concatenate double sharp: 'a ## b' -> 'ab'
-    concatenateDoubleSharp();
-
-    createLinks();
 
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
@@ -3422,13 +3426,16 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Put ^{} statements in asm()
     simplifyAsm2();
 
+    // Order keywords "static" and "const"
+    simplifyStaticConst();
+
     // convert platform dependent types to standard types
     // 32 bits: size_t -> unsigned long
     // 64 bits: size_t -> unsigned long long
     simplifyPlatformTypes();
 
     // collapse compound standard types into a single token
-    // unsigned long long int => long _isUnsigned=true,_isLong=true
+    // unsigned long long int => long (with _isUnsigned=true,_isLong=true)
     simplifyStdType();
 
     if (_settings->terminated())
@@ -3439,8 +3446,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     if (_settings->terminated())
         return false;
-
-    simplifyConst();
 
     // struct simplification "struct S {} s; => struct S { } ; S s ;
     simplifyStructDecl();
@@ -3664,8 +3669,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyRedundantConsecutiveBraces();
 
     simplifyEmptyNamespaces();
-
-    simplifyStaticConst();
 
     simplifyMathFunctions();
 
@@ -5644,88 +5647,59 @@ void Tokenizer::simplifyPlatformTypes()
 void Tokenizer::simplifyStdType()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // long unsigned => unsigned long
-        if (Token::Match(tok, "char|short|int|long unsigned|signed")) {
-            const bool isUnsigned = tok->next()->str() == "unsigned";
-            tok->deleteNext();
-            tok->isUnsigned(isUnsigned);
-            tok->isSigned(!isUnsigned);
-        }
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (_settings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
+            bool isFloat= false;
+            bool isSigned = false;
+            bool isUnsigned = false;
+            bool isComplex = false;
+            unsigned int countLong = 0;
+            Token* typeSpec = nullptr;
 
-        else if (Token::Match(tok, "float|double complex|_Complex")) {
-            tok->deleteNext();
-            tok->isComplex(true);
-        }
-
-        else if (!Token::Match(tok, "unsigned|signed|char|short|int|long"))
-            continue;
-
-        // check if signed or unsigned specified
-        if (Token::Match(tok, "unsigned|signed")) {
-            const bool isUnsigned = tok->str() == "unsigned";
-
-            // unsigned i => unsigned int i
-            if (!Token::Match(tok->next(), "char|short|int|long"))
-                tok->str("int");
-            else
-                tok->deleteThis();
-            tok->isUnsigned(isUnsigned);
-            tok->isSigned(!isUnsigned);
-        }
-
-        if (tok->str() == "int") {
-            if (tok->strAt(1) == "long") {
-                tok->str("long");
-                tok->deleteNext();
-            } else if (tok->strAt(1) == "short") {
-                tok->str("short");
-                tok->deleteNext();
+            Token* tok2 = tok;
+            for (; tok2->next(); tok2 = tok2->next()) {
+                if (tok2->str() == "long") {
+                    countLong++;
+                    if (!isFloat)
+                        typeSpec = tok2;
+                } else if (tok2->str() == "short") {
+                    typeSpec = tok2;
+                } else if (tok2->str() == "unsigned")
+                    isUnsigned = true;
+                else if (tok2->str() == "signed")
+                    isSigned = true;
+                else if (Token::Match(tok2, "float|double")) {
+                    isFloat = true;
+                    typeSpec = tok2;
+                } else if (_settings->standards.c >= Standards::C99 && Token::Match(tok2, "complex|_Complex"))
+                    isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
+                else if (Token::Match(tok2, "char|int")) {
+                    if (!typeSpec)
+                        typeSpec = tok2;
+                } else
+                    break;
             }
-            if (tok->strAt(1) == "long") {
-                tok->isLong(true);
-                tok->deleteNext();
-            }
-            if (Token::Match(tok->next(), "unsigned|signed")) {
-                tok->isUnsigned(tok->next()->str() == "unsigned");
-                tok->isSigned(tok->next()->str() == "signed");
-                tok->deleteNext();
-                if (tok->strAt(1) == "long")
-                    tok->deleteNext();
-                else if (tok->strAt(1) == "short")
-                    tok->deleteNext();
-            }
-        } else if (tok->str() == "long") {
-            if (tok->strAt(1) == "long") {
-                tok->isLong(true);
-                tok->deleteNext();
-            }
-            if (tok->strAt(1) == "int") {
-                tok->deleteNext();
-                if (Token::Match(tok->next(), "unsigned|signed")) {
-                    tok->isUnsigned(tok->next()->str() == "unsigned");
-                    tok->isSigned(tok->next()->str() == "signed");
-                    tok->deleteNext();
+
+            if (!typeSpec) { // unsigned i; or similar declaration
+                if (!isComplex) { // Ensure that "complex" is not the variables name
+                    tok->str("int");
+                    tok->isSigned(isSigned);
+                    tok->isUnsigned(isUnsigned);
                 }
-            } else if (tok->strAt(1) == "double") {
-                tok->str("double");
-                tok->isLong(true);
-                tok->deleteNext();
-            } else if (Token::Match(tok->next(), "unsigned|signed")) {
-                tok->isUnsigned(tok->next()->str() == "unsigned");
-                tok->isSigned(tok->next()->str() == "signed");
-                tok->deleteNext();
-                if (tok->strAt(1) == "int")
-                    tok->deleteNext();
-            }
-        } else if (tok->str() == "short") {
-            if (tok->strAt(1) == "int")
-                tok->deleteNext();
-            if (Token::Match(tok->next(), "unsigned|signed")) {
-                tok->isUnsigned(tok->next()->str() == "unsigned");
-                tok->isSigned(tok->next()->str() == "signed");
-                tok->deleteNext();
-                if (tok->strAt(1) == "int")
-                    tok->deleteNext();
+            } else {
+                typeSpec->isLong(typeSpec->isLong() || (isFloat && countLong == 1) || countLong > 1);
+                typeSpec->isComplex(typeSpec->isComplex() || (isFloat && isComplex));
+                typeSpec->isSigned(typeSpec->isSigned() || isSigned);
+                typeSpec->isUnsigned(typeSpec->isUnsigned() || isUnsigned);
+
+                // Remove specifiers
+                const Token* tok3 = tok->previous();
+                tok2 = tok2->previous();
+                while (tok3 != tok2) {
+                    if (tok2 != typeSpec &&
+                        (isComplex || !Token::Match(tok2, "complex|_Complex")))  // Ensure that "complex" is not the variables name
+                        tok2->deleteThis();
+                    tok2 = tok2->previous();
+                }
             }
         }
     }
@@ -5751,20 +5725,22 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             for (; leftTok; leftTok = leftTok->previous()) {
                 if (!Token::Match(leftTok, "%type%|static|const|extern") ||
-                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:")))
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator")))
                     break;
             }
 
-            // The token preceding the declaration should indicate the start of a statement
-            if (!leftTok ||
-                leftTok == tok ||
-                !Token::Match(leftTok, ";|{|}|private:|protected:|public:")) {
+            // The token preceding the declaration should indicate the start of a declaration
+            if (leftTok == tok ||
+                (leftTok && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:"))) {
                 continue;
             }
 
             // Move the qualifier to the left-most position in the declaration
             tok->deleteNext();
-            if (leftTok->next())
+            if (!leftTok) {
+                list.front()->insertToken(qualifier, false);
+                list.front()->swapWithNext();
+            } else if (leftTok->next())
                 leftTok->next()->insertToken(qualifier, true);
             else
                 leftTok->insertToken(qualifier);
@@ -8643,23 +8619,6 @@ std::string Tokenizer::simplifyString(const std::string &source)
     }
 
     return str;
-}
-
-void Tokenizer::simplifyConst()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isStandardType() && tok->strAt(1) == "const") {
-            tok->swapWithNext();
-        } else if (Token::Match(tok, "struct %type% const")) {
-            tok->next()->swapWithNext();
-            tok->swapWithNext();
-        } else if (Token::Match(tok, "%type% const") &&
-                   (!tok->previous() || Token::Match(tok->previous(), "[;{}(,]")) &&
-                   tok->str().find(':') == std::string::npos &&
-                   tok->str() != "operator") {
-            tok->swapWithNext();
-        }
-    }
 }
 
 void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
