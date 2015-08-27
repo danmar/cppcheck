@@ -2581,7 +2581,23 @@ private:
                       "    memset(c2, 0, 10);\n"
                       "    memset(c3, 0, 10);\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
+                      "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+
+        // Ticket #6953
+        checkNoMemset("typedef float realnum;\n"
+                      "struct multilevel_data {\n"
+                      "  realnum *GammaInv;\n"
+                      "  realnum data[1];\n"
+                      "};\n"
+                      "void *new_internal_data() const {\n"
+                      "  multilevel_data *d = (multilevel_data *) malloc(sizeof(multilevel_data));\n"
+                      "  memset(d, 0, sizeof(multilevel_data));\n"
+                      "  return (void*) d;\n"
+                      "}");
+        ASSERT_EQUALS("[test.cpp:8]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
     }
 
     void memsetOnStdPodType() { // Ticket #5901
