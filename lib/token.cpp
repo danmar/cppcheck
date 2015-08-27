@@ -853,36 +853,36 @@ Token * Token::findClosingBracket()
 
 //---------------------------------------------------------------------------
 
-const Token *Token::findsimplematch(const Token *tok, const char pattern[])
+const Token *Token::findsimplematch(const Token *startTok, const char pattern[])
 {
-    for (; tok; tok = tok->next()) {
+    for (const Token* tok = startTok; tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, pattern))
             return tok;
     }
     return 0;
 }
 
-const Token *Token::findsimplematch(const Token *tok, const char pattern[], const Token *end)
+const Token *Token::findsimplematch(const Token *startTok, const char pattern[], const Token *end)
 {
-    for (; tok && tok != end; tok = tok->next()) {
+    for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
         if (Token::simpleMatch(tok, pattern))
             return tok;
     }
     return 0;
 }
 
-const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId)
+const Token *Token::findmatch(const Token *startTok, const char pattern[], unsigned int varId)
 {
-    for (; tok; tok = tok->next()) {
+    for (const Token* tok = startTok; tok; tok = tok->next()) {
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
     return 0;
 }
 
-const Token *Token::findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId)
+const Token *Token::findmatch(const Token *startTok, const char pattern[], const Token *end, unsigned int varId)
 {
-    for (; tok && tok != end; tok = tok->next()) {
+    for (const Token* tok = startTok; tok && tok != end; tok = tok->next()) {
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
