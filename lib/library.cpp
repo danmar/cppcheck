@@ -36,13 +36,14 @@ Library::Error Library::load(const char exename[], const char path[])
 {
     if (std::strchr(path,',') != nullptr) {
         std::string p(path);
-        std::string::size_type pos = p.find(',');
-        while (pos != std::string::npos) {
+        for (;;) {
+            const std::string::size_type pos = p.find(',');
+            if (pos == std::string::npos)
+                break;
             const Error &e = load(exename, p.substr(0,pos).c_str());
             if (e.errorcode != OK)
                 return e;
             p = p.substr(pos+1);
-            pos = p.find(',');
         }
         if (!p.empty())
             return load(exename, p.c_str());
@@ -180,8 +181,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (name_char == nullptr)
                 return Error(MISSING_ATTRIBUTE, "name");
             std::string name = name_char;
-            while (name.find(",") != std::string::npos) {
-                const std::string::size_type pos = name.find(",");
+            for (;;) {
+                const std::string::size_type pos = name.find(',');
+                if (pos == std::string::npos)
+                    break;
                 const Error &err = loadFunction(node, name.substr(0,pos), unknown_elements);
                 if (err.errorcode != ErrorCode::OK)
                     return err;
