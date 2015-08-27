@@ -871,12 +871,12 @@ public:
 
     const Scope *findRecordInNestedList(const std::string & name) const;
     Scope *findRecordInNestedList(const std::string & name) {
-        return const_cast<Scope *>(static_cast<const Scope *>(this)->findRecordInNestedList(name));
+        return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
 
     const Type* findType(const std::string& name) const;
     Type* findType(const std::string& name) {
-        return const_cast<Type*>(static_cast<const Scope *>(this)->findType(name));
+        return const_cast<Type*>(const_cast<const Scope *>(this)->findType(name));
     }
 
     /**
@@ -975,12 +975,12 @@ public:
 
     const Type* findType(const Token *tok, const Scope *startScope) const;
     Type* findType(const Token *tok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(tok, static_cast<const Scope *>(startScope)));
+        return const_cast<Type*>(this->findType(tok, const_cast<const Scope *>(startScope)));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) const {
-        return const_cast<Scope *>(this->findScope(tok, static_cast<const Scope *>(startScope)));
+        return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {

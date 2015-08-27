@@ -105,7 +105,7 @@ public:
      */
     const Token *tokAt(int index) const;
     Token *tokAt(int index) {
-        return const_cast<Token *>(static_cast<const Token *>(this)->tokAt(index));
+        return const_cast<Token *>(const_cast<const Token *>(this)->tokAt(index));
     }
 
     /**
@@ -114,7 +114,7 @@ public:
      */
     const Token *linkAt(int index) const;
     Token *linkAt(int index) {
-        return const_cast<Token *>(static_cast<const Token *>(this)->linkAt(index));
+        return const_cast<Token *>(const_cast<const Token *>(this)->linkAt(index));
     }
 
     /**
@@ -388,21 +388,21 @@ public:
         setFlag(fIsComplex, value);
     }
 
-    static const Token *findsimplematch(const Token *tok, const char pattern[]);
-    static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
-    static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
-    static Token *findsimplematch(Token *tok, const char pattern[]) {
-        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern));
+    static const Token *findsimplematch(const Token *startTok, const char pattern[]);
+    static const Token *findsimplematch(const Token *startTok, const char pattern[], const Token *end);
+    static const Token *findmatch(const Token *startTok, const char pattern[], unsigned int varId = 0);
+    static const Token *findmatch(const Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0);
+    static Token *findsimplematch(Token *startTok, const char pattern[]) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
     }
-    static Token *findsimplematch(Token *tok, const char pattern[], const Token *end) {
-        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern, end));
+    static Token *findsimplematch(Token *startTok, const char pattern[], const Token *end) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
     }
-    static Token *findmatch(Token *tok, const char pattern[], unsigned int varId = 0) {
-        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, varId));
+    static Token *findmatch(Token *startTok, const char pattern[], unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token *tok, const char pattern[], const Token *end, unsigned int varId = 0) {
-        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, end, varId));
+    static Token *findmatch(Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
     /**
