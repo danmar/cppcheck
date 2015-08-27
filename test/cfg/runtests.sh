@@ -16,7 +16,7 @@ CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitco
 CXX=g++
 CXX_OPT='-fsyntax-only -std=c++0x'
 CC=gcc
-CC_OPT='-Wno-nonnull -fsyntax-only'
+CC_OPT='-Wno-nonnull -Wno-implicit-function-declaration -fsyntax-only'
 
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
