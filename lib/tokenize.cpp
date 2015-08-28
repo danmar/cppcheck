@@ -3834,6 +3834,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " function=\"" << tok->function() << '\"';
         if (!tok->values.empty())
             out << " values=\"" << &tok->values << '\"';
+        if (tok->type())
+            out << " type-scope=\"" << tok->type()->classScope << '\"';
         if (tok->astParent())
             out << " astParent=\"" << tok->astParent() << '\"';
         if (tok->astOperand1())

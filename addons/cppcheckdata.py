@@ -107,6 +107,10 @@ class Token:
     # @endcode
     values = None
 
+    typeScopeId = None
+    ## type scope (token->type()->classScope)
+    typeScope = None
+
     astParentId = None
     ## syntax tree parent
     astParent = None
@@ -188,6 +192,8 @@ class Token:
         self.function = None
         self.valuesId = element.get('values')
         self.values = None
+        self.typeScopeId = element.get('type-scope')
+        self.typeScope = None
         self.astParentId = element.get('astParent')
         self.astParent = None
         self.astOperand1Id = element.get('astOperand1')
@@ -203,6 +209,7 @@ class Token:
         self.variable = IdMap[self.variableId]
         self.function = IdMap[self.functionId]
         self.values = IdMap[self.valuesId]
+        self.typeScope = IdMap[self.typeScopeId]
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
         self.astOperand2 = IdMap[self.astOperand2Id]

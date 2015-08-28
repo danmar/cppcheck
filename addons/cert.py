@@ -10,17 +10,32 @@
 
 import cppcheckdata
 import sys
-
+import re
 
 def reportError(token, severity, msg):
     sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') cert.py: ' + msg + '\n')
 
+def isUnpackedStruct(var):
+    decl = var.typeStartToken
+    while decl and decl.isName:
+        if decl.str == 'struct':
+            structScope = decl.next.typeScope
+            if structScope:
+                linenr = int(structScope.classStart.linenr)
+                for line in open(structScope.classStart.file):
+                    linenr = linenr - 1
+                    if linenr == 0:
+                        return True
+                    if re.match(r'#pragma\s+pack\s*\(',line):
+                        return False
+            break
+        decl = decl.next
+    return False
 
-def isLocalStruct(arg):
+def isLocalUnpackedStruct(arg):
     if arg and arg.str == '&' and not arg.astOperand2:
         arg = arg.astOperand1
-    return arg and arg.variable and arg.variable.isClass and (arg.variable.isLocal or arg.variable.isArgument)
-
+    return arg and arg.variable and (arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg.variable)
 
 def isBitwiseOp(token):
     return token and (token.str in ['&', '|', '^'])
@@ -44,9 +59,9 @@ def exp42(data):
                 arg1 = token.astOperand2.astOperand1.astOperand1
                 arg2 = token.astOperand2.astOperand1.astOperand2
 
-        if token.astOperand1.str == 'memcmp' and (isLocalStruct(arg1) or isLocalStruct(arg2)):
+        if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
             reportError(token, 'style', 'EXP42-C Comparison of struct padding data')
-        if (token.astOperand1.str in ['memcpy', 'memmove']) and isLocalStruct(arg2):
+        if (token.astOperand1.str in ['memcpy', 'memmove']) and isLocalUnpackedStruct(arg2):
             reportError(token, 'style', 'EXP42-C Reading struct padding data')
 
 # EXP46-C
