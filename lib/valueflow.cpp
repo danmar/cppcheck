@@ -784,7 +784,7 @@ static void valueFlowReverse(TokenList *tokenlist,
             if (!var->isLocal()) {
                 if (!Token::Match(tok2->previous(), ")|else|do {"))
                     break;
-                if (Token::simpleMatch(tok2->previous(), ") {") &&
+                if ((tok2->previous()->str() == ")") &&
                     !Token::Match(tok2->linkAt(-1)->previous(), "if|for|while ("))
                     break;
             }
