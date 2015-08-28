@@ -978,6 +978,207 @@ void uninitvar_erfc(void)
     (void)erfcl(ld);
 }
 
+void uninitvar_carg(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)cargf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)carg(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)cargl(ldc);
+}
+
+void uninitvar_exp(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)expf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)exp(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)expl(ld);
+}
+
+void uninitvar_cexp(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)cexpf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)cexp(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)cexpl(ldc);
+}
+
+void uninitvar_cimag(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)cimagf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)cimag(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)cimagl(ldc);
+}
+
+void uninitvar_exp2(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)exp2f(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)exp2(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)exp2l(ld);
+}
+
+void uninitvar_expm1(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)expm1f(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)expm1(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)expm1l(ld);
+}
+
+void uninitvar_fabs(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)fabsf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)fabs(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)fabsl(ld);
+}
+
+void uninitvar_fdim(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)fdimf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)fdim(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)fdiml(ld1,ld2);
+}
+
+void uninitvar_fclose(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fclose(stream);
+}
+
+void uninitvar_feof(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)feof(stream);
+}
+
+void uninitvar_ferror(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)ferror(stream);
+}
+
+void uninitvar_fflush(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fflush(stream);
+}
+
+void uninitvar_fgetc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fgetc(stream);
+}
+
+void uninitvar_fgetwc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fgetwc(stream);
+}
+
+void uninitvar_fgetpos(void)
+{
+    FILE* stream;
+    fpos_t *ptr;
+    // cppcheck-suppress uninitvar
+    (void)fgetpos(stream,ptr);
+}
+
+void uninitvar_floor(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)floorf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)floor(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)floorl(ld);
+}
+
+#if 0 // #6958
+void uninitvar_fma(void)
+{
+    float f1,f2,f3;
+    // cppcheck-suppress uninitvar
+    (void)fmaf(f1,f2,f3);
+
+    double d1,d2,d3;
+    // cppcheck-suppress uninitvar
+    (void)fma(d1,d2,d3);
+
+    long double ld1,ld2,ld3;
+    // cppcheck-suppress uninitvar
+    (void)fmal(ld1,ld2,ld3);
+}
+#endif
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";

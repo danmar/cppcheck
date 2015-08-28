@@ -545,3 +545,160 @@ void uninitvar_erfc(void)
     // cppcheck-suppress uninitvar
     (void)std::erfc(ld);
 }
+
+void uninitvar_exp(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::exp(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::exp(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::exp(ld);
+}
+
+void uninitvar_exp2(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::exp2(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::exp2(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::exp2(ld);
+}
+
+void uninitvar_expm1(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::expm1(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::expm1(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::expm1(ld);
+}
+
+void uninitvar_fabs(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::fabs(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::fabs(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::fabs(ld);
+}
+
+void uninitvar_fdim(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::fdim(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::fdim(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::fdim(ld1,ld2);
+}
+
+void uninitvar_fclose(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fclose(stream);
+}
+
+void uninitvar_ferror(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::ferror(stream);
+}
+
+void uninitvar_feof(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::feof(stream);
+}
+
+void uninitvar_fflush(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fflush(stream);
+}
+
+void uninitvar_fgetc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fgetc(stream);
+}
+
+void uninitvar_fgetwc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fgetwc(stream);
+}
+
+void uninitvar_fgetpos(void)
+{
+    FILE* stream;
+    fpos_t *ptr;
+    // cppcheck-suppress uninitvar
+    (void)std::fgetpos(stream,ptr);
+}
+
+void uninitvar_floor(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::floor(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::floor(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::floor(ld);
+}
+
+#if 0 // #6958
+void uninitvar_fma(void)
+{
+    float f1,f2,f3;
+    // cppcheck-suppress uninitvar
+    (void)std::fma(f1,f2,f3);
+
+    double d1,d2,d3;
+    // cppcheck-suppress uninitvar
+    (void)std::fma(d1,d2,d3);
+
+    long double ld1,ld2,ld3;
+    // cppcheck-suppress uninitvar
+    (void)std::fma(ld1,ld2,ld3);
+}
+#endif
