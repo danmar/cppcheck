@@ -1850,7 +1850,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return (false);
 
 
-            const Token* lhs = tok1->tokAt(-1);
+            const Token* lhs = tok1->previous();
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
                 if (lhs->tokType() == Token::eAssignmentOp && lhs->previous()->variable()) {
