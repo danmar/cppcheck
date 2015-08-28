@@ -113,6 +113,7 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesArray);
+        TEST_CASE(test_isVariableDeclarationIdentifiesPointerArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
@@ -491,6 +492,22 @@ private:
         Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings.library);
         ASSERT(true == v.isArray());
         ASSERT(false == v.isPointer());
+        ASSERT(false == v.isPointerArray());
+        ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesPointerArray() {
+        reset();
+        givenACodeSampleToTokenize arr("A *a[5];");
+        bool result = si.isVariableDeclaration(arr.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings.library);
+        ASSERT(false == v.isPointer());
+        ASSERT(true == v.isArray());
+        ASSERT(false == v.isPointerToArray());
+        ASSERT(true == v.isPointerArray());
         ASSERT(false == v.isReference());
     }
 
@@ -505,6 +522,7 @@ private:
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointerToArray());
+        ASSERT(false == v.isPointerArray());
         ASSERT(false == v.isReference());
     }
 

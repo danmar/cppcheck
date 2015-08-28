@@ -148,7 +148,7 @@ void CheckClass::constructors()
                     continue;
 
                 // Check if this is a class constructor
-                if (!var->isPointer() && var->isClass() && func->type == Function::eConstructor) {
+                if (!var->isPointer() && !var->isPointerArray() && var->isClass() && func->type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
                     if (!var->type())
                         continue;

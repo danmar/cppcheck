@@ -1422,6 +1422,10 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
+bool Variable::isPointerArray() const {
+    return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
+}
+
 const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
