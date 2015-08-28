@@ -583,20 +583,6 @@ static void valueFlowArray(TokenList *tokenlist)
     std::map<unsigned int, const Token *> constantArrays;
 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "const %type% %var% [ %num%| ] = {")) {
-            const Token *vartok = tok->tokAt(2);
-            const Token *rhstok = vartok->next()->link()->tokAt(2);
-            constantArrays[vartok->varId()] = rhstok;
-            tok = rhstok->link();
-        }
-
-        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
-            const Token *vartok = tok->tokAt(2);
-            const Token *strtok = vartok->next()->link()->tokAt(2);
-            constantArrays[vartok->varId()] = strtok;
-            tok = strtok->next();
-        }
-
         if (tok->varId() > 0U) {
             const std::map<unsigned int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
@@ -604,6 +590,23 @@ static void valueFlowArray(TokenList *tokenlist)
                 value.tokvalue = it->second;
                 setTokenValue(tok, value);
             }
+            continue;
+        }
+
+        if (Token::Match(tok, "const %type% %var% [ %num%| ] = {")) {
+            const Token *vartok = tok->tokAt(2);
+            const Token *rhstok = vartok->next()->link()->tokAt(2);
+            constantArrays[vartok->varId()] = rhstok;
+            tok = rhstok->link();
+            continue;
+        }
+
+        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
+            const Token *vartok = tok->tokAt(2);
+            const Token *strtok = vartok->next()->link()->tokAt(2);
+            constantArrays[vartok->varId()] = strtok;
+            tok = strtok->next();
+            continue;
         }
     }
 }
