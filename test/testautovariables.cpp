@@ -75,6 +75,7 @@ private:
         TEST_CASE(testautovar15); // ticket #6538
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
+        TEST_CASE(testautovar_ptrptr); // ticket #6956
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
@@ -422,6 +423,14 @@ private:
               "    arr[0]=&num;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar_ptrptr() { // #6596
+        check("void remove_duplicate_matches (char **matches) {\n"
+              "  char dead_slot;\n"
+              "  matches[0] = (char *)&dead_slot;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_return1() {
