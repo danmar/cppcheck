@@ -356,6 +356,88 @@ void uninitvar_atol(void)
     (void)std::atoll(c);
 }
 
+void uninitvar_ceil(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::ceil(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::ceil(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::ceil(ld);
+}
+
+void uninitvar_copysign(void)
+{
+    float f1, f2;
+    // cppcheck-suppress uninitvar
+    (void)std::copysign(f1, f2);
+
+    double d1, d2;
+    // cppcheck-suppress uninitvar
+    (void)std::copysign(d1, d2);
+
+    long double ld1, ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::copysign(ld1, ld2);
+}
+
+void uninitvar_cbrt(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::cbrt(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::cbrt(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::cbrt(ld);
+}
+
+void uninitvar_cos(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::cos(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::cos(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::cos(ld);
+}
+
+void uninitvar_clearerr(void)
+{
+    FILE * stream;
+    // cppcheck-suppress uninitvar
+    std::clearerr(stream);
+}
+
+void uninitvar_cosh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::cosh(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::cosh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::cosh(ld);
+}
+
 void uninitvar_feraiseexcept(void)
 {
     int excepts;

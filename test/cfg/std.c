@@ -798,6 +798,112 @@ void uninitvar_atol(void)
     (void)atoll(c);
 }
 
+void uninitvar_calloc(void)
+{
+    size_t nitems;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    int * p = (int*) calloc(nitems, size);
+    free(p);
+}
+
+void uninitvar_ceil(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)ceilf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)ceil(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)ceill(ld);
+}
+
+void uninitvar_copysign(void)
+{
+    float f1, f2;
+    // cppcheck-suppress uninitvar
+    (void)copysignf(f1, f2);
+
+    double d1, d2;
+    // cppcheck-suppress uninitvar
+    (void)copysign(d1, d2);
+
+    long double ld1, ld2;
+    // cppcheck-suppress uninitvar
+    (void)copysignl(ld1, ld2);
+}
+
+void uninitvar_cbrt(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)cbrtf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)cbrt(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)cbrtl(ld);
+}
+
+void uninitvar_cos(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)cosf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)cos(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)cosl(ld);
+}
+
+void uninitvar_clearerr(void)
+{
+    FILE * stream;
+    // cppcheck-suppress uninitvar
+    clearerr(stream);
+}
+
+void uninitvar_ccos(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)ccosf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)ccos(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)ccosl(ldc);
+}
+
+void uninitvar_cosh(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)coshf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)cosh(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)coshl(ld);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
