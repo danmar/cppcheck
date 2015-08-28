@@ -486,3 +486,62 @@ void uninitvar_feupdateenv(void)
     // cppcheck-suppress uninitvar
     (void)std::feupdateenv(envp);
 }
+
+void uninitvar_ctime(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)std::ctime(tp);
+}
+
+void uninitvar_difftime(void)
+{
+    time_t t1,t2;
+    // cppcheck-suppress uninitvar
+    (void)std::difftime(t1, t2);
+}
+
+void uninitvar_div(void)
+{
+    int num;
+    int denom;
+    // cppcheck-suppress uninitvar
+    (void)std::div(num,denom);
+}
+
+void uninitvar_exit(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::exit(i);
+}
+
+void uninitvar_erf(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::erf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::erf(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::erf(ld);
+}
+
+void uninitvar_erfc(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::erfc(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::erfc(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::erfc(ld);
+}

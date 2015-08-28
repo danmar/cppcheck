@@ -904,6 +904,80 @@ void uninitvar_cosh(void)
     (void)coshl(ld);
 }
 
+void uninitvar_ccosh(void)
+{
+    float complex fd;
+    // cppcheck-suppress uninitvar
+    (void)ccoshf(fd);
+
+    double complex dc;
+    // cppcheck-suppress uninitvar
+    (void)ccosh(dc);
+
+    long double complex ldc;
+    // cppcheck-suppress uninitvar
+    (void)ccoshl(ldc);
+}
+
+void uninitvar_ctime(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)ctime(tp);
+}
+
+void uninitvar_difftime(void)
+{
+    time_t t1,t2;
+    // cppcheck-suppress uninitvar
+    (void)difftime(t1, t2);
+}
+
+void uninitvar_div(void)
+{
+    int num;
+    int denom;
+    // cppcheck-suppress uninitvar
+    (void)div(num,denom);
+}
+
+void uninitvar_exit(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    exit(i);
+}
+
+void uninitvar_erf(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)erff(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)erf(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)erfl(ld);
+}
+
+void uninitvar_erfc(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)erfcf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)erfc(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)erfcl(ld);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
