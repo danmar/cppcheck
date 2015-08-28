@@ -394,6 +394,12 @@ public:
     }
 
     /**
+     * Is variable an array of pointers
+     * @return true if array or pointers, false otherwise
+     */
+    bool isPointerArray() const;
+
+    /**
      * Is array or pointer variable.
      * @return true if pointer or array, false otherwise
      */

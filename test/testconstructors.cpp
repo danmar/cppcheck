@@ -148,6 +148,7 @@ private:
         TEST_CASE(uninitVarArray6);
         TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray8);
+        TEST_CASE(uninitVarArray9); // ticket #6957
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarCpp11Init1);
@@ -2402,6 +2403,17 @@ private:
               "    Foo() { ::ZeroMemory(a); }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray9() { // #6957
+        check("class BaseGDL;\n"
+              "struct IxExprListT {\n"
+              "private:\n"
+              "    BaseGDL* eArr[3];\n"
+              "public:\n"
+              "    IxExprListT() {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'IxExprListT::eArr' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray2D() {
