@@ -91,6 +91,7 @@ private:
         TEST_CASE(localvar45); // ticket #4899
         TEST_CASE(localvar46); // ticket #5491 (C++11 style initialization)
         TEST_CASE(localvar47); // ticket #6603
+        TEST_CASE(localvar48); // ticket #6954
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1892,6 +1893,13 @@ private:
                               "        = (flag) ? &SfxUndoManager::foo : &SfxUndoManager::bar;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'retrieveCount' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar48() { // #6954
+        functionVariableUsage("void foo() {\n"
+                              "  long (*pKoeff)[256] = new long[9][256];\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {

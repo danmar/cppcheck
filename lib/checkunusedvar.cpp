@@ -689,6 +689,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::reference;
             else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
                 type = Variables::pointerPointer;
+            else if (i->isPointerToArray())
+                type = Variables::pointerPointer;
             else if (i->isPointer())
                 type = Variables::pointer;
             else if (_tokenizer->isC() ||
