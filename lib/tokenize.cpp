@@ -5711,16 +5711,15 @@ void Tokenizer::simplifyStaticConst()
 {
     // This function will simplify the token list so that the qualifiers "static"
     // and "const" appear in the reverse order to what is in the array below.
-    const char* qualifiers[] = {"const", "static"};
+    const std::string qualifiers[] = {"const", "static"};
 
     // Move 'const' before all other qualifiers and types and then
     // move 'static' before all other qualifiers and types.
     for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
-        const char* qualifier = qualifiers[i];
         for (Token *tok = list.front(); tok; tok = tok->next()) {
 
             // Keep searching for an instance of "static" or "const"
-            if (!tok->next() || tok->next()->str() != qualifier)
+            if (!tok->next() || tok->next()->str() != qualifiers[i])
                 continue;
 
             // Look backwards to find the beginning of the declaration
@@ -5740,12 +5739,12 @@ void Tokenizer::simplifyStaticConst()
             // Move the qualifier to the left-most position in the declaration
             tok->deleteNext();
             if (!leftTok) {
-                list.front()->insertToken(qualifier, false);
+                list.front()->insertToken(qualifiers[i], false);
                 list.front()->swapWithNext();
             } else if (leftTok->next())
-                leftTok->next()->insertToken(qualifier, true);
+                leftTok->next()->insertToken(qualifiers[i], true);
             else
-                leftTok->insertToken(qualifier);
+                leftTok->insertToken(qualifiers[i]);
         }
     }
 }
@@ -5753,10 +5752,14 @@ void Tokenizer::simplifyStaticConst()
 void Tokenizer::simplifyIfAndWhileAssign()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok->next(), "if|while ( !| (| %name% =") &&
-            !Token::Match(tok->next(), "if|while ( !| (| %name% . %name% =") &&
-            !Token::Match(tok->next(), "if|while ( 0 == (| %name% =") &&
-            !Token::Match(tok->next(), "if|while ( 0 == (| %name% . %name% ="))
+        if (!Token::Match(tok->next(), "if|while ("))
+            continue;
+
+        const Token* tokAt3 = tok->tokAt(3);
+        if (!Token::Match(tokAt3, "!| (| %name% =") &&
+            !Token::Match(tokAt3, "!| (| %name% . %name% =") &&
+            !Token::Match(tokAt3, "0 == (| %name% =") &&
+            !Token::Match(tokAt3, "0 == (| %name% . %name% ="))
             continue;
 
         // simplifying a "while(cond) { }" condition ?
@@ -6946,7 +6949,7 @@ void Tokenizer::simplifyCharAt()
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
             // Check within range
             if (index >= 0 && index <= (MathLib::bigint)Token::getStrLength(tok)) {
-                tok->str(std::string("'" + Token::getCharAt(tok, (size_t)index) + "'"));
+                tok->str("'" + Token::getCharAt(tok, (size_t)index) + "'");
                 tok->deleteNext(3);
             }
         }
@@ -9485,7 +9488,8 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 
 namespace {
     struct triplet {
-        triplet(const char* t, const char* m="", const char* u="") : tchar(t), mbcs(m), unicode(u) {}
+        triplet(const char* t, const char* m, const char* u) : tchar(t), mbcs(m), unicode(u) {}
+        triplet(const std::string& t) : tchar(t) {}
         bool operator <(const triplet& rhs) const {
             return tchar < rhs.tchar;
         }
@@ -9536,7 +9540,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 
     const bool ansi = _settings->platformType == Settings::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        std::set<triplet>::const_iterator match = apis.find(tok->str().c_str());
+        std::set<triplet>::const_iterator match = apis.find(tok->str());
         if (match!=apis.end()) {
             const std::string pattern(match->tchar + " (");
             if (Token::simpleMatch(tok, pattern.c_str())) {
