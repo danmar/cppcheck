@@ -221,11 +221,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>arguments</sender>
+   <signal>itemChanged(QListWidgetItem*)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>argumentChanged(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>542</x>
+     <y>117</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFunction(int)</slot>
   <slot>openCfg()</slot>
   <slot>changeFunction()</slot>
   <slot>saveCfg()</slot>
+  <slot>argumentChanged(QListWidgetItem*)</slot>
  </slots>
 </ui>

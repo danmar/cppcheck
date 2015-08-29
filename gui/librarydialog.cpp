@@ -28,7 +28,8 @@
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::LibraryDialog)
+    ui(new Ui::LibraryDialog),
+    ignoreChanges(false)
 {
     ui->setupUi(this);
     ui->buttonSave->setEnabled(false);
@@ -38,6 +39,7 @@ LibraryDialog::~LibraryDialog()
 {
     delete ui;
 }
+
 void LibraryDialog::openCfg()
 {
     const QSettings settings;
@@ -79,6 +81,7 @@ void LibraryDialog::saveCfg()
 
 void LibraryDialog::selectFunction(int row)
 {
+    ignoreChanges = true;
     const LibraryData::Function &function = data.functions[row];
     ui->functionreturn->setChecked(!function.noreturn);
     ui->useretval->setChecked(function.useretval);
@@ -88,18 +91,40 @@ void LibraryDialog::selectFunction(int row)
         QString s("arg");
         if (arg.nr != LibraryData::Function::Arg::ANY)
             s += QString::number(arg.nr);
-        if (arg.formatstr)
-            s += " formatstr";
-        else if (arg.strz)
-            s += " strz";
-        else if (!arg.valid.isNull())
-            s += " " + arg.valid;
         ui->arguments->addItem(s);
+
+        QListWidgetItem *item = new QListWidgetItem("Not bool value", ui->arguments);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(arg.notbool ? Qt::Checked : Qt::Unchecked);
+        ui->arguments->addItem(item);
+
+        item = new QListWidgetItem("Not null", ui->arguments);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(arg.notnull ? Qt::Checked : Qt::Unchecked);
+        ui->arguments->addItem(item);
+
+        item = new QListWidgetItem("Not uninit", ui->arguments);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(arg.notuninit ? Qt::Checked : Qt::Unchecked);
+        ui->arguments->addItem(item);
+
+        item = new QListWidgetItem("Format string", ui->arguments);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(arg.formatstr ? Qt::Checked : Qt::Unchecked);
+        ui->arguments->addItem(item);
+
+        item = new QListWidgetItem("Zero-terminated string", ui->arguments);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(arg.strz ? Qt::Checked : Qt::Unchecked);
+        ui->arguments->addItem(item);
     }
+    ignoreChanges = false;
 }
 
 void LibraryDialog::changeFunction()
 {
+    if (ignoreChanges)
+        return;
     foreach(const QListWidgetItem *item, ui->functions->selectedItems()) {
         LibraryData::Function &function = data.functions[ui->functions->row(item)];
         function.noreturn   = !ui->functionreturn->isChecked();
@@ -108,4 +133,45 @@ void LibraryDialog::changeFunction()
     }
     ui->buttonSave->setEnabled(true);
 }
+
+
+void LibraryDialog::argumentChanged(QListWidgetItem *changedItem)
+{
+    if (ignoreChanges)
+        return;
+    unsigned argnr = 0;
+    for (int row = 0; row < ui->arguments->count(); row++) {
+        const QListWidgetItem *argItem = ui->arguments->item(row);
+        if (argItem == changedItem)
+            break;
+        if (argItem->text() == "arg")
+            argnr = LibraryData::Function::Arg::ANY;
+        else if (argItem->text().startsWith("arg"))
+            argnr = argItem->text().mid(3).toInt();
+    }
+
+    foreach(const QListWidgetItem *functionItem, ui->functions->selectedItems()) {
+        LibraryData::Function &function = data.functions[ui->functions->row(functionItem)];
+
+        for (LibraryData::Function::Arg &arg : function.args) {
+            if (arg.nr == argnr) {
+                // TODO: Don't use a stringbased lookup
+                if (changedItem->text() == "Not bool")
+                    arg.notbool = (changedItem->checkState() != Qt::Unchecked);
+                else if (changedItem->text() == "Not null")
+                    arg.notnull = (changedItem->checkState() != Qt::Unchecked);
+                else if (changedItem->text() == "Not uninit")
+                    arg.notuninit = (changedItem->checkState() != Qt::Unchecked);
+                else if (changedItem->text() == "Format string")
+                    arg.formatstr = (changedItem->checkState() != Qt::Unchecked);
+                else if (changedItem->text() == "Zero-terminated string")
+                    arg.strz = (changedItem->checkState() != Qt::Unchecked);
+                break;
+            }
+        }
+    }
+
+    ui->buttonSave->setEnabled(true);
+}
+
 

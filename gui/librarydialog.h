@@ -24,6 +24,8 @@
 
 #include "librarydata.h"
 
+class QListWidgetItem;
+
 namespace Ui {
     class LibraryDialog;
 }
@@ -40,11 +42,13 @@ private slots:
     void saveCfg();
     void selectFunction(int row);
     void changeFunction();
+    void argumentChanged(QListWidgetItem *);
 
 private:
     Ui::LibraryDialog *ui;
     LibraryData data;
     QString mFileName;
+    bool ignoreChanges;
 };
 
 #endif // LIBRARYDIALOG_H
