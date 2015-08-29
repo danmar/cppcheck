@@ -38,6 +38,7 @@ public:
             leakignore(false), useretval(false) {
         }
 
+        QStringList comments;
         QString name;
         bool noreturn;
         bool gccPure;

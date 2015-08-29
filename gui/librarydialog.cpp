@@ -117,6 +117,8 @@ void LibraryDialog::selectFunction(int row)
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.strz ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
+
+        ui->arguments->addItem("valid: " + ((!arg.valid.isNull()) ? arg.valid : "*"));
     }
     ignoreChanges = false;
 }

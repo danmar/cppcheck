@@ -66,9 +66,10 @@ static LibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArg
     return arg;
 }
 
-static LibraryData::Function loadFunction(const QDomElement &functionElement)
+static LibraryData::Function loadFunction(const QDomElement &functionElement, const QStringList &comments)
 {
     LibraryData::Function function;
+    function.comments = comments;
     function.name = functionElement.attribute("name");
     for (QDomElement childElement = functionElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
         if (childElement.tagName() == "noreturn")
@@ -132,15 +133,24 @@ bool LibraryData::open(QIODevice &file)
         return false;
 
     QDomElement rootElement = doc.firstChildElement("def");
-    for (QDomElement e = rootElement.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
-        if (e.tagName() == "define")
-            defines.append(loadDefine(e));
-        else if (e.tagName() == "function")
-            functions.append(loadFunction(e));
-        else if (e.tagName() == "memory" || e.tagName() == "resource")
-            memoryresource.append(loadMemoryResource(e));
-        else if (e.tagName() == "podtype")
-            podtypes.append(loadPodType(e));
+    QStringList comments;
+    for (QDomNode n = rootElement.firstChild(); !n.isNull(); n = n.nextSibling()) {
+        if (n.isComment())
+            comments.append(n.toComment().data());
+        else if (n.isElement()) {
+            const QDomElement e = n.toElement();
+
+            if (e.tagName() == "define")
+                defines.append(loadDefine(e));
+            else if (e.tagName() == "function")
+                functions.append(loadFunction(e, comments));
+            else if (e.tagName() == "memory" || e.tagName() == "resource")
+                memoryresource.append(loadMemoryResource(e));
+            else if (e.tagName() == "podtype")
+                podtypes.append(loadPodType(e));
+
+            comments.clear();
+        }
     }
 
     return true;
@@ -158,9 +168,20 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Functio
         functionElement.appendChild(e);
     }
     if (function.useretval)
-        functionElement.appendChild(doc.createElement("useretval"));
+        functionElement.appendChild(doc.createElement("use-retval"));
     if (function.leakignore)
         functionElement.appendChild(doc.createElement("leak-ignore"));
+    if (function.gccConst)
+        functionElement.appendChild(doc.createElement("const"));
+    if (function.gccPure)
+        functionElement.appendChild(doc.createElement("pure"));
+    if (!function.formatstr.scan.isNull()) {
+        QDomElement e = doc.createElement("formatstr");
+        e.setAttribute("scan", function.formatstr.scan);
+        if (!function.formatstr.secure.isNull())
+            e.setAttribute("secure", function.formatstr.secure);
+        functionElement.appendChild(e);
+    }
 
     // Argument info..
     foreach(const LibraryData::Function::Arg &arg, function.args) {
@@ -239,6 +260,9 @@ QString LibraryData::toString() const
     }
 
     foreach(const Function &function, functions) {
+        foreach(const QString &comment, function.comments) {
+            root.appendChild(doc.createComment(comment));
+        }
         root.appendChild(FunctionElement(doc, function));
     }
 
