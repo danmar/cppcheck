@@ -8329,6 +8329,10 @@ private:
             "+ i13 + i14 + i15 + i16 + i17 + i18 ;\n"
             "}";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
+
+        const char code3[] = "const unsigned long extern int i;";
+        const char expected3[] = "extern const unsigned long i ;";
+        ASSERT_EQUALS(expected3, tokenizeAndStringify(code3, true));
     }
 
     void simplifyDeprecated() {

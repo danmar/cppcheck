@@ -5709,16 +5709,16 @@ void Tokenizer::simplifyStdType()
 
 void Tokenizer::simplifyStaticConst()
 {
-    // This function will simplify the token list so that the qualifiers "static"
+    // This function will simplify the token list so that the qualifiers "extern", "static"
     // and "const" appear in the reverse order to what is in the array below.
-    const std::string qualifiers[] = {"const", "static"};
+    const std::string qualifiers[] = {"const", "static", "extern"};
 
     // Move 'const' before all other qualifiers and types and then
-    // move 'static' before all other qualifiers and types.
+    // move 'static' before all other qualifiers and types, ...
     for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
 
-            // Keep searching for an instance of "static" or "const"
+            // Keep searching for a qualifier
             if (!tok->next() || tok->next()->str() != qualifiers[i])
                 continue;
 
