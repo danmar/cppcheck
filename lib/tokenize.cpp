@@ -7165,7 +7165,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name) const
         if (end) {
             if (Token::simpleMatch(end, ") {")) { // function parameter ?
                 // make sure it's not a conditional
-                if (Token::Match(end->link()->previous(), "if|for|while|switch|BOOST_FOREACH"))
+                if (Token::Match(end->link()->previous(), "if|for|while|switch|BOOST_FOREACH") || Token::Match(end->link()->tokAt(-2), ":|,"))
                     return false;
 
                 // look backwards

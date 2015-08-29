@@ -3244,6 +3244,17 @@ private:
                              "void f() { if (aa) ; else if (bb==x) df; }\n";
         checkSimplifyEnum(code3);
         ASSERT_EQUALS("", errout.str());
+
+        // avoid false positive: Initializer list
+        const char code4[] = "struct S {\n"
+                             "    enum { E = 1 };\n"
+                             "    explicit S(float f)\n"
+                             "        : f_(f * E)\n"
+                             "    {}\n"
+                             "    float f_;\n"
+                             "};";
+        checkSimplifyEnum(code4);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void enum23() { // ticket #2804
