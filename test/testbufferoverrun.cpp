@@ -2477,6 +2477,14 @@ private:
               "f(a);\n"
               "");
         ASSERT_EQUALS("", errout.str());
+
+        check("void CreateLeafTex(unsigned char buf[256][2048][4]);\n"
+              "void foo() {\n"
+              "  unsigned char(* tree)[2048][4] = new unsigned char[256][2048][4];\n"
+              "  CreateLeafTex(tree);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void possible_buffer_overrun_1() { // #3035
