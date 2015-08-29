@@ -60,9 +60,7 @@ def exp42(data):
                 arg2 = token.astOperand2.astOperand1.astOperand2
 
         if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
-            reportError(token, 'style', 'EXP42-C Comparison of struct padding data')
-        if (token.astOperand1.str in ['memcpy', 'memmove']) and isLocalUnpackedStruct(arg2):
-            reportError(token, 'style', 'EXP42-C Reading struct padding data')
+            reportError(token, 'style', 'EXP42-C Comparison of struct padding data (fix either by packing the struct using \'#pragma pack\' or by rewriting the comparison)')
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
