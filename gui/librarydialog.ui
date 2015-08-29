@@ -66,6 +66,30 @@
          </property>
         </widget>
        </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="addFunction">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
       </layout>
      </item>
      <item>
@@ -234,6 +258,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>addFunction</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>addFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>48</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>65</x>
+     <y>298</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFunction(int)</slot>
@@ -241,5 +281,6 @@
   <slot>changeFunction()</slot>
   <slot>saveCfg()</slot>
   <slot>argumentChanged(QListWidgetItem*)</slot>
+  <slot>addFunction()</slot>
  </slots>
 </ui>

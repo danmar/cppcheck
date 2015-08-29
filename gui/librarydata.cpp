@@ -132,6 +132,8 @@ bool LibraryData::open(QIODevice &file)
     if (!doc.setContent(&file))
         return false;
 
+    clear();
+
     QDomElement rootElement = doc.firstChildElement("def");
     QStringList comments;
     for (QDomNode n = rootElement.firstChild(); !n.isNull(); n = n.nextSibling()) {

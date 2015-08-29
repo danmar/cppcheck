@@ -23,6 +23,7 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QInputDialog>
 
 // TODO: get/compare functions from header
 
@@ -57,12 +58,15 @@ void LibraryDialog::openCfg()
         mFileName.clear();
         QFile file(selectedFile);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            ignoreChanges = true;
             data.open(file);
             mFileName = selectedFile;
             ui->buttonSave->setEnabled(false);
             ui->functions->clear();
-            foreach(const struct LibraryData::Function &function, data.functions)
-            ui->functions->addItem(function.name);
+            foreach(const struct LibraryData::Function &function, data.functions) {
+                ui->functions->addItem(function.name);
+            }
+            ignoreChanges = false;
         }
     }
 }
@@ -77,6 +81,25 @@ void LibraryDialog::saveCfg()
         ts << data.toString();
         ui->buttonSave->setEnabled(false);
     }
+}
+
+void LibraryDialog::addFunction()
+{
+    LibraryData::Function f;
+    bool ok;
+    f.name = QInputDialog::getText(this, tr("Add function"), tr("Function name"), QLineEdit::Normal, "doStuff", &ok);
+    if (!ok)
+        return;
+    int args = QInputDialog::getInt(this, tr("Add function"), tr("Number of arguments"), 0, 0, 20, 1, &ok);
+    if (!ok)
+        return;
+    for (int i = 1; i <= args; i++) {
+        LibraryData::Function::Arg arg;
+        arg.nr = i;
+        f.args.append(arg);
+    }
+    data.functions.append(f);
+    ui->functions->addItem(f.name);
 }
 
 void LibraryDialog::selectFunction(int row)

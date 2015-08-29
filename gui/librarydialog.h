@@ -40,6 +40,7 @@ public:
 private slots:
     void openCfg();
     void saveCfg();
+    void addFunction();
     void selectFunction(int row);
     void changeFunction();
     void argumentChanged(QListWidgetItem *);
