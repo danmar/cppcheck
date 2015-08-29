@@ -3916,6 +3916,8 @@ void Tokenizer::removeMacrosInGlobalScope()
 
 void Tokenizer::removeMacroInClassDef()
 {
+    if (!isCPP())
+        return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct %name% %name% {|:") &&
             (tok->next()->isUpperCaseName() || tok->tokAt(2)->isUpperCaseName())) {
@@ -6567,7 +6569,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
         }
 
         // Delete pointer alias
-        if (pointeralias && (tok3->str() == "delete") && tok3->next() &&
+        if (isCPP() && pointeralias && (tok3->str() == "delete") && tok3->next() &&
             (Token::Match(tok3->next(), "%varid% ;", varid) ||
              Token::Match(tok3->next(), "[ ] %varid%", varid))) {
             tok3 = (tok3->next()->str() == "[") ? tok3->tokAt(3) : tok3->next();
@@ -8457,7 +8459,7 @@ void Tokenizer::simplifyComma()
 
         // We must not accept just any keyword, e.g. accepting int
         // would cause function parameters to corrupt.
-        if (tok->strAt(1) == "delete") {
+        if (isCPP() && tok->strAt(1) == "delete") {
             // Handle "delete a, delete b;"
             tok->str(";");
         }
@@ -8472,8 +8474,8 @@ void Tokenizer::simplifyComma()
                 if (tok2->str() == "=") {
                     // Handle "a = 0, b = 0;"
                     replace = true;
-                } else if (Token::Match(tok2, "delete %name%") ||
-                           Token::Match(tok2, "delete [ ] %name%")) {
+                } else if (isCPP() && (Token::Match(tok2, "delete %name%") ||
+                                       Token::Match(tok2, "delete [ ] %name%"))) {
                     // Handle "delete a, a = 0;"
                     replace = true;
                 } else if (Token::Match(tok2, "[?:;,{}()]")) {

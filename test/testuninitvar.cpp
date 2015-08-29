@@ -66,6 +66,7 @@ private:
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
         TEST_CASE(uninitvar_ternaryexpression); // #4683
+        TEST_CASE(uninitvar_pointertoarray);
         TEST_CASE(trac_4871);
 
         TEST_CASE(syntax_error); // Ticket #5073
@@ -1428,6 +1429,40 @@ private:
                        "  bar(x);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_pointertoarray() {
+        checkUninitVar("void draw_quad(float z)  {\n"
+                       "    int i;\n"
+                       "    float (*vertices)[2][4];\n"
+                       "    vertices[0][0][0] = z;\n"
+                       "    vertices[0][0][1] = z;\n"
+                       "    vertices[1][0][0] = z;\n"
+                       "    vertices[1][0][1] = z;\n"
+                       "    vertices[2][0][0] = z;\n"
+                       "    vertices[2][0][1] = z;\n"
+                       "    vertices[3][0][0] = z;\n"
+                       "    vertices[3][0][1] = z;\n"
+                       "    for (i = 0; i < 4; i++) {\n"
+                       "        vertices[i][0][2] = z;\n"
+                       "        vertices[i][0][3] = 1.0;\n"
+                       "        vertices[i][1][0] = 2.0;\n"
+                       "        vertices[i][1][1] = 3.0;\n"
+                       "        vertices[i][1][2] = 4.0;\n"
+                       "        vertices[i][1][3] = 5.0;\n"
+                       "    }\n"
+                       "}\n");
+        // kind of regression test - there are more lines which access vertices!?
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:5]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:6]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:7]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:8]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:9]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:10]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:11]: (error) Uninitialized variable: vertices\n"
+                      "[test.cpp:18]: (error) Uninitialized variable: vertices\n",
+                      errout.str());
     }
 
     // alloc..

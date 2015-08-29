@@ -1590,6 +1590,28 @@ private:
               "  a[0][0] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void draw_quad(float z)  {\n"
+              "    int i;\n"
+              "    float (*vertices)[2][4];\n"
+              "    vertices[0][0][0] = z;\n"
+              "    vertices[0][0][1] = z;\n"
+              "    vertices[1][0][0] = z;\n"
+              "    vertices[1][0][1] = z;\n"
+              "    vertices[2][0][0] = z;\n"
+              "    vertices[2][0][1] = z;\n"
+              "    vertices[3][0][0] = z;\n"
+              "    vertices[3][0][1] = z;\n"
+              "    for (i = 0; i < 4; i++) {\n"
+              "        vertices[i][0][2] = z;\n"
+              "        vertices[i][0][3] = 1.0;\n"
+              "        vertices[i][1][0] = 2.0;\n"
+              "        vertices[i][1][1] = 3.0;\n"
+              "        vertices[i][1][2] = 4.0;\n"
+              "        vertices[i][1][3] = 5.0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_switch_in_for() {
