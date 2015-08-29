@@ -9489,7 +9489,7 @@ void Tokenizer::simplifyMicrosoftMemoryFunctions()
 namespace {
     struct triplet {
         triplet(const char* t, const char* m, const char* u) : tchar(t), mbcs(m), unicode(u) {}
-        triplet(const std::string& t) : tchar(t) {}
+        explicit triplet(const std::string& t) : tchar(t) {}
         bool operator <(const triplet& rhs) const {
             return tchar < rhs.tchar;
         }
@@ -9540,7 +9540,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 
     const bool ansi = _settings->platformType == Settings::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        std::set<triplet>::const_iterator match = apis.find(tok->str());
+        std::set<triplet>::const_iterator match = apis.find(triplet(tok->str()));
         if (match!=apis.end()) {
             const std::string pattern(match->tchar + " (");
             if (Token::simpleMatch(tok, pattern.c_str())) {
