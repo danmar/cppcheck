@@ -220,18 +220,20 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
         return false;
     if (tok->isConstOp())
         return isVariableUsed(tok->astOperand1(),var) || isVariableUsed(tok->astOperand2(),var);
-    if (var.isArray()) {
-        const Token *parent = tok->astParent();
-        while (Token::Match(parent, "[?:]"))
-            parent = parent->astParent();
-        // no dereference, then array is not "used"
-        if (!Token::Match(parent, "*|["))
-            return false;
-        const Token *parent2 = parent->astParent();
-        // TODO: handle function calls. There is a TODO assertion in TestUninitVar::uninitvar_arrays
-        return !parent2 || parent2->isConstOp() || (parent2->str() == "=" && parent2->astOperand2() == parent);
-    }
-    return (tok->varId() == var.declarationId());
+    if (tok->varId() != var.declarationId())
+        return false;
+    if (!var.isArray())
+        return true;
+
+    const Token *parent = tok->astParent();
+    while (Token::Match(parent, "[?:]"))
+        parent = parent->astParent();
+    // no dereference, then array is not "used"
+    if (!Token::Match(parent, "*|["))
+        return false;
+    const Token *parent2 = parent->astParent();
+    // TODO: handle function calls. There is a TODO assertion in TestUninitVar::uninitvar_arrays
+    return !parent2 || parent2->isConstOp() || (parent2->str() == "=" && parent2->astOperand2() == parent);
 }
 
 bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar)

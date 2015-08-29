@@ -1281,6 +1281,12 @@ private:
                        "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
+        checkUninitVar("void f(int x) {\n"
+                       "  int a[2];\n"
+                       "  y *= (x ? 1 : 2);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // passing array to library functions
         checkUninitVar("void f()\n"
                        "{\n"
