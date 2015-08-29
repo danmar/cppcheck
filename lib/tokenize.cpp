@@ -8226,13 +8226,10 @@ void Tokenizer::simplifyMathFunctions()
                 tok->str(strNumber); // insert result into token list
                 simplifcationMade = true;
             } else if (Token::Match(tok, "fma|fmaf|fmal ( %any% , %any% , %any% )")) {
-                // Simplify: fma(a,b,c) == > ( a ) * ( b ) + ( c )
-                // get parameters
-                const std::string& a(tok->strAt(2));
-                const std::string& b(tok->strAt(4));
-                const std::string& c(tok->strAt(6));
-                tok->str("( " + a + " ) * ( " + b + " ) + ( " + c + " )");  // insert result into token list
-                tok->deleteNext(7);  // delete fma call
+                // Simplify: fma(a,b,c) == > ( a * b  + c )
+                tok->tokAt(3)->str("*");
+                tok->tokAt(5)->str("+");
+                tok->deleteThis();  // delete fma call
                 simplifcationMade = true;
             } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
                 // Simplify: sqrt(0) = 0 and cbrt(0) == 0
