@@ -160,7 +160,7 @@ void CheckClass::constructors()
                 }
 
                 // Check if type can't be copied
-                if (!var->isPointer() && var->typeScope()) {
+                if (!var->isPointer() && !var->isPointerArray() && var->typeScope()) {
                     if (func->type == Function::eMoveConstructor) {
                         if (canNotMove(var->typeScope()))
                             continue;
