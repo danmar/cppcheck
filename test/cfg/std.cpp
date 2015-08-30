@@ -686,19 +686,21 @@ void uninitvar_floor(void)
     (void)std::floor(ld);
 }
 
-#if 0 // #6958
 void uninitvar_fma(void)
 {
+    // cppcheck-suppress unassignedVariable
     float f1,f2,f3;
     // cppcheck-suppress uninitvar
     (void)std::fma(f1,f2,f3);
 
+    // cppcheck-suppress unassignedVariable
     double d1,d2,d3;
     // cppcheck-suppress uninitvar
     (void)std::fma(d1,d2,d3);
 
+    // cppcheck-suppress unassignedVariable
     long double ld1,ld2,ld3;
     // cppcheck-suppress uninitvar
     (void)std::fma(ld1,ld2,ld3);
 }
-#endif
+

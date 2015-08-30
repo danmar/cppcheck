@@ -1163,22 +1163,24 @@ void uninitvar_floor(void)
     (void)floorl(ld);
 }
 
-#if 0 // #6958
 void uninitvar_fma(void)
 {
+    // cppcheck-suppress unassignedVariable
     float f1,f2,f3;
     // cppcheck-suppress uninitvar
     (void)fmaf(f1,f2,f3);
 
+    // cppcheck-suppress unassignedVariable
     double d1,d2,d3;
     // cppcheck-suppress uninitvar
     (void)fma(d1,d2,d3);
 
+    // cppcheck-suppress unassignedVariable
     long double ld1,ld2,ld3;
     // cppcheck-suppress uninitvar
     (void)fmal(ld1,ld2,ld3);
 }
-#endif
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
