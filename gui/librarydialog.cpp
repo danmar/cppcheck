@@ -104,6 +104,14 @@ void LibraryDialog::addFunction()
 
 void LibraryDialog::selectFunction(int row)
 {
+    if (row == -1) {
+        ui->functionreturn->setChecked(false);
+        ui->useretval->setChecked(false);
+        ui->leakignore->setChecked(false);
+        ui->arguments->clear();
+        return;
+    }
+
     ignoreChanges = true;
     const LibraryData::Function &function = data.functions[row];
     ui->functionreturn->setChecked(!function.noreturn);
@@ -116,27 +124,27 @@ void LibraryDialog::selectFunction(int row)
             s += QString::number(arg.nr);
         ui->arguments->addItem(s);
 
-        QListWidgetItem *item = new QListWidgetItem("Not bool value", ui->arguments);
+        QListWidgetItem *item = new QListWidgetItem(tr("Not bool"), ui->arguments);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.notbool ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
 
-        item = new QListWidgetItem("Not null", ui->arguments);
+        item = new QListWidgetItem(tr("Not null"), ui->arguments);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.notnull ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
 
-        item = new QListWidgetItem("Not uninit", ui->arguments);
+        item = new QListWidgetItem(tr("Not uninit"), ui->arguments);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.notuninit ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
 
-        item = new QListWidgetItem("Format string", ui->arguments);
+        item = new QListWidgetItem(tr("Format string"), ui->arguments);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.formatstr ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
 
-        item = new QListWidgetItem("Zero-terminated string", ui->arguments);
+        item = new QListWidgetItem(tr("Zero-terminated string"), ui->arguments);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(arg.strz ? Qt::Checked : Qt::Unchecked);
         ui->arguments->addItem(item);
