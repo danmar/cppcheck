@@ -65,7 +65,7 @@ void LibraryDialog::openCfg()
             mFileName = selectedFile;
             ui->buttonSave->setEnabled(false);
             ui->functions->clear();
-            foreach(const struct LibraryData::Function &function, data.functions) {
+            foreach(const struct CppcheckLibraryData::Function &function, data.functions) {
                 ui->functions->addItem(function.name);
             }
             ignoreChanges = false;
@@ -90,12 +90,12 @@ void LibraryDialog::addFunction()
     LibraryAddFunctionDialog *d = new LibraryAddFunctionDialog;
     if (d->exec() == QDialog::Accepted && !d->functionName().isEmpty()) {
 
-        LibraryData::Function f;
+        CppcheckLibraryData::Function f;
         f.name = d->functionName();
         int args = d->numberOfArguments();
 
         for (int i = 1; i <= args; i++) {
-            LibraryData::Function::Arg arg;
+            CppcheckLibraryData::Function::Arg arg;
             arg.nr = i;
             f.args.append(arg);
         }
@@ -117,7 +117,7 @@ void LibraryDialog::selectFunction(int row)
     }
 
     ignoreChanges = true;
-    const LibraryData::Function &function = data.functions[row];
+    const CppcheckLibraryData::Function &function = data.functions[row];
     ui->functionreturn->setChecked(!function.noreturn);
     ui->useretval->setChecked(function.useretval);
     ui->leakignore->setChecked(function.leakignore);
@@ -130,7 +130,7 @@ void LibraryDialog::changeFunction()
     if (ignoreChanges)
         return;
     foreach(const QListWidgetItem *item, ui->functions->selectedItems()) {
-        LibraryData::Function &function = data.functions[ui->functions->row(item)];
+        CppcheckLibraryData::Function &function = data.functions[ui->functions->row(item)];
         function.noreturn   = !ui->functionreturn->isChecked();
         function.useretval  = ui->useretval->isChecked();
         function.leakignore = ui->leakignore->isChecked();
@@ -145,8 +145,8 @@ void LibraryDialog::editArg()
     if (ui->arguments->selectedItems().count() != 1)
         return;
 
-    LibraryData::Function &function = data.functions[ui->functions->row(ui->functions->selectedItems().first())];
-    LibraryData::Function::Arg &arg = function.args[ui->arguments->row(ui->arguments->selectedItems().first())];
+    CppcheckLibraryData::Function &function = data.functions[ui->functions->row(ui->functions->selectedItems().first())];
+    CppcheckLibraryData::Function::Arg &arg = function.args[ui->arguments->row(ui->arguments->selectedItems().first())];
 
     LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
     if (d->exec() == QDialog::Accepted) {
@@ -158,12 +158,12 @@ void LibraryDialog::editArg()
     ui->buttonSave->setEnabled(true);
 }
 
-void LibraryDialog::updateArguments(const LibraryData::Function &function)
+void LibraryDialog::updateArguments(const CppcheckLibraryData::Function &function)
 {
     ui->arguments->clear();
-    foreach(const LibraryData::Function::Arg &arg, function.args) {
+    foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
         QString s("arg");
-        if (arg.nr != LibraryData::Function::Arg::ANY)
+        if (arg.nr != CppcheckLibraryData::Function::Arg::ANY)
             s += QString::number(arg.nr);
 
         s += "\n    not bool: " + QString(arg.notbool ? "true" : "false");
@@ -172,7 +172,7 @@ void LibraryDialog::updateArguments(const LibraryData::Function &function)
         s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
         s += "\n    strz: " + QString(arg.strz ? "true" : "false");
         s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
-        foreach(const LibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+        foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
             s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
         }
 

@@ -110,7 +110,7 @@ HEADERS += aboutdialog.h \
            xmlreportv1.h \
            xmlreportv2.h \
     librarydialog.h \
-    librarydata.h \
+    cppchecklibrarydata.h \
     libraryaddfunctiondialog.h \
     libraryeditargdialog.h
 
@@ -148,7 +148,7 @@ SOURCES += aboutdialog.cpp \
            xmlreportv1.cpp \
            xmlreportv2.cpp \
     librarydialog.cpp \
-    librarydata.cpp \
+    cppchecklibrarydata.cpp \
     libraryaddfunctiondialog.cpp \
     libraryeditargdialog.cpp
 

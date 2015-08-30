@@ -16,32 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "librarydata.h"
+#include "cppchecklibrarydata.h"
 
 #include <QDomDocument>
 #include <QDomNode>
 #include <QDomNodeList>
 
-const unsigned int LibraryData::Function::Arg::ANY = ~0U;
+const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 
-LibraryData::LibraryData()
+CppcheckLibraryData::CppcheckLibraryData()
 {
 }
 
 
-static LibraryData::Define loadDefine(const QDomElement &defineElement)
+static CppcheckLibraryData::Define loadDefine(const QDomElement &defineElement)
 {
-    LibraryData::Define define;
+    CppcheckLibraryData::Define define;
     define.name = defineElement.attribute("name");
     define.value = defineElement.attribute("value");
     return define;
 }
 
-static LibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArgElement)
+static CppcheckLibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArgElement)
 {
-    LibraryData::Function::Arg arg;
+    CppcheckLibraryData::Function::Arg arg;
     if (functionArgElement.attribute("nr") == "any")
-        arg.nr = LibraryData::Function::Arg::ANY;
+        arg.nr = CppcheckLibraryData::Function::Arg::ANY;
     else
         arg.nr = functionArgElement.attribute("nr").toUInt();
     for (QDomElement childElement = functionArgElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
@@ -58,7 +58,7 @@ static LibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArg
         else if (childElement.tagName() == "valid")
             arg.valid = childElement.text();
         else if (childElement.tagName() == "minsize") {
-            LibraryData::Function::Arg::MinSize minsize;
+            CppcheckLibraryData::Function::Arg::MinSize minsize;
             minsize.type = childElement.attribute("type");
             minsize.arg  = childElement.attribute("arg");
             minsize.arg2 = childElement.attribute("arg2");
@@ -68,9 +68,9 @@ static LibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArg
     return arg;
 }
 
-static LibraryData::Function loadFunction(const QDomElement &functionElement, const QStringList &comments)
+static CppcheckLibraryData::Function loadFunction(const QDomElement &functionElement, const QStringList &comments)
 {
-    LibraryData::Function function;
+    CppcheckLibraryData::Function function;
     function.comments = comments;
     function.name = functionElement.attribute("name");
     for (QDomElement childElement = functionElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
@@ -88,7 +88,7 @@ static LibraryData::Function loadFunction(const QDomElement &functionElement, co
             function.formatstr.scan   = childElement.attribute("scan");
             function.formatstr.secure = childElement.attribute("secure");
         } else if (childElement.tagName() == "arg") {
-            const LibraryData::Function::Arg fa = loadFunctionArg(childElement);
+            const CppcheckLibraryData::Function::Arg fa = loadFunctionArg(childElement);
             function.args.append(fa);
         } else {
             int x = 123;
@@ -100,13 +100,13 @@ static LibraryData::Function loadFunction(const QDomElement &functionElement, co
 }
 
 
-static LibraryData::MemoryResource loadMemoryResource(const QDomElement &element)
+static CppcheckLibraryData::MemoryResource loadMemoryResource(const QDomElement &element)
 {
-    LibraryData::MemoryResource memoryresource;
+    CppcheckLibraryData::MemoryResource memoryresource;
     memoryresource.type = element.tagName();
     for (QDomElement childElement = element.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
         if (childElement.tagName() == "alloc") {
-            LibraryData::MemoryResource::Alloc alloc;
+            CppcheckLibraryData::MemoryResource::Alloc alloc;
             alloc.init = (childElement.attribute("init", "false") == "true");
             alloc.name = childElement.text();
             memoryresource.alloc.append(alloc);
@@ -118,9 +118,9 @@ static LibraryData::MemoryResource loadMemoryResource(const QDomElement &element
     return memoryresource;
 }
 
-static LibraryData::PodType loadPodType(const QDomElement &element)
+static CppcheckLibraryData::PodType loadPodType(const QDomElement &element)
 {
-    LibraryData::PodType podtype;
+    CppcheckLibraryData::PodType podtype;
     podtype.name = element.attribute("name");
     podtype.size = element.attribute("size");
     podtype.sign = element.attribute("sign");
@@ -128,7 +128,7 @@ static LibraryData::PodType loadPodType(const QDomElement &element)
 }
 
 
-bool LibraryData::open(QIODevice &file)
+bool CppcheckLibraryData::open(QIODevice &file)
 {
     QDomDocument doc;
     if (!doc.setContent(&file))
@@ -162,7 +162,7 @@ bool LibraryData::open(QIODevice &file)
 
 
 
-static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Function &function)
+static QDomElement FunctionElement(QDomDocument &doc, const CppcheckLibraryData::Function &function)
 {
     QDomElement functionElement = doc.createElement("function");
     functionElement.setAttribute("name", function.name);
@@ -188,10 +188,10 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Functio
     }
 
     // Argument info..
-    foreach(const LibraryData::Function::Arg &arg, function.args) {
+    foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
         QDomElement argElement = doc.createElement("arg");
         functionElement.appendChild(argElement);
-        if (arg.nr == LibraryData::Function::Arg::ANY)
+        if (arg.nr == CppcheckLibraryData::Function::Arg::ANY)
             argElement.setAttribute("nr", "any");
         else
             argElement.setAttribute("nr", arg.nr);
@@ -213,7 +213,7 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Functio
         }
 
         if (!arg.minsizes.isEmpty()) {
-            foreach(const LibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+            foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
                 QDomElement e = doc.createElement("minsize");
                 e.setAttribute("type", minsize.type);
                 e.setAttribute("arg", minsize.arg);
@@ -227,10 +227,10 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Functio
     return functionElement;
 }
 
-static QDomElement MemoryResourceElement(QDomDocument &doc, const LibraryData::MemoryResource &mr)
+static QDomElement MemoryResourceElement(QDomDocument &doc, const CppcheckLibraryData::MemoryResource &mr)
 {
     QDomElement element = doc.createElement(mr.type);
-    foreach(const LibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
+    foreach(const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
         QDomElement e = doc.createElement("alloc");
         if (alloc.init)
             e.setAttribute("init", "true");
@@ -251,7 +251,7 @@ static QDomElement MemoryResourceElement(QDomDocument &doc, const LibraryData::M
 }
 
 
-QString LibraryData::toString() const
+QString CppcheckLibraryData::toString() const
 {
     QDomDocument doc;
     QDomElement root = doc.createElement("def");

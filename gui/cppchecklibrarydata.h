@@ -16,17 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBRARYDATA_H
-#define LIBRARYDATA_H
+#ifndef CPPCHECKLIBRARYDATA_H
+#define CPPCHECKLIBRARYDATA_H
 
 #include <QList>
 #include <QString>
 #include <QStringList>
 #include <QIODevice>
 
-class LibraryData {
+class CppcheckLibraryData {
 public:
-    LibraryData();
+    CppcheckLibraryData();
 
     struct Define {
         QString name;

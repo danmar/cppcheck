@@ -2,7 +2,7 @@
 #define LIBRARYEDITARGDIALOG_H
 
 #include <QDialog>
-#include "librarydata.h"
+#include "cppchecklibrarydata.h"
 
 namespace Ui {
     class LibraryEditArgDialog;
@@ -12,15 +12,15 @@ class LibraryEditArgDialog : public QDialog {
     Q_OBJECT
 
 public:
-    LibraryEditArgDialog(QWidget *parent, const LibraryData::Function::Arg &a);
+    LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &a);
     ~LibraryEditArgDialog();
 
-    LibraryData::Function::Arg getArg() const;
+    CppcheckLibraryData::Function::Arg getArg() const;
 
 private:
     Ui::LibraryEditArgDialog *ui;
 
-    LibraryData::Function::Arg arg;
+    CppcheckLibraryData::Function::Arg arg;
 };
 
 #endif // LIBRARYEDITARGDIALOG_H

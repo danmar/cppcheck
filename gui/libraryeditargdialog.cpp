@@ -1,7 +1,7 @@
 #include "libraryeditargdialog.h"
 #include "ui_libraryeditargdialog.h"
 
-LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const LibraryData::Function::Arg &a) :
+LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &a) :
     QDialog(parent),
     ui(new Ui::LibraryEditArgDialog),
     arg(a)
@@ -22,9 +22,9 @@ LibraryEditArgDialog::~LibraryEditArgDialog()
     delete ui;
 }
 
-LibraryData::Function::Arg LibraryEditArgDialog::getArg() const
+CppcheckLibraryData::Function::Arg LibraryEditArgDialog::getArg() const
 {
-    LibraryData::Function::Arg ret;
+    CppcheckLibraryData::Function::Arg ret;
     ret.notbool   = ui->notbool->isChecked();
     ret.notnull   = ui->notnull->isChecked();
     ret.notuninit = ui->notuninit->isChecked();

@@ -22,7 +22,7 @@
 #include <QDialog>
 #include <QFile>
 
-#include "librarydata.h"
+#include "cppchecklibrarydata.h"
 
 class QListWidgetItem;
 
@@ -47,11 +47,11 @@ private slots:
 
 private:
     Ui::LibraryDialog *ui;
-    LibraryData data;
+    CppcheckLibraryData data;
     QString mFileName;
     bool ignoreChanges;
 
-    void updateArguments(const LibraryData::Function &function);
+    void updateArguments(const CppcheckLibraryData::Function &function);
 };
 
 #endif // LIBRARYDIALOG_H
