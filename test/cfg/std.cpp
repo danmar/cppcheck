@@ -704,3 +704,47 @@ void uninitvar_fma(void)
     (void)std::fma(ld1,ld2,ld3);
 }
 
+void uninitvar_fmax(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmax(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmax(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmax(ld1,ld2);
+}
+
+void uninitvar_fmin(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmin(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmin(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmin(ld1,ld2);
+}
+
+void uninitvar_fmod(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmod(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmod(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::fmod(ld1,ld2);
+}

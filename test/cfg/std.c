@@ -1181,6 +1181,51 @@ void uninitvar_fma(void)
     (void)fmal(ld1,ld2,ld3);
 }
 
+void uninitvar_fmax(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)fmaxf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)fmax(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)fmaxl(ld1,ld2);
+}
+
+void uninitvar_fmin(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)fminf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)fmin(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)fminl(ld1,ld2);
+}
+
+void uninitvar_fmod(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)fmodf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)fmod(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)fmodl(ld1,ld2);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
