@@ -69,10 +69,11 @@ public:
         checkOther.checkIgnoredReturnValue();
         checkOther.checkRedundantPointerOp();
         checkOther.checkZeroDivision();
+        checkOther.checkInterlockedDecrement();
+        checkOther.checkUnusedLabel();
 
         // --check-library : functions with nonmatching configuration
         checkOther.checkLibraryMatchFunctions();
-        checkOther.checkInterlockedDecrement();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -222,7 +223,11 @@ public:
     /** @brief --check-library: warn for unconfigured function calls */
     void checkLibraryMatchFunctions();
 
+    /** @brief %Check for race condition with non-interlocked access after InterlockedDecrement() */
     void checkInterlockedDecrement();
+
+    /** @brief %Check for unused labels */
+    void checkUnusedLabel();
 
 private:
     // Error messages..
@@ -276,6 +281,7 @@ private:
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
+    void unusedLabelError(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -334,6 +340,7 @@ private:
         c.commaSeparatedReturnError(0);
         c.ignoredReturnValueError(0, "malloc");
         c.redundantPointerOpError(0, "varname", false);
+        c.unusedLabelError(0);
     }
 
     static std::string myName() {
@@ -391,7 +398,8 @@ private:
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
                "- identical code in both branches of if/else or ternary operator.\n"
-               "- redundant pointer operation on pointer like &*some_ptr.\n";
+               "- redundant pointer operation on pointer like &*some_ptr.\n"
+               "- find unused 'goto' labels.\n";
     }
 };
 /// @}

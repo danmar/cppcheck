@@ -168,6 +168,8 @@ private:
         TEST_CASE(redundantPointerOp);
         TEST_CASE(test_isSameExpression);
         TEST_CASE(raceAfterInterlockedDecrement);
+
+        TEST_CASE(testUnusedLabel);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -3091,7 +3093,7 @@ private:
               "  label:\n"
               "    throw 0;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Label 'label' is not used.\n", errout.str());
 
         check("void foo() {\n"
               "    wxCHECK2(state < 3 && state >= 0, return);\n"
@@ -6445,6 +6447,51 @@ private:
             "    if (0 >= newCount)\n"
             "        destroy;\n"
             "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testUnusedLabel() {
+        check("void f() {\n"
+              "    label:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Label 'label' is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    label:\n"
+              "    foo();\n"
+              "    goto label;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    label:\n"
+              "    foo();\n"
+              "    goto label;\n"
+              "}\n"
+              "void g() {\n"
+              "    label:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Label 'label' is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    switch(a) {\n"
+              "        default:\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    class X {\n"
+              "        protected:\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    class X {\n"
+              "        my_protected:\n"
+              "    };\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

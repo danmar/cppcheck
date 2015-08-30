@@ -2618,3 +2618,31 @@ void CheckOther::raceAfterInterlockedDecrementError(const Token* tok)
     reportError(tok, Severity::error, "raceAfterInterlockedDecrement",
                 "Race condition: non-interlocked access after InterlockedDecrement(). Use InterlockedDecrement() return value instead.");
 }
+
+void CheckOther::checkUnusedLabel()
+{
+    if (!_settings->isEnabled("style"))
+        return;
+
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (!tok->scope()->isExecutable())
+                tok = tok->scope()->classEnd;
+
+            if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
+                if (!Token::findsimplematch(scope->classStart->next(), ("goto " + tok->strAt(1)).c_str(), scope->classEnd->previous()))
+                    unusedLabelError(tok->next());
+            }
+        }
+    }
+}
+
+void CheckOther::unusedLabelError(const Token* tok)
+{
+    reportError(tok, Severity::style, "unusedLabel",
+                "Label '" + (tok?tok->str():emptyString) + "' is not used.");
+}
