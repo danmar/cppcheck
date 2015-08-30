@@ -19,6 +19,7 @@
 #include "librarydialog.h"
 #include "ui_librarydialog.h"
 #include "libraryaddfunctiondialog.h"
+#include "libraryeditargdialog.h"
 
 #include <QFile>
 #include <QSettings>
@@ -87,22 +88,22 @@ void LibraryDialog::saveCfg()
 void LibraryDialog::addFunction()
 {
     LibraryAddFunctionDialog *d = new LibraryAddFunctionDialog;
-    if (d->exec() != QDialog::Accepted) {
-        delete d;
-        return;
-    }
+    if (d->exec() == QDialog::Accepted && !d->functionName().isEmpty()) {
 
-    LibraryData::Function f;
-    f.name = d->functionName();
-    int args = d->numberOfArguments();
+        LibraryData::Function f;
+        f.name = d->functionName();
+        int args = d->numberOfArguments();
 
-    for (int i = 1; i <= args; i++) {
-        LibraryData::Function::Arg arg;
-        arg.nr = i;
-        f.args.append(arg);
+        for (int i = 1; i <= args; i++) {
+            LibraryData::Function::Arg arg;
+            arg.nr = i;
+            f.args.append(arg);
+        }
+        data.functions.append(f);
+        ui->functions->addItem(f.name);
+        ui->buttonSave->setEnabled(true);
     }
-    data.functions.append(f);
-    ui->functions->addItem(f.name);
+    delete d;
 }
 
 void LibraryDialog::selectFunction(int row)
@@ -120,40 +121,7 @@ void LibraryDialog::selectFunction(int row)
     ui->functionreturn->setChecked(!function.noreturn);
     ui->useretval->setChecked(function.useretval);
     ui->leakignore->setChecked(function.leakignore);
-    ui->arguments->clear();
-    foreach(const LibraryData::Function::Arg &arg, function.args) {
-        QString s("arg");
-        if (arg.nr != LibraryData::Function::Arg::ANY)
-            s += QString::number(arg.nr);
-        ui->arguments->addItem(s);
-
-        QListWidgetItem *item = new QListWidgetItem(tr("Not bool"), ui->arguments);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(arg.notbool ? Qt::Checked : Qt::Unchecked);
-        ui->arguments->addItem(item);
-
-        item = new QListWidgetItem(tr("Not null"), ui->arguments);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(arg.notnull ? Qt::Checked : Qt::Unchecked);
-        ui->arguments->addItem(item);
-
-        item = new QListWidgetItem(tr("Not uninit"), ui->arguments);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(arg.notuninit ? Qt::Checked : Qt::Unchecked);
-        ui->arguments->addItem(item);
-
-        item = new QListWidgetItem(tr("Format string"), ui->arguments);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(arg.formatstr ? Qt::Checked : Qt::Unchecked);
-        ui->arguments->addItem(item);
-
-        item = new QListWidgetItem(tr("Zero-terminated string"), ui->arguments);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(arg.strz ? Qt::Checked : Qt::Unchecked);
-        ui->arguments->addItem(item);
-
-        ui->arguments->addItem("valid: " + ((!arg.valid.isNull()) ? arg.valid : "*"));
-    }
+    updateArguments(function);
     ignoreChanges = false;
 }
 
@@ -170,44 +138,44 @@ void LibraryDialog::changeFunction()
     ui->buttonSave->setEnabled(true);
 }
 
-
-void LibraryDialog::argumentChanged(QListWidgetItem *changedItem)
+void LibraryDialog::editArg()
 {
-    if (ignoreChanges)
+    if (ui->functions->selectedItems().count() != 1)
         return;
-    unsigned argnr = 0;
-    for (int row = 0; row < ui->arguments->count(); row++) {
-        const QListWidgetItem *argItem = ui->arguments->item(row);
-        if (argItem == changedItem)
-            break;
-        if (argItem->text() == "arg")
-            argnr = LibraryData::Function::Arg::ANY;
-        else if (argItem->text().startsWith("arg"))
-            argnr = argItem->text().mid(3).toInt();
+    if (ui->arguments->selectedItems().count() != 1)
+        return;
+
+    LibraryData::Function &function = data.functions[ui->functions->row(ui->functions->selectedItems().first())];
+    LibraryData::Function::Arg &arg = function.args[ui->arguments->row(ui->arguments->selectedItems().first())];
+
+    LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
+    if (d->exec() == QDialog::Accepted) {
+        arg = d->getArg();
+        updateArguments(function);
     }
 
-    foreach(const QListWidgetItem *functionItem, ui->functions->selectedItems()) {
-        LibraryData::Function &function = data.functions[ui->functions->row(functionItem)];
-
-        for (LibraryData::Function::Arg &arg : function.args) {
-            if (arg.nr == argnr) {
-                // TODO: Don't use a stringbased lookup
-                if (changedItem->text() == "Not bool")
-                    arg.notbool = (changedItem->checkState() != Qt::Unchecked);
-                else if (changedItem->text() == "Not null")
-                    arg.notnull = (changedItem->checkState() != Qt::Unchecked);
-                else if (changedItem->text() == "Not uninit")
-                    arg.notuninit = (changedItem->checkState() != Qt::Unchecked);
-                else if (changedItem->text() == "Format string")
-                    arg.formatstr = (changedItem->checkState() != Qt::Unchecked);
-                else if (changedItem->text() == "Zero-terminated string")
-                    arg.strz = (changedItem->checkState() != Qt::Unchecked);
-                break;
-            }
-        }
-    }
-
+    delete d;
     ui->buttonSave->setEnabled(true);
 }
 
+void LibraryDialog::updateArguments(const LibraryData::Function &function)
+{
+    ui->arguments->clear();
+    foreach(const LibraryData::Function::Arg &arg, function.args) {
+        QString s("arg");
+        if (arg.nr != LibraryData::Function::Arg::ANY)
+            s += QString::number(arg.nr);
 
+        s += "\n    not bool: " + QString(arg.notbool ? "true" : "false");
+        s += "\n    not null: " + QString(arg.notnull ? "true" : "false");
+        s += "\n    not uninit: " + QString(arg.notuninit ? "true" : "false");
+        s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
+        s += "\n    strz: " + QString(arg.strz ? "true" : "false");
+        s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
+        foreach(const LibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+            s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
+        }
+
+        ui->arguments->addItem(s);
+    }
+}

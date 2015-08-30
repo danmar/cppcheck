@@ -43,13 +43,15 @@ private slots:
     void addFunction();
     void selectFunction(int row);
     void changeFunction();
-    void argumentChanged(QListWidgetItem *);
+    void editArg();
 
 private:
     Ui::LibraryDialog *ui;
     LibraryData data;
     QString mFileName;
     bool ignoreChanges;
+
+    void updateArguments(const LibraryData::Function &function);
 };
 
 #endif // LIBRARYDIALOG_H

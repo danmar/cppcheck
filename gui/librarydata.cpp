@@ -58,9 +58,11 @@ static LibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArg
         else if (childElement.tagName() == "valid")
             arg.valid = childElement.text();
         else if (childElement.tagName() == "minsize") {
-            arg.minsize.type = childElement.attribute("type");
-            arg.minsize.arg  = childElement.attribute("arg");
-            arg.minsize.arg2 = childElement.attribute("arg2");
+            LibraryData::Function::Arg::MinSize minsize;
+            minsize.type = childElement.attribute("type");
+            minsize.arg  = childElement.attribute("arg");
+            minsize.arg2 = childElement.attribute("arg2");
+            arg.minsizes.append(minsize);
         }
     }
     return arg;
@@ -210,13 +212,15 @@ static QDomElement FunctionElement(QDomDocument &doc, const LibraryData::Functio
             argElement.appendChild(e);
         }
 
-        if (!arg.minsize.type.isEmpty()) {
-            QDomElement e = doc.createElement("minsize");
-            e.setAttribute("type", arg.minsize.type);
-            e.setAttribute("arg", arg.minsize.arg);
-            if (!arg.minsize.arg2.isEmpty())
-                e.setAttribute("arg2", arg.minsize.arg2);
-            argElement.appendChild(e);
+        if (!arg.minsizes.isEmpty()) {
+            foreach(const LibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+                QDomElement e = doc.createElement("minsize");
+                e.setAttribute("type", minsize.type);
+                e.setAttribute("arg", minsize.arg);
+                if (!minsize.arg2.isEmpty())
+                    e.setAttribute("arg2", minsize.arg2);
+                argElement.appendChild(e);
+            }
         }
     }
 

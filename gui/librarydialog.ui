@@ -126,17 +126,28 @@
         <widget class="QListWidget" name="arguments"/>
        </item>
        <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="editArgButton">
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
@@ -243,22 +254,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>arguments</sender>
-   <signal>itemChanged(QListWidgetItem*)</signal>
-   <receiver>LibraryDialog</receiver>
-   <slot>argumentChanged(QListWidgetItem*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>517</x>
-     <y>140</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>542</x>
-     <y>117</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>addFunction</sender>
    <signal>clicked()</signal>
    <receiver>LibraryDialog</receiver>
@@ -274,6 +269,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>editArgButton</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editArg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>317</x>
+     <y>278</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>281</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFunction(int)</slot>
@@ -282,5 +293,6 @@
   <slot>saveCfg()</slot>
   <slot>argumentChanged(QListWidgetItem*)</slot>
   <slot>addFunction()</slot>
+  <slot>editArg()</slot>
  </slots>
 </ui>

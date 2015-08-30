@@ -63,11 +63,12 @@ public:
             bool formatstr;
             bool strz;
             QString valid;
-            struct {
+            struct MinSize {
                 QString type;
                 QString arg;
                 QString arg2;
-            } minsize;
+            };
+            QList<struct MinSize> minsizes;
         };
         QList<struct Arg> args;
     };

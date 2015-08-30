@@ -52,7 +52,8 @@ FORMS = about.ui \
         settings.ui \
         stats.ui \
     librarydialog.ui \
-    libraryaddfunctiondialog.ui
+    libraryaddfunctiondialog.ui \
+    libraryeditargdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -110,7 +111,8 @@ HEADERS += aboutdialog.h \
            xmlreportv2.h \
     librarydialog.h \
     librarydata.h \
-    libraryaddfunctiondialog.h
+    libraryaddfunctiondialog.h \
+    libraryeditargdialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -147,7 +149,8 @@ SOURCES += aboutdialog.cpp \
            xmlreportv2.cpp \
     librarydialog.cpp \
     librarydata.cpp \
-    libraryaddfunctiondialog.cpp
+    libraryaddfunctiondialog.cpp \
+    libraryeditargdialog.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
