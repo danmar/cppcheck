@@ -1163,6 +1163,7 @@ static Token *simplifyVarMapExpandValue(Token *tok, const std::map<std::string, 
 /**
  * Simplifies the variable map. For example if the map contains A=>B, B=>1, then A=>B is simplified to A=>1.
  * @param [in,out] variables - a map of variable name to variable value. This map will be modified.
+ * @param [in] settings Current settings being used
  */
 static void simplifyVarMap(std::map<std::string, std::string> &variables, const Settings& settings)
 {
@@ -2581,8 +2582,9 @@ public:
     /**
      * @brief Constructor for PreprocessorMacro. This is the "setter"
      * for this class - everything is setup here.
-     * @param macro The code after define, until end of line,
+     * @param [in] macro The code after define, until end of line,
      * e.g. "A(x) foo(x);"
+     * @param [in] settings Current settings being used
      */
     PreprocessorMacro(const std::string &macro, const Settings* settings)
         : tokenlist(settings), _macro(macro) {

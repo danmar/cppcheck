@@ -52,7 +52,6 @@ public:
 
     /**
      * \param[in] tokens token list
-     * \param[out] errorToken which identifies the syntax error if any. Might be NULL anyway
      * @return false if there are no syntax errors or true
      */
     static void checkComplicatedSyntaxErrorsInTemplates(const Token *tokens);
