@@ -51,7 +51,8 @@ FORMS = about.ui \
         scratchpad.ui \
         settings.ui \
         stats.ui \
-    librarydialog.ui
+    librarydialog.ui \
+    libraryaddfunctiondialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -108,7 +109,8 @@ HEADERS += aboutdialog.h \
            xmlreportv1.h \
            xmlreportv2.h \
     librarydialog.h \
-    librarydata.h
+    librarydata.h \
+    libraryaddfunctiondialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -144,7 +146,8 @@ SOURCES += aboutdialog.cpp \
            xmlreportv1.cpp \
            xmlreportv2.cpp \
     librarydialog.cpp \
-    librarydata.cpp
+    librarydata.cpp \
+    libraryaddfunctiondialog.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS

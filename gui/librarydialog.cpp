@@ -18,6 +18,7 @@
 
 #include "librarydialog.h"
 #include "ui_librarydialog.h"
+#include "libraryaddfunctiondialog.h"
 
 #include <QFile>
 #include <QSettings>
@@ -85,14 +86,16 @@ void LibraryDialog::saveCfg()
 
 void LibraryDialog::addFunction()
 {
+    LibraryAddFunctionDialog *d = new LibraryAddFunctionDialog;
+    if (d->exec() != QDialog::Accepted) {
+        delete d;
+        return;
+    }
+
     LibraryData::Function f;
-    bool ok;
-    f.name = QInputDialog::getText(this, tr("Add function"), tr("Function name"), QLineEdit::Normal, "doStuff", &ok);
-    if (!ok)
-        return;
-    int args = QInputDialog::getInt(this, tr("Add function"), tr("Number of arguments"), 0, 0, 20, 1, &ok);
-    if (!ok)
-        return;
+    f.name = d->functionName();
+    int args = d->numberOfArguments();
+
     for (int i = 1; i <= args; i++) {
         LibraryData::Function::Arg arg;
         arg.nr = i;
