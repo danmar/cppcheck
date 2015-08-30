@@ -1545,6 +1545,29 @@ private:
                       "3: union { float a@1 ; int b@2 ; } ;\n"
                       "4: } ;\n",
                       tokenize(code2));
+
+        const char code3[] = "void f() {\n"
+                             "    union {\n"
+                             "        struct {\n"
+                             "            char a, b, c, d;\n"
+                             "        };\n"
+                             "        int abcd;\n"
+                             "    };\n"
+                             "    g(abcd);\n"
+                             "    h(a, b, c, d);\n"
+                             "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void f ( ) {\n"
+                      "2: union {\n"
+                      "3: struct {\n"
+                      "4: char a@1 ; char b@2 ; char c@3 ; char d@4 ;\n"
+                      "5: } ;\n"
+                      "6: int abcd@5 ;\n"
+                      "7: } ;\n"
+                      "8: g ( abcd@5 ) ;\n"
+                      "9: h ( a@1 , b@2 , c@3 , d@4 ) ;\n"
+                      "10: }\n",
+                      tokenize(code3));
     }
 
     void varid_in_class12() { // #4637 - method

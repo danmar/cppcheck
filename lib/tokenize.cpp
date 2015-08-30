@@ -2647,8 +2647,8 @@ void Tokenizer::setVarId()
                 scopeStack.push(scopeStackEntryType(isExecutable, _varId));
             }
         } else if (tok->str() == "}") {
-            // parse anonymous unions as part of the current scope
-            if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::simpleMatch(tok->link()->previous(), "union {")) &&
+            // parse anonymous unions/structs as part of the current scope
+            if (!(Token::simpleMatch(tok, "} ;") && tok->link() && Token::Match(tok->link()->previous(), "union|struct {")) &&
                 !(initlist && Token::Match(tok, "} ,|{") && Token::Match(tok->link()->previous(), "%name%|>|>> {"))) {
                 // Set variable ids in class declaration..
                 if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link()) {
