@@ -151,31 +151,35 @@ void LibraryDialog::editArg()
     LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
     if (d->exec() == QDialog::Accepted) {
         arg = d->getArg();
-        updateArguments(function);
+        ui->arguments->selectedItems().first()->setText(getArgText(arg));
     }
 
     delete d;
     ui->buttonSave->setEnabled(true);
 }
 
+QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
+{
+    QString s("arg");
+    if (arg.nr != CppcheckLibraryData::Function::Arg::ANY)
+        s += QString::number(arg.nr);
+
+    s += "\n    not bool: " + QString(arg.notbool ? "true" : "false");
+    s += "\n    not null: " + QString(arg.notnull ? "true" : "false");
+    s += "\n    not uninit: " + QString(arg.notuninit ? "true" : "false");
+    s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
+    s += "\n    strz: " + QString(arg.strz ? "true" : "false");
+    s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
+    foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+        s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
+    }
+    return s;
+}
+
 void LibraryDialog::updateArguments(const CppcheckLibraryData::Function &function)
 {
     ui->arguments->clear();
     foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
-        QString s("arg");
-        if (arg.nr != CppcheckLibraryData::Function::Arg::ANY)
-            s += QString::number(arg.nr);
-
-        s += "\n    not bool: " + QString(arg.notbool ? "true" : "false");
-        s += "\n    not null: " + QString(arg.notnull ? "true" : "false");
-        s += "\n    not uninit: " + QString(arg.notuninit ? "true" : "false");
-        s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
-        s += "\n    strz: " + QString(arg.strz ? "true" : "false");
-        s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
-        foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
-            s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
-        }
-
-        ui->arguments->addItem(s);
+        ui->arguments->addItem(getArgText(arg));
     }
 }

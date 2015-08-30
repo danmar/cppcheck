@@ -51,6 +51,7 @@ private:
     QString mFileName;
     bool ignoreChanges;
 
+    static QString getArgText(const CppcheckLibraryData::Function::Arg &arg);
     void updateArguments(const CppcheckLibraryData::Function &function);
 };
 
