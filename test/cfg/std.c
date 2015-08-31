@@ -1324,6 +1324,39 @@ void uninitvar_freopen(void)
     free(p);
 }
 
+void uninitvar_frexp(void)
+{
+    float f1;
+    int *i1;
+    // cppcheck-suppress uninitvar
+    (void)frexpf(f1,i1);
+
+    double d1;
+    int *i2;
+    // cppcheck-suppress uninitvar
+    (void)frexp(d1,i2);
+
+    long double ld1;
+    int *i3;
+    // cppcheck-suppress uninitvar
+    (void)frexpl(ld1,i3);
+}
+
+void uninitvar_hypot(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)hypotf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)hypot(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)hypotl(ld1,ld2);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";

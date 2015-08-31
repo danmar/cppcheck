@@ -846,3 +846,36 @@ void uninitvar_freopen(void)
     FILE * p = std::freopen(filename,mode,stream);
     free(p);
 }
+
+void uninitvar_frexp(void)
+{
+    float f1;
+    int *i1;
+    // cppcheck-suppress uninitvar
+    (void)std::frexp(f1,i1);
+
+    double d1;
+    int *i2;
+    // cppcheck-suppress uninitvar
+    (void)std::frexp(d1,i2);
+
+    long double ld1;
+    int *i3;
+    // cppcheck-suppress uninitvar
+    (void)std::frexp(ld1,i3);
+}
+
+void uninitvar_hypot(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::hypot(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::hypot(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::hypot(ld1,ld2);
+}
