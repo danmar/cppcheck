@@ -1296,6 +1296,34 @@ void uninitvar_fputws(void)
     (void)fputws(string,stream);
 }
 
+void uninitvar_fread(void)
+{
+    void *ptr;
+    size_t size;
+    size_t nobj;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fread(ptr,size,nobj,stream);
+}
+
+void uninitvar_free(void)
+{
+    // cppcheck-suppress unassignedVariable
+    void *block;
+    // cppcheck-suppress uninitvar
+    free(block);
+}
+
+void uninitvar_freopen(void)
+{
+    char *filename;
+    char *mode;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    FILE * p = freopen(filename,mode,stream);
+    free(p);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";

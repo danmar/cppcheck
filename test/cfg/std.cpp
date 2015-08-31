@@ -818,3 +818,31 @@ void uninitvar_fputws(void)
     // cppcheck-suppress uninitvar
     (void)std::fputws(string,stream);
 }
+
+void uninitvar_fread(void)
+{
+    void *ptr;
+    size_t size;
+    size_t nobj;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fread(ptr,size,nobj,stream);
+}
+
+void uninitvar_free(void)
+{
+    // cppcheck-suppress unassignedVariable
+    void *block;
+    // cppcheck-suppress uninitvar
+    std::free(block);
+}
+
+void uninitvar_freopen(void)
+{
+    char *filename;
+    char *mode;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    FILE * p = std::freopen(filename,mode,stream);
+    free(p);
+}
