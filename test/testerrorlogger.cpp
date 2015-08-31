@@ -32,6 +32,7 @@ private:
     const ErrorLogger::ErrorMessage::FileLocation barCpp8;
 
     void run() {
+        TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationDefaults);
         TEST_CASE(FileLocationSetFile);
         TEST_CASE(ErrorMessageConstruct);
@@ -58,6 +59,41 @@ private:
         TEST_CASE(SerializeSanitize);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+    }
+
+    void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
+        const std::string plainText = "text";
+
+        ErrorLogger::ErrorMessage message;
+        message._id = id;
+
+        std::string serialized = message.toString(true, idPlaceholder + plainText + idPlaceholder);
+        ASSERT_EQUALS(id + plainText + id, serialized);
+
+        serialized = message.toString(true, idPlaceholder + idPlaceholder);
+        ASSERT_EQUALS(id + id, serialized);
+
+        serialized = message.toString(true, plainText + idPlaceholder + plainText);
+        ASSERT_EQUALS(plainText + id + plainText, serialized);
+    }
+
+    void PatternSearchReplace() const {
+        const std::string idPlaceholder = "{id}";
+
+        const std::string empty;
+        TestPatternSearchReplace(idPlaceholder, empty);
+
+        const std::string shortIdValue = "ID";
+        ASSERT_EQUALS(true, shortIdValue.length() < idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, shortIdValue);
+
+        const std::string mediumIdValue = "_ID_";
+        ASSERT_EQUALS(mediumIdValue.length(), idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, mediumIdValue);
+
+        const std::string longIdValue = "longId";
+        ASSERT_EQUALS(true, longIdValue.length() > idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, longIdValue);
     }
 
     void FileLocationDefaults() const {
