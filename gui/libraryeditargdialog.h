@@ -20,7 +20,7 @@ public:
 private:
     Ui::LibraryEditArgDialog *ui;
 
-    CppcheckLibraryData::Function::Arg arg;
+    QList<CppcheckLibraryData::Function::Arg::MinSize> minsizes;
 };
 
 #endif // LIBRARYEDITARGDIALOG_H
