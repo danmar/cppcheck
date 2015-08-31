@@ -1,4 +1,4 @@
-find_package(Qt4 4.6.1 COMPONENTS QtCore QtGui)
+find_package(Qt4 4.6.1 COMPONENTS QtCore QtGui QtXML)
 if (HAVE_RULES)
     find_library(PCRE pcre)
     if (NOT PCRE)
