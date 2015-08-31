@@ -251,7 +251,7 @@ void CheckSizeof::sizeofCalculation()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token *argument = tok->next()->astOperand2();
-            if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
+            if (argument && argument->isCalculation(true) && (!argument->isExpandedMacro() || printInconclusive))
                 sizeofCalculationError(argument, argument->isExpandedMacro());
         }
     }
