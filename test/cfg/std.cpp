@@ -879,3 +879,12 @@ void uninitvar_hypot(void)
     // cppcheck-suppress uninitvar
     (void)std::hypot(ld1,ld2);
 }
+
+void uninitvar_fscanf(void)
+{
+    FILE *stream;
+    char *format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::fscanf(stream,format,i);
+}

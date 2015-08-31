@@ -1254,7 +1254,7 @@ void uninitar_vfprintf(void)
     (void)vfprintf(stream, format, arg);
 }
 
-void uninitar_vfwprintf(void)
+void uninitar_vfwprintf(FILE *s, wchar_t *f, va_list a)
 {
     FILE *stream;
     wchar_t *format;
@@ -1262,6 +1262,12 @@ void uninitar_vfwprintf(void)
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
     (void)vfwprintf(stream, format, arg);
+    // cppcheck-suppress uninitvar
+    (void)vfwprintf(s, format, a);
+    // cppcheck-suppress uninitvar
+    (void)vfwprintf(stream, f, a);
+    // no warning is expected
+    (void)vfwprintf(s, f, a);
 }
 
 void uninitvar_fputc(void)
@@ -1355,6 +1361,15 @@ void uninitvar_hypot(void)
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
     (void)hypotl(ld1,ld2);
+}
+
+void uninitvar_fscanf(void)
+{
+    FILE *stream;
+    char *format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)fscanf(stream,format,i);
 }
 
 void ignoreretrn(void)
