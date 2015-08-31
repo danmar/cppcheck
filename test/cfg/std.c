@@ -1226,6 +1226,76 @@ void uninitvar_fmod(void)
     (void)fmodl(ld1,ld2);
 }
 
+void uninitar_fopen(void)
+{
+    char *filename;
+    char *mode;
+    // cppcheck-suppress uninitvar
+    FILE * fp = fopen(filename, mode);
+    fclose(fp);
+}
+
+void uninitar_fprintf(void)
+{
+    FILE *stream;
+    char *format;
+    int argument;
+    // cppcheck-suppress uninitvar
+    (void)fprintf(stream, format, argument);
+}
+
+void uninitar_vfprintf(void)
+{
+    FILE *stream;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vfprintf(stream, format, arg);
+}
+
+void uninitar_vfwprintf(void)
+{
+    FILE *stream;
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vfwprintf(stream, format, arg);
+}
+
+void uninitvar_fputc(void)
+{
+    int c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fputc(c,stream);
+}
+
+void uninitvar_fputwc(void)
+{
+    wchar_t c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fputwc(c,stream);
+}
+
+void uninitvar_fputs(void)
+{
+    char *string;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fputs(string,stream);
+}
+
+void uninitvar_fputws(void)
+{
+    wchar_t *string;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)fputws(string,stream);
+}
+
 void ignoreretrn(void)
 {
     char szNumbers[] = "2001 60c0c0 -1101110100110100100000 0x6fffff";

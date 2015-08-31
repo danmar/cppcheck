@@ -748,3 +748,73 @@ void uninitvar_fmod(void)
     // cppcheck-suppress uninitvar
     (void)std::fmod(ld1,ld2);
 }
+
+void uninitar_fopen(void)
+{
+    char *filename;
+    char *mode;
+    // cppcheck-suppress uninitvar
+    FILE * fp = std::fopen(filename, mode);
+    fclose(fp);
+}
+
+void uninitar_fprintf(void)
+{
+    FILE *stream;
+    char *format;
+    int argument;
+    // cppcheck-suppress uninitvar
+    (void)std::fprintf(stream, format, argument);
+}
+
+void uninitar_vfprintf(void)
+{
+    FILE *stream;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vfprintf(stream, format, arg);
+}
+
+void uninitar_vfwprintf(void)
+{
+    FILE *stream;
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vfwprintf(stream, format, arg);
+}
+
+void uninitvar_fputc(void)
+{
+    int c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fputc(c,stream);
+}
+
+void uninitvar_fputwc(void)
+{
+    wchar_t c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fputwc(c,stream);
+}
+
+void uninitvar_fputs(void)
+{
+    char *string;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fputs(string,stream);
+}
+
+void uninitvar_fputws(void)
+{
+    wchar_t *string;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fputws(string,stream);
+}
