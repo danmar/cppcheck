@@ -674,22 +674,24 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
         if (total_size > 0) {
             // Writing data into array..
-            if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) ||
-                (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))) {
-                const std::size_t len = Token::getStrLength(tok->tokAt(varcount + 4));
-                if (len >= (unsigned int)total_size) {
-                    bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
-                    continue;
-                }
-            } else if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %var% )", declarationId)) ||
-                       (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %var% )").c_str()))) {
-                const Variable *var = tok->tokAt(varcount + 4)->variable();
-                if (var && var->isArray() && var->dimensions().size() == 1) {
-                    const MathLib::bigint len = var->dimension(0);
-                    if (len > total_size) {
-                        if (printInconclusive)
-                            possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+            if ((declarationId > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str%|%var% )", declarationId)) ||
+                (declarationId == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str%|%var% )").c_str()))) {
+                const Token* lastParamTok = tok->tokAt(varcount + 4);
+                if (lastParamTok->tokType() == Token::Type::eString) {
+                    const std::size_t len = Token::getStrLength(lastParamTok);
+                    if (len >= (unsigned int)total_size) {
+                        bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
                         continue;
+                    }
+                } else {
+                    const Variable *var = lastParamTok->variable();
+                    if (var && var->isArray() && var->dimensions().size() == 1) {
+                        const MathLib::bigint len = var->dimension(0);
+                        if (len > total_size) {
+                            if (printInconclusive)
+                                possibleBufferOverrunError(tok, tok->strAt(4), tok->strAt(2), tok->str() == "strcat");
+                            continue;
+                        }
                     }
                 }
             }
