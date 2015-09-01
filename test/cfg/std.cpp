@@ -1195,3 +1195,448 @@ void uninitvar_iswspace(void)
     // cppcheck-suppress uninitvar
     (void)std::iswspace(i);
 }
+
+void uninitvar_iswupper(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswupper(i);
+}
+
+void uninitvar_iswxdigit(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswxdigit(i);
+}
+
+void uninitvar_towctrans(void)
+{
+    wint_t c;
+    wctrans_t desc;
+    // cppcheck-suppress uninitvar
+    (void)std::towctrans(c,desc);
+}
+
+void uninitvar_towlower(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::towlower(i);
+}
+
+void uninitvar_towupper(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::towupper(i);
+}
+
+void uninitvar_wctrans(void)
+{
+    char* property;
+    // cppcheck-suppress uninitvar
+    (void)std::wctrans(property);
+}
+
+void uninitvar_wctype(void)
+{
+    char* property;
+    // cppcheck-suppress uninitvar
+    (void)std::wctype(property);
+}
+
+void uninitvar_labs(void)
+{
+    long int li;
+    // cppcheck-suppress uninitvar
+    (void)std::labs(li);
+
+    long long int lli;
+    // cppcheck-suppress uninitvar
+    (void)std::llabs(lli);
+}
+
+void uninitvar_ldexp(void)
+{
+    float fd;
+    int e1;
+    // cppcheck-suppress uninitvar
+    (void)std::ldexp(fd,e1);
+
+    double dc;
+    int e2;
+    // cppcheck-suppress uninitvar
+    (void)std::ldexp(dc,e2);
+
+    long double ldc;
+    int e3;
+    // cppcheck-suppress uninitvar
+    (void)std::ldexp(ldc,e3);
+}
+
+void uninitvar_lgamma(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::lgammaf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::lgamma(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::lgammal(ld);
+}
+
+void uninitvar_rint(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::rintf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::rint(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::rintl(ld);
+}
+
+void uninitvar_lrint(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::lrintf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::lrint(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::lrintl(ld);
+}
+
+void uninitvar_llrint(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::llrintf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::llrint(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::llrintl(ld);
+}
+
+void uninitvar_lround(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::lroundf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::lround(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::lroundl(ld);
+}
+
+void uninitvar_llround(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::llroundf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::llround(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::llroundl(ld);
+}
+
+void uninitvar_srand(void)
+{
+    unsigned int seed;
+    // cppcheck-suppress uninitvar
+    (void)std::srand(seed);
+}
+
+void uninitvar_ldiv(void)
+{
+    long int l1;
+    long int l2;
+    // cppcheck-suppress uninitvar
+    (void)std::ldiv(l1,l2);
+
+    long long int ll1;
+    long long int ll2;
+    // cppcheck-suppress uninitvar
+    (void)std::lldiv(ll1,ll2);
+}
+
+void uninitvar_localtime(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)std::localtime(tp);
+}
+
+void uninitvar_log(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::log(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::log(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::log(ld);
+}
+
+void uninitvar_fpclassify(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::fpclassify(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::fpclassify(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::fpclassify(ld);
+}
+
+void uninitvar_isfinite(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::isfinite(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::isfinite(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::isfinite(ld);
+}
+
+void uninitvar_isgreater(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreater(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreater(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreater(ld1,ld2);
+}
+
+void uninitvar_isgreaterequal(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreaterequal(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreaterequal(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::isgreaterequal(ld1,ld2);
+}
+
+void uninitvar_isinf(void)
+{
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::isinf(d);
+}
+
+void uninitvar_logb(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::logbf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::logb(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::logbl(ld);
+}
+
+void uninitvar_isless(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::isless(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::isless(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::isless(ld1,ld2);
+}
+
+void uninitvar_islessequal(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessequal(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessequal(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessequal(ld1,ld2);
+}
+
+void uninitvar_islessgreater(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessgreater(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessgreater(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::islessgreater(ld1,ld2);
+}
+
+void uninitvar_nan(void)
+{
+    char *tagp;
+    // cppcheck-suppress uninitvar
+    (void)std::nanf(tagp);
+    // cppcheck-suppress uninitvar
+    (void)std::nan(tagp);
+    // cppcheck-suppress uninitvar
+    (void)std::nanl(tagp);
+}
+
+void uninitvar_isnan(void)
+{
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::isnan(d);
+}
+
+void uninitvar_isnormal(void)
+{
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::isnormal(d);
+}
+
+void uninitvar_isunordered(void)
+{
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::isunordered(d1,d2);
+}
+
+void uninitvar_ilogb(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::ilogb(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::ilogb(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::ilogb(ld);
+}
+
+void uninitvar_log10(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::log10(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::log10(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::log10(ld);
+}
+
+void uninitvar_log1p(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::log1pf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::log1p(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::log1pl(ld);
+}
+
+void uninitvar_log2(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::log2f(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::log2(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::log2l(ld);
+}
+
+void uninitvar_nearbyint(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::nearbyintf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::nearbyint(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::nearbyintl(ld);
+}
