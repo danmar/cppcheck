@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <tgmath.h> // frexp
 #include <wchar.h>
+#include <wctype.h>
 #include <fenv.h>
 
 void bufferAccessOutOfBounds(void)
@@ -1571,6 +1572,175 @@ void uninitvar_ungetwc(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     (void)ungetwc(c,stream);
+}
+
+void uninitvar_getenv(void)
+{
+    char *name;
+    // cppcheck-suppress uninitvar
+    (void)getenv(name);
+}
+
+void uninitvar_gmtime(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)gmtime(tp);
+}
+
+void uninitvar_isalnum(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isalnum(i);
+}
+
+void uninitvar_iswalnum(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswalnum(i);
+}
+
+void uninitvar_isalpha(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isalpha(i);
+}
+
+void uninitvar_iswalpha(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswalpha(i);
+}
+
+void uninitvar_isblank(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isblank(i);
+}
+
+void uninitvar_iswblank(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswblank(i);
+}
+
+void uninitvar_iscntrl(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)iscntrl(i);
+}
+
+void uninitvar_iswcntrl(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswcntrl(i);
+}
+
+void uninitvar_iswctype(void)
+{
+    wint_t c;
+    wctype_t desc;
+    // cppcheck-suppress uninitvar
+    (void)iswctype(c,desc);
+}
+
+void uninitvar_isdigit(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isdigit(i);
+}
+
+void uninitvar_iswdigit(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswdigit(i);
+}
+
+void uninitvar_isgraph(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isgraph(i);
+}
+
+void uninitvar_iswgraph(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswgraph(i);
+}
+
+void uninitvar_islower(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)islower(i);
+}
+
+void uninitvar_iswlower(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswlower(i);
+}
+
+void uninitvar_isprint(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isprint(i);
+}
+
+void uninitvar_iswprint(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswprint(i);
+}
+
+void uninitvar_ispunct(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)ispunct(i);
+}
+
+void uninitvar_iswpunct(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswpunct(i);
+}
+
+void uninitvar_isspace(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isspace(i);
+}
+
+void uninitvar_iswspace(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)iswspace(i);
+}
+
+void uninitvar_isupper(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)isupper(i);
 }
 
 void ignoreretrn(void)

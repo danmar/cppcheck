@@ -1089,3 +1089,109 @@ void uninitvar_ungetwc(void)
     // cppcheck-suppress uninitvar
     (void)std::ungetwc(c,stream);
 }
+
+void uninitvar_getenv(void)
+{
+    char *name;
+    // cppcheck-suppress uninitvar
+    (void)std::getenv(name);
+}
+
+void uninitvar_gmtime(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)std::gmtime(tp);
+}
+
+void uninitvar_iswalnum(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswalnum(i);
+}
+
+void uninitvar_iswalpha(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswalpha(i);
+}
+
+void uninitvar_isblank(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::isblank(i);
+}
+
+void uninitvar_iswblank(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswblank(i);
+}
+
+void uninitvar_iswcntrl(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswcntrl(i);
+}
+
+void uninitvar_iswctype(void)
+{
+    wint_t c;
+    wctype_t desc;
+    // cppcheck-suppress uninitvar
+    (void)std::iswctype(c,desc);
+}
+
+void uninitvar_iswdigit(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswdigit(i);
+}
+
+void uninitvar_iswgraph(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswgraph(i);
+}
+
+void uninitvar_iswlower(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswlower(i);
+}
+
+void uninitvar_iswprint(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswprint(i);
+}
+
+void uninitvar_ispunct(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::ispunct(i);
+}
+
+void uninitvar_iswpunct(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswpunct(i);
+}
+
+void uninitvar_iswspace(void)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::iswspace(i);
+}
