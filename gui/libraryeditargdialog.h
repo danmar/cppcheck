@@ -17,6 +17,9 @@ public:
 
     CppcheckLibraryData::Function::Arg getArg() const;
 
+private slots:
+    void minsizeChanged(int);
+
 private:
     Ui::LibraryEditArgDialog *ui;
 
