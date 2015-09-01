@@ -888,3 +888,204 @@ void uninitvar_fscanf(void)
     // cppcheck-suppress uninitvar
     (void)std::fscanf(stream,format,i);
 }
+
+void uninitvar_vfscanf(void)
+{
+    FILE *stream;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vfscanf(stream,format,arg);
+}
+
+void uninitvar_vfwscanf(void)
+{
+    FILE *stream;
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vfwscanf(stream,format,arg);
+}
+
+void uninitvar_fseek(void)
+{
+    FILE* stream;
+    long int offset;
+    int origin;
+    // cppcheck-suppress uninitvar
+    (void)std::fseek(stream,offset,origin);
+}
+
+void uninitvar_fsetpos(void)
+{
+    FILE* stream;
+    fpos_t *ptr;
+    // cppcheck-suppress uninitvar
+    (void)std::fsetpos(stream,ptr);
+}
+
+void uninitvar_fgets(void)
+{
+    char *buffer;
+    int n;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fgets(buffer,n,stream);
+}
+
+void uninitvar_fgetws(void)
+{
+    wchar_t *buffer;
+    int n;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fgetws(buffer,n,stream);
+}
+
+void uninitvar_ftell(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::ftell(stream);
+}
+
+void uninitvar_fwide(void)
+{
+    FILE *stream;
+    int mode;
+    // cppcheck-suppress uninitvar
+    (void)std::fwide(stream,mode);
+}
+
+void uninitvar_fwrite(void)
+{
+    void *ptr;
+    size_t size;
+    size_t nobj;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::fwrite(ptr,size,nobj,stream);
+}
+
+void uninitvar_mblen(void)
+{
+    char *string;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)std::mblen(string,size);
+}
+
+void uninitvar_mbtowc(void)
+{
+    wchar_t* pwc;
+    char* pmb;
+    size_t max;
+    // cppcheck-suppress uninitvar
+    (void)std::mbtowc(pwc,pmb,max);
+}
+
+void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
+{
+    char* pmb;
+    size_t max;
+    mbstate_t* ps;
+    // cppcheck-suppress uninitvar
+    (void)std::mbrlen(pmb,max,ps);
+    // cppcheck-suppress uninitvar
+    (void)std::mbrlen(pmb,m,s);
+    // cppcheck-suppress uninitvar
+    (void)std::mbrlen(p,max,s);
+    // cppcheck-suppress uninitvar
+    (void)std::mbrlen(p,m,ps);
+    // no warning is expected
+    (void)std::mbrlen(p,m,s);
+}
+
+void uninitvar_btowc(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::btowc(c);
+}
+
+void uninitvar_mbsinit(void)
+{
+    mbstate_t* ps;
+    // cppcheck-suppress uninitvar
+    (void)std::mbsinit(ps);
+}
+
+void uninitvar_mbstowcs(void)
+{
+    wchar_t *ws;
+    char *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::mbstowcs(ws,s,n);
+}
+
+void uninitvar_mbsrtowcs(void)
+{
+    wchar_t* dest;
+    const char* src;
+    size_t max;
+    mbstate_t* ps;
+    // cppcheck-suppress uninitvar
+    (void)std::mbsrtowcs(dest,&src,max,ps);
+}
+
+void uninitvar_wctob(void)
+{
+    wint_t wc;
+    // cppcheck-suppress uninitvar
+    (void)std::wctob(wc);
+}
+
+void uninitvar_wctomb(void)
+{
+    char *s;
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    (void)std::wctomb(s,wc);
+}
+
+void uninitvar_wcstombs(void)
+{
+    char *mbstr;
+    wchar_t *wcstr;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wcstombs(mbstr,wcstr,n);
+}
+
+void uninitvar_getc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::getc(stream);
+}
+
+void uninitvar_getwc(void)
+{
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::getwc(stream);
+}
+
+void uninitvar_ungetc(void)
+{
+    int c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::ungetc(c,stream);
+}
+
+void uninitvar_ungetwc(void)
+{
+    wint_t c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::ungetwc(c,stream);
+}
