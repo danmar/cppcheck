@@ -8708,6 +8708,8 @@ private:
     void removeMacroInClassDef() { // #6058
         ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred { } ;"));
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
+        // Regression for C code:
+        ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", false, true, Settings::Unspecified, "test.c"));
     }
 
     void sizeofAddParentheses() {

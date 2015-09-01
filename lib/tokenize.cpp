@@ -3916,8 +3916,6 @@ void Tokenizer::removeMacrosInGlobalScope()
 
 void Tokenizer::removeMacroInClassDef()
 {
-    if (!isCPP())
-        return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct %name% %name% {|:") &&
             (tok->next()->isUpperCaseName() || tok->tokAt(2)->isUpperCaseName())) {
