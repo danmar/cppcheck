@@ -14,6 +14,7 @@
 #include <wchar.h>
 #include <wctype.h>
 #include <fenv.h>
+#include <setjmp.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -2291,4 +2292,85 @@ void uninitvar_nearbyint(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)nearbyintl(ld);
+}
+
+void uninitvar_nextafter(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)nextafterf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)nextafter(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)nextafterl(ld1,ld2);
+}
+
+void uninitvar_nexttoward(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)nexttowardf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)nexttoward(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)nexttowardl(ld1,ld2);
+}
+
+void uninitvar_longjmp(void)
+{
+    jmp_buf env;
+    int val;
+    // cppcheck-suppress uninitvar
+    (void)longjmp(env,val);
+}
+
+void uninitvar_malloc(void)
+{
+    size_t size;
+    // cppcheck-suppress uninitvar
+    int *p = (int*)malloc(size);
+    free(p);
+}
+
+void uninitvar_alloca(void)
+{
+    size_t size;
+    // cppcheck-suppress obsoleteFunctionsalloca
+    // cppcheck-suppress uninitvar
+    (void)alloca(size);
+}
+
+void uninitvar_memchr(void)
+{
+    void *cs;
+    int c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)memchr(cs,c,n);
+}
+
+void uninitvar_wmemchr(void)
+{
+    wchar_t *cs;
+    wchar_t c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)wmemchr(cs,c,n);
+}
+
+void uninitvar_memcmp(void)
+{
+    void *s1;
+    void *s2;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)memcmp(s1,s2,n);
 }
