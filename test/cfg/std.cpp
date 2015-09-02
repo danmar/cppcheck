@@ -135,7 +135,7 @@ void uninitvar_acosh(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::acosh(f);
+    (void)std::acoshf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -143,7 +143,7 @@ void uninitvar_acosh(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::acosh(ld);
+    (void)std::acoshl(ld);
 }
 
 void uninitvar_asctime(void)
@@ -218,7 +218,7 @@ void uninitvar_asinh(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::asinh(f);
+    (void)std::asinhf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -226,7 +226,7 @@ void uninitvar_asinh(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::asinh(ld);
+    (void)std::asinhl(ld);
 }
 
 void uninitvar_wcsftime(wchar_t* ptr)
@@ -287,7 +287,7 @@ void uninitvar_tgamma(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::tgamma(f);
+    (void)std::tgammaf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -295,14 +295,14 @@ void uninitvar_tgamma(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::tgamma(ld);
+    (void)std::tgammal(ld);
 }
 
 void uninitvar_trunc(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::trunc(f);
+    (void)std::truncf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -310,14 +310,14 @@ void uninitvar_trunc(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::trunc(ld);
+    (void)std::truncl(ld);
 }
 
 void uninitvar_atanh(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::atanh(f);
+    (void)std::atanhf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -325,7 +325,7 @@ void uninitvar_atanh(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::atanh(ld);
+    (void)std::atanhl(ld);
 }
 
 void uninitvar_atan2(void)
@@ -375,7 +375,7 @@ void uninitvar_copysign(void)
 {
     float f1, f2;
     // cppcheck-suppress uninitvar
-    (void)std::copysign(f1, f2);
+    (void)std::copysignf(f1, f2);
 
     double d1, d2;
     // cppcheck-suppress uninitvar
@@ -383,14 +383,14 @@ void uninitvar_copysign(void)
 
     long double ld1, ld2;
     // cppcheck-suppress uninitvar
-    (void)std::copysign(ld1, ld2);
+    (void)std::copysignl(ld1, ld2);
 }
 
 void uninitvar_cbrt(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::cbrt(f);
+    (void)std::cbrtf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -398,7 +398,7 @@ void uninitvar_cbrt(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::cbrt(ld);
+    (void)std::cbrtl(ld);
 }
 
 void uninitvar_cos(void)
@@ -520,7 +520,7 @@ void uninitvar_erf(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::erf(f);
+    (void)std::erff(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -528,14 +528,14 @@ void uninitvar_erf(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::erf(ld);
+    (void)std::erfl(ld);
 }
 
 void uninitvar_erfc(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::erfc(f);
+    (void)std::erfcf(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -543,7 +543,7 @@ void uninitvar_erfc(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::erfc(ld);
+    (void)std::erfcl(ld);
 }
 
 void uninitvar_exp(void)
@@ -565,7 +565,7 @@ void uninitvar_exp2(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::exp2(f);
+    (void)std::exp2f(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -573,14 +573,14 @@ void uninitvar_exp2(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::exp2(ld);
+    (void)std::exp2l(ld);
 }
 
 void uninitvar_expm1(void)
 {
     float f;
     // cppcheck-suppress uninitvar
-    (void)std::expm1(f);
+    (void)std::expm1f(f);
 
     double d;
     // cppcheck-suppress uninitvar
@@ -588,7 +588,7 @@ void uninitvar_expm1(void)
 
     long double ld;
     // cppcheck-suppress uninitvar
-    (void)std::expm1(ld);
+    (void)std::expm1l(ld);
 }
 
 void uninitvar_fabs(void)
