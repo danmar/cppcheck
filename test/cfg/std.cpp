@@ -610,7 +610,7 @@ void uninitvar_fdim(void)
 {
     float f1,f2;
     // cppcheck-suppress uninitvar
-    (void)std::fdim(f1,f2);
+    (void)std::fdimf(f1,f2);
 
     double d1,d2;
     // cppcheck-suppress uninitvar
@@ -618,7 +618,7 @@ void uninitvar_fdim(void)
 
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
-    (void)std::fdim(ld1,ld2);
+    (void)std::fdiml(ld1,ld2);
 }
 
 void uninitvar_fclose(void)
@@ -691,7 +691,7 @@ void uninitvar_fma(void)
     // cppcheck-suppress unassignedVariable
     float f1,f2,f3;
     // cppcheck-suppress uninitvar
-    (void)std::fma(f1,f2,f3);
+    (void)std::fmaf(f1,f2,f3);
 
     // cppcheck-suppress unassignedVariable
     double d1,d2,d3;
@@ -701,14 +701,14 @@ void uninitvar_fma(void)
     // cppcheck-suppress unassignedVariable
     long double ld1,ld2,ld3;
     // cppcheck-suppress uninitvar
-    (void)std::fma(ld1,ld2,ld3);
+    (void)std::fmal(ld1,ld2,ld3);
 }
 
 void uninitvar_fmax(void)
 {
     float f1,f2;
     // cppcheck-suppress uninitvar
-    (void)std::fmax(f1,f2);
+    (void)std::fmaxf(f1,f2);
 
     double d1,d2;
     // cppcheck-suppress uninitvar
@@ -716,14 +716,14 @@ void uninitvar_fmax(void)
 
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
-    (void)std::fmax(ld1,ld2);
+    (void)std::fmaxl(ld1,ld2);
 }
 
 void uninitvar_fmin(void)
 {
     float f1,f2;
     // cppcheck-suppress uninitvar
-    (void)std::fmin(f1,f2);
+    (void)std::fminf(f1,f2);
 
     double d1,d2;
     // cppcheck-suppress uninitvar
@@ -731,7 +731,7 @@ void uninitvar_fmin(void)
 
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
-    (void)std::fmin(ld1,ld2);
+    (void)std::fminl(ld1,ld2);
 }
 
 void uninitvar_fmod(void)
@@ -869,7 +869,7 @@ void uninitvar_hypot(void)
 {
     float f1,f2;
     // cppcheck-suppress uninitvar
-    (void)std::hypot(f1,f2);
+    (void)std::hypotf(f1,f2);
 
     double d1,d2;
     // cppcheck-suppress uninitvar
@@ -877,7 +877,7 @@ void uninitvar_hypot(void)
 
     long double ld1,ld2;
     // cppcheck-suppress uninitvar
-    (void)std::hypot(ld1,ld2);
+    (void)std::hypotl(ld1,ld2);
 }
 
 void uninitvar_fscanf(void)

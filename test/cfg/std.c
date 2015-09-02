@@ -1581,6 +1581,14 @@ void uninitvar_getenv(void)
     (void)getenv(name);
 }
 
+void uninitvar_gets(void)
+{
+    char *buffer;
+    // cppcheck-suppress obsoleteFunctionsgets
+    // cppcheck-suppress uninitvar
+    (void)gets(buffer);
+}
+
 void uninitvar_gmtime(void)
 {
     time_t *tp;
