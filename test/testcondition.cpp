@@ -528,7 +528,35 @@ private:
         check("bool f(int x) {\n"
               "    return x | 0x02;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("bool f(int x) {\n"
+              "  if (x) {\n"
+              "    return x | 0x02;\n"
+              "  }\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("const bool f(int x) {\n"
+              "    return x | 0x02;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("struct F {\n"
+              "  static const bool f(int x) {\n"
+              "      return x | 0x02;\n"
+              "  }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+
+        check("struct F {\n"
+              "  typedef bool b_t;\n"
+              "};\n"
+              "F::b_t f(int x) {\n"
+              "  return x | 0x02;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
 
         check("int f(int x) {\n"
               "    return x | 0x02;\n"
