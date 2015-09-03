@@ -95,11 +95,40 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QCheckBox" name="functionreturn">
-         <property name="text">
-          <string>function always return</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>noreturn</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="noreturn">
+           <item>
+            <property name="text">
+             <string>False</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>True</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Unknown</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QCheckBox" name="useretval">
@@ -190,22 +219,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>functionreturn</sender>
-   <signal>clicked()</signal>
-   <receiver>LibraryDialog</receiver>
-   <slot>changeFunction()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>327</x>
-     <y>45</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>353</x>
-     <y>2</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>useretval</sender>
    <signal>clicked()</signal>
    <receiver>LibraryDialog</receiver>
@@ -285,6 +298,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>noreturn</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>504</x>
+     <y>45</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>543</x>
+     <y>32</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFunction(int)</slot>
@@ -294,5 +323,6 @@
   <slot>argumentChanged(QListWidgetItem*)</slot>
   <slot>addFunction()</slot>
   <slot>editArg()</slot>
+  <slot>changeFunction(int)</slot>
  </slots>
 </ui>

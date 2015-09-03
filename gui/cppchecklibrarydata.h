@@ -34,13 +34,13 @@ public:
     };
 
     struct Function {
-        Function() : noreturn(true), gccPure(false), gccConst(false),
+        Function() : noreturn(Unknown), gccPure(false), gccConst(false),
             leakignore(false), useretval(false) {
         }
 
         QStringList comments;
         QString name;
-        bool noreturn;
+        enum TrueFalseUnknown { False, True, Unknown } noreturn;
         bool gccPure;
         bool gccConst;
         bool leakignore;

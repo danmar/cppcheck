@@ -109,7 +109,7 @@ void LibraryDialog::addFunction()
 void LibraryDialog::selectFunction(int row)
 {
     if (row == -1) {
-        ui->functionreturn->setChecked(false);
+        ui->noreturn->setCurrentIndex(0);
         ui->useretval->setChecked(false);
         ui->leakignore->setChecked(false);
         ui->arguments->clear();
@@ -118,11 +118,16 @@ void LibraryDialog::selectFunction(int row)
 
     ignoreChanges = true;
     const CppcheckLibraryData::Function &function = data.functions[row];
-    ui->functionreturn->setChecked(!function.noreturn);
+    ui->noreturn->setCurrentIndex(function.noreturn);
     ui->useretval->setChecked(function.useretval);
     ui->leakignore->setChecked(function.leakignore);
     updateArguments(function);
     ignoreChanges = false;
+}
+
+void LibraryDialog::changeFunction(int)
+{
+    changeFunction();
 }
 
 void LibraryDialog::changeFunction()
@@ -131,7 +136,7 @@ void LibraryDialog::changeFunction()
         return;
     foreach(const QListWidgetItem *item, ui->functions->selectedItems()) {
         CppcheckLibraryData::Function &function = data.functions[ui->functions->row(item)];
-        function.noreturn   = !ui->functionreturn->isChecked();
+        function.noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)ui->noreturn->currentIndex();
         function.useretval  = ui->useretval->isChecked();
         function.leakignore = ui->leakignore->isChecked();
     }

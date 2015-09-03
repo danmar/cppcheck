@@ -75,7 +75,7 @@ static CppcheckLibraryData::Function loadFunction(const QDomElement &functionEle
     function.name = functionElement.attribute("name");
     for (QDomElement childElement = functionElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
         if (childElement.tagName() == "noreturn")
-            function.noreturn = (childElement.text() == "true");
+            function.noreturn = (childElement.text() == "true") ? CppcheckLibraryData::Function::True : CppcheckLibraryData::Function::False;
         else if (childElement.tagName() == "pure")
             function.gccPure = true;
         else if (childElement.tagName() == "const")
@@ -160,8 +160,6 @@ bool CppcheckLibraryData::open(QIODevice &file)
     return true;
 }
 
-
-
 static QDomElement FunctionElement(QDomDocument &doc, const CppcheckLibraryData::Function &function)
 {
     QDomElement functionElement = doc.createElement("function");
@@ -172,9 +170,9 @@ static QDomElement FunctionElement(QDomDocument &doc, const CppcheckLibraryData:
         functionElement.appendChild(doc.createElement("const"));
     if (function.gccPure)
         functionElement.appendChild(doc.createElement("pure"));
-    {
+    if (function.noreturn != CppcheckLibraryData::Function::Unknown) {
         QDomElement e = doc.createElement("noreturn");
-        e.appendChild(doc.createTextNode(function.noreturn ? "true" : "false"));
+        e.appendChild(doc.createTextNode(function.noreturn == CppcheckLibraryData::Function::True ? "true" : "false"));
         functionElement.appendChild(e);
     }
     if (function.leakignore)

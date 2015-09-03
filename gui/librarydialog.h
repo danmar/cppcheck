@@ -43,6 +43,7 @@ private slots:
     void addFunction();
     void selectFunction(int row);
     void changeFunction();
+    void changeFunction(int);
     void editArg();
 
 private:
