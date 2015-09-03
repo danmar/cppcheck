@@ -2464,3 +2464,96 @@ void uninivar_perror(void)
     // cppcheck-suppress uninitvar
     (void)perror(string);
 }
+
+void uninitvar_pow(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)powf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)pow(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)powl(ld1,ld2);
+}
+
+void uninitvar_cpow(void)
+{
+    float complex f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)cpowf(f1,f2);
+
+    double complex d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)cpow(d1,d2);
+
+    long double complex ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)cpowl(ld1,ld2);
+}
+
+void uninitvar_remainder(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)remainderf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)remainder(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)remainderl(ld1,ld2);
+}
+
+void uninitvar_remquo(void)
+{
+    float f1,f2;
+    int *i1;
+    // cppcheck-suppress uninitvar
+    (void)remquof(f1,f2,i1);
+
+    double d1,d2;
+    int *i2;
+    // cppcheck-suppress uninitvar
+    (void)remquo(d1,d2,i2);
+
+    long double ld1,ld2;
+    int *i3;
+    // cppcheck-suppress uninitvar
+    (void)remquol(ld1,ld2,i3);
+}
+
+void uninivar_printf(void)
+{
+    char * format;
+    int i;
+    // no warning is expected
+    (void)printf("x");
+    // cppcheck-suppress uninitvar
+    (void)printf(format,i);
+    // cppcheck-suppress uninitvar
+    (void)printf(format,1);
+}
+
+void uninivar_vprintf(void)
+{
+    char * format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vprintf(format,arg);
+}
+
+void uninivar_vwprintf(void)
+{
+    wchar_t * format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vwprintf(format,arg);
+}

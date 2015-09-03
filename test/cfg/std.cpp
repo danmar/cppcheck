@@ -1801,3 +1801,81 @@ void uninivar_perror(void)
     // cppcheck-suppress uninitvar
     (void)std::perror(string);
 }
+
+void uninitvar_pow(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::pow(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::pow(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::pow(ld1,ld2);
+}
+
+void uninitvar_remainder(void)
+{
+    float f1,f2;
+    // cppcheck-suppress uninitvar
+    (void)std::remainderf(f1,f2);
+
+    double d1,d2;
+    // cppcheck-suppress uninitvar
+    (void)std::remainder(d1,d2);
+
+    long double ld1,ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::remainderl(ld1,ld2);
+}
+
+void uninitvar_remquo(void)
+{
+    float f1,f2;
+    int *i1;
+    // cppcheck-suppress uninitvar
+    (void)std::remquof(f1,f2,i1);
+
+    double d1,d2;
+    int *i2;
+    // cppcheck-suppress uninitvar
+    (void)std::remquo(d1,d2,i2);
+
+    long double ld1,ld2;
+    int *i3;
+    // cppcheck-suppress uninitvar
+    (void)std::remquol(ld1,ld2,i3);
+}
+
+void uninivar_printf(void)
+{
+    char * format;
+    int i;
+    // no warning is expected
+    (void)std::printf("x");
+    // cppcheck-suppress uninitvar
+    (void)std::printf(format,i);
+    // cppcheck-suppress uninitvar
+    (void)std::printf(format,1);
+}
+
+void uninivar_vprintf(void)
+{
+    char * format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vprintf(format,arg);
+}
+
+void uninivar_vwprintf(void)
+{
+    wchar_t * format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vwprintf(format,arg);
+}
