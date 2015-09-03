@@ -1715,3 +1715,89 @@ void uninitvar_memcmp(void)
     // cppcheck-suppress uninitvar
     (void)std::memcmp(s1,s2,n);
 }
+
+void uninitvar_memcpy(void)
+{
+    void *ct;
+    void *cs;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::memcpy(ct,cs,n);
+}
+
+void uninitvar_wmemcpy(void)
+{
+    wchar_t *cs;
+    wchar_t *c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wmemcpy(cs,c,n);
+}
+
+void uninitvar_memmove(void)
+{
+    void *ct;
+    void *cs;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::memmove(ct,cs,n);
+}
+
+void uninitvar_wmemmove(void)
+{
+    wchar_t *cs;
+    wchar_t *c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wmemmove(cs,c,n);
+}
+
+void uninitvar_memset(void)
+{
+    void *s;
+    int c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::memset(s,c,n);
+}
+
+void uninitvar_wmemset(void)
+{
+    wchar_t *cs;
+    wchar_t  c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wmemset(cs,c,n);
+}
+
+void uninitvar_mktime(void)
+{
+    struct tm *tp;
+    // cppcheck-suppress uninitvar
+    (void)std::mktime(tp);
+}
+
+void uninivar_modf(void)
+{
+    float f1;
+    float *f2;
+    // cppcheck-suppress uninitvar
+    (void)std::modf(f1,f2);
+
+    double d1;
+    double *d2;
+    // cppcheck-suppress uninitvar
+    (void)std::modf(d1,d2);
+
+    long double ld1;
+    long double *ld2;
+    // cppcheck-suppress uninitvar
+    (void)std::modf(ld1,ld2);
+}
+
+void uninivar_perror(void)
+{
+    char *string;
+    // cppcheck-suppress uninitvar
+    (void)std::perror(string);
+}
