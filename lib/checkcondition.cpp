@@ -217,6 +217,24 @@ static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchil
         getnumchildren(tok->astOperand2(), numchildren);
 }
 
+/* Return whether tok is in the body for a function returning a boolean. */
+static bool inBooleanFunction(const Token *tok)
+{
+    const Scope *scope = tok ? tok->scope() : 0;
+    while (scope && scope->isLocal())
+        scope = scope->nestedIn;
+    if (scope && scope->type == Scope::eFunction) {
+        const Function *func = scope->function;
+        if (func) {
+            const Token *ret = func->retDef;
+            while (ret && Token::Match(ret, "static|const"))
+                ret = ret->next();
+            return ret && (ret->str() == "bool");
+        }
+    }
+    return false;
+}
+
 void CheckCondition::checkBadBitmaskCheck()
 {
     if (!_settings->isEnabled("warning"))
@@ -228,7 +246,8 @@ void CheckCondition::checkBadBitmaskCheck()
             const bool isBoolean = Token::Match(parent, "&&|%oror%") ||
                                    (parent->str() == "?" && parent->astOperand1() == tok) ||
                                    (parent->str() == "=" && parent->astOperand2() == tok && parent->astOperand1() && parent->astOperand1()->variable() && parent->astOperand1()->variable()->typeStartToken()->str() == "bool") ||
-                                   (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while"));
+                                   (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
+                                   (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
             const bool isTrue = (tok->astOperand1()->values.size() == 1 && tok->astOperand1()->values.front().intvalue != 0 && !tok->astOperand1()->values.front().conditional) ||
                                 (tok->astOperand2()->values.size() == 1 && tok->astOperand2()->values.front().intvalue != 0 && !tok->astOperand2()->values.front().conditional);
