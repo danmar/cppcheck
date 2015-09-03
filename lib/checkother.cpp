@@ -58,6 +58,9 @@ void CheckOther::checkCastIntToCharAndBack()
         const Scope * scope = symbolDatabase->functionScopes[i];
         std::map<unsigned int, std::string> vars;
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            // Quick check to see if any of the matches below have any chances
+            if (!tok->isName() || !Token::Match(tok, "%var%|EOF %comp%|="))
+                continue;
             if (Token::Match(tok, "%var% = fclose|fflush|fputc|fputs|fscanf|getchar|getc|fgetc|putchar|putc|puts|scanf|sscanf|ungetc (")) {
                 const Variable *var = tok->variable();
                 if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
@@ -80,8 +83,7 @@ void CheckOther::checkCastIntToCharAndBack()
                 if (var && var->typeEndToken()->str() == "char" && !var->typeEndToken()->isSigned()) {
                     vars[tok->varId()] = "cin.get";
                 }
-            }
-            if (Token::Match(tok, "%var% %comp% EOF")) {
+            } else if (Token::Match(tok, "%var% %comp% EOF")) {
                 if (vars.find(tok->varId()) != vars.end()) {
                     checkCastIntToCharAndBackError(tok, vars[tok->varId()]);
                 }
