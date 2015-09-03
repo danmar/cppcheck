@@ -166,45 +166,55 @@ static QDomElement FunctionElement(QDomDocument &doc, const CppcheckLibraryData:
 {
     QDomElement functionElement = doc.createElement("function");
     functionElement.setAttribute("name", function.name);
-    if (!function.noreturn) {
-        QDomElement e = doc.createElement("noreturn");
-        e.appendChild(doc.createTextNode("false"));
-        functionElement.appendChild(e);
-    }
     if (function.useretval)
         functionElement.appendChild(doc.createElement("use-retval"));
-    if (function.leakignore)
-        functionElement.appendChild(doc.createElement("leak-ignore"));
     if (function.gccConst)
         functionElement.appendChild(doc.createElement("const"));
     if (function.gccPure)
         functionElement.appendChild(doc.createElement("pure"));
-    if (!function.formatstr.scan.isNull()) {
-        QDomElement e = doc.createElement("formatstr");
-        e.setAttribute("scan", function.formatstr.scan);
-        if (!function.formatstr.secure.isNull())
-            e.setAttribute("secure", function.formatstr.secure);
+    {
+        QDomElement e = doc.createElement("noreturn");
+        e.appendChild(doc.createTextNode(function.noreturn ? "true" : "false"));
         functionElement.appendChild(e);
     }
-
+    if (function.leakignore)
+        functionElement.appendChild(doc.createElement("leak-ignore"));
+    /*
+        if (!function.formatstr.scan.isNull()) {
+            QDomElement e = doc.createElement("formatstr");
+            e.setAttribute("scan", function.formatstr.scan);
+            if (!function.formatstr.secure.isNull())
+                e.setAttribute("secure", function.formatstr.secure);
+            functionElement.appendChild(e);
+        }
+    */
     // Argument info..
     foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
+        if (arg.formatstr) {
+            QDomElement e = doc.createElement("formatstr");
+            if (!function.formatstr.scan.isNull())
+                e.setAttribute("scan", function.formatstr.scan);
+            if (!function.formatstr.secure.isNull())
+                e.setAttribute("secure", function.formatstr.secure);
+            functionElement.appendChild(e);
+        }
+
         QDomElement argElement = doc.createElement("arg");
         functionElement.appendChild(argElement);
         if (arg.nr == CppcheckLibraryData::Function::Arg::ANY)
             argElement.setAttribute("nr", "any");
         else
             argElement.setAttribute("nr", arg.nr);
-        if (arg.notbool)
-            argElement.appendChild(doc.createElement("not-bool"));
+        if (arg.formatstr)
+            argElement.appendChild(doc.createElement("formatstr"));
         if (arg.notnull)
             argElement.appendChild(doc.createElement("not-null"));
         if (arg.notuninit)
             argElement.appendChild(doc.createElement("not-uninit"));
+        if (arg.notbool)
+            argElement.appendChild(doc.createElement("not-bool"));
         if (arg.strz)
             argElement.appendChild(doc.createElement("strz"));
-        if (arg.formatstr)
-            argElement.appendChild(doc.createElement("formatstr"));
 
         if (!arg.valid.isEmpty()) {
             QDomElement e = doc.createElement("valid");
@@ -279,8 +289,10 @@ QString CppcheckLibraryData::toString() const
     foreach(const PodType &podtype, podtypes) {
         QDomElement podtypeElement = doc.createElement("podtype");
         podtypeElement.setAttribute("name", podtype.name);
-        podtypeElement.setAttribute("size", podtype.size);
-        podtypeElement.setAttribute("sign", podtype.sign);
+        if (!podtype.size.isEmpty())
+            podtypeElement.setAttribute("size", podtype.size);
+        if (!podtype.sign.isEmpty())
+            podtypeElement.setAttribute("sign", podtype.sign);
         root.appendChild(podtypeElement);
     }
 
