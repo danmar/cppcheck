@@ -302,14 +302,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     std::string::size_type index = 0;
     while ((index = source.find(searchFor, index)) != std::string::npos) {
         source.replace(index, searchFor.length(), replaceWith);
-
-        std::string::size_type advanceBy;
-        if (searchFor.length() >= replaceWith.length())
-            advanceBy = replaceWith.length();
-        else
-            advanceBy = (replaceWith.length() - searchFor.length()) + 1;
-
-        index += advanceBy;
+        index += replaceWith.length();
     }
 }
 
