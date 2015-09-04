@@ -405,12 +405,14 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
+#if 0
 void uninitvar_assert(void)
 {
     int i;
     // cppcheck-suppress uninitvar
     assert(i);
 }
+#endif
 
 void uninitvar_sqrt(void)
 {
