@@ -1879,3 +1879,105 @@ void uninivar_vwprintf(void)
     // cppcheck-suppress uninitvar
     (void)std::vwprintf(format,arg);
 }
+
+void uninivar_bsearch(void)
+{
+    void* key;
+    void* base;
+    size_t num;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)std::bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
+}
+
+void uninitvar_qsort(void)
+{
+    void *base;
+    size_t n;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)std::qsort(base,n,size, (int(*)(const void*,const void*)) strcmp);
+}
+
+void uninitvar_putc(void)
+{
+    int c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::putc(c,stream);
+}
+
+void uninitvar_putwc(void)
+{
+    wchar_t c;
+    FILE *stream;
+    // cppcheck-suppress uninitvar
+    (void)std::putc(c,stream);
+}
+
+void uninitvar_putchar(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::putchar(c);
+}
+
+void uninitvar_putwchar(void)
+{
+    wchar_t c;
+    // cppcheck-suppress uninitvar
+    (void)std::putwchar(c);
+}
+
+void uninitvar_puts(void)
+{
+    char *s;
+    // cppcheck-suppress uninitvar
+    (void)std::puts(s);
+}
+
+void uninitvar_realloc(void)
+{
+    void *block;
+    size_t newsize;
+    // cppcheck-suppress uninitvar
+    void *p = std::realloc(block, newsize);
+    free(p);
+}
+
+void uninitvar_remove(void)
+{
+    char *s;
+    // cppcheck-suppress uninitvar
+    (void)std::remove(s);
+}
+
+void uninitvar_rename(void)
+{
+    char *s1;
+    char *s2;
+    // cppcheck-suppress uninitvar
+    (void)std::rename(s1,s2);
+}
+
+void uninitvar_rewind(void)
+{
+    FILE *f;
+    // cppcheck-suppress uninitvar
+    (void)std::rewind(f);
+}
+
+void uninitvar_round(void)
+{
+    float f;
+    // cppcheck-suppress uninitvar
+    (void)std::roundf(f);
+
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::round(d);
+
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::roundl(ld);
+}
