@@ -804,17 +804,17 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
                 } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-                    const Token *tok1 = tok->next()->link()->next();
+                    const Token *scopeStartTok = tok->next()->link()->next();
                     if (tok->str() == "if")
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eIf, tok1));
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eIf, scopeStartTok));
                     else if (tok->str() == "for") {
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eFor, tok1));
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eFor, scopeStartTok));
                     } else if (tok->str() == "while")
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, tok1));
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, scopeStartTok));
                     else if (tok->str() == "catch") {
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, tok1));
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, scopeStartTok));
                     } else // if (tok->str() == "switch")
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, tok1));
+                        scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, scopeStartTok));
 
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
@@ -822,7 +822,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                         scope->checkVariable(tok->tokAt(2), Local, &settings->library); // check for variable declaration and add it to new scope if found
                     else if (scope->type == Scope::eCatch)
                         scope->checkVariable(tok->tokAt(2), Throw, &settings->library); // check for variable declaration and add it to new scope if found
-                    tok = tok1;
+                    tok = scopeStartTok;
                 } else if (tok->str() == "{" && !tok->previous()->varId()) {
                     if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
                         scopeList.push_back(Scope(this, tok->linkAt(-1)->linkAt(-1), scope, Scope::eLambda, tok));
