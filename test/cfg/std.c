@@ -2702,7 +2702,7 @@ void uninitvar_signbit(void)
     // cppcheck-suppress uninitvar
     (void)signbit(d);
 }
-#if 0
+
 void uninivar_signal(void)
 {
     int i;
@@ -2716,4 +2716,3 @@ void uninivar_raise(void)
     // cppcheck-suppress uninitvar
     (void)raise(i);
 }
-#endif

@@ -18,6 +18,7 @@
 #include <cfenv>
 #include <csetjmp>
 #include <cmath>
+#include <csignal>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -2025,7 +2026,6 @@ void uninitvar_signbit(void)
     (void)std::signbit(d);
 }
 
-#if 0
 void uninivar_signal(void)
 {
     int i;
@@ -2039,4 +2039,3 @@ void uninivar_raise(void)
     // cppcheck-suppress uninitvar
     (void)std::raise(i);
 }
-#endif
