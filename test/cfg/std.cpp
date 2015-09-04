@@ -1981,3 +1981,62 @@ void uninitvar_round(void)
     // cppcheck-suppress uninitvar
     (void)std::roundl(ld);
 }
+
+void uninivar_scalbn(void)
+{
+    float f;
+    int i1;
+    // cppcheck-suppress uninitvar
+    (void)std::scalbnf(f,i1);
+
+    double d;
+    int i2;
+    // cppcheck-suppress uninitvar
+    (void)std::scalbn(d,i2);
+
+    long double ld;
+    int i3;
+    // cppcheck-suppress uninitvar
+    (void)std::scalbnl(ld,i3);
+}
+
+void uninivar_scalbln(void)
+{
+    float f;
+    long int i1;
+    // cppcheck-suppress uninitvar
+    (void)std::scalblnf(f,i1);
+
+    double d;
+    long int i2;
+    // cppcheck-suppress uninitvar
+    (void)std::scalbln(d,i2);
+
+    long double ld;
+    long int i3;
+    // cppcheck-suppress uninitvar
+    (void)std::scalblnl(ld,i3);
+}
+
+void uninitvar_signbit(void)
+{
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)std::signbit(d);
+}
+
+#if 0
+void uninivar_signal(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::signal(i, exit);
+}
+
+void uninivar_raise(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::raise(i);
+}
+#endif

@@ -2659,3 +2659,61 @@ void uninitvar_round(void)
     // cppcheck-suppress uninitvar
     (void)roundl(ld);
 }
+
+void uninivar_scalbn(void)
+{
+    float f;
+    int i1;
+    // cppcheck-suppress uninitvar
+    (void)scalbnf(f,i1);
+
+    double d;
+    int i2;
+    // cppcheck-suppress uninitvar
+    (void)scalbn(d,i2);
+
+    long double ld;
+    int i3;
+    // cppcheck-suppress uninitvar
+    (void)scalbnl(ld,i3);
+}
+
+void uninivar_scalbln(void)
+{
+    float f;
+    long int i1;
+    // cppcheck-suppress uninitvar
+    (void)scalblnf(f,i1);
+
+    double d;
+    long int i2;
+    // cppcheck-suppress uninitvar
+    (void)scalbln(d,i2);
+
+    long double ld;
+    long int i3;
+    // cppcheck-suppress uninitvar
+    (void)scalblnl(ld,i3);
+}
+
+void uninitvar_signbit(void)
+{
+    double d;
+    // cppcheck-suppress uninitvar
+    (void)signbit(d);
+}
+#if 0
+void uninivar_signal(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    signal(i, exit);
+}
+
+void uninivar_raise(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)raise(i);
+}
+#endif
