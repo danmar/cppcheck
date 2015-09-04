@@ -65,13 +65,22 @@
               <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
+              <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+              <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+              <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
-              <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
-              <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+            </Component>
+          </Directory>
+          <Directory Id='AddonsFolder' Name='addons'>
+            <Component Id='Addons' Guid='$(var.addonsGUID)'>
+              <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
+              <File Id='cert.py' Name='cert.py' Source='$(var.AddonsDir)\cert.py' />
+              <File Id='naming.py' Name='naming.py' Source='$(var.AddonsDir)\naming.py' />
+              <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
             </Component>
           </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
@@ -107,8 +116,8 @@
             <RemoveFile Id='qtgui4dll' On='install' Name='qtgui4.dll' />
           </Component>
         </Directory>
-        <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
       </Directory>
+      <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
         <Directory Id='ProgramMenuDir' Name='$(var.ProductName)'>
@@ -120,6 +129,7 @@
       </Directory>
     </Directory>
 
+    <Property Id="INSTALLLEVEL" Value="1" />
     <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.'
       Display='expand' Level='1' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='CppcheckCore' Display='hidden' AllowAdvertise='no' Title='Cppcheck-Core' Description='Cppcheck core components' Level='1'>
@@ -144,7 +154,10 @@
       <Feature Id='ConfigFiles' Title='Additional configurations' AllowAdvertise='no' Description='Provide additional configuration files, for example for WinAPI, GTK and SDL' Level='1'>
         <ComponentRef Id='OptionalCfgs' />
       </Feature>
-      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2010 Runtime Components">
+      <Feature Id='PythonAddons' Title='Python addons' AllowAdvertise='no'  Description='Contains several addons requiring python' Level='2'>
+        <ComponentRef Id='Addons' />
+      </Feature>
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2015 Runtime Components">
         <MergeRef Id="CRT"/>
       </Feature>
     </Feature>
