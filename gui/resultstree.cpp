@@ -776,7 +776,7 @@ void ResultsTree::HideResult()
 
 void ResultsTree::HideAllIdResult()
 {
-    if (mContextItem) {
+    if (mContextItem && mContextItem->parent()) {
         // Make sure we are working with the first column
         if (mContextItem->column() != 0)
             mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
