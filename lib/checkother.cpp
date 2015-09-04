@@ -850,10 +850,10 @@ void CheckOther::checkSuspiciousCaseInSwitch()
                         break;
                     if (Token::Match(tok2, "[;}{]"))
                         break;
+
                     if (tok2->str() == "?")
                         finding = nullptr;
-
-                    if (Token::Match(tok2, "&&|%oror%"))
+                    else if (Token::Match(tok2, "&&|%oror%"))
                         finding = tok2;
                 }
                 if (finding)
