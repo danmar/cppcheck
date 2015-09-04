@@ -705,7 +705,7 @@
   </action>
   <action name="mActionLibraryEditor">
    <property name="text">
-    <string>LibraryEditor...</string>
+    <string>Library Editor...</string>
    </property>
    <property name="toolTip">
     <string>Open library editor</string>
