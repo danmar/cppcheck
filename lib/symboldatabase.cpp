@@ -2043,34 +2043,34 @@ const Function* Type::getFunction(const std::string& funcName) const
     return 0;
 }
 
-bool Type::hasCircularDependencies(std::set<BaseInfo>* anchestors) const
+bool Type::hasCircularDependencies(std::set<BaseInfo>* ancestors) const
 {
-    std::set<BaseInfo> knownAnchestors;
-    if (!anchestors) {
-        anchestors=&knownAnchestors;
+    std::set<BaseInfo> knownAncestors;
+    if (!ancestors) {
+        ancestors=&knownAncestors;
     }
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
         if (!parent->type)
             continue;
         else if (this==parent->type)
             return true;
-        else if (anchestors->find(*parent)!=anchestors->end())
+        else if (ancestors->find(*parent)!=ancestors->end())
             return true;
         else {
-            anchestors->insert(*parent);
-            if (parent->type->hasCircularDependencies(anchestors))
+            ancestors->insert(*parent);
+            if (parent->type->hasCircularDependencies(ancestors))
                 return true;
         }
     }
     return false;
 }
 
-bool Type::findDependency(const Type* anchestor) const
+bool Type::findDependency(const Type* ancestor) const
 {
-    if (this==anchestor)
+    if (this==ancestor)
         return true;
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-        if (parent->type && parent->type->findDependency(anchestor))
+        if (parent->type && parent->type->findDependency(ancestor))
             return true;
     }
     return false;

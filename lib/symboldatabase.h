@@ -119,17 +119,17 @@ public:
 
     /**
     * Check for circulare dependencies, i.e. loops within the class hierarchie
-    * @param anchestors list of anchestors. For internal usage only, clients should not supply this argument.
+    * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
     * @return true if there is a circular dependency
     */
-    bool hasCircularDependencies(std::set<BaseInfo>* anchestors = nullptr) const;
+    bool hasCircularDependencies(std::set<BaseInfo>* ancestors = nullptr) const;
 
     /**
     * Check for dependency
-    * @param anchestor potential anchestor
+    * @param ancestor potential ancestor
     * @return true if there is a dependency
     */
-    bool findDependency(const Type* anchestor) const;
+    bool findDependency(const Type* ancestor) const;
 };
 
 /** @brief Information about a member variable. */
