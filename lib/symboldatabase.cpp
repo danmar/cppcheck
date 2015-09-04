@@ -1888,7 +1888,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
 {
     const Token *tok1 = *tok;
     scopeList.push_back(Scope(this, tok1, *scope));
-    Scope *new_scope = &scopeList.back();
+    Scope *newScope = &scopeList.back();
 
     // find start of function '{'
     bool foundInitList = false;
@@ -1907,11 +1907,11 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 
     if (tok1 && tok1->str() == "{") {
-        new_scope->classStart = tok1;
-        new_scope->classEnd = tok1->link();
+        newScope->classStart = tok1;
+        newScope->classEnd = tok1->link();
 
         // syntax error?
-        if (!new_scope->classEnd) {
+        if (!newScope->classEnd) {
             scopeList.pop_back();
             while (tok1->next())
                 tok1 = tok1->next();
@@ -1920,8 +1920,8 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
             return;
         }
 
-        (*scope)->nestedList.push_back(new_scope);
-        *scope = new_scope;
+        (*scope)->nestedList.push_back(newScope);
+        *scope = newScope;
         *tok = tok1;
     } else {
         scopeList.pop_back();
