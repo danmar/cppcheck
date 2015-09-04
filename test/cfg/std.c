@@ -405,14 +405,12 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
-#if 0
 void uninitvar_assert(void)
 {
     int i;
     // cppcheck-suppress uninitvar
     assert(i);
 }
-#endif
 
 void uninitvar_sqrt(void)
 {
@@ -2715,4 +2713,75 @@ void uninivar_raise(void)
     int i;
     // cppcheck-suppress uninitvar
     (void)raise(i);
+}
+
+void uninivar_scanf(void)
+{
+    char *format;
+    char str[42];
+    // cppcheck-suppress uninitvar
+    (void)scanf(format, str);
+}
+
+void uninivar_vsscanf(void)
+{
+    char *s;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vsscanf(s,format,arg);
+}
+
+void uninivar_vswscanf(void)
+{
+    wchar_t *s;
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vswscanf(s,format,arg);
+}
+
+void uninivar_vscanf(void)
+{
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vscanf(format,arg);
+}
+
+void uninivar_vwscanf(void)
+{
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)vwscanf(format,arg);
+}
+
+void uninivar_setbuf(void)
+{
+    FILE *stream;
+    char *buf;
+    // cppcheck-suppress uninitvar
+    (void)setbuf(stream,buf);
+}
+
+void uninivar_setvbuf(void)
+{
+    FILE *stream;
+    char *buf;
+    int mode;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)setvbuf(stream,buf,mode,size);
+}
+
+void uninivar_setjmp(void) // #6977
+{
+    jmp_buf j;
+    // cppcheck-suppress uninitvar
+    (void)setjmp(j);
 }

@@ -19,6 +19,7 @@
 #include <csetjmp>
 #include <cmath>
 #include <csignal>
+#include <csetjmp>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -2038,4 +2039,68 @@ void uninivar_raise(void)
     int i;
     // cppcheck-suppress uninitvar
     (void)std::raise(i);
+}
+
+void uninivar_scanf(void)
+{
+    char *format;
+    char str[42];
+    // cppcheck-suppress uninitvar
+    (void)std::scanf(format, str);
+}
+
+void uninivar_vsscanf(void)
+{
+    char *s;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vsscanf(s,format,arg);
+}
+
+void uninivar_vswscanf(void)
+{
+    wchar_t *s;
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vswscanf(s,format,arg);
+}
+
+void uninivar_vscanf(void)
+{
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vscanf(format,arg);
+}
+
+void uninivar_vwscanf(void)
+{
+    wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vwscanf(format,arg);
+}
+
+void uninivar_setbuf(void)
+{
+    FILE *stream;
+    char *buf;
+    // cppcheck-suppress uninitvar
+    (void)std::setbuf(stream,buf);
+}
+
+void uninivar_setvbuf(void)
+{
+    FILE *stream;
+    char *buf;
+    int mode;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)std::setvbuf(stream,buf,mode,size);
 }
