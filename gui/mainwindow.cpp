@@ -44,7 +44,7 @@
 #include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"
-//#include "librarydialog.h"
+#include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
@@ -1219,8 +1219,8 @@ void MainWindow::ShowStatistics()
 
 void MainWindow::ShowLibraryEditor()
 {
-    //LibraryDialog libraryDialog(this);
-    //libraryDialog.exec();
+    LibraryDialog libraryDialog(this);
+    libraryDialog.exec();
 }
 
 void MainWindow::Log(const QString &logline)
