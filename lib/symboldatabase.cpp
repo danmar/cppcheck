@@ -1976,9 +1976,10 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 tok2 = tok2->next();
             }
 
-            base.nameTok = tok2;
             if (!tok2)
                 return nullptr;
+
+            base.nameTok = tok2;
             // handle global namespace
             if (tok2->str() == "::") {
                 tok2 = tok2->next();
