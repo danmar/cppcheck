@@ -164,6 +164,7 @@ private:
         TEST_CASE(garbageCode122); // #6303
         TEST_CASE(garbageCode123);
         TEST_CASE(garbageCode124); // 6948
+        TEST_CASE(garbageCode125); // 6782, 6834
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -936,6 +937,13 @@ private:
 
     void garbageCode124() {
         checkCode("+---+");
+    }
+
+    void garbageCode125() {
+        ASSERT_THROW(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"),
+                     InternalError);
+        ASSERT_THROW(checkCode("template < Types > struct S :{ ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) }"),
+                     InternalError);
     }
 
     void garbageValueFlow() {
