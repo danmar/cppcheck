@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 
     makeExtObj(fout, externalfiles);
 
-    fout << ".PHONY: dmake\n\n";
+    fout << ".PHONY: run-dmake\n\n";
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
@@ -400,7 +400,8 @@ int main(int argc, char **argv)
     fout << "checkcfg:\tcppcheck\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)\n\n";
+    fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "reduce:\ttools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)\n\n";

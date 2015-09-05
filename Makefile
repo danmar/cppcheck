@@ -230,7 +230,7 @@ endif
 
 
 EXTOBJ += $(TINYXML)
-.PHONY: dmake
+.PHONY: run-dmake
 
 
 ###### Targets
@@ -254,6 +254,8 @@ checkcfg:	cppcheck
 
 dmake:	tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o
 	$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)
+
+run-dmake: dmake
 	./dmake
 
 reduce:	tools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)
