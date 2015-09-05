@@ -5,7 +5,6 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-QT += xml
 greaterThan(QT_MAJOR_VERSION, 4) {
     QT += widgets # In Qt 5 widgets are in separate module
     QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module

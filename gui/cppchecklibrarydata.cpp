@@ -18,9 +18,8 @@
 
 #include "cppchecklibrarydata.h"
 
-#include <QDomDocument>
-#include <QDomNode>
-#include <QDomNodeList>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 
@@ -28,273 +27,263 @@ CppcheckLibraryData::CppcheckLibraryData()
 {
 }
 
-
-static CppcheckLibraryData::Define loadDefine(const QDomElement &defineElement)
+static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Define define;
-    define.name = defineElement.attribute("name");
-    define.value = defineElement.attribute("value");
+    define.name = xmlReader.attributes().value("name").toString();
+    define.value = xmlReader.attributes().value("value").toString();
     return define;
 }
 
-static CppcheckLibraryData::Function::Arg loadFunctionArg(const QDomElement &functionArgElement)
+static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Function::Arg arg;
-    if (functionArgElement.attribute("nr") == "any")
+    QString argnr = xmlReader.attributes().value("nr").toString();
+    if (argnr == "any")
         arg.nr = CppcheckLibraryData::Function::Arg::ANY;
     else
-        arg.nr = functionArgElement.attribute("nr").toUInt();
-    for (QDomElement childElement = functionArgElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
-        if (childElement.tagName() == "not-bool")
+        arg.nr = argnr.toUInt();
+
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "arg") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "not-bool")
             arg.notbool = true;
-        else if (childElement.tagName() == "not-null")
+        else if (elementName == "not-null")
             arg.notnull = true;
-        else if (childElement.tagName() == "not-uninit")
+        else if (elementName == "not-uninit")
             arg.notuninit = true;
-        else if (childElement.tagName() == "strz")
+        else if (elementName == "strz")
             arg.strz = true;
-        else if (childElement.tagName() == "formatstr")
+        else if (elementName == "formatstr")
             arg.formatstr = true;
-        else if (childElement.tagName() == "valid")
-            arg.valid = childElement.text();
-        else if (childElement.tagName() == "minsize") {
+        else if (elementName == "valid")
+            arg.valid = xmlReader.readElementText();
+        else if (elementName == "minsize") {
             CppcheckLibraryData::Function::Arg::MinSize minsize;
-            minsize.type = childElement.attribute("type");
-            minsize.arg  = childElement.attribute("arg");
-            minsize.arg2 = childElement.attribute("arg2");
+            minsize.type = xmlReader.attributes().value("type").toString();
+            minsize.arg  = xmlReader.attributes().value("arg").toString();
+            minsize.arg2 = xmlReader.attributes().value("arg2").toString();
             arg.minsizes.append(minsize);
         }
     }
     return arg;
 }
 
-static CppcheckLibraryData::Function loadFunction(const QDomElement &functionElement, const QStringList &comments)
+static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QStringList &comments)
 {
     CppcheckLibraryData::Function function;
     function.comments = comments;
-    function.name = functionElement.attribute("name");
-    for (QDomElement childElement = functionElement.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
-        if (childElement.tagName() == "noreturn")
-            function.noreturn = (childElement.text() == "true") ? CppcheckLibraryData::Function::True : CppcheckLibraryData::Function::False;
-        else if (childElement.tagName() == "pure")
+    function.name = xmlReader.attributes().value("name").toString();
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "function") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "noreturn")
+            function.noreturn = (xmlReader.readElementText() == "true") ? CppcheckLibraryData::Function::True : CppcheckLibraryData::Function::False;
+        else if (elementName == "pure")
             function.gccPure = true;
-        else if (childElement.tagName() == "const")
+        else if (elementName == "const")
             function.gccConst = true;
-        else if (childElement.tagName() == "leak-ignore")
+        else if (elementName == "leak-ignore")
             function.leakignore = true;
-        else if (childElement.tagName() == "use-retval")
+        else if (elementName == "use-retval")
             function.useretval = true;
-        else if (childElement.tagName() == "formatstr") {
-            function.formatstr.scan   = childElement.attribute("scan");
-            function.formatstr.secure = childElement.attribute("secure");
-        } else if (childElement.tagName() == "arg") {
-            const CppcheckLibraryData::Function::Arg fa = loadFunctionArg(childElement);
-            function.args.append(fa);
-        } else {
-            int x = 123;
-            x++;
-
-        }
+        else if (elementName == "formatstr") {
+            function.formatstr.scan   = xmlReader.attributes().value("scan").toString();
+            function.formatstr.secure = xmlReader.attributes().value("secure").toString();
+        } else if (elementName == "arg")
+            function.args.append(loadFunctionArg(xmlReader));
     }
     return function;
 }
 
 
-static CppcheckLibraryData::MemoryResource loadMemoryResource(const QDomElement &element)
+static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::MemoryResource memoryresource;
-    memoryresource.type = element.tagName();
-    for (QDomElement childElement = element.firstChildElement(); !childElement.isNull(); childElement = childElement.nextSiblingElement()) {
-        if (childElement.tagName() == "alloc") {
+    memoryresource.type = xmlReader.name().toString();
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != memoryresource.type) {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "alloc") {
             CppcheckLibraryData::MemoryResource::Alloc alloc;
-            alloc.init = (childElement.attribute("init", "false") == "true");
-            alloc.name = childElement.text();
+            alloc.init = (xmlReader.attributes().value("init").toString() == "true");
+            alloc.name = xmlReader.readElementText();
             memoryresource.alloc.append(alloc);
-        } else if (childElement.tagName() == "dealloc")
-            memoryresource.dealloc.append(childElement.text());
-        else if (childElement.tagName() == "use")
-            memoryresource.use.append(childElement.text());
+        } else if (elementName == "dealloc")
+            memoryresource.dealloc.append(xmlReader.readElementText());
+        else if (elementName == "use")
+            memoryresource.use.append(xmlReader.readElementText());
     }
     return memoryresource;
 }
 
-static CppcheckLibraryData::PodType loadPodType(const QDomElement &element)
+static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::PodType podtype;
-    podtype.name = element.attribute("name");
-    podtype.size = element.attribute("size");
-    podtype.sign = element.attribute("sign");
+    podtype.name = xmlReader.attributes().value("name").toString();
+    podtype.size = xmlReader.attributes().value("size").toString();
+    podtype.sign = xmlReader.attributes().value("sign").toString();
     return podtype;
 }
 
-
 bool CppcheckLibraryData::open(QIODevice &file)
 {
-    QDomDocument doc;
-    if (!doc.setContent(&file))
-        return false;
-
     clear();
-
-    QDomElement rootElement = doc.firstChildElement("def");
     QStringList comments;
-    for (QDomNode n = rootElement.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (n.isComment())
-            comments.append(n.toComment().data());
-        else if (n.isElement()) {
-            const QDomElement e = n.toElement();
-
-            if (e.tagName() == "define")
-                defines.append(loadDefine(e));
-            else if (e.tagName() == "function")
-                functions.append(loadFunction(e, comments));
-            else if (e.tagName() == "memory" || e.tagName() == "resource")
-                memoryresource.append(loadMemoryResource(e));
-            else if (e.tagName() == "podtype")
-                podtypes.append(loadPodType(e));
-
+    QXmlStreamReader xmlReader(&file);
+    while (!xmlReader.atEnd()) {
+        const QXmlStreamReader::TokenType t = xmlReader.readNext();
+        switch (t) {
+        case QXmlStreamReader::Comment:
+            comments.append(xmlReader.text().toString());
+            break;
+        case QXmlStreamReader::StartElement:
+            if (xmlReader.name() == "define")
+                defines.append(loadDefine(xmlReader));
+            else if (xmlReader.name() == "function")
+                functions.append(loadFunction(xmlReader, comments));
+            else if (xmlReader.name() == "memory" || xmlReader.name() == "resource")
+                memoryresource.append(loadMemoryResource(xmlReader));
+            else if (xmlReader.name() == "podtype")
+                podtypes.append(loadPodType(xmlReader));
             comments.clear();
+            break;
+        default:
+            break;
         }
     }
 
     return true;
 }
 
-static QDomElement FunctionElement(QDomDocument &doc, const CppcheckLibraryData::Function &function)
+static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Function &function)
 {
-    QDomElement functionElement = doc.createElement("function");
-    functionElement.setAttribute("name", function.name);
-    if (function.useretval)
-        functionElement.appendChild(doc.createElement("use-retval"));
-    if (function.gccConst)
-        functionElement.appendChild(doc.createElement("const"));
-    if (function.gccPure)
-        functionElement.appendChild(doc.createElement("pure"));
-    if (function.noreturn != CppcheckLibraryData::Function::Unknown) {
-        QDomElement e = doc.createElement("noreturn");
-        e.appendChild(doc.createTextNode(function.noreturn == CppcheckLibraryData::Function::True ? "true" : "false"));
-        functionElement.appendChild(e);
+    foreach(const QString &comment, function.comments) {
+        xmlWriter.writeComment(comment);
     }
+
+    xmlWriter.writeStartElement("function");
+    xmlWriter.writeAttribute("name", function.name);
+
+    if (function.useretval)
+        xmlWriter.writeEmptyElement("use-retval");
+    if (function.gccConst)
+        xmlWriter.writeEmptyElement("const");
+    if (function.gccPure)
+        xmlWriter.writeEmptyElement("pure");
+    if (function.noreturn != CppcheckLibraryData::Function::Unknown)
+        xmlWriter.writeTextElement("noreturn", (function.noreturn == CppcheckLibraryData::Function::True) ? "true" : "false");
     if (function.leakignore)
-        functionElement.appendChild(doc.createElement("leak-ignore"));
-    /*
-        if (!function.formatstr.scan.isNull()) {
-            QDomElement e = doc.createElement("formatstr");
-            e.setAttribute("scan", function.formatstr.scan);
-            if (!function.formatstr.secure.isNull())
-                e.setAttribute("secure", function.formatstr.secure);
-            functionElement.appendChild(e);
-        }
-    */
+        xmlWriter.writeEmptyElement("leak-ignore");
     // Argument info..
     foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
         if (arg.formatstr) {
-            QDomElement e = doc.createElement("formatstr");
+            xmlWriter.writeStartElement("formatstr");
             if (!function.formatstr.scan.isNull())
-                e.setAttribute("scan", function.formatstr.scan);
+                xmlWriter.writeAttribute("scan", function.formatstr.scan);
             if (!function.formatstr.secure.isNull())
-                e.setAttribute("secure", function.formatstr.secure);
-            functionElement.appendChild(e);
+                xmlWriter.writeAttribute("secure", function.formatstr.secure);
+            xmlWriter.writeEndElement();
         }
 
-        QDomElement argElement = doc.createElement("arg");
-        functionElement.appendChild(argElement);
+        xmlWriter.writeStartElement("arg");
         if (arg.nr == CppcheckLibraryData::Function::Arg::ANY)
-            argElement.setAttribute("nr", "any");
+            xmlWriter.writeAttribute("nr", "any");
         else
-            argElement.setAttribute("nr", arg.nr);
+            xmlWriter.writeAttribute("nr", QString::number(arg.nr));
         if (arg.formatstr)
-            argElement.appendChild(doc.createElement("formatstr"));
+            xmlWriter.writeEmptyElement("formatstr");
         if (arg.notnull)
-            argElement.appendChild(doc.createElement("not-null"));
+            xmlWriter.writeEmptyElement("not-null");
         if (arg.notuninit)
-            argElement.appendChild(doc.createElement("not-uninit"));
+            xmlWriter.writeEmptyElement("not-uninit");
         if (arg.notbool)
-            argElement.appendChild(doc.createElement("not-bool"));
+            xmlWriter.writeEmptyElement("not-bool");
         if (arg.strz)
-            argElement.appendChild(doc.createElement("strz"));
+            xmlWriter.writeEmptyElement("strz");
 
-        if (!arg.valid.isEmpty()) {
-            QDomElement e = doc.createElement("valid");
-            e.appendChild(doc.createTextNode(arg.valid));
-            argElement.appendChild(e);
+        if (!arg.valid.isEmpty())
+            xmlWriter.writeTextElement("valid",arg.valid);
+
+        foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+            xmlWriter.writeStartElement("minsize");
+            xmlWriter.writeAttribute("type", minsize.type);
+            xmlWriter.writeAttribute("arg", minsize.arg);
+            if (!minsize.arg2.isEmpty())
+                xmlWriter.writeAttribute("arg2", minsize.arg2);
+            xmlWriter.writeEndElement();
         }
 
-        if (!arg.minsizes.isEmpty()) {
-            foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
-                QDomElement e = doc.createElement("minsize");
-                e.setAttribute("type", minsize.type);
-                e.setAttribute("arg", minsize.arg);
-                if (!minsize.arg2.isEmpty())
-                    e.setAttribute("arg2", minsize.arg2);
-                argElement.appendChild(e);
-            }
-        }
+        xmlWriter.writeEndElement();
     }
-
-    return functionElement;
+    xmlWriter.writeEndElement();
 }
 
-static QDomElement MemoryResourceElement(QDomDocument &doc, const CppcheckLibraryData::MemoryResource &mr)
+static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::MemoryResource &mr)
 {
-    QDomElement element = doc.createElement(mr.type);
+    xmlWriter.writeStartElement(mr.type);
     foreach(const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
-        QDomElement e = doc.createElement("alloc");
+        xmlWriter.writeStartElement("alloc");
         if (alloc.init)
-            e.setAttribute("init", "true");
-        e.appendChild(doc.createTextNode(alloc.name));
-        element.appendChild(e);
+            xmlWriter.writeAttribute("init", "true");
+        xmlWriter.writeCharacters(alloc.name);
+        xmlWriter.writeEndElement();
     }
     foreach(const QString &dealloc, mr.dealloc) {
-        QDomElement e = doc.createElement("dealloc");
-        e.appendChild(doc.createTextNode(dealloc));
-        element.appendChild(e);
+        xmlWriter.writeTextElement("dealloc", dealloc);
     }
     foreach(const QString &use, mr.use) {
-        QDomElement e = doc.createElement("use");
-        e.appendChild(doc.createTextNode(use));
-        element.appendChild(e);
+        xmlWriter.writeTextElement("use", use);
     }
-    return element;
+    xmlWriter.writeEndElement();
 }
 
 
 QString CppcheckLibraryData::toString() const
 {
-    QDomDocument doc;
-    QDomElement root = doc.createElement("def");
-    doc.appendChild(root);
-    root.setAttribute("format","2");
+    QString outputString;
+    QXmlStreamWriter xmlWriter(&outputString);
+    xmlWriter.setAutoFormatting(true);
+    xmlWriter.writeStartDocument("1.0");
+    xmlWriter.writeStartElement("def");
+    xmlWriter.writeAttribute("format","2");
 
     foreach(const Define &define, defines) {
-        QDomElement defineElement = doc.createElement("define");
-        defineElement.setAttribute("name", define.name);
-        defineElement.setAttribute("value", define.value);
-        root.appendChild(defineElement);
+        xmlWriter.writeStartElement("define");
+        xmlWriter.writeAttribute("name", define.name);
+        xmlWriter.writeAttribute("value", define.value);
+        xmlWriter.writeEndElement();
     }
 
     foreach(const Function &function, functions) {
-        foreach(const QString &comment, function.comments) {
-            root.appendChild(doc.createComment(comment));
-        }
-        root.appendChild(FunctionElement(doc, function));
+        writeFunction(xmlWriter, function);
     }
 
     foreach(const MemoryResource &mr, memoryresource) {
-        root.appendChild(MemoryResourceElement(doc, mr));
+        writeMemoryResource(xmlWriter, mr);
     }
 
     foreach(const PodType &podtype, podtypes) {
-        QDomElement podtypeElement = doc.createElement("podtype");
-        podtypeElement.setAttribute("name", podtype.name);
+        xmlWriter.writeStartElement("podtype");
+        xmlWriter.writeAttribute("name", podtype.name);
         if (!podtype.size.isEmpty())
-            podtypeElement.setAttribute("size", podtype.size);
+            xmlWriter.writeAttribute("size", podtype.size);
         if (!podtype.sign.isEmpty())
-            podtypeElement.setAttribute("sign", podtype.sign);
-        root.appendChild(podtypeElement);
+            xmlWriter.writeAttribute("sign", podtype.sign);
+        xmlWriter.writeEndElement();
     }
 
-    return doc.toString();
+    xmlWriter.writeEndElement();
+
+    return outputString;
 }
-
-
