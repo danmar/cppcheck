@@ -2054,6 +2054,7 @@ void Tokenizer::simplifyArrayAccessSyntax()
         if (Token::Match(tok, "%num% [ %name% ]")) {
             std::string temp = tok->str();
             tok->str(tok->strAt(2));
+            tok->varId(tok->tokAt(2)->varId());
             tok->tokAt(2)->str(temp);
         }
     }

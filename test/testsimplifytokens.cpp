@@ -132,7 +132,7 @@ private:
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
 
-        TEST_CASE(reverseArraySyntax)
+        TEST_CASE(simplifyArrayAccessSyntax)
         TEST_CASE(simplify_numeric_condition)
         TEST_CASE(simplify_condition);
 
@@ -2523,8 +2523,9 @@ private:
                           "}"));
     }
 
-    void reverseArraySyntax() {
-        ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
+    void simplifyArrayAccessSyntax() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: int a@1 ; a@1 [ 13 ] ;\n", tokenizeDebugListing("int a; 13[a];"));
     }
 
     void simplify_numeric_condition() {
