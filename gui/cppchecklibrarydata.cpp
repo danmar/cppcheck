@@ -27,6 +27,52 @@ CppcheckLibraryData::CppcheckLibraryData()
 {
 }
 
+static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::Container container;
+    container.id           = xmlReader.attributes().value("id").toString();
+    container.inherits     = xmlReader.attributes().value("inherits").toString();
+    container.startPattern = xmlReader.attributes().value("startPattern").toString();
+    container.endPattern   = xmlReader.attributes().value("endPattern").toString();
+
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "container") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "type") {
+            container.type.templateParameter = xmlReader.attributes().value("templateParameter").toString();
+            container.type.string            = xmlReader.attributes().value("string").toString();
+        } else if (elementName == "size" || elementName == "access" || elementName == "other") {
+            const QString indexOperator = xmlReader.attributes().value("indexOperator").toString();
+            if (elementName == "access" && indexOperator == "array-like")
+                container.access_arrayLike = true;
+            const QString templateParameter = xmlReader.attributes().value("templateParameter").toString();
+            if (elementName == "size" && !templateParameter.isEmpty())
+                container.size_templateParameter = templateParameter.toInt();
+            for (;;) {
+                type = xmlReader.readNext();
+                if (xmlReader.name().toString() == elementName)
+                    break;
+                if (type != QXmlStreamReader::StartElement)
+                    continue;
+                struct CppcheckLibraryData::Container::Function function;
+                function.name   = xmlReader.attributes().value("name").toString();
+                function.action = xmlReader.attributes().value("action").toString();
+                function.yields = xmlReader.attributes().value("yields").toString();
+                if (elementName == "size")
+                    container.sizeFunctions.append(function);
+                else if (elementName == "access")
+                    container.accessFunctions.append(function);
+                else
+                    container.otherFunctions.append(function);
+            };
+        }
+    }
+    return container;
+}
+
 static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Define define;
@@ -148,6 +194,8 @@ bool CppcheckLibraryData::open(QIODevice &file)
             comments.append(xmlReader.text().toString());
             break;
         case QXmlStreamReader::StartElement:
+            if (xmlReader.name() == "container")
+                containers.append(loadContainer(xmlReader));
             if (xmlReader.name() == "define")
                 defines.append(loadDefine(xmlReader));
             else if (xmlReader.name() == "function")
@@ -164,6 +212,53 @@ bool CppcheckLibraryData::open(QIODevice &file)
     }
 
     return true;
+}
+
+static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
+{
+    if (functions.isEmpty() && extra <= 0)
+        return;
+    xmlWriter.writeStartElement(name);
+    if (extra > 0) {
+        if (name == "access")
+            xmlWriter.writeAttribute("indexOperator", "array-like");
+        else if (name == "size")
+            xmlWriter.writeAttribute("templateParameter", QString::number(extra));
+    }
+    foreach(const CppcheckLibraryData::Container::Function &function, functions) {
+        xmlWriter.writeStartElement("function");
+        xmlWriter.writeAttribute("name", function.name);
+        if (!function.action.isEmpty())
+            xmlWriter.writeAttribute("action", function.action);
+        if (!function.yields.isEmpty())
+            xmlWriter.writeAttribute("yields", function.yields);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
+static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Container &container)
+{
+    xmlWriter.writeStartElement("container");
+    xmlWriter.writeAttribute("id", container.id);
+    if (!container.startPattern.isEmpty())
+        xmlWriter.writeAttribute("startPattern", container.startPattern);
+    if (!container.endPattern.isEmpty())
+        xmlWriter.writeAttribute("endPattern", container.endPattern);
+    if (!container.inherits.isEmpty())
+        xmlWriter.writeAttribute("inherits", container.inherits);
+    if (!container.type.templateParameter.isEmpty() || !container.type.string.isEmpty()) {
+        xmlWriter.writeStartElement("type");
+        if (!container.type.templateParameter.isEmpty())
+            xmlWriter.writeAttribute("templateParameter", container.type.templateParameter);
+        if (!container.type.string.isEmpty())
+            xmlWriter.writeAttribute("string", container.type.string);
+        xmlWriter.writeEndElement();
+    }
+    writeContainerFunctions(xmlWriter, "size", container.size_templateParameter, container.sizeFunctions);
+    writeContainerFunctions(xmlWriter, "access", container.access_arrayLike, container.accessFunctions);
+    writeContainerFunctions(xmlWriter, "other", 0, container.otherFunctions);
+    xmlWriter.writeEndElement();
 }
 
 static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Function &function)
@@ -273,13 +368,17 @@ QString CppcheckLibraryData::toString() const
         writeMemoryResource(xmlWriter, mr);
     }
 
+    foreach(const Container &container, containers) {
+        writeContainer(xmlWriter, container);
+    }
+
     foreach(const PodType &podtype, podtypes) {
         xmlWriter.writeStartElement("podtype");
         xmlWriter.writeAttribute("name", podtype.name);
-        if (!podtype.size.isEmpty())
-            xmlWriter.writeAttribute("size", podtype.size);
         if (!podtype.sign.isEmpty())
             xmlWriter.writeAttribute("sign", podtype.sign);
+        if (!podtype.size.isEmpty())
+            xmlWriter.writeAttribute("size", podtype.size);
         xmlWriter.writeEndElement();
     }
 
