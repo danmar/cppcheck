@@ -185,20 +185,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             // exitcode-suppressions filename.txt
             if (std::strcmp(argv[i], "--exitcode-suppressions") == 0) {
-                // This is deprecated and will be removed soon
-                PrintMessage("cppcheck: '--exitcode-suppressions <file>' is deprecated, use '--exitcode-suppressions=<file>' instead.");
+                // Error message to be removed in 1.72
+                PrintMessage("cppcheck: '--exitcode-suppressions <file>' has been removed, use '--exitcode-suppressions=<file>' instead.");
+                return false;
+            }
 
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: No filename specified for the '--exitcode-suppressions' option.");
-                    return false;
-                }
-                filename = argv[i];
-            }
             // exitcode-suppressions=filename.txt
-            else {
-                filename = 24 + argv[i];
-            }
+            filename = 24 + argv[i];
 
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
@@ -240,29 +233,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         else if (std::strcmp(argv[i], "--suppressions") == 0) {
-            // This is deprecated and will be removed soon
-            PrintMessage("cppcheck: '--suppressions' is deprecated, use '--suppressions-list' instead.");
-
-            ++i;
-
-            if (i >= argc) {
-                PrintMessage("cppcheck: No file specified for the '--suppressions' option.");
-                return false;
-            }
-
-            std::ifstream f(argv[i]);
-            if (!f.is_open()) {
-                std::string message("cppcheck: Couldn't open the file: \"");
-                message += std::string(argv[i]);
-                message += "\".";
-                PrintMessage(message);
-                return false;
-            }
-            const std::string errmsg(_settings->nomsg.parseFile(f));
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
+            // Error message to be removed in 1.72
+            PrintMessage("cppcheck: '--suppressions' has been removed, use '--suppressions-list=<file>' instead.");
+            return false;
         }
 
         else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
