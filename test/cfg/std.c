@@ -2780,10 +2780,3 @@ void uninivar_setvbuf(void)
     // cppcheck-suppress uninitvar
     (void)setvbuf(stream,buf,mode,size);
 }
-
-void uninivar_setjmp(void) // #6977
-{
-    jmp_buf j;
-    // cppcheck-suppress uninitvar
-    (void)setjmp(j);
-}
