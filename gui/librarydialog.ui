@@ -314,6 +314,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>arguments</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editArg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>525</x>
+     <y>146</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>545</x>
+     <y>145</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectFunction(int)</slot>
