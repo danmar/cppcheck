@@ -1702,7 +1702,7 @@ private:
                        "    AB ab;\n"
                        "    if (ab);\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab\n", "", errout.str());
     }
 
     // references..

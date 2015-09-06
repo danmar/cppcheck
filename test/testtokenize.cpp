@@ -2672,7 +2672,8 @@ private:
                             "int baz() { "
                             "  return sizeof(arr_t); "
                             "}";
-        ASSERT_EQUALS("int foo ( int ) ; "
+        ASSERT_EQUALS("enum e { VAL1 = 1 ; VAL2 = 2 } ; "
+                      "int foo ( int ) ; "
                       "void bar ( ) { throw foo ( 1 ) ; } "
                       "int baz ( ) { return 2 ; }", tokenizeAndStringify(code, true));
     }
