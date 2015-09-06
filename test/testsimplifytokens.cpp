@@ -2872,19 +2872,21 @@ private:
 
     void enum1() {
         const char code[] = "enum A { a, b, c }; A c1 = c;";
-        const char expected[] = "enum A { a = 0 , b = 1 , c = 2 } ; A c1 ; c1 = 2 ;";
+        const char expected[] = "int c1 ; c1 = 2 ;";
+
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void enum2() {
         const char code[] = "enum A { a, }; int array[a];";
-        const char expected[] = "enum A { a = 0 , } ; int array [ 0 ] ;";
+        const char expected[] = "int array [ 0 ] ;";
+
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void enum3() {
         const char code[] = "enum { a, }; int array[a];";
-        const char expected[] = "enum { a = 0 , } ; int array [ 0 ] ;";
+        const char expected[] = "int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -2904,14 +2906,14 @@ private:
 
             const char expected[] = "class A { "
                                     "public: "
-                                    "enum EA { a1 = 0 , a2 = 1 , a3 = 2 } ; "
-                                    "EA get ( ) const ; "
-                                    "void put ( EA a ) { ea = a ; ea = 0 ; } "
+                                    ""
+                                    "int get ( ) const ; "
+                                    "void put ( int a ) { ea = a ; ea = 0 ; } "
                                     "private: "
-                                    "EA ea ; "
+                                    "int ea ; "
                                     "} ; "
-                                    "A :: EA A :: get ( ) const { return ea ; } "
-                                    "A :: EA e ; e = 0 ;";
+                                    "int A :: get ( ) const { return ea ; } "
+                                    "int e ; e = 0 ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -2927,13 +2929,13 @@ private:
                                 "A::EA e = A::a1;";
 
             const char expected[] = "struct A { "
-                                    "enum EA { a1 = 0 , a2 = 1 , a3 = 2 } ; "
-                                    "EA get ( ) const ; "
-                                    "void put ( EA a ) { ea = a ; ea = 0 ; } "
-                                    "EA ea ; "
+                                    ""
+                                    "int get ( ) const ; "
+                                    "void put ( int a ) { ea = a ; ea = 0 ; } "
+                                    "int ea ; "
                                     "} ; "
-                                    "A :: EA A :: get ( ) const { return ea ; } "
-                                    "A :: EA e ; e = 0 ;";
+                                    "int A :: get ( ) const { return ea ; } "
+                                    "int e ; e = 0 ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
@@ -2950,8 +2952,7 @@ private:
                             "    g\n"
                             "};\n"
                             "int sum =  a + b + c + d + e + f + g;";
-        const char expected[] = "enum ABC { a = sizeof ( int ) , b = 1 + sizeof ( int ) , c = 1 + sizeof ( int ) + 100 , d = 1 + sizeof ( int ) + 101 , e = 1 + sizeof ( int ) + 102 , f = 90 , g = 91 } ; "
-                                "int sum ; sum = "
+        const char expected[] = "int sum ; sum = "
                                 "sizeof ( int ) + "
                                 "( 1 + sizeof ( int ) ) + "
                                 "( 1 + sizeof ( int ) + 100 ) + " // 101 = 100 + 1
@@ -2960,12 +2961,12 @@ private:
                                 ";";
 
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("enum ABC { a = 4 ; b = 5 ; c = 105 ; d = 106 ; e = 107 ; f = 90 ; g = 91 } ; int sum ; sum = 508 ;", tok(code, true));
+        ASSERT_EQUALS("int sum ; sum = 508 ;", tok(code, true));
     }
 
     void enum6() {
         const char code[] = "enum { a = MAC(A, B, C) }; void f(a) { }";
-        const char expected[] = "enum { a = MAC ( A , B , C ) } ; void f ( a ) { }";
+        const char expected[] = "void f ( a ) { }";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
@@ -2978,8 +2979,7 @@ private:
                                 "  int A = B;\n"
                                 "  { float A = C; }\n"
                                 "}";
-            const char expected[] = "enum FOO { A = 0 , B = 1 , C = 2 } ; "
-                                    "int main ( ) "
+            const char expected[] = "int main ( ) "
                                     "{ "
                                     "int A ; A = 1 ; "
                                     "{ float A ; A = 2 ; } "
@@ -2990,8 +2990,7 @@ private:
         {
             const char code[] = "enum FOO {A,B,C};\n"
                                 "void f(int A, float B, char C) { }";
-            const char expected[] = "enum FOO { A = 0 , B = 1 , C = 2 } ; "
-                                    "void f ( int A , float B , char C ) { }";
+            const char expected[] = "void f ( int A , float B , char C ) { }";
             ASSERT_EQUALS(expected, tok(code, false));
         }
     }
@@ -3069,8 +3068,7 @@ private:
         const char code[] = "enum {\n"
                             "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1,\n"
                             "} e = SHELL_SIZE;";
-        const char expected[] = "enum { SHELL_SIZE = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 , } ; "
-                                "int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
+        const char expected[] = "int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
 
         ASSERT_EQUALS("", errout.str());
@@ -3084,7 +3082,7 @@ private:
                             "}";
         const char expected[] = "int main ( ) "
                                 "{ "
-                                "enum { u = 0 , v = 1 } ; "
+                                ""
                                 "A u ; u = 1 ; A v ; v = 2 ; "
                                 "}";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
@@ -3099,7 +3097,7 @@ private:
                             "{\n"
                             "    unsigned int fred = 0;\n"
                             "}";
-        const char expected[] = "enum fred { a = 0 , b = 1 } ; void foo ( ) { unsigned int fred ; fred = 0 ; }";
+        const char expected[] = "void foo ( ) { unsigned int fred ; fred = 0 ; }";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
@@ -3109,15 +3107,14 @@ private:
                             "{\n"
                             "    unsigned int fred = a;\n"
                             "}";
-        const char expected[] = "enum ab { ENTRY ( 1 , a = 0 ) , ENTRY ( 2 , b ) } ; "
-                                "void foo ( ) { unsigned int fred ; fred = a ; }";
+        const char expected[] = "void foo ( ) { unsigned int fred ; fred = a ; }";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
     void enum14() {
         const char code[] = "enum ab { a };\n"
                             "ab";
-        const char expected[] = "enum ab { a = 0 } ; ab";
+        const char expected[] = "ab";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
     }
 
@@ -3125,63 +3122,56 @@ private:
         {
             const char code[] = "enum : char { a = 99 };\n"
                                 "char c1 = a;";
-            const char expected[] = "enum : char { a = 99 } ; "
-                                    "char c1 ; c1 = 99 ;";
+            const char expected[] = "char c1 ; c1 = 99 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 { a };\n"
                                 "Enum1 e1 = Enum1::a;";
-            const char expected[] = "enum Enum1 { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = 0 ;";
+            const char expected[] = "int e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "enum Enum1 { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = a ;";
+            const char expected[] = "int e1 ; e1 = a ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum Enum1 : char { a };\n"
                                 "Enum1 e1 = a;";
-            const char expected[] = "enum Enum1 : char { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = 0 ;";
+            const char expected[] = "char e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned char { a };\n"
                                 "Enum1 e1 = Enum1::a;";
-            const char expected[] = "enum Enum1 : unsigned char { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned char e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned int { a };\n"
                                 "Enum1 e1 = Enum1::a;";
-            const char expected[] = "enum Enum1 : unsigned int { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned int e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class Enum1 : unsigned long long int { a };\n"
                                 "Enum1 e1 = Enum1::a;";
-            const char expected[] = "enum Enum1 : unsigned long long { a = 0 } ; "
-                                    "Enum1 e1 ; e1 = 0 ;";
+            const char expected[] = "unsigned long long e1 ; e1 = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         }
 
         {
             const char code[] = "enum class { A };\n"
                                 "int i = A;";
-            const char expected [] = "enum class { A = 0 } ; int i ; i = 0 ;";
+            const char expected [] = "int i ; i = 0 ;";
             ASSERT_EQUALS(expected, checkSimplifyEnum(code, false)); // Compile as C code: enum has name 'class'
             checkSimplifyEnum(code, true); // Compile as C++ code: Don't crash
         }
@@ -3203,14 +3193,14 @@ private:
         // if header is included twice its enums will be duplicated
         const char code[] = "enum ab { a=0, b };"
                             "enum ab { a=0, b };\n";
-        ASSERT_EQUALS("enum ab { a = 0 , b = 1 } ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void enum18() { // ticket #2466 - array with same name as enum constant
         const char code[] = "enum ab { a=0, b };\n"
                             "void f() { a[0]; }\n";
-        ASSERT_EQUALS("enum ab { a = 0 , b = 1 } ; void f ( ) { a [ 0 ] ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("void f ( ) { a [ 0 ] ; }", checkSimplifyEnum(code));
     }
 
     void enum19() { // ticket #2536
@@ -3221,12 +3211,12 @@ private:
 
     void enum20() { // ticket #2600 segmentation fault
         const char code[] = "enum { const }\n";
-        ASSERT_EQUALS("enum { const = 0 }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("", checkSimplifyEnum(code));
     }
 
     void enum21() { // ticket #2720 syntax error
         const char code[] = "enum E2 : signed const short { };\n";
-        ASSERT_EQUALS("enum E2 : signed int const short { } ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3271,8 +3261,7 @@ private:
     void enum23() { // ticket #2804
         const char code[] = "enum Enumerator : std::uint8_t { ITEM1, ITEM2, ITEM3 };\n"
                             "Enumerator e = ITEM3;\n";
-        const char expected[] = "enum Enumerator : std :: uint8_t { ITEM1 = 0 , ITEM2 = 1 , ITEM3 = 2 } ; "
-                                "Enumerator e ; e = 2 ;";
+        const char expected[] = "std :: uint8_t e ; e = 2 ;";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3282,10 +3271,7 @@ private:
                             "void f(long style) {\n"
                             "    if (style & STYLE) { }\n"
                             "}\n";
-        const char expected[] = "enum EnumName { STYLE = 1 } ; "
-                                "void f ( long style ) { "
-                                "if ( style & 1 ) { } "
-                                "}";
+        const char expected[] = "void f ( long style ) { if ( style & 1 ) { } }";
         ASSERT_EQUALS(expected, checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3310,12 +3296,12 @@ private:
                             "void f() { char x[4];  memset(x, 0, 4);\n"
                             "{ x } };\n"
                             "void g() { x; }";
-        ASSERT_EQUALS("enum { x = 0 } ; void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("void f ( ) { char x [ 4 ] ; memset ( x , 0 , 4 ) ; { x } } ; void g ( ) { 0 ; }", checkSimplifyEnum(code));
     }
 
     void enum29() {  // #3747 - bitwise or value
         const char code[] = "enum { x=1, y=x|2 }; i = (3==y);";
-        ASSERT_EQUALS("enum { x = 1 , y = 3 } ; i = 3 == 3 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("i = 3 == 3 ;", checkSimplifyEnum(code));
     }
 
     void enum30() { // #3852 - false positive
@@ -3336,57 +3322,52 @@ private:
                              "int main() {"
                              "    return TestIf::Bar::two;\n"
                              "}";
-        ASSERT_EQUALS("class TestIf { "
-                      "public: "
-                      "enum Foo { one = 0 , two = 1 } ; "
-                      "enum Bar { one = 0 , two = 1 } ; "
-                      "} ; "
-                      "int main ( ) { return 1 ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("class TestIf { public: } ; int main ( ) { return 1 ; }", checkSimplifyEnum(code));
         ASSERT_EQUALS("", errout.str());
     }
 
     void enum31() {  // #3934 - calculation in first item
         const char code[] = "enum { x=2*32, y }; i = y;";
-        ASSERT_EQUALS("enum { x = 64 , y = 65 } ; i = 65 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("i = 65 ;", checkSimplifyEnum(code));
     }
 
     void enum32() {  // #3998 - wrong enum simplification => access violation
         const char code[] = "enum { x=(32), y=x, z }; { a, z }";
-        ASSERT_EQUALS("enum { x = 32 , y = 32 , z = 33 } ; { a , ( 33 ) }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("{ a , ( 33 ) }", checkSimplifyEnum(code));
     }
 
     void enum33() {  // #4015 - segmentation fault
         const char code[] = "enum { A=SOME_VALUE, B=A };";
-        ASSERT_EQUALS("enum { A = SOME_VALUE , B = SOME_VALUE } ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
     }
 
     void enum34() {  // #4141 - division by zero
         const char code[] = "enum { A=1/0 };";
-        ASSERT_EQUALS("enum { A = 1 / 0 } ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS(";", checkSimplifyEnum(code));
     }
 
     void enum35() {  // #3953 - avoid simplification of type
-        ASSERT_EQUALS("enum { A = 0 } ; void f ( A * a ) ;", checkSimplifyEnum("enum { A }; void f(A * a) ;"));
-        ASSERT_EQUALS("enum { A = 0 } ; void f ( A * a ) { }", checkSimplifyEnum("enum { A }; void f(A * a) { }"));
+        ASSERT_EQUALS("void f ( A * a ) ;", checkSimplifyEnum("enum { A }; void f(A * a) ;"));
+        ASSERT_EQUALS("void f ( A * a ) { }", checkSimplifyEnum("enum { A }; void f(A * a) { }"));
     }
 
     void enum36() {  // #4378
         const char code[] = "struct X { enum Y { a, b }; X(Y) { Y y = (Y)1; } };";
-        ASSERT_EQUALS("struct X { enum Y { a = 0 , b = 1 } ; X ( Y ) { Y y ; y = ( Y ) 1 ; } } ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("struct X { X ( int ) { int y ; y = ( int ) 1 ; } } ;", checkSimplifyEnum(code));
     }
 
     void enum37() {  // #4280 - shadow variables
         const char code1[] = "enum { a, b }; void f(int a) { return a + 1; }";
-        ASSERT_EQUALS("enum { a = 0 , b = 1 } ; void f ( int a ) { return a + 1 ; }", checkSimplifyEnum(code1));
+        ASSERT_EQUALS("void f ( int a ) { return a + 1 ; }", checkSimplifyEnum(code1));
 
         const char code2[] = "enum { a, b }; void f() { int a; }";
-        ASSERT_EQUALS("enum { a = 0 , b = 1 } ; void f ( ) { int a ; }", checkSimplifyEnum(code2));
+        ASSERT_EQUALS("void f ( ) { int a ; }", checkSimplifyEnum(code2));
 
         const char code3[] = "enum { a, b }; void f() { int *a=do_something(); }";
-        ASSERT_EQUALS("enum { a = 0 , b = 1 } ; void f ( ) { int * a ; a = do_something ( ) ; }", checkSimplifyEnum(code3));
+        ASSERT_EQUALS("void f ( ) { int * a ; a = do_something ( ) ; }", checkSimplifyEnum(code3));
 
         const char code4[] = "enum { a, b }; void f() { int &a=x; }";
-        ASSERT_EQUALS("enum { a = 0 , b = 1 } ; void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
+        ASSERT_EQUALS("void f ( ) { int & a = x ; }", checkSimplifyEnum(code4));
 
         // #4857 - not shadow variable
         checkSimplifyEnum("enum { a,b }; void f() { if (x) { } else if ( x & a ) {} }");
@@ -3407,7 +3388,7 @@ private:
 
     void enum40() {
         const char code[] = "enum { A=(1<<0)|(1<<1) }; void f() { x = y + A; }";
-        ASSERT_EQUALS("enum { A = 1 | ( 2 ) } ; void f ( ) { x = y + ( 3 ) ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("void f ( ) { x = y + ( 3 ) ; }", checkSimplifyEnum(code));
     }
 
     void enum41() { // ticket #5212 (valgrind errors during enum simplification)
@@ -3419,38 +3400,35 @@ private:
                             "  };\n"
                             "}\n"
                             "int x = Foo::eAll;";
-        ASSERT_EQUALS("namespace Foo { enum BarConfig { eBitOne = 1 , eBitTwo = 2 , eAll = 1 | ( 2 ) } ; } "
-                      "int x ; x = ( 1 ) | 2 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("int x ; x = ( 1 ) | 2 ;", checkSimplifyEnum(code));
     }
 
     void enum42() { // ticket #5182 (template function call in template value)
         const char code[] = "enum { A = f<int,2>() };\n"
                             "a = A;";
-        ASSERT_EQUALS("enum { A = f < int , 2 > ( ) } ; a = f < int , 2 > ( ) ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("a = f < int , 2 > ( ) ;", checkSimplifyEnum(code));
     }
 
     void enum43() { // lhs in assignment
         const char code[] = "enum { A, B };\n"
                             "A = 1;";
-        ASSERT_EQUALS("enum { A = 0 , B = 1 } ; A = 1 ;", checkSimplifyEnum(code));
+        ASSERT_EQUALS("A = 1 ;", checkSimplifyEnum(code));
     }
 
     void enum44() {
         const char code1[] = "enum format_t { YYYYMMDD = datemask_traits< datemask<'Y', 'Y', 'Y', 'Y', '/', 'M', 'M', '/', 'D', 'D'> >::value, };\n"
                              "YYYYMMDD;";
-        ASSERT_EQUALS("enum format_t { YYYYMMDD = datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value , } ; "
-                      "datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ;", checkSimplifyEnum(code1));
+        ASSERT_EQUALS("( datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ) ;", checkSimplifyEnum(code1));
 
         const char code2[] = "enum format_t { YYYYMMDD = datemask_traits< datemask<'Y', 'Y', 'Y', 'Y', '/', 'M', 'M', '/', 'D', 'D'>>::value, };\n"
                              "YYYYMMDD;";
-        ASSERT_EQUALS("enum format_t { YYYYMMDD = datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value , } ; "
-                      "datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ;", checkSimplifyEnum(code2));
+        ASSERT_EQUALS("( datemask_traits < datemask < 'Y' , 'Y' , 'Y' , 'Y' , '/' , 'M' , 'M' , '/' , 'D' , 'D' > > :: value ) ;", checkSimplifyEnum(code2));
     }
 
     void enumscope1() { // #3949 - don't simplify enum from one function in another function
         const char code[] = "void foo() { enum { A = 0, B = 1 }; }\n"
                             "void bar() { int a = A; }";
-        ASSERT_EQUALS("void foo ( ) { enum { A = 0 , B = 1 } ; } void bar ( ) { int a ; a = A ; }", checkSimplifyEnum(code));
+        ASSERT_EQUALS("void foo ( ) { } void bar ( ) { int a ; a = A ; }", checkSimplifyEnum(code));
     }
 
     void duplicateDefinition() { // #3565 - wrongly detects duplicate definition

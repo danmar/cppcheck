@@ -7278,8 +7278,18 @@ void Tokenizer::simplifyEnum()
 {
     std::string className;
     int classLevel = 0;
+    bool goback = false;
     const bool printStyle = _settings->isEnabled("style");
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+        if (goback) {
+            //jump back once, see the comment at the end of the function
+            goback = false;
+            tok = tok->previous();
+            if (!tok)
+                break;
+        }
+
         if (tok->next() &&
             (!tok->previous() || (tok->previous()->str() != "enum")) &&
             Token::Match(tok, "class|struct|namespace")) {
@@ -7642,7 +7652,7 @@ void Tokenizer::simplifyEnum()
                 tempTok->insertToken(";");
                 tempTok = tempTok->next();
                 if (typeTokenStart == 0)
-                    tempTok->insertToken(enumType ? enumType->str() : std::string("int"));
+                    tempTok->insertToken("int");
                 else {
                     Token *tempTok1 = typeTokenStart;
 
@@ -7655,6 +7665,83 @@ void Tokenizer::simplifyEnum()
                         tempTok = tempTok->next();
                     }
                 }
+            }
+
+            if (enumType) {
+                const std::string pattern(className.empty() ? std::string("") : (className + " :: " + enumType->str()));
+
+                // count { and } for tok2
+                int level = 0;
+                bool inScope = true;
+
+                bool exitThisScope = false;
+                int exitScope = 0;
+                bool simplify = false;
+                bool hasClass = false;
+                for (Token *tok2 = end->next(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "}") {
+                        --level;
+                        if (level < 0)
+                            inScope = false;
+
+                        if (exitThisScope) {
+                            if (level < exitScope)
+                                exitThisScope = false;
+                        }
+                    } else if (tok2->str() == "{")
+                        ++level;
+                    else if (!pattern.empty() && ((tok2->str() == "enum" && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str()))) {
+                        simplify = true;
+                        hasClass = true;
+                    } else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next() && tok2->next()->str() == enumType->str()))) {
+                        if (tok2->strAt(-1) == "::") {
+                            // Don't replace this enum if it's preceded by "::"
+                        } else if (tok2->next() &&
+                                   (tok2->next()->isName() || tok2->next()->str() == "(")) {
+                            simplify = true;
+                            hasClass = false;
+                        } else if (tok2->previous()->str() == "(" && tok2->next()->str() == ")") {
+                            simplify = true;
+                            hasClass = false;
+                        }
+                    }
+
+                    if (simplify) {
+                        if (tok2->str() == "enum")
+                            tok2->deleteNext();
+                        if (typeTokenStart == 0)
+                            tok2->str("int");
+                        else {
+                            tok2->str(typeTokenStart->str());
+                            copyTokens(tok2, typeTokenStart->next(), typeTokenEnd);
+                        }
+
+                        if (hasClass) {
+                            tok2->deleteNext(2);
+                        }
+
+                        simplify = false;
+                    }
+                }
+            }
+
+            tok1 = start;
+            Token::eraseTokens(tok1, end->next());
+            if (start != list.front()) {
+                tok1 = start->previous();
+                tok1->deleteNext();
+                //no need to remove last token in the list
+                if (tok1->tokAt(2))
+                    tok1->deleteNext();
+                tok = tok1;
+            } else {
+                list.front()->deleteThis();
+                //no need to remove last token in the list
+                if (list.front()->next())
+                    list.front()->deleteThis();
+                tok = list.front();
+                //now the next token to process is 'tok', not 'tok->next()';
+                goback = true;
             }
         }
     }

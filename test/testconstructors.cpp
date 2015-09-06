@@ -1423,7 +1423,7 @@ private:
               "    ECODES _code;\n"
               "};");
 
-        TODO_ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::_code' is not initialized in the constructor.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::_code' is not initialized in the constructor.\n", errout.str());
 
 
         check("class A{};\n"

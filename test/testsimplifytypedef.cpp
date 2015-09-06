@@ -425,10 +425,8 @@ private:
                             "abc e1;\n"
                             "XYZ e2;";
 
-        const char expected[] = "enum abc { a = 0 , b = 1 , c = 2 } ; "
-                                "enum xyz { x = 0 , y = 1 , z = 2 } ; "
-                                "abc e1 ; "
-                                "enum xyz e2 ;";
+        const char expected[] = "int e1 ; "
+                                "int e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -1624,16 +1622,13 @@ private:
     void simplifyTypedef60() { // ticket #2035
         const char code[] = "typedef enum {qfalse, qtrue} qboolean;\n"
                             "typedef qboolean (*localEntitiyAddFunc_t) (struct le_s * le, entity_t * ent);\n"
-                            "void f() {\n"
+                            "void f()\n"
+                            "{\n"
                             "    qboolean b;\n"
                             "    localEntitiyAddFunc_t f;\n"
                             "}";
         // The expected result..
-        const char expected[] = "enum qboolean { qfalse = 0 , qtrue = 1 } ; "
-                                "void f ( ) { "
-                                "qboolean b ; "
-                                "qboolean * f ; "
-                                "}";
+        const char expected[] = "void f ( ) { int b ; int * f ; }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2427,8 +2422,10 @@ private:
                             "      domain_dim = TrafoEvaluator::domain_dim,\n"
                             "    };\n"
                             "};";
-        (void)tok(code);
-        ASSERT_EQUALS("", errout.str());  // <- no syntax error
+
+        const char expected[] = "template < typename DataType , typename SpaceType , typename TrafoConfig > class AsmTraits1 { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1() {
@@ -3010,12 +3007,13 @@ private:
                             "typedef MySpace::Format_E2 (**PtrToFunPtr_Type2)();\n"
                             "PtrToFunPtr_Type1 t1;\n"
                             "PtrToFunPtr_Type2 t2;";
-        ASSERT_EQUALS("enum Format_E1 { FORMAT11 FORMAT12 } ; Format_E1 Format_T1 ; "
-                      "namespace MySpace { "
-                      "enum Format_E2 { FORMAT21 FORMAT22 } ; Format_E2 Format_T2 ; "
+        ASSERT_EQUALS("int Format_T1 ; "
+                      "namespace MySpace "
+                      "{ "
+                      "int Format_T2 ; "
                       "} "
-                      "Format_E1 ( * * t1 ) ( ) ; "
-                      "MySpace :: Format_E2 ( * * t2 ) ( ) ;",
+                      "int ( * * t1 ) ( ) ; "
+                      "int ( * * t2 ) ( ) ;",
                       tok(code,false));
     }
 
