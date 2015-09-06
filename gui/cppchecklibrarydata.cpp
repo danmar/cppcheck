@@ -347,6 +347,7 @@ QString CppcheckLibraryData::toString() const
     QString outputString;
     QXmlStreamWriter xmlWriter(&outputString);
     xmlWriter.setAutoFormatting(true);
+    xmlWriter.setAutoFormattingIndent(2);
     xmlWriter.writeStartDocument("1.0");
     xmlWriter.writeStartElement("def");
     xmlWriter.writeAttribute("format","2");

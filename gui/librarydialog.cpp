@@ -80,7 +80,7 @@ void LibraryDialog::saveCfg()
     QFile file(mFileName);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream ts(&file);
-        ts << data.toString();
+        ts << data.toString() << '\n';
         ui->buttonSave->setEnabled(false);
     }
 }
