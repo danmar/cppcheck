@@ -41,10 +41,11 @@ private slots:
     void openCfg();
     void saveCfg();
     void addFunction();
-    void selectFunction(int row);
     void changeFunction();
-    void changeFunction(int);
     void editArg();
+    void filterFunctions(QString);
+    void selectFunction();
+    void sortFunctions(bool);
 
 private:
     Ui::LibraryDialog *ui;
@@ -53,6 +54,7 @@ private:
     bool ignoreChanges;
 
     static QString getArgText(const CppcheckLibraryData::Function::Arg &arg);
+    CppcheckLibraryData::Function *currentFunction();
     void updateArguments(const CppcheckLibraryData::Function &function);
 };
 

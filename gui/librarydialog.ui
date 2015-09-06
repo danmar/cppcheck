@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>547</width>
-    <height>300</height>
+    <width>869</width>
+    <height>588</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,6 +57,36 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QPushButton" name="sortFunctions">
+           <property name="text">
+            <string>AZ</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QListWidget" name="functions">
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
@@ -87,6 +117,9 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="filter"/>
          </item>
         </layout>
        </item>
@@ -187,34 +220,18 @@
  <resources/>
  <connections>
   <connection>
-   <sender>functions</sender>
-   <signal>currentRowChanged(int)</signal>
-   <receiver>LibraryDialog</receiver>
-   <slot>selectFunction(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>155</x>
-     <y>218</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>327</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>buttonOpen</sender>
    <signal>clicked()</signal>
    <receiver>LibraryDialog</receiver>
    <slot>openCfg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>61</x>
-     <y>27</y>
+     <x>59</x>
+     <y>18</y>
     </hint>
     <hint type="destinationlabel">
-     <x>72</x>
-     <y>21</y>
+     <x>66</x>
+     <y>34</y>
     </hint>
    </hints>
   </connection>
@@ -225,12 +242,12 @@
    <slot>changeFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>372</x>
-     <y>69</y>
+     <x>739</x>
+     <y>74</y>
     </hint>
     <hint type="destinationlabel">
-     <x>475</x>
-     <y>5</y>
+     <x>750</x>
+     <y>74</y>
     </hint>
    </hints>
   </connection>
@@ -241,12 +258,12 @@
    <slot>changeFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>419</x>
-     <y>99</y>
+     <x>735</x>
+     <y>103</y>
     </hint>
     <hint type="destinationlabel">
-     <x>319</x>
-     <y>3</y>
+     <x>744</x>
+     <y>102</y>
     </hint>
    </hints>
   </connection>
@@ -257,12 +274,12 @@
    <slot>saveCfg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>102</x>
-     <y>9</y>
+     <x>118</x>
+     <y>16</y>
     </hint>
     <hint type="destinationlabel">
-     <x>115</x>
-     <y>1</y>
+     <x>130</x>
+     <y>32</y>
     </hint>
    </hints>
   </connection>
@@ -273,12 +290,12 @@
    <slot>addFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>48</x>
-     <y>282</y>
+     <x>53</x>
+     <y>564</y>
     </hint>
     <hint type="destinationlabel">
-     <x>65</x>
-     <y>298</y>
+     <x>63</x>
+     <y>582</y>
     </hint>
    </hints>
   </connection>
@@ -289,28 +306,12 @@
    <slot>editArg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>317</x>
-     <y>278</y>
+     <x>488</x>
+     <y>580</y>
     </hint>
     <hint type="destinationlabel">
-     <x>349</x>
-     <y>281</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>noreturn</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>LibraryDialog</receiver>
-   <slot>changeFunction(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>504</x>
-     <y>45</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>543</x>
-     <y>32</y>
+     <x>497</x>
+     <y>580</y>
     </hint>
    </hints>
   </connection>
@@ -321,24 +322,89 @@
    <slot>editArg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>525</x>
-     <y>146</y>
+     <x>685</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
-     <x>545</x>
-     <y>145</y>
+     <x>693</x>
+     <y>148</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sortFunctions</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>sortFunctions(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>45</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>58</x>
+     <y>66</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>filter</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>filterFunctions(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>257</x>
+     <y>565</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>273</x>
+     <y>582</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>functions</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>selectFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>190</x>
+     <y>141</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>203</x>
+     <y>140</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>noreturn</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>696</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>703</x>
+     <y>46</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
-  <slot>selectFunction(int)</slot>
-  <slot>openCfg()</slot>
-  <slot>changeFunction()</slot>
-  <slot>saveCfg()</slot>
-  <slot>argumentChanged(QListWidgetItem*)</slot>
   <slot>addFunction()</slot>
+  <slot>argumentChanged(QListWidgetItem*)</slot>
+  <slot>changeFunction()</slot>
   <slot>editArg()</slot>
-  <slot>changeFunction(int)</slot>
+  <slot>filterFunctions(QString)</slot>
+  <slot>openCfg()</slot>
+  <slot>saveCfg()</slot>
+  <slot>selectFunction()</slot>
+  <slot>sortFunctions(bool)</slot>
  </slots>
 </ui>
