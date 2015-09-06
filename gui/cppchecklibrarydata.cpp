@@ -243,7 +243,7 @@ static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDat
     xmlWriter.writeAttribute("id", container.id);
     if (!container.startPattern.isEmpty())
         xmlWriter.writeAttribute("startPattern", container.startPattern);
-    if (!container.endPattern.isEmpty())
+    if (!container.endPattern.isNull())
         xmlWriter.writeAttribute("endPattern", container.endPattern);
     if (!container.inherits.isEmpty())
         xmlWriter.writeAttribute("inherits", container.inherits);
@@ -329,8 +329,7 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
     xmlWriter.writeStartElement(mr.type);
     foreach(const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
         xmlWriter.writeStartElement("alloc");
-        if (alloc.init)
-            xmlWriter.writeAttribute("init", "true");
+        xmlWriter.writeAttribute("init", alloc.init ? "true" : "false");
         xmlWriter.writeCharacters(alloc.name);
         xmlWriter.writeEndElement();
     }
@@ -342,7 +341,6 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
     }
     xmlWriter.writeEndElement();
 }
-
 
 QString CppcheckLibraryData::toString() const
 {
