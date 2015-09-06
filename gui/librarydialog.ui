@@ -61,7 +61,7 @@
          <item>
           <widget class="QPushButton" name="sortFunctions">
            <property name="text">
-            <string>AZ</string>
+            <string>Sort</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -117,6 +117,13 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Filter:</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="filter"/>

@@ -36,6 +36,8 @@ LibraryDialog::LibraryDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->buttonSave->setEnabled(false);
+    ui->sortFunctions->setEnabled(false);
+    ui->filter->setEnabled(false);
 }
 
 LibraryDialog::~LibraryDialog()
@@ -81,6 +83,8 @@ void LibraryDialog::openCfg()
             foreach(const struct CppcheckLibraryData::Function &function, data.functions) {
                 ui->functions->addItem(function.name);
             }
+            ui->sortFunctions->setEnabled(!data.functions.empty());
+            ui->filter->setEnabled(!data.functions.empty());
             ignoreChanges = false;
         }
     }
@@ -115,6 +119,8 @@ void LibraryDialog::addFunction()
         data.functions.append(f);
         ui->functions->addItem(f.name);
         ui->buttonSave->setEnabled(true);
+        ui->sortFunctions->setEnabled(!data.functions.empty());
+        ui->filter->setEnabled(!data.functions.empty());
     }
     delete d;
 }
@@ -145,9 +151,14 @@ void LibraryDialog::sortFunctions(bool sort)
         ui->functions->sortItems();
     else {
         ignoreChanges = true;
+        CppcheckLibraryData::Function *selfunction = currentFunction();
         ui->functions->clear();
-        foreach(const struct CppcheckLibraryData::Function &function, data.functions)
-        ui->functions->addItem(function.name);
+        foreach(const struct CppcheckLibraryData::Function &function, data.functions) {
+            QListWidgetItem *item = new QListWidgetItem(ui->functions);
+            item->setText(function.name);
+            item->setSelected(selfunction == &function);
+            ui->functions->addItem(item);
+        }
         if (!ui->filter->text().isEmpty())
             filterFunctions(ui->filter->text());
         ignoreChanges = false;
