@@ -2780,3 +2780,19 @@ void uninivar_setvbuf(void)
     // cppcheck-suppress uninitvar
     (void)setvbuf(stream,buf,mode,size);
 }
+
+void uninivar_strcat(void)
+{
+    char *deststr;
+    char *srcstr;
+    // cppcheck-suppress uninitvar
+    (void)strcat(deststr,srcstr);
+}
+
+void uninivar_wcscat(void)
+{
+    wchar_t *deststr;
+    wchar_t *srcstr;
+    // cppcheck-suppress uninitvar
+    (void)wcscat(deststr,srcstr);
+}
