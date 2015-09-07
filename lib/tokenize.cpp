@@ -2051,7 +2051,7 @@ void Tokenizer::simplifyArrayAccessSyntax()
 {
     // 0[a] -> a[0]
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%num% [ %name% ]")) {
+        if (tok->isNumber() && Token::Match(tok, "%num% [ %name% ]")) {
             std::string temp = tok->str();
             tok->str(tok->strAt(2));
             tok->varId(tok->tokAt(2)->varId());
@@ -2128,6 +2128,8 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 void Tokenizer::arraySize()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->isName() || !Token::Match( tok, "%name% [ ] =" ) )
+            continue;
         bool addlength = false;
         if (Token::Match(tok, "%name% [ ] = { %str% } ;")) {
             Token *t = tok->tokAt(3);
@@ -8762,6 +8764,8 @@ void Tokenizer::simplifyStructDecl()
 
     // Add names for anonymous structs
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if(!tok->isName() )
+            continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[")) {
