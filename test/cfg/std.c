@@ -3136,3 +3136,36 @@ void uninitvar_time(void)
     // cppcheck-suppress uninitvar
     (void)time(tp);
 }
+
+void uninitvar_tmpnam(void)
+{
+    char *s;
+    // cppcheck-suppress uninitvar
+    (void)tmpnam(s);
+}
+
+void uninivar_tolower(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)tolower(c);
+}
+
+void uninivar_toupper(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)toupper(c);
+}
+
+void uninivar_wcstof(void)
+{
+    const wchar_t *s;
+    wchar_t **endp;
+    // cppcheck-suppress uninitvar
+    (void)wcstof(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)wcstod(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)wcstold(s,endp);
+}

@@ -2446,3 +2446,36 @@ void uninitvar_time(void)
     // cppcheck-suppress uninitvar
     (void)std::time(tp);
 }
+
+void uninitvar_tmpnam(void)
+{
+    char *s;
+    // cppcheck-suppress uninitvar
+    (void)std::tmpnam(s);
+}
+
+void uninivar_tolower(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::tolower(c);
+}
+
+void uninivar_toupper(void)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::toupper(c);
+}
+
+void uninivar_wcstof(void)
+{
+    const wchar_t *s;
+    wchar_t **endp;
+    // cppcheck-suppress uninitvar
+    (void)std::wcstof(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstod(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstold(s,endp);
+}
