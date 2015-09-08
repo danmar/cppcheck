@@ -2128,7 +2128,7 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 void Tokenizer::arraySize()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName() || !Token::Match( tok, "%name% [ ] =" ) )
+        if (!tok->isName() || !Token::Match(tok, "%name% [ ] ="))
             continue;
         bool addlength = false;
         if (Token::Match(tok, "%name% [ ] = { %str% } ;")) {
@@ -8764,7 +8764,7 @@ void Tokenizer::simplifyStructDecl()
 
     // Add names for anonymous structs
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if(!tok->isName() )
+        if (!tok->isName())
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {

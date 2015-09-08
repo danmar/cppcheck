@@ -2120,3 +2120,266 @@ void uninivar_wcscat(void)
     // cppcheck-suppress uninitvar
     (void)std::wcscat(deststr,srcstr);
 }
+void uninivar_wcrtomb(void)
+{
+    char *s;
+    wchar_t wc;
+    mbstate_t *ps;
+    // cppcheck-suppress uninitvar
+    (void)std::wcrtomb(s,wc,ps);
+}
+
+void uninivar_strchr(void)
+{
+    char *cs;
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::strchr(cs,c);
+}
+
+void uninivar_wcschr(void)
+{
+    wchar_t *cs;
+    wchar_t c;
+    // cppcheck-suppress uninitvar
+    (void)std::wcschr(cs,c);
+}
+
+void uninivar_strcmp(void)
+{
+    char *str1;
+    char *str2;
+    // cppcheck-suppress uninitvar
+    (void)std::strcmp(str1,str2);
+}
+
+void uninivar_wcscmp(void)
+{
+    wchar_t *str1;
+    wchar_t *str2;
+    // cppcheck-suppress uninitvar
+    (void)std::wcscmp(str1,str2);
+}
+
+void uninivar_strcpy(void)
+{
+    char *str1;
+    char *str2;
+    // cppcheck-suppress uninitvar
+    (void)std::strcpy(str1,str2);
+}
+
+void uninivar_wcscpy(void)
+{
+    wchar_t *str1;
+    wchar_t *str2;
+    // cppcheck-suppress uninitvar
+    (void)std::wcscpy(str1,str2);
+}
+
+void uninivar_strftime(void)
+{
+    char *s;
+    size_t max;
+    char *fmt;
+    struct tm *p;
+    // cppcheck-suppress uninitvar
+    (void)std::strftime(s,max,fmt,p);
+}
+
+void uninivar_strlen(void)
+{
+    char *s;
+    // cppcheck-suppress uninitvar
+    (void)std::strlen(s);
+}
+
+void uninivar_wcslen(void)
+{
+    wchar_t *s;
+    // cppcheck-suppress uninitvar
+    (void)std::wcslen(s);
+}
+
+void uninivar_strncpy(void)
+{
+    char *s;
+    char *ct;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::strncpy(s,ct,n);
+}
+
+void uninivar_strpbrk(void)
+{
+    char *cs;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strpbrk(cs,ct);
+}
+
+void uninivar_strncat(void)
+{
+    char *ct;
+    char *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::strncat(ct,s,n);
+}
+
+void uninivar_wcsncat(void)
+{
+    wchar_t *ct;
+    wchar_t *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncat(ct,s,n);
+}
+
+void uninivar_strncmp(void)
+{
+    char *ct;
+    char *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::strncmp(ct,s,n);
+}
+
+void uninivar_wcsncmp(void)
+{
+    wchar_t *ct;
+    wchar_t *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncmp(ct,s,n);
+}
+
+void uninivar_strstr(void)
+{
+    char *cs;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strstr(cs,ct);
+}
+
+void uninivar_wcsstr(void)
+{
+    wchar_t *cs;
+    wchar_t *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsstr(cs,ct);
+}
+
+void uninivar_strspn(void)
+{
+    char *cs;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strspn(cs,ct);
+}
+
+void uninivar_strxfrm(void)
+{
+    char *ds;
+    char *ss;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::strxfrm(ds,ss,n);
+}
+
+void uninivar_wcsxfrm(void)
+{
+    wchar_t *ds;
+    wchar_t *ss;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsxfrm(ds,ss,n);
+}
+
+void uninivar_wcsspn(void)
+{
+    wchar_t *ds;
+    wchar_t *ss;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsspn(ds,ss);
+}
+
+void uninivar_setlocale(void)
+{
+    int category;
+    char* locale;
+    // cppcheck-suppress uninitvar
+    (void)std::setlocale(category,locale);
+}
+void uninivar_strerror(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::strerror(i);
+}
+
+void uninivar_strcspn(void)
+{
+    char *cs;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strcspn(cs,ct);
+}
+
+void uninivar_wcscspn(void)
+{
+    wchar_t *cs;
+    wchar_t *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::wcscspn(cs,ct);
+}
+
+void uninivar_wcspbrk(void)
+{
+    wchar_t *cs;
+    wchar_t *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::wcspbrk(cs,ct);
+}
+
+void uninivar_wcsncpy(void)
+{
+    wchar_t *cs;
+    wchar_t *ct;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncpy(cs,ct,n);
+}
+
+void uninivar_strcoll(void)
+{
+    char *cs;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strcoll(cs,ct);
+}
+
+void uninivar_wcscoll(void)
+{
+    wchar_t *cs;
+    wchar_t *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::wcscoll(cs,ct);
+}
+
+void uninivar_strrchr(void)
+{
+    char * str;
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)std::strrchr(str,c);
+}
+
+void uninivar_wcsrchr(void)
+{
+    wchar_t* ws;
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsrchr(ws,wc);
+}
+
