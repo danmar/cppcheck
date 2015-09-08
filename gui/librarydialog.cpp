@@ -34,8 +34,7 @@ public:
     FunctionListItem(QListWidget *view,
                      CppcheckLibraryData::Function *function,
                      bool selected)
-        : QListWidgetItem(view), function(function)
-    {
+        : QListWidgetItem(view), function(function) {
         setText(function->name);
         setFlags(flags() | Qt::ItemIsEditable);
         setSelected(selected);
@@ -92,8 +91,8 @@ void LibraryDialog::openCfg()
             ui->functions->clear();
             for (struct CppcheckLibraryData::Function &function : data.functions) {
                 ui->functions->addItem(new FunctionListItem(ui->functions,
-                                                            &function,
-                                                            false));
+                                       &function,
+                                       false));
             }
             ui->sortFunctions->setEnabled(!data.functions.empty());
             ui->filter->setEnabled(!data.functions.empty());
@@ -185,8 +184,8 @@ void LibraryDialog::sortFunctions(bool sort)
         ui->functions->clear();
         for (struct CppcheckLibraryData::Function &function : data.functions) {
             ui->functions->addItem(new FunctionListItem(ui->functions,
-                                                        &function,
-                                                        selfunction == &function));
+                                   &function,
+                                   selfunction == &function));
         }
         if (!ui->filter->text().isEmpty())
             filterFunctions(ui->filter->text());

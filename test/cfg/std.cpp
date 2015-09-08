@@ -20,6 +20,7 @@
 #include <cmath>
 #include <csignal>
 #include <csetjmp>
+#include <cinttypes>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -2383,3 +2384,65 @@ void uninivar_wcsrchr(void)
     (void)std::wcsrchr(ws,wc);
 }
 
+void uninivar_wcsrtombs(void)
+{
+    char *dst;
+    const wchar_t * p;;
+    size_t len;
+    mbstate_t *ps;
+    // cppcheck-suppress uninitvar
+    (void)std::wcsrtombs(dst,&p,len,ps);
+}
+
+void uninivar_strtok(void)
+{
+    char *s;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)std::strtok(s,ct);
+}
+
+void uninivar_strtoimax(void)
+{
+    const char *s;
+    char **endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)std::strtoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoumax(s,endp,base);
+}
+
+void uninivar_strtof(void)
+{
+    const char *s;
+    char **endp;
+    // cppcheck-suppress uninitvar
+    (void)std::strtof(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)std::strtod(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)std::strtold(s,endp);
+}
+
+void uninivar_strtol(void)
+{
+    const char *s;
+    char **endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)std::strtol(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoll(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoul(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoull(s,endp,base);
+}
+
+void uninitvar_time(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)std::time(tp);
+}

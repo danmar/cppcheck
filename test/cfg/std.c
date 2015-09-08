@@ -3073,3 +3073,66 @@ void uninivar_wcsrchr(void)
     // cppcheck-suppress uninitvar
     (void)wcsrchr(ws,wc);
 }
+
+void uninivar_wcsrtombs(void)
+{
+    char *dst;
+    const wchar_t * p;;
+    size_t len;
+    mbstate_t *ps;
+    // cppcheck-suppress uninitvar
+    (void)wcsrtombs(dst,&p,len,ps);
+}
+
+void uninivar_strtok(void)
+{
+    char *s;
+    char *ct;
+    // cppcheck-suppress uninitvar
+    (void)strtok(s,ct);
+}
+
+void uninivar_strtoimax(void)
+{
+    const char *s;
+    char **endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)strtoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoumax(s,endp,base);
+}
+
+void uninivar_strtof(void)
+{
+    const char *s;
+    char **endp;
+    // cppcheck-suppress uninitvar
+    (void)strtof(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)strtod(s,endp);
+    // cppcheck-suppress uninitvar
+    (void)strtold(s,endp);
+}
+
+void uninivar_strtol(void)
+{
+    const char *s;
+    char **endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)strtol(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoll(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoul(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoull(s,endp,base);
+}
+
+void uninitvar_time(void)
+{
+    time_t *tp;
+    // cppcheck-suppress uninitvar
+    (void)time(tp);
+}
