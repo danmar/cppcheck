@@ -89,7 +89,7 @@
        <item>
         <widget class="QListWidget" name="functions">
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+          <set>QAbstractItemView::DoubleClicked</set>
          </property>
          <property name="selectionBehavior">
           <enum>QAbstractItemView::SelectRows</enum>
@@ -313,8 +313,8 @@
    <slot>editArg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>488</x>
-     <y>580</y>
+     <x>519</x>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -361,8 +361,8 @@
    <slot>filterFunctions(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>565</y>
+     <x>429</x>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
      <x>273</x>
@@ -402,6 +402,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>functions</sender>
+   <signal>itemChanged(QListWidgetItem*)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>editFunctionName(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>104</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>235</x>
+     <y>104</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addFunction()</slot>
@@ -413,5 +429,6 @@
   <slot>saveCfg()</slot>
   <slot>selectFunction()</slot>
   <slot>sortFunctions(bool)</slot>
+  <slot>editFunctionName(QListWidgetItem*)</slot>
  </slots>
 </ui>

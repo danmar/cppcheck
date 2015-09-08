@@ -3,6 +3,10 @@
 
 #include <QDialog>
 
+#define SIMPLENAME     "[_a-zA-Z][_a-zA-Z0-9]*"            // just a name
+#define SCOPENAME      SIMPLENAME "(::" SIMPLENAME ")*"    // names with optional scope
+#define NAMES          SCOPENAME "(," SCOPENAME ")*"       // names can be separated by comma
+
 namespace Ui {
     class LibraryAddFunctionDialog;
 }

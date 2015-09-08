@@ -29,6 +29,20 @@
 
 // TODO: get/compare functions from header
 
+class FunctionListItem : public QListWidgetItem {
+public:
+    FunctionListItem(QListWidget *view,
+                     CppcheckLibraryData::Function *function,
+                     bool selected)
+        : QListWidgetItem(view), function(function)
+    {
+        setText(function->name);
+        setFlags(flags() | Qt::ItemIsEditable);
+        setSelected(selected);
+    }
+    CppcheckLibraryData::Function *function;
+};
+
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LibraryDialog),
@@ -50,11 +64,7 @@ CppcheckLibraryData::Function *LibraryDialog::currentFunction()
     QList<QListWidgetItem *> selitems = ui->functions->selectedItems();
     if (selitems.count() != 1)
         return nullptr;
-    for (int row = 0; row < data.functions.size(); ++row) {
-        if (data.functions[row].name == selitems.front()->text())
-            return &data.functions[row];
-    }
-    return nullptr;
+    return dynamic_cast<FunctionListItem *>(selitems.first())->function;
 }
 
 void LibraryDialog::openCfg()
@@ -80,8 +90,10 @@ void LibraryDialog::openCfg()
             ui->buttonSave->setEnabled(false);
             ui->filter->clear();
             ui->functions->clear();
-            foreach(const struct CppcheckLibraryData::Function &function, data.functions) {
-                ui->functions->addItem(function.name);
+            for (struct CppcheckLibraryData::Function &function : data.functions) {
+                ui->functions->addItem(new FunctionListItem(ui->functions,
+                                                            &function,
+                                                            false));
             }
             ui->sortFunctions->setEnabled(!data.functions.empty());
             ui->filter->setEnabled(!data.functions.empty());
@@ -117,12 +129,30 @@ void LibraryDialog::addFunction()
             f.args.append(arg);
         }
         data.functions.append(f);
-        ui->functions->addItem(f.name);
+        ui->functions->addItem(new FunctionListItem(ui->functions, &data.functions.back(), false));
         ui->buttonSave->setEnabled(true);
         ui->sortFunctions->setEnabled(!data.functions.empty());
         ui->filter->setEnabled(!data.functions.empty());
     }
     delete d;
+}
+
+void LibraryDialog::editFunctionName(QListWidgetItem* item)
+{
+    if (ignoreChanges)
+        return;
+    QString functionName = item->text();
+    CppcheckLibraryData::Function * const function = dynamic_cast<FunctionListItem*>(item)->function;
+    if (functionName != function->name) {
+        if (QRegExp(NAMES).exactMatch(functionName)) {
+            function->name = functionName;
+            ui->buttonSave->setEnabled(true);
+        } else {
+            ignoreChanges = true;
+            item->setText(function->name);
+            ignoreChanges = false;
+        }
+    }
 }
 
 void LibraryDialog::selectFunction()
@@ -147,17 +177,16 @@ void LibraryDialog::selectFunction()
 
 void LibraryDialog::sortFunctions(bool sort)
 {
-    if (sort)
+    if (sort) {
         ui->functions->sortItems();
-    else {
+    } else {
         ignoreChanges = true;
         CppcheckLibraryData::Function *selfunction = currentFunction();
         ui->functions->clear();
-        foreach(const struct CppcheckLibraryData::Function &function, data.functions) {
-            QListWidgetItem *item = new QListWidgetItem(ui->functions);
-            item->setText(function.name);
-            item->setSelected(selfunction == &function);
-            ui->functions->addItem(item);
+        for (struct CppcheckLibraryData::Function &function : data.functions) {
+            ui->functions->addItem(new FunctionListItem(ui->functions,
+                                                        &function,
+                                                        selfunction == &function));
         }
         if (!ui->filter->text().isEmpty())
             filterFunctions(ui->filter->text());

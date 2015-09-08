@@ -43,6 +43,7 @@ private slots:
     void addFunction();
     void changeFunction();
     void editArg();
+    void editFunctionName(QListWidgetItem*);
     void filterFunctions(QString);
     void selectFunction();
     void sortFunctions(bool);
