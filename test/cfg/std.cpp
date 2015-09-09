@@ -20,6 +20,8 @@
 #include <cmath>
 #include <csignal>
 #include <csetjmp>
+#include <iostream>
+#include <iomanip>
 #include <cinttypes>
 
 void bufferAccessOutOfBounds(void)
@@ -2478,4 +2480,199 @@ void uninivar_wcstof(void)
     (void)std::wcstod(s,endp);
     // cppcheck-suppress uninitvar
     (void)std::wcstold(s,endp);
+}
+
+void uninivar_mbrtowc(void)
+{
+    wchar_t* pwc;
+    const char* pmb;
+    size_t max;
+    mbstate_t* ps;
+    // cppcheck-suppress uninitvar
+    (void)std::mbrtowc(pwc,pmb,max,ps);
+}
+
+void uninivar_wcstok(void)
+{
+    wchar_t *s;
+    const wchar_t *ct;
+    wchar_t **ptr;
+    // cppcheck-suppress uninitvar
+    (void)std::wcstok(s,ct,ptr);
+}
+
+void uninivar_wcstoimax(void)
+{
+    const wchar_t *s;
+    wchar_t ** endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoumax(s,endp,base);
+}
+
+void uninivar_wcstol(void)
+{
+    const wchar_t *s;
+    wchar_t ** endp;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)std::wcstol(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoll(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoul(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoull(s,endp,base);
+}
+
+void uninitvar_wprintf(wchar_t *format, int input)
+{
+    const wchar_t *f;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::wprintf(f,i);
+    // cppcheck-suppress uninitvar
+    (void)std::wprintf(f);
+    // cppcheck-suppress uninitvar
+    (void)std::wprintf(f,input);
+    // cppcheck-suppress uninitvar
+    (void)std::wprintf(format,i);
+    // no warning is expected
+    (void)std::wprintf(format,input);
+    (void)std::wprintf(format);
+}
+
+void uninitvar_sprintf(void)
+{
+    char *s;
+    const char *format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::sprintf(s,format,i);
+}
+
+void uninitvar_swprintf(void)
+{
+    wchar_t *s;
+    size_t n;
+    const wchar_t *format;
+    // cppcheck-suppress uninitvar
+    (void)std::swprintf(s,n,format);
+}
+
+void uninitvar_vsprintf(void)
+{
+    char *s;
+    const char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vsprintf(s,format,arg);
+}
+
+void uninitvar_vswprintf(void)
+{
+    wchar_t *s;
+    size_t n;
+    const wchar_t *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vswprintf(s,n,format,arg);
+}
+
+void uninivar_fwprintf(void)
+{
+    FILE* stream;
+    const wchar_t* format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::fwprintf(stream,format,i);
+}
+
+void uninivar_snprintf(void)
+{
+    char *s;
+    size_t n;
+    char *format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::snprintf(s,n,format,i);
+}
+
+void uninivar_vsnprintf(void)
+{
+    char *s;
+    size_t n;
+    char *format;
+    va_list arg;
+    // cppcheck-suppress va_list_usedBeforeStarted
+    // cppcheck-suppress uninitvar
+    (void)std::vsnprintf(s,n,format,arg);
+}
+
+void uninivar_wscanf(void)
+{
+    wchar_t *format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::wscanf(format);
+    // cppcheck-suppress uninitvar
+    (void)std::wscanf(format,&i);
+}
+
+void uninivar_sscanf(void)
+{
+    char *string;
+    const char * format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::sscanf(string,format);
+    // cppcheck-suppress uninitvar
+    (void)std::sscanf(string,format,&i);
+}
+
+void uninivar_fwscanf(void)
+{
+    FILE* stream;
+    wchar_t* format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::fwscanf(stream,format);
+    // cppcheck-suppress uninitvar
+    (void)std::fwscanf(stream,format,&i);
+}
+
+void uninivar_swscanf(void)
+{
+    wchar_t* s;
+    wchar_t* format;
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)std::swscanf(s,format);
+    // cppcheck-suppress uninitvar
+    (void)std::swscanf(s,format,&i);
+}
+
+void uninitvar_system(void)
+{
+    char *c;
+    // cppcheck-suppress uninitvar
+    (void)std::system(c);
+}
+
+void uninitvar_setw(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::cout << std::setw(i);
+}
+
+void uninitvar_setiosflags(void)
+{
+    std::ios_base::fmtflags mask;
+    // cppcheck-suppress uninitvar
+    std::cout << std::setiosflags(mask); // #6987 - false negative
 }
