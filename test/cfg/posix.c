@@ -193,11 +193,22 @@ void uninitvar_types(void)
     d.d_ino + 1;
 }
 
-void timet_h()
+void timet_h(struct timespec* ptp1)
 {
+    clockid_t clk_id;
     struct timespec* ptp;
     // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, ptp);
+    // cppcheck-suppress uninitvar
+    clock_settime(clk_id, ptp);
+    // cppcheck-suppress uninitvar
+    clock_settime(clk_id, ptp1);
+
+    struct timespec tp;
+    // cppcheck-suppress uninitvar
+    clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
+    // cppcheck-suppress uninitvar
+    clock_settime(clk_id, &tp);
 
     time_t clock = time(0);
     char buf[26];
