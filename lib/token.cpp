@@ -1136,19 +1136,8 @@ void Token::astOperand2(Token *tok)
     _astOperand2 = tok;
 }
 
-bool Token::isCalculation(bool goDownwards) const
+bool Token::isCalculation() const
 {
-    if (goDownwards && Token::Match(this, "[|(|,")) {
-        bool ret = false;
-        if (this->astOperand1())
-            ret = this->astOperand1()->isCalculation(true);
-        if (ret)
-            return true;
-        if (this->astOperand2())
-            ret = this->astOperand2()->isCalculation(true);
-        return ret;
-
-    }
     if (!Token::Match(this, "%cop%|++|--"))
         return false;
 

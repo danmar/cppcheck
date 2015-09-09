@@ -872,10 +872,9 @@ public:
      * For '*' and '&' tokens it is looked up if this is a
      * dereference or address-of. A dereference or address-of is not
      * counted as a calculation.
-     * @param goDownwards the function will look for calculations in all children of the tree
      * @return returns true if current token is a calculation
      */
-    bool isCalculation(bool goDownwards = false) const;
+    bool isCalculation() const;
 
     void clearAst() {
         _astOperand1 = _astOperand2 = _astParent = NULL;

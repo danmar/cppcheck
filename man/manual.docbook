@@ -5,15 +5,15 @@
   <bookinfo>
     <title>Cppcheck 1.71 dev</title>
 
-    <date>2015-06-20</date>
+    <date>2015-09-09</date>
   </bookinfo>
 
   <chapter>
     <title>Introduction</title>
 
     <para>Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers
-    and many other analysis tools, it doesn't detect syntax errors. Cppcheck
-    only detects the types of bugs that the compilers normally fail to detect.
+    and many other analysis tools, it doesn't detect syntax errors. Instead, Cppcheck
+    detects the types of bugs that the compilers normally fail to detect.
     The goal is no false positives.</para>
 
     <para>Supported code and platforms:</para>
@@ -34,8 +34,6 @@
         memory.</para>
       </listitem>
     </itemizedlist>
-
-    <para>Accuracy</para>
 
     <para>Please understand that there are limits of Cppcheck. Cppcheck is
     rarely wrong about reported errors. But there are many bugs that it
@@ -82,7 +80,7 @@
 
       <programlisting>cppcheck path</programlisting>
 
-      <para>If "path" is a folder then cppcheck will check all source files in
+      <para>If "path" is a folder then cppcheck will recursively check all source files in
       this folder.</para>
 
       <programlisting>Checking path/file1.cpp...
@@ -94,10 +92,8 @@ Checking path/file2.cpp...
     <section>
       <title>Excluding a file or folder from checking</title>
 
-      <para>To exclude a file or folder, there are two options.</para>
-
-      <para>The first option is to only provide the paths and files you want
-      to check.</para>
+      <para>To exclude a file or folder, there are two options. The first option
+      is to only provide the paths and files you want to check.</para>
 
       <programlisting>cppcheck src/a src/b</programlisting>
 
@@ -110,6 +106,23 @@ Checking path/file2.cpp...
       class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
+    </section>
+
+    <section>
+      <title>Include paths</title>
+
+      <para>To add an include path, use <parameter class="command">-I</parameter>, followed by the path.</para>
+
+      <para>Cppcheck's preprocessor basically handles includes like any other preprocessor.
+      However, while other preprocessors stop working when they encounter a missing header,
+      cppcheck will just print an information message and continues parsing the code.</para>
+
+      <para>The purpose of this behaviour is that cppcheck is meant to work without
+      necessarily seeing the entire code. Actually, it is recommended to not give all include
+      paths. While it is useful for cppcheck to see the declaration of a class when checking the
+      implementation of its members, passing standard library headers is highly discouraged because
+      it will result in worse results and longer checking time. For such cases, .cfg files (see below) are the
+      better way to provide information about the implementation of functions and types to cppcheck.</para>
     </section>
 
     <section>
@@ -208,7 +221,7 @@ cppcheck --enable=unusedFunction file.c
 cppcheck --enable=all</programlisting>
 
       <para>Please note that <literal>--enable=unusedFunction</literal> should
-      only be used when the whole program is scanned. And therefore
+      only be used when the whole program is scanned. Therefore,
       <literal>--enable=all</literal> should also only be used when the whole
       program is scanned. The reason is that the unusedFunction checking will
       warn if a function is not called. There will be noise if function calls
@@ -248,6 +261,8 @@ cppcheck --enable=all</programlisting>
       folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
+
+      <para>Please note that this will disable unusedFunction checking.</para>
     </section>
   </chapter>
 
@@ -284,13 +299,13 @@ cppcheck -DA --force file.c</programlisting>
   <chapter>
     <title>XML output</title>
 
-    <para>Cppcheck can generate the output in <literal>XML</literal> format.
+    <para>Cppcheck can generate output in <literal>XML</literal> format.
     There is an old <literal>XML</literal> format (version 1) and a new
     <literal>XML</literal> format (version 2). Please use the new version if
     you can.</para>
 
     <para>The old version is kept for backwards compatibility only. It will
-    not be changed. But it will likely be removed someday. Use
+    not be changed, but it will likely be removed someday. Use
     <parameter>--xml</parameter> to enable this format.</para>
 
     <para>The new version fixes a few problems with the old format. The new
@@ -298,8 +313,9 @@ cppcheck -DA --force file.c</programlisting>
     attributes and elements. A sample command to check a file and output
     errors in the new <literal>XML</literal> format:</para>
 
-    <para><programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>Here
-    is a sample version 2 report:</para>
+    <programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>
+
+    <para>Here is a sample version 2 report:</para>
 
     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;results version="2"&gt;
