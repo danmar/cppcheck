@@ -139,9 +139,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
-    if (INVALID_HANDLE_VALUE != hFind) {
-        FindClose(hFind);
-    }
+    FindClose(hFind);
 }
 
 bool FileLister::isDirectory(const std::string &path)
