@@ -3350,3 +3350,20 @@ void uninitvar_system(void)
     // cppcheck-suppress uninitvar
     (void)system(c);
 }
+
+void uninitvar_zonetime(void)
+{
+    time_t *tp;
+    int zone;
+    // cppcheck-suppress uninitvar
+    (void)zonetime(tp,zone);
+}
+
+void uninitvar_itoa(void)
+{
+    int value;
+    char * str;
+    int base;
+    // cppcheck-suppress uninitvar
+    (void)itoa(value,str,base);
+}

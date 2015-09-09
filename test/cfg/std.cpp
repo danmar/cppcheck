@@ -2676,3 +2676,36 @@ void uninitvar_setiosflags(void)
     // cppcheck-suppress uninitvar
     std::cout << std::setiosflags(mask); // #6987 - false negative
 }
+
+void uninitvar_resetiosflags(void)
+{
+    std::ios_base::fmtflags mask;
+    // cppcheck-suppress uninitvar
+    std::cout << std::resetiosflags(mask); // #6987 - false negative
+}
+
+void uninitvar_setfill(void)
+{
+    char c;
+    // cppcheck-suppress uninitvar
+    std::cout << std::setfill(c);
+
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    std::wcout << std::setfill(wc);
+}
+
+void uninitvar_setprecision(void)
+{
+    int p;
+    // cppcheck-suppress uninitvar
+    std::cout << std::setprecision(p);
+}
+
+void uninitvar_setbase(void)
+{
+    int p;
+    // cppcheck-suppress uninitvar
+    std::cout << std::setbase(p);
+}
+
