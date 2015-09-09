@@ -108,18 +108,6 @@ private:
 
         check("sizeof(--foo)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("sizeof(bar(1, 2, --foo, 3, 4))");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("sizeof( int32_t[ i++ ] );");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("sizeof(a[b + 2])");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
-
-        check("sizeof((2 + a)[b])");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
     }
 
     void sizeofForArrayParameter() {
