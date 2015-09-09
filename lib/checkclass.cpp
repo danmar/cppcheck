@@ -1991,13 +1991,15 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 // ClassCheck: Check that initializer list is in declared order.
 //---------------------------------------------------------------------------
 
-struct VarInfo {
-    VarInfo(const Variable *_var, const Token *_tok)
-        : var(_var), tok(_tok) { }
+namespace { // avoid one-definition-rule violation
+    struct VarInfo {
+        VarInfo(const Variable *_var, const Token *_tok)
+            : var(_var), tok(_tok) { }
 
-    const Variable *var;
-    const Token *tok;
-};
+        const Variable *var;
+        const Token *tok;
+    };
+}
 
 void CheckClass::initializerListOrder()
 {
