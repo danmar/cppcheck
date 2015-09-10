@@ -2709,3 +2709,20 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
+void invalidFunctionArgBool_abs(bool b, double x, double y)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::abs(true); // #6990
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::abs(b); // #6990
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::abs(x<y); // #5635
+}
+
+void ignoredReturnValue_abs(int i)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::abs(i);
+    // cppcheck-suppress constStatement
+    std::abs(-199);
+}

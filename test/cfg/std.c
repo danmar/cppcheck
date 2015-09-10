@@ -3378,3 +3378,11 @@ void invalidFunctionArgBool_abs(bool b, double x, double y)
     // cppcheck-suppress invalidFunctionArgBool
     (void)abs(x<y); // #5635
 }
+
+void ignoredReturnValue_abs(int i)
+{
+    // cppcheck-suppress ignoredReturnValue
+    abs(i);
+    // cppcheck-suppress constStatement
+    abs(-100);
+}
