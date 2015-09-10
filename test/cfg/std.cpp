@@ -2709,6 +2709,21 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
+void uninivar_find(std::string s)
+{
+    // testing of size_t find (const string& str, size_t pos = 0)
+    size_t pos;
+    // cppcheck-suppress uninitvar
+    (void)s.find("find",pos); // #6991
+
+    // testing of  size_t find (const char* s, size_t pos = 0) const;
+    char *c;
+    // cppcheck-suppress uninitvar
+    (void)s.find(c,0);
+    // cppcheck-suppress uninitvar
+    (void)s.find(c,pos);
+}
+
 void invalidFunctionArgBool_abs(bool b, double x, double y)
 {
     // cppcheck-suppress invalidFunctionArgBool
