@@ -119,7 +119,7 @@ static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlR
     return arg;
 }
 
-static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QStringList &comments)
+static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QString comments)
 {
     CppcheckLibraryData::Function function;
     function.comments = comments;
@@ -185,13 +185,15 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
 bool CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
-    QStringList comments;
+    QString comments;
     QXmlStreamReader xmlReader(&file);
     while (!xmlReader.atEnd()) {
         const QXmlStreamReader::TokenType t = xmlReader.readNext();
         switch (t) {
         case QXmlStreamReader::Comment:
-            comments.append(xmlReader.text().toString());
+            if (!comments.isEmpty())
+                comments += "\n";
+            comments += xmlReader.text().toString();
             break;
         case QXmlStreamReader::StartElement:
             if (xmlReader.name() == "container")
@@ -263,7 +265,12 @@ static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDat
 
 static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Function &function)
 {
-    foreach(const QString &comment, function.comments) {
+    QString comments = function.comments;
+    while (comments.startsWith("\n"))
+        comments = comments.mid(1);
+    while (comments.endsWith("\n"))
+        comments.chop(1);
+    foreach(const QString &comment, comments.split('\n')) {
         xmlWriter.writeComment(comment);
     }
 

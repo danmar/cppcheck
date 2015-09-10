@@ -135,6 +135,55 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Comments</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPlainTextEdit" name="comments">
+            <property name="lineWrapMode">
+             <enum>QPlainTextEdit::NoWrap</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
           <widget class="QLabel" name="label">
@@ -249,12 +298,12 @@
    <slot>changeFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>739</x>
-     <y>74</y>
+     <x>550</x>
+     <y>157</y>
     </hint>
     <hint type="destinationlabel">
-     <x>750</x>
-     <y>74</y>
+     <x>561</x>
+     <y>157</y>
     </hint>
    </hints>
   </connection>
@@ -265,12 +314,12 @@
    <slot>changeFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>735</x>
-     <y>103</y>
+     <x>531</x>
+     <y>183</y>
     </hint>
     <hint type="destinationlabel">
-     <x>744</x>
-     <y>102</y>
+     <x>540</x>
+     <y>182</y>
     </hint>
    </hints>
   </connection>
@@ -313,8 +362,8 @@
    <slot>editArg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>575</y>
+     <x>488</x>
+     <y>580</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
@@ -329,12 +378,12 @@
    <slot>editArg()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>685</x>
-     <y>149</y>
+     <x>529</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel">
-     <x>693</x>
-     <y>148</y>
+     <x>543</x>
+     <y>223</y>
     </hint>
    </hints>
   </connection>
@@ -393,12 +442,12 @@
    <slot>changeFunction()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>696</x>
-     <y>46</y>
+     <x>545</x>
+     <y>137</y>
     </hint>
     <hint type="destinationlabel">
-     <x>703</x>
-     <y>46</y>
+     <x>552</x>
+     <y>138</y>
     </hint>
    </hints>
   </connection>
@@ -415,6 +464,38 @@
     <hint type="destinationlabel">
      <x>235</x>
      <y>104</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>noreturn</sender>
+   <signal>editTextChanged(QString)</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>548</x>
+     <y>128</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>555</x>
+     <y>128</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comments</sender>
+   <signal>textChanged()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>changeFunction()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>567</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>584</x>
+     <y>48</y>
     </hint>
    </hints>
   </connection>

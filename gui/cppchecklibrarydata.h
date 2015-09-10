@@ -64,7 +64,7 @@ public:
             leakignore(false), useretval(false) {
         }
 
-        QStringList comments;
+        QString comments;
         QString name;
         enum TrueFalseUnknown { False, True, Unknown } noreturn;
         bool gccPure;

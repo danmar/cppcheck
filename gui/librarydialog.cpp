@@ -167,6 +167,7 @@ void LibraryDialog::selectFunction()
     }
 
     ignoreChanges = true;
+    ui->comments->setPlainText(function->comments);
     ui->noreturn->setCurrentIndex(function->noreturn);
     ui->useretval->setChecked(function->useretval);
     ui->leakignore->setChecked(function->leakignore);
@@ -214,6 +215,7 @@ void LibraryDialog::changeFunction()
         return;
 
     CppcheckLibraryData::Function *function = currentFunction();
+    function->comments   = ui->comments->toPlainText();
     function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)ui->noreturn->currentIndex();
     function->useretval  = ui->useretval->isChecked();
     function->leakignore = ui->leakignore->isChecked();
