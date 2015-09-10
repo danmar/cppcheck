@@ -365,7 +365,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         // is condition only depending on 1 variable?
         std::stack<const Token*> tokens;
         tokens.push(parent->astOperand1());
-        std::set<unsigned int> variables;  // used variables
+        unsigned int varId = 0;
         while (!tokens.empty()) {
             const Token *t = tokens.top();
             tokens.pop();
@@ -374,9 +374,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
             tokens.push(t->astOperand1());
             tokens.push(t->astOperand2());
             if (t->varId()) {
-                variables.insert(t->varId());
-                if (variables.size() > 1U || value.varId != 0U)
+                if (varId > 0 || value.varId != 0U)
                     return;
+                varId = t->varId();
             } else if (t->str() == "(" && Token::Match(t->previous(), "%name%"))
                 return; // function call
         }
@@ -385,8 +385,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
         v.conditional = true;
         v.changeKnownToPossible();
 
-        if (!variables.empty())
-            v.varId = *(variables.begin());
+        if (varId)
+            v.varId = varId;
 
         setTokenValue(parent, v);
     }
