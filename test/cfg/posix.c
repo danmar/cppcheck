@@ -152,7 +152,7 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
     // cppcheck-suppress uninitvar
-    write(fd,buf,2);
+    write(fd,buf,2); // #6325
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
     // cppcheck-suppress uninitvar
