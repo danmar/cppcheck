@@ -148,12 +148,15 @@ void uninitvar(int fd)
     char buf[2];
     int decimal, sign;
     double d;
+    void *p;
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
     // cppcheck-suppress uninitvar
     write(fd,buf,2);
     // cppcheck-suppress uninitvar
     write(fd,"ab",x);
+    // cppcheck-suppress uninitvar
+    write(fd,p,2);
 
 
     /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */

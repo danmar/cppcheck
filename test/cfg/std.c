@@ -16,6 +16,7 @@
 #include <fenv.h>
 #include <setjmp.h>
 #include <time.h>
+#include <stdbool.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -3366,4 +3367,14 @@ void uninitvar_itoa(void)
     int base;
     // cppcheck-suppress uninitvar
     (void)itoa(value,str,base);
+}
+
+void invalidFunctionArgBool_abs(bool b, double x, double y)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)abs(true); // #6990
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)abs(b); // #6990
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)abs(x<y); // #5635
 }
