@@ -1062,13 +1062,15 @@ void Preprocessor::handleUndef(std::list<std::string> &configurations) const
                 else if (cfg->compare(0,it->length(),*it)==0 && cfg->find_first_of(";=") == it->length())
                     undef = true;
                 else if (cfg->find(";" + *it) == std::string::npos)
-                    ;
+                    continue;
                 else if (cfg->find(";" + *it + ";") != std::string::npos)
                     undef = true;
                 else if (cfg->find(";" + *it + "=") != std::string::npos)
                     undef = true;
                 else if (cfg->find(";" + *it) + it->size() + 1U == cfg->size())
                     undef = true;
+                if (undef)
+                    break;
             }
 
             if (undef)
