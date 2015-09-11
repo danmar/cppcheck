@@ -789,6 +789,13 @@ void uninitvar_atan2(void)
     (void)atan2l(ld1,ld2);
 }
 
+void uninitvar_atof(void)
+{
+    char * c;
+    // cppcheck-suppress uninitvar
+    (void)atof(c);
+}
+
 void uninitvar_atol(void)
 {
     char * c;
@@ -3443,5 +3450,38 @@ void nullPointer_fesetenv(void)
     (void)fesetenv(envp);
     // cppcheck-suppress nullPointer
     (void)fesetenv(0);
+}
+
+void nullPointer_fesetexceptflag(int excepts)
+{
+    fexcept_t* flagp = 0;
+    // cppcheck-suppress nullPointer
+    (void)fesetexceptflag(flagp,excepts);
+    // cppcheck-suppress nullPointer
+    (void)fesetexceptflag(0,excepts);
+}
+
+void nullPointer_feupdateenv(void)
+{
+    fenv_t* envp = 0;
+    // cppcheck-suppress nullPointer
+    (void)feupdateenv(envp);
+    // cppcheck-suppress nullPointer
+    (void)feupdateenv(0);
+}
+
+void nullPointer_atexit(void)
+{
+    // cppcheck-suppress nullPointer
+    (void)atexit(0);
+}
+
+void nullPointer_atof(void)
+{
+    char * c = 0;
+    // cppcheck-suppress nullPointer
+    (void)atof(c);
+    // cppcheck-suppress nullPointer
+    (void)atof(0);
 }
 
