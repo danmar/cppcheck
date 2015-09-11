@@ -5886,7 +5886,7 @@ void Tokenizer::simplifyVariableMultipleAssign()
             }
 
             Token *stopAt = tok->tokAt(2);
-            const Token *valueTok = tok->tokAt(4);
+            const Token *valueTok = stopAt->tokAt(2);
             const std::string& value(valueTok->str());
             tok2 = tok2->next();
 
