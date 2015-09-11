@@ -6245,9 +6245,11 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const valueToken = tok2->tokAt(4);
                 std::string value(valueToken->str());
                 if (tok2->str() == "sprintf") {
-                    std::string::difference_type n = -1;
-                    while (static_cast<std::string::size_type>(n = value.find("%%",n+1)) != std::string::npos) {
-                        value.replace(n,2,"%");
+                    std::string::size_type n = 0;
+                    while ((n = value.find("%%", n)) != std::string::npos) {
+                        // Replace "%%" with "%" - erase the first '%' and continue past the second '%'
+                        value.erase(n, 1);
+                        ++n;
                     }
                 }
                 const unsigned int valueVarId(0);
