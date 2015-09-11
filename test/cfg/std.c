@@ -3386,3 +3386,62 @@ void ignoredReturnValue_abs(int i)
     // cppcheck-suppress constStatement
     abs(-100);
 }
+
+void nullPointer_asctime(void)
+{
+    struct tm *tm = 0;
+    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress nullPointer
+    (void)asctime(tm);
+    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress nullPointer
+    (void)asctime(0);
+}
+
+void nullPointer_wcsftime(size_t maxsize)
+{
+    wchar_t* ptr = 0;
+    wchar_t* format = 0;
+    struct tm* timeptr = 0;
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(ptr,maxsize,format,timeptr);
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(0,maxsize,0,0);
+}
+
+void nullPointer_fegetenv(void)
+{
+    fenv_t* envp = 0;
+    // cppcheck-suppress nullPointer
+    (void)fegetenv(envp);
+    // cppcheck-suppress nullPointer
+    (void)fegetenv(0);
+}
+
+void nullPointer_fegetexceptflag(int excepts)
+{
+    fexcept_t* flagp = 0;
+    // cppcheck-suppress nullPointer
+    (void)fegetexceptflag(flagp,excepts);
+    // cppcheck-suppress nullPointer
+    (void)fegetexceptflag(0,excepts);
+}
+
+void nullPointer_feholdexcept(void)
+{
+    fenv_t* envp = 0;
+    // cppcheck-suppress nullPointer
+    (void)feholdexcept(envp);
+    // cppcheck-suppress nullPointer
+    (void)feholdexcept(0);
+}
+
+void nullPointer_fesetenv(void)
+{
+    fenv_t* envp = 0;
+    // cppcheck-suppress nullPointer
+    (void)fesetenv(envp);
+    // cppcheck-suppress nullPointer
+    (void)fesetenv(0);
+}
+
