@@ -1198,7 +1198,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             else {
                 bool use = false;
 
-                std::stack<const Token *> f;
+                std::stack<const Token *> functions;
 
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == ";") {
@@ -1207,17 +1207,18 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
 
                     if (tok2->str() == "(")
-                        f.push(tok2->previous());
-                    else if (!f.empty() && tok2->str() == ")")
-                        f.pop();
+                        functions.push(tok2->previous());
+                    else if (!functions.empty() && tok2->str() == ")")
+                        functions.pop();
 
                     if (tok2->varId() == varid) {
                         // Read data..
                         if (!Token::Match(tok2->previous(), "&|(") &&
                             tok2->strAt(1) == "[") {
-                        } else if (f.empty() ||
-                                   !test_white_list(f.top()->str(), _settings, tokenizer->isCPP()) ||
-                                   getDeallocationType(f.top(),varid)) {
+                            ;
+                        } else if (functions.empty() ||
+                                   !test_white_list(functions.top()->str(), _settings, tokenizer->isCPP()) ||
+                                   getDeallocationType(functions.top(),varid)) {
                             use = true;
                         }
                     }
