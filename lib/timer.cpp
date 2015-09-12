@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "timer.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
-#include "timer.h"
 /*
     TODO:
-    - sort list by time
-    - do not sort the results alphabetically
     - rename "file" to "single"
     - synchronise map access in multithreaded mode or disable timing
     - add unit tests

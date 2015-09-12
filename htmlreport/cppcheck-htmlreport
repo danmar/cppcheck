@@ -6,14 +6,16 @@ import io
 import sys
 import optparse
 import os
+import operator
 
+from collections import Counter
 from pygments import highlight
 from pygments.lexers import guess_lexer_for_filename
 from pygments.formatters import HtmlFormatter
 from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
-
+from xml.sax.saxutils import escape
 """
 Turns a cppcheck xml file into a browsable html report along
 with syntax highlighted source code.
@@ -21,10 +23,17 @@ with syntax highlighted source code.
 
 STYLE_FILE = """
 body {
-    background-color: black;
     font: 13px Arial, Verdana, Sans-Serif;
     margin: 0;
-    padding: 0;
+    width: auto;
+}
+
+h1 {
+    margin: 10px;
+}
+
+#footer > p {
+    margin: 4px;
 }
 
 .error {
@@ -38,20 +47,37 @@ body {
     margin-left: 4px;
 }
 
-.highlight .hll {
-    padding: 1px;
+.inconclusive {
+    background-color: #B6B6B4;
 }
 
-#page {
-    background-color: white;
-    border: 2px solid #aaa;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    margin: 30px;
-    overflow: auto;
-    padding: 5px 20px;
-    width: auto;
+.inconclusive2 {
+    background-color: #B6B6B4;
+    border: 1px dotted black;
+    display: inline-block;
+    margin-left: 4px;
+}
+
+div.verbose {
+    display: inline-block;
+    vertical-align: top;
+    cursor: help;
+}
+
+div.verbose div.content {
+    display: none;
+    position: absolute;
+    padding: 10px;
+    margin: 4px;
+    max-width: 40%;
+    white-space: pre-wrap;
+    border: 1px solid black;
+    background-color: #FFFFCC;
+    cursor: auto;
+}
+
+.highlight .hll {
+    padding: 1px;
 }
 
 #header {
@@ -62,24 +88,69 @@ body {
     float: left;
     margin-top: 5px;
     text-align: left;
-    width: 100px;
-    height: auto;
+    width: 150px;
+    height: 75%;
+    position: fixed;
+    overflow: auto;
+    z-index: 1;
+}
+
+#menu_index {
+    float: left;
+    margin-top: 5px;
+    padding-left: 5px;
+    text-align: left;
+    width: 200px;
+    height: 75%;
+    position: fixed;
+    overflow: auto;
+    z-index: 1;
 }
 
 #menu > a {
     display: block;
     margin-left: 10px;
+    font: 12px;
+    z-index: 1;
+}
+
+#filename  {
+    margin-left: 10px;
+    font: 12px;
+    z-index: 1;
+}
+
+.highlighttable {
+    background-color:white;
+    z-index: 10;
+    position: relative;
+    margin: -10 px;
 }
 
 #content {
+    background-color: white;
     -webkit-box-sizing: content-box;
     -moz-box-sizing: content-box;
     box-sizing: content-box;
-    border-left: thin solid #aaa;
     float: left;
     margin: 5px;
+    margin-left: 10px;
     padding: 0 10px 10px 10px;
     width: 80%;
+    padding-left: 150px;
+}
+
+#content_index {
+    background-color: white;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    float: left;
+    margin: 5px;
+    margin-left: 10px;
+    padding: 0 10px 10px 10px;
+    width: 80%;
+    padding-left: 200px;
 }
 
 .linenos {
@@ -111,14 +182,50 @@ HTML_HEAD = """
     <style>
 %s
     </style>
+    <script language="javascript">
+      function getStyle(el,styleProp) {
+        if (el.currentStyle)
+          var y = el.currentStyle[styleProp];
+        else if (window.getComputedStyle)
+          var y = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+        return y;
+      }
+      function toggle() {
+        var el = this.expandable_content;
+        var mark = this.expandable_marker;
+        if (el.style.display == "block") {
+          el.style.display = "none";
+          mark.innerHTML = "[+]";
+        } else {
+          el.style.display = "block";
+          mark.innerHTML = "[-]";
+        }
+      }
+      function init_expandables() {
+        var elts = document.getElementsByClassName("expandable");
+        for (var i = 0; i < elts.length; i++) {
+          var el = elts[i];
+          var clickable = el.getElementsByTagName("span")[0];
+          var marker = clickable.getElementsByClassName("marker")[0];
+          var content = el.getElementsByClassName("content")[0];
+          var width = clickable.clientWidth - parseInt(getStyle(content, "padding-left")) - parseInt(getStyle(content, "padding-right"));
+          content.style.width = width + "px";
+          clickable.expandable_content = content;
+          clickable.expandable_marker = marker;
+          clickable.onclick = toggle;
+        }
+      }
+    </script>
   </head>
-  <body>
-    <div id="page">
+  <body onload="init_expandables()">
       <div id="header">
-        <h1>Cppcheck report - %s</h1>
+        <h1>Cppcheck report - %s: %s </h1>
       </div>
-      <div id="menu">
-        <a href="index.html">Defect list</a>
+      <div id="menu" dir="rtl">
+       <p id="filename"><a href="index.html">Defects:</a> %s</p>
+"""
+
+HTML_HEAD_END = """
       </div>
       <div id="content">
 """
@@ -127,20 +234,32 @@ HTML_FOOTER = """
       </div>
       <div id="footer">
         <p>
-          Cppcheck - a tool for static C/C++ code analysis
-        </p>
-        <ul>
-          <li>Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></li>
-          <li>Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a></li>
-          <li>IRC: #cppcheck at irc.freenode.net</li>
-        </ul>
+         Cppcheck %s - a tool for static C/C++ code analysis</br>
+         </br>
+         Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a></br>
+         IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a></br>
+        <p>
       </div>
-    </div>
   </body>
 </html>
 """
 
 HTML_ERROR = "<span class='error2'>&lt;--- %s</span>\n"
+HTML_INCONCLUSIVE = "<span class='inconclusive2'>&lt;--- %s</span>\n"
+
+HTML_EXPANDABLE_ERROR = "<div class='verbose expandable'><span class='error2'>&lt;--- %s <span class='marker'>[+]</span></span><div class='content'>%s</div></div>\n"""
+HTML_EXPANDABLE_INCONCLUSIVE = "<div class='verbose expandable'><span class='inconclusive2'>&lt;--- %s <span class='marker'>[+]</span></span><div class='content'>%s</div></div>\n"""
+
+# escape() and unescape() takes care of &, < and >.
+html_escape_table = {
+    '"': "&quot;",
+    "'": "&apos;"
+}
+html_unescape_table = {v: k for k, v in html_escape_table.items()}
+
+
+def html_escape(text):
+    return escape(text, html_escape_table)
 
 
 class AnnotateCodeFormatter(HtmlFormatter):
@@ -154,7 +273,22 @@ class AnnotateCodeFormatter(HtmlFormatter):
             if i == 1:
                 for error in self.errors:
                     if error['line'] == line_no:
-                        t = t.replace('\n', HTML_ERROR % error['msg'])
+                        try:
+                            if error['inconclusive'] == 'true':
+                                # only print verbose msg if it really differs
+                                # from actual message
+                                if error.get('verbose') and (error['verbose'] != error['msg']):
+                                    index = t.rfind('\n')
+                                    t = t[:index] + HTML_EXPANDABLE_INCONCLUSIVE % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
+                                else:
+                                    t = t.replace('\n', HTML_INCONCLUSIVE % error['msg'])
+                        except KeyError:
+                            if error.get('verbose') and (error['verbose'] != error['msg']):
+                                index = t.rfind('\n')
+                                t = t[:index] + HTML_EXPANDABLE_ERROR % (error['msg'], html_escape(error['verbose'].replace("\\012", '\n'))) + t[index + 1:]
+                            else:
+                                t = t.replace('\n', HTML_ERROR % error['msg'])
+
                 line_no = line_no + 1
             yield i, t
 
@@ -167,6 +301,7 @@ class CppCheckHandler(XmlContentHandler):
         XmlContentHandler.__init__(self)
         self.errors = []
         self.version = '1'
+        self.versionCppcheck = ''
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -190,19 +325,32 @@ class CppCheckHandler(XmlContentHandler):
         })
 
     def handleVersion2(self, name, attributes):
+        if name == 'cppcheck':
+            self.versionCppcheck = attributes['version']
         if name == 'error':
-            self.errors.append({
-                'file': '',
-                'line': 0,
-                'id': attributes['id'],
-                'severity': attributes['severity'],
-                'msg': attributes['msg']
-            })
+            try:
+                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg'],
+                    'verbose': attributes.get('verbose'),
+                    'inconclusive': attributes['inconclusive']
+                })
+            except KeyError:
+                self.errors.append({
+                    'file': '',
+                    'line': 0,
+                    'id': attributes['id'],
+                    'severity': attributes['severity'],
+                    'msg': attributes['msg'],
+                    'verbose': attributes.get('verbose')
+                })
         elif name == 'location':
             assert self.errors
             self.errors[-1]['file'] = attributes['file']
             self.errors[-1]['line'] = int(attributes['line'])
-
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
@@ -224,6 +372,13 @@ if __name__ == '__main__':
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
+
+    try:
+        sys.argv[1]
+    except IndexError:  # no arguments give, print --help
+        parser.print_help()
+        quit()
+
     if not options.report_dir:
         parser.error('No report directory set.')
 
@@ -238,6 +393,8 @@ if __name__ == '__main__':
         if not os.path.exists(options.file):
             parser.error('cppcheck xml file: %s not found.' % options.file)
         input_file = io.open(options.file, 'r')
+    else:
+        parser.error('No cppcheck xml file specified. (--file=)')
 
     # Parse the xml file and produce a simple list of errors.
     print('Parsing xml report.')
@@ -270,7 +427,9 @@ if __name__ == '__main__':
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
     print('Processing errors')
-    for filename, data in files.items():
+
+    decode_errors = []
+    for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
         errors = data['errors']
 
@@ -283,11 +442,19 @@ if __name__ == '__main__':
 
         source_filename = os.path.join(source_dir, filename)
         try:
-            with io.open(source_filename, 'r') as input_file:
+            with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
-            sys.stderr.write("ERROR: Source file '%s' not found.\n" %
+            if (error['id'] == 'unmatchedSuppression'):
+                continue  # file not found, bail out
+            else:
+                sys.stderr.write("ERROR: Source file '%s' not found.\n" %
+                                 source_filename)
+            continue
+        except UnicodeDecodeError:
+            sys.stderr.write("WARNING: Unicode decode error in '%s'.\n" %
                              source_filename)
+            decode_errors.append(source_filename[2:])  # "[2:]" gets rid of "./" at beginning
             continue
 
         htmlFormatter = AnnotateCodeFormatter(linenos=True,
@@ -296,14 +463,28 @@ if __name__ == '__main__':
                                               lineanchors='line',
                                               encoding=options.source_encoding)
         htmlFormatter.errors = errors
+
         with io.open(os.path.join(options.report_dir, htmlfile),
                      'w') as output_file:
             output_file.write(HTML_HEAD %
                               (options.title,
                                htmlFormatter.get_style_defs('.highlight'),
-                               options.title))
+                               options.title,
+                               filename,
+                               filename.split('/')[-1]))
 
-            lexer = guess_lexer_for_filename(source_filename, '')
+            for error in sorted(errors, key=lambda k: k['line']):
+                output_file.write("<a href='%s#line-%d'> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+
+            output_file.write(HTML_HEAD_END)
+            try:
+                lexer = guess_lexer_for_filename(source_filename, '')
+            except:
+                sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
+                output_file.write("\n <tr><td colspan='4'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                output_file.write("\n <tr><td colspan='4'> Sorry about this.</td></tr>")
+                continue
+
             if options.source_encoding:
                 lexer.encoding = options.source_encoding
 
@@ -311,43 +492,155 @@ if __name__ == '__main__':
                 highlight(content, lexer, htmlFormatter).decode(
                     options.source_encoding))
 
-            output_file.write(HTML_FOOTER)
+            output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
         print('  ' + filename)
 
     # Generate a master index.html file that will contain a list of
     # all the errors created.
     print('Creating index.html')
+
     with io.open(os.path.join(options.report_dir, 'index.html'),
                  'w') as output_file:
-        output_file.write(HTML_HEAD % (options.title, '', options.title))
-        output_file.write('<table>')
-        output_file.write(
-            '<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
-        for filename, data in files.items():
-            output_file.write(
-                "<tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
-                (data['htmlfile'], filename))
-            for error in data['errors']:
-                if error['severity'] == 'error':
-                    error_class = 'class="error"'
-                else:
-                    error_class = ''
 
-                if error['id'] == 'missingInclude':
+        stats_count = 0
+        stats = []
+        for filename, data in sorted(files.items()):
+            for error in data['errors']:
+                stats.append(error['id'])  # get the stats
+                stats_count += 1
+
+        stat_html = []
+        # the following lines sort the stat primary by value (occurrences),
+        # but if two IDs occur equally often, then we sort them alphabetically by warning ID
+        try:
+            cnt_max = Counter(stats).most_common()[0][1]
+        except IndexError:
+            cnt_max = 0
+
+        try:
+            cnt_min = Counter(stats).most_common()[-1][1]
+        except IndexError:
+            cnt_min = 0
+
+        for occurrences in reversed(range(cnt_min, cnt_max + 1)):
+            for _id in [k for k, v in sorted(Counter(stats).items()) if v == occurrences]:
+                stat_html.append("        " + str(dict(Counter(stats).most_common())[_id]) + " " + str(_id) + "<br/>\n")
+
+        output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
+        output_file.write('       <p>\n' + '        ' + str(stats_count) + ' total<br/><br/>\n' + ''.join(stat_html) + '<br/><br/><a href="stats.html">Statistics</a></p>')
+        output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
+        output_file.write('       <table>\n')
+        output_file.write(
+            '       <tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>')
+        for filename, data in sorted(files.items()):
+            if filename in decode_errors:  # don't print a link but a note
+                output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
+            else:
+                if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
-                        '<tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
-                        (error['id'], error['severity'], error['msg']))
+                        "\n       <tr><td colspan='4'>%s</td></tr>" %
+                        (filename))
                 else:
                     output_file.write(
-                        "<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
-                        (data['htmlfile'], error['line'], error['line'],
-                         error['id'], error['severity'], error_class,
-                         error['msg']))
-        output_file.write('</table>')
-        output_file.write(HTML_FOOTER)
+                        "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                        (data['htmlfile'], filename))
+
+                for error in sorted(data['errors'], key=lambda k: k['line']):
+                    error_class = ''
+                    try:
+                        if error['inconclusive'] == 'true':
+                            error_class = 'class="inconclusive"'
+                            error['severity'] += ", inconcl."
+                    except KeyError:
+                        pass
+
+                    if error['severity'] == 'error':
+                        error_class = 'class="error"'
+                    if error['id'] == 'missingInclude':
+                        output_file.write(
+                            '\n         <tr><td></td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+                            (error['id'], error['severity'], error['msg']))
+                    elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
+                        output_file.write(
+                            "\n         <tr><td></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                            (error['id'], error['severity'], error_class,
+                             error['msg']))
+                    else:
+                        output_file.write(
+                            "\n       <tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td %s>%s</td></tr>" %
+                            (data['htmlfile'], error['line'], error['line'],
+                             error['id'], error['severity'], error_class,
+                             error['msg']))
+
+        output_file.write('\n       </table>')
+        output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
+
+    if (decode_errors):
+        sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
+        sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
     with io.open(os.path.join(options.report_dir, 'style.css'),
                  'w') as css_file:
         css_file.write(STYLE_FILE)
+
+    print("Creating stats.html (statistics)\n")
+    stats_countlist = {}
+
+    for filename, data in sorted(files.items()):
+        if (filename == ''):
+            continue
+        stats_tmplist = []
+        for error in sorted(data['errors'], key=lambda k: k['line']):
+            stats_tmplist.append(error['severity'])
+
+        stats_countlist[filename] = dict(Counter(stats_tmplist))
+
+    # get top ten for each severity
+    SEVERITIES = "error", "warning", "portability", "performance", "style", "unusedFunction", "information", "missingInclude", "internal"
+
+    with io.open(os.path.join(options.report_dir, 'stats.html'), 'w') as stats_file:
+
+        stats_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
+        stats_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
+
+        for sev in SEVERITIES:
+            _sum = 0
+            stats_templist = {}
+
+            # if the we have an style warning but we are checking for
+            # portability, we have to skip it to prevent KeyError
+            try:
+                for filename in stats_countlist:
+                    try:  # also bail out if we have a file with no sev-results
+                        _sum += stats_countlist[filename][sev]
+                        stats_templist[filename] = (int)(stats_countlist[filename][sev])  # file : amount,
+                    except KeyError:
+                        continue
+                # don't print "0 style" etc, if no style warnings were found
+                if (_sum == 0):
+                    break
+            except KeyError:
+                continue
+            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</br>\n")
+
+            # sort, so that the file with the most severities per type is first
+            stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1, 0), reverse=True)
+            it = 0
+            LENGTH = 0
+
+            for i in stats_list_sorted:  # printing loop
+                # for aesthetics: if it's the first iteration of the loop, get
+                # the max length of the number string
+                if (it == 0):
+                    LENGTH = len(str(i[1]))  # <- length of longest number, now get the difference and try to  make other numbers align to it
+
+                stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a></br>\n")
+                it += 1
+                if (it == 10):  # print only the top 10
+                    break
+            stats_file.write("</p>\n")
+
+    print("\nOpen '" + options.report_dir + "/index.html' to see the results.")

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,31 +19,24 @@
 #include "tokenize.h"
 #include "checkassert.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestAssert : public TestFixture {
 public:
-    TestAssert() : TestFixture("TestAsserts") {}
+    TestAssert() : TestFixture("TestAssert") {}
 
 private:
-    void check(
-        const char code[],
-        const char *filename = NULL) {
+    void check(const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("style");
         settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename ? filename : "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         // Check..
         CheckAssert checkAssert(&tokenizer, &settings, this);
@@ -53,6 +46,7 @@ private:
     void run() {
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
+        TEST_CASE(memberFunctionCallInAssert);
         TEST_CASE(safeFunctionCallInAssert);
     }
 
@@ -133,7 +127,40 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memberFunctionCallInAssert() {
+        check("struct SquarePack {\n"
+              "   void Foo();\n"
+              "};\n"
+              "void foo(SquarePack s) {\n"
+              "   assert( s.Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "   void Foo() const;\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static void Foo();\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct SquarePack {\n"
+              "};\n"
+              "void foo(SquarePack* s) {\n"
+              "   assert( s->Foo(); );\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assignmentInAssert() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public:
      * @param originalPath path to be simplified, must have / -separators.
      * @return simplified path
      */
-    static std::string simplifyPath(const char *originalPath);
+    static std::string simplifyPath(std::string originalPath);
 
     /**
      * @brief Lookup the path part from a filename (e.g., '/tmp/a.h' -> '/tmp/', 'a.h' -> '')
@@ -105,10 +105,17 @@ public:
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
+      * @brief Get an absolute file path from a relative one.
+      * @param filePath File path to be made absolute.
+      * @return absolute path, if possible. Otherwise an empty path is returned
+      */
+    static std::string getAbsoluteFilePath(const std::string& filePath);
+
+    /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional
-     * @return returns true if the file extension indicates it should be checked
+     * @return true if the file extension indicates it should be checked
      */
     static bool acceptFile(const std::string &filename) {
         const std::set<std::string> extra;
@@ -120,7 +127,7 @@ public:
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional
      * @param extra    extra file extensions
-     * @return returns true if the file extension indicates it should be checked
+     * @return true if the file extension indicates it should be checked
      */
     static bool acceptFile(const std::string &filename, const std::set<std::string> &extra);
 
@@ -138,7 +145,6 @@ public:
      */
     static bool isCPP(const std::string &extensionInLowerCase);
 
-private:
     /**
      * @brief Is filename a header based on file extension
      * @param path filename to check. path info is optional

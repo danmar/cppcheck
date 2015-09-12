@@ -1,0 +1,333 @@
+[linux-3.11/arch/arm64/kvm/sys_regs.c:1020]: (error) Uninitialized variable: clidr
+[linux-3.11/arch/arm64/kvm/sys_regs.c:1021]: (error) Uninitialized struct member: clidr.val
+[linux-3.11/arch/cris/arch-v32/drivers/sync_serial.c:285]: (error) Array 'ports[1]' accessed at index 1, which is out of bounds.
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:1003]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:1502]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/hp/common/sba_iommu.c:956]: (error) Possible null pointer dereference: ioc
+[linux-3.11/arch/ia64/kernel/palinfo.c:133]: (error) Array 'units[5]' accessed at index 6, which is out of bounds.
+[linux-3.11/arch/ia64/sn/pci/tioca_provider.c:484] -> [linux-3.11/arch/ia64/sn/pci/tioca_provider.c:487]: (warning) Possible null pointer dereference: map - otherwise it is redundant to check it against null.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: ''.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_CRAMFS;CONFIG_MTD_UCLINUX'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_DEBUG_FS'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_DEBUG_FS;CONFIG_MMU'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_DUMMY_CONSOLE;CONFIG_VT'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_EARLY_PRINTK'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_MTD_UCLINUX'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_MTD_UCLINUX;CONFIG_ROMFS_FS'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_VT'.
+[linux-3.11/arch/microblaze/kernel/setup.c:180]: (error) Invalid number of character (() when these macros are defined: 'CONFIG_VT;CONFIG_XILINX_CONSOLE'.
+[linux-3.11/arch/mips/ralink/prom.c:64]: (error) Uninitialized variable: argc
+[linux-3.11/arch/mips/txx9/generic/pci.c:334]: (error) Array 'regs[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/arch/mn10300/boot/tools/build.c:54]: (error) va_list 'args' was opened but not closed by va_end().
+[linux-3.11/arch/powerpc/kernel/cacheinfo.c:384] -> [linux-3.11/arch/powerpc/kernel/cacheinfo.c:386]: (warning) Possible null pointer dereference: cache - otherwise it is redundant to check it against null.
+[linux-3.11/arch/powerpc/kernel/prom_init.c:391]: (error) va_list 'args' was opened but not closed by va_end().
+[linux-3.11/arch/powerpc/perf/power4-pmu.c:506]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/arch/powerpc/perf/ppc970-pmu.c:380]: (error) Array 'pmcsel[8]' accessed at index 8, which is out of bounds.
+[linux-3.11/arch/powerpc/platforms/powermac/bootx_init.c:87]: (error) va_list 'args' was opened but not closed by va_end().
+[linux-3.11/arch/um/drivers/net_user.c:258]: (error) va_list 'ap' was opened but not closed by va_end().
+[linux-3.11/arch/unicore32/kernel/early_printk.c:48]: (error) Uninitialized variable: keep_early
+[linux-3.11/arch/x86/boot/compressed/mkpiggy.c:61]: (error) Resource leak: f
+[linux-3.11/arch/x86/boot/tools/build.c:135]: (error) va_list 'args' was opened but not closed by va_end().
+[linux-3.11/arch/x86/kvm/x86.c:5471]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5472]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5473]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/kvm/x86.c:5474]: (error) Uninitialized variable: param
+[linux-3.11/arch/x86/math-emu/poly_2xm1.c:127]: (error) Uninitialized struct member: Denom.msw
+[linux-3.11/arch/x86/math-emu/poly_2xm1.c:73]: (error) Uninitialized struct member: argSignif.msw
+[linux-3.11/arch/x86/math-emu/poly_atan.c:92]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:194]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:199]: (error) Uninitialized variable: argSignif
+[linux-3.11/arch/x86/math-emu/poly_l2.c:205]: (error) Uninitialized struct member: Numer.msw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:212]: (error) Uninitialized struct member: argSignif.msw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:218]: (error) Uninitialized struct member: argSignif.lsw
+[linux-3.11/arch/x86/math-emu/poly_l2.c:219]: (error) Uninitialized struct member: argSignif.midw
+[linux-3.11/arch/x86/math-emu/poly_sin.c:352]: (error) Uninitialized struct member: fix_up.msw
+[linux-3.11/arch/x86/math-emu/poly_tan.c:108]: (error) Uninitialized struct member: accum.lsw
+[linux-3.11/arch/x86/math-emu/poly_tan.c:186]: (error) Uninitialized struct member: fix_up.msw
+[linux-3.11/arch/xtensa/platforms/iss/network.c:115]: (error) va_list 'ap' was opened but not closed by va_end().
+[linux-3.11/Documentation/connector/ucon.c:250]: (error) Resource leak: out
+[linux-3.11/Documentation/laptops/hpfall.c:33]: (error) Dangerous usage of 'devname' (strncpy doesn't always null-terminate it).
+[linux-3.11/drivers/acpi/battery.c:553] -> [linux-3.11/drivers/acpi/battery.c:557]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/bus.c:737] -> [linux-3.11/drivers/acpi/bus.c:740]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/glue.c:243] -> [linux-3.11/drivers/acpi/glue.c:245]: (performance) Variable 'retval' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/power.c:264] -> [linux-3.11/drivers/acpi/power.c:266]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/power.c:611] -> [linux-3.11/drivers/acpi/power.c:630]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_core.c:170] -> [linux-3.11/drivers/acpi/processor_core.c:172]: (performance) Variable 'apic_id' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_perflib.c:365] -> [linux-3.11/drivers/acpi/processor_perflib.c:374]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/acpi/processor_perflib.c:577] -> [linux-3.11/drivers/acpi/processor_perflib.c:584]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[linux-3.11/drivers/atm/fore200e.c:2802]: (error) Uninitialized variable: err
+[linux-3.11/drivers/char/tile-srom.c:156]: (error) Uninitialized variable: dummy
+[linux-3.11/drivers/clk/sunxi/clk-sunxi.c:52]: (error) Memory leak: fixed
+[linux-3.11/drivers/clk/sunxi/clk-sunxi.c:52]: (error) Memory leak: gate
+[linux-3.11/drivers/cpufreq/cpufreq.c:341] -> [linux-3.11/drivers/cpufreq/cpufreq.c:353]: (warning) Possible null pointer dereference: policy - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/crypto/caam/caamhash.c:822]: (error) Uninitialized variable: desc
+[linux-3.11/drivers/dma/mmp_tdma.c:190]: (error) Uninitialized variable: tdcr
+[linux-3.11/drivers/dma/mmp_tdma.c:231]: (error) Uninitialized variable: tdcr
+[linux-3.11/drivers/dma/txx9dmac.c:1227] -> [linux-3.11/drivers/dma/txx9dmac.c:1247]: (warning) Possible null pointer dereference: pdata - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-twl4030.c:530] -> [linux-3.11/drivers/gpio/gpio-twl4030.c:543]: (warning) Possible null pointer dereference: pdata - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:60] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:61] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:63] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:64] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:65] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:66] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpio/gpio-ucb1400.c:67] -> [linux-3.11/drivers/gpio/gpio-ucb1400.c:73]: (warning) Possible null pointer dereference: ucb - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:219]: (error) Array 'dsi_errors[31]' accessed at index 31, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:536] -> [linux-3.11/drivers/gpu/drm/gma500/mdfld_dsi_pkg_sender.c:541]: (warning) Possible null pointer dereference: sender - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/i915/i915_gem.c:986]: (error) Possible null pointer dereference: ring
+[linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:312] -> [linux-3.11/drivers/gpu/drm/i915/i915_gem_context.c:321]: (warning) Possible null pointer dereference: file - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:687] -> [linux-3.11/drivers/gpu/drm/i915/intel_overlay.c:692]: (warning) Possible null pointer dereference: overlay - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/gpu/drm/qxl/qxl_draw.c:352]: (error) Uninitialized variable: drawable
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:652]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:653]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:656]: (error) Array 'YCOEF_EN_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:656]: (error) Array 'YCOEF_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:657]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/gpu/drm/radeon/radeon_legacy_tv.c:660]: (error) Array 'SLOPE_value[5]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/infiniband/hw/ipath/ipath_diag.c:366]: (error) Uninitialized struct member: dp.unit
+[linux-3.11/drivers/input/touchscreen/ad7879-spi.c:37]: (error) Uninitialized variable: _rx_buf
+[linux-3.11/drivers/isdn/mISDN/dsp_cmx.c:1623]: (error) Invalid number of character ({) when these macros are defined: 'DSP_NEVER_DEFINED'.
+[linux-3.11/drivers/media/dvb-frontends/dib9000.c:1047]: (error) Array 'mb[10]' accessed at index 10, which is out of bounds.
+[linux-3.11/drivers/media/dvb-frontends/ds3000.c:619]: (error) Array 'dvbs2_snr_tab[80]' accessed at index 80, which is out of bounds.
+[linux-3.11/drivers/media/dvb-frontends/stv0367.c:926]: (error) Possible null pointer dereference: tuner_ops
+[linux-3.11/drivers/media/i2c/ov9650.c:710]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/i2c/ov9650.c:711]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/i2c/ov9650.c:725]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/media/pci/saa7134/saa7134-input.c:136]: (error) Uninitialized variable: b
+[linux-3.11/drivers/media/usb/dvb-usb-v2/mxl111sf.c:139]: (error) Uninitialized variable: val
+[linux-3.11/drivers/mfd/pm8921-core.c:178]: (error) Possible null pointer dereference: pmic
+[linux-3.11/drivers/mfd/tps65911-comparator.c:61]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/drivers/mfd/tps65911-comparator.c:88]: (error) Array 'tps_comparators[2]' accessed at index 2, which is out of bounds.
+[linux-3.11/drivers/misc/lkdtm.c:330]: (error) Uninitialized variable: data
+[linux-3.11/drivers/misc/sgi-xp/xpc_partition.c:73]: (error) Uninitialized variable: buf
+[linux-3.11/drivers/misc/sgi-xp/xpc_sn2.c:2173]: (error) Uninitialized variable: msg
+[linux-3.11/drivers/misc/sgi-xp/xpc_sn2.c:2174]: (error) Uninitialized variable: notify
+[linux-3.11/drivers/mmc/host/sdhci-spear.c:93]: (error) Possible null pointer dereference: pdata
+[linux-3.11/drivers/net/ethernet/emulex/benet/be_cmds.c:1542]: (error) Uninitialized variable: status
+[linux-3.11/drivers/net/ethernet/i825xx/sun3_82586.c:993]: (error) Array 'p.xmit_cmds[1]' accessed at index 1, which is out of bounds.
+[linux-3.11/drivers/net/ethernet/marvell/mvneta.c:2779]: (error) Uninitialized variable: phy_addr
+[linux-3.11/drivers/net/ethernet/smsc/smc91x.c:556]: (error) Uninitialized variable: flags
+[linux-3.11/drivers/net/fddi/skfp/ecm.c:500]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/net/wireless/ath/ath9k/eeprom.c:414]: (error) Array 'data_9287[idxL].pwrPdg[4][1]' index data_9287[idxL].pwrPdg[0][4] out of bounds.
+[linux-3.11/drivers/net/wireless/ath/ath9k/hw.c:1280]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/net/wireless/ath/ath9k/hw.c:1282]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1851]: (error) Uninitialized struct member: gains.dac
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1851]: (error) Uninitialized struct member: gains.gm
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1851]: (error) Uninitialized struct member: gains.pad
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1851]: (error) Uninitialized struct member: gains.pga
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1851]: (error) Uninitialized variable: gains
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1853]: (error) Uninitialized struct member: gains.dac
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1853]: (error) Uninitialized struct member: gains.gm
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1853]: (error) Uninitialized struct member: gains.pad
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1853]: (error) Uninitialized struct member: gains.pga
+[linux-3.11/drivers/net/wireless/b43/phy_lp.c:1853]: (error) Uninitialized variable: gains
+[linux-3.11/drivers/net/wireless/b43/phy_n.c:167] -> [linux-3.11/drivers/net/wireless/b43/phy_n.c:171]: (warning) Possible null pointer dereference: e - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/net/wireless/brcm80211/brcmfmac/bcmsdh_sdmmc.c:133]: (error) Uninitialized variable: err_ret
+[linux-3.11/drivers/net/wireless/libertas/cmd.c:1129]: (error) Uninitialized struct member: cmd.control
+[linux-3.11/drivers/net/wireless/libertas/cmd.c:1131]: (error) Uninitialized struct member: cmd.control
+[linux-3.11/drivers/net/wireless/rt2x00/rt2x00mac.c:799]: (error) Uninitialized struct member: setup.rx_chain_num
+[linux-3.11/drivers/net/wireless/rt2x00/rt2x00mac.c:799]: (error) Uninitialized struct member: setup.tx_chain_num
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8188ee/trx.c:321]: (error) Uninitialized variable: packet_beacon
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:559]: (error) Uninitialized variable: value8
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:560]: (error) Uninitialized variable: value32
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:566]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:570]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:574]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:575]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:579]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:591]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/hw.c:598]: (error) Uninitialized variable: txpktbuf_bndy
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192de/phy.c:217]: (error) Uninitialized variable: dbi_direct
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192se/rf.c:66]: (error) Uninitialized variable: pwrbase0
+[linux-3.11/drivers/net/wireless/rtlwifi/rtl8192se/rf.c:67]: (error) Uninitialized variable: pwrbase0
+[linux-3.11/drivers/net/wireless/ti/wlcore/boot.c:126]: (error) Undefined behavior: Variable 'min_fw_str' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/net/wireless/ti/wlcore/boot.c:129]: (error) Undefined behavior: Variable 'min_fw_str' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/platform/x86/sony-laptop.c:795]: (error) Uninitialized variable: len
+[linux-3.11/drivers/s390/char/con3215.c:733]: (error) Array 'raw3215[1]' accessed at index 1, which is out of bounds.
+[linux-3.11/drivers/scsi/aacraid/rx.c:503]: (error) Uninitialized variable: var
+[linux-3.11/drivers/scsi/advansys.c:11505]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/advansys.c:11560]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11563]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11564]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11565]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11566]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11567]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11568]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11569]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11570]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11571]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11572]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11573]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11575]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11577]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11579]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11581]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11582]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11586]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11587]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11588]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11590]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11592]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11593]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11594]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11595]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11596]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11597]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11598]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11599]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11600]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11601]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11603]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11605]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11607]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11609]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11614]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11615]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11616]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11618]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11620]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11621]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11622]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11623]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11624]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11625]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11626]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11627]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11628]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11629]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11631]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11633]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11635]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11637]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11677]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11680]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11741]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11743]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11745]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/advansys.c:11747]: (error) Possible null pointer dereference: adv_dvc_varp
+[linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5808] -> [linux-3.11/drivers/scsi/bfa/bfa_fcs_lport.c:5811]: (warning) Possible null pointer dereference: port - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/bfa/bfa_svc.c:1026] -> [linux-3.11/drivers/scsi/bfa/bfa_svc.c:1028]: (warning) Possible null pointer dereference: fcxp - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/BusLogic.c:699]: (error) Uninitialized variable: adapter
+[linux-3.11/drivers/scsi/csiostor/csio_lnode.c:873] -> [linux-3.11/drivers/scsi/csiostor/csio_lnode.c:878]: (warning) Possible null pointer dereference: ln - otherwise it is redundant to check it against null.
+[linux-3.11/drivers/scsi/eata_pio.c:923]: (error) Array 'reg_IRQ[16]' accessed at index 16, which is out of bounds.
+[linux-3.11/drivers/scsi/pm8001/pm80xx_hwi.c:811]: (error) Uninitialized variable: ret
+[linux-3.11/drivers/scsi/qla2xxx/qla_attr.c:896]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/spi/spi-dw.c:659]: (error) Memory leak: chip
+[linux-3.11/drivers/staging/bcm/CmHost.c:1294]: (error) Array 'psfCSType.cCPacketClassificationRule.u8IPv6FlowLable[3]' accessed at index 3, which is out of bounds.
+[linux-3.11/drivers/staging/bcm/CmHost.c:1294]: (error) Array 'psfCSType.cCPacketClassificationRule.u8IPv6FlowLable[3]' accessed at index 4, which is out of bounds.
+[linux-3.11/drivers/staging/bcm/CmHost.c:1294]: (error) Array 'psfCSType.cCPacketClassificationRule.u8IPv6FlowLable[3]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/staging/comedi/drivers/ni_mio_common.c:5044]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/staging/cxt1e1/comet.c:441]: (error) Array 'table[24][5]' index table[24][0] out of bounds.
+[linux-3.11/drivers/staging/lustre/lustre/ptlrpc/pack_generic.c:2462]: (error) va_list 'args' was opened but not closed by va_end().
+[linux-3.11/drivers/staging/ozwpan/ozpd.c:177]: (error) Possible null pointer dereference: pd
+[linux-3.11/drivers/staging/rtl8192u/ieee80211/aes.c:311]: (error) Array 'ctx.E[60]' accessed at index 60, which is out of bounds.
+[linux-3.11/drivers/staging/rtl8192u/ieee80211/aes.c:311]: (error) Array 'ctx.E[60]' accessed at index 61, which is out of bounds.
+[linux-3.11/drivers/staging/rtl8192u/ieee80211/aes.c:311]: (error) Array 'ctx.E[60]' accessed at index 62, which is out of bounds.
+[linux-3.11/drivers/staging/rtl8192u/ieee80211/aes.c:311]: (error) Array 'ctx.E[60]' accessed at index 63, which is out of bounds.
+[linux-3.11/drivers/staging/rtl8192u/r8192U_core.c:4723]: (error) Possible null pointer dereference: driver_info
+[linux-3.11/drivers/staging/rtl8712/rtl871x_ioctl_linux.c:1830]: (error) Memory leak: param
+[linux-3.11/drivers/staging/rtl8712/rtl871x_mlme.c:1296]: (error) Memory leak: pcmd
+[linux-3.11/drivers/staging/rtl8712/rtl871x_mlme.c:1296]: (error) Memory leak: psetkeyparm
+[linux-3.11/drivers/staging/tidspbridge/pmgr/dspapi.c:1787]: (error) Uninitialized variable: mask
+[linux-3.11/drivers/staging/tidspbridge/pmgr/dspapi.c:363]: (error) Uninitialized variable: num_nodes
+[linux-3.11/drivers/staging/tidspbridge/pmgr/dspapi.c:396]: (error) Uninitialized variable: num_procs
+[linux-3.11/drivers/staging/tidspbridge/pmgr/dspapi.c:503]: (error) Uninitialized variable: index
+[linux-3.11/drivers/staging/usbip/userspace/libsrc/names.c:179]: (error) Memory leak: p
+[linux-3.11/drivers/staging/usbip/userspace/libsrc/usbip_host_driver.c:130]: (error) Common realloc mistake: 'edev' nulled but not freed upon failure
+[linux-3.11/drivers/staging/vt6656/bssdb.c:596]: (error) Division by zero.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:286]: (error) Array 'pVBInfo.CR40[3]' accessed at index 11, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:289]: (error) Array 'pVBInfo.CR40[3]' accessed at index 12, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:292]: (error) Array 'pVBInfo.CR40[3]' accessed at index 13, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:306]: (error) Array 'pVBInfo.CR40[3]' accessed at index 11, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:310]: (error) Array 'pVBInfo.CR40[3]' accessed at index 12, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:314]: (error) Array 'pVBInfo.CR40[3]' accessed at index 13, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:325]: (error) Array 'pVBInfo.CR40[3]' accessed at index 13, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:338]: (error) Array 'pVBInfo.CR40[3]' accessed at index 12, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:342]: (error) Array 'pVBInfo.CR40[3]' accessed at index 11, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:367]: (error) Array 'pVBInfo.CR40[3]' accessed at index 13, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:375]: (error) Array 'pVBInfo.CR40[3]' accessed at index 12, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:378]: (error) Array 'pVBInfo.CR40[3]' accessed at index 11, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:411]: (error) Array 'pVBInfo.CR40[3]' accessed at index 8, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:412]: (error) Array 'pVBInfo.CR40[3]' accessed at index 5, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:413]: (error) Array 'pVBInfo.CR40[3]' accessed at index 6, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:414]: (error) Array 'pVBInfo.CR40[3]' accessed at index 7, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:433]: (error) Array 'pVBInfo.CR40[3]' accessed at index 9, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:436]: (error) Array 'pVBInfo.CR40[3]' accessed at index 10, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:447]: (error) Array 'pVBInfo.CR40[3]' accessed at index 3, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:463]: (error) Array 'pVBInfo.CR40[3]' accessed at index 20, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:467]: (error) Array 'pVBInfo.CR40[3]' accessed at index 23, which is out of bounds.
+[linux-3.11/drivers/staging/xgifb/vb_init.c:478]: (error) Array 'pVBInfo.CR40[3]' accessed at index 4, which is out of bounds.
+[linux-3.11/drivers/tty/serial/msm_serial.c:818]: (error) Uninitialized variable: baud
+[linux-3.11/drivers/tty/serial/vt8500_serial.c:564]: (error) Uninitialized variable: port
+[linux-3.11/drivers/tty/sysrq.c:139]: (error) Possible null pointer dereference: killer
+[linux-3.11/drivers/usb/atm/cxacru.c:1111]: (error) Uninitialized variable: bp
+[linux-3.11/drivers/usb/atm/usbatm.c:1382]: (error) Undefined behavior: Variable 'buffer' is used as parameter and destination in s[n]printf().
+[linux-3.11/drivers/usb/class/usbtmc.c:808]: (error) Uninitialized variable: actual
+[linux-3.11/drivers/usb/gadget/mv_u3d_core.c:315]: (error) Memory leak: trb
+[linux-3.11/drivers/usb/gadget/mv_u3d_core.c:459]: (error) Memory leak: trb
+[linux-3.11/drivers/usb/serial/mos7840.c:1373]: (error) Uninitialized variable: mos7840_port
+[linux-3.11/drivers/usb/serial/mos7840.c:1375]: (error) Uninitialized variable: mos7840_port
+[linux-3.11/drivers/usb/serial/mos7840.c:1395]: (error) Uninitialized variable: mos7840_port
+[linux-3.11/drivers/video/aty/mach64_ct.c:180]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/video/aty/mach64_ct.c:183]: (error) Shifting by a negative value is undefined behaviour
+[linux-3.11/drivers/video/broadsheetfb.c:673]: (error) Memory leak: sector_buffer
+[linux-3.11/drivers/video/cyber2000fb.c:1962]: (error) Uninitialized variable: err
+[linux-3.11/drivers/video/sis/init301.c:5717]: (error) Division by zero.
+[linux-3.11/fs/btrfs/reada.c:434] -> [linux-3.11/fs/btrfs/reada.c:450]: (warning) Possible null pointer dereference: fs_info - otherwise it is redundant to check it against null.
+[linux-3.11/fs/fuse/file.c:2058]: (error) Possible null pointer dereference: pages
+[linux-3.11/fs/jfs/jfs_txnmgr.c:1933]: (error) Uninitialized struct member: pxd.addr1
+[linux-3.11/fs/jfs/jfs_txnmgr.c:1933]: (error) Uninitialized struct member: pxd.addr2
+[linux-3.11/fs/jfs/jfs_txnmgr.c:1933]: (error) Uninitialized struct member: pxd.len
+[linux-3.11/fs/jfs/jfs_txnmgr.c:1933]: (error) Uninitialized variable: pxd
+[linux-3.11/fs/xfs/xfs_dir2_node.c:491]: (error) Uninitialized variable: lowstale
+[linux-3.11/fs/xfs/xfs_dir2_node.c:492]: (error) Uninitialized variable: highstale
+[linux-3.11/kernel/posix-timers.c:382]: (error) Uninitialized variable: __timr
+[linux-3.11/kernel/posix-timers.c:776]: (error) Uninitialized variable: __timr
+[linux-3.11/kernel/posix-timers.c:809]: (error) Uninitialized variable: __timr
+[linux-3.11/kernel/posix-timers.c:892]: (error) Uninitialized variable: __timr
+[linux-3.11/kernel/posix-timers.c:940]: (error) Uninitialized variable: __timr
+[linux-3.11/lib/argv_split.c:92]: (error) Memory leak: argv
+[linux-3.11/net/ipv6/ip6_gre.c:673]: (error) Uninitialized variable: max_headroom
+[linux-3.11/net/ipv6/netfilter/nf_conntrack_reasm.c:422]: (error) Uninitialized variable: head
+[linux-3.11/net/ipv6/reassembly.c:454]: (error) Uninitialized variable: head
+[linux-3.11/net/wireless/wext-sme.c:351]: (error) Possible null pointer dereference: ie
+[linux-3.11/scripts/docproc.c:394]: (error) Common realloc mistake: 'data' nulled but not freed upon failure
+[linux-3.11/scripts/docproc.c:418]: (error) Common realloc mistake: 'all_list' nulled but not freed upon failure
+[linux-3.11/scripts/dtc/checks.c:116]: (error) va_list 'ap' was opened but not closed by va_end().
+[linux-3.11/scripts/dtc/fdtput.c:99]: (error) Common realloc mistake: 'value' nulled but not freed upon failure
+[linux-3.11/scripts/dtc/util.c:214]: (error) Common realloc mistake: 'buf' nulled but not freed upon failure
+[linux-3.11/scripts/dtc/util.h:34]: (error) va_list 'ap' was opened but not closed by va_end().
+[linux-3.11/scripts/genksyms/genksyms.c:875]: (error) Resource leak: dumpfile
+[linux-3.11/scripts/kconfig/confdata.c:62]: (error) va_list 'ap' was opened but not closed by va_end().
+[linux-3.11/scripts/kconfig/nconf.gui.c:375]: (error) Common realloc mistake: 'result' nulled but not freed upon failure
+[linux-3.11/scripts/kconfig/nconf.gui.c:481]: (error) Common realloc mistake: 'result' nulled but not freed upon failure
+[linux-3.11/scripts/kconfig/symbol.c:903]: (error) Common realloc mistake: 'res' nulled but not freed upon failure
+[linux-3.11/security/apparmor/match.c:64]: (error) Uninitialized struct member: th.td_data
+[linux-3.11/security/apparmor/match.c:64]: (error) Uninitialized struct member: th.td_hilen
+[linux-3.11/sound/oss/midi_synth.c:51]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:57]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:61]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:66]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:70]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:74]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/midi_synth.c:79]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/mpu401.c:1661]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/mpu401.c:1672]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/mpu401.c:1682]: (error) Uninitialized variable: len
+[linux-3.11/sound/oss/mpu401.c:1690]: (error) Uninitialized variable: len
+[linux-3.11/sound/pci/ice1712/wm8766.c:256]: (error) Uninitialized variable: val2
+[linux-3.11/sound/pci/ice1712/wm8776.c:529]: (error) Uninitialized variable: val2
+[linux-3.11/sound/soc/codecs/ad193x.c:488]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/codecs/tlv320aic23.c:675]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/nuc900/nuc900-ac97.c:337]: (error) Uninitialized variable: ret
+[linux-3.11/sound/soc/txx9/txx9aclc-ac97.c:190]: (error) Uninitialized variable: drvdata
+[linux-3.11/sound/soc/txx9/txx9aclc-ac97.c:192]: (error) Uninitialized variable: drvdata
+[linux-3.11/tools/lib/traceevent/event-parse.c:250]: (error) Common realloc mistake: 'cmdlines' nulled but not freed upon failure
+[linux-3.11/tools/perf/bench/sched-messaging.c:335]: (error) Memory leak: pth_tab
+[linux-3.11/tools/perf/perf.c:273]: (error) Common realloc mistake: 'new_argv' nulled but not freed upon failure
+[linux-3.11/tools/perf/tests/dso-data.c:47]: (error) Memory leak: buf
+[linux-3.11/tools/perf/util/annotate.c:680]: (error) Memory leak: ppercents
+[linux-3.11/tools/power/cpupower/bench/parse.c:166]: (error) Resource leak: configfile
+[linux-3.11/tools/power/cpupower/bench/parse.c:87]: (error) Common realloc mistake: 'filename' nulled but not freed upon failure
+[linux-3.11/tools/power/cpupower/utils/cpupower.c:96]: (error) Memory leak: page
+[linux-3.11/tools/testing/selftests/timers/posix_timers.c:155]: (error) Uninitialized variable: err

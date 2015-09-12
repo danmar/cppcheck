@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,12 @@
 
 #include "cmdlineparser.h"
 #include "cppcheck.h"
+#include "cppcheckexecutor.h"
 #include "filelister.h"
 #include "path.h"
 #include "settings.h"
 #include "timer.h"
+#include "check.h"
 
 #include <algorithm>
 #include <iostream>
@@ -65,7 +67,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     }
 }
 
-static void AddInclPathsToList(const std::string& FileList, std::list<std::string>& PathNames)
+static void AddInclPathsToList(const std::string& FileList, std::list<std::string>* PathNames)
 {
     // to keep things initially simple, if the file can't be opened, just be
     // silent and move on
@@ -78,13 +80,20 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
                 PathName = Path::removeQuotationMarks(PathName);
 
                 // If path doesn't end with / or \, add it
-                if (PathName[PathName.length()-1] != '/')
+                if (PathName.back() != '/')
                     PathName += '/';
 
-                PathNames.push_back(PathName);
+                PathNames->push_back(PathName);
             }
         }
     }
+}
+
+static void AddPathsToSet(const std::string& FileName, std::set<std::string>* set)
+{
+    std::list<std::string> templist;
+    AddInclPathsToList(FileName, &templist);
+    set->insert(templist.begin(), templist.end());
 }
 
 CmdLineParser::CmdLineParser(Settings *settings)
@@ -117,6 +126,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strcmp(argv[i], "--debug") == 0)
             _settings->debug = _settings->debugwarnings = true;
 
+        // Show --debug output after the first simplifications
+        else if (std::strcmp(argv[i], "--debug-normal") == 0)
+            _settings->debugnormal = true;
+
         // Show debug warnings
         else if (std::strcmp(argv[i], "--debug-warnings") == 0)
             _settings->debugwarnings = true;
@@ -125,7 +138,20 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strcmp(argv[i], "--debug-fp") == 0)
             _settings->debugFalsePositive = true;
 
-        // Inconclusive checking (still in testing phase)
+        // dump cppcheck data
+        else if (std::strcmp(argv[i], "--dump") == 0)
+            _settings->dump = true;
+
+        // (Experimental) exception handling inside cppcheck client
+        else if (std::strcmp(argv[i], "--exception-handling") == 0)
+            _settings->exceptionHandling = true;
+        else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+            _settings->exceptionHandling = true;
+            const std::string exceptionOutfilename=&(argv[i][21]);
+            CppCheckExecutor::setExceptionOutput(exceptionOutfilename);
+        }
+
+        // Inconclusive checking
         else if (std::strcmp(argv[i], "--inconclusive") == 0)
             _settings->inconclusive = true;
 
@@ -158,21 +184,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             std::string filename;
 
             // exitcode-suppressions filename.txt
-            // Deprecated
             if (std::strcmp(argv[i], "--exitcode-suppressions") == 0) {
-                ++i;
+                // Error message to be removed in 1.72
+                PrintMessage("cppcheck: '--exitcode-suppressions <file>' has been removed, use '--exitcode-suppressions=<file>' instead.");
+                return false;
+            }
 
-                if (i >= argc || std::strncmp(argv[i], "-", 1) == 0 ||
-                    std::strncmp(argv[i], "--", 2) == 0) {
-                    PrintMessage("cppcheck: No filename specified for the '--exitcode-suppressions' option.");
-                    return false;
-                }
-                filename = argv[i];
-            }
             // exitcode-suppressions=filename.txt
-            else {
-                filename = 24 + argv[i];
-            }
+            filename = 24 + argv[i];
 
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
@@ -213,29 +232,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // Filter errors
-        // This is deprecated, see --suppressions-list above
         else if (std::strcmp(argv[i], "--suppressions") == 0) {
-            ++i;
-
-            if (i >= argc) {
-                PrintMessage("cppcheck: No file specified for the '--suppressions' option.");
-                return false;
-            }
-
-            std::ifstream f(argv[i]);
-            if (!f.is_open()) {
-                std::string message("cppcheck: Couldn't open the file: \"");
-                message += std::string(argv[i]);
-                message += "\".";
-                PrintMessage(message);
-                return false;
-            }
-            const std::string errmsg(_settings->nomsg.parseFile(f));
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
+            // Error message to be removed in 1.72
+            PrintMessage("cppcheck: '--suppressions' has been removed, use '--suppressions-list=<file>' instead.");
+            return false;
         }
 
         else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
@@ -266,12 +266,16 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->_relativePaths = true;
             if (argv[i][argv[i][3]=='='?4:17] != 0) {
                 std::string paths = argv[i]+(argv[i][3]=='='?4:17);
-                std::string::size_type pos;
-                do {
-                    pos = paths.find(';');
-                    _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                    paths.erase(0, pos+1);
-                } while (pos != std::string::npos);
+                for (;;) {
+                    std::string::size_type pos = paths.find(';');
+                    if (pos == std::string::npos) {
+                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths));
+                        break;
+                    } else {
+                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        paths.erase(0, pos + 1);
+                    }
+                }
             } else {
                 PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
                 return false;
@@ -304,9 +308,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // Only print something when there are errors
         else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
-            _settings->_errorsOnly = true;
+            _settings->quiet = true;
 
-        // Append userdefined code to checked source code
+        // Append user-defined code to checked source code
         else if (std::strncmp(argv[i], "--append=", 9) == 0) {
             const std::string filename = 9 + argv[i];
             if (!_settings->append(filename)) {
@@ -370,7 +374,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             }
 
             // No "=", append a "=1"
-            if (define.find("=") == std::string::npos)
+            if (define.find('=') == std::string::npos)
                 define += "=1";
 
             if (!_settings->userDefines.empty())
@@ -423,7 +427,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             path = Path::removeQuotationMarks(path);
 
             // If path doesn't end with / or \, add it
-            if (path[path.length()-1] != '/')
+            if (path.back() != '/')
                 path += '/';
 
             _settings->_includePaths.push_back(path);
@@ -435,7 +439,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             _settings->userIncludes.push_back(path);
         } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
             // open this file and read every input file (1 file name per line)
-            AddInclPathsToList(16 + argv[i], _settings->_includePaths);
+            AddInclPathsToList(16 + argv[i], &_settings->_includePaths);
+        } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
+            std::string path = argv[i] + 17;
+            path = Path::fromNativeSeparators(path);
+            _settings->configExcludePaths.insert(path);
+        } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
+            // open this file and read every input file (1 file name per line)
+            AddPathsToSet(23 + argv[i], &_settings->configExcludePaths);
         }
 
         // file list specified
@@ -465,12 +476,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
             if (!path.empty()) {
                 path = Path::fromNativeSeparators(path);
-                path = Path::simplifyPath(path.c_str());
+                path = Path::simplifyPath(path);
                 path = Path::removeQuotationMarks(path);
 
                 if (FileLister::isDirectory(path)) {
                     // If directory name doesn't end with / or \, add it
-                    if (path[path.length()-1] != '/')
+                    if (path.back() != '/')
                         path += '/';
                 }
                 _ignoredPaths.push_back(path);
@@ -479,10 +490,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
         // --library
         else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-            if (!_settings->library.load(argv[0], argv[i]+10)) {
-                PrintMessage("cppcheck: Failed to load library configuration file '" + std::string(argv[i]+10) + "'");
+            if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
                 return false;
-            }
         }
 
         // Report progress
@@ -558,6 +567,29 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
                 return false;
             }
+        } else if (std::strncmp(argv[i], "-l", 2) == 0) {
+            std::string numberString;
+
+            // "-l 3"
+            if (std::strcmp(argv[i], "-l") == 0) {
+                ++i;
+                if (i >= argc || argv[i][0] == '-') {
+                    PrintMessage("cppcheck: argument to '-l' is missing.");
+                    return false;
+                }
+
+                numberString = argv[i];
+            }
+
+            // "-l3"
+            else
+                numberString = argv[i]+2;
+
+            std::istringstream iss(numberString);
+            if (!(iss >> _settings->_loadAverage)) {
+                PrintMessage("cppcheck: argument to '-l' is not a number.");
+                return false;
+            }
         }
 
         // print all possible error messages..
@@ -575,7 +607,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const std::string& name((*it)->name());
                 const std::string info((*it)->classInfo());
                 if (!name.empty() && !info.empty())
-                    doc << "===" << name << "===\n"
+                    doc << "## " << name << " ##\n"
                         << info << "\n";
             }
 
@@ -598,7 +630,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else {
                 std::string message("cppcheck: error: unrecognized showtime mode: \"");
                 message += showtimeMode;
-                message +=  "\".";
+                message +=  "\". Supported modes: file, summary, top5.";
                 PrintMessage(message);
                 return false;
             }
@@ -665,6 +697,8 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 _settings->platform(Settings::Unix32);
             else if (platform == "unix64")
                 _settings->platform(Settings::Unix64);
+            else if (platform == "native")
+                _settings->platform(Settings::Unspecified);
             else {
                 std::string message("cppcheck: error: unrecognized platform: \"");
                 message += platform;
@@ -700,7 +734,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             break;
         }
 
-        else if (std::strncmp(argv[i], "-", 1) == 0 || std::strncmp(argv[i], "--", 2) == 0) {
+        else if (argv[i][0] == '-') {
             std::string message("cppcheck: error: unrecognized command line option: \"");
             message += argv[i];
             message +=  "\".";
@@ -729,8 +763,10 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         PrintMessage("cppcheck: inconclusive messages will not be shown, because the old xml format is not compatible. It's recommended to use the new xml format (use --xml-version=2).");
     }
 
-    if (argc <= 1)
+    if (argc <= 1) {
         _showHelp = true;
+        _exitAfterPrint = true;
+    }
 
     if (_showHelp) {
         PrintHelp();
@@ -752,7 +788,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
 void CmdLineParser::PrintHelp()
 {
-    std::cout <<   "Cppcheck - A tool for static C/C++ code analysis\n"
+    std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
               "\n"
               "Syntax:\n"
               "    cppcheck [OPTIONS] [files or paths]\n"
@@ -766,6 +802,16 @@ void CmdLineParser::PrintHelp()
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
+              "    --config-exclude=<dir>\n"
+              "                         Path (prefix) to be excluded from configuration checking.\n"
+              "                         Preprocessor configurations defined in headers (but not sources)\n"
+              "                         matching the prefix will not be considered for evaluation\n"
+              "                         of configuration alternatives\n"
+              "    --config-excludes-file=<file>\n"
+              "                         A file that contains a list of config-excludes\n"
+              "    --dump               Dump xml data for each translation unit. The dump\n"
+              "                         files have the extension .dump and contain ast,\n"
+              "                         tokenlist, symboldatabase, valueflow.\n"
               "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
               "                         --force is used, Cppcheck will only check the given\n"
               "                         configuration when -D is used.\n"
@@ -844,11 +890,20 @@ void CmdLineParser::PrintHelp()
               "                         more comments, like: '// cppcheck-suppress warningId'\n"
               "                         on the lines before the warning to suppress.\n"
               "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
+              "    -l <load>            Specifies that no new threads should be started if there\n"
+              "                         are other threads running and the load average is at least\n"
+              "                         load (ignored on non UNIX-like systems)\n"
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
               "                         language. Valid values are: c, c++\n"
               "    --library=<cfg>\n"
-              "                         Use library configuration.\n"
+              "                         Load file <cfg> that contains information about types\n"
+              "                         and functions. With such information Cppcheck\n"
+              "                         understands your your code better and therefore you\n"
+              "                         get better results. The std.cfg file that is\n"
+              "                         distributed with Cppcheck is loaded automatically.\n"
+              "                         For more information about library files, read the\n"
+              "                         manual.\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
@@ -866,7 +921,10 @@ void CmdLineParser::PrintHelp()
               "                                 32 bit Windows UNICODE character encoding\n"
               "                          * win64\n"
               "                                 64 bit Windows\n"
-              "    -q, --quiet          Only print error messages.\n"
+              "                          * native\n"
+              "                                 Unspecified platform. Type sizes of host system\n"
+              "                                 are assumed, but no further assumptions.\n"
+              "    -q, --quiet          Do not show progress reports.\n"
               "    -rp, --relative-paths\n"
               "    -rp=<paths>, --relative-paths=<paths>\n"
               "                         Use relative paths in output. When given, <paths> are\n"

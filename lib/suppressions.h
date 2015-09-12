@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ public:
      * @param line number, e.g. "123"
      * @return error message. empty upon success
      */
-    std::string addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
+    std::string addSuppression(const std::string &errorId, const std::string &file = emptyString, unsigned int line = 0);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
@@ -133,13 +133,13 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<SuppressionEntry> getUnmatchedLocalSuppressions(const std::string &file) const;
+    std::list<SuppressionEntry> getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<SuppressionEntry> getUnmatchedGlobalSuppressions() const;
+    std::list<SuppressionEntry> getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const;
 };
 
 /// @}

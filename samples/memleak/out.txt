@@ -1,0 +1,1 @@
+[samples\memleak\bad.c:8]: (error) Memory leak: a

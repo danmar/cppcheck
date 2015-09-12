@@ -1,0 +1,18 @@
+version: 1.69.{build}
+
+environment:
+ VisualStudioVersion: 10.0
+
+configuration:
+- Debug
+- Release
+
+platform:
+- Win32
+
+build_script:
+- msbuild "cppcheck.sln" /m /verbosity:minimal /p:PlatformToolset=v100
+
+test_script:
+- if "%CONFIGURATION%" == "Release" bin\testrunner.exe
+- if "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "testsuite.h"
 #include "errorlogger.h"
 
+
 class TestErrorLogger : public TestFixture {
 public:
     TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5), barCpp8("bar.cpp", 8) {
@@ -31,6 +32,7 @@ private:
     const ErrorLogger::ErrorMessage::FileLocation barCpp8;
 
     void run() {
+        TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationDefaults);
         TEST_CASE(FileLocationSetFile);
         TEST_CASE(ErrorMessageConstruct);
@@ -46,14 +48,52 @@ private:
         TEST_CASE(ToVerboseXmlLocations);
         TEST_CASE(ToXmlV2);
         TEST_CASE(ToXmlV2Locations);
+        TEST_CASE(ToXmlV2Encoding);
 
         // Inconclusive results in xml reports..
         TEST_CASE(InconclusiveXml);
 
         // Serialize / Deserialize inconclusive message
         TEST_CASE(SerializeInconclusiveMessage);
+        TEST_CASE(DeserializeInvalidInput);
+        TEST_CASE(SerializeSanitize);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+    }
+
+    void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
+        const std::string plainText = "text";
+
+        ErrorLogger::ErrorMessage message;
+        message._id = id;
+
+        std::string serialized = message.toString(true, idPlaceholder + plainText + idPlaceholder);
+        ASSERT_EQUALS(id + plainText + id, serialized);
+
+        serialized = message.toString(true, idPlaceholder + idPlaceholder);
+        ASSERT_EQUALS(id + id, serialized);
+
+        serialized = message.toString(true, plainText + idPlaceholder + plainText);
+        ASSERT_EQUALS(plainText + id + plainText, serialized);
+    }
+
+    void PatternSearchReplace() const {
+        const std::string idPlaceholder = "{id}";
+
+        const std::string empty;
+        TestPatternSearchReplace(idPlaceholder, empty);
+
+        const std::string shortIdValue = "ID";
+        ASSERT_EQUALS(true, shortIdValue.length() < idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, shortIdValue);
+
+        const std::string mediumIdValue = "_ID_";
+        ASSERT_EQUALS(mediumIdValue.length(), idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, mediumIdValue);
+
+        const std::string longIdValue = "longId";
+        ASSERT_EQUALS(true, longIdValue.length() > idPlaceholder.length());
+        TestPatternSearchReplace(idPlaceholder, longIdValue);
     }
 
     void FileLocationDefaults() const {
@@ -215,6 +255,24 @@ private:
         ASSERT_EQUALS(message, msg.toXML(false, 2));
     }
 
+    void ToXmlV2Encoding() const {
+        {
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+            ErrorMessage msg(locs, Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", false);
+            const std::string message("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
+            ASSERT_EQUALS(message, msg.toXML(false, 2));
+        }
+        {
+            const char code1[]="äöü";
+            const char code2[]="\x12\x00\x00\x01";
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+            ErrorMessage msg1(locs, Severity::error, std::string("Programming error.\nReading \"")+code1+"\"", "errorId", false);
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML(false, 2));
+            ErrorMessage msg2(locs, Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", false);
+            ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML(false, 2));
+        }
+    }
+
     void InconclusiveXml() const {
         // Location
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs(1, fooCpp5);
@@ -238,6 +296,7 @@ private:
         ErrorMessage msg(locs, Severity::error, "Programming error", "errorId", true);
         ASSERT_EQUALS("7 errorId"
                       "5 error"
+                      "1 0"
                       "12 inconclusive"
                       "17 Programming error"
                       "17 Programming error"
@@ -250,6 +309,30 @@ private:
         ASSERT_EQUALS(true, msg2._inconclusive);
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
+    }
+
+    void DeserializeInvalidInput() const {
+        ErrorMessage msg;
+        ASSERT_THROW(msg.deserialize("500foobar"), InternalError);
+    }
+
+    void SerializeSanitize() const {
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
+        ErrorMessage msg(locs, Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", false);
+
+        ASSERT_EQUALS("7 errorId"
+                      "5 error"
+                      "1 0"
+                      "33 Illegal character in \"foo\\001bar\""
+                      "33 Illegal character in \"foo\\001bar\""
+                      "0 ", msg.serialize());
+
+        ErrorMessage msg2;
+        msg2.deserialize(msg.serialize());
+        ASSERT_EQUALS("errorId", msg2._id);
+        ASSERT_EQUALS(Severity::error, msg2._severity);
+        ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
+        ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());
     }
 
     void suppressUnmatchedSuppressions() {

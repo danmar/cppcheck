@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,16 +25,25 @@
 #include <tinyxml2.h>
 
 #include <cassert>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
-InternalError::InternalError(const Token *tok, const std::string &errorMsg) :
+InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
 {
+    switch (type) {
+    case SYNTAX:
+        id = "syntaxError";
+        break;
+    case INTERNAL:
+        id = "cppcheckError";
+        break;
+    }
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage()
-    : _severity(Severity::none), _inconclusive(false)
+    : _severity(Severity::none), _cwe(0U), _inconclusive(false)
 {
 }
 
@@ -42,6 +51,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
     _severity(severity),   // severity for this error message
+    _cwe(0U),
     _inconclusive(inconclusive)
 {
     // set the summary and verbose messages
@@ -49,7 +59,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
 }
 
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : _id(id), _severity(severity), _inconclusive(inconclusive)
+    : _id(id), _severity(severity), _cwe(0U), _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -73,12 +83,12 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // as an empty message to the user if --verbose is used.
     // Even this doesn't cause problems with messages that have multiple
     // lines, none of the the error messages should end into it.
-    assert(!(msg[msg.size()-1]=='\n'));
+    assert(!(msg.back() =='\n'));
 
     // The summary and verbose message are separated by a newline
     // If there is no newline then both the summary and verbose messages
     // are the given message
-    const std::string::size_type pos = msg.find("\n");
+    const std::string::size_type pos = msg.find('\n');
     if (pos == std::string::npos) {
         _shortMessage = msg;
         _verboseMessage = msg;
@@ -94,12 +104,17 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     std::ostringstream oss;
     oss << _id.length() << " " << _id;
     oss << Severity::toString(_severity).length() << " " << Severity::toString(_severity);
+    oss << MathLib::toString(_cwe).length() << " " << MathLib::toString(_cwe);
     if (_inconclusive) {
         const std::string inconclusive("inconclusive");
         oss << inconclusive.length() << " " << inconclusive;
     }
-    oss << _shortMessage.length() << " " << _shortMessage;
-    oss << _verboseMessage.length() << " " << _verboseMessage;
+
+    const std::string saneShortMessage = fixInvalidChars(_shortMessage);
+    const std::string saneVerboseMessage = fixInvalidChars(_verboseMessage);
+
+    oss << saneShortMessage.length() << " " << saneShortMessage;
+    oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
     oss << _callStack.size() << " ";
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok) {
@@ -135,14 +150,19 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         }
 
         results.push_back(temp);
-        if (results.size() == 4)
+        if (results.size() == 5)
             break;
     }
 
+    if (results.size() != 5)
+        throw InternalError(0, "Internal Error: Deserialization of error message failed");
+
     _id = results[0];
     _severity = Severity::fromString(results[1]);
-    _shortMessage = results[2];
-    _verboseMessage = results[3];
+    std::istringstream scwe(results[2]);
+    scwe >> _cwe;
+    _shortMessage = results[3];
+    _verboseMessage = results[4];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -185,14 +205,14 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
     printer.PushDeclaration("xml version=\"1.0\" encoding=\"UTF-8\"");
 
     // header
-    printer.OpenElement("results");
+    printer.OpenElement("results", false);
     // version 2 header
     if (xml_version == 2) {
         printer.PushAttribute("version", xml_version);
-        printer.OpenElement("cppcheck");
+        printer.OpenElement("cppcheck", false);
         printer.PushAttribute("version", CppCheck::version());
-        printer.CloseElement();
-        printer.OpenElement("errors");
+        printer.CloseElement(false);
+        printer.OpenElement("errors", false);
     }
 
     return std::string(printer.CStr()) + '>';
@@ -201,6 +221,33 @@ std::string ErrorLogger::ErrorMessage::getXMLHeader(int xml_version)
 std::string ErrorLogger::ErrorMessage::getXMLFooter(int xml_version)
 {
     return (xml_version<=1) ? "</results>" : "    </errors>\n</results>";
+}
+
+// There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
+// See #5300 "Invalid encoding in XML output" and  #6431 "Invalid XML created - Invalid encoding of string literal "
+std::string ErrorLogger::ErrorMessage::fixInvalidChars(const std::string& raw)
+{
+    std::string result;
+    result.reserve(raw.length());
+    std::string::const_iterator from=raw.begin();
+    while (from!=raw.end()) {
+        if (std::isprint(static_cast<unsigned char>(*from))) {
+            result.push_back(*from);
+        } else {
+            std::ostringstream es;
+            // straight cast to (unsigned) doesn't work out.
+            const unsigned uFrom = (unsigned char)*from;
+#if 0
+            if (uFrom<0x20)
+                es << "\\XXX";
+            else
+#endif
+                es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << uFrom;
+            result += es.str();
+        }
+        ++from;
+    }
+    return result;
 }
 
 std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
@@ -212,7 +259,7 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
             return "";
 
         tinyxml2::XMLPrinter printer(0, false, 1);
-        printer.OpenElement("error");
+        printer.OpenElement("error", false);
         if (!_callStack.empty()) {
             printer.PushAttribute("file", _callStack.back().getfile().c_str());
             printer.PushAttribute("line", _callStack.back().line);
@@ -220,28 +267,30 @@ std::string ErrorLogger::ErrorMessage::toXML(bool verbose, int version) const
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", (_severity == Severity::error ? "error" : "style"));
         printer.PushAttribute("msg", (verbose ? _verboseMessage : _shortMessage).c_str());
-        printer.CloseElement();
+        printer.CloseElement(false);
         return printer.CStr();
     }
 
     // The xml format you get when you use --xml-version=2
     else if (version == 2) {
         tinyxml2::XMLPrinter printer(0, false, 2);
-        printer.OpenElement("error");
+        printer.OpenElement("error", false);
         printer.PushAttribute("id", _id.c_str());
         printer.PushAttribute("severity", Severity::toString(_severity).c_str());
-        printer.PushAttribute("msg", _shortMessage.c_str());
-        printer.PushAttribute("verbose", _verboseMessage.c_str());
+        printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
+        printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
+        if (_cwe)
+            printer.PushAttribute("cwe", _cwe);
         if (_inconclusive)
             printer.PushAttribute("inconclusive", "true");
 
         for (std::list<FileLocation>::const_reverse_iterator it = _callStack.rbegin(); it != _callStack.rend(); ++it) {
-            printer.OpenElement("location");
+            printer.OpenElement("location", false);
             printer.PushAttribute("file", (*it).getfile().c_str());
             printer.PushAttribute("line", (*it).line);
-            printer.CloseElement();
+            printer.CloseElement(false);
         }
-        printer.CloseElement();
+        printer.CloseElement(false);
         return printer.CStr();
     }
 
@@ -253,7 +302,7 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     std::string::size_type index = 0;
     while ((index = source.find(searchFor, index)) != std::string::npos) {
         source.replace(index, searchFor.length(), replaceWith);
-        index += replaceWith.length() - searchFor.length() + 1;
+        index += replaceWith.length();
     }
 }
 
@@ -317,8 +366,10 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         for (std::list<Suppressions::SuppressionEntry>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
             if (i2->id == "unmatchedSuppression") {
                 if ((i2->file == "*" || i2->file == i->file) &&
-                    (i2->line == 0 || i2->line == i->line))
+                    (i2->line == 0 || i2->line == i->line)) {
                     suppressed = true;
+                    break;
+                }
             }
         }
 
@@ -357,7 +408,7 @@ void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 {
     _file = file;
     _file = Path::fromNativeSeparators(_file);
-    _file = Path::simplifyPath(_file.c_str());
+    _file = Path::simplifyPath(_file);
 }
 
 std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const

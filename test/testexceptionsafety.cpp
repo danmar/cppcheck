@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tokenize.h"
 #include "checkexceptionsafety.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestExceptionSafety : public TestFixture {
 public:
@@ -42,6 +39,13 @@ private:
         TEST_CASE(rethrowCopy4);
         TEST_CASE(rethrowCopy5);
         TEST_CASE(catchExceptionByValue);
+        TEST_CASE(noexceptThrow);
+        TEST_CASE(nothrowThrow);
+        TEST_CASE(unhandledExceptionSpecification1); // #4800
+        TEST_CASE(unhandledExceptionSpecification2);
+        TEST_CASE(nothrowAttributeThrow);
+        TEST_CASE(nothrowAttributeThrow2); // #5703
+        TEST_CASE(nothrowDeclspecThrow);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -68,7 +72,7 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -76,12 +80,7 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Exception thrown in destructor.\n", errout.str());
-
-        check("x::~x() {\n"
-              "    throw e;\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Exception thrown in destructor.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n", errout.str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
@@ -89,6 +88,15 @@ private:
               "        try {\n"
               "            throw e;\n"
               "        } catch (...) {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class x {\n"
+              "    ~x() {\n"
+              "        if(!std::uncaught_exception()) {\n"
+              "            throw e;\n"
               "        }\n"
               "    }\n"
               "}");
@@ -306,6 +314,93 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noexceptThrow() {
+        check("void func1() noexcept(false) { throw 1; }\n"
+              "void func2() noexcept { throw 1; }\n"
+              "void func3() noexcept(true) { throw 1; }\n"
+              "void func4() noexcept(false) { throw 1; }\n"
+              "void func5() noexcept(true) { func1(); }\n"
+              "void func6() noexcept(false) { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n"
+                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() noexcept { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nothrowThrow() {
+        check("void func1() throw(int) { throw 1; }\n"
+              "void func2() throw() { throw 1; }\n"
+              "void func3() throw(int) { throw 1; }\n"
+              "void func4() throw() { func1(); }\n"
+              "void func5() throw(int) { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
+                      "[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() throw() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void unhandledExceptionSpecification1() { // #4800
+        check("void myThrowingFoo() throw(MyException) {\n"
+              "  throw MyException();\n"
+              "}\n"
+              "void myNonCatchingFoo() {\n"
+              "  myThrowingFoo();\n"
+              "}\n"
+              "void myCatchingFoo() {\n"
+              "  try {\n"
+              "    myThrowingFoo();\n"
+              "  } catch(MyException &) {}\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout.str());
+    }
+
+    void unhandledExceptionSpecification2() {
+        check("void f() const throw (std::runtime_error);\n"
+              "int main()\n"
+              "{\n"
+              "    f();\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nothrowAttributeThrow() {
+        check("void func1() throw(int) { throw 1; }\n"
+              "void func2() __attribute((nothrow)); void func2() { throw 1; }\n"
+              "void func3() __attribute((nothrow)); void func3() { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nothrowAttributeThrow2() {
+        check("class foo {\n"
+              "  void copyMemberValues() throw () {\n"
+              "      copyMemberValues();\n"
+              "   }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nothrowDeclspecThrow() {
+        check("void func1() throw(int) { throw 1; }\n"
+              "void __declspec(nothrow) func2() { throw 1; }\n"
+              "void __declspec(nothrow) func3() { func1(); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
+                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
+
+        // avoid false positives
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

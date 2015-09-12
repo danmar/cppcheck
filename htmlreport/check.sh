@@ -25,3 +25,11 @@ echo ""
 ../cppcheck --errorlist --inconclusive --xml-version=2 > errorlist.xml
 xmllint --noout errorlist.xml
 ./cppcheck-htmlreport --file ./errorlist.xml --title "errorlist" --report-dir .
+
+../cppcheck ../samples/memleak/good.c ../samples/resourceLeak/good.c  --xml-version=2 --enable=information --suppressions-list=test_suppressions.txt --xml 2> unmatchedSuppr.xml
+xmllint --noout unmatchedSuppr.xml
+./cppcheck-htmlreport --file ./unmatchedSuppr.xml --title "unmatched Suppressions" --report-dir=.
+grep "unmatchedSuppression<.*>information<.*>Unmatched suppression: variableScope*<" index.html
+grep ">unmatchedSuppression</.*>information<.*>Unmatched suppression: uninitstring<" index.html
+grep "notexisting" index.html
+grep ">unmatchedSuppression<.*>information<.*>Unmatched suppression: \*<" index.html

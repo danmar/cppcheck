@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,30 @@
 #include "settings.h"
 #include "path.h"
 #include "preprocessor.h"       // Preprocessor
+#include "utils.h"
 
 #include <fstream>
 #include <set>
 
 Settings::Settings()
     : _terminate(false),
-      debug(false), debugwarnings(false), debugFalsePositive(false),
-      inconclusive(false), experimental(false),
-      _errorsOnly(false),
+      debug(false),
+      debugnormal(false),
+      debugwarnings(false),
+      debugFalsePositive(false),
+      dump(false),
+      exceptionHandling(false),
+      inconclusive(false),
+      jointSuppressionReport(false),
+      experimental(false),
+      quiet(false),
       _inlineSuppressions(false),
       _verbose(false),
       _force(false),
       _relativePaths(false),
       _xml(false), _xml_version(1),
       _jobs(1),
+      _loadAverage(0),
       _exitCode(0),
       _showtime(SHOWTIME_NONE),
       _maxConfigs(12),
@@ -52,13 +61,27 @@ Settings::Settings()
 #endif
 }
 
+namespace {
+    static const std::set<std::string> id = make_container< std::set<std::string> > ()
+                                            << "warning"
+                                            << "style"
+                                            << "performance"
+                                            << "portability"
+                                            << "information"
+                                            << "missingInclude"
+                                            << "unusedFunction"
+#ifdef CHECK_INTERNAL
+                                            << "internal"
+#endif
+                                            ;
+}
 std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
-    if (str.find(",") != std::string::npos) {
+    if (str.find(',') != std::string::npos) {
         std::string::size_type prevPos = 0;
         std::string::size_type pos = 0;
-        while ((pos = str.find(",", pos)) != std::string::npos) {
+        while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
                 return std::string("cppcheck: --enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
@@ -70,22 +93,6 @@ std::string Settings::addEnabled(const std::string &str)
         if (prevPos >= str.length())
             return std::string("cppcheck: --enable parameter is empty");
         return addEnabled(str.substr(prevPos));
-    }
-
-    bool handled = false;
-
-    static std::set<std::string> id;
-    if (id.empty()) {
-        id.insert("warning");
-        id.insert("style");
-        id.insert("performance");
-        id.insert("portability");
-        id.insert("information");
-        id.insert("missingInclude");
-        id.insert("unusedFunction");
-#ifndef NDEBUG
-        id.insert("internal");
-#endif
     }
 
     if (str == "all") {
@@ -101,7 +108,7 @@ std::string Settings::addEnabled(const std::string &str)
         if (str == "information") {
             _enabled.insert("missingInclude");
         }
-    } else if (!handled) {
+    } else {
         if (str.empty())
             return std::string("cppcheck: --enable parameter is empty");
         else
@@ -109,11 +116,6 @@ std::string Settings::addEnabled(const std::string &str)
     }
 
     return std::string("");
-}
-
-bool Settings::isEnabled(const std::string &str) const
-{
-    return bool(_enabled.find(str) != _enabled.end());
 }
 
 

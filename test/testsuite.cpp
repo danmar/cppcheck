@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "options.h"
 
 #include <iostream>
+#include <cstdio>
 #include <list>
 
 std::ostringstream errout;
@@ -73,15 +74,20 @@ TestFixture::TestFixture(const std::string &_name)
 }
 
 
-bool TestFixture::runTest(const char testname[])
+bool TestFixture::prepareTest(const char testname[])
 {
+    // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
+        // Tests will be executed - prepare them
         ++countTests;
         if (quiet_tests) {
-            std::cout << '.';
+            std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
+            std::fflush(stdout);
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
+        _lib = Library();
+        currentTest = classname + "::" + testname;
         return true;
     }
     return false;
@@ -135,17 +141,31 @@ void TestFixture::assertEquals(const char *filename, unsigned int linenr, const 
                    << writestr(actual, true)
                    << '.'
                    << std::endl;
+            if (!msg.empty())
+                errmsg << msg << std::endl;
         } else {
             errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                    << "Expected:" << std::endl
                    << writestr(expected) << std::endl
                    << "Actual:" << std::endl
-                   << writestr(actual) << std::endl << "_____" << std::endl;
-        }
-        if (!msg.empty()) {
-            errmsg << msg << std::endl;
+                   << writestr(actual) << std::endl;
+            if (!msg.empty())
+                errmsg << "Hint:" << std::endl << msg << std::endl;
+            errmsg << "_____" << std::endl;
         }
     }
+}
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+{
+    assertEquals(filename, linenr, std::string(expected), actual, msg);
+}
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
+}
+void TestFixture::assertEquals(const char *filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, expected, std::string(actual), msg);
 }
 
 void TestFixture::assertEquals(const char *filename, unsigned int linenr, long long expected, long long actual, const std::string &msg) const
@@ -218,12 +238,11 @@ void TestFixture::run(const std::string &str)
     if (quiet_tests) {
         std::cout << '\n' << classname << ':';
     }
-    run();
-}
-
-void TestFixture::warn(const char msg[])
-{
-    warnings << "Warning: " << currentTest << " " << msg << std::endl;
+    if (quiet_tests) {
+        REDIRECT;
+        run();
+    } else
+        run();
 }
 
 void TestFixture::processOptions(const options& args)

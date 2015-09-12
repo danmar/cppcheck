@@ -1,4 +1,4 @@
-# Cppcheck [![Build Status](https://travis-ci.org/danmar/cppcheck.png?branch=master)](https://travis-ci.org/danmar/cppcheck) [![Coverity Scan Build Status](https://scan.coverity.com/projects/512/badge.svg)](https://scan.coverity.com/projects/512)
+# Cppcheck [![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck) [![Windows Build status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master) [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)
 
 ## Donations
 
@@ -18,18 +18,20 @@ A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 ## Compiling
 
-Any C++ compiler should work.
+Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2010 then it will work. If nullptr is not supported by your compiler then this can be emulated using the header lib/cxx11emu.h.
 
 To build the GUI, you need Qt.
 
-When building the command line tool, [PCRE](http://www.pcre.org/) is normally used.
-PCRE is optional.
+When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
 There are multiple compilation choices:
 * qmake - cross platform build tool
-* Windows: Visual Studio or Qt Creator or MinGW
+* cmake - cross platform build tool
+* Windows: Visual Studio (VS 2010 and above)
+* Windows: Qt Creator + mingw
 * gnu make
-* g++
+* g++ 4.6 (or later)
+* clang++
 
 ### qmake
 
@@ -43,14 +45,9 @@ make
 
 ### Visual Studio
 
-Use the cppcheck.sln file. The rules are normally enabled.
+Use the cppcheck.sln file. The file is configured for Visual Studio 2013, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
 
-To compile with rules (PCRE dependency):
-* the PCRE dll is needed. It can be downloaded from [here](http://cppcheck.sourceforge.net/pcre-8.10-vs.zip).
-
-To compile without rules (no dependencies):
-* remove the preprocessor define `HAVE_RULES` from the project
-* remove the pcre.lib from the project
+To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /extlibs then.
 
 ### Qt Creator + MinGW
 
@@ -73,16 +70,13 @@ make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
 
 Flags:
 
-1.  `SRCDIR=build`
-
+1.  `SRCDIR=build`  
     Python is used to optimise cppcheck
 
-2.  `CFGDIR=cfg`
-
+2.  `CFGDIR=cfg`  
     Specify folder where .cfg files are found
 
-3.  `HAVE_RULES=yes`
-
+3.  `HAVE_RULES=yes`  
     Enable rules (PCRE is required if this is used)
 
 ### g++ (for experts)
@@ -90,13 +84,13 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -Ilib cli/*.cpp lib/*.cpp
+g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
 ```shell
-g++ -o cppcheck -lpcre -DHAVE_RULES -Ilib -Iexternals cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -lpcre -DHAVE_RULES -Ilib -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW
@@ -115,7 +109,7 @@ make LDFLAGS=-lshlwapi
 
 ```shell
 sudo apt-get install mingw32
-make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
+make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi" RDYNAMIC=""
 mv cppcheck cppcheck.exe
 ```
 

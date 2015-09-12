@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,38 +21,81 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include <string>
+
 class Token;
 class TokenList;
+class SymbolDatabase;
 class ErrorLogger;
 class Settings;
 
 namespace ValueFlow {
     class Value {
     public:
-        Value() : condition(0), conditional(false), intvalue(0), inconclusive(false), varId(0U), varvalue(0) {}
-        Value(long long val) : condition(0), conditional(false), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
-        Value(const Token *c, long long val) : condition(c), conditional(false), intvalue(val), inconclusive(false), varId(0U), varvalue(val) {}
+        explicit Value(long long val = 0) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(0), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        Value(const Token *c, long long val) : intvalue(val), tokvalue(nullptr), varvalue(val), condition(c), varId(0U), conditional(false), inconclusive(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+
+        /** int value */
+        long long intvalue;
+
+        /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
+        const Token *tokvalue;
+
+        /** For calculated values - variable value that calculated value depends on */
+        long long varvalue;
 
         /** Condition that this value depends on (TODO: replace with a 'callstack') */
         const Token *condition;
 
-        /** Conditional value */
-        bool conditional;
-
-        /** int value */
-        long long    intvalue;
-
-        /** Is this value inconclusive? */
-        bool         inconclusive;
-
         /** For calculated values - varId that calculated value depends on */
         unsigned int varId;
 
-        /** For calculated values - variable value that calculated value depends on */
-        long long    varvalue;
+        /** Conditional value */
+        bool conditional;
+
+        /** Is this value inconclusive? */
+        bool inconclusive;
+
+        /** Is this value passed as default parameter to the function? */
+        bool defaultArg;
+
+        /** How known is this value */
+        enum ValueKind {
+            /** This value is possible, other unlisted values may also be possible */
+            Possible,
+            /** Only listed values are possible */
+            Known,
+            /** Max value. Greater values are impossible. */
+            Max,
+            /** Min value. Smaller values are impossible. */
+            Min
+        } valueKind;
+
+        void setKnown() {
+            valueKind = ValueKind::Known;
+        }
+
+        bool isKnown() const {
+            return valueKind == ValueKind::Known;
+        }
+
+        void setPossible() {
+            valueKind = ValueKind::Possible;
+        }
+
+        bool isPossible() const {
+            return valueKind == ValueKind::Possible;
+        }
+
+        void changeKnownToPossible() {
+            if (isKnown())
+                valueKind = ValueKind::Possible;
+        }
     };
 
-    void setValues(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
+    void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
+
+    std::string eitherTheConditionIsRedundant(const Token *condition);
 }
 
 #endif // valueflowH

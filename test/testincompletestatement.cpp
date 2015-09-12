@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-// Check for unused variables..
-
-
 #include "testsuite.h"
 #include "tokenize.h"
 #include "checkother.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
 
 class TestIncompleteStatement : public TestFixture {
 public:
@@ -59,7 +51,9 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test5);
+        TEST_CASE(test6);
         TEST_CASE(test_numeric);
+        TEST_CASE(void0); // #6327: No fp for statement "(void)0;"
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
@@ -68,6 +62,8 @@ private:
         TEST_CASE(returnstruct);
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
+        TEST_CASE(cpp11init);           // #5493 : int i{1};
+        TEST_CASE(block);               // ({ do_something(); 0; })
     }
 
     void test1() {
@@ -121,6 +117,15 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
     }
 
+    void test6() {
+        // dont crash
+        check("void f() {\n"
+              "  1 == (two + three);\n"
+              "  2 != (two + three);\n"
+              "  (one + two) != (two + three);\n"
+              "}");
+    }
+
     void test_numeric() {
         check("struct P\n"
               "{\n"
@@ -135,6 +140,14 @@ private:
               "};\n"
               "}");
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void void0() { // #6327
+        check("void f() { (void*)0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { $0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -170,6 +183,14 @@ private:
         // #2462 - C++11 struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6260 - C++11 array initialization
+        check("void foo() {\n"
+              "    static const char* a[][2] {\n"
+              "        {\"b\", \"\"},\n"
+              "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -217,6 +238,26 @@ private:
         check("void f() {\n"
               "    int x = 1;\n"
               "    x++, x++;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init() {
+        check("void f() {\n"
+              "    int x{1};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void block() {
+        check("void f() {\n"
+              "    ({ do_something(); 0; });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "out:\n"
+              "    ({ do_something(); 0; });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

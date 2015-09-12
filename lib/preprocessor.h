@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,9 +54,10 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    Preprocessor(Settings *settings = nullptr, ErrorLogger *errorLogger = nullptr);
+    Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
 
     static bool missingIncludeFlag;
+    static bool missingSystemIncludeFlag;
 
     /**
      * Extract the code for each configuration
@@ -94,7 +95,7 @@ public:
     std::string read(std::istream &istr, const std::string &filename);
 
     /** read preprocessor statements into a string. */
-    std::string readpreprocessor(std::istream &istr, const unsigned int bom) const;
+    static std::string readpreprocessor(std::istream &istr, const unsigned int bom);
 
     /** should __cplusplus be defined? */
     static bool cplusplus(const Settings *settings, const std::string &filename);
@@ -146,9 +147,8 @@ public:
      * Replace "#if defined" with "#ifdef" where possible
      *
      * @param str The string to be converted
-     * @return The replaced string
      */
-    std::string replaceIfDefined(const std::string &str) const;
+    void replaceIfDefined(std::string &str) const;
 
     /**
      * expand macros in code. ifdefs etc are ignored so the code must be a single configuration
@@ -258,18 +258,17 @@ private:
     /**
      * Search includes from code and append code from the included
      * file
-     * @param code The source code to modify
+     * @param[in,out] code The source code to modify
      * @param filePath Relative path to file to check e.g. "src/main.cpp"
      * @param includePaths List of paths where include files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
-     * @return modified source code
      */
     void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
 
-    Settings *_settings;
+    Settings& _settings;
     ErrorLogger *_errorLogger;
 
     /** filename for cpp/c file - useful when reporting errors */

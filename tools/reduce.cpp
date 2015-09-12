@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ private:
     std::time_t stopTime;
 
 public:
-    CppcheckExecutor(const ReduceSettings & settings)
+    explicit CppcheckExecutor(const ReduceSettings & settings)
         : ErrorLogger()
         , cppcheck(*this,false)
         , foundLine(false)
@@ -70,7 +70,7 @@ public:
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;
@@ -105,11 +105,19 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
     return test(settings, filedata, line, line);
 }
 
+#ifdef GDB_HELPERS
 static void printstr(const std::vector<std::string> &filedata, int i1, int i2)
 {
     std::cout << filedata.size();
     for (int i = i1; i < i2; ++i)
         std::cout << i << ":" << filedata[i] << std::endl;
+}
+#endif
+
+static char getEndChar(const std::string &line)
+{
+    std::size_t pos = line.find_last_not_of(" \t");
+    return (pos == std::string::npos) ? '\0' : line[pos];
 }
 
 static std::vector<std::string> readfile(const std::string &filename)
@@ -172,6 +180,62 @@ static std::vector<std::string> readfile(const std::string &filename)
 
         filedata.push_back(line);
     }
+
+    // put function declarations in a single line..
+    for (unsigned int linenr = 0U; linenr+1U < filedata.size(); ++linenr) {
+        // Does this look like start of a function declaration?
+        if (filedata[linenr].empty()                        ||
+            !std::isalpha(filedata[linenr][0U])             ||
+            getEndChar(filedata[linenr]) != ','             ||
+            filedata[linenr].find("(") == std::string::npos ||
+            filedata[linenr].find(")") != std::string::npos)
+            continue;
+
+        // Where does function declaration end?
+        unsigned int linenr2 = linenr + 1U;
+        while (linenr2 < filedata.size() &&
+               getEndChar(filedata[linenr2]) == ','                    &&
+               filedata[linenr2].find("(") == std::string::npos        &&
+               filedata[linenr2].find(")") == std::string::npos)
+            ++linenr2;
+
+        // If function declaration looks correct.. simplify it
+        if (linenr2 < filedata.size()                                  &&
+            getEndChar(filedata[linenr2]) == ';'                       &&
+            filedata[linenr2].find("(") == std::string::npos           &&
+            filedata[linenr2].size() > 2U                              &&
+            filedata[linenr2].find(")") == filedata[linenr2].size() - 2U) {
+            std::string code;
+            for (unsigned int i = linenr; i <= linenr2; i++) {
+                code = code + filedata[i];
+                filedata[i].clear();
+            }
+            filedata[linenr] = code;
+        }
+    }
+
+    // put #define statements in a single line..
+    for (unsigned int linenr = 0U; linenr+1U < filedata.size(); ++linenr) {
+        // is this a multiline #define statement?
+        if (filedata[linenr].compare(0,8,"#define ")!=0 || getEndChar(filedata[linenr])!='\\')
+            continue;
+
+        // where does statement end?
+        unsigned int linenr2 = linenr + 1U;
+        while (linenr2 < filedata.size() && getEndChar(filedata[linenr2]) == '\\')
+            ++linenr2;
+
+        // simplify
+        if (linenr2 < filedata.size()) {
+            std::string code;
+            for (unsigned int i = linenr; i <= linenr2; i++) {
+                code = code + filedata[i].substr(0,filedata[i].size() - 1U);
+                filedata[i].clear();
+            }
+            filedata[linenr] = code;
+        }
+    }
+
     return filedata;
 }
 
@@ -581,7 +645,7 @@ int main(int argc, char *argv[])
     bool def = false;
     bool maxconfigs = false;
 
-    for (int i = 1, includePathIndex = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--stdout") == 0)
             print = true;
         else if (strcmp(argv[i], "--hang") == 0)

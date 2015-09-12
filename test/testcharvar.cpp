@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tokenize.h"
 #include "checkother.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestCharVar : public TestFixture {
 public:
@@ -39,6 +36,7 @@ private:
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
         TEST_CASE(bitop3);
+        TEST_CASE(bitop4); // (long)&c
         TEST_CASE(return1);
         TEST_CASE(assignChar);
         TEST_CASE(and03);
@@ -158,6 +156,15 @@ private:
               "    i &= c;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+    }
+
+    void bitop4() {
+        check("long f(char c) {\n"
+              "  long a;\n"
+              "  a = (long)&c;\n"
+              "  return a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1() {

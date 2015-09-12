@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,12 @@
 #define checkunusedvarH
 //---------------------------------------------------------------------------
 
-#include <map>
-
 #include "config.h"
 #include "check.h"
-#include "settings.h"
+
+#include <map>
 
 class Type;
-class Token;
 class Scope;
 class Variables;
 
@@ -67,7 +65,6 @@ public:
 
     /** @brief %Check for unused function variables */
     void checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables, bool insideLoop);
-    void checkVariableUsage(const Scope* const scope, const Token* start, Variables& variables);
     void checkFunctionVariableUsage();
 
     /** @brief %Check that all struct members are used */
@@ -103,11 +100,11 @@ private:
         return "UnusedVar checks\n"
 
                // style
-               "* unused variable\n"
-               "* allocated but unused variable\n"
-               "* unred variable\n"
-               "* unassigned variable\n"
-               "* unused struct member\n";
+               "- unused variable\n"
+               "- allocated but unused variable\n"
+               "- unred variable\n"
+               "- unassigned variable\n"
+               "- unused struct member\n";
     }
 
     std::map<const Type *,bool> isRecordTypeWithoutSideEffectsMap;

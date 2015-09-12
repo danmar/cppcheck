@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,13 @@ private:
      */
     std::list<std::string> _errorList;
     int _wpipe;
+
+    /**
+     * @brief Check load average condition
+     * @param nchildren - count of currently runned children
+     * @return true - if new process can be started
+     */
+    bool checkLoadAverage(size_t nchildren);
 
 public:
     /**

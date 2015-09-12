@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,8 @@
 
 #include <map>
 #include <string>
-#include <sstream>
 #include <set>
 
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 #ifdef _MSC_VER
 // Visual Studio complains about truncated values for '(char)0xff' and '(char)0xfe'
@@ -49,12 +46,14 @@ public:
 
     class OurPreprocessor : public Preprocessor {
     public:
-        static std::string replaceIfDefined(const std::string &str) {
-            Preprocessor p;
-            return p.replaceIfDefined(str);
+        static std::string replaceIfDefined(std::string str) {
+            Settings settings;
+            Preprocessor p(settings);
+            p.replaceIfDefined(str);
+            return str;
         }
 
-        static std::string expandMacros(const std::string& code, ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
             return Preprocessor::expandMacros(code, "file.cpp", "", errorLogger);
         }
 
@@ -97,14 +96,12 @@ private:
         TEST_CASE(test9);  // Don't crash for invalid code
         TEST_CASE(test10); // Ticket #5139
 
-        // #error => don't extract any code
-        TEST_CASE(error1);
 
-        // #error with extended chars
-        TEST_CASE(error2);
-
+        TEST_CASE(error1); // #error => don't extract any code
+        TEST_CASE(error2); // #error with extended chars
         TEST_CASE(error3);
         TEST_CASE(error4);  // #2919 - wrong filename is reported
+        TEST_CASE(error5);
 
         TEST_CASE(if0_exclude);
         TEST_CASE(if0_whitespace);
@@ -300,6 +297,11 @@ private:
         TEST_CASE(validateCfg);
 
         TEST_CASE(if_sizeof);
+
+        TEST_CASE(double_include); // #5717
+        TEST_CASE(invalid_ifs); // #5909
+
+        TEST_CASE(garbage);
     }
 
 
@@ -307,25 +309,25 @@ private:
         const char code[] = " \t a //\n"
                             "  #aa\t /* remove this */\tb  \r\n";
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("a\n#aa b\n", codestr);
     }
 
     void readCode2() {
-        const char code[] = "R\"( \" /* abc */ \n)\";";
+        const char code[] = "R\"( \" \\ ' /* abc */ \n)\";";
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
-        ASSERT_EQUALS("\" \\\" /* abc */ \\n\"\n;", codestr);
+        ASSERT_EQUALS("\" \\\" \\\\ ' /* abc */ \\n\"\n;", codestr);
     }
 
     void readCode3() {
         const char code[] = "func(#errorname)";
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::string codestr(preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("func(#errorname)", codestr);
@@ -335,7 +337,7 @@ private:
         const char code[] = "char c = '\\ ';";
         Settings settings;
         errout.str("");
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         ASSERT_EQUALS("char c = '\\ ';", preprocessor.read(istr,"test.c"));
         ASSERT_EQUALS("", errout.str());
@@ -344,7 +346,7 @@ private:
 
     void utf16() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         // a => a
         {
@@ -397,7 +399,7 @@ private:
 
     void removeComments() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         // #3837 - asm comments
         const char code[] = "void test(void) {\n"
@@ -473,7 +475,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -494,7 +496,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -514,7 +516,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -536,7 +538,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -558,7 +560,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -581,7 +583,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -600,7 +602,7 @@ private:
 
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         const std::string actual(preprocessor.read(istr, "test.c"));
 
         // Compare results..
@@ -619,7 +621,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -651,7 +653,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -675,7 +677,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -699,7 +701,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -724,7 +726,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -752,7 +754,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -773,7 +775,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -797,7 +799,7 @@ private:
         Settings settings;
         settings._maxConfigs = 1;
         settings.userDefines = "X";
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c"); // <- don't crash
     }
 
@@ -812,7 +814,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
     }
 
@@ -827,7 +829,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         errout.str("");
         preprocessor.preprocess(istr, actual, "file.c");
 
@@ -849,7 +851,7 @@ private:
         // Read string..
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("#error\n\n123", preprocessor.read(istr,"test.c"));
     }
 
@@ -858,7 +860,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "__cplusplus";
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
@@ -871,7 +873,7 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout.str());
@@ -882,16 +884,27 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout.str());
         }
     }
 
+    void error5() {
+        errout.str("");
+        Settings settings;
+        settings.userDefines = "FOO";
+        settings._force = true; // No message if --force is given
+        Preprocessor preprocessor(settings, this);
+        const std::string code("#error hello world!\n");
+        preprocessor.getcode(code, "X", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void if0_exclude() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code("#if 0\n"
                                 "A\n"
@@ -908,7 +921,7 @@ private:
 
     void if0_whitespace() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code(" # if  0 \n"
                                 "A\n"
@@ -919,7 +932,7 @@ private:
 
     void if0_else() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code("#if 0\n"
                                 "A\n"
@@ -941,7 +954,7 @@ private:
 
     void if0_elif() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code("#if 0\n"
                                 "A\n"
@@ -954,7 +967,7 @@ private:
 
     void if0_include_1() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code("#if 0\n"
                                 "#include \"a.h\"\n"
@@ -965,7 +978,7 @@ private:
 
     void if0_include_2() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream code("#if 0\n"
                                 "#include \"a.h\"\n"
@@ -991,7 +1004,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Expected configurations: "" and "ABC"
@@ -1011,7 +1024,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Expected configurations: "" and "ABC"
@@ -1034,7 +1047,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Expected configurations: "" and "ABC"
@@ -1049,7 +1062,7 @@ private:
         // Preprocess
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\n\n", preprocessor.read(istr, "test.c"));
     }
 
@@ -1066,7 +1079,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1084,7 +1097,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1102,7 +1115,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1123,7 +1136,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1140,7 +1153,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1161,7 +1174,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1184,7 +1197,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1198,7 +1211,8 @@ private:
 
 
     void match_cfg_def() {
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         {
             std::map<std::string, std::string> cfg;
@@ -1249,7 +1263,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1271,7 +1285,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1299,7 +1313,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1325,7 +1339,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1356,7 +1370,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1380,7 +1394,7 @@ private:
         std::map<std::string, std::string> actual;
         Settings settings;
         settings.debug = settings.debugwarnings = true;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1403,7 +1417,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1425,7 +1439,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1446,7 +1460,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1467,7 +1481,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1484,7 +1498,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1502,7 +1516,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -1524,7 +1538,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1544,7 +1558,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1559,7 +1573,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1577,7 +1591,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1595,7 +1609,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
     }
 
@@ -1609,7 +1623,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1619,7 +1633,8 @@ private:
                                 "#if A == 1\n"
                                 ";\n"
                                 "#endif\n";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\n;\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -1627,7 +1642,8 @@ private:
         const char filedata[] = "#if ('A' == 0x41)\n"
                                 "123\n"
                                 "#endif\n";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -1635,7 +1651,8 @@ private:
         const char filedata[] = "#if !(A)\n"
                                 "123\n"
                                 "#endif\n";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -1649,7 +1666,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "4456.c");  // <- don't crash in Preprocessor::getcfgs -> Tokenize -> number of template parameters
     }
 
@@ -1669,7 +1686,7 @@ private:
         Settings settings;
         settings.debug = settings.debugwarnings = true;
         settings.addEnabled("missingInclude");
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1688,7 +1705,8 @@ private:
         const std::string code("#if X || Y\n"
                                "a1;\n"
                                "#endif\n");
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\na1;\n\n", preprocessor.getcode(code, "X", "test.c"));
         ASSERT_EQUALS("\na1;\n\n", preprocessor.getcode(code, "Y", "test.c"));
     }
@@ -1703,7 +1721,7 @@ private:
                                "Betty\n"
                                "#endif\n");
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
@@ -1720,7 +1738,7 @@ private:
                                "#if YYDEBUG\n"
                                "#endif\n");
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
@@ -1737,7 +1755,7 @@ private:
                                "INLINE inline __forceinline\n"
                               );
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
@@ -1746,12 +1764,12 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n$$$__forceinline $$inline $$__forceinline\n", actual[""]);
     }
 
-    void ticket_4922() {// #4922
+    void ticket_4922() { // #4922
         const std::string code("__asm__ \n"
                                "{ int extern __value) 0; (double return (\"\" } extern\n"
                                "__typeof __finite (__finite) __finite __inline \"__GI___finite\");");
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.cpp");
@@ -1764,7 +1782,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("#define str \"abc\" \"def\"\n\nabcdef = str;\n", preprocessor.read(istr, "test.c"));
     }
 
@@ -1775,7 +1794,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr, "test.c"));
     }
 
@@ -1786,7 +1806,8 @@ private:
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr, "test.c"));
     }
 
@@ -1800,7 +1821,7 @@ private:
         Settings settings;
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1825,7 +1846,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -1834,7 +1855,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void remove_asm() {
+    void remove_asm() const {
         std::string str1("#asm\nmov ax,bx\n#endasm");
         Preprocessor::removeAsm(str1);
         ASSERT_EQUALS("asm(\nmov ax,bx\n);", str1);
@@ -1844,7 +1865,7 @@ private:
         ASSERT_EQUALS("\nasm(\nmov ax,bx\n);\n", str2);
     }
 
-    void if_defined() {
+    void if_defined() const {
         {
             const char filedata[] = "#if defined(AAA)\n"
                                     "#endif\n";
@@ -1856,14 +1877,14 @@ private:
         }
     }
 
-    void if_not_defined() {
+    void if_not_defined() const {
         const char filedata[] = "#if !defined(AAA)\n"
                                 "#endif\n";
         ASSERT_EQUALS("#ifndef AAA\n#endif\n", OurPreprocessor::replaceIfDefined(filedata));
     }
 
 
-    void macro_simple1() {
+    void macro_simple1() const {
         {
             const char filedata[] = "#define AAA(aa) f(aa)\n"
                                     "AAA(5);\n";
@@ -1877,25 +1898,25 @@ private:
         }
     }
 
-    void macro_simple2() {
+    void macro_simple2() const {
         const char filedata[] = "#define min(x,y) x<y?x:y\n"
                                 "min(a(),b());\n";
         ASSERT_EQUALS("\n$a()<$b()?$a():$b();\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple3() {
+    void macro_simple3() const {
         const char filedata[] = "#define A 4\n"
                                 "A AA\n";
         ASSERT_EQUALS("\n$4 AA\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple4() {
+    void macro_simple4() const {
         const char filedata[] = "#define TEMP_1 if( temp > 0 ) return 1;\n"
                                 "TEMP_1\n";
         ASSERT_EQUALS("\n$if( $temp > $0 ) $return $1;\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple5() {
+    void macro_simple5() const {
         const char filedata[] = "#define ABC if( temp > 0 ) return 1;\n"
                                 "\n"
                                 "void foo()\n"
@@ -1906,75 +1927,75 @@ private:
         ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    $if( $temp > $0 ) $return $1;\n}\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple6() {
+    void macro_simple6() const {
         const char filedata[] = "#define ABC (a+b+c)\n"
                                 "ABC\n";
         ASSERT_EQUALS("\n$($a+$b+$c)\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple7() {
+    void macro_simple7() const {
         const char filedata[] = "#define ABC(str) str\n"
                                 "ABC(\"(\")\n";
         ASSERT_EQUALS("\n$\"(\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple8() {
+    void macro_simple8() const {
         const char filedata[] = "#define ABC 123\n"
                                 "#define ABCD 1234\n"
                                 "ABC ABCD\n";
         ASSERT_EQUALS("\n\n$123 $1234\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple9() {
+    void macro_simple9() const {
         const char filedata[] = "#define ABC(a) f(a)\n"
                                 "ABC( \"\\\"\" );\n"
                                 "ABC( \"g\" );\n";
         ASSERT_EQUALS("\n$f(\"\\\"\");\n$f(\"g\");\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple10() {
+    void macro_simple10() const {
         const char filedata[] = "#define ABC(t) t x\n"
                                 "ABC(unsigned long);\n";
         ASSERT_EQUALS("\n$unsigned $long $x;\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple11() {
+    void macro_simple11() const {
         const char filedata[] = "#define ABC(x) delete x\n"
                                 "ABC(a);\n";
         ASSERT_EQUALS("\n$delete $a;\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple12() {
+    void macro_simple12() const {
         const char filedata[] = "#define AB ab.AB\n"
                                 "AB.CD\n";
         ASSERT_EQUALS("\n$ab.$AB.CD\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple13() {
+    void macro_simple13() const {
         const char filedata[] = "#define TRACE(x)\n"
                                 "TRACE(;if(a))\n";
         ASSERT_EQUALS("\n$\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple14() {
+    void macro_simple14() const {
         const char filedata[] = "#define A \"  a  \"\n"
                                 "printf(A);\n";
         ASSERT_EQUALS("\nprintf($\"  a  \");\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple15() {
+    void macro_simple15() const {
         const char filedata[] = "#define FOO\"foo\"\n"
                                 "FOO\n";
         ASSERT_EQUALS("\n$\"foo\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple16() {  // # 4703
+    void macro_simple16() const {  // # 4703
         const char filedata[] = "#define MACRO( A, B, C ) class A##B##C##Creator {};\n"
                                 "MACRO( B\t, U , G )";
         ASSERT_EQUALS("\n$class $BUGCreator{};", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple17() {  // # 5074 - the Token::isExpandedMacro() doesn't always indicate properly if token comes from macro
+    void macro_simple17() const {  // # 5074 - the Token::isExpandedMacro() doesn't always indicate properly if token comes from macro
         // It would probably be OK if the generated code was
         // "\n123+$123" since the first 123 comes from the source code
         const char filedata[] = "#define MACRO(A) A+123\n"
@@ -1982,7 +2003,7 @@ private:
         ASSERT_EQUALS("\n$123+$123", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_simple18() {  // (1e-7)
+    void macro_simple18() const {  // (1e-7)
         const char filedata1[] = "#define A (1e-7)\n"
                                  "a=A;";
         ASSERT_EQUALS("\na=$($1e-7);", OurPreprocessor::expandMacros(filedata1));
@@ -2016,7 +2037,7 @@ private:
         ASSERT_EQUALS("\na=$($8.0E+007);", OurPreprocessor::expandMacros(filedata8));
     }
 
-    void macroInMacro1() {
+    void macroInMacro1() const {
         {
             const char filedata[] = "#define A(m) long n = m; n++;\n"
                                     "#define B(n) A(n)\n"
@@ -2116,20 +2137,20 @@ private:
         }
     }
 
-    void macroInMacro2() {
+    void macroInMacro2() const {
         const char filedata[] = "#define A(x) a##x\n"
                                 "#define B 0\n"
                                 "A(B)\n";
         ASSERT_EQUALS("\n\n$aB\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_mismatch() {
+    void macro_mismatch() const {
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
                                 "AAA(5);\n";
         ASSERT_EQUALS("\nAAA(5);\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_linenumbers() {
+    void macro_linenumbers() const {
         const char filedata[] = "#define AAA(a)\n"
                                 "AAA(5\n"
                                 "\n"
@@ -2143,13 +2164,13 @@ private:
                       OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_nopar() {
+    void macro_nopar() const {
         const char filedata[] = "#define AAA( ) { NULL }\n"
                                 "AAA()\n";
         ASSERT_EQUALS("\n${ $NULL }\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void macro_switchCase() {
+    void macro_switchCase() const {
         {
             // Make sure "case 2" doesn't become "case2"
             const char filedata[] = "#define A( b ) "
@@ -2195,7 +2216,7 @@ private:
         }
     }
 
-    void macro_NULL() {
+    void macro_NULL() const {
         // Let the tokenizer handle NULL.
         // See ticket #4482 - UB when passing NULL to variadic function
         ASSERT_EQUALS("\n$0", OurPreprocessor::expandMacros("#define null 0\nnull"));
@@ -2212,7 +2233,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2220,7 +2241,7 @@ private:
         ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
     }
 
-    void string2() {
+    void string2() const {
         const char filedata[] = "#define AAA 123\n"
                                 "str = \"AAA\"\n";
 
@@ -2228,7 +2249,7 @@ private:
         ASSERT_EQUALS("\nstr = \"AAA\"\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void string3() {
+    void string3() const {
         const char filedata[] = "str(\";\");\n";
 
         // Compare results..
@@ -2253,13 +2274,13 @@ private:
                                     "#undef z\n"
                                     "int z;\n"
                                     "z = 0;\n";
-
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("\n\nint z;\nz = 0;\n", preprocessor.getcode(filedata, "", ""));
         }
     }
 
-    void defdef() {
+    void defdef() const {
         const char filedata[] = "#define AAA 123\n"
                                 "#define AAA 456\n"
                                 "#define AAA 789\n"
@@ -2269,7 +2290,7 @@ private:
         ASSERT_EQUALS("\n\n\n$789\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void preprocessor_doublesharp() {
+    void preprocessor_doublesharp() const {
         // simple testcase without ##
         const char filedata1[] = "#define TEST(var,val) var = val\n"
                                  "TEST(foo,20);\n";
@@ -2320,7 +2341,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2331,7 +2352,7 @@ private:
 
 
 
-    void va_args_1() {
+    void va_args_1() const {
         const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);\n";
 
@@ -2341,7 +2362,7 @@ private:
         ASSERT_EQUALS("\n$printf(\"[0x%lx-0x%lx)\",$pstart,$pend);\n", actual);
     }
 
-    void va_args_2() {
+    void va_args_2() const {
         const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
                                 "DBG(\"hello\");\n";
 
@@ -2351,13 +2372,13 @@ private:
         ASSERT_EQUALS("\n$printf(\"hello\");\n", actual);
     }
 
-    void va_args_3() {
+    void va_args_3() const {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";
         ASSERT_EQUALS("\n${ $fred($123); }\n", OurPreprocessor::expandMacros(filedata));
     }
 
-    void va_args_4() {
+    void va_args_4() const {
         const char filedata[] = "#define FRED(name, ...) name (__VA_ARGS__)\n"
                                 "FRED(abc, 123)\n";
         ASSERT_EQUALS("\n$abc($123)\n", OurPreprocessor::expandMacros(filedata));
@@ -2377,7 +2398,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2386,7 +2407,7 @@ private:
     }
 
 
-    void stringify() {
+    void stringify() const {
         const char filedata[] = "#define STRINGIFY(x) #x\n"
                                 "STRINGIFY(abc)\n";
 
@@ -2396,7 +2417,7 @@ private:
         ASSERT_EQUALS("\n$\"abc\"\n", actual);
     }
 
-    void stringify2() {
+    void stringify2() const {
         const char filedata[] = "#define A(x) g(#x)\n"
                                 "A(abc);\n";
 
@@ -2406,7 +2427,7 @@ private:
         ASSERT_EQUALS("\n$g(\"abc\");\n", actual);
     }
 
-    void stringify3() {
+    void stringify3() const {
         const char filedata[] = "#define A(x) g(#x)\n"
                                 "A( abc);\n";
 
@@ -2416,7 +2437,7 @@ private:
         ASSERT_EQUALS("\n$g(\"abc\");\n", actual);
     }
 
-    void stringify4() {
+    void stringify4() const {
         const char filedata[] = "#define A(x) #x\n"
                                 "1 A(\n"
                                 "abc\n"
@@ -2428,7 +2449,7 @@ private:
         ASSERT_EQUALS("\n1 $\n\n\"abc\" 2\n", actual);
     }
 
-    void stringify5() {
+    void stringify5() const {
         const char filedata[] = "#define A(x) a(#x,x)\n"
                                 "A(foo(\"\\\"\"))\n";
         ASSERT_EQUALS("\n$a(\"foo(\\\"\\\\\\\"\\\")\",$foo(\"\\\"\"))\n", OurPreprocessor::expandMacros(filedata));
@@ -2444,7 +2465,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2466,7 +2487,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2484,7 +2505,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2495,8 +2516,8 @@ private:
     void pragma_once() {
         const char code[] = "#pragma once\n"
                             "int x";
-
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
         std::set<std::string> pragmaOnce;
@@ -2515,7 +2536,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2546,7 +2567,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             ASSERT_EQUALS(expected, actual[""]);
@@ -2622,7 +2643,7 @@ private:
 
             // expand macros..
             errout.str("");
-            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+            OurPreprocessor::expandMacros(filedata, this);
 
             ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
@@ -2633,16 +2654,16 @@ private:
         std::istringstream istr(filedata);
         errout.str("");
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.read(istr, "test.cpp");
-        ASSERT_EQUALS("[test.cpp:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c8)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) The code contains unhandled characters (character code = 0xc8). Checking continues, but do not expect valid results.\n", errout.str());
     }
 
     void unicodeInComment() {
         const std::string filedata("//\xC8");
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("", preprocessor.read(istr, "test.cpp"));
     }
 
@@ -2650,7 +2671,7 @@ private:
         const std::string filedata("\"\xC8\"");
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp"));
     }
 
@@ -2666,7 +2687,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2687,7 +2708,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2708,7 +2729,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2731,7 +2752,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>());
 
         // Compare results..
@@ -2752,7 +2773,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>());
 
         // Compare results..
@@ -2761,7 +2782,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void includes() {
+    void includes() const {
         {
             std::string src = "#include a.h";
             ASSERT_EQUALS(OurPreprocessor::NoHeader, OurPreprocessor::getHeaderFileName(src));
@@ -2805,7 +2826,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -2815,7 +2836,8 @@ private:
     }
 
     void define_if1() {
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         {
             const char filedata[] = "#define A 0\n"
@@ -2839,7 +2861,8 @@ private:
                                 "#if (B==A) || (B==C)\n"
                                 "FOO\n"
                                 "#endif";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -2848,7 +2871,8 @@ private:
                                 "#if (A==0)\n"
                                 "FOO\n"
                                 "#endif";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -2857,7 +2881,8 @@ private:
                                 "#if X==123\n"
                                 "FOO\n"
                                 "#endif";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
     }
 
@@ -2868,7 +2893,8 @@ private:
                                     "#if B==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
         }
         {
@@ -2878,7 +2904,8 @@ private:
                                     "#if C==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("\n\n\n\nFOO\n\n", preprocessor.getcode(filedata,"",""));
         }
         {
@@ -2886,7 +2913,8 @@ private:
                                     "#if A==1\n"
                                     "FOO\n"
                                     "#endif";
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata,"",""));
         }
     }
@@ -2903,7 +2931,8 @@ private:
                                 "#if B >= 0\n"
                                 "456\n"
                                 "#endif\n";
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         const std::string actualA0 = preprocessor.getcode(filedata, "A=0", "test.c");
         ASSERT_EQUALS(true,  actualA0.find("123") != std::string::npos);
         ASSERT_EQUALS(false, actualA0.find("456") != std::string::npos);
@@ -2925,7 +2954,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -2943,7 +2972,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -2961,7 +2990,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -2979,7 +3008,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -2998,7 +3027,7 @@ private:
             std::istringstream istr(filedata);
             std::map<std::string, std::string> actual;
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
@@ -3017,7 +3046,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3035,7 +3064,8 @@ private:
                                 "B me;\n";
 
         // Preprocess => actual result..
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\n\n\n\n\n$int me;\n", preprocessor.getcode(filedata, "", "a.cpp"));
         ASSERT_EQUALS("\n\n\n\n\n\n$char me;\n", preprocessor.getcode(filedata, "A", "a.cpp"));
     }
@@ -3050,7 +3080,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         ASSERT_EQUALS(1U, actual.size());
@@ -3064,7 +3094,8 @@ private:
                                 "#endif\n";
 
         // Preprocess => actual result..
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata, "", "a.cpp"));
         ASSERT_EQUALS("\n\n\n\n", preprocessor.getcode(filedata, "A", "a.cpp"));
     }
@@ -3089,7 +3120,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3110,7 +3141,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3132,7 +3163,7 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // B will always be defined if A is defined; the following test
@@ -3157,7 +3188,7 @@ private:
         const std::string filedata("/*\n*/ # /*\n*/ defi\\\nne FO\\\nO 10\\\n20");
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("#define FOO 1020", preprocessor.read(istr, "test.cpp"));
     }
 
@@ -3165,7 +3196,7 @@ private:
         const std::string filedata("\"foo\\\\\nbar\"");
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS("\"foo\\bar\"", preprocessor.read(istr, "test.cpp"));
     }
 
@@ -3173,7 +3204,7 @@ private:
         const std::string filedata("#define A \" a  \"\n\" b\"");
         std::istringstream istr(filedata);
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         ASSERT_EQUALS(filedata, preprocessor.read(istr, "test.cpp"));
     }
 
@@ -3183,7 +3214,7 @@ private:
             const std::string filedata("#define A \" \\\\\"/*space*/  \" \"");
             std::istringstream istr(filedata);
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("#define A \" \\\\\" \" \"", preprocessor.read(istr, "test.cpp"));
         }
 
@@ -3192,7 +3223,7 @@ private:
             const std::string filedata("#define A \" \\\\\\\"  \"");
             std::istringstream istr(filedata);
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("#define A \" \\\\\\\"  \"", preprocessor.read(istr, "test.cpp"));
         }
 
@@ -3201,14 +3232,14 @@ private:
             const std::string filedata("#define A \" \\\\\\\\\"/*space*/  \" \"");
             std::istringstream istr(filedata);
             Settings settings;
-            Preprocessor preprocessor(&settings, this);
+            Preprocessor preprocessor(settings, this);
             ASSERT_EQUALS("#define A \" \\\\\\\\\" \" \"", preprocessor.read(istr, "test.cpp"));
         }
     }
 
     void invalid_define_1() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream src("#define =\n");
         std::string processedFile;
@@ -3219,7 +3250,7 @@ private:
 
     void invalid_define_2() {  // #4036 - hang
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream src("#define () {(int f(x) }\n");
         std::string processedFile;
@@ -3230,7 +3261,7 @@ private:
 
     void missingInclude() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         Preprocessor::missingIncludeFlag = false;
 
         std::istringstream src("#include \"missing.h\"\n");
@@ -3247,7 +3278,7 @@ private:
         Settings settings;
         settings._inlineSuppressions = true;
         settings.addEnabled("all");
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream src("// cppcheck-suppress missingInclude\n"
                                "#include \"missing.h\"\n"
@@ -3267,8 +3298,8 @@ private:
         const std::string src("#if defined X || Y\n"
                               "Fred & Wilma\n"
                               "#endif\n");
-
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         std::string actual = preprocessor.getcode(src, "X=1", "test.c");
 
         ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
@@ -3279,13 +3310,15 @@ private:
                               "Fred & Wilma\n"
                               "#endif\n");
         {
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             std::string actual = preprocessor.getcode(src, "X=1", "test.c");
             ASSERT_EQUALS("\n\n\n", actual);
         }
 
         {
-            Preprocessor preprocessor(nullptr, this);
+            Settings settings;
+            Preprocessor preprocessor(settings, this);
             std::string actual = preprocessor.getcode(src, "X=1;Y=2", "test.c");
             ASSERT_EQUALS("\nFred & Wilma\n\n", actual);
         }
@@ -3298,7 +3331,8 @@ private:
                             "#if (X == Y)\n"
                             "Fred & Wilma\n"
                             "#endif\n";
-        Preprocessor preprocessor(nullptr,this);
+        Settings settings;
+        Preprocessor preprocessor(settings,this);
         const std::string actual = preprocessor.getcode(code, "TEST", "test.c");
         ASSERT_EQUALS("\n\n\nFred & Wilma\n\n", actual);
     }
@@ -3306,7 +3340,8 @@ private:
     void predefine4() {
         // #3577
         const char code[] = "char buf[X];\n";
-        Preprocessor preprocessor(nullptr,this);
+        Settings settings;
+        Preprocessor preprocessor(settings,this);
         const std::string actual = preprocessor.getcode(code, "X=123", "test.c");
         ASSERT_EQUALS("char buf[$123];\n", actual);
     }
@@ -3314,7 +3349,8 @@ private:
     void predefine5() {  // #3737, #5119 - automatically define __cplusplus
         // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
-        Preprocessor preprocessor(nullptr,this);
+        Settings settings;
+        Preprocessor preprocessor(settings,this);
         ASSERT_EQUALS("\n\n\n",    preprocessor.getcode(code, "X=123", "test.c"));
         ASSERT_EQUALS("\n123\n\n", preprocessor.getcode(code, "X=123", "test.cpp"));
 
@@ -3322,7 +3358,6 @@ private:
         ASSERT_EQUALS(false, Preprocessor::cplusplus(nullptr,"test.c"));
         ASSERT_EQUALS(true, Preprocessor::cplusplus(nullptr,"test.cpp"));
 
-        Settings settings;
         ASSERT_EQUALS(true, Preprocessor::cplusplus(&settings,"test.cpp"));
         settings.userUndefs.insert("__cplusplus");
         ASSERT_EQUALS(false, Preprocessor::cplusplus(&settings,"test.cpp"));
@@ -3342,7 +3377,7 @@ private:
 
         // actual result..
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::map<std::string, std::string> defs;
         defs["A"] = "1";
         const std::list<std::string> configs = preprocessor.getcfgs(filedata, "test1.c", defs);
@@ -3359,7 +3394,8 @@ private:
         std::map<std::string, std::string> cfg;
         cfg["C"] = "";
         std::string condition("defined(A) || defined(B) || defined(C)");
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
         preprocessor.simplifyCondition(cfg, condition, true);
         ASSERT_EQUALS("1", condition);
     }
@@ -3367,7 +3403,8 @@ private:
     void invalidElIf() {
         // #2942 - segfault
         const char code[] = "#elif (){\n";
-        Preprocessor preprocessor(nullptr,this);
+        Settings settings;
+        Preprocessor preprocessor(settings,this);
         const std::string actual = preprocessor.getcode(code, "TEST", "test.c");
         ASSERT_EQUALS("\n", actual);
     }
@@ -3376,7 +3413,8 @@ private:
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         // ifdef
         {
@@ -3509,7 +3547,6 @@ private:
             const std::string code("#ifndef X\n#error abc\n#endif");
             const std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
             ASSERT_EQUALS("\n#error abc\n\n", actual);
-            ASSERT_EQUALS("[test.c:2]: (error) abc\n", errout.str());
         }
     }
 
@@ -3518,7 +3555,7 @@ private:
         std::map<std::string,std::string> defs;
         defs["AA"] = "";
         Settings settings;
-        Preprocessor preprocessor(&settings,this);
+        Preprocessor preprocessor(settings,this);
 
         // missing local include
         {
@@ -3559,11 +3596,18 @@ private:
             errout.str("");
             settings.checkConfiguration = true;
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
-            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found.\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (information) Include file: <missing-include!!.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
 
             pragmaOnce.clear();
             errout.str("");
             settings.nomsg.addSuppression("missingIncludeSystem");
+            preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
+            ASSERT_EQUALS("", errout.str());
+
+            pragmaOnce.clear();
+            errout.str("");
+            settings = Settings();
+            settings.nomsg.addSuppression("missingInclude");
             preprocessor.handleIncludes(code,"test.c",includePaths,defs,pragmaOnce,std::list<std::string>());
             ASSERT_EQUALS("", errout.str());
         }
@@ -3589,7 +3633,8 @@ private:
         const std::string filePath("test.c");
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         // #3405
         {
@@ -3621,9 +3666,9 @@ private:
             std::string actual(preprocessor.handleIncludes(code,filePath,includePaths,defs,pragmaOnce,std::list<std::string>()));
 
             // the 1,2,4 should be in the result
-            actual.erase(0, actual.find("1"));
-            while (actual.find("\n") != std::string::npos)
-                actual.erase(actual.find("\n"),1);
+            actual.erase(0, actual.find('1'));
+            while (actual.find('\n') != std::string::npos)
+                actual.erase(actual.find('\n'), 1);
             ASSERT_EQUALS("124", actual);
         }
 
@@ -3655,8 +3700,8 @@ private:
                             "123\n"
                             "\n"
                             "#endif";
-
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
@@ -3676,7 +3721,7 @@ private:
 
         Settings settings;
         settings.userUndefs.insert("A");
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
@@ -3698,7 +3743,8 @@ private:
         const std::list<std::string> includePaths;
         std::map<std::string,std::string> defs;
         std::set<std::string> pragmaOnce;
-        Preprocessor preprocessor(nullptr, this);
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
 
         std::istringstream istr(code);
         const std::string s(preprocessor.read(istr, ""));
@@ -3729,7 +3775,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X");
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3749,7 +3795,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X");
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3770,7 +3816,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3791,7 +3837,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3812,7 +3858,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3835,7 +3881,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3854,7 +3900,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3878,7 +3924,7 @@ private:
         settings.checkConfiguration = true;
         errout.str("");
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3901,7 +3947,7 @@ private:
         std::map<std::string, std::string> actual;
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
@@ -3921,7 +3967,7 @@ private:
         std::istringstream istr(filedata);
         settings.userUndefs.insert("X"); // User undefs should override internal defines
 
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         std::string processedFile;
         std::list<std::string> resultConfigurations;
@@ -3938,7 +3984,7 @@ private:
     void handleUndef() {
         Settings settings;
         settings.userUndefs.insert("X");
-        const Preprocessor preprocessor(&settings, this);
+        const Preprocessor preprocessor(settings, this);
         std::list<std::string> configurations;
 
         // configurations to keep
@@ -3961,7 +4007,7 @@ private:
         ASSERT_EQUALS(0U, configurations.size());
     }
 
-    void macroChar() {
+    void macroChar() const {
         const char filedata[] = "#define X 1\nX\n";
         ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,nullptr));
         OurPreprocessor::macroChar = char(1);
@@ -3971,7 +4017,7 @@ private:
 
     void validateCfg() {
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
 
         ASSERT_EQUALS(true, preprocessor.validateCfg("", "X=42"));  // don't hang when parsing cfg
         ASSERT_EQUALS(false, preprocessor.validateCfg("int y=Y;", "X=42;Y"));
@@ -4015,11 +4061,56 @@ private:
                                   "#endif";
 
         Settings settings;
-        Preprocessor preprocessor(&settings, this);
+        Preprocessor preprocessor(settings, this);
         std::istringstream istr(code);
         std::map<std::string, std::string> actual;
         preprocessor.preprocess(istr, actual, "file.c");
         ASSERT_EQUALS("\nFred & Wilma\n\n\n\n\n", actual[""]);
+    }
+
+    void double_include() {
+        const char code[] = "int x";
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
+        std::list<std::string> includePaths;
+        includePaths.push_back(".");
+        includePaths.push_back(".");
+        std::map<std::string,std::string> defs;
+        std::set<std::string> pragmaOnce;
+        preprocessor.handleIncludes(code, "123.h", includePaths, defs, pragmaOnce, std::list<std::string>());
+    }
+
+    void invalid_ifs() {
+        const char filedata[] = "#ifdef\n"
+                                "#endif\n"
+                                "#ifdef !\n"
+                                "#endif\n"
+                                "#if defined\n"
+                                "#endif\n"
+                                "#define f(x) x\n"
+                                "#if f(2\n"
+                                "#endif\n"
+                                "int x;\n";
+
+        // Preprocess => don't crash..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+    }
+
+    void garbage() {
+        const char filedata[] = "V\n"
+                                "#define X b   #endif #line 0 \"x\"  ;\n"
+                                "#if ! defined ( Y )    #endif";
+
+        // Preprocess => don't crash..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
     }
 };
 

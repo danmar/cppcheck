@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@
 #include <list>
 #include <string>
 
-class Token;
 class Scope;
 class Function;
 class Variable;
@@ -48,10 +47,11 @@ class Variable;
 
 /** @brief Base class for memory leaks checking */
 class CPPCHECKLIB CheckMemoryLeak {
-private:
+protected:
     /** For access to the tokens */
     const Tokenizer * const tokenizer;
 
+private:
     /** ErrorLogger used to report errors */
     ErrorLogger * const errorLogger;
 
@@ -73,8 +73,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const Token *location, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -82,8 +83,9 @@ private:
      * @param severity the severity of the bug
      * @param id type of message
      * @param msg text
+     * @param cwe cwe number
      */
-    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, unsigned int cwe) const;
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
@@ -203,8 +205,7 @@ public:
     }
 
     /** @brief Unit testing : testing the white list */
-    static bool test_white_list(const std::string &funcname);
-    static bool test_white_list_with_lib(const std::string &funcname, const Settings *settings);
+    static bool test_white_list(const std::string &funcname, const Settings *settings, bool cpp);
 
     /** @brief Perform checking */
     void check();
@@ -213,15 +214,6 @@ public:
      * Checking for a memory leak caused by improper realloc usage.
      */
     void checkReallocUsage();
-
-    /**
-     * @brief %Check if there is a "!var" match inside a condition
-     * @param tok      first token to match
-     * @param varid    variable id
-     * @param endpar   if this is true the "!var" must be followed by ")"
-     * @return true if match
-     */
-    static bool notvar(const Token *tok, unsigned int varid, bool endpar = false);
 
     /**
      * Inspect a function call. the call_func and getcode are recursive
@@ -289,16 +281,13 @@ public:
 
     /**
      * Checking the variable varname
-     * @param Tok1 start token
+     * @param startTok start token
      * @param varname name of variable (for error messages)
      * @param varid variable id
      * @param classmember is the scope inside a class member function
      * @param sz size of type.. if the variable is a "int *" then sz should be "sizeof(int)"
      */
-    void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
-
-    /** parse tokens to see what functions are "noreturn" */
-    void parse_noreturn();
+    void checkScope(const Token *startTok, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
 private:
     /** Report all possible errors (for the --errorlist) */
@@ -331,12 +320,6 @@ private:
     std::string classInfo() const {
         return "Is there any allocated memory when a function goes out of scope\n";
     }
-
-    /** Function names for functions that are "noreturn" */
-    std::set<std::string> noreturn;
-
-    /** Function names for functions that are not "noreturn" */
-    std::set<std::string> notnoreturn;
 
     const SymbolDatabase *symbolDatabase;
 };
@@ -456,14 +439,22 @@ private:
      */
     void checkForUnusedReturnValue(const Scope *scope);
 
+    /**
+     * @brief %Check if an exception could cause a leak in an argument constructed with shared_ptr/unique_ptr.
+     * @param scope     The scope of the function to check.
+     */
+    void checkForUnsafeArgAlloc(const Scope *scope);
+
     void functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall);
     void returnValueNotUsedError(const Token* tok, const std::string &alloc);
+    void unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string &objType);
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const {
         CheckMemoryLeakNoVar c(0, settings, e);
 
         c.functionCallLeak(0, "funcName", "funcName");
         c.returnValueNotUsedError(0, "funcName");
+        c.unsafeArgAllocError(0, "funcName", "shared_ptr", "int");
     }
 
     static std::string myName() {

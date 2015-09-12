@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "tokenize.h"
 #include "checkboost.h"
 #include "testsuite.h"
-#include <sstream>
 
-extern std::ostringstream errout;
 
 class TestBoost : public TestFixture {
 public:
@@ -47,11 +43,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const std::string str1(tokenizer.tokens()->stringifyList(0,true));
         tokenizer.simplifyTokenList2();
-        const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-        if (str1 != str2)
-            warn("Unsimplified code in test case");
 
         // Check..
         CheckBoost checkBoost;
@@ -95,6 +87,16 @@ private:
         check("void f() {\n"
               "    BOOST_FOREACH(const int &i, get_data())\n"
               "        data.insert(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Break after modification (#4788)
+        check("void f() {\n"
+              "    vector<int> data;\n"
+              "    BOOST_FOREACH(int i, data) {\n"
+              "        data.push_back(123);\n"
+              "        break;\n"
+              "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -2,5 +2,5 @@
 int main()
 {
     char str[5];
-    snprintf(str, 10, "%s", "abc");
+    strcpy(str, "0123456789abcdef");
 }

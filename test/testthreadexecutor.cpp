@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@
  */
 
 
-// The preprocessor that Cppcheck uses is a bit special. Instead of generating
-// the code for a known configuration, it generates the code for each configuration.
-
-
 #include "cppcheck.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
@@ -29,8 +25,6 @@
 #include <map>
 #include <string>
 
-extern std::ostringstream errout;
-extern std::ostringstream output;
 
 class TestThreadExecutor : public TestFixture {
 public:
@@ -69,6 +63,7 @@ private:
 
     void run() {
         TEST_CASE(deadlock_with_many_errors);
+        TEST_CASE(many_threads);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -86,6 +81,16 @@ private:
         oss << "  return 0;\n"
             << "}\n";
         check(2, 3, 3, oss.str());
+    }
+
+    void many_threads() {
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        oss << "  char *a = malloc(10);\n";
+        oss << "  return 0;\n"
+            << "}";
+        check(20, 100, 100, oss.str());
     }
 
     void no_errors_more_files() {

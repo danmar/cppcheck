@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@
 #include "logview.h"
 #include "filelist.h"
 #include "showtypes.h"
+#include "librarydialog.h"
 
 static const QString OnlineHelpURL("http://cppcheck.sourceforge.net/manual.html");
 
@@ -77,6 +78,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, SIGNAL(returnPressed()), this, SLOT(FilterResults()));
 
+    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(Print()));
+    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(PrintPreview()));
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
@@ -97,6 +100,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionShowHidden, SIGNAL(triggered()), mUI.mResults, SLOT(ShowHiddenResults()));
     connect(mUI.mActionViewLog, SIGNAL(triggered()), this, SLOT(ShowLogView()));
     connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(ShowStatistics()));
+    connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(ShowLibraryEditor()));
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
@@ -134,6 +138,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     EnableCheckButtons(true);
 
+    mUI.mActionPrint->setShortcut(QKeySequence::Print);
+    mUI.mActionPrint->setEnabled(false);
+    mUI.mActionPrintPreview->setEnabled(false);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionRecheck->setEnabled(false);
@@ -183,12 +190,12 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    Platform &plat = mPlatforms.get(Settings::Win32A);
+    const Settings::PlatformType defaultPlat = Settings::Win32W;
 #else
-    Platform &plat = mPlatforms.get(Settings::Unspecified);
+    const Settings::PlatformType defaultPlat = Settings::Unspecified;
 #endif
+    Platform &plat = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlat).toInt());
     plat.mActMainWindow->setChecked(true);
-    mSettings->setValue(SETTINGS_CHECKED_PLATFORM, plat.mType);
 }
 
 MainWindow::~MainWindow()
@@ -513,34 +520,82 @@ void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-bool MainWindow::LoadLibrary(Library *library, QString filename)
+Library::Error MainWindow::LoadLibrary(Library *library, QString filename)
 {
+    Library::Error ret;
+
     // Try to load the library from the project folder..
     if (mProject) {
         QString path = QFileInfo(mProject->GetProjectFile()->GetFilename()).canonicalPath();
-        if (library->load(NULL, (path+"/"+filename).toLatin1()))
-            return true;
+        ret = library->load(NULL, (path+"/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
     }
 
     // Try to load the library from the application folder..
-    QString path = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    if (library->load(NULL, (path+"/"+filename).toLatin1()))
-        return true;
+    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+    ret = library->load(NULL, (appPath+"/"+filename).toLatin1());
+    if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+        return ret;
+    ret = library->load(NULL, (appPath+"/cfg/"+filename).toLatin1());
+    if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+        return ret;
 
     // Try to load the library from the cfg subfolder..
-    path = path + "/cfg";
-    if (library->load(NULL, (path+"/"+filename).toLatin1()))
-        return true;
-
-    // Try to load resource..
-    QFile f(":/cfg/" + filename);
-    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString data = f.readAll();
-        if (library->loadxmldata(data.toLatin1(), data.length()))
-            return true;
+    const QString datadir = mSettings->value("DATADIR", QString()).toString();
+    if (!datadir.isEmpty()) {
+        ret = library->load(NULL, (datadir+"/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
+        ret = library->load(NULL, (datadir+"/cfg/"+filename).toLatin1());
+        if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
+            return ret;
     }
 
-    return false;
+    return ret;
+}
+
+bool MainWindow::TryLoadLibrary(Library *library, QString filename)
+{
+    const Library::Error error = LoadLibrary(library, filename);
+    if (error.errorcode != Library::ErrorCode::OK) {
+        if (error.errorcode == Library::UNKNOWN_ELEMENT) {
+            QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename).arg(error.reason.c_str()));
+            return true;
+        }
+
+        QString errmsg;
+        switch (error.errorcode) {
+        case Library::ErrorCode::OK:
+            break;
+        case Library::ErrorCode::FILE_NOT_FOUND:
+            errmsg = tr("File not found");
+            break;
+        case Library::ErrorCode::BAD_XML:
+            errmsg = tr("Bad XML");
+            break;
+        case Library::ErrorCode::MISSING_ATTRIBUTE:
+            errmsg = tr("Missing attribute");
+            break;
+        case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
+            errmsg = tr("Bad attribute value");
+            break;
+        case Library::ErrorCode::UNSUPPORTED_FORMAT:
+            errmsg = tr("Unsupported format");
+            break;
+        case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
+            errmsg = tr("Duplicate platform type");
+            break;
+        case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
+            errmsg = tr("Platform type redefined");
+            break;
+        }
+        if (!error.reason.empty())
+            errmsg += " '" + QString::fromStdString(error.reason) + "'";
+        QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library '%1'.\n%2").arg(filename).arg(errmsg));
+        return false;
+    }
+    return true;
 }
 
 Settings MainWindow::GetCppcheckSettings()
@@ -553,7 +608,7 @@ Settings MainWindow::GetCppcheckSettings()
         QStringList dirs = pfile->GetIncludeDirs();
         AddIncludeDirs(dirs, result);
 
-        QStringList defines = pfile->GetDefines();
+        const QStringList defines = pfile->GetDefines();
         QString define;
         foreach(define, defines) {
             if (!result.userDefines.empty())
@@ -561,14 +616,13 @@ Settings MainWindow::GetCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
-        QStringList libraries = pfile->GetLibraries();
+        const QStringList libraries = pfile->GetLibraries();
         foreach(QString library, libraries) {
             const QString filename = library + ".cfg";
-            if (!LoadLibrary(&result.library, filename))
-                QMessageBox::information(this, tr("Information"), tr("Failed to load the selected library %1").arg(filename));
+            TryLoadLibrary(&result.library, filename);
         }
 
-        QStringList suppressions = pfile->GetSuppressions();
+        const QStringList suppressions = pfile->GetSuppressions();
         foreach(QString suppression, suppressions) {
             result.nomsg.addSuppressionLine(suppression.toStdString());
         }
@@ -595,7 +649,7 @@ Settings MainWindow::GetCppcheckSettings()
     result.addEnabled("missingInclude");
     result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
-    result._errorsOnly = false;
+    result.quiet = false;
     result._verbose = true;
     result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result._xml = false;
@@ -607,13 +661,16 @@ Settings MainWindow::GetCppcheckSettings()
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
 
-    bool std = LoadLibrary(&result.library, "std.cfg");
+    const bool std = TryLoadLibrary(&result.library, "std.cfg");
     bool posix = true;
     if (result.standards.posix)
-        posix = LoadLibrary(&result.library, "posix.cfg");
+        posix = TryLoadLibrary(&result.library, "posix.cfg");
+    bool windows = true;
+    if (result.platformType == Settings::Win32A || result.platformType == Settings::Win32W || result.platformType == Settings::Win64)
+        windows = TryLoadLibrary(&result.library, "windows.cfg");
 
-    if (!std || !posix)
-        QMessageBox::warning(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken.").arg(!std ? "std.cfg" : "posix.cfg"));
+    if (!std || !posix || !windows)
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));
 
     if (result._jobs <= 1) {
         result._jobs = 1;
@@ -645,6 +702,8 @@ void MainWindow::CheckDone()
     if (mUI.mResults->HasResults()) {
         mUI.mActionClearResults->setEnabled(true);
         mUI.mActionSave->setEnabled(true);
+        mUI.mActionPrint->setEnabled(true);
+        mUI.mActionPrintPreview->setEnabled(true);
     }
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
@@ -654,6 +713,7 @@ void MainWindow::CheckDone()
 
     // Notify user - if the window is not active - that check is ready
     QApplication::alert(this, 3000);
+    ShowStatistics();
 }
 
 void MainWindow::CheckLockDownUI()
@@ -718,6 +778,8 @@ void MainWindow::ClearResults()
     mUI.mResults->Clear(true);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
+    mUI.mActionPrint->setEnabled(false);
+    mUI.mActionPrintPreview->setEnabled(false);
 }
 
 void MainWindow::OpenResults()
@@ -826,7 +888,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->accept();
     } else {
         const QString text(tr("Checking is running.\n\n" \
-                              "Do you want to stop the checking and exit Cppcheck?."));
+                              "Do you want to stop the checking and exit Cppcheck?"));
 
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
@@ -1053,6 +1115,8 @@ void MainWindow::CheckProject(Project *project)
     // file's location directory as root path
     if (rootpath.isEmpty() || rootpath == ".")
         mCurrentDirectory = inf.canonicalPath();
+    else if (rootpath.startsWith("."))
+        mCurrentDirectory = inf.canonicalPath() + rootpath.mid(1);
     else
         mCurrentDirectory = rootpath;
 
@@ -1151,6 +1215,12 @@ void MainWindow::ShowStatistics()
     statsDialog.setStatistics(mUI.mResults->GetStatistics());
 
     statsDialog.exec();
+}
+
+void MainWindow::ShowLibraryEditor()
+{
+    LibraryDialog libraryDialog(this);
+    libraryDialog.exec();
 }
 
 void MainWindow::Log(const QString &logline)

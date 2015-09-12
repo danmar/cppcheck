@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "settings.h"
 #include "redirect.h"
 #include "timer.h"
+
 
 class TestCmdlineParser : public TestFixture {
 public:
@@ -71,7 +72,7 @@ private:
         TEST_CASE(enabledPortability);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
@@ -286,17 +287,17 @@ private:
     void quietshort() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "-q", "file.cpp"};
-        settings._errorsOnly = false;
+        settings.quiet = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings._errorsOnly);
+        ASSERT_EQUALS(true, settings.quiet);
     }
 
     void quietlong() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--quiet", "file.cpp"};
-        settings._errorsOnly = false;
+        settings.quiet = false;
         ASSERT(defParser.ParseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings._errorsOnly);
+        ASSERT_EQUALS(true, settings.quiet);
     }
 
     void defines_noarg() {
@@ -516,7 +517,7 @@ private:
         ASSERT(settings.isEnabled("missingInclude"));
     }
 
-#ifndef NDEBUG
+#ifdef CHECK_INTERNAL
     void enabledInternal() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--enable=internal", "file.cpp"};

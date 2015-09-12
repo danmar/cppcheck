@@ -26,7 +26,7 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message utf8="true">
-        <source>Copyright © 2007-2013 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright © 2007-2015 Daniel Marjamäki and cppcheck team.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -96,6 +96,173 @@ Parameters: -l(line) (file)</source>
     <message>
         <source>Could not read the file: %1</source>
         <translation type="unfinished">Ne peut pas lire le fichier : %1</translation>
+    </message>
+</context>
+<context>
+    <name>LibraryAddFunctionDialog</name>
+    <message>
+        <source>Add function</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Function name(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LibraryDialog</name>
+    <message>
+        <source>Library Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Functions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>noreturn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>False</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>True</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>return value must be used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ignore function in leaks checking</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arguments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Library files (*.cfg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open library file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LibraryEditArgDialog</name>
+    <message>
+        <source>Edit argument</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Is bool value allowed? For instance result from comparison or from &apos;!&apos; operator.&lt;/p&gt;
+&lt;p&gt;Typically, set this if the argument is a pointer, size, etc.&lt;/p&gt;
+&lt;p&gt;Example:&lt;/p&gt;
+&lt;pre&gt;    memcmp(x, y, i == 123);   // last argument should not have a bool value&lt;/pre&gt;
+&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not bool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Is a null parameter value allowed?&lt;/p&gt;
+&lt;p&gt;Typically this should be used on any pointer parameter that does not allow null.&lt;/p&gt;
+&lt;p&gt;Example:&lt;/p&gt;
+&lt;pre&gt;    strcpy(x,y); // neither x or y is allowed to be null.&lt;/pre&gt;
+&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not null</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not uninit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Format string</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min size of buffer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>argvalue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>constant</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mul</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>strlen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arg2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>and</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Valid values</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -442,7 +609,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <source>Checking is running.
 
-Do you want to stop the checking and exit Cppcheck?.</source>
+Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -600,20 +767,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <translation type="unfinished">Sélectionner les fichiers à vérifier</translation>
     </message>
     <message>
-        <source>Cppcheck GUI.
-
-Syntax:
-    cppcheck-gui [OPTIONS] [files or paths]
-
-Options:
-    -h, --help     Print this help
-    -p &lt;file&gt;      Open given project file and start checking it
-    -l &lt;file&gt;      Open given results xml file
-    -d &lt;directory&gt; Specify the directory that was checked to generate the results xml specified with -l
-    -v, --version  Show program version</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation type="unfinished"></translation>
     </message>
@@ -638,15 +791,88 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to load the selected library %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Failed to load %1. Your Cppcheck installation is broken.</source>
+        <source>Cppcheck GUI.
+
+Syntax:
+    cppcheck-gui [OPTIONS] [files or paths]
+
+Options:
+    -h, --help              Print this help
+    -p &lt;file&gt;               Open given project file and start checking it
+    -l &lt;file&gt;               Open given results xml file
+    -d &lt;directory&gt;          Specify the directory that was checked to generate the results xml specified with -l
+    -v, --version           Show program version
+    --data-dir=&lt;directory&gt;  Specify directory where GUI datafiles are located (translations, cfg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bad XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Missing attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bad attribute value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to load the selected library &apos;%1&apos;.
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unsupported format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The library &apos;%1&apos; contains unknown elements:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate platform type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Platform type redefined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Print...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print the Current Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Pre&amp;view...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open a Print Preview Dialog for the Current Results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Library Editor...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open library editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -760,6 +986,14 @@ Options:
     </message>
     <message>
         <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Defines must be separated by a semicolon &apos;;&apos;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -944,6 +1178,10 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Open containing folder</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -991,6 +1229,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No errors found, nothing to print.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

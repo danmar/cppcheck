@@ -21,5 +21,3 @@ do
     git checkout master
     git branch -D "$i"
 done
-
-

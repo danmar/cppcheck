@@ -1,0 +1,1 @@
+[samples\outOfBounds\bad.c:5]: (error) Buffer is accessed out of bounds: str

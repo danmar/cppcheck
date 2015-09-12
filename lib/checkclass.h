@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "config.h"
 #include "check.h"
 
-class Token;
 class Scope;
 class Function;
 
@@ -69,6 +68,7 @@ public:
         checkClass.operatorEqToSelf();
         checkClass.initializerListOrder();
         checkClass.initializationListUsage();
+        checkClass.checkSelfInitialization();
 
         checkClass.virtualDestructor();
         checkClass.checkConst();
@@ -76,11 +76,16 @@ public:
         checkClass.checkPureVirtualFunctionCall();
 
         checkClass.checkDuplInheritedMembers();
+        checkClass.checkExplicitConstructors();
     }
 
 
     /** @brief %Check that all class constructors are ok */
     void constructors();
+
+    /** @brief %Check that constructors with single parameter are explicit,
+     *  if they has to be.*/
+    void checkExplicitConstructors();
 
     /** @brief %Check that all private functions are called */
     void privateFunctions();
@@ -94,7 +99,7 @@ public:
      * Important: The checking doesn't work on simplified tokens list.
      */
     void checkMemset();
-    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation);
+    void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes);
 
     /** @brief 'operator=' should return something and it should not be const. */
     void operatorEq();
@@ -117,11 +122,15 @@ public:
     /** @brief Check initializer list order */
     void initializerListOrder();
 
+    /** @brief Suggest using initialization list */
     void initializationListUsage();
+
+    /** @brief Check for initialization of a member with itself */
+    void checkSelfInitialization();
 
     void copyconstructors();
 
-    /** @brief call of pure virtual funcion */
+    /** @brief call of pure virtual function */
     void checkPureVirtualFunctionCall();
 
     /** @brief Check duplicated inherited members */
@@ -132,6 +141,8 @@ private:
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+    void noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+    void noExplicitCopyMoveConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     //void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
     void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
     void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
@@ -139,23 +150,30 @@ private:
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
+    void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
+    void memsetErrorFloat(const Token *tok, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
     void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
     void operatorEqReturnError(const Token *tok, const std::string &className);
-    void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
+    void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
+    void operatorEqShouldBeLeftUnimplementedError(const Token *tok);
+    void operatorEqMissingReturnStatementError(const Token *tok, bool error);
     void operatorEqToSelfError(const Token *tok);
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
     void suggestInitializationList(const Token *tok, const std::string& varname);
+    void selfInitializationError(const Token* tok, const std::string& varname);
     void callsPureVirtualFunctionError(const Function & scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(0, settings, errorLogger);
         c.noConstructorError(0, "classname", false);
+        c.noExplicitConstructorError(0, "classname", false);
+        c.noExplicitCopyMoveConstructorError(0, "classname", false);
         //c.copyConstructorMallocError(0, 0, "var");
         c.copyConstructorShallowCopyError(0, "var");
         c.noCopyConstructorError(0, "class", false);
@@ -163,17 +181,22 @@ private:
         c.operatorEqVarError(0, "classname", "", false);
         c.unusedPrivateFunctionError(0, "classname", "funcname");
         c.memsetError(0, "memfunc", "classname", "class");
+        c.memsetErrorReference(0, "memfunc", "class");
+        c.memsetErrorFloat(0, "class");
         c.mallocOnClassWarning(0, "malloc", 0);
         c.mallocOnClassError(0, "malloc", 0, "std::string");
         c.operatorEqReturnError(0, "class");
-        c.virtualDestructorError(0, "Base", "Derived");
+        c.virtualDestructorError(0, "Base", "Derived", false);
         c.thisSubtractionError(0);
         c.operatorEqRetRefThisError(0);
+        c.operatorEqMissingReturnStatementError(0, true);
+        c.operatorEqShouldBeLeftUnimplementedError(0);
         c.operatorEqToSelfError(0);
         c.checkConstError(0, "class", "function", false);
         c.checkConstError(0, "class", "function", true);
         c.initializerListError(0, 0, "class", "variable");
         c.suggestInitializationList(0, "variable");
+        c.selfInitializationError(0, "var");
         c.duplInheritedMembersError(0, 0, "class", "class", "variable", false, false);
     }
 
@@ -183,36 +206,39 @@ private:
 
     std::string classInfo() const {
         return "Check the code for each class.\n"
-               "* Missing constructors and copy constructors\n"
-               //"* Missing allocation of memory in copy constructor\n"
-               "* Are all variables initialized by the constructors?\n"
-               "* Are all variables assigned by 'operator='?\n"
-               "* Warn if memset, memcpy etc are used on a class\n"
-               "* Warn if memory for classes is allocated with malloc()\n"
-               "* If it's a base class, check that the destructor is virtual\n"
-               "* Are there unused private functions?\n"
-               "* 'operator=' should return reference to self\n"
-               "* 'operator=' should check for assignment to self\n"
-               "* Constness for member functions\n"
-               "* Order of initializations\n"
-               "* Suggest usage of initialization list\n"
-               "* Suspicious subtraction from 'this'\n"
-               "* Call of pure virtual function in constructor/destructor\n"
-               "* Duplicated inherited data members\n";
+               "- Missing constructors and copy constructors\n"
+               //"- Missing allocation of memory in copy constructor\n"
+               "- Constructors which should be explicit are explicit\n"
+               "- Are all variables initialized by the constructors?\n"
+               "- Are all variables assigned by 'operator='?\n"
+               "- Warn if memset, memcpy etc are used on a class\n"
+               "- Warn if memory for classes is allocated with malloc()\n"
+               "- If it's a base class, check that the destructor is virtual\n"
+               "- Are there unused private functions?\n"
+               "- 'operator=' should return reference to self\n"
+               "- 'operator=' should check for assignment to self\n"
+               "- Constness for member functions\n"
+               "- Order of initializations\n"
+               "- Suggest usage of initialization list\n"
+               "- Initialization of a member with itself\n"
+               "- Suspicious subtraction from 'this'\n"
+               "- Call of pure virtual function in constructor/destructor\n"
+               "- Duplicated inherited data members\n";
     }
 
-    // operatorEqRetRefThis helper function
+    // operatorEqRetRefThis helper functions
     void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
+    void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions);
 
     // operatorEqToSelf helper functions
-    bool hasAllocation(const Function *func, const Scope* scope);
+    bool hasAllocation(const Function *func, const Scope* scope) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs);
 
     // checkConst helper functions
-    bool isMemberVar(const Scope *scope, const Token *tok);
-    bool isMemberFunc(const Scope *scope, const Token *tok);
-    bool isConstMemberFunc(const Scope *scope, const Token *tok);
-    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed);
+    bool isMemberVar(const Scope *scope, const Token *tok) const;
+    bool isMemberFunc(const Scope *scope, const Token *tok) const;
+    bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
+    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */

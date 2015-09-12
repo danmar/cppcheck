@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,12 @@ namespace {
     CheckBool instance;
 }
 
+
+static bool astIsBool(const Token *expr)
+{
+    return Token::Match(expr, "%comp%|%bool%|%oror%|&&|!") && !expr->link();
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
@@ -41,12 +47,9 @@ void CheckBool::checkIncrementBoolean()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% ++")) {
-                if (tok->varId()) {
-                    const Variable *var = tok->variable();
-
-                    if (var && var->typeEndToken()->str() == "bool")
-                        incrementBooleanError(tok);
-                }
+                const Variable *var = tok->variable();
+                if (var && var->typeEndToken()->str() == "bool")
+                    incrementBooleanError(tok);
             }
         }
     }
@@ -102,7 +105,9 @@ void CheckBool::checkBitwiseOnBoolean()
 void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op)
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
-                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?", true);
+                "Boolean variable '" + varname + "' is used in bitwise operation. Did you mean '" + op + "'?",
+                0U,
+                true);
 }
 
 //---------------------------------------------------------------------------
@@ -127,41 +132,42 @@ void CheckBool::checkComparisonOfBoolWithInt()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if ((!Token::Match(tok->previous(), "%cop%")) && Token::Match(tok->next(), "%comp%") && (!Token::Match(tok->tokAt(3), "%cop%"))) {
-                const Token* const right = tok->tokAt(2);
-                if ((tok->varId() && right->isNumber()) || (tok->isNumber() && right->varId())) { // Comparing variable with number
-                    const Token* varTok = tok;
+            const Token* const left = tok->astOperand1();
+            const Token* const right = tok->astOperand2();
+            if (left && right && tok->isComparisonOp()) {
+                if ((left->varId() && right->isNumber()) || (left->isNumber() && right->varId())) { // Comparing variable with number
+                    const Token* varTok = left;
                     const Token* numTok = right;
-                    if (tok->isNumber() && right->varId()) // num with var
+                    if (left->isNumber() && right->varId()) // num with var
                         std::swap(varTok, numTok);
                     if (isBool(varTok->variable()) && // Variable has to be a boolean
-                        ((tok->strAt(1) != "==" && tok->strAt(1) != "!=") ||
+                        ((tok->str() != "==" && tok->str() != "!=") ||
                          (MathLib::toLongNumber(numTok->str()) != 0 && MathLib::toLongNumber(numTok->str()) != 1))) { // == 0 and != 0 are allowed, for C also == 1 and != 1
-                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->strAt(1) == "==" || tok->strAt(1) == "!=");
+                        comparisonOfBoolWithIntError(varTok, numTok->str(), tok->str() == "==" || tok->str() == "!=");
                     }
-                } else if (tok->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                } else if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
                     if (isNonBoolStdType(right->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(right, tok->str(), false);
-                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                        comparisonOfBoolWithIntError(right, left->str(), false);
+                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (tok->varId() && right->isBoolean()) { // Comparing variable with boolean constant
-                    if (isNonBoolStdType(tok->variable())) { // Variable has to be of non-boolean standard type
-                        comparisonOfBoolWithIntError(tok, right->str(), false);
-                    } else if (tok->strAt(1) != "==" && tok->strAt(1) != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, tok->str());
+                } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
+                    if (isNonBoolStdType(left->variable())) { // Variable has to be of non-boolean standard type
+                        comparisonOfBoolWithIntError(left, right->str(), false);
+                    } else if (tok->str() != "==" && tok->str() != "!=") {
+                        comparisonOfBoolWithInvalidComparator(right, left->str());
                     }
-                } else if (tok->isNumber() && right->isBoolean()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(tok, right->str(), false);
-                } else if (tok->isBoolean() && right->isNumber()) { // number constant with boolean constant
-                    comparisonOfBoolWithIntError(tok, tok->str(), false);
-                } else if (tok->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
+                } else if (left->isNumber() && right->isBoolean()) { // number constant with boolean constant
+                    comparisonOfBoolWithIntError(left, right->str(), false);
+                } else if (left->isBoolean() && right->isNumber()) { // number constant with boolean constant
+                    comparisonOfBoolWithIntError(left, left->str(), false);
+                } else if (left->varId() && right->varId()) { // Comparing two variables, one of them boolean, one of them integer
                     const Variable* var1 = right->variable();
-                    const Variable* var2 = tok->variable();
+                    const Variable* var2 = left->variable();
                     if (isBool(var1) && isNonBoolStdType(var2)) // Comparing boolean with non-bool standard type
-                        comparisonOfBoolWithIntError(tok, var1->name(), false);
+                        comparisonOfBoolWithIntError(left, var1->name(), false);
                     else if (isNonBoolStdType(var1) && isBool(var2)) // Comparing non-bool standard type with boolean
-                        comparisonOfBoolWithIntError(tok, var2->name(), false);
+                        comparisonOfBoolWithIntError(left, var2->name(), false);
                 }
             }
         }
@@ -196,6 +202,17 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 // Comparing functions which are returning value of type bool
 //-------------------------------------------------------------------------------
 
+static bool tokenIsFunctionReturningBool(const Token* tok)
+{
+    const Function* func = tok->function();
+    if (func && Token::Match(tok, "%name% (")) {
+        if (func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CheckBool::checkComparisonOfFuncReturningBool()
 {
     if (!_settings->isEnabled("style"))
@@ -206,44 +223,28 @@ void CheckBool::checkComparisonOfFuncReturningBool()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
+    const std::size_t functionsCount = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functionsCount; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+            if (tok->tokType() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            const Token *first_token;
-            bool first_token_func_of_type_bool = false;
+            const Token *firstToken = tok->previous();
             if (tok->strAt(-1) == ")") {
-                first_token = tok->previous()->link()->previous();
-            } else {
-                first_token = tok->previous();
+                firstToken = firstToken->link()->previous();
             }
-            if (Token::Match(first_token, "%var% (") && !Token::Match(first_token->previous(), "::|.")) {
-                const Function* func = first_token->function();
-                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                    first_token_func_of_type_bool = true;
-                }
+            const Token *secondToken = tok->next();
+            while (secondToken->str() == "!") {
+                secondToken = secondToken->next();
             }
-
-            Token *second_token = tok->next();
-            bool second_token_func_of_type_bool = false;
-            while (second_token->str()=="!") {
-                second_token = second_token->next();
-            }
-            if (Token::Match(second_token, "%var% (") && !Token::Match(second_token->previous(), "::|.")) {
-                const Function* func = second_token->function();
-                if (func && func->tokenDef && func->tokenDef->strAt(-1) == "bool") {
-                    second_token_func_of_type_bool = true;
-                }
-            }
-
-            if ((first_token_func_of_type_bool == true) && (second_token_func_of_type_bool == true)) {
-                comparisonOfTwoFuncsReturningBoolError(first_token->next(), first_token->str(), second_token->str());
-            } else if (first_token_func_of_type_bool == true) {
-                comparisonOfFuncReturningBoolError(first_token->next(), first_token->str());
-            } else if (second_token_func_of_type_bool == true) {
-                comparisonOfFuncReturningBoolError(second_token->previous(), second_token->str());
+            const bool firstIsFunctionReturningBool = tokenIsFunctionReturningBool(firstToken);
+            const bool secondIsFunctionReturningBool = tokenIsFunctionReturningBool(secondToken);
+            if (firstIsFunctionReturningBool && secondIsFunctionReturningBool) {
+                comparisonOfTwoFuncsReturningBoolError(firstToken->next(), firstToken->str(), secondToken->str());
+            } else if (firstIsFunctionReturningBool) {
+                comparisonOfFuncReturningBoolError(firstToken->next(), firstToken->str());
+            } else if (secondIsFunctionReturningBool) {
+                comparisonOfFuncReturningBoolError(secondToken->previous(), secondToken->str());
             }
         }
     }
@@ -290,25 +291,28 @@ void CheckBool::checkComparisonOfBoolWithBool()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->type() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+            if (tok->tokType() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            bool first_token_bool = false;
-            bool second_token_bool = false;
+            bool firstTokenBool = false;
 
-            const Token *first_token = tok->previous();
-            if (first_token->varId()) {
-                if (isBool(first_token->variable())) {
-                    first_token_bool = true;
+            const Token *firstToken = tok->previous();
+            if (firstToken->varId()) {
+                if (isBool(firstToken->variable())) {
+                    firstTokenBool = true;
                 }
             }
-            const Token *second_token = tok->next();
-            if (second_token->varId()) {
-                if (isBool(second_token->variable())) {
-                    second_token_bool = true;
+            if (!firstTokenBool)
+                continue;
+
+            bool secondTokenBool = false;
+            const Token *secondToken = tok->next();
+            if (secondToken->varId()) {
+                if (isBool(secondToken->variable())) {
+                    secondTokenBool = true;
                 }
             }
-            if ((first_token_bool == true) && (second_token_bool == true)) {
-                comparisonOfBoolWithBoolError(first_token->next(), first_token->str());
+            if (secondTokenBool) {
+                comparisonOfBoolWithBoolError(firstToken->next(), secondToken->str());
             }
         }
     }
@@ -332,20 +336,14 @@ void CheckBool::checkAssignBoolToPointer()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% = %bool% ;")) {
-                // check if there is a deref
-                // *x.p = true;  // <- don't warn
-                // x.p = true;   // <- warn
-                const Token *prev = tok;
-                while (Token::Match(prev->tokAt(-2), "%var% ."))
-                    prev = prev->tokAt(-2);
-                if (Token::Match(prev->previous(), "[*.)]"))
+            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
+                const Token *lhs = tok->astOperand1();
+                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
+                    lhs = lhs->astOperand2();
+                if (!lhs || !lhs->variable() || !lhs->variable()->isPointer())
                     continue;
 
-                // Is variable a pointer?
-                const Variable *var1(tok->variable());
-                if (var1 && var1->isPointer())
-                    assignBoolToPointerError(tok);
+                assignBoolToPointerError(tok);
             }
         }
     }
@@ -355,37 +353,6 @@ void CheckBool::assignBoolToPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "assignBoolToPointer",
                 "Boolean value assigned to pointer.");
-}
-
-/**
- * @brief Is the result of the LHS expression non-bool?
- * @param tok last token in lhs
- * @return true => lhs result is non-bool. false => lhs result type is unknown or bool
- */
-static bool isNonBoolLHSExpr(const Token *tok)
-{
-    // return value. only return true if we "know" it's a non-bool expression
-    bool nonBoolExpr = false;
-
-    for (; tok; tok = tok->previous()) {
-        if (tok->str() == ")") {
-            if (!Token::Match(tok->link()->previous(), "&&|%oror%|( ("))
-                tok = tok->link();
-        } else if (tok->str() == "(" || tok->str() == "[")
-            break;
-        else if (tok->isNumber())
-            nonBoolExpr = true;
-        else if (tok->isArithmeticalOp()) {
-            return true;
-        } else if (tok->isComparisonOp() || (tok->str() == "!" && tok->previous()->str()=="("))
-            return false;
-        else if (Token::Match(tok,"[;{}=?:&|^,]"))
-            break;
-        else if (Token::Match(tok, "&&|%oror%|and|or"))
-            break;
-    }
-
-    return nonBoolExpr;
 }
 
 //-----------------------------------------------------------------------------
@@ -401,101 +368,48 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Skip template parameters
-            if (tok->str() == "<" && tok->link()) {
-                tok = tok->link();
+            if (!tok->isComparisonOp())
+                continue;
+
+            const Token* numTok = 0;
+            const Token* boolExpr = 0;
+            bool numInRhs;
+            if (astIsBool(tok->astOperand1())) {
+                boolExpr = tok->astOperand1();
+                numTok = tok->astOperand2();
+                numInRhs = true;
+            } else if (astIsBool(tok->astOperand2())) {
+                boolExpr = tok->astOperand2();
+                numTok = tok->astOperand1();
+                numInRhs = false;
+            } else {
                 continue;
             }
 
-            const Token* numTok = 0;
-            const Token* opTok = 0;
-            char op = 0;
-            if (Token::Match(tok, "&&|%oror% %any% ) %comp% %any%")) {
-                numTok = tok->tokAt(4);
-                opTok = tok->tokAt(3);
-                if (Token::Match(opTok, "<|>"))
-                    op = opTok->str()[0];
-            } else if (Token::Match(tok, "%any% %comp% ( %any% &&|%oror%")) {
-                numTok = tok;
-                opTok = tok->next();
-                if (Token::Match(opTok, "<|>"))
-                    op = opTok->str()[0]=='>'?'<':'>';
-            }
+            if (!numTok || !boolExpr)
+                continue;
 
-            else if (Token::Match(tok, "! %var% %comp% %any%") && !isNonBoolLHSExpr(tok)) {
-                numTok = tok->tokAt(3);
-                opTok = tok->tokAt(2);
-                if (Token::Match(opTok, "<|>"))
-                    op = opTok->str()[0];
-            } else if (Token::Match(tok->previous(), "(|&&|%oror% %num% %comp% !")) {
-                const Token *rhs = tok->tokAt(3);
-                while (rhs) {
-                    if (rhs->str() == "!") {
-                        if (Token::simpleMatch(rhs, "! ("))
-                            rhs = rhs->next()->link();
-                        rhs = rhs->next();
-                    } else if (rhs->isName() || rhs->isNumber())
-                        rhs = rhs->next();
-                    else
-                        break;
-                }
-                if (Token::Match(rhs, "&&|%oror%|)")) {
-                    numTok = tok;
-                    opTok = tok->next();
-                    if (Token::Match(opTok, "<|>"))
-                        op = opTok->str()[0]=='>'?'<':'>';
-                }
-            }
+            if (Token::Match(boolExpr,"%bool%"))
+                // The CheckBool::checkComparisonOfBoolWithInt warns about this.
+                continue;
 
-            // boolean result in lhs compared with <|<=|>|>=
-            else if (tok->isComparisonOp() && !Token::Match(tok,"==|!=") && !isNonBoolLHSExpr(tok->previous())) {
-                const Token *lhs = tok;
-                while (nullptr != (lhs = lhs->previous())) {
-                    if ((lhs->isName() && !Token::Match(lhs,"or|and")) || lhs->isNumber())
-                        continue;
-                    if (lhs->isArithmeticalOp())
-                        continue;
-                    if (Token::Match(lhs, ")|]")) {
-                        if (Token::Match(lhs->link()->previous(), "%var% ("))
-                            lhs = lhs->link();
-                        continue;
-                    }
-                    break;
-                }
-                if (lhs && (lhs->isComparisonOp() || lhs->str() == "!")) {
-                    if (_tokenizer->isCPP() && tok->str() == ">" &&
-                        (Token::Match(lhs->previous(), "%var% <") || lhs->str() == ">"))
-                        continue;
-                    while (nullptr != (lhs = lhs->previous())) {
-                        if ((lhs->isName() && lhs->str() != "return") || lhs->isNumber())
-                            continue;
-                        if (Token::Match(lhs,"[+-*/.]"))
-                            continue;
-                        if (Token::Match(lhs, ")|]")) {
-                            lhs = lhs->previous();
-                            continue;
-                        }
-                        break;
-                    }
+            if (boolExpr->isOp() && numTok->isName() && Token::Match(tok, "==|!="))
+                // there is weird code such as:  ((a<b)==c)
+                // but it is probably written this way by design.
+                continue;
 
-                    std::string expression;
-                    for (const Token *t = lhs ? lhs->next() : _tokenizer->tokens(); t != tok; t = t->next()) {
-                        if (!expression.empty())
-                            expression += ' ';
-                        expression += t->str();
-                    }
-
-                    comparisonOfBoolWithInvalidComparator(tok, expression);
-                }
-            }
-
-            if (numTok && opTok) {
-                if (numTok->isNumber()) {
-                    if (((numTok->str() != "0" && numTok->str() != "1") || !Token::Match(opTok, "!=|==")) && !((op == '<' && numTok->str() == "1") || (op == '>' && numTok->str() == "0")))
-                        comparisonOfBoolExpressionWithIntError(tok, true);
-                } else if (isNonBoolStdType(numTok->variable()))
-                    comparisonOfBoolExpressionWithIntError(tok, false);
-            }
+            if (numTok->isNumber()) {
+                if (numTok->str() == "0" &&
+                    (numInRhs ? Token::Match(tok, ">|==|!=")
+                     : Token::Match(tok, "<|==|!=")))
+                    continue;
+                if (numTok->str() == "1" &&
+                    (numInRhs ? Token::Match(tok, "<|==|!=")
+                     : Token::Match(tok, ">|==|!=")))
+                    continue;
+                comparisonOfBoolExpressionWithIntError(tok, true);
+            } else if (isNonBoolStdType(numTok->variable()))
+                comparisonOfBoolExpressionWithIntError(tok, false);
         }
     }
 }
@@ -515,14 +429,20 @@ void CheckBool::pointerArithBool()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "if|while (")) {
-                pointerArithBoolCond(tok->next()->astOperand2());
-            }
-        }
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (scope->type != Scope::eIf && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eFor)
+            continue;
+        const Token* tok = scope->classDef->next()->astOperand2();
+        if (scope->type == Scope::eFor) {
+            tok = Token::findsimplematch(scope->classDef->tokAt(2), ";");
+            if (tok)
+                tok = tok->astOperand2();
+            if (tok)
+                tok = tok->astOperand1();
+        } else if (scope->type == Scope::eDo)
+            tok = (scope->classEnd->tokAt(2)) ? scope->classEnd->tokAt(2)->astOperand2() : nullptr;
+
+        pointerArithBoolCond(tok);
     }
 }
 
@@ -535,7 +455,7 @@ void CheckBool::pointerArithBoolCond(const Token *tok)
         pointerArithBoolCond(tok->astOperand2());
         return;
     }
-    if (tok->str() != "+")
+    if (tok->str() != "+" && tok->str() != "-")
         return;
 
     if (tok->astOperand1() &&
@@ -553,4 +473,30 @@ void CheckBool::pointerArithBoolError(const Token *tok)
                 "pointerArithBool",
                 "Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n"
                 "Converting pointer arithmetic result to bool. The boolean result is always true unless there is pointer arithmetic overflow, and overflow is undefined behaviour. Probably a dereference is forgotten.");
+}
+
+void CheckBool::checkAssignBoolToFloat()
+{
+    if (!_tokenizer->isCPP())
+        return;
+    if (!_settings->isEnabled("style"))
+        return;
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * scope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%var% =")) {
+                const Variable * const var = tok->variable();
+                if (var && var->isFloatingType() && !var->isArrayOrPointer() && astIsBool(tok->next()->astOperand2()))
+                    assignBoolToFloatError(tok->next());
+            }
+        }
+    }
+}
+
+void CheckBool::assignBoolToFloatError(const Token *tok)
+{
+    reportError(tok, Severity::style, "assignBoolToFloat",
+                "Boolean value assigned to floating point variable.");
 }

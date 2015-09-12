@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,22 +46,40 @@ ProjectFileDialog::ProjectFileDialog(const QString &path, QWidget *parent)
     // Checkboxes for the libraries..
     const QString applicationFilePath = QCoreApplication::applicationFilePath();
     const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-    const QString searchPaths[] = { ":/cfg", appPath, appPath + "/cfg", inf.canonicalPath() };
-    for (int i = 0; i < sizeof(searchPaths) / sizeof(searchPaths[0]); i++) {
-        QDir dir(searchPaths[i]);
+    QSettings settings;
+    const QString datadir = settings.value("DATADIR",QString()).toString();
+    QStringList searchPaths;
+    searchPaths << appPath << appPath + "/cfg" << inf.canonicalPath();
+    if (!datadir.isEmpty())
+        searchPaths << datadir << datadir + "/cfg";
+    QStringList libs;
+    foreach(const QString sp, searchPaths) {
+        QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
         foreach(QFileInfo item, dir.entryInfoList()) {
             QString library = item.fileName();
+            {
+                Library lib;
+                const QString fullfilename = sp + "/" + library;
+                const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+                if (err.errorcode != Library::OK)
+                    continue;
+            }
             library.chop(4);
             if (library.compare("std", Qt::CaseInsensitive) == 0)
                 continue;
-            QCheckBox *checkbox = new QCheckBox(this);
-            checkbox->setText(library);
-            mUI.librariesLayout->addWidget(checkbox);
-            mLibraryCheckboxes << checkbox;
+            if (libs.indexOf(library) == -1)
+                libs << library;
         }
+    }
+    qSort(libs);
+    foreach(const QString library, libs) {
+        QCheckBox *checkbox = new QCheckBox(this);
+        checkbox->setText(library);
+        mUI.librariesLayout->addWidget(checkbox);
+        mLibraryCheckboxes << checkbox;
     }
 
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));

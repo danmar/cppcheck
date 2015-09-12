@@ -25,9 +25,6 @@
     <ClCompile Include="test64bit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testassignif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,9 +44,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testcppcheck.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="testdivision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testerrorlogger.cpp">
@@ -76,7 +70,7 @@
     <ClCompile Include="testnullpointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testobsoletefunctions.cpp">
+    <ClCompile Include="testobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testoptions.cpp">
@@ -179,6 +173,36 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testvalueflow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testsamples.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testvaarg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="teststring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testcondition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testtype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testvarid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testsimplifytemplate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testsimplifytypedef.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testgarbage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testtokenlist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

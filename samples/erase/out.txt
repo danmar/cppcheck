@@ -1,0 +1,1 @@
+[samples\erase\bad.cpp:9] -> [samples\erase\bad.cpp:11]: (error) Iterator 'iter' used after element has been erased.

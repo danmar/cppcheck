@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "filelister.h"
 #include "path.h"
+#include "pathmatch.h"
 #include <cstring>
 #include <string>
 #include <sstream>
@@ -67,7 +68,7 @@ static BOOL MyFileExists(const std::string& path)
     return result;
 }
 
-void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra)
+void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
@@ -123,7 +124,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             // File
             const std::string nativename = Path::fromNativeSeparators(fname);
 
-            if (!checkAllFilesInDir || Path::acceptFile(fname, extra)) {
+            if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.Match(fname)) {
                 // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
                 files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
@@ -133,13 +134,12 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             }
         } else {
             // Directory
-            FileLister::recursiveAddFiles(files, fname, extra);
+            if (!ignored.Match(fname))
+                FileLister::recursiveAddFiles(files, fname, extra, ignored);
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
-    if (INVALID_HANDLE_VALUE != hFind) {
-        FindClose(hFind);
-    }
+    FindClose(hFind);
 }
 
 bool FileLister::isDirectory(const std::string &path)
@@ -149,7 +149,7 @@ bool FileLister::isDirectory(const std::string &path)
 
 bool FileLister::fileExists(const std::string &path)
 {
-    return (MyFileExists(path) == TRUE);
+    return (MyFileExists(path) != FALSE);
 }
 
 
@@ -158,6 +158,10 @@ bool FileLister::fileExists(const std::string &path)
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+
+#if defined(__CYGWIN__)
+#undef __STRICT_ANSI__
+#endif
 
 #include <glob.h>
 #include <unistd.h>
@@ -185,14 +189,17 @@ std::string FileLister::getAbsolutePath(const std::string& path)
     return absolute_path;
 }
 
-void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
-                                    std::map<std::string, std::size_t> &files,
-                                    const std::string &path,
-                                    const std::set<std::string> &extra)
+void FileLister::addFiles2(std::set<std::string> &seen_paths,
+                           std::map<std::string, std::size_t> &files,
+                           const std::string &path,
+                           const std::set<std::string> &extra,
+                           bool recursive,
+                           const PathMatch& ignored
+                          )
 {
     std::ostringstream oss;
     oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
+    if (path.length() > 0 && path.back() == '/')
         oss << "*";
 
     glob_t glob_results;
@@ -211,10 +218,10 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
         if (seen_paths.find(absolute_path) != seen_paths.end())
             continue;
 
-        if (filename[filename.length()-1] != '/') {
+        if (filename.back() != '/') {
             // File
 
-            if (Path::sameFileName(path,filename) || Path::acceptFile(filename, extra)) {
+            if ((Path::sameFileName(path,filename) || Path::acceptFile(filename, extra)) && !ignored.Match(filename)) {
                 seen_paths.insert(absolute_path);
 
                 struct stat sb;
@@ -224,21 +231,28 @@ void FileLister::recursiveAddFiles2(std::set<std::string> &seen_paths,
                 } else
                     files[filename] = 0;
             }
-        } else {
+        } else if (recursive) {
             // Directory
-
-            seen_paths.insert(absolute_path);
-            recursiveAddFiles2(seen_paths, files, filename, extra);
+            if (!ignored.Match(filename)) {
+                seen_paths.insert(absolute_path);
+                addFiles2(seen_paths, files, filename, extra, recursive, ignored);
+            }
         }
     }
     globfree(&glob_results);
 }
 
 
-void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra)
+void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
     std::set<std::string> seen_paths;
-    recursiveAddFiles2(seen_paths, files, path, extra);
+    addFiles2(seen_paths, files, path, extra, true, ignored);
+}
+
+void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+{
+    std::set<std::string> seen_paths;
+    addFiles2(seen_paths, files, path, extra, recursive, ignored);
 }
 
 bool FileLister::isDirectory(const std::string &path)

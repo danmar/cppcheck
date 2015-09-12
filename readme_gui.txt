@@ -46,6 +46,9 @@ These commands generate makefiles to actually build the software. After that
 the actual building is done in IDE or command line as usual. Note that you
 don't need to run qmake again unless you add/remove files from the project.
 
+The Visual Studio solution does not contain a configuration for x64 platform, but
+it can be added easily.
+
 Tests
 -----
 There are tests for the GUI in gui/test -directory. There is test.pro

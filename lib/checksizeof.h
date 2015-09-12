@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjam‰ki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@
 
 #include "config.h"
 #include "check.h"
-#include "settings.h"
 
-class Token;
 class Function;
 class Variable;
 
@@ -94,6 +92,7 @@ private:
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
     void sizeofForPointerError(const Token* tok, const std::string &varname);
+    void divideBySizeofError(const Token* tok, const std::string &memfunc);
     void sizeofForNumericParameterError(const Token* tok);
     void sizeofVoidError(const Token *tok);
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
@@ -104,6 +103,7 @@ private:
 
         c.sizeofForArrayParameterError(0);
         c.sizeofForPointerError(0, "varname");
+        c.divideBySizeofError(0, "memset");
         c.sizeofForNumericParameterError(0);
         c.sizeofsizeofError(0);
         c.sizeofCalculationError(0, false);
@@ -120,14 +120,13 @@ private:
 
     std::string classInfo() const {
         return "sizeof() usage checks\n"
-
-               "* sizeof for array given as function argument\n"
-               "* sizeof for numeric given as function argument\n"
-               "* using sizeof(pointer) instead of the size of pointed data\n"
-               "* look for 'sizeof sizeof ..'\n"
-               "* look for calculations inside sizeof()\n"
-               "* look for suspicious calculations with sizeof()\n"
-               "* using 'sizeof(void)' which is undefined\n";
+               "- sizeof for array given as function argument\n"
+               "- sizeof for numeric given as function argument\n"
+               "- using sizeof(pointer) instead of the size of pointed data\n"
+               "- look for 'sizeof sizeof ..'\n"
+               "- look for calculations inside sizeof()\n"
+               "- look for suspicious calculations with sizeof()\n"
+               "- using 'sizeof(void)' which is undefined\n";
     }
 };
 /// @}

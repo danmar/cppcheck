@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual Studio Express 2013 for Windows Desktop
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cli", "cli\cli.vcxproj", "{35CBDF51-2456-3EC3-99ED-113C30858883}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C183DB5B-AD6C-423D-80CA-1F9549555A1A} = {C183DB5B-AD6C-423D-80CA-1F9549555A1A}

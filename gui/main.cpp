@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@
 #include "translationhandler.h"
 
 
-void ShowUsage();
-void ShowVersion();
-bool CheckArgs(const QStringList &args);
+static void ShowUsage();
+static void ShowVersion();
+static bool CheckArgs(const QStringList &args);
 
 int main(int argc, char *argv[])
 {
@@ -54,8 +54,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
 
-    TranslationHandler* th = new TranslationHandler(&app);
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
+
+    // Set data dir..
+    foreach(const QString arg, app.arguments()) {
+        if (arg.startsWith("--data-dir=")) {
+            settings->setValue("DATADIR", arg.mid(11));
+            return 0;
+        }
+    }
+
+    TranslationHandler* th = new TranslationHandler(&app);
     th->SetLanguage(settings->value(SETTINGS_LANGUAGE, th->SuggestLanguage()).toString());
 
     if (!CheckArgs(app.arguments()))
@@ -73,7 +82,7 @@ int main(int argc, char *argv[])
 
 // Check only arguments needing action before GUI is shown.
 // Rest of the arguments are handled in MainWindow::HandleCLIParams()
-bool CheckArgs(const QStringList &args)
+static bool CheckArgs(const QStringList &args)
 {
     if (args.contains("-h") || args.contains("--help")) {
         ShowUsage();
@@ -86,18 +95,19 @@ bool CheckArgs(const QStringList &args)
     return true;
 }
 
-void ShowUsage()
+static void ShowUsage()
 {
     QString helpMessage = MainWindow::tr(
                               "Cppcheck GUI.\n\n"
                               "Syntax:\n"
                               "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
                               "Options:\n"
-                              "    -h, --help     Print this help\n"
-                              "    -p <file>      Open given project file and start checking it\n"
-                              "    -l <file>      Open given results xml file\n"
-                              "    -d <directory> Specify the directory that was checked to generate the results xml specified with -l\n"
-                              "    -v, --version  Show program version");
+                              "    -h, --help              Print this help\n"
+                              "    -p <file>               Open given project file and start checking it\n"
+                              "    -l <file>               Open given results xml file\n"
+                              "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
+                              "    -v, --version           Show program version\n"
+                              "    --data-dir=<directory>  Specify directory where GUI datafiles are located (translations, cfg)");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),
@@ -110,7 +120,7 @@ void ShowUsage()
 #endif
 }
 
-void ShowVersion()
+static void ShowVersion()
 {
 #if defined(_WIN32)
     AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), 0);

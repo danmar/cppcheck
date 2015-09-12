@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ class QItemSelectionModel;
 class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
-    ResultsTree(QWidget * parent = 0);
+    explicit ResultsTree(QWidget * parent = 0);
     virtual ~ResultsTree();
     void Initialize(QSettings *settings, ApplicationList *list);
 
@@ -224,6 +224,11 @@ protected slots:
     void HideAllIdResult();
 
     /**
+    * @brief Slot for context menu item to open the folder containing the current file.
+    */
+    void OpenContainingFolder();
+
+    /**
     * @brief Slot for selection change in the results tree.
     *
     * @param current Model index to specify new selected item.
@@ -285,7 +290,15 @@ protected:
     * @param target Error tree item to open
     * @param fullPath Are we copying full path or only filename?
     */
-    void CopyPath(QStandardItem *target, bool fullPath);
+    void CopyPathToClipboard(QStandardItem *target, bool fullPath);
+
+    /**
+    * @brief Helper function returning the filename/full path of the error tree item \a target.
+    *
+    * @param target The error tree item containing the filename/full path
+    * @param fullPath Whether or not to retrieve the full path or only the filename.
+    */
+    QString GetFilePath(QStandardItem *target, bool fullPath);
 
     /**
     * @brief Context menu event (user right clicked on the tree)

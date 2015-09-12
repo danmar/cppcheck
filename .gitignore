@@ -71,4 +71,8 @@ htmlreport/MANIFEST
 # kdevelop 4.x
 *.kdev4
 
-htdocs/node_modules
+# Common cmake build directories
+build*
+
+# Temporal files
+*.swp

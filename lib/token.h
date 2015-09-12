@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,10 @@
 #include "mathlib.h"
 
 class Scope;
+class Type;
 class Function;
 class Variable;
+class Settings;
 
 /// @addtogroup Core
 /// @{
@@ -57,8 +59,8 @@ private:
 
 public:
     enum Type {
-        eVariable, eType, eFunction, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Name (unknown identifier)
-        eNumber, eString, eChar, eBoolean, eLiteral, // Literals: Number, String, Character, User defined literal (C++11)
+        eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
+        eNumber, eString, eChar, eBoolean, eLiteral, // Literals: Number, String, Character, Boolean, User defined literal (C++11)
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
         eOther,
@@ -68,7 +70,13 @@ public:
     explicit Token(Token **tokensBack);
     ~Token();
 
-    void str(const std::string &s);
+    template<typename T>
+    void str(T&& s) {
+        _str = s;
+        _varId = 0;
+
+        update_property_info();
+    }
 
     /**
      * Concatenate two (quoted) strings. Automatically cuts of the last/first character.
@@ -86,24 +94,33 @@ public:
     void deleteNext(unsigned long index = 1);
 
     /**
-     * Returns token in given index, related to this token.
+     * Swap the contents of this token with the next token.
+     */
+    void swapWithNext();
+
+    /**
+     * @return token in given index, related to this token.
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
     const Token *tokAt(int index) const;
     Token *tokAt(int index) {
-        return const_cast<Token *>(static_cast<const Token *>(this)->tokAt(index));
+        return const_cast<Token *>(const_cast<const Token *>(this)->tokAt(index));
     }
 
     /**
-     * Returns the link to the token in given index, related to this token.
+     * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
     const Token *linkAt(int index) const;
     Token *linkAt(int index) {
-        return const_cast<Token *>(static_cast<const Token *>(this)->linkAt(index));
+        return const_cast<Token *>(const_cast<const Token *>(this)->linkAt(index));
     }
 
+    /**
+     * @return String of the token in given index, related to this token.
+     * If that token does not exist, an empty string is being returned.
+     */
     const std::string &strAt(int index) const;
 
     /**
@@ -132,13 +149,14 @@ public:
      *
      * Possible patterns
      * - "%any%" any token
-     * - "%var%" any token which is a name or type e.g. "hello" or "int"
+     * - "%name%" any token which is a name, variable or type e.g. "hello" or "int"
      * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false
      * - "%char%" Any token enclosed in &apos;-character.
      * - "%comp%" Any token such that isComparisonOp() returns true.
      * - "%str%" Any token starting with &quot;-character (C-string).
+     * - "%var%" Match with token with varId > 0
      * - "%varid%" Match with parameter varid
      * - "%op%" Any token such that isOp() returns true.
      * - "%cop%" Any token such that isConstOp() returns true.
@@ -178,7 +196,7 @@ public:
     static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
 
     /**
-     * Return length of C-string.
+     * @return length of C-string.
      *
      * Should be called for %%str%% tokens only.
      *
@@ -187,7 +205,16 @@ public:
     static std::size_t getStrLength(const Token *tok);
 
     /**
-     * Return char of C-string at index (possible escaped "\\n")
+     * @return sizeof of C-string.
+     *
+     * Should be called for %%str%% tokens only.
+     *
+     * @param tok token with C-string
+     **/
+    static std::size_t getStrSize(const Token *tok);
+
+    /**
+     * @return char of C-string at index (possible escaped "\\n")
      *
      * Should be called for %%str%% tokens only.
      *
@@ -196,113 +223,186 @@ public:
      **/
     static std::string getCharAt(const Token *tok, std::size_t index);
 
-    Type type() const {
-        return _type;
+    Token::Type tokType() const {
+        return _tokType;
     }
-    void type(Type t) {
-        _type = t;
+    void tokType(Token::Type t) {
+        _tokType = t;
+    }
+    void isKeyword(bool kwd) {
+        if (kwd)
+            _tokType = eKeyword;
+        else if (_tokType == eKeyword)
+            _tokType = eName;
+    }
+    bool isKeyword() const {
+        return _tokType == eKeyword;
     }
     bool isName() const {
-        return _type == eName || _type == eType || _type == eVariable || _type == eFunction ||
-               _type == eBoolean; // TODO: "true"/"false" aren't really a name...
+        return _tokType == eName || _tokType == eType || _tokType == eVariable || _tokType == eFunction || _tokType == eKeyword ||
+               _tokType == eBoolean; // TODO: "true"/"false" aren't really a name...
     }
     bool isUpperCaseName() const;
     bool isLiteral() const {
-        return _type == eNumber || _type == eString || _type == eChar ||
-               _type == eBoolean || _type == eLiteral;
+        return _tokType == eNumber || _tokType == eString || _tokType == eChar ||
+               _tokType == eBoolean || _tokType == eLiteral;
     }
     bool isNumber() const {
-        return _type == eNumber;
+        return _tokType == eNumber;
     }
     bool isOp() const {
         return (isConstOp() ||
                 isAssignmentOp() ||
-                _type == eIncDecOp);
+                _tokType == eIncDecOp);
     }
     bool isConstOp() const {
         return (isArithmeticalOp() ||
-                _type == eLogicalOp ||
-                _type == eComparisonOp ||
-                _type == eBitOp);
+                _tokType == eLogicalOp ||
+                _tokType == eComparisonOp ||
+                _tokType == eBitOp);
     }
     bool isExtendedOp() const {
         return isConstOp() ||
-               _type == eExtendedOp;
+               _tokType == eExtendedOp;
     }
     bool isArithmeticalOp() const {
-        return _type == eArithmeticalOp;
+        return _tokType == eArithmeticalOp;
     }
     bool isComparisonOp() const {
-        return _type == eComparisonOp;
+        return _tokType == eComparisonOp;
     }
     bool isAssignmentOp() const {
-        return _type == eAssignmentOp;
+        return _tokType == eAssignmentOp;
     }
     bool isBoolean() const {
-        return _type == eBoolean;
+        return _tokType == eBoolean;
     }
+    bool isUnaryPreOp() const;
 
+    unsigned int flags() const {
+        return _flags;
+    }
+    void flags(unsigned int flags_) {
+        _flags = flags_;
+    }
     bool isUnsigned() const {
-        return _isUnsigned;
+        return getFlag(fIsUnsigned);
     }
     void isUnsigned(bool sign) {
-        _isUnsigned = sign;
+        setFlag(fIsUnsigned, sign);
     }
     bool isSigned() const {
-        return _isSigned;
+        return getFlag(fIsSigned);
     }
     void isSigned(bool sign) {
-        _isSigned = sign;
+        setFlag(fIsSigned, sign);
     }
     bool isPointerCompare() const {
-        return _isPointerCompare;
+        return getFlag(fIsPointerCompare);
     }
     void isPointerCompare(bool b) {
-        _isPointerCompare = b;
+        setFlag(fIsPointerCompare, b);
     }
     bool isLong() const {
-        return _isLong;
+        return getFlag(fIsLong);
     }
     void isLong(bool size) {
-        _isLong = size;
+        setFlag(fIsLong, size);
     }
     bool isStandardType() const {
-        return _isStandardType;
+        return getFlag(fIsStandardType);
+    }
+    void isStandardType(bool b) {
+        setFlag(fIsStandardType, b);
     }
     bool isExpandedMacro() const {
-        return _isExpandedMacro;
+        return getFlag(fIsExpandedMacro);
     }
     void isExpandedMacro(bool m) {
-        _isExpandedMacro = m;
+        setFlag(fIsExpandedMacro, m);
+    }
+    bool isCast() const {
+        return getFlag(fIsCast);
+    }
+    void isCast(bool c) {
+        setFlag(fIsCast, c);
     }
     bool isAttributeConstructor() const {
-        return _isAttributeConstructor;
+        return getFlag(fIsAttributeConstructor);
     }
     void isAttributeConstructor(bool ac) {
-        _isAttributeConstructor = ac;
+        setFlag(fIsAttributeConstructor, ac);
+    }
+    bool isAttributeDestructor() const {
+        return getFlag(fIsAttributeDestructor);
+    }
+    void isAttributeDestructor(bool value) {
+        setFlag(fIsAttributeDestructor, value);
     }
     bool isAttributeUnused() const {
-        return _isAttributeUnused;
+        return getFlag(fIsAttributeUnused);
     }
     void isAttributeUnused(bool unused) {
-        _isAttributeUnused = unused;
+        setFlag(fIsAttributeUnused, unused);
+    }
+    bool isAttributeUsed() const {
+        return getFlag(fIsAttributeUsed);
+    }
+    void isAttributeUsed(bool unused) {
+        setFlag(fIsAttributeUsed, unused);
+    }
+    bool isAttributePure() const {
+        return getFlag(fIsAttributePure);
+    }
+    void isAttributePure(bool value) {
+        setFlag(fIsAttributePure, value);
+    }
+    bool isAttributeConst() const {
+        return getFlag(fIsAttributeConst);
+    }
+    void isAttributeConst(bool value) {
+        setFlag(fIsAttributeConst, value);
+    }
+    bool isAttributeNoreturn() const {
+        return getFlag(fIsAttributeNoreturn);
+    }
+    void isAttributeNoreturn(bool value) {
+        setFlag(fIsAttributeNoreturn, value);
+    }
+    bool isAttributeNothrow() const {
+        return getFlag(fIsAttributeNothrow);
+    }
+    void isAttributeNothrow(bool value) {
+        setFlag(fIsAttributeNothrow, value);
+    }
+    bool isOperatorKeyword() const {
+        return getFlag(fIsOperatorKeyword);
+    }
+    void isOperatorKeyword(bool value) {
+        setFlag(fIsOperatorKeyword, value);
+    }
+    bool isComplex() const {
+        return getFlag(fIsComplex);
+    }
+    void isComplex(bool value) {
+        setFlag(fIsComplex, value);
     }
 
-    static const Token *findsimplematch(const Token *tok, const char pattern[]);
-    static const Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
-    static const Token *findmatch(const Token *tok, const char pattern[], const Token *end, unsigned int varId = 0);
-    static Token *findsimplematch(Token *tok, const char pattern[]) {
-        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern));
+    static const Token *findsimplematch(const Token *startTok, const char pattern[]);
+    static const Token *findsimplematch(const Token *startTok, const char pattern[], const Token *end);
+    static const Token *findmatch(const Token *startTok, const char pattern[], unsigned int varId = 0);
+    static const Token *findmatch(const Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0);
+    static Token *findsimplematch(Token *startTok, const char pattern[]) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
     }
-    static Token *findsimplematch(Token *tok, const char pattern[], const Token *end) {
-        return const_cast<Token *>(findsimplematch(static_cast<const Token *>(tok), pattern, end));
+    static Token *findsimplematch(Token *startTok, const char pattern[], const Token *end) {
+        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
     }
-    static Token *findmatch(Token *tok, const char pattern[], unsigned int varId = 0) {
-        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, varId));
+    static Token *findmatch(Token *startTok, const char pattern[], unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token *tok, const char pattern[], const Token *end, unsigned int varId = 0) {
-        return const_cast<Token *>(findmatch(static_cast<const Token *>(tok), pattern, end, varId));
+    static Token *findmatch(Token *startTok, const char pattern[], const Token *end, unsigned int varId = 0) {
+        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
     /**
@@ -312,14 +412,14 @@ public:
      * string, return value is 0. If needle was not found, return
      * value is -1.
      *
-     * @param tok Current token
+     * @param needle Current token
      * @param haystack e.g. "one|two" or "|one|two"
-     * @param needle e.g. "one", "two" or "invalid"
+     * @param varid optional varid of token
      * @return 1 if needle is found from the haystack
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *tok, const char *haystack, const char *needle);
+    static int multiCompare(const Token *needle, const char *haystack, unsigned int varid);
 
     unsigned int linenr() const {
         return _linenr;
@@ -371,7 +471,7 @@ public:
     void varId(unsigned int id) {
         _varId = id;
         if (id != 0)
-            _type = eVariable;
+            _tokType = eVariable;
         else
             update_property_info();
     }
@@ -408,15 +508,16 @@ public:
      * @param os The result is shifted into that output stream
      * @param varid Print varids. (Style: "varname@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
+     * @param macro Prints $ in front of the token if it was expanded from a macro.
      */
-    void stringify(std::ostream& os, bool varid, bool attributes) const;
+    void stringify(std::ostream& os, bool varid, bool attributes, bool macro) const;
 
     /**
      * Stringify a list of token, from current instance on.
      * @param varid Print varids. (Style: "varname@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param linenumbers Print line number in front of each line
-     * @param linebreaks Insert \n into string when line number changes
+     * @param linebreaks Insert "\\n" into string when line number changes
      * @param files print Files as numbers or as names (if fileNames is given)
      * @param fileNames Vector of filenames. Used (if given) to print filenames as strings instead of numbers.
      * @param end Stringification ends before this token is reached. 0 to stringify until end of list.
@@ -469,7 +570,7 @@ public:
     }
 
     /**
-     * Returns a pointer to the scope containing this token.
+     * @return a pointer to the scope containing this token.
      */
     const Scope *scope() const {
         return _scope;
@@ -482,16 +583,16 @@ public:
     void function(const Function *f) {
         _function = f;
         if (f)
-            _type = eFunction;
-        else if (_type == eFunction)
-            _type = eName;
+            _tokType = eFunction;
+        else if (_tokType == eFunction)
+            _tokType = eName;
     }
 
     /**
-     * Returns a pointer to the Function associated with this token.
+     * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return _type == eFunction ? _function : 0;
+        return _tokType == eFunction ? _function : 0;
     }
 
     /**
@@ -501,16 +602,35 @@ public:
     void variable(const Variable *v) {
         _variable = v;
         if (v || _varId)
-            _type = eVariable;
-        else if (_type == eVariable)
-            _type = eName;
+            _tokType = eVariable;
+        else if (_tokType == eVariable)
+            _tokType = eName;
     }
 
     /**
-     * Returns a pointer to the variable associated with this token.
+     * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return _type == eVariable ? _variable : 0;
+        return _tokType == eVariable ? _variable : 0;
+    }
+
+    /**
+    * Associate this token with given type
+    * @param t Type to be associated
+    */
+    void type(const ::Type *t) {
+        _type = t;
+        if (t)
+            _tokType = eType;
+        else if (_tokType == eType)
+            _tokType = eName;
+    }
+
+    /**
+    * @return a pointer to the type associated with this token.
+    */
+    const ::Type *type() const {
+        return _tokType == eType ? _type : 0;
     }
 
     /**
@@ -541,20 +661,28 @@ public:
     }
 
     /** Calculate progress values for all tokens */
-    void assignProgressValues() {
-        unsigned int total_count = 0;
-        for (Token *tok = this; tok; tok = tok->next())
-            ++total_count;
-        unsigned int count = 0;
-        for (Token *tok = this; tok; tok = tok->next())
-            tok->_progressValue = count++ * 100 / total_count;
-    }
+    static void assignProgressValues(Token *tok);
 
     /**
-     * Returns the first token of the next argument. Does only work on argument
-     * lists. Returns 0, if there is no next argument
+     * @return the first token of the next argument. Does only work on argument
+     * lists. Requires that Tokenizer::createLinks2() has been called before.
+     * Returns 0, if there is no next argument.
      */
     Token* nextArgument() const;
+
+    /**
+     * @return the first token of the next argument. Does only work on argument
+     * lists. Should be used only before Tokenizer::createLinks2() was called.
+     * Returns 0, if there is no next argument.
+     */
+    Token* nextArgumentBeforeCreateLinks2() const;
+
+    /**
+    * @return the first token of the next template argument. Does only work on template argument
+    * lists. Requires that Tokenizer::createLinks2() has been called before.
+    * Returns 0, if there is no next argument.
+    */
+    Token* nextTemplateArgument() const;
 
     /**
      * Returns the closing bracket of opening '<'. Should only be used if link()
@@ -565,17 +693,21 @@ public:
     Token* findClosingBracket();
 
     /**
-     * Returns the original name.
+     * @return the original name.
      */
     const std::string & originalName() const {
-        return _originalName;
+        return _originalName ? *_originalName : emptyString;
     }
 
     /**
      * Sets the original name.
      */
-    void originalName(const std::string & name) {
-        _originalName = name;
+    template<typename T>
+    void originalName(T&& name) {
+        if (!_originalName)
+            _originalName = new std::string(name);
+        else
+            *_originalName = name;
     }
 
     /** Values of token */
@@ -584,7 +716,7 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
-            if (it->intvalue == val)
+            if (it->intvalue == val && !it->tokvalue)
                 return &(*it);
         }
         return NULL;
@@ -594,12 +726,22 @@ public:
         const ValueFlow::Value *ret = nullptr;
         std::list<ValueFlow::Value>::const_iterator it;
         for (it = values.begin(); it != values.end(); ++it) {
+            if (it->tokvalue)
+                continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
                 ((it->condition != NULL) == condition))
                 ret = &(*it);
         }
         return ret;
     }
+
+    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
+    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
+
+    const Token *getValueTokenMaxStrLength() const;
+    const Token *getValueTokenMinStrSize() const;
+
+    const Token *getValueTokenDeadPointer() const;
 
 private:
 
@@ -624,13 +766,7 @@ private:
      */
     static const char *chrInFirstWord(const char *str, char c);
 
-    /**
-     * Works almost like strlen() except
-     * if str has empty space &apos; &apos; character, that character is handled
-     * as if it were &apos;\\0&apos;
-     */
-    static int firstWordLen(const char *str);
-
+    std::string _str;
 
     Token *_next;
     Token *_previous;
@@ -641,9 +777,9 @@ private:
     union {
         const Function *_function;
         const Variable *_variable;
+        const ::Type* _type;
     };
 
-    std::string _str;
     unsigned int _varId;
     unsigned int _fileIndex;
     unsigned int _linenr;
@@ -654,15 +790,47 @@ private:
      */
     unsigned int _progressValue;
 
-    Type _type;
-    bool _isUnsigned;
-    bool _isSigned;
-    bool _isPointerCompare;
-    bool _isLong;
-    bool _isStandardType;
-    bool _isExpandedMacro;
-    bool _isAttributeConstructor;  // __attribute__((constructor))
-    bool _isAttributeUnused;       // __attribute__((unused))
+    Token::Type _tokType;
+
+    enum {
+        fIsUnsigned             = (1 << 0),
+        fIsSigned               = (1 << 1),
+        fIsPointerCompare       = (1 << 2),
+        fIsLong                 = (1 << 3),
+        fIsStandardType         = (1 << 4),
+        fIsExpandedMacro        = (1 << 5),
+        fIsCast                 = (1 << 6),
+        fIsAttributeConstructor = (1 << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
+        fIsAttributeDestructor  = (1 << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
+        fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
+        fIsAttributePure        = (1 << 10), // __attribute__((pure))
+        fIsAttributeConst       = (1 << 11), // __attribute__((const))
+        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
+        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
+        fIsAttributeUsed        = (1 << 14), // __attribute__((used))
+        fIsOperatorKeyword      = (1 << 15), // operator=, etc
+        fIsComplex              = (1 << 16)  // complex/_Complex type
+    };
+
+    unsigned int _flags;
+
+    /**
+     * Get specified flag state.
+     * @param flag_ flag to get state of
+     * @return true if flag set or false in flag not set
+     */
+    bool getFlag(unsigned int flag_) const {
+        return bool((_flags & flag_) != 0);
+    }
+
+    /**
+     * Set specified flag state.
+     * @param flag_ flag to set state
+     * @param state_ new state of flag
+     */
+    void setFlag(unsigned int flag_, bool state_) {
+        _flags = state_ ? _flags | flag_ : _flags & ~flag_;
+    }
 
     /** Updates internal property cache like _isName or _isBoolean.
         Called after any _str() modification. */
@@ -677,7 +845,7 @@ private:
     Token *_astParent;
 
     // original name like size_t
-    std::string _originalName;
+    std::string* _originalName;
 
 public:
     void astOperand1(Token *tok);
@@ -721,11 +889,13 @@ public:
         return ret + sep + _str;
     }
 
+    std::string astStringVerbose(const unsigned int indent1, const unsigned int indent2) const;
+
     std::string expressionString() const;
 
-    void printAst() const;
+    void printAst(bool verbose, bool xml, std::ostream &out) const;
 
-    void printValueFlow() const;
+    void printValueFlow(bool xml, std::ostream &out) const;
 };
 
 /// @}

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ public:
      * @param caseSensitive Match the case of the characters when
      *   matching paths?
      */
-    PathMatch(const std::vector<std::string> &masks, bool caseSensitive = true);
+    explicit PathMatch(const std::vector<std::string> &masks, bool caseSensitive = true);
 
     /**
      * @brief Match path against list of masks.

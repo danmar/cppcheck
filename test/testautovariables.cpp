@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "tokenize.h"
 #include "checkautovariables.h"
 #include "testsuite.h"
 
-#include <sstream>
-
-extern std::ostringstream errout;
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -33,33 +29,27 @@ public:
 private:
 
 
-
-    void check(const char code[], bool inconclusive=false, bool runSimpleChecks=true) {
+    void check(const char code[], bool inconclusive = false, bool runSimpleChecks = true, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
         settings.inconclusive = inconclusive;
         settings.addEnabled("warning");
+        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
 
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
         checkAutoVariables.assignFunctionArg();
 
         if (runSimpleChecks) {
-            const std::string str1(tokenizer.tokens()->stringifyList(0,true));
             tokenizer.simplifyTokenList2();
-            const std::string str2(tokenizer.tokens()->stringifyList(0,true));
-            if (str1 != str2)
-                warn(("Unsimplified code in test case. It looks like this test "
-                      "should either be cleaned up or moved to TestTokenizer or "
-                      "TestSimplifyTokens instead.\nstr1="+str1+"\nstr2="+str2).c_str());
-
 
             // Check auto variables
             checkAutoVariables.autoVariables();
@@ -80,14 +70,19 @@ private:
         TEST_CASE(testautovar10); // ticket #2930 - void f(char *p) { p = '\0'; }
         TEST_CASE(testautovar11); // ticket #4641 - fp, assign local struct member address to function parameter
         TEST_CASE(testautovar12); // ticket #5024 - crash
+        TEST_CASE(testautovar13); // ticket #5537 - crash
+        TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
+        TEST_CASE(testautovar15); // ticket #6538
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
+        TEST_CASE(testautovar_ptrptr); // ticket #6956
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_return4); // ticket #3030
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
         TEST_CASE(testassign2);  // Ticket #2765
 
@@ -102,11 +97,19 @@ private:
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
+        TEST_CASE(returnReferenceLiteral);
+        TEST_CASE(returnReferenceCalculation);
+        TEST_CASE(returnReferenceLambda);
+        TEST_CASE(returnReferenceInnerScope);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
 
         TEST_CASE(returnParameterAddress);
+
+        TEST_CASE(testconstructor); // ticket #5478 - crash
+
+        TEST_CASE(variableIsUsedInScope); // ticket #5599 crash in variableIsUsedInScope()
     }
 
 
@@ -124,7 +127,7 @@ private:
               "    int num = 2;\n"
               "    res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -153,7 +156,7 @@ private:
               "    int num = 2;\n"
               "    res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
@@ -256,12 +259,17 @@ private:
         check("void foo(char* p) {\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
 
         check("void foo(int b) {\n"
               "    b = foo(b);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
+        check("void foo(char* p) {\n" // don't warn for self assignment, there is another warning for this
+              "  p = p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo(char* p) {\n"
               "    if (!p) p = buf;\n"
@@ -289,13 +297,13 @@ private:
         check("void foo(Foo* p) {\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
 
         check("class Foo {};\n"
               "void foo(Foo p) {\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assignment of function parameter has no effect outside the function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
         check("void foo(Foo p) {\n"
               "    p = 0;\n"
@@ -313,15 +321,20 @@ private:
               "    return d;"
               "}",false,false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int* ptr) {\n" // #4793
+              "    ptr++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?\n", errout.str());
     }
 
     void testautovar11() { // #4641 - fp, assign local struct member address to function parameter
         check("struct A {\n"
-              "    char *data[10];\n"
+              "    char (*data)[10];\n"
               "};\n"
               "void foo(char** p) {\n"
               "    struct A a = bar();\n"
-              "    *p = &a.data[0];\n"
+              "    *p = &(*a.data)[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -348,8 +361,47 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
-    void testautovar12() { // Ticket #5024 - Crash on invalid input
+    void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
         check("void f(int* a) { a = }");
+        check("struct custom_type { custom_type(int) {} };\n"
+              "void func(int) {}\n"
+              "int var;\n"
+              "void init() { func(var); }\n"
+              "UNKNOWN_MACRO_EXPANDING_TO_SIGNATURE { custom_type a(var); }");
+    }
+
+    void testautovar13() { // Ticket #5537
+        check("class FileManager {\n"
+              "  FileManager() : UniqueRealDirs(*new UniqueDirContainer())\n"
+              "  {}\n"
+              "  ~FileManager() {\n"
+              "    delete &UniqueRealDirs;\n"
+              "   }\n"
+              "};\n");
+    }
+
+    void testautovar14() { // Ticket #4776
+        check("void f(int x) {\n"
+              "label:"
+              "  if (x>0) {\n"
+              "    x = x >> 1;\n"
+              "    goto label;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar15() { // Ticket #6538
+        check("static const float4  darkOutline(0.05f, 0.05f, 0.05f, 0.95f);\n"
+              "static const float darkLuminosity = 0.05 +\n"
+              "                                    0.0722f * math::powf(darkOutline[2], 2.2);\n"
+              "const float4* ChooseOutlineColor(const float4& textColor)  {\n"
+              "    const float lumdiff = something;\n"
+              "    if (lumdiff > 5.0f)\n"
+              "        return &darkOutline;\n"
+              "    return 0;\n"
+              "}", false, false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_array1() {
@@ -371,6 +423,14 @@ private:
               "    arr[0]=&num;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar_ptrptr() { // #6596
+        check("void remove_duplicate_matches (char **matches) {\n"
+              "  char dead_slot;\n"
+              "  matches[0] = (char *)&dead_slot;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_return1() {
@@ -465,7 +525,82 @@ private:
               "        free(psz_title);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        // #2298 new check: passing stack-address to free()
+        check("int main() {\n"
+              "   int *p = malloc(4);\n"
+              "   free(&p);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+        check("int main() {\n"
+              "   int i;\n"
+              "   free(&i);\n"
+              "   return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+
+        // #5732
+        check("int main() {\n"
+              "   long (*pKoeff)[256] = new long[9][256];\n"
+              "   delete[] pKoeff;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int main() {\n"
+              "   long *pKoeff[256];\n"
+              "   delete[] pKoeff;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+
+        check("int main() {\n"
+              "   long *pKoeff[256];\n"
+              "   free (pKoeff);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
+
+        check("void foo() {\n"
+              "   const intPtr& intref = Getter();\n"
+              "   delete intref;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "   MyObj& obj = *new MyObj;\n"
+              "   delete &obj;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6506
+        check("struct F {\n"
+              "  void free(void*) {}\n"
+              "};\n"
+              "void foo() {\n"
+              "  char c1[1];\n"
+              "  F().free(c1);\n"
+              "  char *c2 = 0;\n"
+              "  F().free(&c2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class foo {\n"
+              "  void free(void* );\n"
+              "  void someMethod() {\n"
+              "    char **dst_copy = NULL;\n"
+              "    free(&dst_copy);\n"
+              "  }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testinvaliddealloc_C() {
+        // #5691
+        check("void svn_repos_dir_delta2() {\n"
+              "  struct context c;\n"
+              "      SVN_ERR(delete(&c, root_baton, src_entry, pool));\n"
+              "}\n", false, true, "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testassign1() { // Ticket #1819
@@ -771,6 +906,88 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void returnReferenceLiteral() {
+        check("const std::string &a() {\n"
+              "    return \"foo\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("const std::string a() {\n"
+              "    return \"foo\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceCalculation() {
+        check("const std::string &a(const std::string& str) {\n"
+              "    return \"foo\" + str;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("int& operator<<(int out, int path) {\n"
+              "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("std::ostream& operator<<(std::ostream& out, const std::string& path) {\n"
+              "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::ostream& operator<<(std::ostream* out, const std::string& path) {\n"
+              "    return *out << path;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("Unknown1& operator<<(Unknown1 out, Unknown2 path) {\n"
+              "    return out << path;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& a(int b) {\n"
+              "    return 2*(b+1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("const std::string &a(const std::string& str) {\n"
+              "    return str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const std::string &a(int bar) {\n"
+              "    return foo(bar + 1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const std::string a(const std::string& str) {\n"
+              "    return \"foo\" + str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceLambda() {
+        // #6787
+        check("const Item& foo(const Container& items) const {\n"
+              "    return bar(items.begin(), items.end(),\n"
+              "    [](const Item& lhs, const Item& rhs) {\n"
+              "        return false;\n"
+              "    });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceInnerScope() {
+        // #6951
+        check("const Callback& make() {\n"
+              "    struct _Wrapper {\n"
+              "        static ulong call(void* o, const void* f, const void*[]) {\n"
+              "            return 1;\n"
+              "        }\n"
+              "    };\n"
+              "    return _make(_Wrapper::call, pmf);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void testglobalnamespace() {
         check("class SharedPtrHolder\n"
@@ -807,6 +1024,25 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testconstructor() { // Ticket #5478 - crash while checking a constructor
+        check("class const_tree_iterator {\n"
+              "  const_tree_iterator(bool (*_incream)(node_type*&)) {}\n"
+              "  const_tree_iterator& parent() {\n"
+              "    return const_tree_iterator(foo);\n"
+              "  }\n"
+              "};");
+    }
+
+    void variableIsUsedInScope() {
+        check("void removed_cb (GList *uids) {\n"
+              "for (; uids; uids = uids->next) {\n"
+              "}\n"
+              "}\n"
+              "void opened_cb () {\n"
+              "	g_signal_connect (G_CALLBACK (removed_cb));\n"
+              "}");
     }
 
 };

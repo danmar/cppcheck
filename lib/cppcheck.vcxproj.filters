@@ -38,7 +38,7 @@
     <ClCompile Include="checknullpointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkobsoletefunctions.cpp">
+    <ClCompile Include="checkobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkother.cpp">
@@ -63,9 +63,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="errorlogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="executionpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mathlib.cpp">
@@ -93,9 +90,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkboost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="checkassignif.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkinternal.cpp">
@@ -131,6 +125,24 @@
     <ClCompile Include="valueflow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="check.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkvaarg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checkcondition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="checktype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="astutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -151,7 +163,7 @@
     <ClInclude Include="checknullpointer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checkobsoletefunctions.h">
+    <ClInclude Include="checkobsolescentfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">
@@ -179,9 +191,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="errorlogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="executionpath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mathlib.h">
@@ -215,9 +224,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="check64bit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="checkassignif.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkautovariables.h">
@@ -260,6 +266,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="valueflow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkvaarg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkcondition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checktype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="astutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

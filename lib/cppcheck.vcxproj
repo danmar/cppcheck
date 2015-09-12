@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
       <Configuration>Debug-PCRE</Configuration>
@@ -36,14 +36,26 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp" />
+    <ClCompile Include="astutils.cpp" />
+    <ClCompile Include="check.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="check64bit.cpp" />
     <ClCompile Include="checkassert.cpp" />
-    <ClCompile Include="checkassignif.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
     <ClCompile Include="checkbool.cpp" />
     <ClCompile Include="checkboost.cpp" />
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
+    <ClCompile Include="checkcondition.cpp" />
+    <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkinternal.cpp" />
     <ClCompile Include="checkio.cpp" />
@@ -51,17 +63,18 @@
     <ClCompile Include="checkmemoryleak.cpp" />
     <ClCompile Include="checknonreentrantfunctions.cpp" />
     <ClCompile Include="checknullpointer.cpp" />
-    <ClCompile Include="checkobsoletefunctions.cpp" />
+    <ClCompile Include="checkobsolescentfunctions.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
     <ClCompile Include="checkstl.cpp" />
+    <ClCompile Include="checktype.cpp" />
     <ClCompile Include="checkuninitvar.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
     <ClCompile Include="checkunusedvar.cpp" />
+    <ClCompile Include="checkvaarg.cpp" />
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="errorlogger.cpp" />
-    <ClCompile Include="executionpath.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
@@ -78,15 +91,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\externals\tinyxml\tinyxml2.h" />
+    <ClInclude Include="astutils.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
     <ClInclude Include="checkassert.h" />
-    <ClInclude Include="checkassignif.h" />
     <ClInclude Include="checkautovariables.h" />
     <ClInclude Include="checkbool.h" />
     <ClInclude Include="checkboost.h" />
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
+    <ClInclude Include="checkcondition.h" />
+    <ClInclude Include="checkstring.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkinternal.h" />
     <ClInclude Include="checkio.h" />
@@ -94,18 +109,19 @@
     <ClInclude Include="checkmemoryleak.h" />
     <ClInclude Include="checknonreentrantfunctions.h" />
     <ClInclude Include="checknullpointer.h" />
-    <ClInclude Include="checkobsoletefunctions.h" />
+    <ClInclude Include="checkobsolescentfunctions.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />
     <ClInclude Include="checkstl.h" />
+    <ClInclude Include="checktype.h" />
     <ClInclude Include="checkuninitvar.h" />
     <ClInclude Include="checkunusedfunctions.h" />
     <ClInclude Include="checkunusedvar.h" />
+    <ClInclude Include="checkvaarg.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="errorlogger.h" />
-    <ClInclude Include="executionpath.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="path.h" />
@@ -133,41 +149,49 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -242,15 +266,22 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">
     <ClCompile>
@@ -260,15 +291,22 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -278,14 +316,20 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">
     <ClCompile>
@@ -295,8 +339,11 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -304,6 +351,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -316,12 +366,17 @@
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -329,7 +384,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">
     <ClCompile>
@@ -342,12 +401,17 @@
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -356,7 +420,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -369,12 +437,17 @@
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -383,6 +456,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">
     <ClCompile>
@@ -395,12 +471,17 @@
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4251;4512</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4251;4482;4512</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>check.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>check.h</ForcedIncludeFiles>
+      <AdditionalOptions>/Zc:inline /Zc:throwingNew %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -410,6 +491,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

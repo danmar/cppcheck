@@ -3,17 +3,17 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.64 dev</title>
+    <title>Cppcheck 1.71 dev</title>
 
-    <date>2013-12-23</date>
+    <date>2015-09-09</date>
   </bookinfo>
 
   <chapter>
     <title>Introduction</title>
 
     <para>Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers
-    and many other analysis tools, it doesn't detect syntax errors. Cppcheck
-    only detects the types of bugs that the compilers normally fail to detect.
+    and many other analysis tools, it doesn't detect syntax errors. Instead, Cppcheck
+    detects the types of bugs that the compilers normally fail to detect.
     The goal is no false positives.</para>
 
     <para>Supported code and platforms:</para>
@@ -34,8 +34,6 @@
         memory.</para>
       </listitem>
     </itemizedlist>
-
-    <para>Accuracy</para>
 
     <para>Please understand that there are limits of Cppcheck. Cppcheck is
     rarely wrong about reported errors. But there are many bugs that it
@@ -82,7 +80,7 @@
 
       <programlisting>cppcheck path</programlisting>
 
-      <para>If "path" is a folder then cppcheck will check all source files in
+      <para>If "path" is a folder then cppcheck will recursively check all source files in
       this folder.</para>
 
       <programlisting>Checking path/file1.cpp...
@@ -94,10 +92,8 @@ Checking path/file2.cpp...
     <section>
       <title>Excluding a file or folder from checking</title>
 
-      <para>To exclude a file or folder, there are two options.</para>
-
-      <para>The first option is to only provide the paths and files you want
-      to check.</para>
+      <para>To exclude a file or folder, there are two options. The first option
+      is to only provide the paths and files you want to check.</para>
 
       <programlisting>cppcheck src/a src/b</programlisting>
 
@@ -110,6 +106,23 @@ Checking path/file2.cpp...
       class="directory">src/c</filename> are checked:</para>
 
       <programlisting>cppcheck -isrc/c src</programlisting>
+    </section>
+
+    <section>
+      <title>Include paths</title>
+
+      <para>To add an include path, use <parameter class="command">-I</parameter>, followed by the path.</para>
+
+      <para>Cppcheck's preprocessor basically handles includes like any other preprocessor.
+      However, while other preprocessors stop working when they encounter a missing header,
+      cppcheck will just print an information message and continues parsing the code.</para>
+
+      <para>The purpose of this behaviour is that cppcheck is meant to work without
+      necessarily seeing the entire code. Actually, it is recommended to not give all include
+      paths. While it is useful for cppcheck to see the declaration of a class when checking the
+      implementation of its members, passing standard library headers is highly discouraged because
+      it will result in worse results and longer checking time. For such cases, .cfg files (see below) are the
+      better way to provide information about the implementation of functions and types to cppcheck.</para>
     </section>
 
     <section>
@@ -168,7 +181,8 @@ Checking path/file2.cpp...
           <term>information</term>
 
           <listitem>
-            <para>Informational messages about checking problems.</para>
+            <para>Configuration problems. The recommendation is to only enable
+            these during configuration.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -196,8 +210,8 @@ cppcheck --enable=information file.c
 # using the old xml format.
 cppcheck --enable=style file.c
 
-# enable warning and information messages
-cppcheck --enable=warning,information file.c
+# enable warning and performance messages
+cppcheck --enable=warning,performance file.c
 
 # enable unusedFunction checking. This is not enabled by --enable=style
 # because it doesn't work well on libraries.
@@ -207,7 +221,7 @@ cppcheck --enable=unusedFunction file.c
 cppcheck --enable=all</programlisting>
 
       <para>Please note that <literal>--enable=unusedFunction</literal> should
-      only be used when the whole program is scanned. And therefore
+      only be used when the whole program is scanned. Therefore,
       <literal>--enable=all</literal> should also only be used when the whole
       program is scanned. The reason is that the unusedFunction checking will
       warn if a function is not called. There will be noise if function calls
@@ -247,6 +261,8 @@ cppcheck --enable=all</programlisting>
       folder:</para>
 
       <programlisting>cppcheck -j 4 path</programlisting>
+
+      <para>Please note that this will disable unusedFunction checking.</para>
     </section>
   </chapter>
 
@@ -283,13 +299,13 @@ cppcheck -DA --force file.c</programlisting>
   <chapter>
     <title>XML output</title>
 
-    <para>Cppcheck can generate the output in <literal>XML</literal> format.
+    <para>Cppcheck can generate output in <literal>XML</literal> format.
     There is an old <literal>XML</literal> format (version 1) and a new
     <literal>XML</literal> format (version 2). Please use the new version if
     you can.</para>
 
     <para>The old version is kept for backwards compatibility only. It will
-    not be changed. But it will likely be removed someday. Use
+    not be changed, but it will likely be removed someday. Use
     <parameter>--xml</parameter> to enable this format.</para>
 
     <para>The new version fixes a few problems with the old format. The new
@@ -297,15 +313,16 @@ cppcheck -DA --force file.c</programlisting>
     attributes and elements. A sample command to check a file and output
     errors in the new <literal>XML</literal> format:</para>
 
-    <para><programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>Here
-    is a sample version 2 report:</para>
+    <programlisting>cppcheck --xml-version=2 file1.cpp</programlisting>
+
+    <para>Here is a sample version 2 report:</para>
 
     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;results version="2"&gt;
-  &lt;cppcheck version="1.53"&gt;
+  &lt;cppcheck version="1.66"&gt;
   &lt;errors&gt;
     &lt;error id="someError" severity="error" msg="short error text"
-           verbose="long error text" inconclusive="true"&gt;
+           verbose="long error text" inconclusive="true" cwe="312"&gt;
       &lt;location file="file.c" line="1"/&gt;
     &lt;/error&gt;
   &lt;/errors&gt;
@@ -359,6 +376,15 @@ cppcheck -DA --force file.c</programlisting>
           <listitem>
             <para>This attribute is only used when the message is
             inconclusive.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><sgmltag>cwe</sgmltag></term>
+
+          <listitem>
+            <para>CWE ID for message. This attribute is only used when the CWE
+            ID for the message is known.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -554,7 +580,7 @@ uninitvar</programlisting>
 
         <para>You can use the suppressions file like this:</para>
 
-        <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
+        <programlisting>cppcheck --suppressions-list=suppressions.txt src/</programlisting>
       </section>
     </section>
 
@@ -595,6 +621,584 @@ Checking test.c...
   </chapter>
 
   <chapter>
+    <title>Library configuration</title>
+
+    <para>When external libraries are used, such as windows/posix/gtk/qt/etc,
+    <literal>Cppcheck</literal> doesn't know how the external functions
+    behave. <literal>Cppcheck</literal> then fails to detect various problems
+    such as leaks, buffer overflows, possible null pointer dereferences, etc.
+    But this can be fixed with configuration files.</para>
+
+    <para>If you create a configuration file for a popular library, we would
+    appreciate if you upload it to us.</para>
+
+    <section>
+      <title>Using your own custom .cfg file</title>
+
+      <para>You can create and use your own .cfg files for your projects. Use
+      <literal>--check-library</literal> and
+      <literal>--enable=information</literal> to get hints about what you
+      should configure.</para>
+
+      <para>The command line cppcheck will try to load custom .cfg files from
+      the working path - execute cppcheck from the path where the .cfg files
+      are.</para>
+
+      <para>The cppcheck GUI will try to load custom .cfg files from the
+      project file path. The custom .cfg files should be shown in the
+      <literal>Edit Project File</literal> dialog that you open from the
+      <literal>File</literal> menu.</para>
+    </section>
+
+    <section>
+      <title>Memory/resource leaks</title>
+
+      <para>Cppcheck has configurable checking for leaks.</para>
+
+      <section>
+        <title>alloc and dealloc</title>
+
+        <para>Here is an example program:</para>
+
+        <para><programlisting>void test()
+{
+    HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
+}</programlisting></para>
+
+        <para>The code example above has a resource leak -
+        <literal>CreatePen()</literal> is a windows function that creates a
+        pen. However Cppcheck doesn't assume that return values from functions
+        must be freed. There is no error message:</para>
+
+        <programlisting># cppcheck pen1.c
+Checking pen1.c...</programlisting>
+
+        <para>If you provide a windows configuration file then
+        <literal>Cppcheck</literal> detects the bug:</para>
+
+        <programlisting># cppcheck --library=windows.cfg pen1.c
+Checking pen1.c...
+[pen1.c:3]: (error) Resource leak: pen</programlisting>
+
+        <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;resource&gt;
+    &lt;alloc&gt;CreatePen&lt;/alloc&gt;
+    &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
+  &lt;/resource&gt;
+&lt;/def&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>leak-ignore and use</title>
+
+        <para>Often the allocated pointer is passed to functions.
+        Example:</para>
+
+        <programlisting>void test()
+{
+    char *p = malloc(100);
+    dostuff(p);
+}</programlisting>
+
+        <para>If Cppcheck doesn't know what <literal>dostuff</literal> does,
+        without configuration it will assume that <literal>dostuff</literal>
+        takes care of the memory so there is no memory leak.</para>
+
+        <para>To specify that <literal>dostuff</literal> doesn't take care of
+        the memory in any way, use <literal>leak-ignore</literal>:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="dostuff"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>If instead <literal>dostuff</literal> takes care of the memory
+        then this can be configured with:</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;memory&gt;
+    &lt;alloc&gt;malloc&lt;/alloc&gt;
+    &lt;dealloc&gt;free&lt;/dealloc&gt;
+    &lt;use&gt;dostuff&lt;/use&gt;
+  &lt;/memory&gt;
+&lt;/def&gt;</programlisting>
+
+        <para>The <literal><literal>&lt;use&gt;</literal></literal>
+        configuration has no logical purpose. You will get the same warnings
+        without it. Use it to silence <literal>--check-library</literal>
+        information messages.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Function argument: Uninitialized memory</title>
+
+      <para>Here is an example program:</para>
+
+      <programlisting>void test()
+{
+    char buffer1[1024];
+    char buffer2[1024];
+    CopyMemory(buffer1, buffer2, 1024);
+}</programlisting>
+
+      <para>The bug here is that buffer2 is uninitialized. The second argument
+      for CopyMemory needs to be initialized. However
+      <literal>Cppcheck</literal> assumes that it is fine to pass
+      uninitialized variables to functions:</para>
+
+      <programlisting># cppcheck uninit.c 
+Checking uninit.c...</programlisting>
+
+      <para>If you provide a windows configuration file then Cppcheck detects
+      the bug:</para>
+
+      <programlisting># cppcheck --library=windows.cfg uninit.c 
+Checking uninit.c...
+[uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
+
+      <para>Here is the minimal <literal>windows.cfg</literal>:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="CopyMemory"&gt;
+    &lt;arg nr="1"/&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-uninit/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="3"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting></para>
+    </section>
+
+    <section>
+      <title>Function Argument: Null pointers</title>
+
+      <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
+      is an example program:</para>
+
+      <programlisting>void test()
+{
+    CopyMemory(NULL, NULL, 1024);
+}</programlisting>
+
+      <para>The MSDN documentation is not clear if that is ok or not. But
+      let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
+      functions so no error is reported:</para>
+
+      <programlisting># cppcheck null.c 
+Checking null.c...</programlisting>
+
+      <para>If you provide a windows configuration file then
+      <literal>Cppcheck</literal> detects the bug:</para>
+
+      <programlisting>cppcheck --library=windows.cfg null.c 
+Checking null.c...
+[null.c:3]: (error) Null pointer dereference</programlisting>
+
+      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="CopyMemory"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+    &lt;arg nr="3"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: Format string</title>
+
+      <para>You can define that a function takes a format string.
+      Example:</para>
+
+      <programlisting>void test()
+{
+    do_something("%i %i\n", 1024);
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck formatstring.c 
+Checking formatstring.c...</programlisting>
+
+      <para>A configuration file can be created that says that the string is a
+      format string. For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;formatstr type="printf"/&gt;
+    &lt;arg nr="1"&gt;
+      &lt;formatstr/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
+
+      <programlisting>cppcheck --library=test.cfg formatstring.c 
+Checking formatstring.c...
+[formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
+
+      <para>The <literal>type</literal> attribute can be either:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>printf - format string follows the printf rules</para>
+        </listitem>
+
+        <listitem>
+          <para>scanf - format string follows the scanf rules</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Function Argument: Value range</title>
+
+      <para>The valid values can be defined. Imagine:</para>
+
+      <programlisting>void test()
+{
+    do_something(1024);
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck valuerange.c 
+Checking valuerange.c...</programlisting>
+
+      <para>A configuration file can be created that says that 1024 is out of
+      bounds. For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;valid&gt;0:1023&lt;/valid&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
+
+      <programlisting>cppcheck --library=test.cfg range.c 
+Checking range.c...
+[range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
+
+      <para>Some example expressions you can use in the valid element:</para>
+
+      <programlisting>0,3,5  =&gt; only values 0, 3 and 5 are valid
+-10:20  =&gt;  all values between -10 and 20 are valid
+:0  =&gt;  all values that are less or equal to 0 are valid
+0:  =&gt;  all values that are greater or equal to 0 are valid
+0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
+    </section>
+
+    <section>
+      <title>Function Argument: minsize</title>
+
+      <para>Some function arguments take a buffer. With minsize you can
+      configure the min size of the buffer (in bytes, not elements).
+      Imagine:</para>
+
+      <programlisting>void test()
+{
+    char str[5];
+    do_something(str,"12345");
+}</programlisting>
+
+      <para>No error is reported for that:</para>
+
+      <programlisting># cppcheck minsize.c 
+Checking minsize.c...</programlisting>
+
+      <para>A configuration file can for instance be created that says that
+      the size of the buffer in argument 1 must be larger than the strlen of
+      argument 2.For instance:</para>
+
+      <para><programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="do_something"&gt;
+    &lt;arg nr="1"&gt;
+      &lt;minsize type="strlen" arg="2"/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>Now Cppcheck will report this error:</para>
+
+      <programlisting>cppcheck --library=1.cfg minsize.c
+Checking minsize.c...
+[minsize.c:4]: (error) Buffer is accessed out of bounds: str
+</programlisting>
+
+      <para>There are different types of minsizes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>strlen</term>
+
+          <listitem>
+            <para>buffer size must be larger than other arguments string
+            length. Example: see strcpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>argvalue</term>
+
+          <listitem>
+            <para>buffer size must be larger than value in other argument.
+            Example: see memset configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>sizeof</term>
+
+          <listitem>
+            <para>buffer size must be larger than other argument buffer size.
+            Example: see strncpy configuration in std.cfg</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>mul</term>
+
+          <listitem>
+            <para>buffer size must be larger than multiplication result when
+            multiplying values given in two other arguments. Typically one
+            argument defines the element size and another element defines the
+            number of elements. Example: see fread configuration in
+            std.cfg</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>noreturn</title>
+
+      <para>Cppcheck doesn't assume that functions always return. Here is an
+      example code:</para>
+
+      <programlisting>void test(int x)
+{
+    int data, buffer[1024];
+    if (x == 1)
+        data = 123;
+    else
+        ZeroMemory(buffer, sizeof(buffer));
+    buffer[0] = data;  // &lt;- error: data is uninitialized if x is not 1
+}</programlisting>
+
+      <para>In theory, if <literal>ZeroMemory</literal> terminates the program
+      then there is no bug. Cppcheck therefore reports no error:</para>
+
+      <programlisting># cppcheck noreturn.c 
+Checking noreturn.c...</programlisting>
+
+      <para>However if you use <literal>--check-library</literal> and
+      <literal>--enable=information</literal> you'll get this:</para>
+
+      <programlisting># cppcheck --check-library --enable=information noreturn.c 
+Checking noreturn.c...
+[noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
+</programlisting>
+
+      <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
+      detected:</para>
+
+      <programlisting># cppcheck --library=windows.cfg noreturn.c 
+Checking noreturn.c...
+[noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
+
+      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="ZeroMemory"&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>use-retval</title>
+
+      <para>As long as nothing else is specified, cppcheck assumes that
+      ignoring the return value of a function is ok:</para>
+
+      <programlisting>bool test(const char* a, const char* b)
+{
+    strcmp(a, b);  // &lt;- bug: The call of strcmp does not have side-effects, but the return value is ignored.
+    return true;
+}</programlisting>
+
+      <para>In case <literal>strcmp</literal> has side effects, such as
+      assigning the result to one of the parameters passed to it, nothing bad
+      would happen:</para>
+
+      <programlisting># cppcheck useretval.c 
+Checking useretval.c...</programlisting>
+
+      <para>If a proper <literal>lib.cfg</literal> is provided, the bug is
+      detected:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=warning useretval.c 
+Checking useretval.c...
+[noreturn.c:3]: (warning) Return value of function strcmp() is not used.</programlisting>
+
+      <para>Here is a minimal <literal>lib.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;function name="strcmp"&gt;
+    &lt;use-retval/&gt;
+  &lt;/function&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>define</title>
+
+      <para>Libraries can be used to define preprocessor macros as well. For
+      example:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;define name="NULL_VALUE" value="0"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Each occurrence of "NULL_VALUE" in the code would then be replaced
+      by "0" at preprocessor stage.</para>
+    </section>
+
+    <section>
+      <title>podtype</title>
+
+      <para>Lots of code relies on typedefs providing platform independent
+      types. "podtype"-tags can be used to provide necessary information to
+      cppcheck to support them. Without further information, cppcheck does not
+      understand the type "uint16_t" in the following example:</para>
+
+      <programlisting>void test() {
+    uint16_t a;
+}</programlisting>
+
+      <para>No message about variable 'a' being unused is printed:</para>
+
+      <programlisting># cppcheck --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...</programlisting>
+
+      <para>If uint16_t is defined in a library as follows, the result
+      improves:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;podtype name="uint16_t" sign="u" size="2"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>The size of the type is specified in bytes. Possible values for
+      the "sign" attribute are "s" (signed) and "u" (unsigned). Both
+      attributes are optional. Using this library, cppcheck prints:</para>
+
+      <programlisting># cppcheck --library=lib.cfg --enable=style unusedvar.cpp 
+Checking unusedvar.cpp...
+[unusedvar.cpp:2]: (style) Unused variable: a</programlisting>
+    </section>
+
+    <section>
+      <title>container</title>
+
+      <para>A lot of C++ libraries, among those the STL itself, provide
+      containers with very similar functionality. Libraries can be used to
+      tell cppcheck about their behaviour. Each container needs a unique ID.
+      It can optionally have a startPattern, which must be a valid
+      Token::Match pattern and an endPattern that is compared to the linked
+      token of the first token with such a link. The optional attribute
+      "inherits" takes an ID from a previously defined container.</para>
+
+      <para>Inside the &lt;container&gt; tag, functions can be defined inside
+      of the tags &lt;size&gt;, &lt;access&gt; and &lt;other&gt; (on your
+      choice). Each of them can specify an action like "resize" and/or the
+      result it yields, for example "end-iterator".</para>
+
+      <para>The following example provides a definition for std::vector, based
+      on the definition of "stdContainer" (not shown):</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;container id="stdVector" startPattern="std :: vector &amp;lt;" inherits="stdContainer"&gt;
+    &lt;size&gt;
+      &lt;function name="push_back" action="push"/&gt;
+      &lt;function name="pop_back" action="pop"/&gt;
+    &lt;/size&gt;
+    &lt;access indexOperator="array-like"&gt;
+      &lt;function name="at" yields="at_index"/&gt;
+      &lt;function name="front" yields="item"/&gt;
+      &lt;function name="back" yields="item"/&gt;
+    &lt;/access&gt;
+  &lt;/container&gt;
+&lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Example configuration for strcpy()</title>
+
+      <para>The proper configuration for the standard strcpy() function would
+      be:</para>
+
+      <programlisting>  &lt;function name="strcpy"&gt;
+    &lt;leak-ignore/&gt;
+    &lt;noreturn&gt;false&lt;/noreturn&gt;
+    &lt;arg nr="1"&gt;
+      &lt;not-null/&gt;
+    &lt;/arg&gt;
+    &lt;arg nr="2"&gt;
+      &lt;not-null/&gt;
+      &lt;not-uninit/&gt;
+      &lt;strz/&gt;
+    &lt;/arg&gt;
+  &lt;/function&gt;</programlisting>
+
+      <para>The <literal>&lt;leak-ignore/&gt;</literal> tells Cppcheck to
+      ignore this function call in the leaks checking. Passing allocated
+      memory to this function won't mean it will be deallocated.</para>
+
+      <para>The <literal>&lt;noreturn&gt;</literal> tells Cppcheck if this
+      function returns or not.</para>
+
+      <para>The first argument that the function takes is a pointer. It must
+      not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
+      used.</para>
+
+      <para>The second argument the function takes is a pointer. It must not
+      be null. And it must point at initialized data. Using
+      <literal>&lt;not-null&gt;</literal> and
+      <literal>&lt;not-uninit&gt;</literal> is correct. Moreover it must point
+      at a zero-terminated string so &lt;strz&gt; is also used.</para>
+    </section>
+
+    <section>
+      <title>Specifications for all arguments</title>
+
+      <para>Specifying <literal>-1</literal> as the argument number is going
+      to apply a check to all arguments of that function. The specifications
+      for individual arguments override this setting.</para>
+    </section>
+  </chapter>
+
+  <chapter>
     <title>Rules</title>
 
     <para>You can define custom rules using regular expressions.</para>
@@ -605,7 +1209,8 @@ Checking test.c...
 
     <para>To get started writing rules, see the related articles here:</para>
 
-    <para><uri>http://sourceforge.net/projects/cppcheck/files/Articles/</uri></para>
+    <para><ulink
+    url="http://sourceforge.net/projects/cppcheck/files/Articles/">http://sourceforge.net/projects/cppcheck/files/Articles/</ulink></para>
 
     <para>The file format for rules is:</para>
 
@@ -619,6 +1224,11 @@ Checking test.c...
     &lt;summary&gt;SUMMARY&lt;/summary&gt;
   &lt;/message&gt;
 &lt;/rule&gt;</programlisting>
+
+    <para>CDATA can be used to include characters in a pattern that might
+    interfere with XML:</para>
+
+    <programlisting>&lt;![CDATA[some&lt;strange&gt;pattern]]&gt;</programlisting>
 
     <section>
       <title>&lt;tokenlist&gt;</title>
@@ -702,274 +1312,171 @@ Checking test.c...
   </chapter>
 
   <chapter>
-    <title>Library configuration</title>
+    <title>Cppcheck addons</title>
 
-    <para>When external libraries are used, such as windows/posix/gtk/qt/etc,
-    <literal>Cppcheck</literal> doesn't know how the external functions
-    behave. <literal>Cppcheck</literal> then fails to detect various problems
-    such as leaks, buffer overflows, possible null pointer dereferences, etc.
-    But this can be fixed with configuration files.</para>
+    <para>Cppcheck addons are implemented as standalone scripts or programs.
+    With Cppcheck addons, you can for instance:</para>
 
-    <para>If you create a configuration file for a popular library, we would
-    appreciate if you upload it to us.</para>
+    <itemizedlist>
+      <listitem>
+        <para>add extra custom checkers that use sophisticated analysis</para>
+      </listitem>
+
+      <listitem>
+        <para>visualize your code</para>
+      </listitem>
+
+      <listitem>
+        <para>etc</para>
+      </listitem>
+    </itemizedlist>
 
     <section>
-      <title>Memory/resource leaks</title>
+      <title>Using Cppcheck addons</title>
 
-      <para>Here is an example program:</para>
+      <para>Currently there are two steps to use an addon:</para>
 
-      <para><programlisting>void test()
-{
-    HPEN pen = CreatePen(PS_SOLID, 1, RGB(255,0,0));
-}</programlisting></para>
+      <orderedlist>
+        <listitem>
+          <para>Run Cppcheck to generate dump files</para>
+        </listitem>
 
-      <para>The code example above has a resource leak -
-      <literal>CreatePen()</literal> is a windows function that creates a pen.
-      However Cppcheck doesn't assume that return values from functions must
-      be freed. There is no error message:</para>
+        <listitem>
+          <para>Run the addon on the dump files</para>
+        </listitem>
+      </orderedlist>
 
-      <programlisting># cppcheck pen1.c
-Checking pen1.c...</programlisting>
+      <para>The <literal>--dump</literal> flag is used to generate dump files.
+      To generate a dump file for every source file in the foo/ folder:</para>
 
-      <para>If you provide a windows configuration file then
-      <literal>Cppcheck</literal> detects the bug:</para>
+      <programlisting>cppcheck --dump foo/</programlisting>
 
-      <programlisting># cppcheck --library=windows.cfg pen1.c
-Checking pen1.c...
-[pen1.c:3]: (error) Resource leak: pen</programlisting>
+      <para>To run a addon script on all dump files in the foo/ folder:</para>
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+      <programlisting>python addon.py foo/*.dump</programlisting>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;resource&gt;
-    &lt;alloc&gt;CreatePen&lt;/alloc&gt;
-    &lt;dealloc&gt;DeleteObject&lt;/dealloc&gt;
-  &lt;/resource&gt;
-&lt;/def&gt;</programlisting>
+      <section>
+        <title>Where to find some Cppcheck addons</title>
+
+        <para>There are a few addons that can be downloaded.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Addons provided by the Cppcheck project:
+            <uri>http://github.com/danmar/cppcheck/blob/master/addons</uri></para>
+          </listitem>
+
+          <listitem>
+            <para>ublinter, a project that wants to "lint" for "undefined
+            behaviour": <uri>http://github.com/danmar/ublinter</uri></para>
+          </listitem>
+        </itemizedlist>
+
+        <para>We would be happy to add a link to your addon here (no matter if
+        it's commercial or free).</para>
+      </section>
     </section>
 
     <section>
-      <title>Function argument: Uninitialized memory</title>
+      <title>Writing Cppcheck addons</title>
 
-      <para>Here is an example program:</para>
+      <para>Cppcheck generates dump files in XML format that contains:</para>
 
-      <programlisting>void test()
-{
-    char buffer1[1024];
-    char buffer2[1024];
-    CopyMemory(buffer1, buffer2, 1024);
-}</programlisting>
+      <itemizedlist>
+        <listitem>
+          <para>Token list</para>
+        </listitem>
 
-      <para>The bug here is that buffer2 is uninitialized. The second argument
-      for CopyMemory needs to be initialized. However
-      <literal>Cppcheck</literal> assumes that it is fine to pass
-      uninitialized variables to functions:</para>
+        <listitem>
+          <para>Syntax trees</para>
+        </listitem>
 
-      <programlisting># cppcheck uninit.c 
-Checking uninit.c...</programlisting>
+        <listitem>
+          <para>Symbol database (functions, classes, variables, all scopes,
+          ..)</para>
+        </listitem>
 
-      <para>If you provide a windows configuration file then Cppcheck detects
-      the bug:</para>
+        <listitem>
+          <para>Known values (value flow analysis)</para>
+        </listitem>
+      </itemizedlist>
 
-      <programlisting># cppcheck --library=windows.cfg uninit.c 
-Checking uninit.c...
-[uninit.c:5]: (error) Uninitialized variable: buffer2</programlisting>
+      <para>Cppcheck can't execute addons directly. There is no direct
+      interface. This means there are not much restrictions:</para>
 
-      <para>Here is the minimal <literal>windows.cfg</literal>:</para>
+      <itemizedlist>
+        <listitem>
+          <para>You can use any licensing you want for your addons</para>
+        </listitem>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="CopyMemory"&gt;
-    &lt;arg nr="2"&gt;
-      &lt;not-uninit/&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting></para>
-    </section>
+        <listitem>
+          <para>You can use an arbitrary script/programming language to write
+          addons</para>
+        </listitem>
 
-    <section>
-      <title>Function Argument: Null pointers</title>
+        <listitem>
+          <para>The user interface and output is defined by you</para>
+        </listitem>
 
-      <para>Cppcheck assumes it's ok to pass NULL pointers to functions. Here
-      is an example program:</para>
+        <listitem>
+          <para>You can use addons for other use cases than generating
+          warnings</para>
+        </listitem>
+      </itemizedlist>
 
-      <programlisting>void test()
-{
-    CopyMemory(NULL, NULL, 1024);
-}</programlisting>
+      <para>For your convenience, Cppcheck provides cppcheckdata.py that you
+      can use to access Cppcheck data from Python. Using this is
+      optional.</para>
 
-      <para>The MSDN documentation is not clear if that is ok or not. But
-      let's assume it's bad. Cppcheck assumes that it's ok to pass NULL to
-      functions so no error is reported:</para>
+      <section>
+        <title>Example 1 - print all tokens</title>
 
-      <programlisting># cppcheck null.c 
-Checking null.c...</programlisting>
+        <para>Script:</para>
 
-      <para>If you provide a windows configuration file then
-      <literal>Cppcheck</literal> detects the bug:</para>
+        <programlisting>import sys
+import cppcheckdata
 
-      <programlisting>cppcheck --library=windows.cfg null.c 
-Checking null.c...
-[null.c:3]: (error) Null pointer dereference</programlisting>
+def printtokens(data):
+    for token in data.tokenlist:
+        print(token.str)
 
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
+for arg in sys.argv[1:]:
+    printtokens(cppcheckdata.parse(arg))</programlisting>
+      </section>
 
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="CopyMemory"&gt;
-    &lt;arg nr="1"&gt;
-      &lt;not-null/&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting>
-    </section>
+      <section>
+        <title>Example 2 - List all functions</title>
 
-    <section>
-      <title>Function Argument: Format string</title>
+        <para>Script:</para>
 
-      <para>You can define that a function takes a format string.
-      Example:</para>
+        <programlisting>import sys
+import cppcheckdata
 
-      <programlisting>void test()
-{
-    do_something("%i %i\n", 1024);
-}</programlisting>
+def printfunctions(data):
+    for scope in data.scopes:
+        if scope.type == 'Function':
+            print(scope.className)
 
-      <para>No error is reported for that:</para>
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
 
-      <programlisting># cppcheck formatstring.c 
-Checking formatstring.c...</programlisting>
+      <section>
+        <title>Example 3 - List all classes</title>
 
-      <para>A configuration file can be created that says that the string is a
-      format string. For instance:</para>
+        <para>Script:</para>
 
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="do_something"&gt;
-    &lt;arg nr="1"&gt;
-      &lt;formatstr/&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
+        <programlisting>import sys
+import cppcheckdata
 
-      <programlisting>cppcheck --library=test.cfg formatstring.c 
-Checking formatstring.c...
-[formatstring.c:3]: (error) do_something format string requires 2 parameters but only 1 is given.</programlisting>
-    </section>
+def printclasses(data):
+    for scope in data.scopes:
+        if scope.type == 'Class':
+            print(scope.className)
 
-    <section>
-      <title>Function Argument: Value range</title>
-
-      <para>The valid values can be defined. Imagine:</para>
-
-      <programlisting>void test()
-{
-    do_something(1024);
-}</programlisting>
-
-      <para>No error is reported for that:</para>
-
-      <programlisting># cppcheck valuerange.c 
-Checking valuerange.c...</programlisting>
-
-      <para>A configuration file can be created that says that 1024 is out of
-      bounds. For instance:</para>
-
-      <para><programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="do_something"&gt;
-    &lt;arg nr="1"&gt;
-      &lt;valid&gt;0-1023&lt;/valid&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting>Now Cppcheck will report an error:</para>
-
-      <programlisting>cppcheck --library=test.cfg range.c 
-Checking range.c...
-[range.c:3]: (error) Invalid do_something() argument nr 1. The value is 1024 but the valid values are '0-1023'.</programlisting>
-    </section>
-
-    <section>
-      <title>noreturn</title>
-
-      <para>Cppcheck doesn't assume that functions always return. Here is an
-      example code:</para>
-
-      <programlisting>void test(int x)
-{
-    int data, buffer[1024];
-    if (x == 1)
-        data = 123;
-    else
-        ZeroMemory(buffer, sizeof(buffer));
-    buffer[0] = data;  // &lt;- error: data is uninitialized if x is not 1
-}</programlisting>
-
-      <para>In theory, if <literal>ZeroMemory</literal> terminates the program
-      then there is no bug. Cppcheck therefore reports no error:</para>
-
-      <programlisting># cppcheck noreturn.c 
-Checking noreturn.c...</programlisting>
-
-      <para>However if you use <literal>--check-library</literal> and
-      <literal>--enable=information</literal> you'll get this:</para>
-
-      <programlisting># cppcheck --check-library --enable=information noreturn.c 
-Checking noreturn.c...
-[noreturn.c:7]: (information) --check-library: Function ZeroMemory() should have &lt;noreturn&gt; configuration
-</programlisting>
-
-      <para>If a proper <literal>windows.cfg</literal> is provided, the bug is
-      detected:</para>
-
-      <programlisting># cppcheck --library=windows.cfg noreturn.c 
-Checking noreturn.c...
-[noreturn.c:8]: (error) Uninitialized variable: data</programlisting>
-
-      <para>Here is a minimal <literal>windows.cfg</literal> file:</para>
-
-      <programlisting>&lt;?xml version="1.0"?&gt;
-&lt;def&gt;
-  &lt;function name="ZeroMemory"&gt;
-    &lt;noreturn&gt;false&lt;/noreturn&gt;
-  &lt;/function&gt;
-&lt;/def&gt;</programlisting>
-    </section>
-
-    <section>
-      <title>Example configuration for strcpy()</title>
-
-      <para>The proper configuration for the standard strcpy() function would
-      be:</para>
-
-      <programlisting>  &lt;function name="strcpy"&gt;
-    &lt;leak-ignore/&gt;
-    &lt;noreturn&gt;false&lt;/noreturn&gt;
-    &lt;arg nr="1"&gt;
-      &lt;not-null/&gt;
-    &lt;/arg&gt;
-    &lt;arg nr="2"&gt;
-      &lt;not-null/&gt;
-      &lt;not-uninit/&gt;
-    &lt;/arg&gt;
-  &lt;/function&gt;</programlisting>
-
-      <para>The <literal>&lt;leak-ignore/&gt;</literal> tells Cppcheck to
-      ignore this function call in the leaks checking. Passing allocated
-      memory to this function won't mean it will be deallocated.</para>
-
-      <para>The <literal>&lt;noreturn&gt;</literal> tells Cppcheck if this
-      function returns or not.</para>
-
-      <para>The first argument that the function takes is a pointer. It must
-      not be a null pointer, therefore <literal>&lt;not-null&gt;</literal> is
-      used.</para>
-
-      <para>The second argument the function takes is a pointer. It must not
-      be null. And it must point at initialized data. Using
-      <literal>&lt;not-null&gt;</literal> and
-      <literal>&lt;not-uninit&gt;</literal> is correct.</para>
+for arg in sys.argv[1:]:
+    printfunctions(cppcheckdata.parse(arg))</programlisting>
+      </section>
     </section>
   </chapter>
 

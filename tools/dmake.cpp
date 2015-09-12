@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,21 +26,22 @@
 #include <sstream>
 
 #include "../cli/filelister.h"
+#include "../cli/pathmatch.h"
 
-std::string builddir(std::string filename)
+static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
         filename = "$(SRCDIR)" + filename.substr(3);
     return filename;
 }
 
-std::string objfile(std::string cppfile)
+static std::string objfile(std::string cppfile)
 {
     cppfile.erase(cppfile.rfind("."));
     return builddir(cppfile + ".o");
 }
 
-void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
@@ -83,14 +84,17 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) -std=c++0x -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o " << objfile(files[i]) << " " << builddir(files[i]) << "\n\n";
     }
 }
 
-static void getCppFiles(std::vector<std::string> &files, const std::string &path)
+static void getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
     std::map<std::string,size_t> filemap;
-    FileLister::recursiveAddFiles(filemap, path);
+    const std::set<std::string> extra;
+    const std::vector<std::string> masks;
+    const PathMatch matcher(masks);
+    FileLister::addFiles(filemap, path, extra, recursive, matcher);
 
     // add *.cpp files to the "files" vector..
     for (std::map<std::string,size_t>::const_iterator it = filemap.begin(); it != filemap.end(); ++it) {
@@ -153,13 +157,16 @@ int main(int argc, char **argv)
 
     // Get files..
     std::vector<std::string> libfiles;
-    getCppFiles(libfiles, "lib/");
+    getCppFiles(libfiles, "lib/", false);
 
     std::vector<std::string> clifiles;
-    getCppFiles(clifiles, "cli/");
+    getCppFiles(clifiles, "cli/", false);
 
     std::vector<std::string> testfiles;
-    getCppFiles(testfiles, "test/");
+    getCppFiles(testfiles, "test/", false);
+
+    std::vector<std::string> toolsfiles;
+    getCppFiles(toolsfiles, "tools/", false);
 
     if (libfiles.empty() && clifiles.empty() && testfiles.empty()) {
         std::cerr << "No files found. Are you in the correct directory?" << std::endl;
@@ -167,7 +174,7 @@ int main(int argc, char **argv)
     }
 
     std::vector<std::string> externalfiles;
-    getCppFiles(externalfiles, "externals/");
+    getCppFiles(externalfiles, "externals/", true);
 
 
     // QMAKE - lib/lib.pri
@@ -252,6 +259,9 @@ int main(int argc, char **argv)
          << "    CFG=\n"
          << "endif\n\n";
 
+    // enable backtrac
+    fout << "RDYNAMIC=-rdynamic\n";
+
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
          << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
@@ -270,6 +280,8 @@ int main(int argc, char **argv)
          << "\n"
          << "    ifeq ($(MSYSTEM),MINGW32)\n"
          << "        LDFLAGS=-lshlwapi\n"
+         << "    else\n"
+         << "        RDYNAMIC=-lshlwapi\n"
          << "    endif\n"
          << "else # !COMSPEC\n"
          << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
@@ -289,9 +301,21 @@ int main(int argc, char **argv)
          << "endif # COMSPEC\n"
          << "\n";
 
+    // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
+    fout << "# Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
+         << "# with tinyxml2 and Cygwin.\n"
+         << "ifdef COMSPEC\n"
+         << "    uname_S := $(shell uname -s)\n"
+         << "\n"
+         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
+         << "        UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
+         << "    endif # CYGWIN\n"
+         << "endif # COMSPEC\n"
+         << "\n";
+
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -include lib/cxx11emu.h -DNDEBUG -Wall -Wno-sign-compare");
     } else {
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
@@ -304,19 +328,21 @@ int main(int argc, char **argv)
                                 "-Wextra "
                                 "-Wabi "
                                 "-Wcast-qual "
-                                "-Wconversion "
+//                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
                                 "-Wfloat-equal "
                                 "-Winline "
 //                                "-Wlogical-op "
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
-                                "-Woverloaded-virtual "
+//                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wshadow "
 //                                "-Wsign-conversion "
                                 "-Wsign-promo "
+                                "-Wno-missing-field-initializers "
+                                "-Wno-missing-braces "
 //                                "-Wunreachable-code "
                                 "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarelly a bug
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
@@ -334,48 +360,53 @@ int main(int argc, char **argv)
 
     makeConditionalVariable(fout, "CXX", "g++");
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals -Iexternals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -Iexternals/tinyxml");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
-    fout << "DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
+    fout << "DB2MAN?=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
     fout << "XP=xsltproc -''-nonet -''-param man.charmap.use.subset \"0\"\n";
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =      " << objfile(libfiles[0]);
-    for (unsigned int i = 1; i < libfiles.size(); ++i)
+    for (size_t i = 1; i < libfiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(libfiles[i]);
     fout << "\n\n";
     fout << "CLIOBJ =      " << objfile(clifiles[0]);
-    for (unsigned int i = 1; i < clifiles.size(); ++i)
+    for (size_t i = 1; i < clifiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(clifiles[i]);
     fout << "\n\n";
     fout << "TESTOBJ =     " << objfile(testfiles[0]);
-    for (unsigned int i = 1; i < testfiles.size(); ++i)
+    for (size_t i = 1; i < testfiles.size(); ++i)
         fout << " \\\n" << std::string(14, ' ') << objfile(testfiles[i]);
     fout << "\n\n";
 
     makeExtObj(fout, externalfiles);
 
+    fout << ".PHONY: run-dmake\n\n";
     fout << "\n###### Targets\n\n";
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o cppcheck $(CLIOBJ) $(LIBOBJ) $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o cli/pathmatch.o\n";
-    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS)\n\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o cli/cppcheckexecutor.o cli/cmdlineparser.o cli/filelister.o cli/pathmatch.o $(EXTOBJ) $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -g -q\n\n";
-    fout << "dmake:\ttools/dmake.cpp\n";
-    fout << "\t$(CXX) -std=c++0x -o dmake tools/dmake.cpp cli/filelister.cpp lib/path.cpp -Ilib $(LDFLAGS)\n\n";
-    fout << "reduce:\ttools/reduce.cpp\n";
-    fout << "\t$(CXX) -std=c++0x -g -o reduce tools/reduce.cpp -Ilib -Iexternals/tinyxml lib/*.cpp externals/tinyxml/tinyxml2.cpp\n\n";
+    fout << "checkcfg:\tcppcheck\n";
+    fout << "\t./test/cfg/runtests.sh\n\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -std=c++0x -o dmake tools/dmake.o cli/filelister.o cli/pathmatch.o lib/path.o -Ilib $(LDFLAGS)\n\n";
+    fout << "run-dmake: dmake\n";
+    fout << "\t./dmake\n\n";
+    fout << "reduce:\ttools/reduce.o externals/tinyxml/tinyxml2.o $(LIBOBJ)\n";
+    fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=c++0x -g -o reduce tools/reduce.o -Ilib -Iexternals/tinyxml $(LIBOBJ) $(LIBS) externals/tinyxml/tinyxml2.o $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o externals/tinyxml/*.o testrunner reduce cppcheck cppcheck.1\n\n";
+    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/tinyxml/*.o testrunner reduce dmake cppcheck cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
@@ -384,7 +415,11 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";
-    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n\n";
+    fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
+    fout << "ifdef CFGDIR \n";
+    fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
+    fout << "\tinstall -m 644 cfg/* ${DESTDIR}${CFGDIR}\n";
+    fout << "endif\n\n";
 
     fout << "\n###### Build\n\n";
 
@@ -392,7 +427,7 @@ int main(int argc, char **argv)
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, externalfiles, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
     return 0;
 }
-

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 
 /// @addtogroup Checks
 /// @{
@@ -71,7 +70,7 @@ public:
 private:
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings);
+        ArgumentInfo(const Token *arg, const Settings *settings, bool isCPP);
         ~ArgumentInfo();
 
         bool isArrayOrPointer() const;
@@ -79,14 +78,16 @@ private:
         bool isKnownType() const;
         bool isStdVectorOrString();
         bool isStdContainer(const Token *tok);
+        bool isLibraryType(const Settings *settings) const;
 
         const Variable *variableInfo;
         const Token *typeToken;
         const Function *functionInfo;
+        Token *tempToken;
         bool element;
         bool _template;
         bool address;
-        Token *tempToken;
+        bool isCPP;
 
     private:
         ArgumentInfo(const ArgumentInfo &); // not implemented
@@ -100,7 +101,8 @@ private:
     void readWriteOnlyFileError(const Token *tok);
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
-    void invalidScanfError(const Token *tok, bool portability);
+    void seekOnAppendedFileError(const Token *tok);
+    void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &function,
                                         unsigned int numFormat,
@@ -119,7 +121,7 @@ private:
     void invalidPrintfArgTypeError_float(const Token* tok, unsigned int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, unsigned int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, unsigned int numFormat, int width, const Variable *var);
-    void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
+    static void argumentType(std::ostream & s, const ArgumentInfo * argInfo);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckIO c(0, settings, errorLogger);
@@ -130,7 +132,8 @@ private:
         c.readWriteOnlyFileError(0);
         c.writeReadOnlyFileError(0);
         c.useClosedFileError(0);
-        c.invalidScanfError(0, false);
+        c.seekOnAppendedFileError(0);
+        c.invalidScanfError(0);
         c.wrongPrintfScanfArgumentsError(0,"printf",3,2);
         c.invalidScanfArgTypeError_s(0, 1, "s", NULL);
         c.invalidScanfArgTypeError_int(0, 1, "d", NULL, false);
@@ -142,24 +145,26 @@ private:
         c.invalidPrintfArgTypeError_uint(0, 1, "u", NULL);
         c.invalidPrintfArgTypeError_sint(0, 1, "i", NULL);
         c.invalidPrintfArgTypeError_float(0, 1, "f", NULL);
+        c.invalidLengthModifierError(0, 1, "I");
         c.invalidScanfFormatWidthError(0, 10, 5, NULL);
         c.wrongPrintfScanfPosixParameterPositionError(0, "printf", 2, 1);
     }
 
     static std::string myName() {
-        return "IO";
+        return "IO using format string";
     }
 
     std::string classInfo() const {
-        return "Check input/output operations.\n"
-               "* Bad usage of the function 'sprintf' (overlapping data)\n"
-               "* Missing or wrong width specifiers in 'scanf' format string\n"
-               "* Use a file that has been closed\n"
-               "* File input/output without positioning results in undefined behaviour\n"
-               "* Read to a file that has only been opened for writing (or vice versa)\n"
-               "* Using fflush() on an input stream\n"
-               "* Invalid usage of output stream. For example: 'std::cout << std::cout;'\n"
-               "* Wrong number of arguments given to 'printf' or 'scanf;'\n";
+        return "Check format string input/output operations.\n"
+               "- Bad usage of the function 'sprintf' (overlapping data)\n"
+               "- Missing or wrong width specifiers in 'scanf' format string\n"
+               "- Use a file that has been closed\n"
+               "- File input/output without positioning results in undefined behaviour\n"
+               "- Read to a file that has only been opened for writing (or vice versa)\n"
+               "- Repositioning operation on a file opened in append mode\n"
+               "- Using fflush() on an input stream\n"
+               "- Invalid usage of output stream. For example: 'std::cout << std::cout;'\n"
+               "- Wrong number of arguments given to 'printf' or 'scanf;'\n";
     }
 };
 /// @}

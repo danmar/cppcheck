@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -220,6 +220,12 @@ public slots:
     */
     void ShowStatistics();
 
+    /**
+    * @brief Slot for showing the library editor
+    *
+    */
+    void ShowLibraryEditor();
+
 protected slots:
 
     /**
@@ -428,9 +434,17 @@ private:
      * @brief Load library file
      * @param library  library to use
      * @param filename filename (no path)
-     * @return True if successful
+     * @return error code
      */
-    bool LoadLibrary(Library *library, QString filename);
+    Library::Error LoadLibrary(Library *library, QString filename);
+
+    /**
+    * @brief Tries to load library file, prints message on error
+    * @param library  library to use
+    * @param filename filename (no path)
+    * @return True if no error
+    */
+    bool TryLoadLibrary(Library *library, QString filename);
 
     /**
     * @brief Update project MRU items in File-menu.

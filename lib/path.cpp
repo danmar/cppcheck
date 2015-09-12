@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2014 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__GNUC__) && defined(_WIN32)
+#if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
 #undef __STRICT_ANSI__
 #endif
+#include "path.h"
 #include <algorithm>
 #include <vector>
 #include <sstream>
 #include <cstring>
 #include <cctype>
-#include "path.h"
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -58,30 +58,47 @@ std::string Path::fromNativeSeparators(std::string path)
     return path;
 }
 
-std::string Path::simplifyPath(const char *originalPath)
+std::string Path::simplifyPath(std::string originalPath)
 {
-    // Skip ./ at the beginning
-    if (std::strlen(originalPath) > 2 && originalPath[0] == '.' &&
+    const bool isUnc = originalPath.size() > 2 && originalPath[0] == '/' && originalPath[1] == '/';
+
+    // Remove ./, .//, ./// etc. at the beginning
+    if (originalPath.size() > 2 && originalPath[0] == '.' &&
         originalPath[1] == '/') {
-        originalPath += 2;
+        size_t toErase = 2;
+        for (std::size_t i = 2; i < originalPath.size(); i++) {
+            if (originalPath[i] == '/')
+                toErase++;
+            else
+                break;
+        }
+        originalPath = originalPath.erase(0, toErase);
     }
 
     std::string subPath = "";
     std::vector<std::string> pathParts;
-    for (; *originalPath; ++originalPath) {
-        if (*originalPath == '/' || *originalPath == '\\') {
+    for (std::size_t i = 0; i < originalPath.size(); ++i) {
+        if (originalPath[i] == '/' || originalPath[i] == '\\') {
             if (subPath.length() > 0) {
                 pathParts.push_back(subPath);
                 subPath = "";
             }
 
-            pathParts.push_back(std::string(1 , *originalPath));
+            pathParts.push_back(std::string(1 , originalPath[i]));
         } else
-            subPath.append(1, *originalPath);
+            subPath.append(1, originalPath[i]);
     }
 
     if (subPath.length() > 0)
         pathParts.push_back(subPath);
+
+    // First filter out all double slashes
+    for (unsigned int i = 1; i < pathParts.size(); ++i) {
+        if (i > 0 && pathParts[i] == "/" && pathParts[i-1] == "/") {
+            pathParts.erase(pathParts.begin() + static_cast<int>(i) - 1);
+            --i;
+        }
+    }
 
     for (unsigned int i = 1; i < pathParts.size(); ++i) {
         if (i > 1 && pathParts[i-2] != ".." && pathParts[i] == ".." && pathParts.size() > i + 1) {
@@ -99,6 +116,11 @@ std::string Path::simplifyPath(const char *originalPath)
         }
     }
 
+    if (isUnc) {
+        // Restore the leading double slash
+        pathParts.insert(pathParts.begin(), "/");
+    }
+
     std::ostringstream oss;
     for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i) {
         oss << pathParts[i];
@@ -109,14 +131,12 @@ std::string Path::simplifyPath(const char *originalPath)
 
 std::string Path::getPathFromFilename(const std::string &filename)
 {
-    std::string path = "";
-
     std::size_t pos = filename.find_last_of("\\/");
 
     if (pos != std::string::npos)
-        path = filename.substr(0, 1 + pos);
+        return filename.substr(0, 1 + pos);
 
-    return path;
+    return "";
 }
 
 
@@ -218,4 +238,22 @@ bool Path::isHeader(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
     return (extension.compare(0, 2, ".h") == 0);
+}
+
+std::string Path::getAbsoluteFilePath(const std::string& filePath)
+{
+    std::string absolute_path;
+#ifdef _WIN32
+    char absolute[_MAX_PATH];
+    if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
+        absolute_path = absolute;
+#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
+    char * absolute = realpath(filePath.c_str(), NULL);
+    if (absolute)
+        absolute_path = absolute;
+    free(absolute);
+#else
+#error Platform absolute path function needed
+#endif
+    return absolute_path;
 }

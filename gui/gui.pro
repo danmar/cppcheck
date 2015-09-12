@@ -5,17 +5,16 @@ DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
     ../lib
-
-# In Qt 5 widgets are in separate module
 greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
+    QT += widgets # In Qt 5 widgets are in separate module
+    QT += printsupport # In Qt 5 QPrinter/QPrintDialog are in separate module
 }
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT
 }
-LIBS += -L../externals
+LIBS += -L$$PWD/../externals
 
 DESTDIR = .
 RCC_DIR = temp
@@ -40,9 +39,6 @@ win32 {
    }
 }
 
-# Generate the translations before we embed them
-system("lrelease gui.pro")
-
 RESOURCES = gui.qrc
 FORMS = about.ui \
         application.ui \
@@ -53,7 +49,10 @@ FORMS = about.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
-        stats.ui
+        stats.ui \
+    librarydialog.ui \
+    libraryaddfunctiondialog.ui \
+    libraryeditargdialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -91,6 +90,7 @@ HEADERS += aboutdialog.h \
            logview.h \
            mainwindow.h \
            platforms.h \
+           printablereport.h \
            project.h \
            projectfile.h \
            projectfiledialog.h \
@@ -107,7 +107,11 @@ HEADERS += aboutdialog.h \
            txtreport.h \
            xmlreport.h \
            xmlreportv1.h \
-           xmlreportv2.h
+           xmlreportv2.h \
+    librarydialog.h \
+    cppchecklibrarydata.h \
+    libraryaddfunctiondialog.h \
+    libraryeditargdialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -124,6 +128,7 @@ SOURCES += aboutdialog.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \
+           printablereport.cpp \
            project.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
@@ -140,7 +145,11 @@ SOURCES += aboutdialog.cpp \
            txtreport.cpp \
            xmlreport.cpp \
            xmlreportv1.cpp \
-           xmlreportv2.cpp
+           xmlreportv2.cpp \
+    librarydialog.cpp \
+    cppchecklibrarydata.cpp \
+    libraryaddfunctiondialog.cpp \
+    libraryeditargdialog.cpp
 
 win32 {
     DEFINES += _CRT_SECURE_NO_WARNINGS
@@ -149,6 +158,12 @@ win32 {
     LIBS += -lshlwapi
 }
 
-unix {
+contains(QMAKE_CC, gcc) {
     QMAKE_CXXFLAGS += -std=c++0x
+}
+
+macx {
+    contains(QMAKE_CXX, clang++) {
+        QMAKE_CXXFLAGS += -std=c++11
+    }
 }
