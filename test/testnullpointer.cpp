@@ -2030,6 +2030,36 @@ private:
                       "[test.cpp:7]: (error) Possible null pointer dereference: p\n"
                       "[test.cpp:8]: (error) Possible null pointer dereference: p\n", errout.str());
 
+        check("void f(std::string s1, const std::string& s2, const std::string* s3) {\n"
+              "    void* p = 0;\n"
+              "    if (x) { return; }\n"
+              "    foo(0 == s1.size());\n"
+              "    foo(0 == s2.size());\n"
+              "    foo(0 == s3->size());\n"
+              "    foo(s1.size() == 0);\n"
+              "    foo(s2.size() == 0);\n"
+              "    foo(s3->size() == 0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string s1, const std::string& s2) {\n"
+              "    if (x) { return; }\n"
+              "    foo(0 == s1[0]);\n"
+              "    foo(0 == s2[0]);\n"
+              "    foo(s1[0] == 0);\n"
+              "    foo(s2[0] == 0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string s1, const std::string& s2) {\n"
+              "    if (x) { return; }\n"
+              "    foo(s1 == '\\0');\n"
+              "    foo(s2 == '\\0');\n"
+              "    foo('\\0' == s1);\n"
+              "    foo('\\0' == s2);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
         check("class Bar {\n"
               "    std::string s;\n"
               "    Bar() : s(0) {}\n"

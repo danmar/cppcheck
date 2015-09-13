@@ -446,14 +446,19 @@ void CheckNullPointer::nullConstantDereference()
             }
 
             const Variable *ovar = nullptr;
-            if (Token::Match(tok, "0 ==|!=|>|>=|<|<= %var% !!."))
-                ovar = tok->tokAt(2)->variable();
-            else if (Token::Match(tok, "%var% ==|!=|>|>=|<|<= 0"))
+            const Token *tokNull = nullptr;
+            if (Token::Match(tok, "0 ==|!=|>|>=|<|<= %var%")) {
+                if (!Token::Match(tok->tokAt(3),".|[")) {
+                    ovar = tok->tokAt(2)->variable();
+                    tokNull = tok;
+                }
+            } else if (Token::Match(tok, "%var% ==|!=|>|>=|<|<= 0") ||
+                       Token::Match(tok, "%var% =|+ 0 )|]|,|;|+")) {
                 ovar = tok->variable();
-            else if (Token::Match(tok, "%var% =|+ 0 )|]|,|;|+"))
-                ovar = tok->variable();
-            if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType() && tok->tokAt(2)->originalName() != "'\\0'")
-                nullPointerError(tok);
+                tokNull = tok->tokAt(2);
+            }
+            if (ovar && !ovar->isPointer() && !ovar->isArray() && ovar->isStlStringType() && tokNull && tokNull->originalName() != "'\\0'")
+                nullPointerError(tokNull);
         }
     }
 }
