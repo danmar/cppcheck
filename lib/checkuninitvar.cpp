@@ -828,8 +828,14 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         }
     }
 
-    if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "= %name% ;|%cop%"))
-        return true;
+    if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "= %name% ;|%cop%")) {
+        // taking reference?
+        const Token *prev = vartok->tokAt(-2);
+        while (Token::Match(prev, "%name%|*"))
+            prev = prev->previous();
+        if (!Token::Match(prev, "&"))
+            return true;
+    }
 
     bool unknown = false;
     if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
