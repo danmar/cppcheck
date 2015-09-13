@@ -833,7 +833,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         const Token *prev = vartok->tokAt(-2);
         while (Token::Match(prev, "%name%|*"))
             prev = prev->previous();
-        if (!Token::Match(prev, "&"))
+        if (!Token::simpleMatch(prev, "&"))
             return true;
     }
 
