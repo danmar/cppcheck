@@ -1407,13 +1407,19 @@ private:
                        "    int a[1];\n"
                        "    return a[0];\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
         checkUninitVar("int foo() {\n"
                        "    int a[2][2];\n"
                        "    return a[0][1];\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("int foo() {\n"
+                       "    int a[10];\n"
+                       "    dostuff(a[0]);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
 
         // # 4740
         checkUninitVar("void f() {\n"

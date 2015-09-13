@@ -845,6 +845,15 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         // if this is not a function parameter report this dereference as variable usage
         if (!functionParameter)
             return true;
+    } else if (alloc == ARRAY && Token::Match(vartok, "%var% [")) {
+        const Token *parent = vartok->next()->astParent();
+        while (Token::simpleMatch(parent, "["))
+            parent = parent->astParent();
+        if (Token::simpleMatch(parent, "&") && !parent->astOperand2())
+            return false;
+        if (Token::Match(parent, "[=,(]"))
+            return false;
+        return true;
     }
 
     if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
