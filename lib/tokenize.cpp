@@ -3082,7 +3082,7 @@ bool Tokenizer::simplifySizeof()
         }
 
         // sizeof('x')
-        if (Token::Match(tok, "sizeof ( %char% )")) {
+        if (Token::Match(tok->next(), "( %char% )")) {
             tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
@@ -3130,7 +3130,7 @@ bool Tokenizer::simplifySizeof()
             }
         }
 
-        else if (Token::Match(tok, "sizeof ( %type% )")) {
+        else if (Token::Match(tok->next(), "( %type% )")) {
             const unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0) {
                 tok->str(MathLib::toString(size));
@@ -3139,7 +3139,7 @@ bool Tokenizer::simplifySizeof()
             }
         }
 
-        else if (Token::simpleMatch(tok, "sizeof ( *") || Token::Match(tok, "sizeof ( %name% [")) {
+        else if (Token::simpleMatch(tok->next(), "( *") || Token::Match(tok->next(), "( %name% [")) {
             // Some default value..
             std::size_t sz = 0;
 
