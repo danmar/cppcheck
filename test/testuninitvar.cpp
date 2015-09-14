@@ -1493,19 +1493,17 @@ private:
                        "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", "", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
+        checkUninitVar("void f() {\n"
                        "    char *p = malloc(64);\n"
                        "    if (p[0]) { }\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
-        checkUninitVar("void f()\n"
-                       "{\n"
+        checkUninitVar("void f() {\n"
                        "    char *p = malloc(64);\n"
                        "    return p[0];\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: p\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
         checkUninitVar("void f()\n"
                        "{\n"

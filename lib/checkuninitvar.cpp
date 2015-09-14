@@ -838,11 +838,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     bool unknown = false;
-    if (pointer && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
-        // pointer is allocated - dereferencing it is ok.
-        if (alloc != NO_ALLOC)
-            return false;
-
+    if (pointer && alloc == NO_ALLOC && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
         // function parameter?
         bool functionParameter = false;
         if (Token::Match(vartok->tokAt(-2), "%name% (") || vartok->previous()->str() == ",")
@@ -851,12 +847,14 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         // if this is not a function parameter report this dereference as variable usage
         if (!functionParameter)
             return true;
-    } else if (alloc == ARRAY && Token::Match(vartok, "%var% [")) {
+    } else if (alloc != NO_ALLOC && Token::Match(vartok, "%var% [")) {
         const Token *parent = vartok->next()->astParent();
         while (Token::simpleMatch(parent, "["))
             parent = parent->astParent();
         if (Token::simpleMatch(parent, "&") && !parent->astOperand2())
             return false;
+        if (parent && Token::Match(parent->previous(), "if|while|switch ("))
+            return true;
         if (Token::Match(parent, "[=,(]"))
             return false;
         return true;
