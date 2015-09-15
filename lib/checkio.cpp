@@ -1523,16 +1523,18 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         typeToken = tempToken;
         return true;
     } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
-        for (std::size_t i = 0, e = variableInfo->type()->derivedFrom.size(); i != e; ++i) {
-            if (Token::Match(variableInfo->type()->derivedFrom[i].nameTok, "std :: vector|array <")) {
-                typeToken = variableInfo->type()->derivedFrom[i].nameTok->tokAt(4);
+        const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
+        for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
+            const Token* nameTok = derivedFrom[i].nameTok;
+            if (Token::Match(nameTok, "std :: vector|array <")) {
+                typeToken = nameTok->tokAt(4);
                 _template = true;
                 return true;
-            } else if (Token::Match(variableInfo->type()->derivedFrom[i].nameTok, "std :: string|wstring")) {
+            } else if (Token::Match(nameTok, "std :: string|wstring")) {
                 tempToken = new Token(0);
                 tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
                 tempToken->linenr(variableInfo->typeStartToken()->linenr());
-                if (variableInfo->type()->derivedFrom[i].nameTok->strAt(2) == "string")
+                if (nameTok->strAt(2) == "string")
                     tempToken->str("char");
                 else
                     tempToken->str("wchar_t");
@@ -1583,7 +1585,7 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
             return true;
         } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
             const std::vector<Type::BaseInfo>& derivedFrom = variable->type()->derivedFrom;
-            for (std::size_t i = 0, e = derivedFrom.size(); i != e; ++i) {
+            for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
                 const Token* nameTok = derivedFrom[i].nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
