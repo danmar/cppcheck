@@ -1229,8 +1229,6 @@ static bool valueFlowForward(Token * const               startToken,
                     ++number_of_if;
                     tok2 = end;
                 } else {
-                    bool bail = true;
-
                     // loop that conditionally set variable and then break => either loop condition is
                     // redundant or the variable can be unchanged after the loop.
                     bool loopCondition = false;
@@ -1241,6 +1239,8 @@ static bool valueFlowForward(Token * const               startToken,
                              Token::simpleMatch(tok2->next()->astOperand2()->astOperand2(), ";") &&
                              Token::Match(tok2->next()->astOperand2()->astOperand2()->astOperand1(), "%op%"))
                         loopCondition = true;
+
+                    bool bail = true;
                     if (loopCondition) {
                         const Token *tok3 = Token::findmatch(start, "%varid%", end, varid);
                         if (Token::Match(tok3, "%varid% =", varid) &&
