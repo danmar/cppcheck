@@ -849,7 +849,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
             return true;
     } else if (alloc != NO_ALLOC && Token::Match(vartok, "%var% [")) {
         const Token *parent = vartok->next()->astParent();
-        while (Token::simpleMatch(parent, "["))
+        while (Token::Match(parent, "[|."))
             parent = parent->astParent();
         if (Token::simpleMatch(parent, "&") && !parent->astOperand2())
             return false;

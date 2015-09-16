@@ -1435,6 +1435,15 @@ private:
                        "  bar(x);\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // struct
+        checkUninitVar("struct Fred { int x; int y; };\n"
+                       ""
+                       "void f() {\n"
+                       "  struct Fred fred[10];\n"
+                       "  fred[1].x = 0;\n"
+                       "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_pointertoarray() {
