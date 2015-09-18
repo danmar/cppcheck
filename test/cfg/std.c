@@ -17,6 +17,7 @@
 #include <setjmp.h>
 #include <time.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -190,6 +191,13 @@ void nullpointerMemcmp(char *p)
 
 
 // uninit pointers
+
+void uninivar_abs(void)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    (void)abs(i);
+}
 
 void uninit_clearerr(void)
 {

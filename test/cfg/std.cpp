@@ -45,6 +45,15 @@ void uninitvar_abs(void)
     (void)std::abs(i);
 }
 
+void uninivar_imaxabs(void)
+{
+    intmax_t i;
+    // cppcheck-suppress uninitvar
+    (void)std::imaxabs(i);
+    // cppcheck-suppress uninitvar
+    (void)imaxabs(i);
+}
+
 void uninitvar_isalnum(void)
 {
     int i;
@@ -521,6 +530,16 @@ void uninitvar_div(void)
     int denom;
     // cppcheck-suppress uninitvar
     (void)std::div(num,denom);
+}
+
+void uninitvar_imaxdiv(void)
+{
+    intmax_t numer;
+    intmax_t denom;
+    // cppcheck-suppress uninitvar
+    (void)std::imaxdiv(numer,denom);
+    // cppcheck-suppress uninitvar
+    (void)imaxdiv(numer,denom);
 }
 
 void uninitvar_exit(void)
@@ -2447,6 +2466,14 @@ void uninivar_strtol(void)
     (void)std::strtoul(s,endp,base);
     // cppcheck-suppress uninitvar
     (void)std::strtoull(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::strtoumax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)strtoumax(s,endp,base);
 }
 
 void uninitvar_time(void)
@@ -2633,6 +2660,14 @@ void uninivar_wcstol(void)
     (void)std::wcstoul(s,endp,base);
     // cppcheck-suppress uninitvar
     (void)std::wcstoull(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)wcstoimax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)std::wcstoumax(s,endp,base);
+    // cppcheck-suppress uninitvar
+    (void)wcstoumax(s,endp,base);
 }
 
 void uninitvar_wprintf(wchar_t *format, int input)
