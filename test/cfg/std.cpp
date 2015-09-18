@@ -2489,7 +2489,7 @@ void uninivar_wcstof(void)
     (void)std::wcstold(s,endp);
 }
 
-void uninivar_stod(void)
+void uninivar_stoX(void)
 {
     std::string str;
     std::wstring wstr;
@@ -2498,6 +2498,96 @@ void uninivar_stod(void)
     (void)std::stod(str,idx);
     // cppcheck-suppress uninitvar
     (void)std::stod(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stof(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stof(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoi(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoi(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stol(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stol(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stold(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stold(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoll(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoll(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoul(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoul(wstr,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoull(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stoull(wstr,idx);
+}
+
+void uninivar_to_string(void)
+{
+    int i;
+    long l;
+    long long ll;
+    unsigned u;
+    unsigned long ul;
+    unsigned long long ull;
+    float f;
+    double d;
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(i);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(l);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(ll);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(u);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(ul);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(ull);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(f);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(d);
+    // cppcheck-suppress uninitvar
+    (void)std::to_string(ld);
+}
+
+void uninivar_to_wstring(void)
+{
+    int i;
+    long l;
+    long long ll;
+    unsigned u;
+    unsigned long ul;
+    unsigned long long ull;
+    float f;
+    double d;
+    long double ld;
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(i);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(l);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(ll);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(u);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(ul);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(ull);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(f);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(d);
+    // cppcheck-suppress uninitvar
+    (void)std::to_wstring(ld);
 }
 
 void uninivar_mbrtowc(void)
