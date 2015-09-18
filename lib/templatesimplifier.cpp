@@ -34,8 +34,6 @@
 
 #ifdef GDB_HELPERS
 
-#include <iostream>
-
 static void printlist(const std::list<Token *> &list)
 {
     for (std::list<Token *>::const_iterator it = list.begin(); it != list.end(); ++it) {
