@@ -2489,6 +2489,17 @@ void uninivar_wcstof(void)
     (void)std::wcstold(s,endp);
 }
 
+void uninivar_stod(void)
+{
+    std::string str;
+    std::wstring wstr;
+    size_t* idx;
+    // cppcheck-suppress uninitvar
+    (void)std::stod(str,idx);
+    // cppcheck-suppress uninitvar
+    (void)std::stod(wstr,idx);
+}
+
 void uninivar_mbrtowc(void)
 {
     wchar_t* pwc;
