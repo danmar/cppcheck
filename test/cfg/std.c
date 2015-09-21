@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <tgmath.h> // frexp
 #include <wchar.h>
+#include <uchar.h>
 #include <wctype.h>
 #include <fenv.h>
 #include <setjmp.h>
@@ -3382,6 +3383,44 @@ void uninitvar_itoa(void)
     int base;
     // cppcheck-suppress uninitvar
     (void)itoa(value,str,base);
+}
+
+void uninivar_c16rtomb(void)
+{
+    char * pmb;
+    char16_t c16;
+    mbstate_t * ps;
+    // cppcheck-suppress uninitvar
+    (void)c16rtomb(pmb,c16,ps);
+}
+
+void uninivar_c32rtomb(void)
+{
+    char * pmb;
+    char32_t c32;
+    mbstate_t * ps;
+    // cppcheck-suppress uninitvar
+    (void)c32rtomb(pmb,c32,ps);
+}
+
+void uninivar_mbrtoc16(void)
+{
+    char16_t * pc16;
+    char * pmb;
+    size_t max;
+    mbstate_t * ps;
+    // cppcheck-suppress uninitvar
+    (void)mbrtoc16(pc16,pmb,max,ps);
+}
+
+void uninivar_mbrtoc32(void)
+{
+    char32_t * pc32;
+    char * pmb;
+    size_t max;
+    mbstate_t * ps;
+    // cppcheck-suppress uninitvar
+    (void)mbrtoc32(pc32,pmb,max,ps);
 }
 
 void invalidFunctionArgBool_abs(bool b, double x, double y)
