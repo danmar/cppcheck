@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <tgmath.h> // frexp
 #include <wchar.h>
+#if  defined(__STD_UTF_16__) || defined(__STD_UTF_32__)
 #include <uchar.h>
+#endif
 #include <wctype.h>
 #include <fenv.h>
 #include <setjmp.h>
@@ -3385,6 +3387,7 @@ void uninitvar_itoa(void)
     (void)itoa(value,str,base);
 }
 
+#ifdef __STD_UTF_16__
 void uninivar_c16rtomb(void)
 {
     char * pmb;
@@ -3392,15 +3395,6 @@ void uninivar_c16rtomb(void)
     mbstate_t * ps;
     // cppcheck-suppress uninitvar
     (void)c16rtomb(pmb,c16,ps);
-}
-
-void uninivar_c32rtomb(void)
-{
-    char * pmb;
-    char32_t c32;
-    mbstate_t * ps;
-    // cppcheck-suppress uninitvar
-    (void)c32rtomb(pmb,c32,ps);
 }
 
 void uninivar_mbrtoc16(void)
@@ -3412,6 +3406,17 @@ void uninivar_mbrtoc16(void)
     // cppcheck-suppress uninitvar
     (void)mbrtoc16(pc16,pmb,max,ps);
 }
+#endif // __STD_UTF_16__
+
+#ifdef __STD_UTF_32__
+void uninivar_c32rtomb(void)
+{
+    char * pmb;
+    char32_t c32;
+    mbstate_t * ps;
+    // cppcheck-suppress uninitvar
+    (void)c32rtomb(pmb,c32,ps);
+}
 
 void uninivar_mbrtoc32(void)
 {
@@ -3422,6 +3427,7 @@ void uninivar_mbrtoc32(void)
     // cppcheck-suppress uninitvar
     (void)mbrtoc32(pc32,pmb,max,ps);
 }
+#endif // __STD_UTF_32__
 
 void invalidFunctionArgBool_abs(bool b, double x, double y)
 {
