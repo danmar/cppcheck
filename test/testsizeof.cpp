@@ -108,6 +108,25 @@ private:
 
         check("sizeof(--foo)");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found calculation inside sizeof().\n", errout.str());
+
+        // #6888
+        check("int f(int i) {\n"
+              "  $($void$)$sizeof$($i $!= $2$);\n" // '$' sets Token::isExpandedMacro() to true
+              "  $($void$)$($($($($sizeof$($i $!= $2$)$)$)$)$);\n"
+              "  $static_cast<void>$($sizeof($i $!= $2$)$);\n"
+              "  $static_cast<void>$($($($($($sizeof$($i $!= $2$)$)$)$)$)$);\n"
+              "  return i + foo(1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "  $sizeof$($i $!= $2$);\n"
+              "  $($($sizeof($i $!= 2$)$)$);\n"
+              "  return i + foo(1);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found calculation inside sizeof().\n"
+                      "[test.cpp:3]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+
     }
 
     void sizeofForArrayParameter() {
