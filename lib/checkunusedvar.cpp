@@ -1183,12 +1183,14 @@ void CheckUnusedVar::checkStructMemberUsage()
             }
 
             // bail out if struct is inherited
-            if (!structname.empty() && Token::findmatch(tok, (",|private|protected|public " + structname).c_str()))
+            if (!structname.empty() && Token::findmatch(tok, (",|private|protected|public " + structname).c_str())) {
                 structname.clear();
+                continue;
+            }
 
             // Bail out if some data is casted to struct..
-            const std::string s("( struct| " + tok->next()->str() + " * ) & %name% [");
-            if (Token::findmatch(tok, s.c_str()))
+            const std::string castPattern("( struct| " + tok->next()->str() + " * ) & %name% [");
+            if (Token::findmatch(tok, castPattern.c_str()))
                 structname.clear();
 
             // Bail out if instance is initialized with {}..
@@ -1203,10 +1205,14 @@ void CheckUnusedVar::checkStructMemberUsage()
                 }
             }
 
+            if (structname.empty())
+                continue;
+
             // bail out for extern/global struct
-            for (const Token *tok2 = Token::findmatch(tok, (structname + " %name%").c_str());
+            const std::string definitionPattern(structname + " %name%");
+            for (const Token *tok2 = Token::findmatch(tok, definitionPattern.c_str());
                  tok2 && tok2->next();
-                 tok2 = Token::findmatch(tok2->next(), (structname + " %name%").c_str())) {
+                 tok2 = Token::findmatch(tok2->next(), definitionPattern.c_str())) {
 
                 const Variable *var = tok2->next()->variable();
                 if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic()))) {
