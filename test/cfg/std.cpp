@@ -2870,11 +2870,12 @@ void uninitvar_find(std::string s)
     char c;
     // cppcheck-suppress uninitvar
     (void)s.find(c,pos);
-
+/*
     // testing of size_t find (const char* pc, size_t pos, size_t n) const;
     size_t n;
     // cppcheck-suppress uninitvar
-    (void)s.find(pc,pos,n);
+    (void)s.find(pc,pos,n); // #6991
+*/
 }
 
 void invalidFunctionArgBool_abs(bool b, double x, double y)
