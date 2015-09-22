@@ -75,7 +75,7 @@ private:
     bool isEmptyType(const Type* type);
 
     // Error messages..
-    void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
+    void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion = false);
     void unusedVariableError(const Token *tok, const std::string &varname);
     void allocatedButUnusedVariableError(const Token *tok, const std::string &varname);
     void unreadVariableError(const Token *tok, const std::string &varname);
