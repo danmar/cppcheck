@@ -1252,16 +1252,17 @@ void CheckUnusedVar::checkStructMemberUsage()
                 }
             }
 
-            if (! used) {
-                unusedStructMemberError(tok->next(), structname, *varname);
+            if (!used) {
+                unusedStructMemberError(tok->next(), structname, *varname, tok->scope()->type == Scope::eUnion);
             }
         }
     }
 }
 
-void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
+void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion)
 {
-    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used.");
+    const char* prefix = isUnion ? "union member '" : "struct member '";
+    reportError(tok, Severity::style, "unusedStructMember", std::string(prefix) + structname + "::" + varname + "' is never used.");
 }
 
 bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
