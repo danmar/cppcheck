@@ -1747,6 +1747,15 @@ void uninitvar_memcmp(void)
     (void)std::memcmp(s1,s2,n);
 }
 
+void uninitvar_wmemcmp(void)
+{
+    wchar_t *s1;
+    wchar_t *s2;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)std::wmemcmp(s1,s2,n);
+}
+
 void uninitvar_memcpy(void)
 {
     void *ct;
@@ -2870,12 +2879,12 @@ void uninitvar_find(std::string s)
     char c;
     // cppcheck-suppress uninitvar
     (void)s.find(c,pos);
-/*
-    // testing of size_t find (const char* pc, size_t pos, size_t n) const;
-    size_t n;
-    // cppcheck-suppress uninitvar
-    (void)s.find(pc,pos,n); // #6991
-*/
+    /*
+        // testing of size_t find (const char* pc, size_t pos, size_t n) const;
+        size_t n;
+        // cppcheck-suppress uninitvar
+        (void)s.find(pc,pos,n); // #6991
+    */
 }
 
 void invalidFunctionArgBool_abs(bool b, double x, double y)
@@ -2985,4 +2994,16 @@ void nullPointer_atof(void)
     (void)std::atof(c);
     // cppcheck-suppress nullPointer
     (void)std::atof(0);
+}
+
+void nullPointer_memcmp(char *p)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::memcmp(p, 0, 123);
+}
+
+void nullPointer_wmemcmp(wchar_t *p)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::wmemcmp(p, 0, 123);
 }

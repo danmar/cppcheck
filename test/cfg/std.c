@@ -177,7 +177,7 @@ void nullpointerMemchr2(char *p, char *s)
     p = memchr(s, 0, strlen(s));
 }
 
-void nullpointerMemchr3(char *p)
+void nullPointer_memchr(char *p)
 {
     char *s = 0;
     // cppcheck-suppress nullPointer
@@ -185,13 +185,17 @@ void nullpointerMemchr3(char *p)
     p = memchr(s, 0, strlen(s));
 }
 
-void nullpointerMemcmp(char *p)
+void nullPointer_memcmp(char *p)
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
-    memcmp(p, 0, 123);
+    (void)memcmp(p, 0, 123);
 }
 
+void nullPointer_wmemcmp(wchar_t *p)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemcmp(p, 0, 123);
+}
 
 // uninit pointers
 
@@ -2393,6 +2397,15 @@ void uninitvar_memcmp(void)
     size_t n;
     // cppcheck-suppress uninitvar
     (void)memcmp(s1,s2,n);
+}
+
+void uninitvar_wmemcmp(void)
+{
+    wchar_t *s1;
+    wchar_t *s2;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)wmemcmp(s1,s2,n);
 }
 
 void uninitvar_memcpy(void)
