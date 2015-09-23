@@ -3653,25 +3653,14 @@ private:
     }
 
     void syntax_error() { // Ticket #5073
-        // Nominal mode => No output
-        checkUninitVar("struct flex_array {};\n"
-                       "struct cgroup_taskset {};\n"
-                       "void cgroup_attach_task() {\n"
-                       "  struct flex_array *group;\n"
-                       "  struct cgroup_taskset tset = { };\n"
-                       "  do { } while_each_thread(leader, tsk);\n"
-                       "}", "test.cpp", /*debugwarnings=*/false);
-        ASSERT_EQUALS("", errout.str());
-
-        // --debug-warnings mode => Debug warning
-        checkUninitVar("struct flex_array {};\n"
-                       "struct cgroup_taskset {};\n"
-                       "void cgroup_attach_task() {\n"
-                       "  struct flex_array *group;\n"
-                       "  struct cgroup_taskset tset = { };\n"
-                       "  do { } while_each_thread(leader, tsk);\n"
-                       "}", "test.cpp", /*debugwarnings=*/true);
-        ASSERT_EQUALS("[test.cpp:6]: (debug) assertion failed '} while ('\n", errout.str());
+        const char code[] = "struct flex_array {};\n"
+                            "struct cgroup_taskset {};\n"
+                            "void cgroup_attach_task() {\n"
+                            "  struct flex_array *group;\n"
+                            "  struct cgroup_taskset tset = { };\n"
+                            "  do { } while_each_thread(leader, tsk);\n"
+                            "}";
+        ASSERT_THROW(checkUninitVar(code), InternalError);
     }
 
     void checkDeadPointer(const char code[]) {

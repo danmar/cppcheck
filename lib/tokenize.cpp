@@ -4371,7 +4371,7 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
             // before the "while"
             if (tokEnd) {
                 tokEnd=tokEnd->next();
-                if (!tokEnd) // no while
+                if (!tokEnd || tokEnd->str()!="while") // no while
                     syntaxError(tok);
             }
         }

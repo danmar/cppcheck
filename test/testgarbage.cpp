@@ -165,6 +165,7 @@ private:
         TEST_CASE(garbageCode123);
         TEST_CASE(garbageCode124); // 6948
         TEST_CASE(garbageCode125); // 6782, 6834
+        TEST_CASE(garbageCode126); // #6997
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -528,11 +529,11 @@ private:
 
     // Bug #6626 crash: Token::astOperand2() const ( do while )
     void garbageCode34() {
-        checkCode("void foo(void) {\n"
-                  " do\n"
-                  " while (0);\n"
-                  "}");
-        ASSERT_EQUALS("", errout.str());
+        const char code[] = "void foo(void) {\n"
+                            " do\n"
+                            " while (0);\n"
+                            "}";
+        ASSERT_THROW(checkCode(code), InternalError);
     }
 
     void garbageCode35() {
@@ -744,7 +745,7 @@ private:
     }
 
     void garbageCode84() { // #6780
-        checkCode("int main ( [ ] ) { " " [ ] ; int i = 0 ; do { } ; } ( [ ] ) { }"); // do not crash
+        ASSERT_THROW(checkCode("int main ( [ ] ) { " " [ ] ; int i = 0 ; do { } ; } ( [ ] ) { }"), InternalError); // do not crash
     }
 
     void garbageCode85() { // #6784
@@ -943,6 +944,11 @@ private:
         ASSERT_THROW(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"),
                      InternalError);
         ASSERT_THROW(checkCode("template < Types > struct S :{ ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) }"),
+                     InternalError);
+    }
+
+    void garbageCode126() {
+        ASSERT_THROW(checkCode("{ } float __ieee754_sinhf ( float x ) { float t , , do { gf_u ( jx ) { } ( 0 ) return ; ( ) { } t } ( 0x42b17180 ) { } }"),
                      InternalError);
     }
 
