@@ -1232,34 +1232,43 @@ void CheckUnusedVar::checkStructMemberUsage()
             structname.clear();
 
         if (!structname.empty() && Token::Match(tok, "[{;]")) {
-            // declaring a POD variable?
+            // declaring a POD member variable?
             if (!tok->next()->isStandardType())
                 continue;
 
-            // Declaring struct variable..
-            const std::string* varname;
+            // Declaring struct member variable..
+            const std::string* memberVarName;
 
             if (Token::Match(tok->next(), "%type% %name% [;[]"))
-                varname = &tok->strAt(2);
+                memberVarName = &tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% %type%|* %name% [;[]"))
-                varname = &tok->strAt(3);
+                memberVarName = &tok->strAt(3);
             else if (Token::Match(tok->next(), "%type% %type% * %name% [;[]"))
-                varname = &tok->strAt(4);
+                memberVarName = &tok->strAt(4);
             else
                 continue;
 
-            // Check if the struct variable is used anywhere in the file
-            const std::string usagePattern(". " + *varname);
+            // Check if the struct member variable is used anywhere in the file
+            const std::string usagePattern(". " + *memberVarName);
             bool used = false;
-            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next()) {
-                if (Token::simpleMatch(tok2, usagePattern.c_str())) {
+            const Token* usageTok = _tokenizer->tokens();
+            while ((usageTok = Token::findsimplematch(usageTok->next(), usagePattern.c_str())) != nullptr) {
+                // Locate the containing struct variable and ensure it's of the same type, not a random struct
+                const Token* structVarTok = usageTok->previous();
+                // Walk backwards over array accesses
+                while (structVarTok && structVarTok->link())
+                    structVarTok = structVarTok->link()->previous();
+                if (!structVarTok)
+                    continue;
+                const Variable* structVar = structVarTok->variable();
+                if (structVar && structVar->type() && structVar->type()->name() == structname) {
                     used = true;
                     break;
                 }
             }
 
             if (!used) {
-                unusedStructMemberError(tok->next(), structname, *varname, tok->scope()->type == Scope::eUnion);
+                unusedStructMemberError(tok->next(), structname, *memberVarName, tok->scope()->type == Scope::eUnion);
             }
         }
     }

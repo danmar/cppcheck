@@ -222,6 +222,34 @@ private:
                       "[test.cpp:4]: (style) union member 'abc::b' is never used.\n"
                       "[test.cpp:5]: (style) union member 'abc::c' is never used.\n", errout.str());
 
+        checkStructMemberUsage("struct A\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "struct B\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "void foo()\n"
+                               "{\n"
+                               "    A a;\n"
+                               "    a.a;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) struct member 'B::a' is never used.\n", errout.str());
+
+        checkStructMemberUsage("struct A\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "struct B\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "void foo(A* a)\n"
+                               "{\n"
+                               "    a->a;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) struct member 'B::a' is never used.\n", errout.str());
     }
 
     void structmember2() {
