@@ -123,17 +123,17 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="23"/>
         <source>Add function</source>
-        <translation type="unfinished"></translation>
+        <translation>Añadir función</translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="34"/>
         <source>Function name(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre(s) de la función</translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="44"/>
         <source>Number of arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Número de argumentos</translation>
     </message>
 </context>
 <context>
@@ -141,27 +141,27 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="librarydialog.ui" line="14"/>
         <source>Library Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Editor de bibliotecas</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="22"/>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="29"/>
         <source>Save</source>
-        <translation type="unfinished">Guardar</translation>
+        <translation>Guardar</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="55"/>
         <source>Functions</source>
-        <translation type="unfinished"></translation>
+        <translation>Funciones</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="74"/>
         <source>Add</source>
-        <translation type="unfinished">Añadir</translation>
+        <translation>Añadir</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="108"/>
@@ -171,17 +171,17 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="librarydialog.ui" line="116"/>
         <source>False</source>
-        <translation type="unfinished"></translation>
+        <translation>Falso</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="121"/>
         <source>True</source>
-        <translation type="unfinished"></translation>
+        <translation>Verdadero</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="126"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Desconocido</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="136"/>
@@ -196,22 +196,22 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="librarydialog.ui" line="150"/>
         <source>Arguments</source>
-        <translation type="unfinished"></translation>
+        <translation>Argumentos</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="162"/>
         <source>Edit</source>
-        <translation type="unfinished">Editar</translation>
+        <translation>Editar</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="52"/>
         <source>Library files (*.cfg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivos de biblioteca (*.cfg)</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="54"/>
         <source>Open library file</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir archivo de biblioteca</translation>
     </message>
 </context>
 <context>
@@ -219,7 +219,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryeditargdialog.ui" line="14"/>
         <source>Edit argument</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar argumento</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="20"/>
@@ -234,7 +234,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryeditargdialog.ui" line="28"/>
         <source>Not bool</source>
-        <translation type="unfinished"></translation>
+        <translation>No bool</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="35"/>
@@ -249,17 +249,17 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryeditargdialog.ui" line="43"/>
         <source>Not null</source>
-        <translation type="unfinished"></translation>
+        <translation>No null</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="50"/>
         <source>Not uninit</source>
-        <translation type="unfinished"></translation>
+        <translation>No uninit</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="57"/>
         <source>String</source>
-        <translation type="unfinished"></translation>
+        <translation>String</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="70"/>
@@ -275,13 +275,13 @@ Parameters: -l(line) (file)</source>
         <location filename="libraryeditargdialog.ui" line="101"/>
         <location filename="libraryeditargdialog.ui" line="208"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Tipo</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="109"/>
         <location filename="libraryeditargdialog.ui" line="219"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Ninguno</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="114"/>
@@ -327,7 +327,7 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="libraryeditargdialog.ui" line="320"/>
         <source>Valid values</source>
-        <translation type="unfinished"></translation>
+        <translation>Valores válidos</translation>
     </message>
 </context>
 <context>
@@ -650,32 +650,32 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="692"/>
         <source>&amp;Print...</source>
-        <translation type="unfinished"></translation>
+        <translation>Im&amp;primir...</translation>
     </message>
     <message>
         <location filename="main.ui" line="695"/>
         <source>Print the Current Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Imprimir el informe actual</translation>
     </message>
     <message>
         <location filename="main.ui" line="700"/>
         <source>Print Pre&amp;view...</source>
-        <translation type="unfinished"></translation>
+        <translation>Pre&amp;visualización de impresión...</translation>
     </message>
     <message>
         <location filename="main.ui" line="703"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
-        <translation type="unfinished"></translation>
+        <translation>Abre el diálogo de previsualización de impresión para el informe actual</translation>
     </message>
     <message>
         <location filename="main.ui" line="708"/>
         <source>Library Editor...</source>
-        <translation type="unfinished"></translation>
+        <translation>Editor de bibliotecas...</translation>
     </message>
     <message>
         <location filename="main.ui" line="711"/>
         <source>Open library editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir el editor de bibliotecas</translation>
     </message>
     <message>
         <location filename="main.ui" line="375"/>
@@ -839,7 +839,7 @@ This is probably because the settings were changed between the Cppcheck versions
     <message>
         <location filename="mainwindow.cpp" line="575"/>
         <source>Bad XML</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">XML malformado</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="578"/>
@@ -1434,7 +1434,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="541"/>
         <source>Open containing folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Abrir carpeta contenedora</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="593"/>
@@ -1536,12 +1536,12 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
     <message>
         <location filename="resultsview.cpp" line="189"/>
         <source>Print Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Imprimir informe</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="208"/>
         <source>No errors found, nothing to print.</source>
-        <translation type="unfinished"></translation>
+        <translation>No se encontraron errores, nada que imprimir.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="240"/>
