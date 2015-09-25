@@ -250,6 +250,21 @@ private:
                                "    a->a;\n"
                                "}");
         ASSERT_EQUALS("[test.cpp:7]: (style) struct member 'B::a' is never used.\n", errout.str());
+
+        checkStructMemberUsage("struct A\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "struct B\n"
+                               "{\n"
+                               "    int a;\n"
+                               "};\n"
+                               "A& bar();\n"
+                               "void foo()\n"
+                               "{\n"
+                               "    bar().a;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (style) struct member 'B::a' is never used.\n", errout.str());
     }
 
     void structmember2() {

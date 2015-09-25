@@ -1265,6 +1265,11 @@ void CheckUnusedVar::checkStructMemberUsage()
                     used = true;
                     break;
                 }
+                const Function* function = structVarTok->function();
+                if (function && function->retType && function->retType->name() == structname) {
+                    used = true;
+                    break;
+                }
             }
 
             if (!used) {
