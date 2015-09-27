@@ -464,6 +464,13 @@ private:
                "  if (x==0) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "void f(int *x) {\n"
+               "  int a = (x && *x == '1');\n"
+               "  int b = a ? atoi(x) : 0;\n"  // <- x is not 0
+               "  if (x==0) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowBeforeConditionFunctionCall() { // function calls

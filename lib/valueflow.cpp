@@ -253,13 +253,17 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
         while (!tokens.empty()) {
             const Token * const tok2 = tokens.top();
             tokens.pop();
-            if (!tok2)
+            if (!tok2 || tok2->str() == ".")
                 continue;
-            if (tok2 != valuetok && tok2->str() == valuetok->str())
+            // A variable is seen..
+            if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || !tok2->variable()->isArgument())) {
+                // TODO: limit this bailout
                 return tok;
+            }
             tokens.push(tok2->astOperand2());
             tokens.push(tok2->astOperand1());
         }
+
     }
     return nullptr;
 }
