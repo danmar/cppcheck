@@ -14,8 +14,7 @@ import os
 import datetime
 import time
 
-DEBIAN = ['ftp://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
-          'http://ftp.sunet.se/pub/Linux/distributions/Debian/debian/',
+DEBIAN = ['ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/']
 
 
