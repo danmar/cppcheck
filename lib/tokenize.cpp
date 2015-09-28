@@ -9216,7 +9216,7 @@ void Tokenizer::simplifyAsm()
 
         else if (Token::Match(tok, "_asm|__asm")) {
             const Token *tok2 = tok;
-            while (tok2 && tok2->linenr() == tok->linenr() && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
+            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == "," || tok2->str() == ":"))
                 tok2 = tok2->next();
             if (!tok2 || tok2->str() == ";" || tok2->linenr() != tok->linenr()) {
                 instruction = tok->next()->stringifyList(tok2);
