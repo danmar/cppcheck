@@ -4927,7 +4927,7 @@ void Tokenizer::simplifyCasts()
         }
 
         // Replace pointer casts of 0.. "(char *)0" => "0"
-        while (Token::Match(tok->next(), "( %type% %type%| * ) 0")) {
+        while (Token::Match(tok->next(), "( %type% %type%| * *| ) 0")) {
             tok->linkAt(1)->next()->isCast(true);
             Token::eraseTokens(tok, tok->next()->link()->next());
             if (tok->str() == ")" && tok->link()->previous()) {
