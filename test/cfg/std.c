@@ -3312,14 +3312,25 @@ void uninivar_fwprintf(void)
     (void)fwprintf(stream,format,i);
 }
 
-void uninivar_snprintf(void)
+void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
 {
-    char *s;
     size_t n;
     char *format;
     int i;
+    char *s;
     // cppcheck-suppress uninitvar
     (void)snprintf(s,n,format,i);
+    // cppcheck-suppress uninitvar
+    (void)snprintf(S,n,Format,Int); // n is uninitialized
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress uninitvar
+    (void)snprintf(S,N,format,Int); // format is uninitialized
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress uninitvar
+    (void)snprintf(S,N,Format,i); // i is uninitialized
+    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress uninitvar
+    (void)snprintf(s,N,Format,Int); // no warning is expected for s (refer to #7012)
 }
 
 void uninivar_vsnprintf(void)
