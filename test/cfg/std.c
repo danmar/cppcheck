@@ -3329,8 +3329,7 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
     // cppcheck-suppress uninitvar
     (void)snprintf(S,N,Format,i); // i is uninitialized
     // cppcheck-suppress redundantCopy
-    // cppcheck-suppress uninitvar
-    (void)snprintf(s,N,Format,Int); // no warning is expected for s (refer to #7012)
+    (void)snprintf(s,N,Format,Int);
 }
 
 void uninivar_vsnprintf(void)
