@@ -214,6 +214,7 @@ static const Signaltype listofsignals[] = {
     DECLARE_SIGNAL(SIGINT),
     DECLARE_SIGNAL(SIGSEGV),
     // don't care: SIGTERM
+    DECLARE_SIGNAL(SIGUSR1)
 };
 
 /*
@@ -239,24 +240,24 @@ static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
 // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     void *array[32]= {0}; // the less resources the better...
-    const int depth = backtrace(array, (int)GetArrayLength(array));
-    const int offset=3; // the first two entries are simply within our own exception handling code, third is within libc
+    const int currentdepth = backtrace(array, (int)GetArrayLength(array));
+    const int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
-        maxdepth=depth+offset;
+        maxdepth=currentdepth-offset;
     else
-        maxdepth+=offset;
-    char **symbolstrings = backtrace_symbols(array, depth);
+        maxdepth = std::min(maxdepth, currentdepth);
+    char **symbolstrings = backtrace_symbols(array, currentdepth);
     if (symbolstrings) {
         fputs("Callstack:\n", f);
         for (int i = offset; i < maxdepth; ++i) {
             const char * const symbol = symbolstrings[i];
             char * realname = nullptr;
-            const char * const firstBracketName = strchr(symbol, '(');
-            const char * const firstBracketAddress = strchr(symbol, '[');
+            const char * const firstBracketName     = strchr(symbol, '(');
+            const char * const firstBracketAddress  = strchr(symbol, '[');
             const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
-            const char * const beginAddress = firstBracketAddress+3;
+            const char * const beginAddress         = firstBracketAddress+3;
             const int addressLen = int(secondBracketAddress-beginAddress);
-            const int padLen = int(ADDRESSDISPLAYLENGTH-addressLen);
+            const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
             if (demangling && firstBracketName) {
                 const char * const plus = strchr(firstBracketName, '+');
                 if (plus && (plus>(firstBracketName+1))) {
@@ -292,9 +293,9 @@ static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
 #endif
 }
 
-static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ;
+static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
 static char mytstack[MYSTACKSIZE]; // alternative stack for signal handler
-static bool bStackBelowHeap=false;
+static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space
 
 /*
  * \return true if address is supposed to be on stack (contrary to heap or elsewhere). If ptr is 0 false will be returned.
@@ -330,12 +331,13 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 #endif
     const char * const signame = signal_name(signo);
     bool bPrintCallstack=true;
+    bool bUnexpectedSignal=true;
     const bool isaddressonstack = isAddressOnStack(info->si_addr);
     FILE* f = (CppCheckExecutor::getExceptionOutput()=="stderr") ? stderr : stdout;
-    fputs("Internal error: cppcheck received signal ", f);
-    fputs(signame, f);
     switch (signo) {
     case SIGBUS:
+        fputs("Internal error: cppcheck received signal ", f);
+        fputs(signame, f);
         switch (info->si_code) {
         case BUS_ADRALN: // invalid address alignment
             fputs(" - BUS_ADRALN", f);
@@ -363,6 +365,8 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (unsigned long)info->si_addr);
         break;
     case SIGFPE:
+        fputs("Internal error: cppcheck received signal ", f);
+        fputs(signame, f);
         switch (info->si_code) {
         case FPE_INTDIV: //     integer divide by zero
             fputs(" - FPE_INTDIV", f);
@@ -395,6 +399,8 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (unsigned long)info->si_addr);
         break;
     case SIGILL:
+        fputs("Internal error: cppcheck received signal ", f);
+        fputs(signame, f);
         switch (info->si_code) {
         case ILL_ILLOPC: //     illegal opcode
             fputs(" - ILL_ILLOPC", f);
@@ -428,10 +434,15 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (isaddressonstack)?" Stackoverflow?":"");
         break;
     case SIGINT:
+        bUnexpectedSignal=false;
+        fputs("cppcheck received signal ", f);
+        fputs(signame, f);
         bPrintCallstack=false;
         fputs(".\n", f);
         break;
     case SIGSEGV:
+        fputs("Internal error: cppcheck received signal ", f);
+        fputs(signame, f);
         switch (info->si_code) {
         case SEGV_MAPERR: //    address not mapped to object
             fputs(" - SEGV_MAPERR", f);
@@ -449,17 +460,27 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (isaddressonstack)?" Stackoverflow?":""
                );
         break;
+    case SIGUSR1:
+        bUnexpectedSignal=false;
+        fputs("cppcheck received signal ", f);
+        fputs(signame, f);
+        fputs(".\n", f);
+        break;
     default:
+        fputs("Internal error: cppcheck received signal ", f);
+        fputs(signame, f);
         fputs(".\n", f);
         break;
     }
     if (bPrintCallstack) {
-        print_stacktrace(f, true, -1 /*(isaddressonstack)?8:-1*/);
+        print_stacktrace(f, true, -1);
+    }
+    if (bUnexpectedSignal) {
         fputs("\nPlease report this to the cppcheck developers!\n", f);
     }
     fflush(f);
 
-    // now let the system proceed, shutdown and hopefully dump core for post-mortem analysis
+    // now let things proceed, shutdown and hopefully dump core for post-mortem analysis
     signal(signo, SIG_DFL);
     kill(killid, signo);
 }
