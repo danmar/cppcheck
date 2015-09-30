@@ -821,12 +821,11 @@ void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)std::vfprintf(stream, Format, Arg);
     // cppcheck-suppress uninitvar
     (void)std::vfprintf(Stream, format, Arg);
-    // cppcheck-suppress va_list_usedBeforeStarted
-    // cppcheck-suppress uninitvar
-    (void)std::vfprintf(Stream, Format, arg);
 
     // no warning is expected
     (void)std::vfprintf(Stream, Format, Arg);
+    // cppcheck-suppress va_list_usedBeforeStarted
+    (void)std::vfprintf(Stream, Format, arg);
 }
 
 void uninitar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
@@ -841,12 +840,11 @@ void uninitar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
     (void)std::vfwprintf(stream, Format, Arg);
     // cppcheck-suppress uninitvar
     (void)std::vfwprintf(Stream, format, Arg);
-    // cppcheck-suppress va_list_usedBeforeStarted
-    // cppcheck-suppress uninitvar
-    (void)std::vfwprintf(Stream, Format, arg);
 
     // no warning is expected
     (void)std::vfwprintf(Stream, Format, Arg);
+    // cppcheck-suppress va_list_usedBeforeStarted
+    (void)std::vfwprintf(Stream, Format, arg);
 }
 
 void uninitvar_fputc(void)
@@ -1945,14 +1943,13 @@ void uninivar_vprintf(char *Format, va_list Arg)
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
     (void)std::vprintf(format,arg);
-    // cppcheck-suppress va_list_usedBeforeStarted
-    // cppcheck-suppress uninitvar
-    (void)std::vprintf(Format,arg);
     // cppcheck-suppress uninitvar
     (void)std::vprintf(format,Arg);
 
     // no warning is expected
     (void)std::vprintf(Format,Arg);
+    // cppcheck-suppress va_list_usedBeforeStarted
+    (void)std::vprintf(Format,arg);
 }
 
 void uninivar_vwprintf(wchar_t *Format, va_list Arg)
@@ -1962,14 +1959,13 @@ void uninivar_vwprintf(wchar_t *Format, va_list Arg)
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
     (void)std::vwprintf(format,arg);
-    // cppcheck-suppress va_list_usedBeforeStarted
-    // cppcheck-suppress uninitvar
-    (void)std::vwprintf(Format,arg);
     // cppcheck-suppress uninitvar
     (void)std::vwprintf(format,Arg);
 
     // no warning is expected
     (void)std::vwprintf(Format,Arg);
+    // cppcheck-suppress va_list_usedBeforeStarted
+    (void)std::vwprintf(Format,arg);
 }
 
 void uninivar_bsearch(void)
@@ -2821,7 +2817,7 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)std::snprintf(S,N,Format,Int);
 }
 
-void uninivar_vsnprintf(void)
+void uninivar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 {
     char *s;
     size_t n;
@@ -2830,6 +2826,17 @@ void uninivar_vsnprintf(void)
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
     (void)std::vsnprintf(s,n,format,arg);
+    // cppcheck-suppress uninitvar
+    (void)std::vsnprintf(s,N,Format,Arg);
+    // cppcheck-suppress uninitvar
+    (void)std::vsnprintf(S,n,Format,Arg);
+    // cppcheck-suppress uninitvar
+    (void)std::vsnprintf(S,N,format,Arg);
+
+    // no warning is expected for
+    (void)std::vsnprintf(S,N,Format,Arg);
+    // cppcheck-suppress va_list_usedBeforeStarted
+    (void)std::vsnprintf(S,N,Format,arg);
 }
 
 void uninivar_wscanf(void)
