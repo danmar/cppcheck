@@ -2304,40 +2304,76 @@ void uninivar_strpbrk(void)
     (void)std::strpbrk(cs,ct);
 }
 
-void uninivar_strncat(void)
+void uninivar_strncat(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::strncat(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)std::strncat(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)std::strncat(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)std::strncat(Ct,S,n);
+
+    // no warning is expected for
+    (void)std::strncat(Ct,S,N);
 }
 
-void uninivar_wcsncat(void)
+void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
     wchar_t *ct;
     wchar_t *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::wcsncat(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncat(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncat(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncat(Ct,S,n);
+
+    // no warning is expected for
+    (void)std::wcsncat(Ct,S,N);
 }
 
-void uninivar_strncmp(void)
+void uninivar_strncmp(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::strncmp(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)std::strncmp(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)std::strncmp(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)std::strncmp(Ct,S,n);
+
+    // no warning is expected for
+    (void)std::strncmp(Ct,S,N);
 }
 
-void uninivar_wcsncmp(void)
+void uninivar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
 {
     wchar_t *ct;
     wchar_t *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::wcsncmp(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncmp(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncmp(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)std::wcsncmp(Ct,S,n);
+
+    // no warning is expected for
+    (void)std::wcsncmp(Ct,S,N);
 }
 
 void uninivar_strstr(void)

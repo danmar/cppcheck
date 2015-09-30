@@ -2975,40 +2975,76 @@ void uninivar_strpbrk(void)
     (void)strpbrk(cs,ct);
 }
 
-void uninivar_strncat(void)
+void uninivar_strncat(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)strncat(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)strncat(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)strncat(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)strncat(Ct,S,n);
+
+    // no warning is expected for
+    (void)strncat(Ct,S,N);
 }
 
-void uninivar_wcsncat(void)
+void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
     wchar_t *ct;
     wchar_t *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)wcsncat(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)wcsncat(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)wcsncat(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)wcsncat(Ct,S,n);
+
+    // no warning is expected for
+    (void)wcsncat(Ct,S,N);
 }
 
-void uninivar_strncmp(void)
+void uninivar_strncmp(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)strncmp(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)strncmp(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)strncmp(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)strncmp(Ct,S,n);
+
+    // no warning is expected for
+    (void)strncmp(Ct,S,N);
 }
 
-void uninivar_wcsncmp(void)
+void uninivar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
 {
     wchar_t *ct;
     wchar_t *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)wcsncmp(ct,s,n);
+    // cppcheck-suppress uninitvar
+    (void)wcsncmp(ct,S,N);
+    // cppcheck-suppress uninitvar
+    (void)wcsncmp(Ct,s,N);
+    // cppcheck-suppress uninitvar
+    (void)wcsncmp(Ct,S,n);
+
+    // no warning is expected for
+    (void)wcsncmp(Ct,S,N);
 }
 
 void uninivar_strstr(void)
