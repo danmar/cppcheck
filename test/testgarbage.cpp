@@ -166,6 +166,7 @@ private:
         TEST_CASE(garbageCode124); // 6948
         TEST_CASE(garbageCode125); // 6782, 6834
         TEST_CASE(garbageCode126); // #6997
+        TEST_CASE(garbageCode127); // #6667
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -950,6 +951,18 @@ private:
     void garbageCode126() {
         ASSERT_THROW(checkCode("{ } float __ieee754_sinhf ( float x ) { float t , , do { gf_u ( jx ) { } ( 0 ) return ; ( ) { } t } ( 0x42b17180 ) { } }"),
                      InternalError);
+    }
+
+    void garbageCode127() { // #6667
+        checkCode("extern \"C\" int printf(const char* fmt, ...);\n"
+                  "class A {\n"
+                  "public:\n"
+                  "  int Var;\n"
+                  "  A(int arg) { Var = arg; }\n"
+                  "  ~A() { printf(\"A d'tor\\n\"); }\n"
+                  "};\n"
+                  " const A& foo(const A& arg) { return arg; }\n"
+                  " foo(A(12)).Var\n");
     }
 
     void garbageValueFlow() {
