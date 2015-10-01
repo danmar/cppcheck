@@ -21,6 +21,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -158,7 +159,7 @@ void nullpointer(int value)
     strtok(NULL,"xyz");
 
     strxfrm(0,"foo",0);
-    // TODO: error message
+    // TODO: error message (#6306 and http://trac.cppcheck.net/changeset/d11eb4931aea51cf2cb74faccdcd2a3289b818d6/)
     strxfrm(0,"foo",42);
 
     snprintf(NULL, 0, "someformatstring"); // legal
@@ -3668,3 +3669,14 @@ void nullPointer_atof(void)
     (void)atof(0);
 }
 
+void invalidPrintfArgType_printf(void)
+{
+    int i = 0;
+    // cppcheck-suppress invalidPrintfArgType_float
+    printf("%f",i);
+
+    // #7016
+    uint8_t n = 7;
+    // cppcheck-suppress invalidPrintfArgType_uint
+    printf("%"PRIi16"\n", n);
+}

@@ -14,9 +14,9 @@ CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitco
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only -std=c++0x -Wno-format-security -Wno-nonnull'
+CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-nonnull '
 CC=gcc
-CC_OPT='-Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
+CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
