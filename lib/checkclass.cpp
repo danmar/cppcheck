@@ -1188,7 +1188,18 @@ void CheckClass::operatorEq()
                 if (func->isDelete())
                     continue;
                 // use definition for check so we don't have to deal with qualification
-                if (!(Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className)) {
+                bool returnSelfRef = false;
+                if (func->retDef->str() == scope->className) {
+                    if (Token::Match(func->retDef, "%type% &")) {
+                        returnSelfRef = true;
+                    } else {
+                        // We might have "Self<template_parameters>&""
+                        Token *tok = func->retDef->next();
+                        if (tok && tok->str() == "<" && tok->link() && tok->link()->next() && tok->link()->next()->str() == "&")
+                            returnSelfRef = true;
+                    }
+                }
+                if (!returnSelfRef) {
                     // make sure we really have a copy assignment operator
                     if (Token::Match(func->tokenDef->tokAt(2), "const| %name% &")) {
                         if (func->tokenDef->strAt(2) == "const" &&
