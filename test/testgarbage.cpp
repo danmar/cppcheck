@@ -167,6 +167,7 @@ private:
         TEST_CASE(garbageCode125); // 6782, 6834
         TEST_CASE(garbageCode126); // #6997
         TEST_CASE(garbageCode127); // #6667
+        TEST_CASE(garbageCode128); // #7018
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -963,6 +964,11 @@ private:
                   "};\n"
                   " const A& foo(const A& arg) { return arg; }\n"
                   " foo(A(12)).Var\n");
+    }
+
+    void garbageCode128() {
+        ASSERT_THROW(checkCode("enum { FOO = ( , ) } {{ }} enum {{ FOO << = } ( ) } {{ }} ;"),
+            InternalError);
     }
 
     void garbageValueFlow() {

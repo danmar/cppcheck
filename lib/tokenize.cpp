@@ -7434,7 +7434,7 @@ void Tokenizer::simplifyEnum()
                         enumName = tok1;
                         lastValue = 0;
                         tok1 = tok1->tokAt(2);
-                        if (Token::Match(tok1, ",|{|}"))
+                        if (!tok1 || Token::Match(tok1, ",|{|}"))
                             syntaxError(tok1);
 
                         enumValueStart = tok1;
@@ -7442,6 +7442,8 @@ void Tokenizer::simplifyEnum()
                         while (enumValueEnd->next() && (!Token::Match(enumValueEnd->next(), "[},]"))) {
                             if (Token::Match(enumValueEnd, "(|[")) {
                                 enumValueEnd = enumValueEnd->link();
+                                if (!enumValueEnd) // #7018 invalid code
+                                    syntaxError(nullptr);
                                 continue;
                             } else if (isCPP() && Token::Match(enumValueEnd, "%type% <") && TemplateSimplifier::templateParameters(enumValueEnd->next()) >= 1U) {
                                 Token *endtoken = enumValueEnd->next()->findClosingBracket();
@@ -7452,8 +7454,9 @@ void Tokenizer::simplifyEnum()
                                 } else
                                     syntaxError(enumValueEnd);
                             }
-
                             enumValueEnd = enumValueEnd->next();
+                            if (!enumValueEnd) // #7018 invalid code
+                                syntaxError(nullptr);
                         }
                         // remember this expression in case it needs to be incremented
                         lastEnumValueStart = enumValueStart;
