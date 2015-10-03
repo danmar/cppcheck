@@ -699,6 +699,13 @@ private:
                        "    void operator=(const A&)=delete;\n"
                        "};");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #7017
+        checkOpertorEq("template<class T> struct X {\n"
+                       "  inline X(const X& Rhs);\n"
+                       "  inline X<T>& operator =(const X& Rhs);\n"
+                       "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEq2() {
