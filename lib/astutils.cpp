@@ -267,6 +267,13 @@ bool isSameExpression(bool cpp, const Token *tok1, const Token *tok2, const std:
     commuative_equals = commuative_equals &&
                         isSameExpression(cpp, tok1->astOperand1(), tok2->astOperand2(), constFunctions);
 
+    // in c++, "a"+b might be different to b+"a"
+    if (cpp && commuative_equals && tok1->str() == "+" &&
+        (tok1->astOperand1()->tokType() == Token::eString || tok1->astOperand2()->tokType() == Token::eString)) {
+        const Token * const other = tok1->astOperand1()->tokType() != Token::eString ? tok1->astOperand1() : tok1->astOperand2();
+        return other && astIsIntegral(other,false);
+    }
+
     return commuative_equals;
 }
 

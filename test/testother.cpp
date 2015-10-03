@@ -4194,6 +4194,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
 
+        check("void foo(std::string a, std::string b) {\n"
+              "  return a.find(b+\"&\") || a.find(\"&\"+b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo() {\n"
               "    if ((b > a) | (a > b)) {}\n" // > is not commutative
               "}");
