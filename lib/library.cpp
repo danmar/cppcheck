@@ -683,6 +683,20 @@ static std::string functionName(const Token *ftok)
     return ret;
 }
 
+bool Library::isuninitargbad(const Token *ftok, int argnr) const
+{
+    const ArgumentChecks *arg = getarg(ftok, argnr);
+    if (!arg) {
+        // non-scan format string argument should not be uninitialized
+        const std::string funcname = functionName(ftok);
+        std::map<std::string, std::pair<bool, bool> >::const_iterator it = _formatstr.find(funcname);
+        if (it != _formatstr.end() && !it->second.first)
+            return true;
+    }
+    return arg && arg->notuninit;
+}
+
+
 /** get allocation id for function */
 int Library::alloc(const Token *tok) const
 {
