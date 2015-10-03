@@ -168,6 +168,8 @@ private:
         TEST_CASE(garbageCode126); // #6997
         TEST_CASE(garbageCode127); // #6667
         TEST_CASE(garbageCode128); // #7018
+        TEST_CASE(garbageCode129); // #7020
+        TEST_CASE(garbageCode130); // #7021
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -968,7 +970,17 @@ private:
 
     void garbageCode128() {
         ASSERT_THROW(checkCode("enum { FOO = ( , ) } {{ }} enum {{ FOO << = } ( ) } {{ }} ;"),
-            InternalError);
+                     InternalError);
+    }
+
+    void garbageCode129() {
+        ASSERT_THROW(checkCode("operator - ( { } typedef typename x ; ( ) ) { ( { { ( ( ) ) } ( { } ) } ) }"),
+                     InternalError);
+    }
+
+    void garbageCode130() {
+        ASSERT_THROW(checkCode("enum { FOO = ( , ){ } { { } } { { FOO} = } ( ) } { { } } enumL\" ( enumL\" { { FOO } ( ) } { { } } ;"),
+                     InternalError);
     }
 
     void garbageValueFlow() {

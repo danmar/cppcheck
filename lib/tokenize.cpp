@@ -1098,6 +1098,8 @@ void Tokenizer::simplifyTypedef()
                         if (func->previous()->str() == "operator")
                             func = func->previous();
 
+                        if (!func->previous()) // #7020
+                            syntaxError(func);
                         // check for qualifier
                         if (func->previous()->str() == "::") {
                             // check for available and matching class name
@@ -7633,6 +7635,8 @@ void Tokenizer::simplifyEnum()
                                     if (enumtok == ev->end)
                                         break;
                                 }
+                                if (!enumtok) // #7021
+                                    syntaxError(nullptr);
                                 if (enumtok->isOp()) {
                                     hasOp = true;
                                     break;
