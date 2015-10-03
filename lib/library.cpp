@@ -683,6 +683,19 @@ static std::string functionName(const Token *ftok)
     return ret;
 }
 
+bool Library::isnullargbad(const Token *ftok, int argnr) const
+{
+    const ArgumentChecks *arg = getarg(ftok, argnr);
+    if (!arg) {
+        // scan format string argument should not be null
+        const std::string funcname = functionName(ftok);
+        std::map<std::string, std::pair<bool, bool> >::const_iterator it = _formatstr.find(funcname);
+        if (it != _formatstr.end() && it->second.first)
+            return true;
+    }
+    return arg && arg->notnull;
+}
+
 bool Library::isuninitargbad(const Token *ftok, int argnr) const
 {
     const ArgumentChecks *arg = getarg(ftok, argnr);

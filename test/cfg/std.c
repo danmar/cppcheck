@@ -165,6 +165,10 @@ void nullpointer(int value)
     snprintf(NULL, 0, "someformatstring"); // legal
     // cppcheck-suppress nullPointer
     snprintf(NULL, 42, "someformatstring"); // not legal
+
+    scanf("%i", &res);
+    // cppcheck-suppress nullPointer
+    scanf("%i", NULL);
 }
 
 void nullpointerMemchr1(char *p, char *s)
