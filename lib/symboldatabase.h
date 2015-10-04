@@ -1008,6 +1008,9 @@ public:
 
     bool isCPP() const;
 
+    /** Set valuetype in provided tokenlist */
+    static void setValueTypeInTokenList(Token *tokens);
+
 private:
     friend class Scope;
     friend class Function;
@@ -1024,7 +1027,6 @@ private:
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
 
-
     const Tokenizer *_tokenizer;
     const Settings *_settings;
     ErrorLogger *_errorLogger;
@@ -1035,6 +1037,23 @@ private:
     /** list for missing types */
     std::list<Type> _blankTypes;
 };
+
+/** Value type */
+class ValueType {
+public:
+    enum Sign {UNKNOWN_SIGN, SIGNED, UNSIGNED} sign;
+    enum Type {UNKNOWN_TYPE, NONSTD, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, FLOAT, DOUBLE} type;
+    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p) {}
+
+    bool isIntegral() const {
+        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::LONGLONG);
+    }
+
+    std::string str() const;
+};
+
 
 //---------------------------------------------------------------------------
 #endif // symboldatabaseH

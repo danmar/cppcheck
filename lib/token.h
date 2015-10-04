@@ -33,6 +33,7 @@ class Scope;
 class Type;
 class Function;
 class Variable;
+class ValueType;
 class Settings;
 
 /// @addtogroup Core
@@ -222,6 +223,11 @@ public:
      * @param index position of character
      **/
     static std::string getCharAt(const Token *tok, std::size_t index);
+
+    const ValueType *valueType() const {
+        return valuetype;
+    }
+    void setValueType(ValueType *vt);
 
     Token::Type tokType() const {
         return _tokType;
@@ -846,6 +852,9 @@ private:
 
     // original name like size_t
     std::string* _originalName;
+
+    // ValueType
+    ValueType *valuetype;
 
 public:
     void astOperand1(Token *tok);

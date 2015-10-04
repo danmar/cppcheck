@@ -49,13 +49,15 @@ Token::Token(Token **t) :
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr),
-    _originalName(nullptr)
+    _originalName(nullptr),
+    valuetype(nullptr)
 {
 }
 
 Token::~Token()
 {
     delete _originalName;
+    delete valuetype;
 }
 
 void Token::update_property_info()
@@ -1508,3 +1510,12 @@ void Token::assignProgressValues(Token *tok)
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
         tok2->_progressValue = count++ * 100 / total_count;
 }
+
+void Token::setValueType(ValueType *vt)
+{
+    if (vt != valuetype) {
+        delete valuetype;
+        valuetype = vt;
+    }
+}
+

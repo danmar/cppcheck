@@ -1726,6 +1726,7 @@ bool Tokenizer::tokenize(std::istream &code,
             }
 
             list.createAst();
+            SymbolDatabase::setValueTypeInTokenList(list.front());
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
 

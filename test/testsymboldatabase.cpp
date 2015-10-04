@@ -262,6 +262,8 @@ private:
 
         TEST_CASE(lambda); // ticket #5867
         TEST_CASE(circularDependencies); // 6298
+
+        TEST_CASE(valuetype);
     }
 
     void array() const {
@@ -2942,6 +2944,37 @@ private:
               "	E c;\n"
               "	c.f();\n"
               "}");
+    }
+
+    std::string typeOf(const char code[], const char str[]) {
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.getSymbolDatabase();
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(),str);
+        return tok->valueType()->str();
+    }
+
+    void valuetype() {
+        // Constant calculations
+        ASSERT_EQUALS("int",   typeOf("1 + 2", "+"));
+        //ASSERT_EQUALS("long", typeOf("1L + 2", "+"));
+        //ASSERT_EQUALS("long long", typeOf("1LL + 2", "+"));
+        ASSERT_EQUALS("float", typeOf("1.2f + 3", "+"));
+        ASSERT_EQUALS("float", typeOf("1 + 2.3f", "+"));
+
+        // char *
+        ASSERT_EQUALS("char*", typeOf("\"hello\" + 1", "+"));
+        ASSERT_EQUALS("char",  typeOf("\"hello\"[1]", "["));
+        ASSERT_EQUALS("char",  typeOf("*\"hello\"", "*"));
+
+        // Variable calculations
+        ASSERT_EQUALS("int",   typeOf("int x; a = x + 1;", "+"));
+        ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
+
+        // array..
+        ASSERT_EQUALS("int*", typeOf("int x[10]; a = x + 1;", "+"));
+        ASSERT_EQUALS("int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
     }
 };
 

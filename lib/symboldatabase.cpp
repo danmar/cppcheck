@@ -3649,3 +3649,168 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
 {
     return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }
+
+static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type, unsigned int pointer)
+{
+    tok->setValueType(new ValueType(sign,type,pointer));
+    Token *parent = const_cast<Token *>(tok->astParent());
+    if (!parent || parent->valueType())
+        return;
+    if (!parent->astOperand1() || !parent->astOperand1()->valueType())
+        return;
+
+    if (parent->str() == "[" && pointer > 0U) {
+        setValueType(parent, sign, type, pointer - 1U);
+        return;
+    }
+    if (parent->str() == "*" && !parent->astOperand2() && pointer > 0U) {
+        setValueType(parent, sign, type, pointer - 1U);
+        return;
+    }
+
+    if (parent->astOperand2() && !parent->astOperand2()->valueType())
+        return;
+    const ValueType *vt1 = parent->astOperand1()->valueType();
+    const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
+    if (parent->isArithmeticalOp() && vt2) {
+        if (vt1->pointer != 0U && vt2->pointer == 0U) {
+            setValueType(parent, vt1->sign, vt1->type, vt1->pointer);
+            return;
+        }
+
+        if (vt1->pointer == 0U && vt2->pointer != 0U) {
+            setValueType(parent, vt2->sign, vt2->type, vt2->pointer);
+            return;
+        }
+
+        if (vt1->pointer != 0U) { // result is pointer diff
+            setValueType(parent, ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U);
+            return;
+        }
+
+        if (vt1->type == ValueType::Type::DOUBLE || vt2->type == ValueType::Type::DOUBLE) {
+            setValueType(parent, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U);
+            return;
+        }
+        if (vt1->type == ValueType::Type::FLOAT || vt2->type == ValueType::Type::FLOAT) {
+            setValueType(parent, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U);
+            return;
+        }
+        if (vt1->isIntegral() && vt2->isIntegral()) {
+            ValueType::Type t = (vt1->type > vt2->type) ? vt1->type : vt2->type;
+            setValueType(parent, ValueType::Sign::UNKNOWN_SIGN, t, 0U);
+            return;
+        }
+    }
+}
+
+void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
+{
+    for (Token *tok = tokens; tok; tok = tok->next())
+        tok->setValueType(nullptr);
+
+    for (Token *tok = tokens; tok; tok = tok->next()) {
+        if (tok->isNumber()) {
+            if (MathLib::isFloat(tok->str()))
+                ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U);
+            if (MathLib::isInt(tok->str()))
+                ::setValueType(tok, (tok->str()[0] == '-') ? ValueType::Sign::SIGNED : ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::INT, 0U);
+        } else if (tok->isComparisonOp())
+            ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U);
+        else if (tok->tokType() == Token::eChar)
+            ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U);
+        else if (tok->tokType() == Token::eString)
+            ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U);
+        else if (tok->str() == "(") {
+            // cast
+            if (!tok->astOperand2() && !Token::Match(tok, "( %name%")) {
+                ValueType::Sign s = ValueType::Sign::UNKNOWN_SIGN;
+                ValueType::Type t = ValueType::Type::UNKNOWN_TYPE;
+                unsigned int p = 0;
+                const Token *tok2;
+                for (tok2 = tok->next(); Token::Match(tok2, "%name%|*"); tok2 = tok2->next()) {
+                    if (tok2->str() == "signed")
+                        s = ValueType::Sign::SIGNED;
+                    else if (tok2->str() == "unsigned")
+                        s = ValueType::Sign::UNSIGNED;
+                    else if (tok2->str() == "bool")
+                        t = ValueType::Type::BOOL;
+                    else if (tok2->str() == "char")
+                        t = ValueType::Type::CHAR;
+                    else if (tok2->str() == "short")
+                        t = ValueType::Type::SHORT;
+                    else if (tok2->str() == "int")
+                        t = ValueType::Type::INT;
+                    else if (tok2->str() == "long")
+                        t = ValueType::Type::LONG;
+                    else if (tok2->str() == "struct")
+                        t = ValueType::Type::NONSTD;
+                    else if (tok2->str() == "*")
+                        p++;
+                }
+                if (tok2 && tok2->str() == ")" && t != ValueType::Type::UNKNOWN_TYPE)
+                    ::setValueType(tok, s, t, p);
+            }
+        } else if (tok->variable()) {
+            const Variable *var = tok->variable();
+            ValueType::Sign sign = ValueType::Sign::UNKNOWN_SIGN;
+            ValueType::Type type = ValueType::Type::UNKNOWN_TYPE;
+            unsigned int p = var->dimensions().size();
+            for (const Token *typeTok = var->typeStartToken(); Token::Match(typeTok, "%name%|*|&"); typeTok = typeTok->next()) {
+                if (typeTok->isUnsigned())
+                    sign = ValueType::Sign::UNSIGNED;
+                else if (typeTok->isSigned())
+                    sign = ValueType::Sign::SIGNED;
+                if (typeTok->isStandardType()) {
+                    if (typeTok->str() == "bool")
+                        type = ValueType::Type::BOOL;
+                    else if (typeTok->str() == "char")
+                        type = ValueType::Type::CHAR;
+                    else if (typeTok->str() == "short")
+                        type = ValueType::Type::SHORT;
+                    else if (typeTok->str() == "int")
+                        type = ValueType::Type::INT;
+                    else if (typeTok->str() == "long")
+                        type = ValueType::Type::LONG;
+                    else if (typeTok->str() == "float")
+                        type = ValueType::Type::FLOAT;
+                    else if (typeTok->str() == "double")
+                        type = ValueType::Type::DOUBLE;
+                }
+                if (typeTok->str() == "*")
+                    p++;
+            }
+            if (type >= ValueType::Type::BOOL)
+                ::setValueType(tok, sign, type, p);
+        }
+    }
+}
+
+std::string ValueType::str() const
+{
+    std::string ret;
+    if (isIntegral()) {
+        if (sign == SIGNED)
+            ret = "signed ";
+        else if (sign == UNSIGNED)
+            ret = "unsigned ";
+        if (type == BOOL)
+            ret += "bool";
+        else if (type == CHAR)
+            ret += "char";
+        else if (type == SHORT)
+            ret += "short";
+        else if (type == INT)
+            ret += "int";
+        else if (type == LONG)
+            ret += "long";
+        else if (type == LONGLONG)
+            ret += "long long";
+    } else if (type == FLOAT)
+        ret = "float";
+    else if (type == DOUBLE)
+        ret = "double";
+    for (int p = 0; p < pointer; p++)
+        ret += "*";
+    return ret;
+}
