@@ -1045,6 +1045,7 @@ public:
     enum Type {UNKNOWN_TYPE, NONSTD, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, FLOAT, DOUBLE} type;
     unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
 
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U) {}
     ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p) {}
 
     bool isIntegral() const {

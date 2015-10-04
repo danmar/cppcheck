@@ -3704,6 +3704,38 @@ static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type,
     }
 }
 
+static const Token * parsedecl(const Token *type, ValueType * const valuetype)
+{
+    valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
+    valuetype->type = ValueType::Type::UNKNOWN_TYPE;
+    while (Token::Match(type, "%name%|*|&") && !type->variable()) {
+        if (type->str() == "signed")
+            valuetype->sign = ValueType::Sign::SIGNED;
+        else if (type->str() == "unsigned")
+            valuetype->sign = ValueType::Sign::UNSIGNED;
+        else if (type->str() == "bool")
+            valuetype->type = ValueType::Type::BOOL;
+        else if (type->str() == "char")
+            valuetype->type = ValueType::Type::CHAR;
+        else if (type->str() == "short")
+            valuetype->type = ValueType::Type::SHORT;
+        else if (type->str() == "int")
+            valuetype->type = ValueType::Type::INT;
+        else if (type->str() == "long")
+            valuetype->type = ValueType::Type::LONG;
+        else if (type->str() == "float")
+            valuetype->type = ValueType::Type::FLOAT;
+        else if (type->str() == "double")
+            valuetype->type = ValueType::Type::DOUBLE;
+        else if (type->str() == "struct")
+            valuetype->type = ValueType::Type::NONSTD;
+        else if (type->str() == "*")
+            valuetype->pointer++;
+        type = type->next();
+    }
+    return (type && valuetype->type != ValueType::Type::UNKNOWN_TYPE) ? type : nullptr;
+}
+
 void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
 {
     for (Token *tok = tokens; tok; tok = tok->next())
@@ -3724,64 +3756,16 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
         else if (tok->str() == "(") {
             // cast
             if (!tok->astOperand2() && !Token::Match(tok, "( %name%")) {
-                ValueType::Sign s = ValueType::Sign::UNKNOWN_SIGN;
-                ValueType::Type t = ValueType::Type::UNKNOWN_TYPE;
-                unsigned int p = 0;
-                const Token *tok2;
-                for (tok2 = tok->next(); Token::Match(tok2, "%name%|*"); tok2 = tok2->next()) {
-                    if (tok2->str() == "signed")
-                        s = ValueType::Sign::SIGNED;
-                    else if (tok2->str() == "unsigned")
-                        s = ValueType::Sign::UNSIGNED;
-                    else if (tok2->str() == "bool")
-                        t = ValueType::Type::BOOL;
-                    else if (tok2->str() == "char")
-                        t = ValueType::Type::CHAR;
-                    else if (tok2->str() == "short")
-                        t = ValueType::Type::SHORT;
-                    else if (tok2->str() == "int")
-                        t = ValueType::Type::INT;
-                    else if (tok2->str() == "long")
-                        t = ValueType::Type::LONG;
-                    else if (tok2->str() == "struct")
-                        t = ValueType::Type::NONSTD;
-                    else if (tok2->str() == "*")
-                        p++;
-                }
-                if (tok2 && tok2->str() == ")" && t != ValueType::Type::UNKNOWN_TYPE)
-                    ::setValueType(tok, s, t, p);
+                ValueType valuetype;
+                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype), ")"))
+                    ::setValueType(tok, valuetype.sign, valuetype.type, valuetype.pointer);
             }
         } else if (tok->variable()) {
             const Variable *var = tok->variable();
-            ValueType::Sign sign = ValueType::Sign::UNKNOWN_SIGN;
-            ValueType::Type type = ValueType::Type::UNKNOWN_TYPE;
-            unsigned int p = var->dimensions().size();
-            for (const Token *typeTok = var->typeStartToken(); Token::Match(typeTok, "%name%|*|&"); typeTok = typeTok->next()) {
-                if (typeTok->isUnsigned())
-                    sign = ValueType::Sign::UNSIGNED;
-                else if (typeTok->isSigned())
-                    sign = ValueType::Sign::SIGNED;
-                if (typeTok->isStandardType()) {
-                    if (typeTok->str() == "bool")
-                        type = ValueType::Type::BOOL;
-                    else if (typeTok->str() == "char")
-                        type = ValueType::Type::CHAR;
-                    else if (typeTok->str() == "short")
-                        type = ValueType::Type::SHORT;
-                    else if (typeTok->str() == "int")
-                        type = ValueType::Type::INT;
-                    else if (typeTok->str() == "long")
-                        type = ValueType::Type::LONG;
-                    else if (typeTok->str() == "float")
-                        type = ValueType::Type::FLOAT;
-                    else if (typeTok->str() == "double")
-                        type = ValueType::Type::DOUBLE;
-                }
-                if (typeTok->str() == "*")
-                    p++;
-            }
-            if (type >= ValueType::Type::BOOL)
-                ::setValueType(tok, sign, type, p);
+            ValueType valuetype;
+            valuetype.pointer = var->dimensions().size();
+            if (parsedecl(var->typeStartToken(), &valuetype))
+                ::setValueType(tok, valuetype.sign, valuetype.type, valuetype.pointer);
         }
     }
 }
