@@ -1775,6 +1775,15 @@ private:
         value = valueOfTok(code, "+");
         ASSERT_EQUALS(13, value.intvalue);
         ASSERT(value.isPossible());
+
+        // known and possible value
+        code = "void f() {\n"
+               "    int x = 1;\n"
+               "    int y = 2 + x;\n" // <- known value, don't care about condition
+               "    if (x == 2) {}\n"
+               "}";
+        ASSERT_EQUALS(true,  testValueOfX(code, 3U, 1)); // value of x can be 1
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 2)); // value of x can't be 2
     }
 };
 

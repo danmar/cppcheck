@@ -358,6 +358,11 @@ static bool isVariableChanged(const Token *start, const Token *end, const unsign
 /** Add token value. Return true if value is added. */
 static bool addValue(Token *tok, const ValueFlow::Value &value)
 {
+    if (value.isKnown()) {
+        // Clear all other values since value is known
+        tok->values.clear();
+    }
+
     // if value already exists, don't add it again
     std::list<ValueFlow::Value>::iterator it;
     for (it = tok->values.begin(); it != tok->values.end(); ++it) {
