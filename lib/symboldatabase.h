@@ -1052,7 +1052,33 @@ public:
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::LONGLONG);
     }
 
-    std::string str() const;
+    std::string str() const  {
+        std::string ret;
+        if (isIntegral()) {
+            if (sign == SIGNED)
+                ret = "signed ";
+            else if (sign == UNSIGNED)
+                ret = "unsigned ";
+            if (type == BOOL)
+                ret += "bool";
+            else if (type == CHAR)
+                ret += "char";
+            else if (type == SHORT)
+                ret += "short";
+            else if (type == INT)
+                ret += "int";
+            else if (type == LONG)
+                ret += "long";
+            else if (type == LONGLONG)
+                ret += "long long";
+        } else if (type == FLOAT)
+            ret = "float";
+        else if (type == DOUBLE)
+            ret = "double";
+        for (int p = 0; p < pointer; p++)
+            ret += "*";
+        return ret;
+    }
 };
 
 
