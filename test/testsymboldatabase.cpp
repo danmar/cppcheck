@@ -2969,12 +2969,17 @@ private:
         ASSERT_EQUALS("char",  typeOf("*\"hello\"", "*"));
 
         // Variable calculations
-        ASSERT_EQUALS("int",   typeOf("int x; a = x + 1;", "+"));
+        ASSERT_EQUALS("int", typeOf("int x; a = x + 1;", "+"));
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
+        ASSERT_EQUALS("signed int", typeOf("signed x; a = x + 1;", "x +"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned x; a = x + 1;", "x +"));
 
         // array..
         ASSERT_EQUALS("int*", typeOf("int x[10]; a = x + 1;", "+"));
         ASSERT_EQUALS("int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
+
+        // cast..
+        ASSERT_EQUALS("char", typeOf("a = (char)32;", "("));
     }
 };
 

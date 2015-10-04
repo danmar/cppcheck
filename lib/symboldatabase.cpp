@@ -3709,11 +3709,11 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     while (Token::Match(type, "%name%|*|&") && !type->variable()) {
-        if (type->str() == "signed")
+        if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
-        else if (type->str() == "unsigned")
+        else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
-        else if (type->str() == "bool")
+        if (type->str() == "bool")
             valuetype->type = ValueType::Type::BOOL;
         else if (type->str() == "char")
             valuetype->type = ValueType::Type::CHAR;
@@ -3755,7 +3755,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
             ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U);
         else if (tok->str() == "(") {
             // cast
-            if (!tok->astOperand2() && !Token::Match(tok, "( %name%")) {
+            if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->next(), &valuetype), ")"))
                     ::setValueType(tok, valuetype.sign, valuetype.type, valuetype.pointer);
