@@ -1361,6 +1361,33 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     , address(false)
     , isCPP(_isCPP)
 {
+    // Use AST type info
+    // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
+    if (tok && !Token::Match(tok, "&| %str%|%num%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
+        const ValueType *valuetype = tok->argumentType();
+        if (valuetype && valuetype->type >= ValueType::Type::BOOL && !valuetype->pointer) {
+            tempToken = new Token(0);
+            if (valuetype->type <= ValueType::INT)
+                tempToken->str("int");
+            else if (valuetype->type == ValueType::LONG)
+                tempToken->str("long");
+            else if (valuetype->type == ValueType::LONGLONG)
+                tempToken->str("long");
+            else if (valuetype->type == ValueType::FLOAT)
+                tempToken->str("float");
+            else if (valuetype->type == ValueType::DOUBLE)
+                tempToken->str("double");
+            if (valuetype->isIntegral()) {
+                if (valuetype->sign == ValueType::Sign::UNSIGNED)
+                    tempToken->isUnsigned(true);
+                else if (valuetype->sign == ValueType::Sign::SIGNED)
+                    tempToken->isSigned(true);
+            }
+            typeToken = tempToken;
+            return;
+        }
+    }
+
     if (tok) {
         if (tok->tokType() == Token::eString) {
             typeToken = tok;

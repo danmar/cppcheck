@@ -58,6 +58,8 @@ private:
 
         TEST_CASE(testTernary); // ticket #6182
         TEST_CASE(testUnsignedConst); // ticket #6132
+
+        TEST_CASE(testAstType); // #7014
     }
 
     void check(const char code[], bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -2781,7 +2783,7 @@ private:
               "    printf(\"%s\", newline ? a : str + len);\n"
               "    printf(\"%s\", newline + newline);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires 'char *' but the argument type is 'int'.\n", errout.str());
 
         check("struct Fred { int i; } f;\n"
               "struct Fred & bar() { };\n"
@@ -3723,6 +3725,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testAstType() { // ticket #7014
+        check("void test() {\n"
+              "    printf(\"%c\", \"hello\"[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIO)
