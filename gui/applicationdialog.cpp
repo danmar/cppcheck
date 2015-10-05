@@ -53,11 +53,11 @@ ApplicationDialog::~ApplicationDialog()
 void ApplicationDialog::Browse()
 {
     QString filter;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     // In Windows (almost) all executables have .exe extension
     // so it does not make sense to show everything.
     filter += tr("Executable files (*.exe);;All files(*.*)");
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
     QString selectedFile = QFileDialog::getOpenFileName(this,
                            tr("Select viewer application"),
                            GetPath(SETTINGS_LAST_APP_PATH),

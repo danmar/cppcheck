@@ -624,7 +624,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         //Replace (file) with filename
         QString file = data["file"].toString();
         file = QDir::toNativeSeparators(file);
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         file.replace(QString("\\"), QString("\\\\"));
 #endif
         qDebug() << "Opening file: " << file;
@@ -667,14 +667,14 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         QString program = app.getPath();
 
         // In Windows we must surround paths including spaces with quotation marks.
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         if (program.indexOf(" ") > -1) {
             if (!program.startsWith('"') && !program.endsWith('"')) {
                 program.insert(0, "\"");
                 program.append("\"");
             }
         }
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
 
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
