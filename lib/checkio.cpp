@@ -1361,9 +1361,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     , address(false)
     , isCPP(_isCPP)
 {
+    if (!tok)
+        return;
+
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (tok && !Token::Match(tok, "&| %str%|%num%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
+    if (!Token::Match(tok, "&| %str%|%num%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
         const ValueType *valuetype = tok->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL && !valuetype->pointer) {
             tempToken = new Token(0);
@@ -1388,130 +1391,129 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
         }
     }
 
-    if (tok) {
-        if (tok->tokType() == Token::eString) {
-            typeToken = tok;
+
+    if (tok->tokType() == Token::eString) {
+        typeToken = tok;
+        return;
+    } else if (tok->str() == "&" || tok->tokType() == Token::eVariable ||
+               tok->tokType() == Token::eFunction || Token::Match(tok, "%type% ::") ||
+               (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
+                Token::simpleMatch(tok->linkAt(1), "> (") &&
+                Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
+        if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
+            typeToken = tok->tokAt(2);
+            while (typeToken->str() == "const" || typeToken->str() == "extern")
+                typeToken = typeToken->next();
             return;
-        } else if (tok->str() == "&" || tok->tokType() == Token::eVariable ||
-                   tok->tokType() == Token::eFunction || Token::Match(tok, "%type% ::") ||
-                   (Token::Match(tok, "static_cast|reinterpret_cast|const_cast <") &&
-                    Token::simpleMatch(tok->linkAt(1), "> (") &&
-                    Token::Match(tok->linkAt(1)->linkAt(1), ") ,|)"))) {
-            if (Token::Match(tok, "static_cast|reinterpret_cast|const_cast")) {
-                typeToken = tok->tokAt(2);
-                while (typeToken->str() == "const" || typeToken->str() == "extern")
-                    typeToken = typeToken->next();
-                return;
-            }
-            if (tok->str() == "&") {
-                address = true;
-                tok = tok->next();
-            }
-            while (Token::Match(tok, "%type% ::"))
-                tok = tok->tokAt(2);
-            if (!tok || !(tok->tokType() == Token::eVariable || tok->tokType() == Token::eFunction))
-                return;
-            const Token *varTok = nullptr;
-            const Token *tok1 = tok->next();
-            for (; tok1; tok1 = tok1->next()) {
-                if (tok1->str() == "," || tok1->str() == ")") {
-                    if (tok1->previous()->str() == "]") {
-                        varTok = tok1->linkAt(-1)->previous();
-                        if (varTok->str() == ")" && varTok->link()->previous()->tokType() == Token::eFunction) {
-                            const Function * function = varTok->link()->previous()->function();
-                            if (function && function->retDef) {
-                                typeToken = function->retDef;
-                                while (typeToken->str() == "const" || typeToken->str() == "extern")
-                                    typeToken = typeToken->next();
-                                functionInfo = function;
-                                element = true;
-                            }
-                            return;
-                        }
-                    } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->tokType() == Token::eFunction) {
-                        const Function * function = tok1->linkAt(-1)->previous()->function();
+        }
+        if (tok->str() == "&") {
+            address = true;
+            tok = tok->next();
+        }
+        while (Token::Match(tok, "%type% ::"))
+            tok = tok->tokAt(2);
+        if (!tok || !(tok->tokType() == Token::eVariable || tok->tokType() == Token::eFunction))
+            return;
+        const Token *varTok = nullptr;
+        const Token *tok1 = tok->next();
+        for (; tok1; tok1 = tok1->next()) {
+            if (tok1->str() == "," || tok1->str() == ")") {
+                if (tok1->previous()->str() == "]") {
+                    varTok = tok1->linkAt(-1)->previous();
+                    if (varTok->str() == ")" && varTok->link()->previous()->tokType() == Token::eFunction) {
+                        const Function * function = varTok->link()->previous()->function();
                         if (function && function->retDef) {
                             typeToken = function->retDef;
                             while (typeToken->str() == "const" || typeToken->str() == "extern")
                                 typeToken = typeToken->next();
                             functionInfo = function;
-                            element = false;
+                            element = true;
                         }
                         return;
-                    } else
-                        varTok = tok1->previous();
-                    break;
-                } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
-                    tok1 = tok1->link();
-                else if (tok1->link() && tok1->str() == "<")
-                    tok1 = tok1->link();
-
-                // check for some common well known functions
-                else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
-                                   (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
-                    tempToken = new Token(0);
-                    tempToken->fileIndex(tok1->fileIndex());
-                    tempToken->linenr(tok1->linenr());
-                    if (tok1->next()->str() == "size") {
-                        // size_t is platform dependent
-                        if (settings->sizeof_size_t == 8) {
-                            tempToken->str("long");
-                            if (settings->sizeof_long != 8)
-                                tempToken->isLong(true);
-                        } else if (settings->sizeof_size_t == 4) {
-                            if (settings->sizeof_long == 4) {
-                                tempToken->str("long");
-                            } else {
-                                tempToken->str("int");
-                            }
-                        }
-
-                        tempToken->originalName("size_t");
-                        tempToken->isUnsigned(true);
-                    } else if (tok1->next()->str() == "empty") {
-                        tempToken->str("bool");
-                    } else if (tok1->next()->str() == "c_str") {
-                        tempToken->str("const");
-                        tempToken->insertToken("*");
-                        if (typeToken->strAt(2) == "string")
-                            tempToken->insertToken("char");
-                        else
-                            tempToken->insertToken("wchar_t");
                     }
-                    typeToken = tempToken;
+                } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->tokType() == Token::eFunction) {
+                    const Function * function = tok1->linkAt(-1)->previous()->function();
+                    if (function && function->retDef) {
+                        typeToken = function->retDef;
+                        while (typeToken->str() == "const" || typeToken->str() == "extern")
+                            typeToken = typeToken->next();
+                        functionInfo = function;
+                        element = false;
+                    }
                     return;
-                }
-
-                // check for std::vector::at() and std::string::at()
-                else if (Token::Match(tok1->previous(), "%var% . at (") &&
-                         Token::Match(tok1->linkAt(2), ") [,)]")) {
+                } else
                     varTok = tok1->previous();
-                    variableInfo = varTok->variable();
+                break;
+            } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
+                tok1 = tok1->link();
+            else if (tok1->link() && tok1->str() == "<")
+                tok1 = tok1->link();
 
-                    if (!variableInfo || !isStdVectorOrString()) {
-                        variableInfo = 0;
-                        typeToken = 0;
+            // check for some common well known functions
+            else if (isCPP && ((Token::Match(tok1->previous(), "%var% . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous())) ||
+                               (Token::Match(tok1->previous(), "] . size|empty|c_str ( ) [,)]") && isStdContainer(tok1->previous()->link()->previous())))) {
+                tempToken = new Token(0);
+                tempToken->fileIndex(tok1->fileIndex());
+                tempToken->linenr(tok1->linenr());
+                if (tok1->next()->str() == "size") {
+                    // size_t is platform dependent
+                    if (settings->sizeof_size_t == 8) {
+                        tempToken->str("long");
+                        if (settings->sizeof_long != 8)
+                            tempToken->isLong(true);
+                    } else if (settings->sizeof_size_t == 4) {
+                        if (settings->sizeof_long == 4) {
+                            tempToken->str("long");
+                        } else {
+                            tempToken->str("int");
+                        }
                     }
 
-                    return;
-                } else if (!(tok1->str() == "." || tok1->tokType() == Token::eVariable || tok1->tokType() == Token::eFunction))
-                    return;
+                    tempToken->originalName("size_t");
+                    tempToken->isUnsigned(true);
+                } else if (tok1->next()->str() == "empty") {
+                    tempToken->str("bool");
+                } else if (tok1->next()->str() == "c_str") {
+                    tempToken->str("const");
+                    tempToken->insertToken("*");
+                    if (typeToken->strAt(2) == "string")
+                        tempToken->insertToken("char");
+                    else
+                        tempToken->insertToken("wchar_t");
+                }
+                typeToken = tempToken;
+                return;
             }
 
-            if (varTok) {
+            // check for std::vector::at() and std::string::at()
+            else if (Token::Match(tok1->previous(), "%var% . at (") &&
+                     Token::Match(tok1->linkAt(2), ") [,)]")) {
+                varTok = tok1->previous();
                 variableInfo = varTok->variable();
-                element = tok1->previous()->str() == "]";
 
-                // look for std::vector operator [] and use template type as return type
-                if (variableInfo) {
-                    if (element && isStdVectorOrString()) { // isStdVectorOrString sets type token if true
-                        element = false;    // not really an array element
-                    } else
-                        typeToken = variableInfo->typeStartToken();
+                if (!variableInfo || !isStdVectorOrString()) {
+                    variableInfo = 0;
+                    typeToken = 0;
                 }
 
                 return;
+            } else if (!(tok1->str() == "." || tok1->tokType() == Token::eVariable || tok1->tokType() == Token::eFunction))
+                return;
+        }
+
+        if (varTok) {
+            variableInfo = varTok->variable();
+            element = tok1->previous()->str() == "]";
+
+            // look for std::vector operator [] and use template type as return type
+            if (variableInfo) {
+                if (element && isStdVectorOrString()) { // isStdVectorOrString sets type token if true
+                    element = false;    // not really an array element
+                } else
+                    typeToken = variableInfo->typeStartToken();
             }
+
+            return;
         }
     }
 }
