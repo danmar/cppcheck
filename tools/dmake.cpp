@@ -313,6 +313,12 @@ int main(int argc, char **argv)
          << "endif # COMSPEC\n"
          << "\n";
 
+    // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
+    makeConditionalVariable(fout, "CXX", "g++");
+    fout << "ifeq ($(CXX), clang++)\n"
+         << "    CPPCHK_GLIBCXX_DEBUG=\n"
+         << "endif\n";
+
     // Makefile settings..
     if (release) {
         makeConditionalVariable(fout, "CXXFLAGS", "-O2 -include lib/cxx11emu.h -DNDEBUG -Wall -Wno-sign-compare");
@@ -358,7 +364,6 @@ int main(int argc, char **argv)
          << "    endif\n"
          << "endif\n\n";
 
-    makeConditionalVariable(fout, "CXX", "g++");
     makeConditionalVariable(fout, "PREFIX", "/usr");
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -Iexternals/tinyxml");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Iexternals/tinyxml");

@@ -72,6 +72,13 @@ ifdef COMSPEC
     endif # CYGWIN
 endif # COMSPEC
 
+ifndef CXX
+    CXX=g++
+endif
+
+ifeq ($(CXX), clang++)
+    CPPCHK_GLIBCXX_DEBUG=
+endif
 ifndef CXXFLAGS
     CXXFLAGS=-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
@@ -83,10 +90,6 @@ ifeq ($(HAVE_RULES),yes)
     else
         LIBS=$(shell pcre-config --libs)
     endif
-endif
-
-ifndef CXX
-    CXX=g++
 endif
 
 ifndef PREFIX
