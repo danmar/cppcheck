@@ -1368,9 +1368,17 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
     if (!Token::Match(tok, "&| %str%|%num%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
         const ValueType *valuetype = tok->argumentType();
-        if (valuetype && valuetype->type >= ValueType::Type::BOOL && !valuetype->pointer) {
+        if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
             tempToken = new Token(0);
-            if (valuetype->type <= ValueType::INT)
+            if (valuetype->pointer == 0U && valuetype->type <= ValueType::INT)
+                tempToken->str("int");
+            else if (valuetype->type == ValueType::BOOL)
+                tempToken->str("bool");
+            else if (valuetype->type == ValueType::CHAR)
+                tempToken->str("char");
+            else if (valuetype->type == ValueType::SHORT)
+                tempToken->str("short");
+            else if (valuetype->type == ValueType::INT)
                 tempToken->str("int");
             else if (valuetype->type == ValueType::LONG)
                 tempToken->str("long");
@@ -1387,6 +1395,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                 else if (valuetype->sign == ValueType::Sign::SIGNED)
                     tempToken->isSigned(true);
             }
+            for (unsigned int p = 0; p < valuetype->pointer; p++)
+                tempToken->insertToken("*");
             typeToken = tempToken;
             return;
         }

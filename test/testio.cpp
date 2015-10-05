@@ -3736,6 +3736,10 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void test() {\n"
+              "    printf(\"%i\", (short *)x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'short *'.\n", errout.str());
     }
 };
 
