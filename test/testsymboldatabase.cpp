@@ -2980,6 +2980,9 @@ private:
 
         // cast..
         ASSERT_EQUALS("char", typeOf("a = (char)32;", "("));
+        ASSERT_EQUALS("long", typeOf("a = (long)32;", "("));
+        ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));
+        ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
     }
 };
 

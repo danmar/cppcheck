@@ -3730,6 +3730,12 @@ private:
               "    printf(\"%c\", \"hello\"[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void test() {\n"
+              "    printf(\"%lld\", (long long)1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

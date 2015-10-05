@@ -1374,9 +1374,10 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                 tempToken->str("int");
             else if (valuetype->type == ValueType::LONG)
                 tempToken->str("long");
-            else if (valuetype->type == ValueType::LONGLONG)
+            else if (valuetype->type == ValueType::LONGLONG) {
                 tempToken->str("long");
-            else if (valuetype->type == ValueType::FLOAT)
+                tempToken->isLong(true);
+            } else if (valuetype->type == ValueType::FLOAT)
                 tempToken->str("float");
             else if (valuetype->type == ValueType::DOUBLE)
                 tempToken->str("double");

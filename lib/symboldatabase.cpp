@@ -3722,7 +3722,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
         else if (type->str() == "int")
             valuetype->type = ValueType::Type::INT;
         else if (type->str() == "long")
-            valuetype->type = ValueType::Type::LONG;
+            valuetype->type = type->isLong() ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
         else if (type->str() == "float")
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
