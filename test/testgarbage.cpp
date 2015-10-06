@@ -170,6 +170,7 @@ private:
         TEST_CASE(garbageCode128); // #7018
         TEST_CASE(garbageCode129); // #7020
         TEST_CASE(garbageCode130); // #7021
+        TEST_CASE(garbageCode131); // #7023
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -982,6 +983,12 @@ private:
         ASSERT_THROW(checkCode("enum { FOO = ( , ){ } { { } } { { FOO} = } ( ) } { { } } enumL\" ( enumL\" { { FOO } ( ) } { { } } ;"),
                      InternalError);
     }
+
+    void garbageCode131() {
+        checkCode("( void ) { ( ) } ( ) / { ( ) }");
+        // actually the invalid code should trigger an syntax error...
+    }
+
 
     void garbageValueFlow() {
         // #6089

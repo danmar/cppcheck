@@ -1075,7 +1075,7 @@ public:
             ret = "float";
         else if (type == DOUBLE)
             ret = "double";
-        for (int p = 0; p < pointer; p++)
+        for (unsigned int p = 0; p < pointer; p++)
             ret += "*";
         return ret;
     }

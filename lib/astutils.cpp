@@ -47,7 +47,7 @@ bool astIsIntegral(const Token *tok, bool unknown)
             return false;
 
         // Function call
-        if (tok->previous()->function()) {
+        if (tok->previous() && tok->previous()->function()) {
             if (Token::Match(tok->previous()->function()->retDef, "float|double"))
                 return false;
             else if (Token::Match(tok->previous()->function()->retDef, "bool|char|short|int|long"))
