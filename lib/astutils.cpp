@@ -24,16 +24,6 @@
 #include "tokenize.h"
 #include <set>
 
-static bool isChar(const Variable* var)
-{
-    return (var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
-}
-
-static bool isSignedChar(const Variable* var)
-{
-    return (isChar(var) && !var->typeStartToken()->isUnsigned());
-}
-
 bool astIsSignedChar(const Token *tok)
 {
     return tok && tok->valueType() && tok->valueType()->sign != ValueType::Sign::UNSIGNED && tok->valueType()->type == ValueType::Type::CHAR && tok->valueType()->pointer == 0U;
