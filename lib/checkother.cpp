@@ -1475,42 +1475,38 @@ void CheckOther::checkCharVariable()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%var% [") && astIsSignedChar(tok->next()->astOperand2())) {
-                const Variable* arrayvar = tok->variable();
-                const MathLib::bigint arraysize = (arrayvar && arrayvar->isArray()) ? arrayvar->dimension(0U) : 0;
-                if (arraysize > 0x80)
+            if (Token::Match(tok, "%var% [")) {
+                if (!tok->variable() || !tok->variable()->isArray())
+                    continue;
+                const Token *index = tok->next()->astOperand2();
+                if (astIsSignedChar(index) && index->getValueGE(0x80, _settings))
                     charArrayIndexError(tok);
             }
-
-            else if (Token::Match(tok, "[&|^]")) {
-                // Don't care about address-of operator
-                if (!tok->astOperand2())
-                    continue;
-
-                const Token *tok2;
-                if (tok->astOperand1() && astIsSignedChar(tok->astOperand1()))
-                    tok2 = tok->astOperand2();
-                else if (astIsSignedChar(tok->astOperand2()))
-                    tok2 = tok->astOperand1();
-                else
-                    continue;
-
-                // it's ok with a bitwise and where the other operand is 0xff or less..
-                if (tok->str() == "&" && tok2 && tok2->isNumber() && MathLib::isGreater("0x100", tok2->str()))
+            if (Token::Match(tok, "[&|^]") && tok->astOperand2()) {
+                bool warn = false;
+                if (astIsSignedChar(tok->astOperand1())) {
+                    const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, _settings);
+                    const ValueFlow::Value *v2 = tok->astOperand2()->getMaxValue(false);
+                    if (!v1)
+                        v1 = tok->astOperand1()->getValueGE(0x80, _settings);
+                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
+                        warn = true;
+                }
+                if (!warn && astIsSignedChar(tok->astOperand2())) {
+                    const ValueFlow::Value *v1 = tok->astOperand2()->getValueLE(-1, _settings);
+                    const ValueFlow::Value *v2 = tok->astOperand1()->getMaxValue(false);
+                    if (!v1)
+                        v1 = tok->astOperand2()->getValueGE(0x80, _settings);
+                    if (v1 && !(tok->str() == "&" && v2 && v2->isKnown() && v2->intvalue >= 0 && v2->intvalue < 0x100))
+                        warn = true;
+                }
+                if (!warn)
                     continue;
 
                 // is the result stored in a short|int|long?
-                if (tok->astParent() && tok->astParent()->str() == "=") {
-                    const Token *eq = tok->astParent();
-                    const Token *lhs = eq->astOperand1();
-                    if (lhs && lhs->str() == "*" && !lhs->astOperand2())
-                        lhs = lhs->astOperand1();
-                    while (lhs && (lhs->str() == "." || lhs->str() == "::"))
-                        lhs = lhs->astOperand2();
-                    if (!lhs || !lhs->isName())
-                        continue;
-                    const Variable *var = lhs->variable();
-                    if (var && var->isIntegralType() && var->typeStartToken()->str() != "char")
+                if (Token::simpleMatch(tok->astParent(), "=")) {
+                    const Token *lhs = tok->astParent()->astOperand1();
+                    if (lhs && lhs->valueType() && lhs->valueType()->type >= ValueType::Type::SHORT)
                         charBitOpError(tok); // This is an error..
                 }
             }

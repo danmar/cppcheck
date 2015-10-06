@@ -26,7 +26,7 @@
 
 bool astIsSignedChar(const Token *tok)
 {
-    return tok && tok->valueType() && tok->valueType()->sign != ValueType::Sign::UNSIGNED && tok->valueType()->type == ValueType::Type::CHAR && tok->valueType()->pointer == 0U;
+    return tok && tok->valueType() && tok->valueType()->sign == ValueType::Sign::SIGNED && tok->valueType()->type == ValueType::Type::CHAR && tok->valueType()->pointer == 0U;
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
