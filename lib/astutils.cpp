@@ -36,18 +36,7 @@ static bool isSignedChar(const Variable* var)
 
 bool astIsSignedChar(const Token *tok)
 {
-    if (!tok)
-        return false;
-    if (tok->str() == "*" && tok->astOperand1() && !tok->astOperand2()) {
-        const Variable *var = tok->astOperand1()->variable();
-        if (!var || !var->isPointer())
-            return false;
-        const Token *type = var->typeStartToken();
-        while (type && type->str() == "const")
-            type = type->next();
-        return (type && type->str() == "char" && !type->isUnsigned());
-    }
-    return isSignedChar(tok->variable());
+    return tok && tok->valueType() && tok->valueType()->sign != ValueType::Sign::UNSIGNED && tok->valueType()->type == ValueType::Type::CHAR && tok->valueType()->pointer == 0U;
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
