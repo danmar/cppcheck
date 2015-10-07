@@ -1262,4 +1262,5 @@ private:
                            "[test.c:1]: (error) Mismatching allocation and deallocation: MyHeap\n[test.c:1]: (error) Memory leak: b\n", errout.str());
     }
 };
-static TestLeakAutoVarWindows testLeakAutoVarWindows;
+
+REGISTER_TEST(TestLeakAutoVarWindows)

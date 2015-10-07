@@ -90,7 +90,7 @@ extern std::ostringstream warnings;
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT( CONDITION ) { bool condition=CONDITION; todoAssertEquals(__FILE__, __LINE__, true, false, condition); }
 #define TODO_ASSERT_EQUALS( WANTED , CURRENT , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
-#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
+#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_##CLASSNAME; }
 
 #ifdef _WIN32
 #define LOAD_LIB_2( LIB, NAME ) { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } }

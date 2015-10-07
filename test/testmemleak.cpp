@@ -107,7 +107,7 @@ private:
     }
 };
 
-static TestMemleak testMemleak;
+REGISTER_TEST(TestMemleak)
 
 
 
@@ -4288,15 +4288,7 @@ private:
     }
 };
 
-static TestMemleakInFunction testMemleakInFunction;
-
-
-
-
-
-
-
-
+REGISTER_TEST(TestMemleakInFunction)
 
 
 
@@ -5558,7 +5550,7 @@ private:
     }
 };
 
-static TestMemleakInClass testMemleakInClass;
+REGISTER_TEST(TestMemleakInClass)
 
 
 
@@ -6180,8 +6172,7 @@ private:
     }
 };
 
-
-static TestMemleakStructMember testMemleakStructMember;
+REGISTER_TEST(TestMemleakStructMember)
 
 
 
@@ -6505,7 +6496,7 @@ private:
         ASSERT_EQUALS("[test.c:1]: (error) Memory leak: a\n", errout.str());
     }
 };
-static TestMemleakGLib testMemleakGLib;
+REGISTER_TEST(TestMemleakGLib)
 
 
 
@@ -6555,4 +6546,5 @@ private:
         TODO_ASSERT_EQUALS("", "[test.c:1]: (error) Resource leak: hFile\n", errout.str());
     }
 };
-static TestMemleakWindows testMemleakWindows;
+
+REGISTER_TEST(TestMemleakWindows)
