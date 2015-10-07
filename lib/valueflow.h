@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <string>
+#include "config.h"
 
 class Token;
 class TokenList;
