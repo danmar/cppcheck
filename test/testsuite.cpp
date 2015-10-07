@@ -86,7 +86,6 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << testname << std::endl;
         }
-        _lib = Library();
         currentTest = classname + "::" + testname;
         return true;
     }

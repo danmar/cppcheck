@@ -135,9 +135,6 @@ private:
     /** Disable assignment operator, no implementation */
     TokenList &operator=(const TokenList &);
 
-public:
-
-private: /// private
     /** Token list */
     Token *_front, *_back;
 

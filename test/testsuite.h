@@ -24,7 +24,6 @@
 #include <set>
 #include "errorlogger.h"
 #include "redirect.h"
-#include "library.h"
 
 class options;
 
@@ -38,7 +37,6 @@ private:
     static std::set<std::string> missingLibs;
 
 protected:
-    Library _lib;
     std::string classname;
     std::string testToRun;
     bool gcc_style_errors;
@@ -50,7 +48,6 @@ protected:
     bool prepareTest(const char testname[]);
 
     void assert_(const char *filename, unsigned int linenr, bool condition) const;
-    void todoAssert(const char *filename, unsigned int linenr, bool condition) const;
 
     void assertEquals(const char *filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     void assertEquals(const char *filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
@@ -97,6 +94,5 @@ extern std::ostringstream warnings;
 #else
 #define LOAD_LIB_2( LIB, NAME ) { if ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) { complainMissingLib(NAME); return; } }
 #endif
-#define LOAD_LIB( NAME ) { LOAD_LIB_2(_lib, NAME); }
 
 #endif
