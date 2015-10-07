@@ -2971,6 +2971,18 @@ private:
         ASSERT_EQUALS("float", typeOf("1.2f + 3", "+"));
         ASSERT_EQUALS("float", typeOf("1 + 2.3f", "+"));
 
+        // promotions
+        ASSERT_EQUALS("signed int", typeOf("(char)1 +  (char)2", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(short)1 + (short)2", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (signed char)2", "+"));
+        ASSERT_EQUALS("signed int", typeOf("(signed int)1 + (unsigned char)2", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed char)2", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned char)2", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (signed int)2", "+"));
+        ASSERT_EQUALS("unsigned int", typeOf("(unsigned int)1 + (unsigned int)2", "+"));
+        ASSERT_EQUALS("signed long", typeOf("(signed long)1 + (unsigned int)2", "+"));
+        ASSERT_EQUALS("unsigned long", typeOf("(unsigned long)1 + (signed int)2", "+"));
+
         // char *
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1", "+"));
         ASSERT_EQUALS("char",  typeOf("\"hello\"[1]", "["));
