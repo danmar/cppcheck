@@ -182,6 +182,8 @@ private:
         TEST_CASE(garbageCode130); // #7021
         TEST_CASE(garbageCode131); // #7023
         TEST_CASE(garbageCode132); // #7022
+        TEST_CASE(garbageCode133);
+        TEST_CASE(garbageCode134);
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -989,6 +991,77 @@ private:
 
     void garbageCode132() { // #7022
         checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }");
+    }
+
+    void garbageCode133() {
+        ASSERT_THROW(checkCode("void f() {{}"), InternalError);
+
+        ASSERT_THROW(checkCode("void f()) {}"), InternalError);
+
+        ASSERT_THROW(checkCode("void f()\n"
+                               "{\n"
+                               " foo(;\n"
+                               "}\n"), InternalError);
+
+        ASSERT_THROW(checkCode("void f()\n"
+                               "{\n"
+                               " for(;;){ foo();\n"
+                               "}\n"), InternalError);
+
+        ASSERT_THROW(checkCode("void f()\n"
+                               "{\n"
+                               " a[10;\n"
+                               "}\n"), InternalError);
+
+        {
+            errout.str("");
+            const char code[] = "{\n"
+                                "   a(\n"
+                                "}\n"
+                                "{\n"
+                                "   b());\n"
+                                "}\n";
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            try {
+                tokenizer.tokenize(istr, "test.cpp");
+                assertThrowFail(__FILE__, __LINE__);
+            } catch (InternalError& e) {
+                ASSERT_EQUALS("Invalid number of character '(' when these macros are defined: ''.", e.errorMessage);
+                ASSERT_EQUALS("syntaxError", e.id);
+                ASSERT_EQUALS(2, e.token->linenr());
+            }
+        }
+    }
+
+    void garbageCode134() {
+        // Ticket #5605, #5759, #5762, #5774, #5823, #6059
+        checkCode("template<>\n");
+        checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }");
+        checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
+        checkCode("() template < T = typename = x > struct a {} { f <int> () }");
+        checkCode("template < T = typename = > struct a { f <int> }");
+        checkCode("struct S { int i, j; }; "
+                  "template<int S::*p, typename U> struct X {}; "
+                  "X<&S::i, int> x = X<&S::i, int>(); "
+                  "X<&S::j, int> y = X<&S::j, int>(); ");
+        checkCode("template <typename T> struct A {}; "
+                  "template <> struct A<void> {}; "
+                  "void foo(const void* f = 0) {}");
+        checkCode("template<typename... T> struct A { "
+                  "  static const int s = 0; "
+                  "}; "
+                  "A<int> a;");
+        checkCode("template<class T, class U> class A {}; "
+                  "template<class T = A<int, int> > class B {}; "
+                  "template<class T = B<int> > class C { "
+                  "    C() : _a(0), _b(0) {} "
+                  "    int _a, _b; "
+                  "};");
+        checkCode("template<class... T> struct A { "
+                  "  static int i; "
+                  "}; "
+                  "void f() { A<int>::i = 0; }");
     }
 
 

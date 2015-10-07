@@ -94,6 +94,8 @@ private:
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
         TEST_CASE(template_constructor);    // #3152 - template constructor is removed
+        TEST_CASE(syntax_error_templates_1);
+        TEST_CASE(template_member_ptr); // Ticket #5786 - crash upon valid code
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1176,6 +1178,81 @@ private:
                              "}";
         ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
     }
+
+    void syntax_error_templates_1() {
+        // ok code.. using ">" for a comparison
+        tok("x<y>z> xyz;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok code
+        tok("template<class T> operator<(T a, T b) { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok code (ticket #1984)
+        tok("void f(a) int a;\n"
+            "{ ;x<y; }");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok code (ticket #1985)
+        tok("void f()\n"
+            "try { ;x<y; }");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok code (ticket #3183)
+        tok("MACRO(({ i < x }))");
+        ASSERT_EQUALS("", errout.str());
+
+        // bad code.. missing ">"
+        ASSERT_THROW(tok("x<y<int> xyz;\n"), InternalError);
+
+        // bad code
+        ASSERT_THROW(tok("typedef\n"
+                         "    typename boost::mpl::if_c<\n"
+                         "          _visitableIndex < boost::mpl::size< typename _Visitables::ConcreteVisitables >::value\n"
+                         "          , ConcreteVisitable\n"
+                         "          , Dummy< _visitableIndex >\n"
+                         "    >::type ConcreteVisitableOrDummy;\n"), InternalError);
+
+        // code is ok, don't show syntax error
+        tok("struct A {int a;int b};\n"
+            "class Fred {"
+            "public:\n"
+            "    Fred() : a({1,2}) {\n"
+            "        for (int i=0;i<6;i++);\n" // <- no syntax error
+            "    }\n"
+            "private:\n"
+            "    A a;\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template_member_ptr() { // Ticket #5786
+        tok("struct A {}; "
+            "struct B { "
+            "template <void (A::*)() const> struct BB {}; "
+            "template <bool BT> static bool foo(int) { return true; } "
+            "void bar() { bool b = foo<true>(0); }"
+            "};");
+        tok("struct A {}; "
+            "struct B { "
+            "template <void (A::*)() volatile> struct BB {}; "
+            "template <bool BT> static bool foo(int) { return true; } "
+            "void bar() { bool b = foo<true>(0); }"
+            "};");
+        tok("struct A {}; "
+            "struct B { "
+            "template <void (A::*)() const volatile> struct BB {}; "
+            "template <bool BT> static bool foo(int) { return true; } "
+            "void bar() { bool b = foo<true>(0); }"
+            "};");
+        tok("struct A {}; "
+            "struct B { "
+            "template <void (A::*)() volatile const> struct BB {}; "
+            "template <bool BT> static bool foo(int) { return true; } "
+            "void bar() { bool b = foo<true>(0); }"
+            "};");
+    }
+
 
     unsigned int templateParameters(const char code[]) {
         Tokenizer tokenizer(&settings, this);
