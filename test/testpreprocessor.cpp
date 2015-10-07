@@ -41,7 +41,6 @@
 class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {
-        Preprocessor::macroChar = '$';
     }
 
     class OurPreprocessor : public Preprocessor {
@@ -4010,9 +4009,9 @@ private:
     void macroChar() const {
         const char filedata[] = "#define X 1\nX\n";
         ASSERT_EQUALS("\n$1\n", OurPreprocessor::expandMacros(filedata,nullptr));
-        OurPreprocessor::macroChar = char(1);
+        Preprocessor::macroChar = char(1);
         ASSERT_EQUALS("\n" + std::string(char(1),1U) + "1\n", OurPreprocessor::expandMacros(filedata,nullptr));
-        OurPreprocessor::macroChar = '$';
+        Preprocessor::macroChar = '$';
     }
 
     void validateCfg() {

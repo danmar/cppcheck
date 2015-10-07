@@ -6523,15 +6523,9 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Preprocess...
-        Preprocessor preprocessor(settings, this);
-        std::istringstream istrpreproc(code);
-        std::map<std::string, std::string> actual;
-        preprocessor.preprocess(istrpreproc, actual, "test.c");
-
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(actual[""]);
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.c");
         tokenizer.simplifyTokenList2();
 

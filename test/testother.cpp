@@ -4006,8 +4006,6 @@ private:
     }
 
     void duplicateBranch2() {
-        Preprocessor::macroChar = '$';
-
         check("void f(int x) {\n" // #4329
               "  if (x)\n"
               "    $;\n"
@@ -4428,7 +4426,6 @@ private:
     }
 
     void duplicateExpression5() {  // #3749 - macros with same values
-        Preprocessor::macroChar = '$';
         check("void f() {\n"
               "    if ($a == $a) { }\n"
               "}");

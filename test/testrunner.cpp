@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testsuite.h"
+#include "preprocessor.h"
+#include "options.h"
 #include <cstdio>
 #include <cstdlib>
-#include "testsuite.h"
-#include "options.h"
+#include <ctime>
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +33,8 @@ int main(int argc, char *argv[])
 #ifdef NDEBUG
     try {
 #endif
+        Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
+
         options args(argc, const_cast<const char**>(argv));
 
         std::size_t failedTestsCount = TestFixture::runTests(args);

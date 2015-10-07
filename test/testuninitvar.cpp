@@ -1989,8 +1989,7 @@ private:
         TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Uninitialized variable: s\n", errout.str());
 
         checkUninitVar("void f() {\n"
-                       "    #define w(x) ({ x z;  (x*)z; })\n" // TODO: Preprocessor?
-                       "    int *n = w(typeof(*n));\n"
+                       "    int *n = ({ typeof(*n) z;  (typeof(*n)*)z; })\n"
                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
     }
