@@ -171,6 +171,7 @@ private:
         TEST_CASE(garbageCode129); // #7020
         TEST_CASE(garbageCode130); // #7021
         TEST_CASE(garbageCode131); // #7023
+        TEST_CASE(garbageCode132); // #7022
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -987,6 +988,10 @@ private:
     void garbageCode131() {
         checkCode("( void ) { ( ) } ( ) / { ( ) }");
         // actually the invalid code should trigger an syntax error...
+    }
+
+    void garbageCode132() { // #7022
+        checkCode("() () { } { () () ({}) i() } void i(void(*ptr) ()) { ptr(!) () }");
     }
 
 

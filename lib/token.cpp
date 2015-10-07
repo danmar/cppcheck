@@ -1211,7 +1211,7 @@ std::string Token::expressionString() const
 
     // move start to lpar in such expression: '(*it).x'
     int par = 0;
-    for (const Token *tok = start; tok != end; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->str() == "(")
             ++par;
         else if (tok->str() == ")") {
@@ -1224,7 +1224,7 @@ std::string Token::expressionString() const
 
     // move end to rpar in such expression: '2>(x+1)'
     par = 0;
-    for (const Token *tok = end; tok != start; tok = tok->previous()) {
+    for (const Token *tok = end; tok && tok != start; tok = tok->previous()) {
         if (tok->str() == ")")
             ++par;
         else if (tok->str() == "(") {
