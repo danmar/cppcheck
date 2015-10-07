@@ -462,7 +462,7 @@ test/testcharvar.o: test/testcharvar.cpp lib/cxx11emu.h lib/tokenize.h lib/error
 test/testclass.o: test/testclass.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testclass.o test/testclass.cpp
 
-test/testcmdlineparser.o: test/testcmdlineparser.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
+test/testcmdlineparser.o: test/testcmdlineparser.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testcmdlineparser.o test/testcmdlineparser.cpp
 
 test/testcondition.o: test/testcondition.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkcondition.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
@@ -480,13 +480,13 @@ test/testerrorlogger.o: test/testerrorlogger.cpp lib/cxx11emu.h lib/cppcheck.h l
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkexceptionsafety.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/settings.h lib/standards.h lib/timer.h
+test/testfilelister.o: test/testfilelister.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testfilelister.o test/testfilelister.cpp
 
-test/testgarbage.o: test/testgarbage.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h lib/check.h
+test/testgarbage.o: test/testgarbage.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/check.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testgarbage.o test/testgarbage.cpp
 
-test/testincompletestatement.o: test/testincompletestatement.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
+test/testincompletestatement.o: test/testincompletestatement.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkother.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
 test/testinternal.o: test/testinternal.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkinternal.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
@@ -501,7 +501,7 @@ test/testleakautovar.o: test/testleakautovar.cpp lib/cxx11emu.h lib/tokenize.h l
 test/testlibrary.o: test/testlibrary.cpp lib/cxx11emu.h lib/library.h lib/config.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenlist.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testlibrary.o test/testlibrary.cpp
 
-test/testmathlib.o: test/testmathlib.cpp lib/cxx11emu.h lib/mathlib.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h lib/library.h lib/token.h lib/valueflow.h
+test/testmathlib.o: test/testmathlib.cpp lib/cxx11emu.h lib/mathlib.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testmathlib.o test/testmathlib.cpp
 
 test/testmemleak.o: test/testmemleak.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkmemoryleak.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h lib/symboldatabase.h lib/utils.h lib/preprocessor.h
@@ -516,37 +516,37 @@ test/testnullpointer.o: test/testnullpointer.cpp lib/cxx11emu.h lib/tokenize.h l
 test/testobsolescentfunctions.o: test/testobsolescentfunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkobsolescentfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testobsolescentfunctions.o test/testobsolescentfunctions.cpp
 
-test/testoptions.o: test/testoptions.cpp lib/cxx11emu.h test/options.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h
+test/testoptions.o: test/testoptions.cpp lib/cxx11emu.h test/options.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testoptions.o test/testoptions.cpp
 
 test/testother.o: test/testother.cpp lib/cxx11emu.h lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/symboldatabase.h lib/token.h lib/valueflow.h lib/mathlib.h lib/utils.h lib/checkother.h lib/check.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h test/testutils.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testother.o test/testother.cpp
 
-test/testpath.o: test/testpath.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/path.h
+test/testpath.o: test/testpath.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testpath.o test/testpath.cpp
 
-test/testpathmatch.o: test/testpathmatch.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h
+test/testpathmatch.o: test/testpathmatch.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testpathmatch.o test/testpathmatch.cpp
 
 test/testpostfixoperator.o: test/testpostfixoperator.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkpostfixoperator.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testpostfixoperator.o test/testpostfixoperator.cpp
 
-test/testpreprocessor.o: test/testpreprocessor.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/preprocessor.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testpreprocessor.o: test/testpreprocessor.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/preprocessor.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testpreprocessor.o test/testpreprocessor.cpp
 
-test/testrunner.o: test/testrunner.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/preprocessor.h test/options.h
+test/testrunner.o: test/testrunner.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/preprocessor.h test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testrunner.o test/testrunner.cpp
 
-test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/path.h
+test/testsamples.o: test/testsamples.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsamples.o test/testsamples.cpp
 
-test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h lib/templatesimplifier.h
+test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/templatesimplifier.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytemplate.o test/testsimplifytemplate.cpp
 
-test/testsimplifytokens.o: test/testsimplifytokens.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testsimplifytokens.o: test/testsimplifytokens.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
 
-test/testsimplifytypedef.o: test/testsimplifytypedef.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testsimplifytypedef.o: test/testsimplifytypedef.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsimplifytypedef.o test/testsimplifytypedef.cpp
 
 test/testsizeof.o: test/testsizeof.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checksizeof.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
@@ -558,52 +558,52 @@ test/teststl.o: test/teststl.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h
 test/teststring.o: test/teststring.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkstring.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h test/testutils.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/teststring.o test/teststring.cpp
 
-test/testsuite.o: test/testsuite.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h test/options.h
+test/testsuite.o: test/testsuite.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsuite.o test/testsuite.cpp
 
 test/testsuppressions.o: test/testsuppressions.cpp lib/cxx11emu.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/tokenlist.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsuppressions.o test/testsuppressions.cpp
 
-test/testsymboldatabase.o: test/testsymboldatabase.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h lib/symboldatabase.h lib/utils.h
+test/testsymboldatabase.o: test/testsymboldatabase.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h lib/symboldatabase.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testsymboldatabase.o test/testsymboldatabase.cpp
 
 test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cxx11emu.h lib/cppcheck.h lib/config.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/suppressions.h lib/standards.h lib/timer.h lib/errorlogger.h lib/check.h lib/tokenize.h lib/tokenlist.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
 
-test/testtimer.o: test/testtimer.cpp lib/cxx11emu.h lib/timer.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h
+test/testtimer.o: test/testtimer.cpp lib/cxx11emu.h lib/timer.h lib/config.h test/testsuite.h lib/errorlogger.h lib/suppressions.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testtimer.o test/testtimer.cpp
 
-test/testtoken.o: test/testtoken.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
+test/testtoken.o: test/testtoken.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testtoken.o test/testtoken.cpp
 
-test/testtokenize.o: test/testtokenize.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h lib/path.h lib/preprocessor.h
+test/testtokenize.o: test/testtokenize.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h lib/path.h lib/preprocessor.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testtokenize.o test/testtokenize.cpp
 
-test/testtokenlist.o: test/testtokenlist.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/path.h lib/settings.h lib/standards.h lib/timer.h lib/tokenlist.h
+test/testtokenlist.o: test/testtokenlist.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/path.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testtokenlist.o test/testtokenlist.cpp
 
 test/testtype.o: test/testtype.cpp lib/cxx11emu.h lib/preprocessor.h lib/config.h lib/tokenize.h lib/errorlogger.h lib/suppressions.h lib/tokenlist.h lib/symboldatabase.h lib/token.h lib/valueflow.h lib/mathlib.h lib/utils.h lib/checktype.h lib/check.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h test/testutils.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testtype.o test/testtype.cpp
 
-test/testuninitvar.o: test/testuninitvar.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/checkuninitvar.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testuninitvar.o: test/testuninitvar.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/checkuninitvar.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testuninitvar.o test/testuninitvar.cpp
 
-test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h test/testsuite.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/checkunusedfunctions.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
+test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h test/testsuite.h test/redirect.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
 test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/cxx11emu.h lib/tokenize.h lib/errorlogger.h lib/config.h lib/suppressions.h lib/tokenlist.h lib/checkclass.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h test/testsuite.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
 
-test/testunusedvar.o: test/testunusedvar.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/settings.h lib/standards.h lib/timer.h
+test/testunusedvar.o: test/testunusedvar.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/checkunusedvar.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testunusedvar.o test/testunusedvar.cpp
 
-test/testvaarg.o: test/testvaarg.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/checkvaarg.h lib/check.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testvaarg.o: test/testvaarg.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/checkvaarg.h lib/check.h lib/token.h lib/valueflow.h lib/mathlib.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvaarg.o test/testvaarg.cpp
 
-test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h test/testutils.h lib/settings.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
+test/testvalueflow.o: test/testvalueflow.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h test/testutils.h lib/settings.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/standards.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvalueflow.o test/testvalueflow.cpp
 
-test/testvarid.o: test/testvarid.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/library.h lib/mathlib.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h lib/settings.h lib/standards.h lib/timer.h
+test/testvarid.o: test/testvarid.cpp lib/cxx11emu.h test/testsuite.h lib/errorlogger.h lib/config.h lib/suppressions.h test/redirect.h lib/tokenize.h lib/tokenlist.h lib/token.h lib/valueflow.h lib/mathlib.h lib/settings.h lib/library.h lib/standards.h lib/timer.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -std=c++0x -c -o test/testvarid.o test/testvarid.cpp
 
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp lib/cxx11emu.h externals/tinyxml/tinyxml2.h
