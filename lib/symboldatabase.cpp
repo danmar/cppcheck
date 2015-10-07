@@ -3697,8 +3697,29 @@ static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type,
             return;
         }
         if (vt1->isIntegral() && vt2->isIntegral()) {
-            ValueType::Type t = (vt1->type > vt2->type) ? vt1->type : vt2->type;
-            setValueType(parent, ValueType::Sign::UNKNOWN_SIGN, t, 0U);
+            ValueType::Type t;
+            ValueType::Sign s;
+            if (vt1->type == vt2->type) {
+                t = vt1->type;
+                if (vt1->sign == ValueType::Sign::UNSIGNED || vt2->sign == ValueType::Sign::UNSIGNED)
+                    s = ValueType::Sign::UNSIGNED;
+                else if (vt1->sign == ValueType::Sign::UNKNOWN_SIGN || vt2->sign == ValueType::Sign::UNKNOWN_SIGN)
+                    s = ValueType::Sign::UNKNOWN_SIGN;
+                else
+                    s = ValueType::Sign::SIGNED;
+            } else if (vt1->type > vt2->type) {
+                t = vt1->type;
+                s = vt1->sign;
+            } else {
+                t = vt2->type;
+                s = vt2->sign;
+            }
+            if (t < ValueType::Type::INT) {
+                t = ValueType::Type::INT;
+                s = ValueType::Sign::SIGNED;
+            }
+
+            setValueType(parent, s, t, 0U);
             return;
         }
     }
@@ -3743,10 +3764,26 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
 
     for (Token *tok = tokens; tok; tok = tok->next()) {
         if (tok->isNumber()) {
-            if (MathLib::isFloat(tok->str()))
-                ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U);
-            if (MathLib::isInt(tok->str()))
-                ::setValueType(tok, (tok->str()[0] == '-') ? ValueType::Sign::SIGNED : ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::INT, 0U);
+            if (MathLib::isFloat(tok->str())) {
+                ValueType::Type type = ValueType::Type::DOUBLE;
+                if (tok->str()[tok->str().size() - 1U] == 'f')
+                    type = ValueType::Type::FLOAT;
+                ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, type, 0U);
+            } else if (MathLib::isInt(tok->str())) {
+                ValueType::Sign sign = ValueType::Sign::SIGNED;
+                ValueType::Type type = ValueType::Type::INT;
+                if (MathLib::isIntHex(tok->str()))
+                    sign = ValueType::Sign::UNSIGNED;
+                else if (tok->str().find_first_of("uU") != std::string::npos)
+                    sign = ValueType::Sign::UNSIGNED;
+                if (tok->str()[tok->str().size() - 1U] == 'L') {
+                    if (tok->str()[tok->str().size() - 2U] == 'L')
+                        type = ValueType::Type::LONGLONG;
+                    else
+                        type = ValueType::Type::LONG;
+                }
+                ::setValueType(tok, sign, type, 0U);
+            }
         } else if (tok->isComparisonOp())
             ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U);
         else if (tok->tokType() == Token::eChar)

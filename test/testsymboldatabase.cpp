@@ -2956,10 +2956,20 @@ private:
     }
 
     void valuetype() {
+        // numbers
+        ASSERT_EQUALS("signed int", typeOf("1", "1"));
+        ASSERT_EQUALS("unsigned int", typeOf("1U", "1U"));
+        ASSERT_EQUALS("signed long", typeOf("1L", "1L"));
+        ASSERT_EQUALS("unsigned long", typeOf("1UL", "1UL"));
+        ASSERT_EQUALS("signed long long", typeOf("1LL", "1LL"));
+        ASSERT_EQUALS("unsigned long long", typeOf("1ULL", "1ULL"));
+        ASSERT_EQUALS("float", typeOf("1.0f", "1.0f"));
+        ASSERT_EQUALS("double", typeOf("1.0", "1.0"));
+
         // Constant calculations
-        ASSERT_EQUALS("int",   typeOf("1 + 2", "+"));
-        //ASSERT_EQUALS("long", typeOf("1L + 2", "+"));
-        //ASSERT_EQUALS("long long", typeOf("1LL + 2", "+"));
+        ASSERT_EQUALS("signed int", typeOf("1 + 2", "+"));
+        ASSERT_EQUALS("signed long", typeOf("1L + 2", "+"));
+        ASSERT_EQUALS("signed long long", typeOf("1LL + 2", "+"));
         ASSERT_EQUALS("float", typeOf("1.2f + 3", "+"));
         ASSERT_EQUALS("float", typeOf("1 + 2.3f", "+"));
 
@@ -2973,6 +2983,11 @@ private:
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("signed x; a = x + 1;", "x +"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned x; a = x + 1;", "x +"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 + 1;",  "u1 +"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 + 1U;", "u1 +"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 + u2;", "u1 +"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * 2;",  "u1 *"));
+        ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * u2;", "u1 *"));
 
         // array..
         ASSERT_EQUALS("int*", typeOf("int x[10]; a = x + 1;", "+"));
