@@ -28,8 +28,11 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("style");
+
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
@@ -61,9 +64,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
         settings.platform(platform);
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -333,7 +335,6 @@ private:
     }
 
     void multipleFiles() {
-        Settings settings;
         Tokenizer tokenizer(&settings, this);
         CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
 

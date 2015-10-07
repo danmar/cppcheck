@@ -28,9 +28,23 @@ public:
     }
 
 private:
-
+    Settings settings0;
+    Settings settings1;
 
     void run() {
+        settings0.addEnabled("style");
+        settings0.addEnabled("warning");
+
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
+        tinyxml2::XMLDocument xmldoc;
+        xmldoc.Parse(cfg, sizeof(cfg));
+        settings1.addEnabled("style");
+        settings1.addEnabled("warning");
+        settings1.library.load(xmldoc);
+
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(compare);            // mismatching LHS/RHS in comparison
@@ -71,19 +85,15 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-
         CheckCondition checkCondition;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
-        checkCondition.runChecks(&tokenizer, &settings, this);
+        checkCondition.runChecks(&tokenizer, &settings0, this);
         tokenizer.simplifyTokenList2();
-        checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkCondition.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 
     void assignAndCompare() {
@@ -355,27 +365,15 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"bar\"> <pure/> </function>\n"
-                           "</def>";
-        tinyxml2::XMLDocument xmldoc;
-        xmldoc.Parse(cfg, sizeof(cfg));
-
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.library.load(xmldoc);
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         CheckCondition checkCondition;
-        checkCondition.runChecks(&tokenizer, &settings, this);
+        checkCondition.runChecks(&tokenizer, &settings1, this);
         tokenizer.simplifyTokenList2();
-        checkCondition.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkCondition.runSimplifiedChecks(&tokenizer, &settings1, this);
     }
     void duplicateIf() {
         check("void f(int a, int &b) {\n"

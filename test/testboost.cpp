@@ -27,17 +27,18 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("style");
+        settings.addEnabled("performance");
+
         TEST_CASE(BoostForeachContainerModification)
     }
 
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("performance");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

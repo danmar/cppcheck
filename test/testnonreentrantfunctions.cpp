@@ -27,8 +27,12 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.standards.posix = true;
+        settings.addEnabled("portability");
+
         TEST_CASE(test_crypt);
         TEST_CASE(test_namespace_handling);
     }
@@ -36,10 +40,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.standards.posix = true;
-        settings.addEnabled("portability");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -30,6 +30,8 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
@@ -38,8 +40,6 @@ private:
     CheckMemoryLeak::AllocType functionReturnType(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -94,8 +94,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -119,15 +117,18 @@ public:
     }
 
 private:
+    Settings settings0;
     Settings settings1;
     Settings settings2;
 
-    void check(const char code[], const Settings *settings = nullptr, bool c = false) {
+    void check(const char code[], bool c = false, bool posix = false, bool experimental = false, Settings *settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
         if (!settings)
             settings = &settings1;
+        settings->experimental = experimental;
+        settings->standards.posix = posix;
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -652,16 +653,13 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-
         // Tokenize..
         std::istringstream istr(code);
-        TokenList list(&settings);
-        list.createTokens(istr,"test.cpp");
-        Token *tokens=list.front();
+        Tokenizer tokenizer(&settings0, this);
+        tokenizer.list.createTokens(istr, "test.cpp");
 
         // replace "if ( ! var )" => "if(!var)"
-        for (Token *tok = tokens; tok; tok = tok->next()) {
+        for (Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "if|while ( var )")) {
                 Token::eraseTokens(tok, tok->tokAt(4));
                 tok->str(tok->str() + "(var)");
@@ -673,11 +671,10 @@ private:
             }
         }
 
-        Tokenizer tokenizer;
-        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.simplifycode(tokens);
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings0, this);
+        checkMemoryLeak.simplifycode(tokenizer.list.front());
 
-        return list.front()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(0, false);
     }
 
 
@@ -818,16 +815,15 @@ private:
 
 
     // is there a leak in given code? if so, return the linenr
-    static unsigned int dofindleak(const char code[]) {
+    unsigned int dofindleak(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.debug = settings.debugwarnings = true;
+        settings0.debug = settings0.debugwarnings = true;
 
         // Tokenize..
         std::istringstream istr(code);
-        TokenList list(&settings);
+        TokenList list(&settings0);
         list.createTokens(istr,"test.cpp");
         Token *tokens=list.front();
 
@@ -849,10 +845,13 @@ private:
         }
 
         const Token *tok = CheckMemoryLeakInFunction::findleak(tokens);
+
+        settings0.debug = settings0.debugwarnings = false;
+
         return (tok ? tok->linenr() : (unsigned int)(-1));
     }
 
-    void findleak() const {
+    void findleak() {
         static const unsigned int notfound = (unsigned int)(-1);
 
         ASSERT_EQUALS(1,  dofindleak("alloc;"));
@@ -1142,8 +1141,6 @@ private:
     }
 
     void ifelse10() {
-        Settings settings;
-        settings.experimental = true;
         check("static char *f()\n"
               "{\n"
               "    char *s = new char[10];\n"
@@ -1155,7 +1152,7 @@ private:
               "    {\n"
               "        str[0] = s;\n"
               "    }\n"
-              "}\n", &settings);
+              "}\n", false, false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1262,8 +1259,6 @@ private:
     }
 
     void if11() {
-        Settings settings;
-        settings.experimental = true;
         check("void foo()\n"
               "{\n"
               "    int *x = new int[10];\n"
@@ -1272,7 +1267,7 @@ private:
               "        return 1;\n"
               "    }\n"
               "    delete [] x;\n"
-              "}\n", &settings);
+              "}", false, false, true);
         TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: x\n",
                            "", errout.str());
     }
@@ -1331,8 +1326,6 @@ private:
 
 
     void forwhile9() {
-        Settings settings;
-        settings.experimental = true;
         check("char *f()\n"
               "{\n"
               "    char *a = 0;\n"
@@ -1347,14 +1340,12 @@ private:
               "    }\n"
               "\n"
               "    return a;\n"
-              "}\n", &settings);
+              "}\n", false, false, true);
         ASSERT_EQUALS("[test.cpp:9]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
     }
 
 
     void forwhile10() {
-        Settings settings;
-        settings.experimental = true;
         check("char *f()\n"
               "{\n"
               "    char *a = 0;\n"
@@ -1369,7 +1360,7 @@ private:
               "    }\n"
               "\n"
               "    return a;\n"
-              "}\n", &settings);
+              "}", false, false, true);
         ASSERT_EQUALS("[test.cpp:9]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n"
                       "[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
@@ -1460,14 +1451,11 @@ private:
 
 
     void mismatch1() {
-        Settings settings;
-        settings.experimental = true;
-
         check("void f()\n"
               "{\n"
               "    int *a = new int[10];\n"
               "    free(a);\n"
-              "}\n", &settings);
+              "}\n", false, false, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
 
         // ticket #2971
@@ -1475,14 +1463,14 @@ private:
               "{\n"
               "    Fred *a = new Fred[10];\n"
               "    free(a);\n"
-              "}\n", &settings);
+              "}\n", false, false, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    struct Fred *a = new struct Fred[10];\n"
               "    free(a);\n"
-              "}\n", &settings);
+              "}\n", false, false, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
     }
 
@@ -1608,9 +1596,6 @@ private:
 
 
     void func5() {
-        Settings settings;
-        settings.experimental = true;
-
         check("static void foo(char *str)\n"
               "{\n"
               "    delete str;\n"
@@ -1620,7 +1605,7 @@ private:
               "{\n"
               "    char *p = new char[100];\n"
               "    foo(p);\n"
-              "}\n", &settings);
+              "}", false, false, true);
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: str\n",
                       errout.str());
     }
@@ -3671,9 +3656,6 @@ private:
     }
 
     void if_with_and() {
-        Settings settings;
-        settings.experimental = true;
-
         check("void f()\n"
               "{\n"
               "  char *a = new char[10];\n"
@@ -3681,7 +3663,7 @@ private:
               "    return;\n"
               "\n"
               "  delete [] a;\n"
-              "}\n", &settings);
+              "}", false, false, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
@@ -3691,18 +3673,15 @@ private:
               "    return;\n"
               "\n"
               "  delete [] a;\n"
-              "}\n", &settings);
+              "}", false, false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
     void assign_pclose() {
-        Settings settings;
-        settings.standards.posix = true;
-
         check("void f() {\n"
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3865,14 +3844,10 @@ private:
     }
 
     void open_function() {
-        Settings settings;
-        settings.experimental = true;
-        settings.standards.posix = true;
-
         check("void f(const char *path)\n"
               "{\n"
               "    int fd = open(path, O_RDONLY);\n"
-              "}\n", &settings);
+              "}", false, true, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
 
         check("void f(const char *path)\n"
@@ -3881,7 +3856,7 @@ private:
               "    if (fd == -1)\n"
               "       return;\n"
               "    close(fd);\n"
-              "}\n", &settings);
+              "}", false, true, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const char *path)\n"
@@ -3890,7 +3865,7 @@ private:
               "    if (fd < 0)\n"
               "       return;\n"
               "    close(fd);\n"
-              "}\n", &settings);
+              "}", false, true, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const char *path)\n"
@@ -3899,35 +3874,31 @@ private:
               "    if (-1 == fd)\n"
               "       return;\n"
               "    close(fd);\n"
-              "}\n", &settings);
+              "}", false, true, true);
         ASSERT_EQUALS("", errout.str());
     }
 
     void creat_function() {
-        Settings settings;
-        settings.standards.posix = true;
         check("void f(const char *path)\n"
               "{\n"
               "    int fd = creat(path, S_IRWXU);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
     }
 
     void close_function() {
-        Settings settings;
-        settings.standards.posix = true;
         check("void f(const char *path)\n"
               "{\n"
               "    int fd = open(path, O_RDONLY);\n"
               "    close(fd);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const char *path)\n"
               "{\n"
               "    int fd = creat(path, S_IRWXU);\n"
               "    close(fd);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const char *path)\n"
@@ -3936,7 +3907,7 @@ private:
               "    if (close(fd) < 0) {\n"
               "        perror(\"close\");\n"
               "    }\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
 
         //#ticket 1401
@@ -3954,7 +3925,7 @@ private:
               "         return 3;\n"
               "      }\n"
               "  close(handle);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("", errout.str());
 
         //#ticket 1401
@@ -3971,13 +3942,11 @@ private:
               "         return 3;\n"
               "      }\n"
               "  close(handle);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
     }
 
     void fd_functions() {
-        Settings settings;
-        settings.standards.posix = true;
         check("void f(const char *path)\n"
               "{\n"
               "    int fd = open(path, O_RDONLY);\n"
@@ -4001,7 +3970,7 @@ private:
               "    ftruncate(fd, len);\n"
               "    fstat(fd, buf);\n"
               "    fchmod(fd, mode);\n"
-              "}", &settings);
+              "}", false, true);
         ASSERT_EQUALS("[test.cpp:24]: (error) Resource leak: fd\n", errout.str());
     }
 
@@ -4252,13 +4221,12 @@ private:
               "    free(ll);\n"
               "    ll = NULL;\n"
               "    delete(ll, ll->top);\n"
-              "}", nullptr, true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
     void gnucfg() {
         Settings settings;
-        settings.standards.posix = true;
         LOAD_LIB_2(settings.library, "gnu.cfg");
         const char code[] = "void leak() {\n"
                             "  char * p = get_current_dir_name();\n" // memory leak
@@ -4267,7 +4235,7 @@ private:
                             "  char * p = get_current_dir_name();\n"
                             "  free(p)\n;"
                             "}";
-        check(code, &settings);
+        check(code, false, true, false, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
@@ -4283,7 +4251,7 @@ private:
               "  int avierr = read_chunk_data(&data);\n"
               "  if (avierr == 0)\n"
               "    free(data);\n"
-              "}", nullptr, true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 };
@@ -4303,6 +4271,8 @@ public:
     }
 
 private:
+    Settings settings;
+
     /**
      * Tokenize and execute leak check for given code
      * @param code Source code
@@ -4310,10 +4280,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -4327,6 +4293,9 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("style");
+
         TEST_CASE(class1);
         TEST_CASE(class2);
         TEST_CASE(class3);
@@ -5564,11 +5533,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void check(const char code[], const char fname[] = 0, bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

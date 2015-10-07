@@ -27,16 +27,12 @@ public:
     }
 
 private:
-
+    Settings settings;
 
 
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("performance");
-        //settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -50,6 +46,8 @@ private:
     }
 
     void run() {
+        settings.addEnabled("performance");
+
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(testvolatile);

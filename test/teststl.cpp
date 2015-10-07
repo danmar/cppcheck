@@ -30,6 +30,9 @@ private:
     Settings settings;
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("style");
+        settings.addEnabled("performance");
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(iterator1);
@@ -134,9 +137,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
-        settings.addEnabled("performance");
         settings.inconclusive = inconclusive;
         settings.standards.cpp = cppstandard;
 
@@ -147,7 +147,7 @@ private:
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckStl checkStl;
+        CheckStl checkStl(&tokenizer, &settings, this);
         checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }
     void check(const std::string &code, const bool inconclusive=false) {

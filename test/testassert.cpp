@@ -26,12 +26,11 @@ public:
     TestAssert() : TestFixture("TestAssert") {}
 
 private:
+    Settings settings;
+
     void check(const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -44,6 +43,8 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
         TEST_CASE(memberFunctionCallInAssert);

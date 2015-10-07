@@ -29,7 +29,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("internal");
+
         TEST_CASE(simplePatternInTokenMatch)
         TEST_CASE(complexPatternInTokenSimpleMatch)
         TEST_CASE(simplePatternSquareBrackets)
@@ -45,9 +49,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("internal");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -29,8 +29,14 @@ public:
 
 
 private:
+    Settings settings0;
+    Settings settings1;
+    Settings settings2;
 
     void run() {
+        settings0.addEnabled("style");
+        settings2.addEnabled("style");
+
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
@@ -161,12 +167,10 @@ private:
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Unspecified, bool debugwarnings = true) {
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.inconclusive = true;
-        settings.debugwarnings = debugwarnings;   // show warnings about unhandled typedef
-        settings.platform(type);
-        Tokenizer tokenizer(&settings, this);
+        settings0.inconclusive = true;
+        settings0.debugwarnings = debugwarnings;   // show warnings about unhandled typedef
+        settings0.platform(type);
+        Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -180,8 +184,7 @@ private:
     std::string simplifyTypedef(const char code[]) {
         errout.str("");
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
 
         std::istringstream istr(code);
         tokenizer.list.createTokens(istr);
@@ -189,6 +192,16 @@ private:
         tokenizer.simplifyTypedef();
 
         return tokenizer.tokens()->stringifyList(0, false);
+    }
+
+    void checkSimplifyTypedef(const char code[]) {
+        errout.str("");
+        // Tokenize..
+        settings2.inconclusive = true;
+        settings2.debugwarnings = true;   // show warnings about unhandled typedef
+        Tokenizer tokenizer(&settings2, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
     }
 
 
@@ -532,8 +545,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -595,8 +607,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -1013,19 +1024,6 @@ private:
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
-    }
-
-    // Check simplifyTypedef
-    void checkSimplifyTypedef(const char code[]) {
-        errout.str("");
-        // Tokenize..
-        Settings settings;
-        settings.inconclusive = true;
-        settings.addEnabled("style");
-        settings.debugwarnings = true;   // show warnings about unhandled typedef
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
     }
 
     void simplifyTypedef35() {

@@ -27,7 +27,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("style");
+
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
 
@@ -163,9 +167,6 @@ private:
     void checkStructMemberUsage(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -478,9 +479,6 @@ private:
     void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

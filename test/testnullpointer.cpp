@@ -44,6 +44,7 @@ private:
             doc.Parse(xmldata, sizeof(xmldata));
             settings.library.load(doc);
         }
+        settings.addEnabled("warning");
 
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
@@ -101,7 +102,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.addEnabled("warning");
         settings.inconclusive = inconclusive;
 
         // Tokenize..

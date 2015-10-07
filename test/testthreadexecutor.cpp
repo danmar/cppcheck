@@ -32,6 +32,7 @@ public:
     }
 
 private:
+    Settings settings;
 
     /**
      * Execute check using n jobs for y files which are have
@@ -52,7 +53,6 @@ private:
             filemap[oss.str()] = 1;
         }
 
-        Settings settings;
         settings._jobs = jobs;
         ThreadExecutor executor(filemap, settings, *this);
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)

@@ -27,12 +27,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -46,6 +45,8 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);

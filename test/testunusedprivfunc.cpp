@@ -28,7 +28,11 @@ public:
     }
 
 private:
+    Settings settings;
+
     void run() {
+        settings.addEnabled("style");
+
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -79,8 +83,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
         settings.platform(platform);
 
         // Tokenize..

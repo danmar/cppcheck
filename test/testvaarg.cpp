@@ -26,12 +26,11 @@ public:
     TestVaarg() : TestFixture("TestVaarg") {}
 
 private:
+    Settings settings;
+
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -44,6 +43,8 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+
         TEST_CASE(wrongParameterTo_va_start);
         TEST_CASE(referenceAs_va_start);
         TEST_CASE(va_end_missing);

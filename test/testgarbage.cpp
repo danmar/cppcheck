@@ -30,8 +30,18 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.debugwarnings = true;
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.addEnabled("portability");
+        settings.addEnabled("performance");
+        settings.addEnabled("information");
+        settings.inconclusive = true;
+        settings.experimental = true;
+
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax1);
         TEST_CASE(wrong_syntax2);
@@ -196,15 +206,6 @@ private:
     std::string checkCodeInternal(const char code[], const char* filename) {
         errout.str("");
 
-        Settings settings;
-        settings.debugwarnings = true;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
-        settings.inconclusive = true;
-        settings.experimental = true;
-
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -263,7 +264,6 @@ private:
                             " )\n"
                             "}";
 
-        Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
@@ -296,9 +296,6 @@ private:
     void wrong_syntax_class_x_y() {
         // #3585
         const char code[] = "class x y { };";
-
-        Settings settings;
-        settings.addEnabled("information");
 
         {
             errout.str("");

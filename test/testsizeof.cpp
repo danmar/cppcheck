@@ -27,9 +27,13 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("portability");
+        settings.inconclusive = true;
+
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);
         TEST_CASE(checkPointerSizeof);
@@ -45,11 +49,6 @@ private:
     void check(const char code[]) {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.inconclusive = true;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

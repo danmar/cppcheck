@@ -28,8 +28,13 @@ public:
     }
 
 private:
+    Settings settings0;
+    Settings settings1;
 
     void run() {
+        settings0.addEnabled("style");
+        settings1.addEnabled("warning");
+
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
         TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
@@ -183,17 +188,15 @@ private:
     void checkExplicitConstructors(const char code[]) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.checkExplicitConstructors();
     }
 
@@ -258,17 +261,15 @@ private:
     void checkDuplInheritedMembers(const char code[]) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.addEnabled("warning");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.checkDuplInheritedMembers();
     }
 
@@ -370,17 +371,15 @@ private:
     void checkCopyConstructor(const char code[]) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.addEnabled("style");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.copyconstructors();
     }
 
@@ -607,18 +606,16 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.inconclusive = true;
+        settings0.inconclusive = true;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.operatorEq();
     }
 
@@ -768,17 +765,14 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.operatorEqRetRefThis();
     }
 
@@ -1055,17 +1049,14 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("warning");
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.operatorEqToSelf();
     }
 
@@ -1878,17 +1869,16 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
-        settings.inconclusive = inconclusive;
+        settings0.inconclusive = inconclusive;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.virtualDestructor();
     }
 
@@ -2732,17 +2722,14 @@ private:
         // Clear the error log
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("warning");
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.thisSubtraction();
     }
 
@@ -2764,25 +2751,22 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], const Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], Settings *s = 0, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        Settings settings;
-        if (s)
-            settings = *s;
-        else
-            settings.addEnabled("style");
-        settings.inconclusive = inconclusive;
+        if (!s)
+            s = &settings0;
+        s->inconclusive = inconclusive;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, s, this);
         checkClass.checkConst();
     }
 
@@ -5750,13 +5734,10 @@ private:
                             "    }\n"
                             "};";
 
-        Settings settings;
-        settings.addEnabled("style");
-
-        checkConst(code, &settings, true);
+        checkConst(code, &settings0, true);
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'foo::f' can be static.\n", errout.str());
 
-        checkConst(code, &settings, false); // TODO: Set inconclusive to true (preprocess it)
+        checkConst(code, &settings0, false); // TODO: Set inconclusive to true (preprocess it)
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5804,17 +5785,15 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.addEnabled("style");
-        settings.inconclusive = true;
+        settings0.inconclusive = true;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.initializerListOrder();
     }
 
@@ -5993,16 +5972,13 @@ private:
         // Clear the error log
         errout.str("");
 
-        // Check..
-        Settings settings;
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.checkSelfInitialization();
     }
 
@@ -6088,25 +6064,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkPureVirtualFunctionCall(const char code[], const Settings *s = 0, bool inconclusive = true) {
+    void checkPureVirtualFunctionCall(const char code[], Settings *s = 0, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        Settings settings;
-        if (s)
-            settings = *s;
-        else
-            settings.addEnabled("warning");
-        settings.inconclusive = inconclusive;
+        if (!s) {
+            static Settings settings_;
+            s = &settings_;
+            s->addEnabled("warning");
+        }
+        s->inconclusive = inconclusive;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, s, this);
         checkClass.checkPureVirtualFunctionCall();
     }
 

@@ -29,8 +29,11 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("portability");
+
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -101,8 +104,6 @@ private:
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Unspecified) {
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("portability");
         settings.debugwarnings = debugwarnings;
         settings.platform(type);
         Tokenizer tokenizer(&settings, this);
@@ -119,7 +120,7 @@ private:
     std::string tok(const char code[], const char filename[]) {
         errout.str("");
 
-        Settings settings;
+        settings.debugwarnings = false;
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
@@ -1177,7 +1178,6 @@ private:
     }
 
     unsigned int templateParameters(const char code[]) {
-        Settings settings;
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
@@ -1208,11 +1208,10 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
     int templateNamePositionHelper(const char code[], unsigned offset = 0) {
-        Settings settings;
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "", true);
+        tokenizer.tokenize(istr, "test.cpp", emptyString, true);
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)

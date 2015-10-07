@@ -32,8 +32,16 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        // strcpy cfg
+        const char cfg[] = "<?xml version=\"1.0\"?>\n"
+                           "<def>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "</def>";
+        settings.library.loadxmldata(cfg, sizeof(cfg));
+
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowPointerAlias);
@@ -72,15 +80,6 @@ private:
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
-        Settings settings;
-
-        // strcpy cfg
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-                           "</def>";
-        settings.library.loadxmldata(cfg, sizeof(cfg));
-
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -101,15 +100,6 @@ private:
 
 
     bool testValueOfX(const char code[], unsigned int linenr, const char value[]) {
-        Settings settings;
-
-        // strcpy cfg
-        const char cfg[] = "<?xml version=\"1.0\"?>\n"
-                           "<def>\n"
-                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-                           "</def>";
-        settings.library.loadxmldata(cfg, sizeof(cfg));
-
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -130,7 +120,6 @@ private:
 
     bool testConditionalValueOfX(const char code[], unsigned int linenr, int value) {
         // Tokenize..
-        Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -149,7 +138,6 @@ private:
     }
 
     void bailout(const char code[]) {
-        Settings settings;
         settings.debugwarnings = true;
 
         // Tokenize..
@@ -157,10 +145,11 @@ private:
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
+
+        settings.debugwarnings = false;
     }
 
     std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[]) {
-        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         errout.str("");

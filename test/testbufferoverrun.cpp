@@ -30,27 +30,24 @@ public:
     }
 
 private:
+    Settings settings0;
 
     void check(const char code[], bool experimental = true, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.inconclusive = true;
-        settings.experimental = experimental;
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
-        settings.addEnabled("portability");
+        settings0.inconclusive = true;
+        settings0.experimental = experimental;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
-        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 
     void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -70,6 +67,10 @@ private:
     }
 
     void run() {
+        settings0.addEnabled("warning");
+        settings0.addEnabled("style");
+        settings0.addEnabled("portability");
+
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
@@ -3431,16 +3432,14 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings0, this);
         checkBufferOverrun.bufferOverrun();
     }
 

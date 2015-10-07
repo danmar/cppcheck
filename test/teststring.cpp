@@ -29,8 +29,12 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("style");
+
         TEST_CASE(stringLiteralWrite);
 
         TEST_CASE(alwaysTrueFalseStringCompare);
@@ -53,10 +57,6 @@ private:
     void check(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

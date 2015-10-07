@@ -734,8 +734,7 @@ private:
                             "    foo[1].x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings localsettings;
-        Tokenizer tokenizer(&localsettings, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -754,8 +753,7 @@ private:
                             "    foo[1][2].x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings localsettings;
-        Tokenizer tokenizer(&localsettings, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -774,8 +772,7 @@ private:
                             "    (foo[1]).x = 123;\n"  // <- x should get a variable() pointer
                             "}";
 
-        Settings localsettings;
-        Tokenizer tokenizer(&localsettings, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -1349,17 +1346,18 @@ private:
         errout.str("");
 
         // Check..
-        Settings localsettings;
-        localsettings.debugwarnings = debug;
+        settings.debugwarnings = debug;
 
         // Tokenize..
-        Tokenizer tokenizer(&localsettings, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList2();
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
+
+        settings.debugwarnings = false;
     }
 
     void functionArgs1() {

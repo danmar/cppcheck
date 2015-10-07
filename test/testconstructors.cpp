@@ -27,16 +27,13 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void check(const char code[], bool showAll = false) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
         settings.inconclusive = showAll;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -50,6 +47,9 @@ private:
     }
 
     void run() {
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+
         TEST_CASE(simple1);
         TEST_CASE(simple2);
         TEST_CASE(simple3);

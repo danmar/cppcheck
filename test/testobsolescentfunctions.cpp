@@ -27,8 +27,13 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
+        settings.addEnabled("style");
+        settings.standards.posix = true;
+        settings.standards.c = Standards::C11;
+
         TEST_CASE(testbsd_signal);
         TEST_CASE(testgethostbyname);
         TEST_CASE(testgethostbyaddr);
@@ -67,11 +72,6 @@ private:
     void check(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        Settings settings;
-        settings.addEnabled("style");
-        settings.standards.posix = true;
-        settings.standards.c = Standards::C11;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

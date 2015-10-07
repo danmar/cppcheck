@@ -27,9 +27,13 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void run() {
+        settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.inconclusive = true;
+
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
         TEST_CASE(incrementBoolean);
         TEST_CASE(assignBoolToPointer);
@@ -64,10 +68,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.inconclusive = true;
         settings.experimental = experimental;
 
         // Tokenize..

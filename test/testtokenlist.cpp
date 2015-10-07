@@ -31,6 +31,7 @@ public:
     }
 
 private:
+    Settings settings;
 
     void run() {
         TEST_CASE(line1); // Ticket #4408
@@ -41,7 +42,6 @@ private:
     // inspired by #5895
     void testaddtoken() {
         const std::string code = "0x89504e470d0a1a0a";
-        Settings settings;
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("9894494448401390090", tokenlist.front()->str());
@@ -69,8 +69,6 @@ private:
 
         errout.str("");
 
-        Settings settings;
-
         TokenList tokenList(&settings);
         std::istringstream istr(code);
         bool res = tokenList.createTokens(istr, "a.cpp");
@@ -96,8 +94,6 @@ private:
 
         errout.str("");
 
-        const Settings settings;
-
         // tokenize..
         TokenList tokenlist(&settings);
         std::istringstream istr(code);
@@ -105,8 +101,6 @@ private:
 
         ASSERT_EQUALS(Path::toNativeSeparators("[c:\\a.h:8]"), tokenlist.fileLine(tokenlist.front()));
     }
-
-
 
 };
 
