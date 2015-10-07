@@ -2972,7 +2972,7 @@ private:
         ASSERT_EQUALS("float", typeOf("1 + 2.3f", "+"));
 
         // char *
-        ASSERT_EQUALS("char*", typeOf("\"hello\" + 1", "+"));
+        ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1", "+"));
         ASSERT_EQUALS("char",  typeOf("\"hello\"[1]", "["));
         ASSERT_EQUALS("char",  typeOf("*\"hello\"", "*"));
 
@@ -2988,7 +2988,7 @@ private:
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * u2;", "u1 *"));
 
         // array..
-        ASSERT_EQUALS("int*", typeOf("int x[10]; a = x + 1;", "+"));
+        ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
         ASSERT_EQUALS("int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
 
         // cast..
@@ -2996,6 +2996,9 @@ private:
         ASSERT_EQUALS("long", typeOf("a = (long)32;", "("));
         ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));
         ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
+
+        // const..
+        ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));
     }
 };
 

@@ -3650,9 +3650,9 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
     return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }
 
-static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type, unsigned int pointer)
+static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type, unsigned int pointer, unsigned int constness = 0U)
 {
-    tok->setValueType(new ValueType(sign,type,pointer));
+    tok->setValueType(new ValueType(sign,type,pointer,constness));
     Token *parent = const_cast<Token *>(tok->astParent());
     if (!parent || parent->valueType())
         return;
@@ -3660,11 +3660,11 @@ static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type,
         return;
 
     if (parent->str() == "[" && pointer > 0U) {
-        setValueType(parent, sign, type, pointer - 1U);
+        setValueType(parent, sign, type, pointer - 1U, constness >> 1);
         return;
     }
     if (parent->str() == "*" && !parent->astOperand2() && pointer > 0U) {
-        setValueType(parent, sign, type, pointer - 1U);
+        setValueType(parent, sign, type, pointer - 1U, constness >> 1);
         return;
     }
 
@@ -3674,17 +3674,17 @@ static void setValueType(Token *tok, ValueType::Sign sign, ValueType::Type type,
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
     if (parent->isArithmeticalOp() && vt2) {
         if (vt1->pointer != 0U && vt2->pointer == 0U) {
-            setValueType(parent, vt1->sign, vt1->type, vt1->pointer);
+            setValueType(parent, vt1->sign, vt1->type, vt1->pointer, vt1->constness);
             return;
         }
 
         if (vt1->pointer == 0U && vt2->pointer != 0U) {
-            setValueType(parent, vt2->sign, vt2->type, vt2->pointer);
+            setValueType(parent, vt2->sign, vt2->type, vt2->pointer, vt2->constness);
             return;
         }
 
         if (vt1->pointer != 0U) { // result is pointer diff
-            setValueType(parent, ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U);
+            setValueType(parent, ValueType::Sign::UNSIGNED, ValueType::Type::INT, 0U, 0U);
             return;
         }
 
@@ -3789,7 +3789,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
         else if (tok->tokType() == Token::eChar)
             ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U);
         else if (tok->tokType() == Token::eString)
-            ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U);
+            ::setValueType(tok, ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
         else if (tok->str() == "(") {
             // cast
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
@@ -3810,28 +3810,33 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
 std::string ValueType::str() const
 {
     std::string ret;
+    if (constness & 1)
+        ret = " const";
     if (isIntegral()) {
         if (sign == SIGNED)
-            ret = "signed ";
+            ret += " signed";
         else if (sign == UNSIGNED)
-            ret = "unsigned ";
+            ret += " unsigned";
         if (type == BOOL)
-            ret += "bool";
+            ret += " bool";
         else if (type == CHAR)
-            ret += "char";
+            ret += " char";
         else if (type == SHORT)
-            ret += "short";
+            ret += " short";
         else if (type == INT)
-            ret += "int";
+            ret += " int";
         else if (type == LONG)
-            ret += "long";
+            ret += " long";
         else if (type == LONGLONG)
-            ret += "long long";
+            ret += " long long";
     } else if (type == FLOAT)
-        ret = "float";
+        ret = " float";
     else if (type == DOUBLE)
-        ret = "double";
-    for (unsigned int p = 0; p < pointer; p++)
-        ret += "*";
-    return ret;
+        ret = " double";
+    for (unsigned int p = 0; p < pointer; p++) {
+        ret += " *";
+        if (constness & (2 << p))
+			ret += " const";
+	}
+    return ret.substr(1);
 }

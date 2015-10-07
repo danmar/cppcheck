@@ -1366,10 +1366,15 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(tok, "&| %str%|%num%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
+    if (!Token::Match(tok, "&| %str%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
         const ValueType *valuetype = tok->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
-            tempToken = new Token(0);
+            typeToken = tempToken = new Token(0);
+            if (valuetype->constness & 1) {
+                tempToken->str("const");
+                tempToken->insertToken("a");
+                tempToken = tempToken->next();
+            }
             if (valuetype->pointer == 0U && valuetype->type <= ValueType::INT)
                 tempToken->str("int");
             else if (valuetype->type == ValueType::BOOL)
@@ -1397,7 +1402,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
             }
             for (unsigned int p = 0; p < valuetype->pointer; p++)
                 tempToken->insertToken("*");
-            typeToken = tempToken;
+            tempToken = const_cast<Token*>(typeToken);
             return;
         }
     }
