@@ -32,12 +32,6 @@
 #include <set>
 
 
-#ifdef _MSC_VER
-// Visual Studio complains about truncated values for '(char)0xff' and '(char)0xfe'
-// TODO: Is there any nice way to fix these warnings?
-#pragma warning( disable : 4310 )
-#endif
-
 class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {
@@ -345,14 +339,14 @@ private:
 
         // a => a
         {
-            const char code[] = { (char)0xff, (char)0xfe, 'a', '\0' };
+            const char code[] = { '\xff', '\xfe', 'a', '\0' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
             ASSERT_EQUALS("a", preprocessor.read(istr, "test.c"));
         }
 
         {
-            const char code[] = { (char)0xfe, (char)0xff, '\0', 'a' };
+            const char code[] = { '\xfe', '\xff', '\0', 'a' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
             ASSERT_EQUALS("a", preprocessor.read(istr, "test.c"));
@@ -360,31 +354,31 @@ private:
 
         // extended char => 0xff
         {
-            const char code[] = { (char)0xff, (char)0xfe, 'a', 'a' };
+            const char code[] = { '\xff', '\xfe', 'a', 'a' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
-            const char expected[] = { (char)0xff, 0 };
+            const char expected[] = { '\xff', 0 };
             ASSERT_EQUALS(expected, preprocessor.read(istr, "test.c"));
         }
 
         {
-            const char code[] = { (char)0xfe, (char)0xff, 'a', 'a' };
+            const char code[] = { '\xfe', '\xff', 'a', 'a' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
-            const char expected[] = { (char)0xff, 0 };
+            const char expected[] = { '\xff', 0 };
             ASSERT_EQUALS(expected, preprocessor.read(istr, "test.c"));
         }
 
         // \r\n => \n
         {
-            const char code[] = { (char)0xff, (char)0xfe, '\r', '\0', '\n', '\0' };
+            const char code[] = { '\xff', '\xfe', '\r', '\0', '\n', '\0' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
             ASSERT_EQUALS("\n", preprocessor.read(istr, "test.c"));
         }
 
         {
-            const char code[] = { (char)0xfe, (char)0xff, '\0', '\r', '\0', '\n' };
+            const char code[] = { '\xfe', '\xff', '\0', '\r', '\0', '\n' };
             std::string s(code, sizeof(code));
             std::istringstream istr(s);
             ASSERT_EQUALS("\n", preprocessor.read(istr, "test.c"));
