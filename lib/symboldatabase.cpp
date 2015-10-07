@@ -3836,7 +3836,7 @@ std::string ValueType::str() const
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
         if (constness & (2 << p))
-			ret += " const";
-	}
+            ret += " const";
+    }
     return ret.substr(1);
 }
