@@ -27,17 +27,13 @@ public:
     }
 
 private:
-
+    Settings settings;
 
     void check(const char code[], bool inconclusive = false, bool runSimpleChecks = true, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        LOAD_LIB_2(settings.library, "std.cfg");
         settings.inconclusive = inconclusive;
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -58,6 +54,10 @@ private:
     }
 
     void run() {
+        settings.addEnabled("warning");
+        settings.addEnabled("style");
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
         TEST_CASE(testautovar3); // ticket #2925
