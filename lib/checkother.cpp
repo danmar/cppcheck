@@ -1623,7 +1623,7 @@ void CheckOther::checkZeroDivision()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "[/%]") || !tok->astOperand1() || !tok->astOperand2())
             continue;
-        if (!astIsIntegral(tok,false))
+        if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
         if (tok->astOperand1()->isNumber()) {
             if (MathLib::isFloat(tok->astOperand1()->str()))

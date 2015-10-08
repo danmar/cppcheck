@@ -3467,9 +3467,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifyVariableMultipleAssign();
 
-    // Simplify float casts (float)1 => 1.0
-    simplifyFloatCasts();
-
     // Collapse operator name tokens into single token
     // operator = => operator=
     simplifyOperatorName();
@@ -4838,19 +4835,6 @@ void Tokenizer::simplifyUndefinedSizeArray()
                 tok = end;
             } else
                 tok = tok->tokAt(3);
-        }
-    }
-}
-
-void Tokenizer::simplifyFloatCasts()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok->next(), "( float|double ) %num%") && MathLib::isInt(tok->strAt(4))) {
-            const bool isFloatType(tok->strAt(2) == "float");
-            tok->deleteNext(3);
-            tok = tok->next();
-            // in case of type 'float', add the corresponding suffix 'f'
-            tok->str(tok->str() + (isFloatType ? ".0f":".0"));
         }
     }
 }

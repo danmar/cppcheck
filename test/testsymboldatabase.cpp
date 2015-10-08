@@ -2987,6 +2987,10 @@ private:
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 + u2;", "u1 +"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * 2;",  "u1 *"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned int u1, u2; a = u1 * u2;", "u1 *"));
+        ASSERT_EQUALS("int *", typeOf("int x; a = &x;", "&"));
+        ASSERT_EQUALS("int *", typeOf("int x; a = &x;", "&"));
+        ASSERT_EQUALS("long double", typeOf("long double x; dostuff(x,1);", "x ,"));
+        ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
 
         // array..
         ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
@@ -2997,6 +3001,7 @@ private:
         ASSERT_EQUALS("long", typeOf("a = (long)32;", "("));
         ASSERT_EQUALS("long", typeOf("a = (long int)32;", "("));
         ASSERT_EQUALS("long long", typeOf("a = (long long)32;", "("));
+        ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
 
         // const..
         ASSERT_EQUALS("const char *", typeOf("a = \"123\";", "\"123\""));

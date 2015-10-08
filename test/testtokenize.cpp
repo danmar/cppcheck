@@ -95,8 +95,6 @@ private:
         TEST_CASE(removeCast16); // #6278
         TEST_CASE(removeCast17); // #6110 - don't remove any parentheses in 'a(b)(c)'
 
-        TEST_CASE(simplifyFloatCasts); // float casting a integer
-
         TEST_CASE(inlineasm);
 
         TEST_CASE(ifAddBraces1);
@@ -984,21 +982,6 @@ private:
     void removeCast17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
         ASSERT_EQUALS("if ( a ( b ) ( c ) >= 3 )",
                       tokenizeAndStringify("if (a(b)(c) >= 3)", true));
-    }
-
-    void simplifyFloatCasts() { // float casting integers
-        // C-style casts
-        ASSERT_EQUALS("a = 1.0f ;", tokenizeAndStringify("a = (float)1;"));
-        ASSERT_EQUALS("a = 1.0f ;", tokenizeAndStringify("a = ((float)1);"));
-        ASSERT_EQUALS("a = 291.0f ;", tokenizeAndStringify("a = ((float)0x123);"));
-
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = (double)1;"));
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = ((double)1);"));
-        ASSERT_EQUALS("a = 291.0 ;", tokenizeAndStringify("a = ((double)0x123);"));
-
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = (long double)1;"));
-        ASSERT_EQUALS("a = 1.0 ;", tokenizeAndStringify("a = ((long double)1);"));
-        ASSERT_EQUALS("a = 291.0 ;", tokenizeAndStringify("a = ((long double)0x123);"));
     }
 
     void inlineasm() {

@@ -3675,6 +3675,14 @@ static void setValueType(Token *tok, const ValueType &valuetype)
                                        valuetype.originalTypeName));
         return;
     }
+    if (parent->str() == "&" && !parent->astOperand2()) {
+        setValueType(parent, ValueType(valuetype.sign,
+                                       valuetype.type,
+                                       valuetype.pointer + 1U,
+                                       valuetype.constness,
+                                       valuetype.originalTypeName));
+        return;
+    }
 
     if (parent->astOperand2() && !parent->astOperand2()->valueType())
         return;
@@ -3696,6 +3704,10 @@ static void setValueType(Token *tok, const ValueType &valuetype)
             return;
         }
 
+        if (vt1->type == ValueType::Type::LONGDOUBLE || vt2->type == ValueType::Type::LONGDOUBLE) {
+            setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::LONGDOUBLE, 0U));
+            return;
+        }
         if (vt1->type == ValueType::Type::DOUBLE || vt2->type == ValueType::Type::DOUBLE) {
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::DOUBLE, 0U));
             return;
@@ -3760,7 +3772,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
         else if (type->str() == "float")
             valuetype->type = ValueType::Type::FLOAT;
         else if (type->str() == "double")
-            valuetype->type = ValueType::Type::DOUBLE;
+            valuetype->type = type->isLong() ? ValueType::Type::LONGDOUBLE : ValueType::Type::DOUBLE;
         else if (type->str() == "struct")
             valuetype->type = ValueType::Type::NONSTD;
         else if (type->str() == "*")
@@ -3845,9 +3857,11 @@ std::string ValueType::str() const
         else if (type == LONGLONG)
             ret += " long long";
     } else if (type == FLOAT)
-        ret = " float";
+        ret += " float";
     else if (type == DOUBLE)
-        ret = " double";
+        ret += " double";
+    else if (type == LONGDOUBLE)
+        ret += " long double";
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
         if (constness & (2 << p))
