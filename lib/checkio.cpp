@@ -1366,7 +1366,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(tok, "&| %str%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
+    if (!Token::Match(tok, "%str%|%name% ,|)") && !Token::Match(tok, "%name% [|(|.|<|::|?")) {
         const ValueType *valuetype = tok->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
             typeToken = tempToken = new Token(0);
@@ -1394,6 +1394,10 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * tok, const Settings *settings,
                 tempToken->str("float");
             else if (valuetype->type == ValueType::DOUBLE)
                 tempToken->str("double");
+            else if (valuetype->type == ValueType::LONGDOUBLE) {
+                tempToken->str("double");
+                tempToken->isLong(true);
+            }
             if (valuetype->isIntegral()) {
                 if (valuetype->sign == ValueType::Sign::UNSIGNED)
                     tempToken->isUnsigned(true);
