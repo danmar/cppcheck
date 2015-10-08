@@ -375,6 +375,7 @@ private:
         tokenizer.simplifyTokenList2();
         checkCondition.runSimplifiedChecks(&tokenizer, &settings1, this);
     }
+
     void duplicateIf() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"

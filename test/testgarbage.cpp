@@ -184,6 +184,7 @@ private:
         TEST_CASE(garbageCode132); // #7022
         TEST_CASE(garbageCode133);
         TEST_CASE(garbageCode134);
+        TEST_CASE(garbageCode135); // #4994
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1062,6 +1063,14 @@ private:
                   "  static int i; "
                   "}; "
                   "void f() { A<int>::i = 0; }");
+    }
+
+    void garbageCode135() { // #4994
+        checkCode("long f () {\n"
+                  "  return a >> extern\n"
+                  "}\n"
+                  "long a = 1 ;\n"
+                  "long b = 2 ;");
     }
 
 

@@ -3428,78 +3428,63 @@ private:
               "void d() { struct b *f; f = malloc(108); }");
     }
 
-    void epcheck(const char code[], const char filename[] = "test.cpp") {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
-
-        // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings0, this);
-        checkBufferOverrun.bufferOverrun();
-    }
-
 
     void executionPaths1() {
-        epcheck("void f(int a)\n"
-                "{\n"
-                "    int buf[10];\n"
-                "    int i = 5;\n"
-                "    if (a == 1)\n"
-                "        i = 1000;\n"
-                "    buf[i] = 0;\n"
-                "}");
+        check("void f(int a)\n"
+              "{\n"
+              "    int buf[10];\n"
+              "    int i = 5;\n"
+              "    if (a == 1)\n"
+              "        i = 1000;\n"
+              "    buf[i] = 0;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
 
-        epcheck("void f(int a)\n"
-                "{\n"
-                "    int buf[10][5];\n"
-                "    int i = 5;\n"
-                "    if (a == 1)\n"
-                "        i = 1000;\n"
-                "    buf[i][0] = 0;\n"
-                "}");
+        check("void f(int a)\n"
+              "{\n"
+              "    int buf[10][5];\n"
+              "    int i = 5;\n"
+              "    if (a == 1)\n"
+              "        i = 1000;\n"
+              "    buf[i][0] = 0;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' index buf[1000][0] out of bounds.\n", errout.str());
     }
 
     void executionPaths2() {
-        epcheck("void foo()\n"
-                "{\n"
-                "    char a[64];\n"
-                "    int sz = sizeof(a);\n"
-                "    bar(&sz);\n"
-                "    a[sz] = 0;\n"
-                "}");
+        check("void foo()\n"
+              "{\n"
+              "    char a[64];\n"
+              "    int sz = sizeof(a);\n"
+              "    bar(&sz);\n"
+              "    a[sz] = 0;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void executionPaths3() {
-        epcheck("void f(char *VLtext)\n"
-                "{\n"
-                "    if ( x ) {\n"
-                "        return VLtext[0];\n"
-                "    } else {\n"
-                "        int wordlen = ab();\n"
-                "        VLtext[wordlen] = 0;\n"
-                "    }\n"
-                "}");
+        check("void f(char *VLtext)\n"
+              "{\n"
+              "    if ( x ) {\n"
+              "        return VLtext[0];\n"
+              "    } else {\n"
+              "        int wordlen = ab();\n"
+              "        VLtext[wordlen] = 0;\n"
+              "    }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void executionPaths5() {
         // No false positive
-        epcheck("class A {\n"
-                "    void foo() {\n"
-                "        int j = g();\n"
-                "        arr[j]=0;\n"
-                "    }\n"
-                "\n"
-                "    int arr[2*BSize + 2];\n"
-                "};");
+        check("class A {\n"
+              "    void foo() {\n"
+              "        int j = g();\n"
+              "        arr[j]=0;\n"
+              "    }\n"
+              "\n"
+              "    int arr[2*BSize + 2];\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3510,7 +3495,7 @@ private:
                             "    if (x) { i = 1000; }\n"
                             "    a[i] = 0;\n"
                             "}";
-        epcheck(code);
+        check(code);
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
     }
 

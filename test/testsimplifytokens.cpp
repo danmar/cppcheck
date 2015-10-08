@@ -782,21 +782,12 @@ private:
         }
     }
 
-
-    std::string elseif(const char code[]) {
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.elseif();
-        return tokenizer.tokens()->stringifyList(false);
-    }
-
     void elseif1() {
         const char code[] = "else if(ab) { cd } else { ef }gh";
-        ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
+        ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", tokenizeDebugListing(code));
 
         // syntax error: assert there is no segmentation fault
-        ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", elseif("else if (x) { }"));
+        ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", tokenizeDebugListing("else if (x) { }"));
 
         {
             const char src[] =  "void f(int g,int f) {\n"
@@ -832,25 +823,24 @@ private:
         {
             const char src[] = "( []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() )";
             const char expected[] = "\n\n##file 0\n1: ( [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) )\n";
-            ASSERT_EQUALS(expected, elseif(src));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
         {
             const char src[] = "[ []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() ]";
             const char expected[] = "\n\n##file 0\n1: [ [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) ]\n";
-            ASSERT_EQUALS(expected, elseif(src));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
         {
             const char src[] = "= { []{if (ab) {cd}else if(ef) { gh } else { ij }kl}() }";
             const char expected[] = "\n\n##file 0\n1: = { [ ] { if ( ab ) { cd } else { if ( ef ) { gh } else { ij } } kl } ( ) }\n";
-            ASSERT_EQUALS(expected, elseif(src));
+            ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
     }
 
 
     unsigned int sizeofFromTokenizer(const char type[]) {
         Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("");
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.fillTypeSizes();
         Token tok1(0);
         tok1.str(type);
         return tokenizer.sizeOfType(&tok1);

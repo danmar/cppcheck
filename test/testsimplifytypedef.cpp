@@ -541,17 +541,7 @@ private:
     void simplifyTypedef18() {
         const char code[] = "typedef vector<int[4]> a;\n"
                             "a b;";
-
-        // Clear the error buffer..
-        errout.str("");
-
-        Tokenizer tokenizer(&settings1, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList2();
-
-        tokenizer.validate();
+        ASSERT_EQUALS("vector < int [ 4 ] > b ;", tok(code));
     }
 
     void simplifyTypedef19() {
@@ -603,17 +593,7 @@ private:
     void simplifyTypedef20() {
         // ticket #1284
         const char code[] = "typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);";
-
-        // Clear the error buffer..
-        errout.str("");
-
-        Tokenizer tokenizer(&settings1, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList2();
-
-        tokenizer.validate();
+        ASSERT_EQUALS(";", tok(code));
     }
 
     void simplifyTypedef21() {
