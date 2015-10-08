@@ -2131,24 +2131,24 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 void Tokenizer::arraySize()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName() || !Token::Match(tok, "%name% [ ] ="))
+        if (!tok->isName() || !Token::Match(tok, "%var% [ ] ="))
             continue;
         bool addlength = false;
-        if (Token::Match(tok, "%name% [ ] = { %str% } ;")) {
+        if (Token::Match(tok, "%var% [ ] = { %str% } ;")) {
             Token *t = tok->tokAt(3);
             t->deleteNext();
             t->next()->deleteNext();
             addlength = true;
         }
 
-        if (addlength || Token::Match(tok, "%name% [ ] = %str% ;")) {
+        if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
             std::size_t sz = Token::getStrSize(tok->tokAt(3));
             tok->insertToken(MathLib::toString((unsigned int)sz));
             tok = tok->tokAt(5);
         }
 
-        else if (Token::Match(tok, "%name% [ ] = {")) {
+        else if (Token::Match(tok, "%var% [ ] = {")) {
             unsigned int sz = 1;
             tok = tok->next();
             Token *end = tok->linkAt(3);
@@ -2163,9 +2163,6 @@ void Tokenizer::arraySize()
                         }
                     }
                     tok2 = tok2->link();
-                } else if (tok2->str() == "<") { // Bailout. TODO: When link() supports <>, this bailout becomes unnecessary
-                    sz = 0;
-                    break;
                 } else if (tok2->str() == ",") {
                     if (!Token::Match(tok2->next(), "[},]"))
                         ++sz;
@@ -3328,9 +3325,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyVarDecl(true);
     simplifyFunctionParameters();
 
-    // specify array size..
-    arraySize();
-
     // simplify labels and 'case|default'-like syntaxes
     simplifyLabelsCaseDefault();
 
@@ -3462,9 +3456,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
-    // specify array size.. needed when arrays are split
-    arraySize();
-
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
 
@@ -3528,6 +3519,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Link < with >
     createLinks2();
+
+    // specify array size
+    arraySize();
 
     // The simplify enum might have inner loops
     if (_settings->terminated())
