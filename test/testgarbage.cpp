@@ -185,6 +185,7 @@ private:
         TEST_CASE(garbageCode133);
         TEST_CASE(garbageCode134);
         TEST_CASE(garbageCode135); // #4994
+        TEST_CASE(garbageCode136); // #7033
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1071,6 +1072,10 @@ private:
                   "}\n"
                   "long a = 1 ;\n"
                   "long b = 2 ;");
+    }
+
+    void garbageCode136() { // #7033
+        checkCode("{ } () { void f() { node_t * n; for (; -n) {} } } { }");
     }
 
 

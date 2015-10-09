@@ -459,6 +459,7 @@ void CheckBool::pointerArithBoolCond(const Token *tok)
         return;
 
     if (tok->astOperand1() &&
+        tok->astOperand2() &&
         tok->astOperand1()->isName() &&
         tok->astOperand1()->variable() &&
         tok->astOperand1()->variable()->isPointer() &&
