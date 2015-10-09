@@ -168,8 +168,8 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         }
 
         // Run rules on this code
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-            if (it->tokenlist == "define") {
+        for (std::map<std::string, Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->second.enabled && it->second.tokenlist == "define") {
                 Tokenizer tokenizer2(&_settings, this);
                 std::istringstream istr2(filedata);
                 tokenizer2.list.createTokens(istr2, filename);
@@ -320,8 +320,8 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
         _tokenizer.setTimerResults(&S_timerResults);
     try {
         // Execute rules for "raw" code
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-            if (it->tokenlist == "raw") {
+        for (std::map<std::string, Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+            if (it->second.enabled && it->second.tokenlist == "raw") {
                 Tokenizer tokenizer2(&_settings, this);
                 std::istringstream istr(code);
                 tokenizer2.list.createTokens(istr, FileName);
@@ -439,8 +439,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 #ifdef HAVE_RULES
     // Are there rules to execute?
     bool isrule = false;
-    for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-        if (it->tokenlist == tokenlist)
+    for (std::map<std::string, Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+        if (it->second.enabled && it->second.tokenlist == tokenlist)
             isrule = true;
     }
 
@@ -454,9 +454,9 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         ostr << " " << tok->str();
     const std::string str(ostr.str());
 
-    for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-        const Settings::Rule &rule = *it;
-        if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
+    for (std::map<std::string, Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
+        const Settings::Rule &rule = it->second;
+        if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist || !rule.enabled)
             continue;
 
         const char *error = nullptr;
@@ -511,6 +511,26 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
             // Report error
             reportErr(errmsg);
+
+            // Disable rules that must be disabled
+            std::istringstream disable(rule.disable_rules);
+            do {
+                std::string rule_to_disable;
+                disable >> rule_to_disable;
+                if (rule_to_disable != "") {
+                    _settings.rules[rule_to_disable].enabled = false;
+                }
+            } while (disable);
+
+            // Enable rules that must be enabled
+            std::istringstream enable(rule.enable_rules);
+            do {
+                std::string rule_to_enable;
+                enable >> rule_to_enable;
+                if (rule_to_enable != "") {
+                    _settings.rules[rule_to_enable].enabled = true;
+                }
+            } while (enable);
         }
 
         pcre_free(re);
