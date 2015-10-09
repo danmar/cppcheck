@@ -641,68 +641,43 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
             Settings::Rule rule;
             rule.pattern = 7 + argv[i];
-            _settings->rules[rule.id] = rule;
+            _settings->rules.push_back(rule);
         }
 
         // Rule file
         else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
             tinyxml2::XMLDocument doc;
             if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_NO_ERROR) {
-                const tinyxml2::XMLElement *node = doc.FirstChildElement();
+                tinyxml2::XMLElement *node = doc.FirstChildElement();
                 for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                     Settings::Rule rule;
 
-                    const tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                    tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
                     if (tokenlist)
                         rule.tokenlist = tokenlist->GetText();
 
-                    const tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                    tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
                     if (pattern) {
                         rule.pattern = pattern->GetText();
                     }
 
-                    const tinyxml2::XMLElement *message = node->FirstChildElement("message");
+                    tinyxml2::XMLElement *message = node->FirstChildElement("message");
                     if (message) {
-                        const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                        tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                         if (severity)
                             rule.severity = severity->GetText();
 
-                        const tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                        tinyxml2::XMLElement *id = message->FirstChildElement("id");
                         if (id)
                             rule.id = id->GetText();
 
-                        const tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                        tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                         if (summary)
                             rule.summary = summary->GetText() ? summary->GetText() : "";
                     }
 
-                    tinyxml2::XMLElement *state = node->FirstChildElement("state");
-                    if (state) {
-                        std::string rule_state = state->GetText();
-                        if (rule_state == "enabled")
-                            rule.enabled = true;
-                        else if (rule_state == "disabled")
-                            rule.enabled = false;
-                        else {
-                            std::string msg("cppcheck: error: unrecognized rule state: \"");
-                            msg += rule_state;
-                            msg +=  "\". Supported states: disable, enable.";
-                            PrintMessage(msg);
-                        }
-                    }
-
-                    tinyxml2::XMLElement *disabled = node->FirstChildElement("disable");
-                    if (disabled) {
-                        rule.disable_rules = disabled->GetText();
-                    }
-
-                    tinyxml2::XMLElement *enabled = node->FirstChildElement("enable");
-                    if (enabled) {
-                        rule.enable_rules = enabled->GetText();
-                    }
-
                     if (!rule.pattern.empty())
-                        _settings->rules[rule.id] = rule;
+                        _settings->rules.push_back(rule);
                 }
             }
         }

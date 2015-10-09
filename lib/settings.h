@@ -218,10 +218,7 @@ public:
         Rule()
             : tokenlist("simple") // use simple tokenlist
             , id("rule")          // default id
-            , severity("style")   // default severity
-            , disable_rules("")   // default disabled rules
-            , enable_rules("")    // default enabled rules
-            , enabled(true) {
+            , severity("style") { // default severity
         }
 
         std::string tokenlist;
@@ -229,15 +226,12 @@ public:
         std::string id;
         std::string severity;
         std::string summary;
-        std::string disable_rules;
-        std::string enable_rules;
-        bool enabled;
     };
 
     /**
      * @brief Extra rules
      */
-    std::map<std::string, Rule> rules;
+    std::list<Rule> rules;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
