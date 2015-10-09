@@ -1482,7 +1482,7 @@ void CheckOther::checkCharVariable()
                 if (astIsSignedChar(index) && index->getValueGE(0x80, _settings))
                     charArrayIndexError(tok);
             }
-            if (Token::Match(tok, "[&|^]") && tok->astOperand2()) {
+            if (Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
                 bool warn = false;
                 if (astIsSignedChar(tok->astOperand1())) {
                     const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, _settings);

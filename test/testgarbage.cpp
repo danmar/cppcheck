@@ -186,6 +186,7 @@ private:
         TEST_CASE(garbageCode134);
         TEST_CASE(garbageCode135); // #4994
         TEST_CASE(garbageCode136); // #7033
+        TEST_CASE(garbageCode137); // #7034
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1076,6 +1077,10 @@ private:
 
     void garbageCode136() { // #7033
         checkCode("{ } () { void f() { node_t * n; for (; -n) {} } } { }");
+    }
+
+    void garbageCode137() { // #7034
+        checkCode("\" \" typedef signed char f; \" \"; void a() { f * s = () &[]; (; ) (; ) }");
     }
 
 
