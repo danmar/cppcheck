@@ -94,6 +94,12 @@ private:
         ArgumentInfo operator = (const ArgumentInfo &); // not implemented
     };
 
+    void checkFormatString(const Token * const tok,
+                           const Token * const formatStringTok,
+                           const Token *       argListTok,
+                           const bool scan,
+                           const bool scanf_s);
+
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
