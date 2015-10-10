@@ -3752,6 +3752,9 @@ static void setValueType(Token *tok, const ValueType &valuetype)
 
 static const Token * parsedecl(const Token *type, ValueType * const valuetype)
 {
+    const unsigned int pointer0 = valuetype->pointer;
+    while (Token::Match(type->previous(), "%name%"))
+        type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
     valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     while (Token::Match(type, "%name%|*|&") && !type->variable()) {
@@ -3759,7 +3762,9 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype)
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
-        if (type->str() == "bool")
+        if (type->str() == "const")
+            valuetype->constness |= (1 << (valuetype->pointer - pointer0));
+        else if (type->str() == "bool")
             valuetype->type = ValueType::Type::BOOL;
         else if (type->str() == "char")
             valuetype->type = ValueType::Type::CHAR;
