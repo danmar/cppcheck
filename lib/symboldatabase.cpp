@@ -3650,6 +3650,18 @@ bool SymbolDatabase::isReservedName(const std::string& iName) const
     return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
 }
 
+static const Token * parsedecl(const Token *type, ValueType * const valuetype);
+static void setValueType(Token *tok, const ValueType &valuetype);
+
+static void setValueType(Token *tok, const Variable &var)
+{
+    ValueType valuetype;
+    valuetype.pointer = var.dimensions().size();
+    valuetype.typeScope = var.typeScope();
+    if (parsedecl(var.typeStartToken(), &valuetype))
+        ::setValueType(tok, valuetype);
+}
+
 static void setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
@@ -3682,6 +3694,22 @@ static void setValueType(Token *tok, const ValueType &valuetype)
                                        valuetype.constness,
                                        valuetype.originalTypeName));
         return;
+    }
+
+    if (parent->str() == "." &&
+        valuetype.typeScope &&
+        parent->astOperand2() && parent->astOperand2()->isName() && !parent->astOperand2()->valueType()) {
+        const std::string &name = parent->astOperand2()->str();
+        const Scope *typeScope = parent->astOperand1()->valueType()->typeScope;
+        if (!typeScope)
+            return;
+        for (std::list<Variable>::const_iterator it = typeScope->varlist.begin(); it != typeScope->varlist.end(); ++it) {
+            const Variable &var = *it;
+            if (var.nameToken()->str() == name) {
+                setValueType(parent, var);
+                return;
+            }
+        }
     }
 
     if (parent->astOperand2() && !parent->astOperand2()->valueType())
@@ -3842,11 +3870,7 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
                     ::setValueType(tok, valuetype);
             }
         } else if (tok->variable()) {
-            const Variable *var = tok->variable();
-            ValueType valuetype;
-            valuetype.pointer = var->dimensions().size();
-            if (parsedecl(var->typeStartToken(), &valuetype))
-                ::setValueType(tok, valuetype);
+            setValueType(tok, *tok->variable());
         }
     }
 }

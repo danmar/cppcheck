@@ -2992,6 +2992,7 @@ private:
         ASSERT_EQUALS("int *", typeOf("int x; a = &x;", "&"));
         ASSERT_EQUALS("long double", typeOf("long double x; dostuff(x,1);", "x ,"));
         ASSERT_EQUALS("long double *", typeOf("long double x; dostuff(&x,1);", "& x ,"));
+        ASSERT_EQUALS("int", typeOf("struct X {int i;}; void f(struct X x) { x.i }", "."));
 
         // array..
         ASSERT_EQUALS("int *", typeOf("int x[10]; a = x + 1;", "+"));
