@@ -135,7 +135,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
         return 0;
 
     if (type->tokType() == Token::eString)
-        return static_cast<unsigned int>(Token::getStrLength(type) + 1);
+        return Token::getStrLength(type) + 1U;
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
     if (it == _typeSize.end())
@@ -3052,7 +3052,7 @@ bool Tokenizer::simplifySizeof()
 
                 Token* tok2 = tok->next();
                 do {
-                    size *= static_cast<unsigned int>(MathLib::toLongNumber(tok2->strAt(1)));
+                    size *= MathLib::toULongNumber(tok2->strAt(1));
                     tok2 = tok2->tokAt(3);
                 } while (Token::Match(tok2, "[ %num% ]"));
                 if (Token::Match(tok2, "[;=]")) {
@@ -3183,7 +3183,7 @@ bool Tokenizer::simplifySizeof()
                     for (unsigned int i = 0; i < derefs; i++)
                         tok2 = tok2->linkAt(1); // Skip all dimensions that are derefenced before the sizeof call
                     while (Token::Match(tok2, "] [ %num% ]")) {
-                        sz *= static_cast<size_t>(MathLib::toULongNumber(tok2->strAt(2)));
+                        sz *= MathLib::toULongNumber(tok2->strAt(2));
                         tok2 = tok2->linkAt(1);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
@@ -3195,7 +3195,7 @@ bool Tokenizer::simplifySizeof()
                     continue;
                 const Token *tok2 = nametok->next();
                 while (Token::Match(tok2, "[ %num% ]")) {
-                    sz *= static_cast<size_t>(MathLib::toLongNumber(tok2->strAt(1)));
+                    sz *= MathLib::toULongNumber(tok2->strAt(1));
                     tok2 = tok2->link()->next();
                 }
                 if (!tok2 || tok2->str() != ")")

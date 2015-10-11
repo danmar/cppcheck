@@ -552,7 +552,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
         next = pattern + std::strlen(pattern);
 
     while (*current) {
-        std::size_t length = static_cast<std::size_t>(next - current);
+        std::size_t length = next - current;
 
         if (!tok || length != tok->_str.length() || std::strncmp(current, tok->_str.c_str(), length))
             return false;
@@ -1043,16 +1043,16 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
     std::ostringstream ret;
 
     unsigned int lineNumber = _linenr;
-    int fileInd = files ? -1 : static_cast<int>(_fileIndex);
+    unsigned int fileInd = files ? ~0U : _fileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
-        if (static_cast<int>(tok->_fileIndex) != fileInd) {
-            if (fileInd != -1) {
+        if (tok->_fileIndex != fileInd) {
+            if (fileInd != ~0U) {
                 lineNumbers[fileInd] = tok->_fileIndex;
             }
 
-            fileInd = static_cast<int>(tok->_fileIndex);
+            fileInd = tok->_fileIndex;
             if (files) {
                 ret << "\n\n##file ";
                 if (fileNames && fileNames->size() > tok->_fileIndex)
@@ -1066,7 +1066,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            if (lineNumber+4 < tok->linenr() && fileInd == static_cast<int>(tok->_fileIndex)) {
+            if (lineNumber+4 < tok->linenr() && fileInd == tok->_fileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
                 ret << tok->linenr() << ": ";

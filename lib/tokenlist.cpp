@@ -92,7 +92,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             _isCPP = _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
-    return static_cast<unsigned int>(_files.size() - 1);
+    return _files.size() - 1U;
 }
 
 void TokenList::deleteTokens(Token *tok)
@@ -400,7 +400,7 @@ unsigned long long TokenList::calculateChecksum() const
 {
     unsigned long long checksum = 0;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const unsigned int subchecksum1 = tok->flags() + tok->varId() + static_cast<unsigned int>(tok->tokType());
+        const unsigned int subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
         unsigned int subchecksum2 = 0;
         for (std::size_t i = 0; i < tok->str().size(); i++)
             subchecksum2 += (unsigned int)tok->str()[i];
