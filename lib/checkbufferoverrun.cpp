@@ -679,7 +679,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 const Token* lastParamTok = tok->tokAt(varcount + 4);
                 if (lastParamTok->tokType() == Token::Type::eString) {
                     const std::size_t len = Token::getStrLength(lastParamTok);
-                    if (len >= (unsigned int)total_size) {
+                    if (len >= total_size) {
                         bufferOverrunError(tok, declarationId > 0 ? emptyString : varnames);
                         continue;
                     }
@@ -916,7 +916,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(tok, arrayInfo, std::list<const Token*>());
 
             if (printWarning && printInconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
-                if (Token::getStrLength(tok->tokAt(4)) >= (unsigned int)total_size) {
+                if (Token::getStrLength(tok->tokAt(4)) >= total_size) {
                     const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(6));
                     if (total_size == num)
                         bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
@@ -965,7 +965,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             // Writing data into array..
             if (total_size > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", declarationId)) {
                 const std::size_t len = Token::getStrLength(tok->tokAt(4));
-                if (len >= (unsigned int)total_size) {
+                if (len >= total_size) {
                     bufferOverrunError(tok, arrayInfo.varname());
                     continue;
                 }
@@ -978,7 +978,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
                 while (Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {
                     charactersAppend += Token::getStrLength(tok2->tokAt(4));
-                    if (charactersAppend >= (unsigned int)total_size) {
+                    if (charactersAppend >= total_size) {
                         bufferOverrunError(tok2, arrayInfo.varname());
                         break;
                     }
