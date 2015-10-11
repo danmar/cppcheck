@@ -3834,6 +3834,13 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
                 if (Token::simpleMatch(parsedecl(tok->next(), &valuetype), ")"))
                     ::setValueType(tok, valuetype);
             }
+
+            // function
+            if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
+                ValueType valuetype;
+                if (Token::simpleMatch(parsedecl(tok->previous()->function()->retDef, &valuetype), "("))
+                    ::setValueType(tok, valuetype);
+            }
         } else if (tok->variable()) {
             const Variable *var = tok->variable();
             ValueType valuetype;

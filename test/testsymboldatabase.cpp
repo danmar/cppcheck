@@ -3009,6 +3009,9 @@ private:
         ASSERT_EQUALS("const int *", typeOf("const int *a; x = a + 1;", "a +"));
         ASSERT_EQUALS("int * const", typeOf("int * const a; x = a + 1;", "+"));
         ASSERT_EQUALS("const int *", typeOf("const int a[20]; x = a + 1;", "+"));
+
+        // function call..
+        ASSERT_EQUALS("int", typeOf("int a(int); a(5);", "( 5"));
     }
 };
 
