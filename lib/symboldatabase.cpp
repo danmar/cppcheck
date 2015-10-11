@@ -3820,9 +3820,14 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         else if (tok->tokType() == Token::eChar)
             ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U));
-        else if (tok->tokType() == Token::eString)
-            ::setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U));
-        else if (tok->str() == "(") {
+        else if (tok->tokType() == Token::eString) {
+            ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
+            if (tok->isLong()) {
+                valuetype.originalTypeName = "wchar_t";
+                valuetype.type = ValueType::Type::SHORT;
+            }
+            ::setValueType(tok, valuetype);
+        } else if (tok->str() == "(") {
             // cast
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;

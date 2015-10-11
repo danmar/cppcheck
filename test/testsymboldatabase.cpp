@@ -2976,6 +2976,7 @@ private:
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1", "+"));
         ASSERT_EQUALS("char",  typeOf("\"hello\"[1]", "["));
         ASSERT_EQUALS("char",  typeOf("*\"hello\"", "*"));
+        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("int", typeOf("int x; a = x + 1;", "+"));
