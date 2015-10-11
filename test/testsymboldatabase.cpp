@@ -2980,6 +2980,7 @@ private:
 
         // Variable calculations
         ASSERT_EQUALS("int", typeOf("int x; a = x + 1;", "+"));
+        ASSERT_EQUALS("int", typeOf("int x; a = x | 1;", "|"));
         ASSERT_EQUALS("float", typeOf("float x; a = x + 1;", "+"));
         ASSERT_EQUALS("signed int", typeOf("signed x; a = x + 1;", "x +"));
         ASSERT_EQUALS("unsigned int", typeOf("unsigned x; a = x + 1;", "x +"));
@@ -3013,6 +3014,7 @@ private:
 
         // function call..
         ASSERT_EQUALS("int", typeOf("int a(int); a(5);", "( 5"));
+        ASSERT_EQUALS("unsigned long", typeOf("sizeof(x);", "("));
     }
 };
 

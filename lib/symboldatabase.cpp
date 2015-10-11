@@ -3744,37 +3744,41 @@ static void setValueType(Token *tok, const ValueType &valuetype)
             setValueType(parent, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 0U));
             return;
         }
-        if (vt1->isIntegral() && vt2->isIntegral()) {
-            ValueType::Type t;
-            ValueType::Sign s;
-            std::string originalTypeName;
-            if (vt1->type == vt2->type) {
-                t = vt1->type;
-                if (vt1->sign == ValueType::Sign::UNSIGNED || vt2->sign == ValueType::Sign::UNSIGNED)
-                    s = ValueType::Sign::UNSIGNED;
-                else if (vt1->sign == ValueType::Sign::UNKNOWN_SIGN || vt2->sign == ValueType::Sign::UNKNOWN_SIGN)
-                    s = ValueType::Sign::UNKNOWN_SIGN;
-                else
-                    s = ValueType::Sign::SIGNED;
-                originalTypeName = (vt1->originalTypeName.empty() ? vt2 : vt1)->originalTypeName;
-            } else if (vt1->type > vt2->type) {
-                t = vt1->type;
-                s = vt1->sign;
-                originalTypeName = vt1->originalTypeName;
-            } else {
-                t = vt2->type;
-                s = vt2->sign;
-                originalTypeName = vt2->originalTypeName;
-            }
-            if (t < ValueType::Type::INT) {
-                t = ValueType::Type::INT;
-                s = ValueType::Sign::SIGNED;
-                originalTypeName.clear();
-            }
+    }
 
-            setValueType(parent, ValueType(s, t, 0U, 0U, originalTypeName));
-            return;
+    if (vt2 &&
+        vt1->isIntegral() && vt1->pointer == 0U &&
+        vt2->isIntegral() && vt2->pointer == 0U &&
+        (parent->isArithmeticalOp() ||parent->tokType() == Token::eBitOp)) {
+
+        ValueType vt;
+        if (vt1->type == vt2->type) {
+            vt.type = vt1->type;
+            if (vt1->sign == ValueType::Sign::UNSIGNED || vt2->sign == ValueType::Sign::UNSIGNED)
+                vt.sign = ValueType::Sign::UNSIGNED;
+            else if (vt1->sign == ValueType::Sign::UNKNOWN_SIGN || vt2->sign == ValueType::Sign::UNKNOWN_SIGN)
+                vt.sign = ValueType::Sign::UNKNOWN_SIGN;
+            else
+                vt.sign = ValueType::Sign::SIGNED;
+            vt.originalTypeName = (vt1->originalTypeName.empty() ? vt2 : vt1)->originalTypeName;
+        } else if (vt1->type > vt2->type) {
+            vt.type = vt1->type;
+            vt.sign = vt1->sign;
+            vt.originalTypeName = vt1->originalTypeName;
+        } else {
+            vt.type = vt2->type;
+            vt.sign = vt2->sign;
+            vt.originalTypeName = vt2->originalTypeName;
         }
+        if (vt.type < ValueType::Type::INT) {
+            vt.type = ValueType::Type::INT;
+            vt.sign = ValueType::Sign::SIGNED;
+            vt.originalTypeName.clear();
+        }
+
+        setValueType(parent, vt);
+        return;
+
     }
 }
 
@@ -3864,10 +3868,17 @@ void SymbolDatabase::setValueTypeInTokenList(Token *tokens)
             }
 
             // function
-            if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
+            else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->previous()->function()->retDef, &valuetype), "("))
                     ::setValueType(tok, valuetype);
+            }
+
+            else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
+                // TODO: use specified size_t type
+                ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
+                valuetype.originalTypeName = "size_t";
+                setValueType(tok, valuetype);
             }
         } else if (tok->variable()) {
             setValueType(tok, *tok->variable());

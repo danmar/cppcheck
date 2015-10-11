@@ -71,43 +71,10 @@ bool astIsIntegral(const Token *tok, bool unknown)
 
 bool astIsFloat(const Token *tok, bool unknown)
 {
-    // TODO: handle arrays
-    if (tok->isNumber())
-        return MathLib::isFloat(tok->str());
-
-    if (tok->isName()) {
-        if (tok->variable())
-            return tok->variable()->isFloatingType();
-
+    const ValueType *vt = tok ? tok->valueType() : nullptr;
+    if (!vt)
         return unknown;
-    }
-    if (tok->str() == "(") {
-        // cast
-        if (Token::Match(tok, "( const| float|double )"))
-            return true;
-
-        // Function call
-        if (tok->previous()->function())
-            return Token::Match(tok->previous()->function()->retDef, "float|double");
-
-        if (tok->strAt(-1) == "sizeof")
-            return false;
-
-        return unknown;
-    }
-
-    if (tok->astOperand2() && (tok->str() == "." || tok->str() == "::"))
-        return astIsFloat(tok->astOperand2(), unknown);
-
-    if (tok->astOperand1() && tok->str() != "?" && astIsFloat(tok->astOperand1(), unknown))
-        return true;
-    if (tok->astOperand2() && astIsFloat(tok->astOperand2(), unknown))
-        return true;
-
-    if (tok->isOp())
-        return false;
-
-    return unknown;
+    return vt->type >= ValueType::Type::FLOAT && vt->pointer == 0U;
 }
 
 std::string astCanonicalType(const Token *expr)
