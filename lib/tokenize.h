@@ -31,7 +31,7 @@
 #include <list>
 #include <ctime>
 
-#ifndef(__GNUC__)
+#ifndef __GNUC__
 #define __attribute__(A)
 #endif
 
