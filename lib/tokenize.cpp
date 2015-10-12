@@ -1726,6 +1726,15 @@ bool Tokenizer::tokenize(std::istream &code,
             }
 
             list.createAst();
+
+            // Verify that ast looks ok
+            for (const Token *tok = list.front(); tok; tok = tok->next()) {
+                // internal error / syntax error if binary operator only has 1 operand
+                if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2()) {
+                    throw InternalError(tok, "ast", InternalError::INTERNAL);
+                }
+            }
+
             SymbolDatabase::setValueTypeInTokenList(list.front());
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
         }
