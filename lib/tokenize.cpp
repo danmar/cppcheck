@@ -5189,9 +5189,11 @@ void Tokenizer::simplifyFunctionPointers()
             continue;
         while (Token::Match(tok2, "(|:: %type%"))
             tok2 = tok2->tokAt(2);
-        if (!Token::Match(tok2, "(|:: * %name%"))
+        if (!Token::Match(tok2, "(|:: * *| %name%"))
             continue;
         tok2 = tok2->tokAt(2);
+        if (tok2->str() == "*")
+            tok2 = tok2->next();
         while (Token::Match(tok2, "%type%|:: %type%|::"))
             tok2 = tok2->next();
 

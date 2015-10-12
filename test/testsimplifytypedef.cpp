@@ -1000,7 +1000,7 @@ private:
             "class X { } ; "
             "int main ( ) "
             "{ "
-            "X ( * * Foo ) ( const X & ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
+            "X * * Foo ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -2990,8 +2990,8 @@ private:
                       "{ "
                       "int Format_T2 ; "
                       "} "
-                      "int ( * * t1 ) ( ) ; "
-                      "int ( * * t2 ) ( ) ;",
+                      "int * * t1 ; "
+                      "int * * t2 ;",
                       tok(code,false));
     }
 
