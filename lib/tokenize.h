@@ -31,6 +31,10 @@
 #include <list>
 #include <ctime>
 
+#ifndef(__GNUC__)
+#define __attribute__(A)
+#endif
+
 class Settings;
 class SymbolDatabase;
 class TimerResults;
