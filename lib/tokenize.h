@@ -568,7 +568,7 @@ private:
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
-    void cppcheckError(const Token *tok) const;
+    void cppcheckError(const Token *tok) const __attribute__((noreturn));
 
     /**
      * Setup links for tokens so that one can call Token::link().
@@ -583,10 +583,10 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok) const;
+    void syntaxError(const Token *tok) const __attribute__((noreturn));
 
     /** Syntax error. Example: invalid number of ')' */
-    void syntaxError(const Token *tok, char c) const;
+    void syntaxError(const Token *tok, char c) const __attribute__((noreturn));
 
 private:
 
