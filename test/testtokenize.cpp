@@ -385,8 +385,6 @@ private:
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
-        TEST_CASE(setVarId) // #6660 - crash
-
         TEST_CASE(platformWin);
         TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
@@ -442,6 +440,8 @@ private:
 
         TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
 
+        TEST_CASE(prepareTernaryOpForAST);
+
         // AST data
         TEST_CASE(astexpr);
         TEST_CASE(astpar);
@@ -458,7 +458,6 @@ private:
         TEST_CASE(removeMacroInClassDef); // #6058
 
         TEST_CASE(sizeofAddParentheses);
-        TEST_CASE(incompleteTernary); // #6659
         TEST_CASE(noreturn); // #5783
     }
 
@@ -7923,6 +7922,15 @@ private:
                       tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.c", true));
     }
 
+    void prepareTernaryOpForAST() {
+        ASSERT_EQUALS("a ? b : c ;", tokenizeAndStringify("a ? b : c;"));
+
+        ASSERT_EQUALS("a ? ( b , c ) : d ;", tokenizeAndStringify("a ? b , c : d;"));
+        ASSERT_EQUALS("a ? ( b , c ) : d ;", tokenizeAndStringify("a ? (b , c) : d;"));
+
+        ASSERT_EQUALS("a ? ( 1 ? ( a , b ) : 3 ) : d ;", tokenizeAndStringify("a ? 1 ? a, b : 3 : d;"));
+    }
+
     std::string testAst(const char code[],bool verbose=false) {
         // tokenize given code..
         Tokenizer tokenList(&settings0, nullptr);
@@ -7935,6 +7943,7 @@ private:
         tokenList.createLinks2();
 
         // Create AST..
+        tokenList.prepareTernaryOpForAST();
         tokenList.list.createAst();
 
         // Basic AST validation
@@ -7996,8 +8005,12 @@ private:
         // assignments are executed from right to left
         ASSERT_EQUALS("abc==", testAst("a=b=c;"));
 
-        // assignment in ternary operator
+        // ternary operator
         ASSERT_EQUALS("ab0=c1=:?", testAst("a?b=0:c=1;"));
+        ASSERT_EQUALS("fabc,d:?=e,", testAst("f = a ? b, c : d, e;"));
+        ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? (b, c) : (d, e));"));
+        ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? b, c : (d, e));"));
+        ASSERT_EQUALS("ab35,4:?foo(:?return", testAst("return (a ? b ? (3,5) : 4 : foo());"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
@@ -8291,30 +8304,6 @@ private:
         ASSERT_EQUALS("sizeof ( a . b ) + 3 ;", tokenizeAndStringify("sizeof a.b+3;"));
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
-    }
-
-    void setVarId() {
-        const char * code = "CS_PLUGIN_NAMESPACE_BEGIN(csparser)\n"
-                            "{\n"
-                            "    struct foo\n"
-                            "    {\n"
-                            "      union\n"
-                            "      {};\n"
-                            "    } halo;\n"
-                            "}\n"
-                            "CS_PLUGIN_NAMESPACE_END(csparser)\n";
-        tokenizeAndStringify(code, true);
-    }
-
-    // #6659 heap user after free: kernel: sm750_accel.c
-    void incompleteTernary() {
-        const char * code = "void hw_copyarea() {\n"
-                            "   de_ctrl = (nDirection == RIGHT_TO_LEFT) ?\n"
-                            "    ( (0 & ~(((1 << (1 - (0 ? DE_CONTROL_DIRECTION))) - 1) << (0 ? DE_CONTROL_DIRECTION))) )\n"
-                            "    : 42;\n"
-                            "}";
-
-        tokenizeAndStringify(code, true);
     }
 
     // see #5783

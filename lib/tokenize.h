@@ -358,11 +358,6 @@ public:
     void simplifyTypedef();
 
     /**
-     * Simplify float casts (float)1 => 1.0
-     */
-    void simplifyFloatCasts();
-
-    /**
      * Simplify casts
      */
     void simplifyCasts();
@@ -694,6 +689,11 @@ private:
      * @return true if any replacement took place, false else
      * */
     bool simplifyStrlen();
+
+    /**
+    * Prepare ternary operators with parantheses so that the AST can be created
+    * */
+    void prepareTernaryOpForAST();
 
     /**
      * check for duplicate enum definition

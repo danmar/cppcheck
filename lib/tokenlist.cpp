@@ -852,14 +852,15 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
 {
     compileLogicOr(tok, state);
     while (tok) {
-        // TODO: http://en.cppreference.com/w/cpp/language/operator_precedence says:
-        //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
         if (tok->isAssignmentOp()) {
             state.assign++;
             compileBinOp(tok, state, compileAssignTernary);
             if (state.assign > 0U)
                 state.assign--;
         } else if (tok->str() == "?") {
+            // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
+            //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
+            // Hence, we rely on Tokenizer::prepareTernaryOpForAST() to add such parantheses where necessary.
             if (tok->strAt(1) == ":") {
                 state.op.push(0);
             }
@@ -895,7 +896,7 @@ static void compileExpression(Token *&tok, AST_state& state)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
-    if (Token::simpleMatch(tok,"for (")) {
+    if (Token::simpleMatch(tok, "for (")) {
         Token *tok2 = tok->tokAt(2);
         Token *init1 = nullptr;
         const Token * const endPar = tok->next()->link();

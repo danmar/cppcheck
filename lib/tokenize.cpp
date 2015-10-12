@@ -1713,6 +1713,8 @@ bool Tokenizer::tokenize(std::istream &code,
 
     if (simplifyTokenList1(FileName)) {
         if (!noSymbolDB_AST) {
+            prepareTernaryOpForAST();
+
             createSymbolDatabase();
 
             // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
@@ -1729,10 +1731,13 @@ bool Tokenizer::tokenize(std::istream &code,
 
             // Verify that ast looks ok
             for (const Token *tok = list.front(); tok; tok = tok->next()) {
-                // internal error / syntax error if binary operator only has 1 operand
-                if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2()) {
-                    throw InternalError(tok, "ast", InternalError::INTERNAL);
-                }
+                // Syntax error if binary operator only has 1 operand
+                if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
+                    throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::SYNTAX);
+
+                // Syntax error if we encounter "?" with operand2 that is not ":"
+                if (tok->astOperand2() && tok->str() == "?" && tok->astOperand2()->str() != ":")
+                    throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::SYNTAX);
             }
 
             SymbolDatabase::setValueTypeInTokenList(list.front());
@@ -10138,6 +10143,41 @@ bool Tokenizer::simplifyStrlen()
         }
     }
     return modified;
+}
+
+void Tokenizer::prepareTernaryOpForAST()
+{
+    // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
+    //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
+    // The AST parser relies on this function to add such parantheses where necessary.
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "?") {
+            bool paranthesesNeeded = false;
+            unsigned int depth = 0;
+            Token* tok2 = tok->next();
+            for (; tok2; tok2 = tok2->next()) {
+                if (tok2->link() && Token::Match(tok2, "{|[|("))
+                    tok2 = tok2->link();
+                else if (tok2->str() == ":") {
+                    if (depth == 0)
+                        break;
+                    depth--;
+                } else if (tok2->str() == ";" || tok2->link())
+                    break;
+                else if (tok2->str() == ",")
+                    paranthesesNeeded = true;
+                else if (tok2->str() == "?") {
+                    depth++;
+                    paranthesesNeeded = true;
+                }
+            }
+            if (paranthesesNeeded && tok2 && tok2->str() == ":") {
+                tok->insertToken("(");
+                tok2->insertToken(")", true);
+                Token::createMutualLinks(tok->next(), tok2->previous());
+            }
+        }
+    }
 }
 
 void Tokenizer::reportError(const Token* tok, const Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const

@@ -187,6 +187,9 @@ private:
         TEST_CASE(garbageCode135); // #4994
         TEST_CASE(garbageCode136); // #7033
         TEST_CASE(garbageCode137); // #7034
+        TEST_CASE(garbageCode138); // #6660
+        TEST_CASE(garbageCode139); // #6659
+        TEST_CASE(garbageCode140); // #7035
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -361,8 +364,8 @@ private:
     }
 
     void garbageCode6() { // #5214
-        checkCode("int b = ( 0 ? ? ) 1 : 0 ;");
-        checkCode("int a = int b = ( 0 ? ? ) 1 : 0 ;");
+        ASSERT_THROW(checkCode("int b = ( 0 ? ? ) 1 : 0 ;"), InternalError);
+        ASSERT_THROW(checkCode("int a = int b = ( 0 ? ? ) 1 : 0 ;"), InternalError);
     }
 
     void garbageCode7() {
@@ -640,7 +643,7 @@ private:
     }
 
     void garbageCode56() { // #6713
-        checkCode("void foo() { int a = 0; int b = ???; }");
+        ASSERT_THROW(checkCode("void foo() { int a = 0; int b = ???; }"), InternalError);
     }
 
     void garbageCode57() { // #6731
@@ -923,10 +926,9 @@ private:
     }
 
     void garbageCode121() { // #2585
-        checkCode("abcdef?""?<"
-                  "123456?""?>"
-                  "+?""?=");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(checkCode("abcdef?""?<"
+                               "123456?""?>"
+                               "+?""?="), InternalError);
     }
 
     void garbageCode122() { // #6303
@@ -1081,6 +1083,30 @@ private:
 
     void garbageCode137() { // #7034
         checkCode("\" \" typedef signed char f; \" \"; void a() { f * s = () &[]; (; ) (; ) }");
+    }
+
+    void garbageCode138() { // #6660
+        checkCode("CS_PLUGIN_NAMESPACE_BEGIN(csparser)\n"
+                  "{\n"
+                  "    struct foo\n"
+                  "    {\n"
+                  "      union\n"
+                  "      {};\n"
+                  "    } halo;\n"
+                  "}\n"
+                  "CS_PLUGIN_NAMESPACE_END(csparser)");
+    }
+
+    void garbageCode139() { // #6659 heap user after free: kernel: sm750_accel.c
+        ASSERT_THROW(checkCode("void hw_copyarea() {\n"
+                               "   de_ctrl = (nDirection == RIGHT_TO_LEFT) ?\n"
+                               "    ( (0 & ~(((1 << (1 - (0 ? DE_CONTROL_DIRECTION))) - 1) << (0 ? DE_CONTROL_DIRECTION))) )\n"
+                               "    : 42;\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode140() { // #7035
+        ASSERT_THROW(checkCode("int foo(int align) { int off(= 0 % align;  return off) ? \\ align - off  :  0;  \\ }"), InternalError);
     }
 
 
