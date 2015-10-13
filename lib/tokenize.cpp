@@ -6885,7 +6885,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        while (Token::Match(tok->previous(), "[;{}[]().,!*] ( %name% .")) {
+        while (Token::Match(tok->previous(), "[;{}[(,!*] ( %name% .")) {
             Token *tok2 = tok->tokAt(2);
             while (Token::Match(tok2, ". %name%")) {
                 tok2 = tok2->tokAt(2);

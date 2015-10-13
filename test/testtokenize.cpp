@@ -236,6 +236,7 @@ private:
         TEST_CASE(removeParentheses21);      // Don't "simplify" casts
         TEST_CASE(removeParentheses22);
         TEST_CASE(removeParentheses23);      // Ticket #6103 - Infinite loop upon valid input
+        TEST_CASE(removeParentheses24);      // Ticket #7040
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -3274,6 +3275,12 @@ private:
             static char  exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
+    }
+
+    void removeParentheses24() { // Ticket #7040
+        static char code[] = "std::hash<decltype(t._data)>()(t._data);";
+        static char  exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void tokenize_double() {
