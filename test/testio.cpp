@@ -637,6 +637,14 @@ private:
               "    fflush(f);\n"
               "}");
         ASSERT_EQUALS("", errout.str()); // #5578
+
+        check("void foo() {\n"
+              "    FILE* f = fopen(\"\", \"a\");\n"
+              "    fclose(f);\n"
+              "    f = fopen(\"\", \"r\");\n"
+              "    fseek(f, 0, SEEK_SET);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str()); // #6566
     }
 
     void fflushOnInputStream() {

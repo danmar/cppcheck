@@ -267,7 +267,8 @@ void CheckIO::checkFileUsage()
                             f.append_mode = Filepointer::APPEND_EX;
                         else
                             f.append_mode = Filepointer::APPEND;
-                    }
+                    } else
+                        f.append_mode = Filepointer::UNKNOWN_AM;
                     f.mode_indent = indent;
                     break;
                 case Filepointer::POSITIONING:
