@@ -26,6 +26,7 @@
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 #include <QSettings>
+#include <QDir>
 #include "common.h"
 #include "erroritem.h"
 #include "resultsview.h"
@@ -369,6 +370,11 @@ void ResultsView::UpdateDetails(const QModelIndex &index)
     QString formattedMsg = QString("%1: %2\n%3: %4")
                            .arg(tr("Summary")).arg(summary)
                            .arg(tr("Message")).arg(message);
+
+    const QString file0 = data["file0"].toString();
+    if (file0 != "" && file0 != data["file"].toString())
+        formattedMsg += QString("\n\n%1: %2").arg(tr("First included by")).arg(QDir::toNativeSeparators(file0));
+
     if (mUI.mTree->ShowIdColumn())
         formattedMsg.prepend(tr("Id") + ": " + data["id"].toString() + "\n");
     mUI.mDetails->setText(formattedMsg);
