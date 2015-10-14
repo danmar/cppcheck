@@ -449,7 +449,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
     }
 
     // Calculations..
-    else if ((parent->isArithmeticalOp() || parent->isComparisonOp()) &&
+    else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp)) &&
              parent->astOperand1() &&
              parent->astOperand2()) {
         const bool known = ((parent->astOperand1()->values.size() == 1U &&
@@ -535,6 +535,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                             result.intvalue = value1->intvalue <= value2->intvalue;
                         else
                             break;
+                        setTokenValue(parent, result);
+                        break;
+                    case '&':
+                        result.intvalue = value1->intvalue & value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '|':
+                        result.intvalue = value1->intvalue | value2->intvalue;
+                        setTokenValue(parent, result);
+                        break;
+                    case '^':
+                        result.intvalue = value1->intvalue ^ value2->intvalue;
                         setTokenValue(parent, result);
                         break;
                     default:
