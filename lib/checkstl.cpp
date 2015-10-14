@@ -744,33 +744,34 @@ void CheckStl::size()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% . size ( )") ||
                 Token::Match(tok, "%name% . %var% . size ( )")) {
-                const Token *tok1 = tok;
-
                 // get the variable
+                const Token *varTok = tok;
                 if (tok->strAt(2) != "size")
-                    tok1 = tok1->tokAt(2);
+                    varTok = varTok->tokAt(2);
 
-                const Token* const end = tok1->tokAt(5);
+                const Token* const end = varTok->tokAt(5);
 
                 // check for comparison to zero
                 if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
-                    if (isCpp03ContainerSizeSlow(tok1))
-                        sizeError(tok1);
+                    if (isCpp03ContainerSizeSlow(varTok)) {
+                        sizeError(varTok);
+                        continue;
+                    }
                 }
 
                 // check for comparison to one
                 if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>") && !tok->tokAt(-3)->isArithmeticalOp())) {
-                    if (isCpp03ContainerSizeSlow(tok1))
-                        sizeError(tok1);
+                    if (isCpp03ContainerSizeSlow(varTok))
+                        sizeError(varTok);
                 }
 
                 // check for using as boolean expression
                 else if ((Token::Match(tok->tokAt(-2), "if|while (") && end->str() == ")") ||
                          (tok->previous()->tokType() == Token::eLogicalOp && Token::Match(end, "&&|)|,|;|%oror%"))) {
-                    if (isCpp03ContainerSizeSlow(tok1))
-                        sizeError(tok1);
+                    if (isCpp03ContainerSizeSlow(varTok))
+                        sizeError(varTok);
                 }
             }
         }
