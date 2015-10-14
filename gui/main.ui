@@ -155,6 +155,10 @@
     <addaction name="menuCpp_standard"/>
     <addaction name="mActionPosix"/>
     <addaction name="separator"/>
+    <addaction name="mActionAutoDetectLanguage"/>
+    <addaction name="mActionEnforceCpp"/>
+    <addaction name="mActionEnforceC"/>
+    <addaction name="separator"/>
     <addaction name="mActionPlatforms"/>
    </widget>
    <widget class="QMenu" name="mMenuEdit">
@@ -709,6 +713,30 @@
    </property>
    <property name="toolTip">
     <string>Open library editor</string>
+   </property>
+  </action>
+  <action name="mActionAutoDetectLanguage">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto-detect language</string>
+   </property>
+  </action>
+  <action name="mActionEnforceCpp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enforce C++</string>
+   </property>
+  </action>
+  <action name="mActionEnforceC">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enforce C</string>
    </property>
   </action>
  </widget>

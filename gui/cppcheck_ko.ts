@@ -197,6 +197,18 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <source>Open library file</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Sort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comments</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LibraryEditArgDialog</name>
@@ -921,6 +933,18 @@ Options:
     </message>
     <message>
         <source>Open library editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Auto-detect language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce C++</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enforce C</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

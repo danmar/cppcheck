@@ -63,6 +63,9 @@
 #define SETTINGS_STD_C11                "Platform C11"
 #define SETTINGS_STD_POSIX              "Platform Posix"
 
+// Language enforcement
+#define SETTINGS_ENFORCED_LANGUAGE      "Enforced language"
+
 // Other settings
 #define SETTINGS_CHECK_FORCE            "Check force"
 #define SETTINGS_CHECK_THREADS          "Check threads"

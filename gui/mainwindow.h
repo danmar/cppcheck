@@ -534,6 +534,11 @@ private:
     QActionGroup *mCStandardActions, *mCppStandardActions;
 
     /**
+    * @brief GUI actions for selecting language.
+    */
+    QActionGroup *mSelectLanguageActions;
+
+    /**
     * @brief Are we exiting the cppcheck?
     * If this is true then the cppcheck is waiting for check threads to exit
     * so that the application can be closed.
