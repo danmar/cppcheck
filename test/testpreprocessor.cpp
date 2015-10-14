@@ -67,6 +67,7 @@ private:
         TEST_CASE(readCode2); // #4308 - convert C++11 raw string to plain old C string
         TEST_CASE(readCode3);
         TEST_CASE(readCode4); // #4351 - escaped whitespace in gcc
+        TEST_CASE(readCode5); // #7042 - C++14 digit separators
 
         // reading utf-16 file
         TEST_CASE(utf16);
@@ -333,6 +334,12 @@ private:
     void readCode4() {
         const char code[] = "char c = '\\ ';";
         ASSERT_EQUALS("char c = '\\ ';", preprocessorRead(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void readCode5() {
+        const char code[] = "int i = 0x1000'00;";
+        ASSERT_EQUALS("int i = 0x100000;", preprocessorRead(code));
         ASSERT_EQUALS("", errout.str());
     }
 

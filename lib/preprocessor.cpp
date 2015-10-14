@@ -632,8 +632,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // add a suppression if the next token is 'case' or 'default'
                 if (detectFallThroughComments && fallThroughComment) {
                     const std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
-                    const std::string tok = str.substr(i, j - i);
-                    if (tok == "case" || tok == "default")
+                    if (str.compare(i, j-i, "case") == 0 || str.compare(i, j-i, "default") == 0)
                         suppressionIDs.push_back("switchCaseFallThrough");
                     fallThroughComment = false;
                 }
@@ -662,8 +661,12 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
+            // C++14 digit separators
+            if (ch == '\'' && std::isdigit(previous))
+                ; // Just skip it.
+
             // String or char constants..
-            if (ch == '\"' || ch == '\'') {
+            else if (ch == '\"' || ch == '\'') {
                 code << char(ch);
                 char chNext;
                 do {
@@ -1963,9 +1966,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = linenr;
-        loc.setfile(filename);
+        ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
         locationList.push_back(loc);
     }
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
