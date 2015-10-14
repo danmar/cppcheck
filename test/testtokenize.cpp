@@ -8018,6 +8018,7 @@ private:
         ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? (b, c) : (d, e));"));
         ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? b, c : (d, e));"));
         ASSERT_EQUALS("ab35,4:?foo(:?return", testAst("return (a ? b ? (3,5) : 4 : foo());"));
+        ASSERT_EQUALS("check(result_typeinvalid:?return", testAst("return check() ? result_type {0, 0} : invalid;"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));

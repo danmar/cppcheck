@@ -10156,13 +10156,13 @@ void Tokenizer::prepareTernaryOpForAST()
             unsigned int depth = 0;
             Token* tok2 = tok->next();
             for (; tok2; tok2 = tok2->next()) {
-                if (tok2->link() && Token::Match(tok2, "{|[|("))
+                if (tok2->link() && Token::Match(tok2, "[|(|<"))
                     tok2 = tok2->link();
                 else if (tok2->str() == ":") {
                     if (depth == 0)
                         break;
                     depth--;
-                } else if (tok2->str() == ";" || tok2->link())
+                } else if (tok2->str() == ";" || (tok2->link() && tok2->str() != "{" && tok2->str() != "}"))
                     break;
                 else if (tok2->str() == ",")
                     paranthesesNeeded = true;
