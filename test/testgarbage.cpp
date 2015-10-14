@@ -190,6 +190,7 @@ private:
         TEST_CASE(garbageCode138); // #6660
         TEST_CASE(garbageCode139); // #6659
         TEST_CASE(garbageCode140); // #7035
+        TEST_CASE(garbageCode141); // #7043
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1107,6 +1108,10 @@ private:
 
     void garbageCode140() { // #7035
         ASSERT_THROW(checkCode("int foo(int align) { int off(= 0 % align;  return off) ? \\ align - off  :  0;  \\ }"), InternalError);
+    }
+
+    void garbageCode141() { // #7043
+        ASSERT_THROW(checkCode("enum { X = << { X } } enum { X = X } = X ;"), InternalError);
     }
 
 

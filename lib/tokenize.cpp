@@ -5299,6 +5299,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, Token * tokEnd, bool only_k_r_
             tok = tok->link();
         }
 
+        if (!tok)
+            syntaxError(nullptr); // #7043 invalid code
         if (tok->previous() && !Token::Match(tok->previous(), "{|}|;|)|public:|protected:|private:"))
             continue;
 
