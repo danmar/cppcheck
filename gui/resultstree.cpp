@@ -105,7 +105,6 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     }
 
     bool hide = !mShowSeverities.isShown(item.severity);
-    //bool hide = !mShowTypes[SeverityToShowType(item.severity)];
 
     //If specified, filter on summary, message, filename, and id
     if (!hide && !mFilter.isEmpty()) {
@@ -132,7 +131,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     line.severity = item.severity;
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *stditem = AddBacktraceFiles(EnsureFileItem(item.files[0], item.file0, hide),
+    QStandardItem* fileItem = EnsureFileItem(item.files[0], item.file0, hide);
+    QStandardItem* stditem = AddBacktraceFiles(fileItem,
                              line,
                              hide,
                              SeverityToIcon(line.severity));
@@ -175,10 +175,10 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
         child_item->setData(QVariant(child_data));
     }
 
-    //TODO just hide/show current error and it's file
-    //since this does a lot of unnecessary work
+    // Partially refresh the tree: Unhide error item and file item if necessary
     if (!hide) {
-        ShowFileItem(realfile);
+        setRowHidden(stditem->row(), stditem->index(), false);
+        setRowHidden(fileItem->row(), QModelIndex(), false);
     }
     return true;
 }
@@ -468,14 +468,6 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, const QStrin
     setRowHidden(mModel.rowCount() - 1, QModelIndex(), hide);
 
     return item;
-}
-
-void ResultsTree::ShowFileItem(const QString &name)
-{
-    QStandardItem *item = FindFileItem(name);
-    if (item) {
-        setRowHidden(0, mModel.indexFromItem(item), false);
-    }
 }
 
 void ResultsTree::contextMenuEvent(QContextMenuEvent * e)

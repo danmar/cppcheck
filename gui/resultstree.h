@@ -387,13 +387,6 @@ protected:
     QStandardItem *EnsureFileItem(const QString &fullpath, const QString &file0, bool hide);
 
     /**
-    * @brief Show a file item
-    *
-    * @param name Filename of the fileitem
-    */
-    void ShowFileItem(const QString &name);
-
-    /**
     * @brief Item model for tree
     *
     */
