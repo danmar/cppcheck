@@ -1065,71 +1065,6 @@ Do you want to remove the file from the recently used projects -list?</source>
 ¿Quiere eliminar el fichero de la lista de proyectos recientes?</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="46"/>
-        <source>English</source>
-        <translation>Inglés</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="45"/>
-        <source>Dutch</source>
-        <translation>Holandés</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="44"/>
-        <source>Chinese (Simplified)</source>
-        <translation>Chino (Simplificado)</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="47"/>
-        <source>Finnish</source>
-        <translation>Finés</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="48"/>
-        <source>French</source>
-        <translation>Francés</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="50"/>
-        <source>Italian</source>
-        <translation>Italiano</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="52"/>
-        <source>Korean</source>
-        <translation>Coreano</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="55"/>
-        <source>Spanish</source>
-        <translation>Español</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="56"/>
-        <source>Swedish</source>
-        <translation>Sueco</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="49"/>
-        <source>German</source>
-        <translation>Alemán</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="53"/>
-        <source>Russian</source>
-        <translation>Ruso</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="51"/>
-        <source>Japanese</source>
-        <translation>Japonés</translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="54"/>
-        <source>Serbian</source>
-        <translation>Serbio</translation>
-    </message>
-    <message>
         <location filename="main.cpp" line="100"/>
         <source>Cppcheck GUI.
 
@@ -1345,22 +1280,22 @@ Options:
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="translationhandler.cpp" line="31"/>
+        <location filename="translationhandler.cpp" line="32"/>
         <source>OK</source>
         <translation>Aceptar</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
+        <location filename="translationhandler.cpp" line="34"/>
         <source>Close</source>
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>Save</source>
         <translation>Guardar</translation>
     </message>
@@ -1368,40 +1303,63 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="93"/>
+        <location filename="translationhandler.cpp" line="99"/>
         <source>Unknown language specified!</source>
         <translation>¡Idioma especificado desconocido!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="123"/>
+        <location filename="translationhandler.cpp" line="129"/>
         <source>Language file %1 not found!</source>
         <translation>¡Fichero de idioma %1 no encontrado!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="129"/>
+        <location filename="translationhandler.cpp" line="135"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Fallo al cargar la traducción para el idioma %1 desde el fichero %2</translation>
     </message>
 </context>
 <context>
+    <name>QPlatformTheme</name>
+    <message>
+        <location filename="translationhandler.cpp" line="37"/>
+        <source>OK</source>
+        <translation>Aceptar</translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="38"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="39"/>
+        <source>Close</source>
+        <translation>Cerrar</translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="40"/>
+        <source>Save</source>
+        <translation>Guardar</translation>
+    </message>
+</context>
+<context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1059"/>
         <source>File</source>
         <translation>Archivo</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1059"/>
         <source>Severity</source>
         <translation>Severidad</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1059"/>
         <source>Line</source>
         <translation>Línea</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1059"/>
         <source>Summary</source>
         <translation>Resumen</translation>
     </message>
@@ -1412,7 +1370,7 @@ Options:
     </message>
     <message>
         <location filename="resultstree.cpp" line="208"/>
-        <location filename="resultstree.cpp" line="733"/>
+        <location filename="resultstree.cpp" line="725"/>
         <source>[Inconclusive]</source>
         <translation>[No concluyente]</translation>
     </message>
@@ -1432,48 +1390,48 @@ Options:
         <translation>depuración</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="535"/>
+        <location filename="resultstree.cpp" line="527"/>
         <source>Copy filename</source>
         <translation>Copiar nombre del archivo</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="536"/>
+        <location filename="resultstree.cpp" line="528"/>
         <source>Copy full path</source>
         <translation>Copiar ruta completa</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="537"/>
+        <location filename="resultstree.cpp" line="529"/>
         <source>Copy message</source>
         <translation>Copiar mensaje</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="538"/>
+        <location filename="resultstree.cpp" line="530"/>
         <source>Copy message id</source>
         <translation>Copiar id del mensaje</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="539"/>
+        <location filename="resultstree.cpp" line="531"/>
         <source>Hide</source>
         <translation>Ocultar</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="540"/>
+        <location filename="resultstree.cpp" line="532"/>
         <source>Hide all with id</source>
         <translation>Ocultar todos con el mismo id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="541"/>
+        <location filename="resultstree.cpp" line="533"/>
         <source>Open containing folder</source>
         <translation>Abrir carpeta contenedora</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="593"/>
-        <location filename="resultstree.cpp" line="607"/>
+        <location filename="resultstree.cpp" line="585"/>
+        <location filename="resultstree.cpp" line="599"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="594"/>
+        <location filename="resultstree.cpp" line="586"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1483,7 +1441,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Configura el programa para editar en Preferencias/Aplicaciones.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="608"/>
+        <location filename="resultstree.cpp" line="600"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -1492,12 +1450,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Configura el programa para editar por defecto en Preferencias/Aplicaciones.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="637"/>
+        <location filename="resultstree.cpp" line="629"/>
         <source>Could not find the file!</source>
         <translation>¡No se ha encontrado el fichero!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="683"/>
+        <location filename="resultstree.cpp" line="675"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1506,7 +1464,7 @@ Please check the application path and parameters are correct.</source>
 Por favor comprueba que la ruta a la aplicación y los parámetros son correctos.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="697"/>
+        <location filename="resultstree.cpp" line="689"/>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
@@ -1515,12 +1473,12 @@ Please select the directory where file is located.</source>
 Por favor selecciona la carpeta donde se encuentra.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="704"/>
+        <location filename="resultstree.cpp" line="696"/>
         <source>Select Directory</source>
         <translation>Selecciona carpeta</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1059"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
@@ -1553,68 +1511,73 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
         <translation>Resultados</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="144"/>
+        <location filename="resultsview.cpp" line="145"/>
         <source>No errors found, nothing to save.</source>
         <translation>No se han encontrado errores, nada que guardar.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="171"/>
-        <location filename="resultsview.cpp" line="179"/>
+        <location filename="resultsview.cpp" line="172"/>
+        <location filename="resultsview.cpp" line="180"/>
         <source>Failed to save the report.</source>
         <translation>Error al guardar el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="189"/>
+        <location filename="resultsview.cpp" line="190"/>
         <source>Print Report</source>
         <translation>Imprimir informe</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="208"/>
+        <location filename="resultsview.cpp" line="209"/>
         <source>No errors found, nothing to print.</source>
         <translation>No se encontraron errores, nada que imprimir.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="240"/>
+        <location filename="resultsview.cpp" line="241"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation>%p% (%1 of %2 archivos comprobados)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="253"/>
-        <location filename="resultsview.cpp" line="264"/>
+        <location filename="resultsview.cpp" line="254"/>
+        <location filename="resultsview.cpp" line="265"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="254"/>
+        <location filename="resultsview.cpp" line="255"/>
         <source>No errors found.</source>
         <translation>No se han encontrado errores.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="261"/>
+        <location filename="resultsview.cpp" line="262"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Se han encontrado errores, pero están configurados para que no se muestren.
 Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="307"/>
-        <location filename="resultsview.cpp" line="325"/>
-        <location filename="resultsview.cpp" line="333"/>
+        <location filename="resultsview.cpp" line="308"/>
+        <location filename="resultsview.cpp" line="326"/>
+        <location filename="resultsview.cpp" line="334"/>
         <source>Failed to read the report.</source>
         <translation>Error al leer el informe.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="370"/>
+        <location filename="resultsview.cpp" line="371"/>
         <source>Summary</source>
         <translation>Resumen</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="371"/>
+        <location filename="resultsview.cpp" line="372"/>
         <source>Message</source>
         <translation>Mensaje</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="373"/>
+        <location filename="resultsview.cpp" line="376"/>
+        <source>First included by</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="379"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
@@ -2008,7 +1971,7 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="135"/>
+        <location filename="translationhandler.cpp" line="141"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2021,7 +1984,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 El idioma de la interfaz gráfica ha sido cambiado a Inglés. Abra la ventana de Preferencias para seleccionar alguno de los idiomas disponibles.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="141"/>
+        <location filename="translationhandler.cpp" line="147"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>

@@ -463,30 +463,6 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>English</source>
-        <translation type="unfinished">Anglais</translation>
-    </message>
-    <message>
-        <source>Dutch</source>
-        <translation type="unfinished">Hollandais</translation>
-    </message>
-    <message>
-        <source>Finnish</source>
-        <translation type="unfinished">Finlandais</translation>
-    </message>
-    <message>
-        <source>Swedish</source>
-        <translation type="unfinished">Suédois</translation>
-    </message>
-    <message>
-        <source>German</source>
-        <translation type="unfinished">Allemand</translation>
-    </message>
-    <message>
-        <source>Russian</source>
-        <translation type="unfinished">Russe</translation>
-    </message>
-    <message>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
     </message>
@@ -653,25 +629,9 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Japanese</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Serbian</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>French</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Spanish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -753,25 +713,13 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Korean</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Italian</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Chinese (Simplified)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1083,6 +1031,25 @@ Options:
     </message>
 </context>
 <context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ResultsTree</name>
     <message>
         <source>File</source>
@@ -1261,6 +1228,10 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>No errors found, nothing to print.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>First included by</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
