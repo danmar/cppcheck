@@ -123,7 +123,7 @@ public:
      * @brief Get files that should be rechecked because they have been
      * changed.
      */
-    QStringList GetReCheckFiles() const;
+    QStringList GetReCheckFiles(bool all) const;
 
 signals:
     /**

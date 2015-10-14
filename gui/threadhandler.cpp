@@ -55,7 +55,7 @@ void ThreadHandler::Check(const Settings &settings, bool recheck)
 {
     if (recheck && mRunningThreadCount == 0) {
         // only recheck changed files
-        mResults.SetFiles(GetReCheckFiles());
+        mResults.SetFiles(GetReCheckFiles(false));
     }
 
     if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs == 0) {
@@ -188,7 +188,7 @@ int ThreadHandler::GetPreviousScanDuration() const
     return mScanDuration;
 }
 
-QStringList ThreadHandler::GetReCheckFiles() const
+QStringList ThreadHandler::GetReCheckFiles(bool all) const
 {
     if (mLastCheckTime.isNull())
         return mLastFiles;

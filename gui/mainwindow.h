@@ -79,10 +79,16 @@ public slots:
     void CheckFiles();
 
     /**
-    * @brief Slot to recheck files
+    * @brief Slot to recheck all files
     *
     */
-    void ReCheck();
+    void ReCheckAll();
+
+    /**
+    * @brief Slot to recheck modified files
+    *
+    */
+    void ReCheckModified();
 
     /**
     * @brief Slot to clear all search results
@@ -306,6 +312,12 @@ protected slots:
     void SelectPlatform();
 
 private:
+
+    /**
+    * @brief Rechecks files
+    *
+    */
+    void ReCheck(bool all);
 
     /**
       * @brief Check the project.

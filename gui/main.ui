@@ -148,7 +148,8 @@
     </widget>
     <addaction name="mActionCheckFiles"/>
     <addaction name="mActionCheckDirectory"/>
-    <addaction name="mActionRecheck"/>
+    <addaction name="mActionRecheckModified"/>
+    <addaction name="mActionRecheckAll"/>
     <addaction name="mActionStop"/>
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
@@ -188,7 +189,8 @@
    <addaction name="mActionOpenProjectFile"/>
    <addaction name="mActionShowScratchpad"/>
    <addaction name="mActionSave"/>
-   <addaction name="mActionRecheck"/>
+   <addaction name="mActionRecheckModified"/>
+   <addaction name="mActionRecheckAll"/>
    <addaction name="mActionStop"/>
    <addaction name="mActionClearResults"/>
    <addaction name="mActionSettings"/>
@@ -273,16 +275,25 @@
     <string>Ctrl+D</string>
    </property>
   </action>
-  <action name="mActionRecheck">
+  <action name="mActionRecheckModified">
    <property name="icon">
     <iconset resource="gui.qrc">
      <normaloff>:/images/view-refresh.png</normaloff>:/images/view-refresh.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Recheck files</string>
+    <string>&amp;Recheck modified files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="mActionRecheckAll">
+   <property name="icon">
+    <iconset resource="gui.qrc">
+     <normaloff>:/images/view-recheck.png</normaloff>:/images/view-recheck.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Recheck all files</string>
    </property>
   </action>
   <action name="mActionStop">

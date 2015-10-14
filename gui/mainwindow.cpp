@@ -103,7 +103,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionViewStats, SIGNAL(triggered()), this, SLOT(ShowStatistics()));
     connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(ShowLibraryEditor()));
 
-    connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
+    connect(mUI.mActionRecheckModified, SIGNAL(triggered()), this, SLOT(ReCheckModified()));
+    connect(mUI.mActionRecheckAll, SIGNAL(triggered()), this, SLOT(ReCheckAll()));
 
     connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
@@ -144,7 +145,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionPrintPreview->setEnabled(false);
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
-    mUI.mActionRecheck->setEnabled(false);
+    mUI.mActionRecheckModified->setEnabled(false);
+    mUI.mActionRecheckAll->setEnabled(false);
     EnableProjectOpenActions(true);
     EnableProjectActions(false);
 
@@ -776,14 +778,24 @@ void MainWindow::ProgramSettings()
     }
 }
 
-void MainWindow::ReCheck()
+void MainWindow::ReCheckModified()
 {
-    const QStringList files = mThread->GetReCheckFiles();
+    ReCheck(false);
+}
+
+void MainWindow::ReCheckAll()
+{
+    ReCheck(true);
+}
+
+void MainWindow::ReCheck(bool all)
+{
+    const QStringList files = mThread->GetReCheckFiles(all);
     if (files.empty())
         return;
 
     // Clear details, statistics and progress
-    mUI.mResults->Clear(false);
+    mUI.mResults->Clear(all);
 
     // Clear results for changed files
     for (int i = 0; i < files.size(); ++i)
@@ -795,7 +807,7 @@ void MainWindow::ReCheck()
     if (mProject)
         qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();
 
-    mThread->Check(GetCppcheckSettings(), true);
+    mThread->Check(GetCppcheckSettings(), !all);
 }
 
 void MainWindow::ClearResults()
@@ -859,8 +871,10 @@ void MainWindow::EnableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionCheckFiles->setEnabled(enable);
 
-    if (!enable || mThread->HasPreviousFiles())
-        mUI.mActionRecheck->setEnabled(enable);
+    if (!enable || mThread->HasPreviousFiles()) {
+        mUI.mActionRecheckModified->setEnabled(enable);
+        mUI.mActionRecheckAll->setEnabled(enable);
+    }
 
     mUI.mActionCheckDirectory->setEnabled(enable);
 }
