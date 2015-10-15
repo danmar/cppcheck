@@ -3200,7 +3200,7 @@ bool Tokenizer::simplifySizeof()
                         tok2 = tok2->linkAt(1);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
-                        sz = 0;
+                        continue;
                 }
             } else if (nametok->strAt(1) == "[" && nametok->isStandardType()) {
                 sz = sizeOfType(nametok);
