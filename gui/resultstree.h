@@ -320,12 +320,14 @@ protected:
     * @param item Error line data
     * @param hide Should this be hidden (true) or shown (false)
     * @param icon Should a default backtrace item icon be added
+    * @param childOfMessage Is this a child element of a message?
     * @return newly created QStandardItem *
     */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
                                      const ErrorLine &item,
                                      const bool hide,
-                                     const QString &icon);
+                                     const QString &icon,
+                                     bool childOfMessage);
 
 
     /**

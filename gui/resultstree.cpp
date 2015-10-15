@@ -144,7 +144,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
     QStandardItem* stditem = AddBacktraceFiles(fileItem,
                              line,
                              hide,
-                             SeverityToIcon(line.severity));
+                             SeverityToIcon(line.severity),
+                             false);
 
     if (!stditem)
         return false;
@@ -170,7 +171,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
         child_item = AddBacktraceFiles(stditem,
                                        line,
                                        hide,
-                                       ":images/go-down.png");
+                                       ":images/go-down.png",
+                                       true);
 
         //Add user data to that item
         QMap<QString, QVariant> child_data;
@@ -184,9 +186,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
         child_item->setData(QVariant(child_data));
     }
 
-    // Partially refresh the tree: Unhide error item and file item if necessary
+    // Partially refresh the tree: Unhide file item if necessary
     if (!hide) {
-        setRowHidden(stditem->row(), stditem->index(), false);
         setRowHidden(fileItem->row(), QModelIndex(), false);
     }
     return true;
@@ -195,7 +196,8 @@ bool ResultsTree::AddErrorItem(const ErrorItem &item)
 QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const ErrorLine &item,
         const bool hide,
-        const QString &icon)
+        const QString &icon,
+        bool childOfMessage)
 
 {
     if (!parent) {
@@ -206,14 +208,27 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     // Ensure shown path is with native separators
     const QString file = QDir::toNativeSeparators(item.file);
     list << CreateNormalItem(file);
-    const QString severity = SeverityToTranslatedString(item.severity);
-    list << CreateNormalItem(severity);
+    if (childOfMessage)
+        list << CreateNormalItem("");
+    else {
+        const QString severity = SeverityToTranslatedString(item.severity);
+        list << CreateNormalItem(severity);
+    }
     list << CreateLineNumberItem(QString("%1").arg(item.line));
-    list << CreateNormalItem(item.errorId);
-    list << CreateCheckboxItem(item.inconclusive);
+    if (childOfMessage)
+        list << CreateNormalItem("");
+    else
+        list << CreateNormalItem(item.errorId);
+    if (childOfMessage)
+        list << CreateNormalItem("");
+    else
+        list << CreateCheckboxItem(item.inconclusive);
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    list << CreateNormalItem(item.summary.toLatin1());
+    if (childOfMessage)
+        list << CreateNormalItem("");
+    else
+        list << CreateNormalItem(item.summary.toLatin1());
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++) {
@@ -223,8 +238,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         if (parent->child(i, 2)->text() == list[2]->text()) {
             // the second column is the severity so check it next
             if (parent->child(i, 1)->text() == list[1]->text()) {
-                // the fourth column is the summary so check it last
-                if (parent->child(i, 4)->text() == list[4]->text()) {
+                // the sixth column is the summary so check it last
+                if (parent->child(i, 5)->text() == list[5]->text()) {
                     // this row matches so don't add it
                     return 0;
                 }
