@@ -3133,11 +3133,12 @@ bool Tokenizer::simplifySizeof()
 
         // sizeof( a )
         else if (Token::Match(tok->next(), "( %var% )")) {
-            if (sizeOfVar.find(tok->tokAt(2)->varId()) != sizeOfVar.end()) {
+            std::map<unsigned int, unsigned int>::const_iterator sizeOfVarPos = sizeOfVar.find(tok->tokAt(2)->varId());
+            if (sizeOfVarPos != sizeOfVar.end()) {
                 tok->deleteNext();
                 tok->deleteThis();
                 tok->deleteNext();
-                tok->str(MathLib::toString(sizeOfVar[tok->varId()]));
+                tok->str(MathLib::toString(sizeOfVarPos->second));
                 ret = true;
             } else {
                 // don't try to replace size of variable if variable has
