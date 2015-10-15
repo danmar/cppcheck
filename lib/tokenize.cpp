@@ -1187,7 +1187,7 @@ void Tokenizer::simplifyTypedef()
                                 tok2->tokAt(-3)->deleteNext(2);
                                 simplifyType = true;
                             }
-                        } else if (Token::Match(tok2->previous(), "case %type% :")) {
+                        } else if (Token::Match(tok2->previous(), "case|;|{|} %type% :")) {
                             tok2 = tok2->next();
                         } else if (duplicateTypedef(&tok2, typeName, typeDef, structs)) {
                             // skip to end of scope if not already there

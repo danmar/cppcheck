@@ -149,6 +149,7 @@ private:
         TEST_CASE(simplifyTypedef110); // ticket #6268
         TEST_CASE(simplifyTypedef111); // ticket #6345
         TEST_CASE(simplifyTypedef112); // ticket #6048
+        TEST_CASE(simplifyTypedef113); // ticket #7030
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2404,6 +2405,13 @@ private:
         const char expected[] = "template < typename DataType , typename SpaceType , typename TrafoConfig > class AsmTraits1 { } ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef113() {     // ticket #7030
+        const char code[] = "typedef int T;\n"
+                            "void f() { T:; }";
+        const char expected[] = "void f ( ) { T : ; }";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedefFunction1() {
