@@ -255,6 +255,7 @@ private:
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
+        TEST_CASE(vardecl5);  // #7048
         TEST_CASE(vardec_static);
         TEST_CASE(vardecl6);
         TEST_CASE(vardecl7);
@@ -3505,6 +3506,14 @@ private:
         const char code4[] = "const void * const p = NULL;";
         const char res4[]  = "const void * const p ; p = 0 ;";
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
+    }
+
+    void vardecl5() {
+        ASSERT_EQUALS("void foo ( int nX ) {\n"
+                      "int addI ; addI = frontPoint == 2 || frontPoint == 1 ? ( i = 0 , 1 ) : ( i = nX - 2 , -1 ) ;\n"
+                      "}", tokenizeAndStringify("void foo(int nX) {\n"
+                                                "    int addI = frontPoint == 2 || frontPoint == 1 ? i = 0, 1 : (i = nX - 2, -1);\n"
+                                                "}"));
     }
 
     void vardecl_stl_1() {

@@ -1713,8 +1713,6 @@ bool Tokenizer::tokenize(std::istream &code,
 
     if (simplifyTokenList1(FileName)) {
         if (!noSymbolDB_AST) {
-            prepareTernaryOpForAST();
-
             createSymbolDatabase();
 
             // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
@@ -3401,6 +3399,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove __asm..
     simplifyAsm();
+
+    // Add parantheses to ternary operator where necessary
+    prepareTernaryOpForAST();
 
     // Change initialisation of variable to assignment
     simplifyInitVar();
