@@ -1,4 +1,3 @@
-
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2015 Daniel Marjamäki and Cppcheck team.
@@ -191,6 +190,7 @@ private:
         TEST_CASE(garbageCode139); // #6659
         TEST_CASE(garbageCode140); // #7035
         TEST_CASE(garbageCode141); // #7043
+        TEST_CASE(garbageCode142); // #7050
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1112,6 +1112,10 @@ private:
 
     void garbageCode141() { // #7043
         ASSERT_THROW(checkCode("enum { X = << { X } } enum { X = X } = X ;"), InternalError);
+    }
+
+    void garbageCode142() { // #7050
+        checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }");
     }
 
 
