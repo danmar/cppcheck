@@ -82,6 +82,15 @@ QStandardItem *ResultsTree::CreateNormalItem(const QString &name)
     return item;
 }
 
+QStandardItem *ResultsTree::CreateCheckboxItem(bool checked)
+{
+    QStandardItem *item = new QStandardItem;
+    item->setCheckable(true);
+    item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    item->setEnabled(false);
+    return item;
+}
+
 QStandardItem *ResultsTree::CreateLineNumberItem(const QString &linenumber)
 {
     QStandardItem *item = new QStandardItem();
@@ -201,15 +210,10 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateNormalItem(severity);
     list << CreateLineNumberItem(QString("%1").arg(item.line));
     list << CreateNormalItem(item.errorId);
+    list << CreateCheckboxItem(item.inconclusive);
     //TODO message has parameter names so we'll need changes to the core
     //cppcheck so we can get proper translations
-    QString summary;
-    if (item.inconclusive) {
-        summary = tr("[Inconclusive]");
-        summary += " ";
-    }
-    summary += item.summary.toLatin1();
-    list << CreateNormalItem(summary);
+    list << CreateNormalItem(item.summary.toLatin1());
 
     // Check for duplicate rows and don't add them if found
     for (int i = 0; i < parent->rowCount(); i++) {
@@ -323,6 +327,7 @@ void ResultsTree::LoadSettings()
     mShowFullPath = mSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool();
 
     ShowIdColumn(mSettings->value(SETTINGS_SHOW_ERROR_ID, false).toBool());
+    ShowInconclusiveColumn(mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
 }
 
 void ResultsTree::SaveSettings() const
@@ -946,7 +951,8 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item) const
 void ResultsTree::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
                                  bool saveAllErrors,
-                                 bool showErrorId)
+                                 bool showErrorId,
+                                 bool showInconclusive)
 {
     if (mShowFullPath != showFullPath) {
         mShowFullPath = showFullPath;
@@ -957,6 +963,7 @@ void ResultsTree::UpdateSettings(bool showFullPath,
     mSaveAllErrors = saveAllErrors;
 
     ShowIdColumn(showErrorId);
+    ShowInconclusiveColumn(showInconclusive);
 }
 
 void ResultsTree::SetCheckDirectory(const QString &dir)
@@ -1056,7 +1063,7 @@ bool ResultsTree::HasResults() const
 void ResultsTree::Translate()
 {
     QStringList labels;
-    labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Summary");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Id") << tr("Inconclusive") << tr("Summary");
     mModel.setHorizontalHeaderLabels(labels);
     //TODO go through all the errors in the tree and translate severity and message
 }
@@ -1068,6 +1075,14 @@ void ResultsTree::ShowIdColumn(bool show)
         showColumn(3);
     else
         hideColumn(3);
+}
+
+void ResultsTree::ShowInconclusiveColumn(bool show)
+{
+    if (show)
+        showColumn(4);
+    else
+        hideColumn(4);
 }
 
 void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)

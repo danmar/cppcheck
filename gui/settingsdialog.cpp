@@ -308,6 +308,11 @@ bool SettingsDialog::ShowErrorId() const
     return CheckStateToBool(mUI.mShowErrorId->checkState());
 }
 
+bool SettingsDialog::ShowInconclusive() const
+{
+    return CheckStateToBool(mUI.mEnableInconclusive->checkState());
+}
+
 void SettingsDialog::AddIncludePath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,

@@ -144,6 +144,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mEnableInconclusive">
+         <property name="text">
+          <string>Check for inconclusive errors also</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -155,6 +162,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="mShowDebugWarnings">
+         <property name="text">
+          <string>Show internal warnings in log</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -321,40 +335,6 @@
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
         </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_6">
-      <attribute name="title">
-       <string>Advanced</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
-       <item>
-        <widget class="QCheckBox" name="mEnableInconclusive">
-         <property name="text">
-          <string>&amp;Show inconclusive errors</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="mShowDebugWarnings">
-         <property name="text">
-          <string>S&amp;how internal warnings in log</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>

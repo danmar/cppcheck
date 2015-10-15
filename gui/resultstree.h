@@ -104,8 +104,9 @@ public:
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
     * @param showErrorId Show error id
+    * @param showInconclusive Show inconclusive column
     */
-    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors, bool showErrorId);
+    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors, bool showErrorId, bool showInconclusive);
 
     /**
     * @brief Set the directory we are checking
@@ -143,6 +144,11 @@ public:
     * @brief Show optional column "Id"
     */
     void ShowIdColumn(bool show);
+
+    /**
+    * @brief Show optional column "Inconclusve"
+    */
+    void ShowInconclusiveColumn(bool show);
 
     /**
     * @brief Returns true if column "Id" is shown
@@ -357,6 +363,15 @@ protected:
     * @return new QStandardItem
     */
     static QStandardItem *CreateNormalItem(const QString &name);
+
+    /**
+    * @brief Create new normal item.
+    *
+    * Normal item has left alignment and text set also as tooltip.
+    * @param checked checked
+    * @return new QStandardItem
+    */
+    static QStandardItem *CreateCheckboxItem(bool checked);
 
     /**
     * @brief Create new line number item.

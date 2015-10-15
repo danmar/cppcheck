@@ -222,9 +222,10 @@ void ResultsView::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
                                  bool saveAllErrors,
                                  bool showNoErrorsMessage,
-                                 bool showErrorId)
+                                 bool showErrorId,
+                                 bool showInconclusive)
 {
-    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId);
+    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId, showInconclusive);
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 

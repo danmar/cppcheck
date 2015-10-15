@@ -84,12 +84,14 @@ public:
     * @param saveAllErrors Save all visible errors
     * @param showNoErrorsMessage Show "no errors"?
     * @param showErrorId Show error id?
+    * @param showInconclusive Show inconclusive?
     */
     void UpdateSettings(bool showFullPath,
                         bool saveFullPath,
                         bool saveAllErrors,
                         bool showNoErrorsMessage,
-                        bool showErrorId);
+                        bool showErrorId,
+                        bool showInconclusive);
 
     /**
     * @brief Set the directory we are checking

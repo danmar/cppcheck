@@ -78,6 +78,14 @@ public:
     */
     bool ShowErrorId() const;
 
+
+    /**
+    * @brief Get checkbox value for mEnableInconclusive
+    *
+    * @return Should inconclusive column be displayed
+    */
+    bool ShowInconclusive() const;
+
     /**
     * @brief Get checkbox value for mSaveAllErrors
     *
