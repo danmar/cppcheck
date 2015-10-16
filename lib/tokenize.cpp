@@ -3156,9 +3156,6 @@ bool Tokenizer::simplifySizeof()
         }
 
         else if (Token::simpleMatch(tok->next(), "( *") || Token::Match(tok->next(), "( %name% [")) {
-            // Some default value..
-            std::size_t sz = 0;
-
             unsigned int derefs = 0;
 
             const Token* nametok = tok->tokAt(2);
@@ -3181,14 +3178,17 @@ bool Tokenizer::simplifySizeof()
                     continue;
             }
 
+            // Some default value
+            std::size_t size = 0;
+
             const unsigned int varid = nametok->varId();
             if (derefs != 0 && varid != 0 && declTokOfVar.find(varid) != declTokOfVar.end()) {
                 // Try to locate variable declaration..
                 const Token *decltok = declTokOfVar[varid];
                 if (Token::Match(decltok->previous(), "%type%|* %name% [")) {
-                    sz = sizeOfType(decltok->previous());
+                    size = sizeOfType(decltok->previous());
                 } else if (Token::Match(decltok->tokAt(-2), "%type% * %name%")) {
-                    sz = sizeOfType(decltok->tokAt(-2));
+                    size = sizeOfType(decltok->tokAt(-2));
                 }
                 // Multi-dimensional array..
                 if (Token::Match(decltok, "%name% [") && Token::simpleMatch(decltok->linkAt(1), "] [")) {
@@ -3196,27 +3196,27 @@ bool Tokenizer::simplifySizeof()
                     for (unsigned int i = 0; i < derefs; i++)
                         tok2 = tok2->linkAt(1); // Skip all dimensions that are derefenced before the sizeof call
                     while (Token::Match(tok2, "] [ %num% ]")) {
-                        sz *= MathLib::toULongNumber(tok2->strAt(2));
+                        size *= MathLib::toULongNumber(tok2->strAt(2));
                         tok2 = tok2->linkAt(1);
                     }
                     if (Token::simpleMatch(tok2, "] ["))
                         continue;
                 }
             } else if (nametok->strAt(1) == "[" && nametok->isStandardType()) {
-                sz = sizeOfType(nametok);
-                if (sz == 0)
+                size = sizeOfType(nametok);
+                if (size == 0)
                     continue;
                 const Token *tok2 = nametok->next();
                 while (Token::Match(tok2, "[ %num% ]")) {
-                    sz *= MathLib::toULongNumber(tok2->strAt(1));
+                    size *= MathLib::toULongNumber(tok2->strAt(1));
                     tok2 = tok2->link()->next();
                 }
                 if (!tok2 || tok2->str() != ")")
                     continue;
             }
 
-            if (sz > 0) {
-                tok->str(MathLib::toString(sz));
+            if (size > 0) {
+                tok->str(MathLib::toString(size));
                 Token::eraseTokens(tok, tok->next()->link()->next());
                 ret = true;
             }
