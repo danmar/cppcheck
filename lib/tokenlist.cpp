@@ -535,7 +535,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "}"))
+            if (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             while (tok->next() && tok->next()->isName())
