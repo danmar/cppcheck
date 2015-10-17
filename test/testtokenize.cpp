@@ -955,12 +955,9 @@ private:
 
         // #4899 - False positive on unused variable
         ASSERT_EQUALS("; float angle ; angle = tilt ;", tokenizeAndStringify("; float angle = (float) tilt;", true)); // status quo
-        TODO_ASSERT_EQUALS("; float angle ; angle = - tilt ;",
-                           "; float angle ; angle = ( float ) - tilt ;",
-                           tokenizeAndStringify("; float angle = (float) -tilt;", true));
-        TODO_ASSERT_EQUALS("; float angle ; angle = tilt ;",
-                           "; float angle ; angle = ( float ) + tilt ;",
-                           tokenizeAndStringify("; float angle = (float) +tilt;", true));
+        ASSERT_EQUALS("; float angle ; angle = ( float ) - tilt ;", tokenizeAndStringify("; float angle = (float) -tilt;", true));
+        ASSERT_EQUALS("; float angle ; angle = ( float ) + tilt ;", tokenizeAndStringify("; float angle = (float) +tilt;", true));
+        ASSERT_EQUALS("; int a ; a = ( int ) ~ c ;", tokenizeAndStringify("; int a = (int)~c;", true));
     }
 
     void removeCast14() { // const

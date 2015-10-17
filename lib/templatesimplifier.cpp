@@ -1006,7 +1006,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         // keep parentheses here: Functor()(a ... )
         // keep parentheses here: ) ( var ) ;
         if ((Token::Match(tok->next(), "( %name% ) ;|)|,|]") ||
-             (Token::Match(tok->next(), "( %name% ) %cop%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&+-]")))) &&
+             (Token::Match(tok->next(), "( %name% ) %cop%") && (tok->tokAt(2)->varId()>0 || !Token::Match(tok->tokAt(4), "[*&+-~]")))) &&
             !tok->isName() &&
             tok->str() != ">" &&
             tok->str() != ")" &&
