@@ -8235,11 +8235,15 @@ private:
         ASSERT_EQUALS("ac&(=", testAst("a = (long)&c;"));
         ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
         ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
+        ASSERT_EQUALS("ac~(=", testAst("a = (b)~c;"));
         ASSERT_EQUALS("ac(=", testAst("a = (some<strange, type>)c;"));
         ASSERT_EQUALS("afoveon_avgimage((foveon_avgimage((+=", testAst("a = foveon_avg(((short(*)[4]) image)) + foveon_avg(((short(*)[4]) image));"));
         ASSERT_EQUALS("c(40<<return", testAst("return (long long)c << 40;"));
         ASSERT_EQUALS("ab-(=", testAst("a = ((int)-b)")); // Multiple subsequent unary operators (cast and -)
         ASSERT_EQUALS("xdouble123(i*(=", testAst("x = (int)(double(123)*i);"));
+
+        // not cast
+        ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
     }
 
     void astlambda() {

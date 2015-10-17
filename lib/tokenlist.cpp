@@ -448,9 +448,10 @@ static bool iscast(const Token *tok)
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")")
-            return type || tok2->strAt(-1) == "*" ||
+            return type || tok2->strAt(-1) == "*" || Token::Match(tok2, ") &|~") ||
                    (Token::Match(tok2, ") %any%") &&
-                    (tok2->strAt(1) == "&" || (!tok2->next()->isOp() && !Token::Match(tok2->next(), "[[]);,?:.]"))));
+                    !tok2->next()->isOp() &&
+                    !Token::Match(tok2->next(), "[[]);,?:.]"));
         if (!Token::Match(tok2, "%name%|*|&|::"))
             return false;
 
