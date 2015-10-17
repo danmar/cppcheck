@@ -527,6 +527,16 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
+        } else if (state.cpp && Token::Match(tok,"%name% {")) {
+            state.op.push(tok);
+            tok = tok->next();
+
+            if (Token::simpleMatch(tok, "{ }"))
+                compileUnaryOp(tok, state, compileExpression);
+            else
+                compileBinOp(tok, state, compileExpression);
+            if (Token::Match(tok, "}"))
+                tok = tok->next();
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             while (tok->next() && tok->next()->isName())
                 tok = tok->next();

@@ -8027,7 +8027,7 @@ private:
         ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? (b, c) : (d, e));"));
         ASSERT_EQUALS("fabc,de,:?=", testAst("f = (a ? b, c : (d, e));"));
         ASSERT_EQUALS("ab35,4:?foo(:?return", testAst("return (a ? b ? (3,5) : 4 : foo());"));
-        ASSERT_EQUALS("check(result_typeinvalid:?return", testAst("return check() ? result_type {0, 0} : invalid;"));
+        ASSERT_EQUALS("check(result_type00,{invalid:?return", testAst("return check() ? result_type {0, 0} : invalid;"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
@@ -8065,7 +8065,7 @@ private:
 
         ASSERT_EQUALS("abc.1:?1+bd.1:?+=", testAst("a =(b.c ? : 1) + 1 + (b.d ? : 1);"));
 
-        ASSERT_EQUALS("catch.(", testAst("try {} catch (...) {}"));
+        ASSERT_EQUALS("try{ catch.(", testAst("try {} catch (...) {}"));
 
         ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar&);"));
         ASSERT_EQUALS("FooBar(", testAst("void Foo(Bar& &);")); // Rvalue reference - simplified from && to & & by real tokenizer
@@ -8171,8 +8171,14 @@ private:
         ASSERT_EQUALS("tset{=", testAst("struct cgroup_taskset tset = {};"));
         ASSERT_EQUALS("s1a&,{2b&,{,{=", testAst("s = { {1, &a}, {2, &b} };"));
 
-        // template paratheses: <>
+        // template parentheses: <>
         ASSERT_EQUALS("stdfabs::m_similarity(numeric_limitsepsilon::(<=return", testAst("return std::fabs(m_similarity) <= numeric_limits<double>::epsilon();")); // #6195
+
+        // C++ initializer
+        ASSERT_EQUALS("Class{", testAst("Class{};"));
+        ASSERT_EQUALS("Class12,{", testAst("Class{1,2};"));
+        ASSERT_EQUALS("abc{d:?=", testAst("a=b?c{}:d;"));
+        ASSERT_EQUALS("abc12,{d:?=", testAst("a=b?c{1,2}:d;"));
     }
 
     void astbrackets() { // []
