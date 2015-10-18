@@ -910,7 +910,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::simpleMatch(tok, "for (")) {
         Token *tok2 = tok->tokAt(2);
         Token *init1 = nullptr;
-        const Token * const endPar = tok->next()->link();
+        Token * const endPar = tok->next()->link();
         while (tok2 && tok2 != endPar && tok2->str() != ";") {
             if (tok2->str() == "<" && tok2->link()) {
                 tok2 = tok2->link();
@@ -953,7 +953,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             tok2 = tok2->next();
         if (tok2 != semicolon2)
             semicolon2->astOperand1(const_cast<Token*>(tok2->astTop()));
-        tok2 = tok->linkAt(1);
+        tok2 = endPar;
         while (tok2 != semicolon2 && !tok2->isName() && !tok2->isNumber())
             tok2 = tok2->previous();
         if (tok2 != semicolon2)
@@ -963,7 +963,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 
-        return tok->linkAt(1);
+        return endPar;
     }
 
     if (Token::simpleMatch(tok, "( {"))
@@ -977,7 +977,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         AST_state state(cpp);
         compileExpression(tok, state);
         Token * const endToken = tok;
-        if (endToken == tok1)
+        if (endToken == tok1 || !endToken)
             return tok1;
 
         // Compile inner expressions inside inner ({..}) and lambda bodies
