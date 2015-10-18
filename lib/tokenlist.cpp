@@ -463,8 +463,18 @@ static bool iscast(const Token *tok)
 }
 
 // X{} X<Y>{} etc
-static bool iscpp11init(const Token * const nameToken)
+static bool iscpp11init(const Token * const tok)
 {
+    const Token *nameToken = nullptr;
+    if (tok->isName())
+        nameToken = tok;
+    else if (Token::Match(tok->previous(), "%name% {"))
+        nameToken = tok->previous();
+    else if (tok->linkAt(-1) && Token::simpleMatch(tok->previous(), "> {") && Token::Match(tok->linkAt(-1)->previous(),"%name% <"))
+        nameToken = tok->linkAt(-1)->previous();
+    if (!nameToken)
+        return false;
+
     const Token *endtok = nullptr;
     if (Token::Match(nameToken,"%name% {"))
         endtok = nameToken->linkAt(1);
@@ -479,6 +489,7 @@ static bool iscpp11init(const Token * const nameToken)
     while (Token::Match(prev, "%name%|::|:|<|>")) {
         if (Token::Match(prev, "class|struct"))
             return false;
+
         prev = prev->previous();
     }
     return true;
@@ -555,13 +566,6 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
-
-            if (Token::simpleMatch(tok, "{ }"))
-                compileUnaryOp(tok, state, compileExpression);
-            else
-                compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "}"))
-                tok = tok->next();
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             while (tok->next() && tok->next()->isName())
                 tok = tok->next();
@@ -678,6 +682,13 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     compileUnaryOp(tok, state, nullptr);
             }
             tok = tok->link()->next();
+        } else if (state.cpp && tok->str() == "{" && iscpp11init(tok)) {
+            if (Token::simpleMatch(tok, "{ }"))
+                compileUnaryOp(tok, state, compileExpression);
+            else
+                compileBinOp(tok, state, compileExpression);
+            if (Token::simpleMatch(tok, "}"))
+                tok = tok->next();
         } else break;
     }
 }
