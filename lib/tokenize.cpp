@@ -9812,8 +9812,6 @@ void Tokenizer::removeUnnecessaryQualification()
     if (isC())
         return;
 
-    const bool portabilityEnabled = _settings->isEnabled("portability");
-
     std::vector<Space> classInfo;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "class|struct|namespace %type% :|{") &&
