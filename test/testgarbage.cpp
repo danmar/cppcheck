@@ -191,6 +191,7 @@ private:
         TEST_CASE(garbageCode140); // #7035
         TEST_CASE(garbageCode141); // #7043
         TEST_CASE(garbageCode142); // #7050
+        TEST_CASE(garbageCode143); // #6922
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1118,6 +1119,19 @@ private:
         checkCode("{ } (  ) { void mapGraphs ( ) { node_t * n ; for (!oid n ) { } } } { }");
     }
 
+    void garbageCode143() { // #6922
+        ASSERT_THROW(checkCode("void neoProgramShadowRegs() {\n"
+                               "    int i;\n"
+                               "    Bool noProgramShadowRegs;\n"
+                               "    if (noProgramShadowRegs) {\n"
+                               "    } else {\n"
+                               "        switch (nPtr->NeoPanelWidth) {\n"
+                               "        case 1280:\n"
+                               "            VGAwCR(0x64,0x?? );\n"
+                               "        }\n"
+                               "    }\n"
+                               "}"), InternalError);
+    }
 
     void garbageValueFlow() {
         // #6089
