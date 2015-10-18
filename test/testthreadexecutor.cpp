@@ -84,60 +84,54 @@ private:
     }
 
     void many_threads() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n";
-        oss << "  char *a = malloc(10);\n";
-        oss << "  return 0;\n"
-            << "}";
-        check(20, 100, 100, oss.str());
+        check(20, 100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_more_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 3, 0, oss.str());
+        check(2, 3, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_less_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 1, 0, oss.str());
+        check(2, 1, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void no_errors_equal_amount_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 2, 0, oss.str());
+        check(2, 2, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}");
     }
 
     void one_error_less_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  {char *a = malloc(10);}\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 1, 1, oss.str());
+        check(2, 1, 1,
+              "int main()\n"
+              "{\n"
+              "  {char *a = malloc(10);}\n"
+              "  return 0;\n"
+              "}");
     }
 
     void one_error_several_files() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n"
-            << "  {char *a = malloc(10);}\n"
-            << "  return 0;\n"
-            << "}\n";
-        check(2, 20, 20, oss.str());
+        check(2, 20, 20,
+              "int main()\n"
+              "{\n"
+              "  {char *a = malloc(10);}\n"
+              "  return 0;\n"
+              "}");
     }
 };
 

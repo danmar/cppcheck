@@ -108,7 +108,7 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(const std::string & str, const unsigned int lineno, const unsigned int fileno, bool split)
+void TokenList::addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split)
 {
     if (str.empty())
         return;
@@ -129,23 +129,20 @@ void TokenList::addtoken(const std::string & str, const unsigned int lineno, con
     }
 
     // Replace hexadecimal value with decimal
-    std::string str2;
     if (MathLib::isIntHex(str) || MathLib::isOct(str) || MathLib::isBin(str)) {
         std::ostringstream str2stream;
         str2stream << MathLib::toULongNumber(str);
-        str2 = str2stream.str();
+        str = str2stream.str();
     } else if (str.compare(0, 5, "_Bool") == 0) {
-        str2 = "bool";
-    } else {
-        str2 = str;
+        str = "bool";
     }
 
     if (_back) {
-        _back->insertToken(str2);
+        _back->insertToken(str);
     } else {
         _front = new Token(&_back);
         _back = _front;
-        _back->str(str2);
+        _back->str(str);
     }
 
     if (isCPP() && str == "delete")
