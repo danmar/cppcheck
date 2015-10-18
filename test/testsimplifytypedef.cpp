@@ -150,6 +150,7 @@ private:
         TEST_CASE(simplifyTypedef111); // ticket #6345
         TEST_CASE(simplifyTypedef112); // ticket #6048
         TEST_CASE(simplifyTypedef113); // ticket #7030
+        TEST_CASE(simplifyTypedef114); // ticket #7058 - skip "struct", AB::..
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2411,6 +2412,13 @@ private:
         const char code[] = "typedef int T;\n"
                             "void f() { T:; }";
         const char expected[] = "void f ( ) { T : ; }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef114() {     // ticket #7058
+        const char code[] = "typedef struct { enum {A,B}; } AB;\n"
+                            "x=AB::B;";
+        const char expected[] = "struct AB { } ; x = 1 ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

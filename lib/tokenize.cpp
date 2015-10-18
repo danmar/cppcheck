@@ -1201,7 +1201,7 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->next();
                                 }
                             }
-                        } else if (tok2->tokAt(-2) && Token::Match(tok2->tokAt(-2), "%type% *|&")) {
+                        } else if (Token::Match(tok2->tokAt(-2), "%type% *|&")) {
                             // Ticket #5868: Don't substitute variable names
                         } else if (tok2->previous()->str() != ".") {
                             simplifyType = true;
@@ -1264,6 +1264,8 @@ void Tokenizer::simplifyTypedef()
                             structRemoved = true;
                         typeStart = typeStart->next();
                     }
+                    if (typeStart->str() == "struct" && Token::Match(tok2, "%name% ::"))
+                        typeStart = typeStart->next();
 
                     // start substituting at the typedef name by replacing it with the type
                     tok2->str(typeStart->str());
