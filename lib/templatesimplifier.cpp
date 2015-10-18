@@ -471,6 +471,11 @@ std::list<Token *> TemplateSimplifier::getTemplateDeclarations(Token *tokens, bo
 
         if (Token::simpleMatch(tok, "template <")) {
             Token *parmEnd = tok->next()->findClosingBracket();
+            if (!tok->tokAt(2))
+                syntaxError(tok->next());
+            if (tok->tokAt(2)->str()=="typename" &&
+                (!tok->tokAt(3) || !Token::Match(tok->tokAt(3), "%name%|.")))
+                syntaxError(tok->next());
             codeWithTemplates = true;
 
             int indentlevel = 0;

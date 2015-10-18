@@ -192,6 +192,7 @@ private:
         TEST_CASE(garbageCode141); // #7043
         TEST_CASE(garbageCode142); // #7050
         TEST_CASE(garbageCode143); // #6922
+        TEST_CASE(garbageCode144); // #6865
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -917,7 +918,8 @@ private:
     }
 
     void garbageCode119() { // #5598
-        checkCode("{ { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };");
+        ASSERT_THROW(checkCode("{ { void foo() { struct }; template <typename> struct S { Used x; void bar() } auto f = [this] { }; } };"),
+                     InternalError);
     }
 
     void garbageCode120() { // #4927
@@ -1133,6 +1135,10 @@ private:
                                "}"), InternalError);
     }
 
+    void garbageCode144() { // #6865
+        ASSERT_THROW(checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;"), InternalError);
+    }
+
     void garbageValueFlow() {
         // #6089
         const char* code = "{} int foo(struct, x1, struct x2, x3, int, x5, x6, x7)\n"
@@ -1217,24 +1223,24 @@ private:
 
         checkCode(" > template < . > struct Y < T > { = } ;\n"); // #6108
 
-        checkCode( // #6117
-            "template <typename ...> struct something_like_tuple\n"
-            "{};\n"
-            "template <typename, typename> struct is_last {\n"
-            "  static const bool value = false;\n"
-            "};\n"
-            "template <typename T, template <typename ...> class Tuple, typename ... Head>\n"
-            "struct is_last<T, Tuple<Head ..., T>>\n"
-            "{\n"
-            "  static const bool value = true;\n"
-            "};\n"
-            "\n"
-            "#define SA(X) static_assert (X, #X)\n"
-            "\n"
-            "typedef something_like_tuple<char, int, float> something_like_tuple_t;\n"
-            "SA ((is_last<float, something_like_tuple_t>::value == false));\n"
-            "SA ((is_last<int, something_like_tuple_t>::value == false));\n"
-        );
+        ASSERT_THROW(checkCode( // #6117
+                         "template <typename ...> struct something_like_tuple\n"
+                         "{};\n"
+                         "template <typename, typename> struct is_last {\n"
+                         "  static const bool value = false;\n"
+                         "};\n"
+                         "template <typename T, template <typename ...> class Tuple, typename ... Head>\n"
+                         "struct is_last<T, Tuple<Head ..., T>>\n"
+                         "{\n"
+                         "  static const bool value = true;\n"
+                         "};\n"
+                         "\n"
+                         "#define SA(X) static_assert (X, #X)\n"
+                         "\n"
+                         "typedef something_like_tuple<char, int, float> something_like_tuple_t;\n"
+                         "SA ((is_last<float, something_like_tuple_t>::value == false));\n"
+                         "SA ((is_last<int, something_like_tuple_t>::value == false));\n"
+                     ), InternalError);
 
         checkCode( // #6225
             "template <typename...>\n"

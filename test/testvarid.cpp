@@ -663,8 +663,7 @@ private:
     }
 
     void varid28() { // ticket #2630 (segmentation fault)
-        tokenize("template <typedef A>\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(tokenize("template <typedef A>\n"), InternalError);
     }
 
     void varid29() {
