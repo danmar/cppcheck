@@ -8656,7 +8656,6 @@ void Tokenizer::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     t.duplicateTypedefError(0, 0, "variable");
     t.duplicateDeclarationError(0, 0, "variable");
     t.duplicateEnumError(0, 0, "variable");
-    t.unnecessaryQualificationError(0, "type");
 }
 
 void Tokenizer::simplifyWhile0()
@@ -9875,30 +9874,6 @@ void Tokenizer::removeUnnecessaryQualification()
                         continue;
                     }
                 }
-
-                {
-                    std::string qualification;
-                    if (portabilityEnabled)
-                        qualification = tok->str() + "::";
-
-                    // check for extra qualification
-                    /** @todo this should be made more generic to handle more levels */
-                    if (Token::Match(tok->tokAt(-2), "%type% ::")) {
-                        if (classInfo.size() >= 2) {
-                            if (classInfo[classInfo.size() - 2].className != tok->strAt(-2))
-                                continue;
-                            if (portabilityEnabled)
-                                qualification = tok->strAt(-2) + "::" + qualification;
-                        } else
-                            continue;
-                    }
-
-                    if (portabilityEnabled)
-                        unnecessaryQualificationError(tok, qualification);
-
-                    tok->deleteNext();
-                    tok->deleteThis();
-                }
             }
         }
     }
@@ -9915,12 +9890,6 @@ void Tokenizer::simplifyDeprecated()
             tok->deleteThis();
         }
     }
-}
-
-void Tokenizer::unnecessaryQualificationError(const Token *tok, const std::string &qualification) const
-{
-    reportError(tok, Severity::portability, "unnecessaryQualification",
-                "The extra qualification \'" + qualification + "\' is unnecessary and is considered an error by many compilers.");
 }
 
 void Tokenizer::simplifyReturnStrncat()

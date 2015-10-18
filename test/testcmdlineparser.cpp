@@ -768,20 +768,20 @@ private:
 
     void suppressionTwo() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--suppress=uninitvar,unnecessaryQualification", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar,noConstructor", "file.cpp"};
         settings = Settings();
         TODO_ASSERT_EQUALS(true, false, defParser.ParseFromArgs(3, argv));
         TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
-        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("unnecessaryQualification", "file.cpp", 1U));
+        TODO_ASSERT_EQUALS(true, false, settings.nomsg.isSuppressed("noConstructor", "file.cpp", 1U));
     }
 
     void suppressionTwoSeparate() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=unnecessaryQualification", "file.cpp"};
+        const char *argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=noConstructor", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.ParseFromArgs(4, argv));
         ASSERT_EQUALS(true, settings.nomsg.isSuppressed("uninitvar", "file.cpp", 1U));
-        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("unnecessaryQualification", "file.cpp", 1U));
+        ASSERT_EQUALS(true, settings.nomsg.isSuppressed("noConstructor", "file.cpp", 1U));
     }
 
     void templates() {
