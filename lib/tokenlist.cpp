@@ -462,6 +462,28 @@ static bool iscast(const Token *tok)
     return false;
 }
 
+// X{} X<Y>{} etc
+static bool iscpp11init(const Token * const nameToken)
+{
+    const Token *endtok = nullptr;
+    if (Token::Match(nameToken,"%name% {"))
+        endtok = nameToken->linkAt(1);
+    else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
+        endtok = nameToken->linkAt(1)->linkAt(1);
+    else
+        return false;
+    // There is no initialisation for example here: 'class Fred {};'
+    if (!Token::simpleMatch(endtok, "} ;"))
+        return true;
+    const Token *prev = nameToken;
+    while (Token::Match(prev, "%name%|::|:|<|>")) {
+        if (Token::Match(prev, "class|struct"))
+            return false;
+        prev = prev->previous();
+    }
+    return true;
+}
+
 static void compileUnaryOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, AST_state& state))
 {
     Token *unaryop = tok;
@@ -528,9 +550,11 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
-        } else if (state.cpp && Token::Match(tok,"%name% {")) {
+        } else if (state.cpp && iscpp11init(tok)) { // X{} X<Y>{} etc
             state.op.push(tok);
             tok = tok->next();
+            if (tok->str() == "<")
+                tok = tok->link()->next();
 
             if (Token::simpleMatch(tok, "{ }"))
                 compileUnaryOp(tok, state, compileExpression);
@@ -969,7 +993,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 
-    if (Token::Match(tok, "%type% <") && Token::Match(tok->linkAt(1), "> !!("))
+    if (Token::Match(tok, "%type% <") && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {

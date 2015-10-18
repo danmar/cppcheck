@@ -8174,8 +8174,11 @@ private:
         // C++ initializer
         ASSERT_EQUALS("Class{", testAst("Class{};"));
         ASSERT_EQUALS("Class12,{", testAst("Class{1,2};"));
+        ASSERT_EQUALS("Class12,{", testAst("Class<X>{1,2};"));
         ASSERT_EQUALS("abc{d:?=", testAst("a=b?c{}:d;"));
         ASSERT_EQUALS("abc12,{d:?=", testAst("a=b?c{1,2}:d;"));
+        ASSERT_EQUALS("abc{d:?=", testAst("a=b?c<X>{}:d;"));
+        ASSERT_EQUALS("abc12,{d:?=", testAst("a=b?c<X>{1,2}:d;"));
     }
 
     void astbrackets() { // []
