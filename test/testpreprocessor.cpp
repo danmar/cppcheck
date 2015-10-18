@@ -338,8 +338,10 @@ private:
     }
 
     void readCode5() {
-        const char code[] = "int i = 0x1000'00;";
-        ASSERT_EQUALS("int i = 0x100000;", preprocessorRead(code));
+        ASSERT_EQUALS("int i = 0x100000;", preprocessorRead("int i = 0x1000'00;"));
+        ASSERT_EQUALS("", errout.str());
+
+        ASSERT_EQUALS("int i = 0x0F0FFFFF;", preprocessorRead("int i = 0x0F0F'FFFF;"));
         ASSERT_EQUALS("", errout.str());
     }
 

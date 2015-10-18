@@ -662,7 +662,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             }
 
             // C++14 digit separators
-            if (ch == '\'' && std::isdigit(previous))
+            if (ch == '\'' && std::isxdigit(previous))
                 ; // Just skip it.
 
             // String or char constants..
