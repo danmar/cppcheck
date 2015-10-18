@@ -384,6 +384,6 @@ private:
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }
-
 };
+
 REGISTER_TEST(TestErrorLogger)
