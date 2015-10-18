@@ -435,9 +435,11 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     // QFileDialog::getExistingDirectory() because they show native Windows
     // selection dialog which is a lot more usable than Qt:s own dialog.
     if (mode == QFileDialog::ExistingFiles) {
+
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
-                   GetPath(SETTINGS_LAST_CHECK_PATH));
+                   GetPath(SETTINGS_LAST_CHECK_PATH),
+                   tr("C/C++ Source (%1)").arg(FileList::GetDefaultFilters().join(" ")));
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {

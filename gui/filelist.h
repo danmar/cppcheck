@@ -68,13 +68,13 @@ public:
     */
     void AddExcludeList(const QStringList &paths);
 
-protected:
-
     /**
     * @brief Return list of default filename extensions included.
     * @return list of default filename extensions included.
     */
     static QStringList GetDefaultFilters();
+
+protected:
 
     /**
     * @brief Test if filename matches the filename extensions filtering.

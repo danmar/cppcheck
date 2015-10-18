@@ -35,7 +35,7 @@ bool FileList::FilterMatches(const QFileInfo &inf)
         const QStringList filters = FileList::GetDefaultFilters();
         QString ext("*.");
         ext += inf.suffix();
-        if (filters.contains(ext))
+        if (filters.contains(ext, Qt::CaseInsensitive))
             return true;
     }
     return false;
