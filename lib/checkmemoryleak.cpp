@@ -2004,12 +2004,12 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
 {
     const Token *result;
 
-    if ((result = Token::findsimplematch(tokens, "loop alloc ;")) != nullptr) {
-        return result;
-    }
-
     if (Token::Match(tokens, "alloc ; if|if(var)|ifv break|continue|return ;")) {
         return tokens->tokAt(3);
+    }
+
+    if ((result = Token::findsimplematch(tokens, "loop alloc ;")) != nullptr) {
+        return result;
     }
 
     if ((result = Token::findmatch(tokens, "alloc ; if|if(var)|ifv return ;")) != nullptr) {
