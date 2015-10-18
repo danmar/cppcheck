@@ -66,7 +66,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
             s = s.substr(0,13) + "..";
         errmsg += " \"" + s + "\"";
     }
-    errmsg += " directly or indirectly is undefined behaviour";
+    errmsg += " directly or indirectly is undefined behaviour.";
 
     reportError(callstack, Severity::error, "stringLiteralWrite", errmsg);
 }
