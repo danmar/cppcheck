@@ -363,6 +363,11 @@ static bool addValue(Token *tok, const ValueFlow::Value &value)
         tok->values.clear();
     }
 
+    // Don't handle more than 10 values for performance reasons
+    // TODO: add setting?
+    if (tok->values.size() >= 10U)
+        return false;
+
     // if value already exists, don't add it again
     std::list<ValueFlow::Value>::iterator it;
     for (it = tok->values.begin(); it != tok->values.end(); ++it) {
