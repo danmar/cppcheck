@@ -318,6 +318,8 @@ private:
         TEST_CASE(removeattribute);
         TEST_CASE(functionAttributeBefore);
         TEST_CASE(functionAttributeAfter);
+
+        TEST_CASE(cpp03template1);
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
@@ -4714,6 +4716,21 @@ private:
         ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
+    }
+
+    void cpp03template1() {
+        {
+            const char *code = "template<typename> struct extent {};";
+            ASSERT_EQUALS("template < typename > struct extent { } ;", tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "template<typename> struct extent;";
+            ASSERT_EQUALS("template < typename > struct extent ;", tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "template<typename, unsigned = 0> struct extent;";
+            ASSERT_EQUALS("template < typename , unsigned int = 0 > struct extent ;", tokenizeAndStringify(code));
+        }
     }
 
     void cpp0xtemplate1() {
