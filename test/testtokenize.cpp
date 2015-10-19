@@ -48,7 +48,6 @@ private:
         TEST_CASE(tokenize7);
         TEST_CASE(tokenize8);
         TEST_CASE(tokenize9);
-        TEST_CASE(tokenize10);
         TEST_CASE(tokenize11);
         TEST_CASE(tokenize13);  // bailout if the code contains "@" - that is not handled well.
         TEST_CASE(tokenize14);  // tokenize "0X10" => 16
@@ -73,6 +72,8 @@ private:
         TEST_CASE(simplifyFileAndLineMacro);  // tokenize "return - __LINE__;"
 
         TEST_CASE(foreach);     // #3690
+
+        TEST_CASE(combineOperators);
 
         TEST_CASE(concatenateNegativeNumber);
 
@@ -661,13 +662,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void tokenize10() {
-        ASSERT_EQUALS("private:", tokenizeAndStringify("private:", false));
-        ASSERT_EQUALS("protected:", tokenizeAndStringify("protected:", false));
-        ASSERT_EQUALS("public:", tokenizeAndStringify("public:", false));
-        ASSERT_EQUALS("__published:", tokenizeAndStringify("__published:", false));
-    }
-
     void tokenize11() {
         ASSERT_EQUALS("X * sizeof ( Y ( ) ) ;", tokenizeAndStringify("X * sizeof(Y());", false));
     }
@@ -863,6 +857,14 @@ private:
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
         ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }" ,tokenizeAndStringify(code));
+    }
+
+    void combineOperators() {
+        ASSERT_EQUALS("; private:", tokenizeAndStringify(";private:", false));
+        ASSERT_EQUALS("; protected:", tokenizeAndStringify(";protected:", false));
+        ASSERT_EQUALS("; public:", tokenizeAndStringify(";public:", false));
+        ASSERT_EQUALS("; __published:", tokenizeAndStringify(";__published:", false));
+        ASSERT_EQUALS("a . public :", tokenizeAndStringify("a.public:", false));
     }
 
     void concatenateNegativeNumber() {

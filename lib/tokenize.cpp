@@ -1862,6 +1862,8 @@ void Tokenizer::fillTypeSizes()
 
 void Tokenizer::combineOperators()
 {
+    const bool cpp = isCPP();
+
     // Combine tokens..
     for (Token *tok = list.front();
          tok && tok->next();
@@ -1902,11 +1904,33 @@ void Tokenizer::combineOperators()
                 tok->str("<<=");
                 tok->deleteNext();
             }
-        } else if ((c1 == 'p' || c1 == '_') && tok->next()->str() == ":" && tok->strAt(2) != ":") {
-            if (Token::Match(tok, "private|protected|public|__published")) {
+        } else if (cpp && (c1 == 'p' || c1 == '_') &&
+                   Token::Match(tok, "private|protected|public|__published : !!:")) {
+            bool simplify = false;
+            unsigned int par = 0U;
+            for (const Token *prev = tok->tokAt(-1); prev; prev = prev->previous()) {
+                if (prev->str() == ")") {
+                    ++par;
+                } else if (prev->str() == "(") {
+                    if (par == 0U)
+                        break;
+                    --par;
+                }
+                if (par != 0U || prev->str() == "(")
+                    continue;
+                if (Token::Match(prev, "[;{}]")) {
+                    simplify = true;
+                    break;
+                }
+                if (prev->isName() && prev->isUpperCaseName())
+                    continue;
+                if (prev->isName() && prev->str()[prev->str().size() - 1U] == ':')
+                    simplify = true;
+                break;
+            }
+            if (simplify) {
                 tok->str(tok->str() + ":");
                 tok->deleteNext();
-                continue;
             }
         }
     }
