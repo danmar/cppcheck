@@ -8105,6 +8105,7 @@ private:
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
         ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
+        ASSERT_EQUALS("Fred10[new", testAst(";new Fred[10];"));
 
         // invalid code (libreoffice), don't hang
         // #define SlideSorterViewShell

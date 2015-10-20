@@ -638,6 +638,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             } else
                 compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
+            bool lambda = false;
             if (state.cpp && isPrefixUnary(tok, state.cpp) && tok->link()->strAt(1) == "(") { // Lambda
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
@@ -645,14 +646,18 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // - Compile the content of the lambda function as separate tree (this is done later)
                 Token* squareBracket = tok;
                 Token* roundBracket = squareBracket->link()->next();
-                Token* curlyBracket = Token::findsimplematch(roundBracket->link()->next(), "{");
-                if (!curlyBracket)
-                    break;
-                squareBracket->astOperand1(roundBracket);
-                roundBracket->astOperand1(curlyBracket);
-                state.op.push(squareBracket);
-                tok = curlyBracket->link()->next();
-            } else {
+                Token* curlyBracket = roundBracket->link()->next();
+                while (Token::Match(curlyBracket, "%name%|.|::"))
+                    curlyBracket = curlyBracket->next();
+                if (Token::simpleMatch(curlyBracket, "{")) {
+                    lambda = true;
+                    squareBracket->astOperand1(roundBracket);
+                    roundBracket->astOperand1(curlyBracket);
+                    state.op.push(squareBracket);
+                    tok = curlyBracket->link()->next();
+                }
+            }
+            if (!lambda) {
                 Token* tok2 = tok;
                 if (tok->strAt(1) != "]")
                     compileBinOp(tok, state, compileExpression);
@@ -1005,6 +1010,9 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         return tok->linkAt(1);
 
     if (tok->str() == "return" || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {
+        if (cpp && Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%"))
+            tok = tok->previous();
+
         Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
