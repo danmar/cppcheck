@@ -67,6 +67,7 @@ private:
         TEST_CASE(uninitvar_operator); // #6680
         TEST_CASE(uninitvar_ternaryexpression); // #4683
         TEST_CASE(uninitvar_pointertoarray);
+        TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(trac_4871);
 
         TEST_CASE(syntax_error); // Ticket #5073
@@ -1478,6 +1479,14 @@ private:
                       "[test.cpp:11]: (error) Uninitialized variable: vertices\n"
                       "[test.cpp:18]: (error) Uninitialized variable: vertices\n",
                       errout.str());
+    }
+
+    void uninitvar_cpp11ArrayInit() { // #7010
+        checkUninitVar("double foo(bool flag) {\n"
+                       "    double adIHPoint_local[4][4]{};\n"
+                       "    function(*adIHPoint_local);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // alloc..

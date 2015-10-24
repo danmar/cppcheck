@@ -78,7 +78,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
                 tok = tok->next();
             while (Token::simpleMatch(tok->link(), "] ["))
                 tok = tok->link()->next();
-            if (Token::simpleMatch(tok->link(), "] ="))
+            if (Token::Match(tok->link(), "] =|{"))
                 continue;
         }
 
