@@ -151,6 +151,7 @@ private:
         TEST_CASE(simplifyTypedef112); // ticket #6048
         TEST_CASE(simplifyTypedef113); // ticket #7030
         TEST_CASE(simplifyTypedef114); // ticket #7058 - skip "struct", AB::..
+        TEST_CASE(simplifyTypedef115); // ticket #6998
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2420,6 +2421,16 @@ private:
                             "x=AB::B;";
         const char expected[] = "struct AB { } ; x = 1 ;";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef115() {     // ticket #6998
+        const char code[] = "typedef unsigned unsignedTypedef;\n"
+                            "unsignedTypedef t1 ;\n"
+                            "unsigned t2 ;";
+        const char expected[] = "unsigned int t1 ; "
+                                "unsigned int t2 ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedefFunction1() {

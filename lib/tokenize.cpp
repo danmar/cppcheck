@@ -704,7 +704,8 @@ void Tokenizer::simplifyTypedef()
         } else if (Token::Match(tokOffset, "%type%")) {
             typeStart = tokOffset;
 
-            while (Token::Match(tokOffset, "const|signed|unsigned|struct|enum %type%") ||
+            while (Token::Match(tokOffset, "const|struct|enum %type%") ||
+                   (Token::Match(tokOffset, "signed|unsigned %type%") && tokOffset->next()->isStandardType()) ||
                    (tokOffset->next() && tokOffset->next()->isStandardType()))
                 tokOffset = tokOffset->next();
 
