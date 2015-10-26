@@ -170,6 +170,7 @@ private:
         TEST_CASE(constFriend); // ticket #1921 - fp for friend function
         TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
         TEST_CASE(constArrayOperator); // #4406
+        TEST_CASE(constRangeBasedFor); // #5514
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -5778,6 +5779,22 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'foo::c' can be const.\n", errout.str());
+    }
+
+    void constRangeBasedFor() { // #5514
+        checkConst("class Fred {\n"
+                   "    int array[256];\n"
+                   "public:\n"
+                   "    void f1() {\n"
+                   "        for (auto & e : array)\n"
+                   "            foo(e);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        for (const auto & e : array)\n"
+                   "            foo(e);\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n", errout.str());
     }
 
     void checkInitializerListOrder(const char code[]) {
