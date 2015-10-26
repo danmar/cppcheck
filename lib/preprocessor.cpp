@@ -2265,7 +2265,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
         if (start != std::string::npos)
             endfilePos = start;
     }
-
+    std::set<std::string> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos) {
         if (_settings.terminated())
             return;
@@ -2306,6 +2306,14 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
             filename = Path::simplifyPath(filename);
             std::string tempFile = filename;
             std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
+            if (handledFiles.find(tempFile) != handledFiles.end()) {
+                // We have processed this file already once, skip
+                // it this time to avoid eternal loop.
+                fin.close();
+                continue;
+            }
+
+            handledFiles.insert(tempFile);
             processedFile = Preprocessor::read(fin, filename);
             fin.close();
         }
