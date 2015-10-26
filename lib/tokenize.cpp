@@ -2749,7 +2749,9 @@ void Tokenizer::setVarId()
             bool decl = setVarIdParseDeclaration(&tok2, variableId, scopeStack.top().isExecutable, isCPP(), isC());
             if (decl) {
                 const Token* prev2 = tok2->previous();
-                if (Token::Match(prev2, "%type% [;[=,):]") && tok2->previous()->str() != "const")
+                if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
+                    ;
+                else if (Token::Match(prev2, "%type% :") && tok->strAt(-1) == "for")
                     ;
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.

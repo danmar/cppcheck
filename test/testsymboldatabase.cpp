@@ -687,7 +687,8 @@ private:
             return;
         ASSERT(db->scopeList.back().type == Scope::eFor);
         ASSERT_EQUALS(2, db->getVariableListSize());
-
+        if (db->getVariableListSize() < 2)
+            return;
         const Variable* e = db->getVariableFromVarId(1);
         ASSERT(e && e->isReference() && e->isLocal());
     }

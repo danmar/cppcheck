@@ -2175,6 +2175,27 @@ private:
                                "    for (auto e : array)\n"
                                "        foo(e);\n"
                                "};"));
+
+        // Labels are no variables
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void foo ( ) {\n"
+                      "2: switch ( event . key . keysym . sym ) {\n"
+                      "3: case SDLK_LEFT : ;\n"
+                      "4: break ;\n"
+                      "5: case SDLK_RIGHT : ;\n"
+                      "6: delta = 1 ;\n"
+                      "7: break ;\n"
+                      "8: }\n"
+                      "9: }\n",
+                      tokenize("void foo() {\n"
+                               "    switch (event.key.keysym.sym) {\n"
+                               "    case SDLK_LEFT:\n"
+                               "        break;\n"
+                               "    case SDLK_RIGHT:\n"
+                               "        delta = 1;\n"
+                               "        break;\n"
+                               "    }\n"
+                               "}", false, "test.c"));
     }
 
     void varidclass1() {
