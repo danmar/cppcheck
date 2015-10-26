@@ -6122,6 +6122,12 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6669
+        check("void foo(size_t size) {\n"
+              "   void * res{malloc(size)};\n"
+              "}", "test.cpp", false, false, true, &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantPointerOp() {
