@@ -703,23 +703,25 @@ std::string Token::getCharAt(const Token *tok, std::size_t index)
 {
     assert(tok != nullptr);
 
-    const std::string strValue(tok->strValue());
-    const char *str = strValue.c_str();
+    std::string::const_iterator it = tok->str().begin() + 1U;
+    const std::string::const_iterator end = tok->str().end() - 1U;
 
-    while (*str) {
+    while (it != end) {
         if (index == 0) {
-            std::string ret;
-            if (*str == '\\') {
-                ret = *str;
-                ++str;
+            if (*it == '\0')
+                return "\\0";
+
+            std::string ret(1, *it);
+            if (*it == '\\') {
+                ++it;
+                ret += *it;
             }
-            ret += *str;
             return ret;
         }
 
-        if (*str == '\\')
-            ++str;
-        ++str;
+        if (*it == '\\')
+            ++it;
+        ++it;
         --index;
     }
     assert(index == 0);
