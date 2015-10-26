@@ -193,6 +193,7 @@ private:
         TEST_CASE(garbageCode142); // #7050
         TEST_CASE(garbageCode143); // #6922
         TEST_CASE(garbageCode144); // #6865
+        TEST_CASE(garbageCode145); // #7074
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1136,6 +1137,10 @@ private:
 
     void garbageCode144() { // #6865
         //ASSERT_THROW(checkCode("template < typename > struct A { } ; template < typename > struct A < INVALID > : A < int[ > { }] ;"), InternalError);
+    }
+
+    void garbageCode145() { // #7074
+        checkCode("++4++ +  + E++++++++++ + ch " "tp.oed5[.]");
     }
 
     void garbageValueFlow() {

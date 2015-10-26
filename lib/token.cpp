@@ -1158,7 +1158,7 @@ bool Token::isUnaryPreOp() const
         return true;
     const Token *tokbefore = _previous;
     const Token *tokafter = _next;
-    for (int distance = 1; distance < 10; distance++) {
+    for (int distance = 1; distance < 10 && tokbefore; distance++) {
         if (tokbefore == _astOperand1)
             return false;
         if (tokafter == _astOperand1)
