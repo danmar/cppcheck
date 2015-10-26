@@ -2584,6 +2584,9 @@ void CheckOther::checkLibraryMatchFunctions()
             !Token::Match(tok, "for|if|while|switch|sizeof|catch|asm|return") &&
             !tok->function() &&
             !tok->varId() &&
+            !tok->type() &&
+            !tok->isStandardType() &&
+            tok->linkAt(1)->strAt(1) != "(" &&
             tok->astParent() == tok->next() &&
             _settings->library.isNotLibraryFunction(tok)) {
             reportError(tok,
