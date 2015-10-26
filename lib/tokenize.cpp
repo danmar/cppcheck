@@ -2470,7 +2470,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
         if (executableScope && ref) {
-            if (Token::Match(tok2, "(|=|{"))
+            if (Token::Match(tok2, "(|=|{|:"))
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
                 return false;   // not catching by reference => not declaration
@@ -2749,7 +2749,7 @@ void Tokenizer::setVarId()
             bool decl = setVarIdParseDeclaration(&tok2, variableId, scopeStack.top().isExecutable, isCPP(), isC());
             if (decl) {
                 const Token* prev2 = tok2->previous();
-                if (Token::Match(prev2, "%type% [;[=,)]") && tok2->previous()->str() != "const")
+                if (Token::Match(prev2, "%type% [;[=,):]") && tok2->previous()->str() != "const")
                     ;
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.

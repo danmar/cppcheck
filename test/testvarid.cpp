@@ -139,6 +139,7 @@ private:
         TEST_CASE(varid_cpp11initialization); // #4344
         TEST_CASE(varid_inheritedMembers); // #4101
         TEST_CASE(varid_header); // #6386
+        TEST_CASE(varid_rangeBasedFor);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2152,6 +2153,28 @@ private:
                                "struct B {\n"
                                "    void setData(const A & a);\n"
                                "}; ", false, "test.h"));
+    }
+
+    void varid_rangeBasedFor() {
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void reset ( Foo array@1 ) {\n"
+                      "2: for ( auto & e@2 : array@1 ) {\n"
+                      "3: foo ( e@2 ) ; }\n"
+                      "4: } ;\n",
+                      tokenize("void reset(Foo array) {\n"
+                               "    for (auto& e : array)\n"
+                               "        foo(e);\n"
+                               "};"));
+
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: void reset ( Foo array@1 ) {\n"
+                      "2: for ( auto e@2 : array@1 ) {\n"
+                      "3: foo ( e@2 ) ; }\n"
+                      "4: } ;\n",
+                      tokenize("void reset(Foo array) {\n"
+                               "    for (auto e : array)\n"
+                               "        foo(e);\n"
+                               "};"));
     }
 
     void varidclass1() {
