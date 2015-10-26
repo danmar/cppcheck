@@ -3038,16 +3038,19 @@ bool Scope::isVariableDeclaration(const Token* tok, const Token*& vartok, const 
         localVarTok = skipPointers(localTypeTok->strAt(1)=="const"?localTypeTok->tokAt(2):localTypeTok->next());
     }
 
-    if (localVarTok && localVarTok->str() == "const")
+    if (!localVarTok)
+        return false;
+
+    if (localVarTok->str() == "const")
         localVarTok = localVarTok->next();
 
-    if (Token::Match(localVarTok, "%name% ;|=")) {
+    if (Token::Match(localVarTok, "%name% ;|=") || (localVarTok->varId() && localVarTok->strAt(1) == ":")) {
         vartok = localVarTok;
         typetok = localTypeTok;
     } else if (Token::Match(localVarTok, "%name% )|[") && localVarTok->str() != "operator") {
         vartok = localVarTok;
         typetok = localTypeTok;
-    } else if (localVarTok && localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
+    } else if (localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
                Token::Match(localVarTok->next()->link(), ")|} ;")) {
         vartok = localVarTok;
         typetok = localTypeTok;

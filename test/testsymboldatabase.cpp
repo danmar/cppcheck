@@ -129,6 +129,8 @@ private:
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableStlType);
 
+        TEST_CASE(rangeBasedFor);
+
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
@@ -674,6 +676,21 @@ private:
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
     }
 
+    void rangeBasedFor() {
+        GET_SYMBOL_DB("void reset() {\n"
+                      "    for(auto& e : array)\n"
+                      "        foo(e);\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->scopeList.back().type == Scope::eFor);
+        ASSERT_EQUALS(2, db->getVariableListSize());
+
+        const Variable* e = db->getVariableFromVarId(1);
+        ASSERT(e && e->isReference() && e->isLocal());
+    }
     void isVariableStlType() {
         {
             reset();
