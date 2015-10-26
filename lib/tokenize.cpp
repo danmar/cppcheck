@@ -269,7 +269,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
             if (Token::simpleMatch(end, ") {")) { // function parameter ?
                 // look backwards
                 if (Token::Match(tok->previous(), "%type%") &&
-                    !Token::Match(tok->previous(), "return|new|const")) {
+                    !Token::Match(tok->previous(), "return|new|const|struct")) {
                     duplicateTypedefError(*tokPtr, name, "function parameter");
                     // duplicate definition so skip entire function
                     *tokPtr = end->next()->link();
@@ -351,8 +351,10 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                         tok = tok->previous();
                     }
 
-                    duplicateTypedefError(*tokPtr, name, "variable");
-                    return true;
+                    if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|[")) {
+                        duplicateTypedefError(*tokPtr, name, "variable");
+                        return true;
+                    }
                 }
             }
         }

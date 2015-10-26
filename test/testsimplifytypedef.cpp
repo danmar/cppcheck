@@ -152,6 +152,8 @@ private:
         TEST_CASE(simplifyTypedef113); // ticket #7030
         TEST_CASE(simplifyTypedef114); // ticket #7058 - skip "struct", AB::..
         TEST_CASE(simplifyTypedef115); // ticket #6998
+        TEST_CASE(simplifyTypedef116); // ticket #5624
+        TEST_CASE(simplifyTypedef117); // ticket #6507
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2429,6 +2431,35 @@ private:
                             "unsigned t2 ;";
         const char expected[] = "unsigned int t1 ; "
                                 "unsigned int t2 ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef116() { // #5624
+        const char code[] = "void fn() {\n"
+                            "    typedef std::vector<CharacterConversion> CharacterToConversion;\n"
+                            "    CharacterToConversion c2c;\n"
+                            "    for (CharacterToConversion::iterator it = c2c.begin(); it != c2c.end(); ++it) {}\n"
+                            "    CharacterToConversion().swap(c2c);\n"
+                            "}";
+        const char expected[] = "void fn ( ) { "
+                                "std :: vector < CharacterConversion > c2c ; "
+                                "for ( std :: vector < CharacterConversion > :: iterator it = c2c . begin ( ) ; it != c2c . end ( ) ; ++ it ) { } "
+                                "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef117() { // #6507
+        const char code[] = "typedef struct bstr {} bstr;\n"
+                            "struct bstr bstr0(const char *s) {\n"
+                            "    return (struct bstr) { (unsigned char *)s, s ? strlen(s) : 0 };\n"
+                            "}";
+        const char expected[] = "struct bstr { } ; "
+                                "struct bstr bstr0 ( const char * s ) { "
+                                "return ( struct bstr ) { ( unsigned char * ) s , s ? strlen ( s ) : 0 } ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
