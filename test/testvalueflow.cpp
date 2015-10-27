@@ -829,10 +829,17 @@ private:
 
         code = "void f() {\n"
                "  X *x = getx();\n"
-               "  if(false) { x = 0; }\n"
+               "  if(0) { x = 0; }\n"
                "  else { x->y = 1; }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f() {\n" // #6239
+               "  int x = 4;\n"
+               "  if(1) { x = 0; }\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 4));
 
         code = "void f() {\n"
                "    int x = 32;\n"
