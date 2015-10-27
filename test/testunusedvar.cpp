@@ -154,6 +154,7 @@ private:
         TEST_CASE(localvarSwitch);   // #3744 - false positive when localvar is used in switch
         TEST_CASE(localvarNULL);     // #4203 - Setting NULL value is not redundant - it is safe
         TEST_CASE(localvarUnusedGoto);    // #4447, #4558 goto
+        TEST_CASE(localvarRangeBasedFor); // #7075
 
         TEST_CASE(localvarCpp11Initialization);
 
@@ -3840,6 +3841,15 @@ private:
         functionVariableUsage("void foo() {\n"
                               "    int myNewValue{ 3u };\n"
                               "    myManager.theDummyTable.addRow(UnsignedIndexValue{ myNewValue }, DummyRowData{ false });\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarRangeBasedFor() {
+        // #7075
+        functionVariableUsage("void reset() {\n"
+                              "    for (auto & e : array)\n"
+                              "        e = 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
