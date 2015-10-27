@@ -484,6 +484,11 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             return true;
         }
 
+        // bailout if there is a goto label
+        if (Token::Match(tok, "[;{}] %name% :")) {
+            return true;
+        }
+
         if (tok->str() == "?") {
             if (!tok->astOperand2())
                 return true;

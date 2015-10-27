@@ -611,6 +611,16 @@ private:
                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo() {\n"
+                       "    int x,y=0;\n"
+                       "again:\n"
+                       "    if (y) return x;\n"
+                       "    x = a;\n"
+                       "    y = 1;\n"
+                       "    goto again;\n"
+                       "}", "test.c", false);
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #3873 (false positive)
         checkUninitVar("MachineLoopRange *MachineLoopRanges::getLoopRange(const MachineLoop *Loop) {\n"
                        "  MachineLoopRange *&Range = Cache[Loop];\n"
