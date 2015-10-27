@@ -4410,10 +4410,8 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
         if (tokPossibleDo &&
             tokPossibleDo->str()=="}")
             tokPossibleDo=tokPossibleDo->link();
-        if (tokPossibleDo)
-            tokPossibleDo=tokPossibleDo->previous();
         if (!tokPossibleDo ||
-            tokPossibleDo->str()!="do")
+            tokPossibleDo->strAt(-1) != "do")
             tokEnd=simplifyAddBracesPair(tok,true);
     } else if (tok->str()=="do") {
         tokEnd=simplifyAddBracesPair(tok,false);
@@ -4431,16 +4429,15 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
         tokEnd=simplifyAddBracesPair(tok,true);
         if (!tokEnd)
             return nullptr;
-        Token * tokEndNext=tokEnd->next();
-        if (tokEndNext && tokEndNext->str()=="else") {
-            Token * tokEndNextNext=tokEndNext->next();
-            if (tokEndNextNext && tokEndNextNext->str()=="if")
+        if (tokEnd->strAt(1) == "else") {
+            Token * tokEndNextNext= tokEnd->tokAt(2);
+            if (!tokEndNextNext || tokEndNextNext->str() == "}")
+                syntaxError(tokEndNextNext);
+            if (tokEndNextNext->str() == "if")
                 // do not change "else if ..." to "else { if ... }"
                 tokEnd=simplifyAddBracesToCommand(tokEndNextNext);
-            else if (Token::simpleMatch(tokEndNext, "else }"))
-                syntaxError(tokEndNext);
             else
-                tokEnd=simplifyAddBracesPair(tokEndNext,false);
+                tokEnd=simplifyAddBracesPair(tokEnd->next(),false);
         }
     }
 
@@ -4450,28 +4447,24 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
 Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
 {
     Token * tokCondition=tok->next();
+    if (!tokCondition) // Missing condition
+        return tok;
+
     Token *tokAfterCondition=tokCondition;
     if (commandWithCondition) {
-        if (!tokCondition) {
-            // Missing condition
-            return tok;
-        }
         if (tokCondition->str()=="(")
             tokAfterCondition=tokCondition->link();
         else
-            tokAfterCondition=nullptr;
-        if (!tokAfterCondition || tokAfterCondition->strAt(1) == "]") {
-            // Bad condition
-            syntaxError(tok);
-        }
+            syntaxError(tok); // Bad condition
+
+        if (!tokAfterCondition || tokAfterCondition->strAt(1) == "]")
+            syntaxError(tok); // Bad condition
+
         tokAfterCondition=tokAfterCondition->next();
-    }
-    if (!tokAfterCondition ||
-        ((tokAfterCondition->tokType()==Token::eBracket ||
-          tokAfterCondition->tokType()==Token::eExtendedOp)&&
-         Token::Match(tokAfterCondition,")|}|>|,"))) {
-        // No tokens left where to add braces around
-        return tok;
+        if (!tokAfterCondition || Token::Match(tokAfterCondition, ")|}|,")) {
+            // No tokens left where to add braces around
+            return tok;
+        }
     }
     Token * tokBracesEnd=nullptr;
     if (tokAfterCondition->str()=="{") {
@@ -4497,24 +4490,17 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         if (tokEnd->str()!="}") {
             // Token does not end with brace
             // Look for ; to add own closing brace after it
-            while (tokEnd &&
-                   tokEnd->str()!=";" &&
-                   !((tokEnd->tokType()==Token::eBracket ||
-                      tokEnd->tokType()==Token::eExtendedOp)&&
-                     Token::Match(tokEnd,")|}|>"))) {
-                if (tokEnd->tokType()==Token::eBracket ||
-                    (tokEnd->tokType()==Token::eExtendedOp && tokEnd->str()=="(")) {
-                    Token *tokInnerCloseBraket=tokEnd->link();
-                    if (!tokInnerCloseBraket) {
+            while (tokEnd && !Token::Match(tokEnd, ";|)|}")) {
+                if (tokEnd->tokType()==Token::eBracket || tokEnd->str() == "(") {
+                    tokEnd = tokEnd->link();
+                    if (!tokEnd) {
                         // Inner bracket does not close
                         return tok;
                     }
-                    tokEnd=tokInnerCloseBraket;
                 }
                 tokEnd=tokEnd->next();
             }
-            if (!tokEnd ||
-                tokEnd->str()!=";") {
+            if (!tokEnd || tokEnd->str() != ";") {
                 // No trailing ;
                 return tok;
             }
