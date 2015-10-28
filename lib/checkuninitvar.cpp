@@ -60,7 +60,7 @@ void CheckUninitVar::checkScope(const Scope* scope)
         if (i->isThrow())
             continue;
 
-        if (i->nameToken()->strAt(1) == "(" || i->nameToken()->strAt(1) == "{")
+        if (i->nameToken()->strAt(1) == "(" || i->nameToken()->strAt(1) == "{"  || i->nameToken()->strAt(1) == ":")
             continue;
 
         if (Token::Match(i->nameToken(), "%name% =")) { // Variable is initialized, but Rhs might be not

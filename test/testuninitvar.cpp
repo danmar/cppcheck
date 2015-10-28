@@ -68,6 +68,7 @@ private:
         TEST_CASE(uninitvar_ternaryexpression); // #4683
         TEST_CASE(uninitvar_pointertoarray);
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
+        TEST_CASE(uninitvar_rangeBasedFor); // #7078
         TEST_CASE(trac_4871);
 
         TEST_CASE(syntax_error); // Ticket #5073
@@ -3647,6 +3648,16 @@ private:
                        "        b = p;\n"
                        "    }\n"
                        "    return a ? b->asd : 0;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_rangeBasedFor() { // #7078
+        checkUninitVar("void function(Entry& entry) {\n"
+                       "    for (auto* expr : entry.exprs) {\n"
+                       "        expr->operate();\n"
+                       "        expr->operate();\n"
+                       "    }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
