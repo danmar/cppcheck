@@ -426,7 +426,7 @@ bool CppCheck::checkFile(const std::string &code, const char FileName[], std::se
                                                e.id,
                                                false);
 
-        _errorLogger.reportErr(errmsg);
+        reportErr(errmsg);
     }
     return true;
 }
