@@ -4373,7 +4373,7 @@ void Tokenizer::removeRedundantFor()
 void Tokenizer::removeRedundantSemicolons()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(") {
+        if (tok->link() && tok->str() == "(") {
             tok = tok->link();
             continue;
         }

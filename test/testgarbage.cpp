@@ -194,6 +194,7 @@ private:
         TEST_CASE(garbageCode143); // #6922
         TEST_CASE(garbageCode144); // #6865
         TEST_CASE(garbageCode145); // #7074
+        TEST_CASE(garbageCode146); // #7081
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1141,6 +1142,13 @@ private:
 
     void garbageCode145() { // #7074
         checkCode("++4++ +  + E++++++++++ + ch " "tp.oed5[.]");
+    }
+
+    void garbageCode146() { // #7081
+        ASSERT_THROW(checkCode("void foo() {\n"
+                               "    ? std::cout << pow((, 1) << std::endl;\n"
+                               "    double <ip = NUO ip) << std::end;\n"
+                               "}"), InternalError);
     }
 
     void garbageValueFlow() {
