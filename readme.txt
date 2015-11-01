@@ -41,12 +41,12 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The file is configured for Visual Studio 2013, but the platform
+        Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform
         toolset can be changed easily to older or newer versions. The solution contains platform
         targets for both x86 and x64.
 
         To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration.
-        pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /extlibs then.
+        pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
 
     Qt Creator + mingw
     ==================

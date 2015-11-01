@@ -5,17 +5,17 @@ with cppcheck and shows list of found errors.
 
 Running
 -------
-You need Qt4 libraries installed in your system. Packages/files to install
+You need Qt4 or Qt5 libraries installed in your system. Packages/files to install
 depends on your operating system:
-- Windows: download Qt4 from http://qt-project.org/downloads
-- Linux: install Qt4 using your package manager, look for packages having Qt4
+- Windows: download Qt from http://www.qt.io/download/
+- Linux: install Qt using your package manager, look for packages having Qt
   in their name, e.g. for Ubuntu install libqt4-core and libqt4-gui.
 
 Compiling
 ---------
 Windows:
 - The easy ways are:
--- download Qt SDK from http://qt-project.org/downloads and use
+-- download Qt SDK from http://www.qt.io/download/ and use
    QtCreator to build the GUI.
 -- Download precompiled libraries for your platform and use your preferred
    IDE/environment to build GUI. Be careful to download the correct version of
