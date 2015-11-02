@@ -657,8 +657,8 @@ private:
     }
 
     void garbageCode58() { // #6732, #6762
-        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
-        ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
+        checkCode("{ }> {= ~A()^{} }P { }");
+        checkCode("{= ~A()^{} }P { } { }> is");
     }
 
     void garbageCode59() { // #6735
@@ -782,7 +782,7 @@ private:
     }
 
     void garbageCode89() { // #6772
-        ASSERT_THROW(checkCode("{ { ( ) } P ( ) ^ { } { } { } ( ) } 0"), InternalError); // do not crash
+        checkCode("{ { ( ) } P ( ) ^ { } { } { } ( ) } 0"); // do not crash
     }
 
     void garbageCode90() { // #6790
@@ -1164,6 +1164,8 @@ private:
                   "    for (int ui = 0; ui < 1z; ui++)\n"
                   "        ;\n"
                   "}");
+
+        checkCode("; void f ^ { return } int main ( ) { }"); // #4941
     }
 
     void garbageValueFlow() {

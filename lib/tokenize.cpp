@@ -9294,9 +9294,7 @@ void Tokenizer::simplifyAsm2()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "^ {")) {
             Token * start = tok;
-            while (start && !Token::Match(start, "[;{}]")) {
-                if (start->link() && Token::Match(start, ")|]"))
-                    start = start->link();
+            while (start && !Token::Match(start, "[;{})]")) {
                 start = start->previous();
             }
             if (start)
@@ -9304,8 +9302,9 @@ void Tokenizer::simplifyAsm2()
             const Token *last = tok->next()->link();
             if (start != tok) {
                 last = last->next();
-                while (last && !Token::Match(last->next(), "[;{}()]"))
+                while (last && !Token::Match(last->next(), "[;{})]"))
                     last = last->next();
+                last = last->next();
             }
             if (start && last) {
                 std::string asmcode(start->str());
