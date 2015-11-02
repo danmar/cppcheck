@@ -789,6 +789,11 @@ private:
                               "        return sizeof...(args);\n"
                               "    }();\n"
                               "};"));
+        ASSERT_EQUALS("int ( ^ block ) ( void ) = asm ( \"^{staticinttest=0;returntest;}\" ) ;",
+                      tokenizeAndStringify("int(^block)(void) = ^{\n"
+                                           "    static int test = 0;\n"
+                                           "    return test;\n"
+                                           "};"));
     }
 
     // #3503 - don't "simplify" SetFunction member function to a variable
