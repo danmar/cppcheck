@@ -195,6 +195,7 @@ private:
         TEST_CASE(garbageCode144); // #6865
         TEST_CASE(garbageCode145); // #7074
         TEST_CASE(garbageCode146); // #7081
+        TEST_CASE(garbageCode147); // #7082
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1149,6 +1150,20 @@ private:
                                "    ? std::cout << pow((, 1) << std::endl;\n"
                                "    double <ip = NUO ip) << std::end;\n"
                                "}"), InternalError);
+    }
+
+    void garbageCode147() { // #7082
+        checkCode("free(3();\n"
+                  "$  vWrongAllocp1) test1<int, -!>() ^ {\n"
+                  "    int *p<ynew int[n];\n"
+                  "    delete[]p;\n"
+                  "    int *p1 = (int*)malloc(n*sizeof(int));\n"
+                  "    free(p1);\n"
+                  "}\n"
+                  "void est2() {\n"
+                  "    for (int ui = 0; ui < 1z; ui++)\n"
+                  "        ;\n"
+                  "}");
     }
 
     void garbageValueFlow() {

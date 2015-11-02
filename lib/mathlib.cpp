@@ -421,7 +421,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 state=BASE_PLUSMINUS;
             else if (*it=='.')
                 state=LEADING_DECIMAL;
-            else if (std::isdigit(*it))
+            else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS1;
             else
                 return false;
@@ -429,7 +429,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
         case BASE_PLUSMINUS:
             if (*it=='.')
                 state=LEADING_DECIMAL;
-            else if (std::isdigit(*it))
+            else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS1;
             else if (*it=='e' || *it=='E')
                 state=E;
@@ -437,7 +437,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 return false;
             break;
         case LEADING_DECIMAL:
-            if (std::isdigit(*it))
+            if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS2;
             else if (*it=='e' || *it=='E')
                 state=E;
@@ -449,7 +449,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 state=E;
             else if (*it=='.')
                 state=TRAILING_DECIMAL;
-            else if (!std::isdigit(*it))
+            else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
         case TRAILING_DECIMAL:
@@ -459,7 +459,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
                 state=SUFFIX_L;
-            else if (std::isdigit(*it))
+            else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS2;
             else
                 return false;
@@ -471,19 +471,19 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
                 state=SUFFIX_L;
-            else if (!std::isdigit(*it))
+            else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
         case E:
             if (*it=='+' || *it=='-')
                 state=MANTISSA_PLUSMINUS;
-            else if (std::isdigit(*it))
+            else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=MANTISSA_DIGITS;
             else
                 return false;
             break;
         case MANTISSA_PLUSMINUS:
-            if (!std::isdigit(*it))
+            if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             else
                 state=MANTISSA_DIGITS;
@@ -493,7 +493,7 @@ bool MathLib::isDecimalFloat(const std::string &s)
                 state=SUFFIX_F;
             else if (*it=='l' || *it=='L')
                 state=SUFFIX_L;
-            else if (!std::isdigit(*it))
+            else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
         case SUFFIX_F:
@@ -550,13 +550,13 @@ bool MathLib::isOct(const std::string& s)
                 return false;
             break;
         case OCTAL_PREFIX:
-            if (isOctalDigit(*it))
+            if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
                 return false;
             break;
         case DIGITS:
-            if (isOctalDigit(*it))
+            if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
                 return isValidIntegerSuffix(it,s.end());
@@ -594,13 +594,13 @@ bool MathLib::isIntHex(const std::string& s)
                 return false;
             break;
         case DIGIT:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
                 return false;
             break;
         case DIGITS:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
                 return isValidIntegerSuffix(it,s.end());
@@ -638,13 +638,13 @@ bool MathLib::isFloatHex(const std::string& s)
                 return false;
             break;
         case WHOLE_NUMBER_DIGIT:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = WHOLE_NUMBER_DIGITS;
             else
                 return false;
             break;
         case WHOLE_NUMBER_DIGITS:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = WHOLE_NUMBER_DIGITS;
             else if (*it=='.')
                 state = FRACTION;
@@ -654,13 +654,13 @@ bool MathLib::isFloatHex(const std::string& s)
                 return false;
             break;
         case FRACTION:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = FRACTION;
             else if (*it=='p' || *it=='P')
                 state = EXPONENT_DIGIT;
             break;
         case EXPONENT_DIGIT:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
             else if (*it=='+' || *it=='-')
                 state = EXPONENT_DIGITS;
@@ -668,7 +668,7 @@ bool MathLib::isFloatHex(const std::string& s)
                 return false;
             break;
         case EXPONENT_DIGITS:
-            if (isxdigit(*it))
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
             else
                 return *it=='f'||*it=='F'||*it=='l'||*it=='L';
@@ -810,19 +810,19 @@ bool MathLib::isDec(const std::string & s)
         case START:
             if (*it == '+' || *it == '-')
                 state = PLUSMINUS;
-            else if (isdigit(*it))
+            else if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
                 return false;
             break;
         case PLUSMINUS:
-            if (isdigit(*it))
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
                 return false;
             break;
         case DIGIT:
-            if (isdigit(*it))
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
                 return isValidIntegerSuffix(it,s.end());

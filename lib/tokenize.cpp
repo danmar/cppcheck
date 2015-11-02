@@ -9294,8 +9294,11 @@ void Tokenizer::simplifyAsm2()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "^ {")) {
             Token * start = tok;
-            while (start && !Token::Match(start, "[;{}]"))
+            while (start && !Token::Match(start, "[;{}]")) {
+                if (start->link() && Token::Match(start, ")|]"))
+                    start = start->link();
                 start = start->previous();
+            }
             if (start)
                 start = start->next();
             const Token *last = tok->next()->link();
