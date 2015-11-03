@@ -776,10 +776,11 @@ private:
     void tokenize28() {
         ASSERT_EQUALS("void f ( ) { asm ( \"^{}\" ) ; }", tokenizeAndStringify("void f() { ^{} }"));
         ASSERT_EQUALS("void f ( ) { asm ( \"x(^{});\" ) ; }", tokenizeAndStringify("void f() { x(^{}); }"));
+        ASSERT_EQUALS("void f ( ) { asm ( \"foo(A(),^{bar();});\" ) ; }", tokenizeAndStringify("void f() { foo(A(), ^{ bar(); }); }"));
         ASSERT_EQUALS("int f0 ( Args args ) {\n"
-                      "asm ( \"return^{returnsizeof...(Args);}()\" ) ;\n"
+                      "asm ( \"return^{returnsizeof...(Args);}()+\" ) ;\n"
                       "\n"
-                      "asm ( \"+^{returnsizeof...(args);}()\" ) ;\n"
+                      "asm ( \"^{returnsizeof...(args);}\" ) ;\n"
                       "\n"
                       "\n"
                       "} ;", tokenizeAndStringify("int f0(Args args) {\n"
