@@ -196,6 +196,7 @@ private:
         TEST_CASE(garbageCode145); // #7074
         TEST_CASE(garbageCode146); // #7081
         TEST_CASE(garbageCode147); // #7082
+        TEST_CASE(garbageCode148); // #7090
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1166,6 +1167,14 @@ private:
                   "}");
 
         checkCode("; void f ^ { return } int main ( ) { }"); // #4941
+    }
+
+    void garbageCode148() { // #7090
+        ASSERT_THROW(checkCode("void f_1() {\n"
+                               "    typedef S0 b[][1][1] != 0\n"
+                               "};\n"
+                               "b[K][0] S0 b[][1][1] != 4{ 0 };\n"
+                               "b[0][0]"), InternalError);
     }
 
     void garbageValueFlow() {

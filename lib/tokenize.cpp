@@ -347,8 +347,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 return false;
                             }
                         }
-
-                        tok = tok->previous();
+                        if (tok)
+                            tok = tok->previous();
                     }
 
                     if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|[")) {
