@@ -4304,6 +4304,8 @@ void Tokenizer::removeRedundantFor()
             const Token *vartok2 = tok->linkAt(2)->previous();
             if (vartok2->str() == "++")
                 vartok2 = vartok2->previous();
+            else if (vartok2->strAt(-1) != "++")
+                continue;
             if (varname != vartok2->str())
                 continue;
 

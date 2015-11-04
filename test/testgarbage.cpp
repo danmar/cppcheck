@@ -197,6 +197,7 @@ private:
         TEST_CASE(garbageCode146); // #7081
         TEST_CASE(garbageCode147); // #7082
         TEST_CASE(garbageCode148); // #7090
+        TEST_CASE(garbageCode149); // #7085
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1175,6 +1176,13 @@ private:
                                "};\n"
                                "b[K][0] S0 b[][1][1] != 4{ 0 };\n"
                                "b[0][0]"), InternalError);
+    }
+
+    void garbageCode149() { // #7085
+        checkCode("int main() {\n"
+                  "    for (j = 0; j < 1; j)\n"
+                  "        j6;\n"
+                  "}");
     }
 
     void garbageValueFlow() {
