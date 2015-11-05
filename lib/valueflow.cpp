@@ -744,6 +744,9 @@ static void valueFlowReverse(TokenList *tokenlist,
 {
     const MathLib::bigint    num        = val.intvalue;
     const Variable * const   var        = varToken->variable();
+    if (!var)
+        return;
+
     const unsigned int       varid      = varToken->varId();
     const Token * const      startToken = var->nameToken();
 
@@ -811,7 +814,7 @@ static void valueFlowReverse(TokenList *tokenlist,
             setTokenValue(tok2, val);
             if (val2.condition)
                 setTokenValue(tok2,val2);
-            if (var && tok2 == var->nameToken())
+            if (tok2 == var->nameToken())
                 break;
         }
 
@@ -833,8 +836,7 @@ static void valueFlowReverse(TokenList *tokenlist,
             if (vartok) {
                 if (settings->debugwarnings) {
                     std::string errmsg = "variable ";
-                    if (var)
-                        errmsg += var->name() + " ";
+                    errmsg += var->name() + " ";
                     errmsg += "stopping on }";
                     bailout(tokenlist, errorLogger, tok2, errmsg);
                 }

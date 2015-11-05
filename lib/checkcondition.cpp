@@ -663,7 +663,7 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             // 'A && (!A || B)' is equivalent with 'A && B'
             // 'A || (!A && B)' is equivalent with 'A || B'
-            if (printStyle && tok->astOperand1() && tok->astOperand2() &&
+            if (printStyle &&
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
                 const Token* tok2 = tok->astOperand2()->astOperand1();

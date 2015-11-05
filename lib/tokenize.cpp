@@ -2583,6 +2583,8 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
     bool initList = false;
     const Token *initListArgLastToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
+        if (!tok)
+            syntaxError(nullptr); // #7089 invalid code        
         if (initList) {
             if (tok == initListArgLastToken)
                 initListArgLastToken = nullptr;
@@ -2591,8 +2593,6 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
                      Token::Match(tok->link(), "}|) ,|{"))
                 initListArgLastToken = tok->link();
         }
-        if (!tok)
-            syntaxError(nullptr); // #7089 invalid code
         if (tok->str() == "{") {
             if (initList && !initListArgLastToken)
                 initList = false;
