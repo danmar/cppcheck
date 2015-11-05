@@ -198,6 +198,7 @@ private:
         TEST_CASE(garbageCode147); // #7082
         TEST_CASE(garbageCode148); // #7090
         TEST_CASE(garbageCode149); // #7085
+        TEST_CASE(garbageCode150); // #7089
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1183,6 +1184,15 @@ private:
                   "    for (j = 0; j < 1; j)\n"
                   "        j6;\n"
                   "}");
+    }
+
+    void garbageCode150() { // #7089
+        ASSERT_THROW(checkCode("class A {\n"
+                               "    pl vFoo() {\n"
+                               "        A::\n"
+                               "    };\n"
+                               "    A::\n"
+                               "}\n"), InternalError);
     }
 
     void garbageValueFlow() {

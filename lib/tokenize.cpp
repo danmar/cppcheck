@@ -2493,7 +2493,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
 
 static void setVarIdStructMembers(Token **tok1,
-                                  std::map<unsigned int, std::map<std::string, unsigned int> > *structMembers,
+                                  std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
                                   unsigned int *_varId)
 {
     Token *tok = *tok1;
@@ -2507,7 +2507,7 @@ static void setVarIdStructMembers(Token **tok1,
         if (TemplateSimplifier::templateParameters(tok->next()) > 0)
             break;
 
-        std::map<std::string, unsigned int>& members = (*structMembers)[struct_varid];
+        std::map<std::string, unsigned int>& members = structMembers[struct_varid];
         const std::map<std::string, unsigned int>::iterator it = members.find(tok->str());
         if (it == members.end()) {
             members[tok->str()] = ++(*_varId);
@@ -2521,11 +2521,11 @@ static void setVarIdStructMembers(Token **tok1,
 }
 
 
-static void setVarIdClassDeclaration(Token * const startToken,
-                                     const std::map<std::string, unsigned int> &variableId,
-                                     const unsigned int scopeStartVarId,
-                                     std::map<unsigned int, std::map<std::string,unsigned int> > *structMembers,
-                                     unsigned int *_varId)
+void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
+        const std::map<std::string, unsigned int> &variableId,
+        const unsigned int scopeStartVarId,
+        std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers,
+        unsigned int *_varId)
 {
     // end of scope
     const Token * const endToken = startToken->link();
@@ -2554,6 +2554,8 @@ static void setVarIdClassDeclaration(Token * const startToken,
                      Token::Match(tok->link(), "}|) ,|{"))
                 initListArgLastToken = tok->link();
         }
+        if (!tok)
+            syntaxError(nullptr); // #7089 invalid code
         if (tok->str() == "{") {
             if (initList && !initListArgLastToken)
                 initList = false;
@@ -2595,7 +2597,7 @@ static void setVarIdClassFunction(const std::string &classname,
                                   Token * const startToken,
                                   const Token * const endToken,
                                   const std::map<std::string, unsigned int> &varlist,
-                                  std::map<unsigned int, std::map<std::string, unsigned int> > *structMembers,
+                                  std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
                                   unsigned int *_varId)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
@@ -2699,7 +2701,7 @@ void Tokenizer::setVarId()
                     setVarIdClassDeclaration(tok->link(),
                                              variableId,
                                              scopeStack.top().startVarid,
-                                             &structMembers,
+                                             structMembers,
                                              &_varId);
                 }
 
@@ -2819,7 +2821,7 @@ void Tokenizer::setVarId()
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
-                setVarIdStructMembers(&tok, &structMembers, &_varId);
+                setVarIdStructMembers(&tok, structMembers, &_varId);
             }
         } else if (Token::Match(tok, "::|. %name%")) {
             // Don't set varid after a :: or . token
@@ -2876,7 +2878,7 @@ void Tokenizer::setVarId()
                     if (tok2->link()) {
                         if (tok2->str() == "{") {
                             if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
-                                setVarIdClassFunction(classname, tok2, tok2->link(), thisClassVars, &structMembers, &_varId);
+                                setVarIdClassFunction(classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
                             tok2 = tok2->link();
                         } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
                             tok2 = tok2->link();
@@ -2920,7 +2922,7 @@ void Tokenizer::setVarId()
                     // If this is a function implementation.. add it to funclist
                     Token * start = startOfFunction(tok2);
                     if (start) {
-                        setVarIdClassFunction(classname, start, start->link(), thisClassVars, &structMembers, &_varId);
+                        setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
                     }
 
                     // constructor with initializer list
@@ -2934,7 +2936,7 @@ void Tokenizer::setVarId()
                             tok3 = vartok->linkAt(1);
                         } while (Token::Match(tok3, ")|} [:,] %name% (|{"));
                         if (Token::Match(tok3, ")|} {")) {
-                            setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, &structMembers, &_varId);
+                            setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
                         }
                     }
                 }
