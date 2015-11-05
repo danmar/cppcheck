@@ -51,6 +51,10 @@ LibraryDialog::LibraryDialog(QWidget *parent) :
     ui->buttonSave->setEnabled(false);
     ui->sortFunctions->setEnabled(false);
     ui->filter->setEnabled(false);
+    ui->addFunction->setEnabled(false);
+
+    //As no function selected, this disables function editing widgets
+    selectFunction();
 }
 
 LibraryDialog::~LibraryDialog()
@@ -96,6 +100,7 @@ void LibraryDialog::openCfg()
             }
             ui->sortFunctions->setEnabled(!data.functions.empty());
             ui->filter->setEnabled(!data.functions.empty());
+            ui->addFunction->setEnabled(true);
             ignoreChanges = false;
         }
     }
@@ -159,19 +164,42 @@ void LibraryDialog::selectFunction()
     const CppcheckLibraryData::Function * const function = currentFunction();
 
     if (function == nullptr) {
+        ui->comments->clear();
+        ui->comments->setEnabled(false);
+
         ui->noreturn->setCurrentIndex(0);
+        ui->noreturn->setEnabled(false);
+
         ui->useretval->setChecked(false);
+        ui->useretval->setEnabled(false);
+
         ui->leakignore->setChecked(false);
+        ui->leakignore->setEnabled(false);
+
         ui->arguments->clear();
+        ui->arguments->setEnabled(false);
+
+        ui->editArgButton->setEnabled(false);
         return;
     }
 
     ignoreChanges = true;
     ui->comments->setPlainText(function->comments);
+    ui->comments->setEnabled(true);
+
     ui->noreturn->setCurrentIndex(function->noreturn);
+    ui->noreturn->setEnabled(true);
+
     ui->useretval->setChecked(function->useretval);
+    ui->useretval->setEnabled(true);
+
     ui->leakignore->setChecked(function->leakignore);
+    ui->leakignore->setEnabled(true);
+
     updateArguments(*function);
+    ui->arguments->setEnabled(true);
+
+    ui->editArgButton->setEnabled(true);
     ignoreChanges = false;
 }
 
@@ -215,6 +243,9 @@ void LibraryDialog::changeFunction()
         return;
 
     CppcheckLibraryData::Function *function = currentFunction();
+    if (!function)
+        return;
+
     function->comments   = ui->comments->toPlainText();
     function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)ui->noreturn->currentIndex();
     function->useretval  = ui->useretval->isChecked();
