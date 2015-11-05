@@ -641,7 +641,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
             Settings::Rule rule;
             rule.pattern = 7 + argv[i];
-            _settings->rules.push_back(rule);
+            _settings->rules[rule.id] = rule;
         }
 
         // Rule file
@@ -674,10 +674,36 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                         if (summary)
                             rule.summary = summary->GetText() ? summary->GetText() : "";
+
                     }
 
+		    tinyxml2::XMLElement *state = node->FirstChildElement("state");
+		    if (state) {
+			std::string rule_state = state->GetText();
+			if (rule_state == "enabled")
+			    rule.enabled = true;
+			else if (rule_state == "disabled")
+			    rule.enabled = false;
+		        else {
+			    std::string msg("cppcheck: error: unrecognized rule state: \"");
+                            msg += rule_state;
+			    msg +=  "\". Supported states: disable, enable.";
+			    PrintMessage(msg);
+		        }
+		    }
+
+		    tinyxml2::XMLElement *disabled = node->FirstChildElement("disable");
+		    if (disabled) {
+			rule.disable_rules = disabled->GetText();
+		    }
+
+		    tinyxml2::XMLElement *enabled = node->FirstChildElement("enable");
+		    if (enabled) {
+			rule.enable_rules = enabled->GetText();
+		    }
+
                     if (!rule.pattern.empty())
-                        _settings->rules.push_back(rule);
+                        _settings->rules[rule.id] = rule;
                 }
             }
         }
