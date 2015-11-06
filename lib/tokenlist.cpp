@@ -576,7 +576,9 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
         }
     } else if (tok->str() == "{") {
-        if (!state.inArrayAssignment && tok->strAt(-1) != "=") {
+        if (tok->previous() && tok->previous()->isName()) {
+            compileBinOp(tok, state, compileExpression);
+        } else if (!state.inArrayAssignment && tok->strAt(-1) != "=") {
             state.op.push(tok);
             tok = tok->link()->next();
         } else {
@@ -746,7 +748,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 state.op.push(tok->next());
                 tok = tok->link()->next();
                 compileBinOp(tok, state, compilePrecedence2);
-            } else if (tok && (tok->str() == "[" || tok->str() == "("))
+            } else if (tok && (tok->str() == "[" || tok->str() == "(" || tok->str() == "{"))
                 compilePrecedence2(tok, state);
             else if (innertype && Token::simpleMatch(tok, ") [")) {
                 tok = tok->next();

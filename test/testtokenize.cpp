@@ -8237,6 +8237,7 @@ private:
         ASSERT_EQUALS("abc{d:?=", testAst("a=b?c<X>{}:d;"));
         ASSERT_EQUALS("abc12,{d:?=", testAst("a=b?c<X>{1,2}:d;"));
         ASSERT_EQUALS("a::12,{", testAst("::a{1,2};")); // operator precedence
+        ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
     }
 
     void astbrackets() { // []
