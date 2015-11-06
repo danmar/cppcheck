@@ -199,6 +199,7 @@ private:
         TEST_CASE(garbageCode148); // #7090
         TEST_CASE(garbageCode149); // #7085
         TEST_CASE(garbageCode150); // #7089
+        TEST_CASE(garbageCode151); // #4175
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1193,6 +1194,14 @@ private:
                                "    };\n"
                                "    A::\n"
                                "}\n"), InternalError);
+    }
+
+    void garbageCode151() { // #4175
+        checkCode(">{ x while (y) z int = }");
+        checkCode("void f() {\n" // #4911 - bad simplification => don't crash
+                  "    int a;\n"
+                  "    do { a=do_something() } while (a);\n"
+                  "}");
     }
 
     void garbageValueFlow() {

@@ -3338,12 +3338,6 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: ptr3\n", errout.str());
 
-        checkUninitVar("void f() {\n" // #4911 - bad simplification => don't crash
-                       "    int a;\n"
-                       "    do { a=do_something() } while (a);\n"
-                       "}\n", "test.cpp", /*debugwarnings=*/true);
-        ASSERT_EQUALS("[test.cpp:3]: (debug) ValueFlow bailout: variable a stopping on }\n", errout.str());
-
         checkUninitVar("void f() {\n"
                        "    int x;\n"
                        "    while (a) {\n"
@@ -3390,8 +3384,6 @@ private:
                        "    i++;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar(">{ x while (y) z int = }"); // #4175 : don't crash
 
         checkUninitVar("int f(void) {\n"
                        "   int x;\n"
