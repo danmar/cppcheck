@@ -4489,6 +4489,24 @@ private:
 
             ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
         }
+
+        {
+            // #6601
+            const char code[] = "template<class R> struct FuncType<R(&)()> : FuncType<R()> { };";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4)); // <class R>
+            ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(14)); // <R(&)()>
+            ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(11)); // (&)
+            ASSERT_EQUALS(true, tok->linkAt(12) == tok->tokAt(13)); // ()
+            ASSERT_EQUALS(true, tok->linkAt(17) == tok->tokAt(21)); // <R()>
+            ASSERT_EQUALS(true, tok->linkAt(19) == tok->tokAt(20)); // ()
+            ASSERT_EQUALS(true, tok->linkAt(22) == tok->tokAt(23)); // {}
+        }
     }
 
     void simplifyString() {
