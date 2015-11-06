@@ -7994,11 +7994,11 @@ private:
     }
 
     void simplifyCaseRange() {
-        ASSERT_EQUALS("void f ( ) { case 1 : ; case 2 : ; case 3 : ; case 4 : ; }", tokenizeAndStringify("void f() { case 1 ... 4: }"));
+        ASSERT_EQUALS("void f ( ) { case 1 : case 2 : case 3 : case 4 : ; }", tokenizeAndStringify("void f() { case 1 ... 4: }"));
         ASSERT_EQUALS("void f ( ) { case 4 . . . 1 : ; }", tokenizeAndStringify("void f() { case 4 ... 1: }"));
         tokenizeAndStringify("void f() { case 1 ... 1000000: }"); // Do not run out of memory
 
-        ASSERT_EQUALS("void f ( ) { case 'a' : ; case 'b' : ; case 'c' : ; }", tokenizeAndStringify("void f() { case 'a' ... 'c': }"));
+        ASSERT_EQUALS("void f ( ) { case 'a' : case 'b' : case 'c' : ; }", tokenizeAndStringify("void f() { case 'a' ... 'c': }"));
         ASSERT_EQUALS("void f ( ) { case 'c' . . . 'a' : ; }", tokenizeAndStringify("void f() { case 'c' ... 'a': }"));
     }
 

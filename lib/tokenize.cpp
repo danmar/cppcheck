@@ -2349,7 +2349,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
         } else if (Token::Match(tok, "(|["))
             tok = tok->link();
 
-        if (Token::Match(tok, "[;{}] case")) {
+        if (Token::Match(tok, "[;{}:] case")) {
             while (nullptr != (tok = tok->next())) {
                 if (Token::Match(tok, "(|[")) {
                     tok = tok->link();
@@ -2367,8 +2367,10 @@ void Tokenizer::simplifyLabelsCaseDefault()
                 break;
             if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
                 tok = tok->next();
-                if (tok->next()->str() != ";")
+                if (tok->next()->str() != ";" && tok->next()->str() != "case")
                     tok->insertToken(";");
+                else
+                    tok = tok->previous();
             } else {
                 syntaxError(tok);
             }
@@ -8064,7 +8066,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                 else
                     indentcase = switchindents[indentswitch-1];
             }
-        } else if (Token::Match(tok, "[{};] case")) {
+        } else if (Token::Match(tok, "[{};:] case")) {
             const Token *tok2 = Token::findsimplematch(tok->next(), ": ;", end);
             if (!tok2) {
                 tok->deleteNext();
@@ -8106,7 +8108,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
                     while (tok2->next() && tok2->next() != end) {
                         if (Token::Match(tok2->next(), "{|[|(")) {
                             tok2 = tok2->next()->link();
-                        } else if (Token::Match(tok2, "[{};] case")) {
+                        } else if (Token::Match(tok2, "[{};:] case")) {
                             const Token *tok3 = Token::findsimplematch(tok2->next(), ": ;", end);
                             if (!tok3) {
                                 tok2 = tok2->next();
