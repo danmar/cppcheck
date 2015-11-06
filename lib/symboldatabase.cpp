@@ -823,8 +823,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                     else if (scope->type == Scope::eCatch)
                         scope->checkVariable(tok->tokAt(2), Throw, &settings->library); // check for variable declaration and add it to new scope if found
                     tok = scopeStartTok;
-                } else if (tok->str() == "{" && !tok->previous()->varId()) {
-                    if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
+                } else if (tok->str() == "{") {
+                    if (tok->previous()->varId())
+                        tok = tok->link();
+                    else if (tok->strAt(-1) == ")" && tok->linkAt(-1)->strAt(-1) == "]") {
                         scopeList.push_back(Scope(this, tok->linkAt(-1)->linkAt(-1), scope, Scope::eLambda, tok));
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();

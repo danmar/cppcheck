@@ -233,6 +233,7 @@ private:
         TEST_CASE(symboldatabase49); // #6424
         TEST_CASE(symboldatabase50); // #6432
         TEST_CASE(symboldatabase51); // #6538
+        TEST_CASE(symboldatabase52); // #6581
 
         TEST_CASE(isImplicitlyVirtual);
 
@@ -2171,6 +2172,21 @@ private:
             ASSERT(findFunctionByName("foo4", &db->scopeList.front()) == nullptr);
             ASSERT(findFunctionByName("foo5", &db->scopeList.front()) == nullptr);
             ASSERT(findFunctionByName("foo6", &db->scopeList.front()) == nullptr);
+        }
+    }
+
+    void symboldatabase52() { // #6581
+        GET_SYMBOL_DB("void foo() {\n"
+                      "    int i = 0;\n"
+                      "    S s{ { i }, 0 };\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT_EQUALS(2, db->scopeList.size());
+            ASSERT_EQUALS(2, db->getVariableListSize()-1);
+            ASSERT(db->getVariableFromVarId(1));
+            ASSERT(db->getVariableFromVarId(2));
         }
     }
 
