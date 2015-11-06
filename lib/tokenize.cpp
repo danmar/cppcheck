@@ -2397,6 +2397,20 @@ void Tokenizer::simplifyCaseRange()
                     tok->insertToken("case");
                 }
             }
+        } else if (Token::Match(tok, "case %char% . . . %char% :")) {
+            char start = tok->strAt(1)[1];
+            char end = tok->strAt(5)[1];
+            if (start < end) {
+                tok = tok->tokAt(2);
+                tok->str(":");
+                tok->deleteNext();
+                tok->next()->str("case");
+                for (char i = end - 1; i > start; i--) {
+                    tok->insertToken(":");
+                    tok->insertToken(std::string(1, '\'') + i + '\'');
+                    tok->insertToken("case");
+                }
+            }
         }
     }
 }
