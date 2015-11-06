@@ -2386,6 +2386,7 @@ void Tokenizer::simplifyCaseRange()
         if (Token::Match(tok, "case %num% . . . %num% :")) {
             MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(5));
+            end = std::min(start + 50, end); // Simplify it 50 times at maximum
             if (start < end) {
                 tok = tok->tokAt(2);
                 tok->str(":");
