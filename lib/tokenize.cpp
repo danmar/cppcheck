@@ -2584,7 +2584,7 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
     const Token *initListArgLastToken = nullptr;
     for (Token *tok = startToken->next(); tok != endToken; tok = tok->next()) {
         if (!tok)
-            syntaxError(nullptr); // #7089 invalid code        
+            syntaxError(nullptr); // #7089 invalid code
         if (initList) {
             if (tok == initListArgLastToken)
                 initListArgLastToken = nullptr;
