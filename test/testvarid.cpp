@@ -992,6 +992,20 @@ private:
                                  "void fred ( int x@1 ) throw ( ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
         ASSERT_EQUALS(expected3, tokenize(code3, false, "test.cpp"));
+
+        const char code4[] = "void fred(int x) noexcept() {}"
+                             "void wilma() { x++; }";
+        const char expected4[] = "\n\n##file 0\n1: "
+                                 "void fred ( int x@1 ) noexcept ( ) { } "
+                                 "void wilma ( ) { x ++ ; }\n";
+        ASSERT_EQUALS(expected4, tokenize(code4, false, "test.cpp"));
+
+        const char code5[] = "void fred(int x) noexcept {}"
+                             "void wilma() { x++; }";
+        const char expected5[] = "\n\n##file 0\n1: "
+                                 "void fred ( int x@1 ) noexcept { } "
+                                 "void wilma ( ) { x ++ ; }\n";
+        ASSERT_EQUALS(expected5, tokenize(code5, false, "test.cpp"));
     }
 
     void varid57() { // #6636: new scope by {}
