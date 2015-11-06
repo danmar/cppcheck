@@ -536,7 +536,7 @@ private:
         check("void f() {\n"
               "    struct foo {\n"
               "        char bar[10];\n"
-              "    };\n"
+              "    }* ptr;\n"
               "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -544,10 +544,10 @@ private:
         check("void f() {\n"
               "    struct foo {\n"
               "        char *bar;\n"
-              "    };\n"
+              "    }* ptr;\n"
               "    memset( ptr->bar, 0, sizeof ptr->bar );\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Size of pointer 'bar' used instead of size of its data.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Size of pointer 'bar' used instead of size of its data.\n", errout.str());
     }
 
     void sizeofDivisionMemset() {

@@ -120,14 +120,14 @@ void CheckSizeof::checkSizeofForPointerSize()
             // Once leaving those tests, it is mandatory to have:
             // - variable matching the used pointer
             // - tokVar pointing on the argument where sizeof may be used
-            if (Token::Match(tok, "[*;{}] %var% = malloc|alloca (")) {
-                variable = tok->next();
-                tokSize = tok->tokAt(5);
-                tokFunc = tok->tokAt(3);
-            } else if (Token::Match(tok, "[*;{}] %var% = calloc (")) {
-                variable = tok->next();
-                tokSize = tok->tokAt(5)->nextArgument();
-                tokFunc = tok->tokAt(3);
+            if (Token::Match(tok, "%var% = malloc|alloca (")) {
+                variable = tok;
+                tokSize = tok->tokAt(4);
+                tokFunc = tok->tokAt(2);
+            } else if (Token::Match(tok, "%var% = calloc (")) {
+                variable = tok;
+                tokSize = tok->tokAt(4)->nextArgument();
+                tokFunc = tok->tokAt(2);
             } else if (Token::Match(tok, "return malloc|alloca (")) {
                 tokSize = tok->tokAt(3);
                 tokFunc = tok->next();
@@ -161,6 +161,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             if (!variable)
                 continue;
 
+            while (Token::Match(variable, "%var% ::|."))
+                variable = variable->tokAt(2);
+
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
             // Only keep variables which are pointers
@@ -186,16 +189,23 @@ void CheckSizeof::checkSizeofForPointerSize()
             // This is to allow generic operations with sizeof
             for (; tokSize && tokSize->str() != ")" && tokSize->str() != "," && tokSize->str() != "sizeof"; tokSize = tokSize->next()) {}
 
+            if (Token::Match(tokSize, "sizeof ( &"))
+                tokSize = tokSize->tokAt(3);
+            else if (Token::Match(tokSize, "sizeof (|&"))
+                tokSize = tokSize->tokAt(2);
+            else
+                tokSize = tokSize->next();
+
+            while (Token::Match(tokSize, "%var% ::|."))
+                tokSize = tokSize->tokAt(2);
+
             // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
             // looks suspicious
             // Do it for first variable
-            if (variable && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable->varId()) ||
-                             Token::Match(tokSize, "sizeof &| %varid% !!.", variable->varId()))) {
+            if (variable && tokSize->varId() == variable->varId())
                 sizeofForPointerError(variable, variable->str());
-            } else if (variable2 && (Token::Match(tokSize, "sizeof ( &| %varid% )", variable2->varId()) ||
-                                     Token::Match(tokSize, "sizeof &| %varid% !!.", variable2->varId()))) {
+            if (variable2 && tokSize->varId() == variable2->varId())
                 sizeofForPointerError(variable2, variable2->str());
-            }
         }
     }
 }
