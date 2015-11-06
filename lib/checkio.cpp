@@ -466,18 +466,8 @@ static bool findFormat(unsigned int arg, const Token *firstArg,
                  argTok->variable()->dimensionKnown(0) &&
                  argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
-        *formatStringTok = nullptr;
-        if (argTok->variable()) {
-            const Token *varTok = argTok->variable()->nameToken();
-            if (Token::Match(varTok, "%name% ; %name% = %str% ;") &&
-                varTok->str() == varTok->strAt(2) &&
-                Token::Match(varTok->tokAt(-4), "const char|wchar_t * const")) {
-                *formatStringTok = varTok->tokAt(4);
-            } else if (Token::Match(varTok, "%name% [ %num% ] = %str% ;") &&
-                       Token::Match(varTok->tokAt(-2), "const char|wchar_t")) {
-                *formatStringTok = varTok->tokAt(5);
-            }
-        }
+        if (argTok->values.size() >= 1 && argTok->values.front().tokvalue && argTok->values.front().tokvalue->tokType() == Token::eString)
+            *formatStringTok = argTok->values.front().tokvalue;
         return true;
     }
     return false;

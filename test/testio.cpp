@@ -3559,7 +3559,7 @@ private:
         check("void foo() {\n"
               "    const char * const format1 = \"%15s%17s%17s%17s%17s\n\";\n"
               "    const char format2[] = \"%15s%17s%17s%17s%17s\n\";\n"
-              "    const char * const format3 = format1;\n" // we should warn about this someday
+              "    const char * const format3 = format1;\n"
               "    int i = 0;\n"
               "    sprintf_s(lineBuffer, format1, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf_s(lineBuffer, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
@@ -3575,14 +3575,20 @@ private:
                       "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:7]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:8]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:8]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:9]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:10]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:11]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:11]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
                       "[test.cpp:12]: (warning) printf format string requires 5 parameters but 6 are given.\n"
                       "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
-                      "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n", errout.str());
+                      "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n"
+                      "[test.cpp:14]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'int'.\n"
+                      "[test.cpp:14]: (warning) printf format string requires 5 parameters but 6 are given.\n", errout.str());
 
     }
 
