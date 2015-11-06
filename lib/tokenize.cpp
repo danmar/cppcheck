@@ -2524,8 +2524,7 @@ static void setVarIdStructMembers(Token **tok1,
 void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
         const std::map<std::string, unsigned int> &variableId,
         const unsigned int scopeStartVarId,
-        std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers,
-        unsigned int *_varId)
+        std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers)
 {
     // end of scope
     const Token * const endToken = startToken->link();
@@ -2581,7 +2580,7 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
                 const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
                 if (it != variableId.end()) {
                     tok->varId(it->second);
-                    setVarIdStructMembers(&tok, structMembers, _varId);
+                    setVarIdStructMembers(&tok, structMembers, &_varId);
                 }
             }
         } else if (indentlevel == 0 && tok->str() == ":" && !initListArgLastToken)
@@ -2701,8 +2700,7 @@ void Tokenizer::setVarId()
                     setVarIdClassDeclaration(tok->link(),
                                              variableId,
                                              scopeStack.top().startVarid,
-                                             structMembers,
-                                             &_varId);
+                                             structMembers);
                 }
 
                 if (scopeInfo.empty()) {
