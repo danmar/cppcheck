@@ -2380,6 +2380,27 @@ void Tokenizer::simplifyLabelsCaseDefault()
 }
 
 
+void Tokenizer::simplifyCaseRange()
+{
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "case %num% . . . %num% :")) {
+            MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
+            MathLib::bigint end = MathLib::toLongNumber(tok->strAt(5));
+            if (start < end) {
+                tok = tok->tokAt(2);
+                tok->str(":");
+                tok->deleteNext();
+                tok->next()->str("case");
+                for (MathLib::bigint i = end-1; i > start; i--) {
+                    tok->insertToken(":");
+                    tok->insertToken(MathLib::toString(i));
+                    tok->insertToken("case");
+                }
+            }
+        }
+    }
+}
+
 
 
 void Tokenizer::simplifyTemplates()
@@ -3372,6 +3393,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Convert K&R function declarations to modern C
     simplifyVarDecl(true);
     simplifyFunctionParameters();
+
+    // simplify case ranges (gcc extension)
+    simplifyCaseRange();
 
     // simplify labels and 'case|default'-like syntaxes
     simplifyLabelsCaseDefault();

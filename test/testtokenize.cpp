@@ -443,6 +443,8 @@ private:
 
         TEST_CASE(simplifyDeprecated);
 
+        TEST_CASE(simplifyCaseRange);
+
         TEST_CASE(compileLimits); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
 
         TEST_CASE(prepareTernaryOpForAST);
@@ -7989,6 +7991,11 @@ private:
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
                       tokenizeAndStringify("[[deprecated]] int f();", false, true, Settings::Unspecified, "test.c", true));
+    }
+
+    void simplifyCaseRange() {
+        ASSERT_EQUALS("void f ( ) { case 1 : ; case 2 : ; case 3 : ; case 4 : ; }", tokenizeAndStringify("void f() { case 1 ... 4: }"));
+        ASSERT_EQUALS("void f ( ) { case 4 . . . 1 : ; }", tokenizeAndStringify("void f() { case 4 ... 1: }"));
     }
 
     void prepareTernaryOpForAST() {

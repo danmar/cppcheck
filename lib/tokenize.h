@@ -209,6 +209,10 @@ public:
       */
     void simplifyLabelsCaseDefault();
 
+    /** simplify case ranges (gcc extension)
+      */
+    void simplifyCaseRange();
+
     /** Remove macros in global scope */
     void removeMacrosInGlobalScope();
 
