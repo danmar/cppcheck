@@ -134,13 +134,13 @@ void CheckSizeof::checkSizeofForPointerSize()
             } else if (Token::simpleMatch(tok, "return calloc (")) {
                 tokSize = tok->tokAt(3)->nextArgument();
                 tokFunc = tok->next();
-            } else if (Token::simpleMatch(tok, "memset (")) {
+            } else if (Token::simpleMatch(tok, "memset (") && tok->strAt(-1) != ".") {
                 variable = tok->tokAt(2);
                 tokSize = variable->nextArgument();
                 if (tokSize)
                     tokSize = tokSize->nextArgument();
                 tokFunc = tok;
-            } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (")) {
+            } else if (Token::Match(tok, "memcpy|memcmp|memmove|strncpy|strncmp|strncat (") && tok->strAt(-1) != ".") {
                 variable = tok->tokAt(2);
                 variable2 = variable->nextArgument();
                 if (!variable2)
@@ -158,7 +158,7 @@ void CheckSizeof::checkSizeofForPointerSize()
                 }
             }
 
-            if (!variable)
+            if (!variable || !tokSize)
                 continue;
 
             while (Token::Match(variable, "%var% ::|."))
@@ -198,6 +198,9 @@ void CheckSizeof::checkSizeofForPointerSize()
 
             while (Token::Match(tokSize, "%var% ::|."))
                 tokSize = tokSize->tokAt(2);
+
+            if (Token::Match(tokSize, "%var% [|("))
+                continue;
 
             // Now check for the sizeof usage. Once here, everything using sizeof(varid) or sizeof(&varid)
             // looks suspicious

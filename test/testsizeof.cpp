@@ -524,6 +524,19 @@ private:
               " memset(pIntArray, 0, sizeof(pIntArray));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void FreeFileName(const char *s) {\n"
+              "  CxString tbuf;\n"
+              "  const char *p;\n"
+              "  memcpy(s, siezof(s));\n" // non-standard memcpy
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "  module_config_t *tab = module;\n"
+              "  memset(tab + confsize, 0, sizeof(tab[confsize]));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeofStruct() {
