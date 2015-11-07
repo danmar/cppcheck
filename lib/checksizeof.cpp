@@ -189,6 +189,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             // This is to allow generic operations with sizeof
             for (; tokSize && tokSize->str() != ")" && tokSize->str() != "," && tokSize->str() != "sizeof"; tokSize = tokSize->next()) {}
 
+            if (tokSize->str() != "sizeof")
+                continue;
+
             if (Token::simpleMatch(tokSize, "sizeof ( &"))
                 tokSize = tokSize->tokAt(3);
             else if (Token::Match(tokSize, "sizeof (|&"))

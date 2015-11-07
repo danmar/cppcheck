@@ -537,6 +537,11 @@ private:
               "  memset(tab + confsize, 0, sizeof(tab[confsize]));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(char* aug) {\n"
+              "  memmove(aug + extra_string, aug, buf - (bfd_byte *)aug);\n" // #7100
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeofStruct() {
