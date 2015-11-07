@@ -951,6 +951,24 @@ private:
               "  if (a>b || a<b) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6064 False positive incorrectLogicOperator - invalid assumption about template type?
+        check("template<typename T> T icdf( const T uniform ) {\n"
+              "   if ((0<uniform) && (uniform<1))\n"
+              "     {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6081 False positive: incorrectLogicOperator, with close negative comparisons
+        check("double neg = -1.0 - 1.0e-13;\n"
+              "void foo() {\n"
+              "    if ((neg < -1.0) && (neg > -1.0 - 1.0e-12))\n"
+              "        return;\n"
+              "    else\n"
+              "        return;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: neg < -1.0 && neg > -1.0.\n", errout.str());
+
     }
 
     void incorrectLogicOperator8() { // opposite expressions
