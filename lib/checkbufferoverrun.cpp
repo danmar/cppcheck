@@ -1089,7 +1089,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (!it->tokvalue)
                     continue;
                 const Variable *var = it->tokvalue->variable();
-                if (var && var->isArray() && value->intvalue > var->dimension(0)) {
+                if (var && var->isArray() && var->dimensions().size() == 1U && value->intvalue > var->dimension(0)) {
                     std::list<const Token *> callstack;
                     callstack.push_back(it->tokvalue);
                     callstack.push_back(tok);
@@ -1098,7 +1098,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     index.push_back(value->intvalue);
 
                     const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
-
                     arrayIndexOutOfBoundsError(callstack, arrayInfo, index);
                 }
             }
