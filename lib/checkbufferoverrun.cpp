@@ -1080,7 +1080,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 bufferOverrunError(tok, tok->str());
         }
 
-        if (Token::Match(tok, "%var% [") && tok->variable() && tok->variable()->isPointer()) {
+        if (Token::Match(tok, "%var% [") && tok->next()->astOperand2() && tok->variable() && tok->variable()->isPointer()) {
             const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
             if (!value)
                 continue;
