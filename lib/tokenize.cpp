@@ -6241,7 +6241,7 @@ bool Tokenizer::simplifyKnownVariables()
                 floatvars.insert(tok2->tokAt(2)->varId());
             }
 
-            if (Token::Match(tok2, "[;{}] %type% |* %name% [")) {
+            if (Token::Match(tok2, "[;{}] %type% *| %name% [")) {
                 const Token *nameToken = tok2->tokAt(2);
                 if (nameToken->str() == "*")
                     nameToken = nameToken->next();
