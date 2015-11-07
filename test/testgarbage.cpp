@@ -200,6 +200,8 @@ private:
         TEST_CASE(garbageCode149); // #7085
         TEST_CASE(garbageCode150); // #7089
         TEST_CASE(garbageCode151); // #4175
+        TEST_CASE(garbageCode152); // travis after 9c7271a5
+
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1202,6 +1204,13 @@ private:
                   "    int a;\n"
                   "    do { a=do_something() } while (a);\n"
                   "}");
+    }
+
+    void garbageCode152() { // happened in travis, originaly from llvm clang code
+        const char* code = "template <bool foo = std::value &&>\n"
+                           "static std::string foo(char *Bla) {\n"
+                           "    while (Bla[1] && Bla[1] != ',') }\n";
+        checkCode(code);
     }
 
     void garbageValueFlow() {
