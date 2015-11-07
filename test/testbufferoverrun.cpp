@@ -2058,6 +2058,13 @@ private:
         check("namespace { class X { static const int x[100]; };\n" // #6232
               "const int X::x[100] = {0}; }", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int a[10];\n"
+              "  int *p = a;\n"
+              "  p[20] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[10]' accessed at index 20, which is out of bounds.\n", errout.str());
     }
 
     void array_index_function_parameter() {
