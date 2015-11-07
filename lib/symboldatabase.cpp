@@ -473,7 +473,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             else
                                 tok = end->tokAt(2);
 
-                            if (Token::Match(tok, "= %any% ;")) {
+                            if (Token::Match(tok, "= !!default ;")) {
                                 function.isPure(true);
                                 tok = tok->tokAt(2);
                             }

@@ -236,6 +236,7 @@ private:
         TEST_CASE(symboldatabase52); // #6581
 
         TEST_CASE(isImplicitlyVirtual);
+        TEST_CASE(isPure);
 
         TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
 
@@ -2305,6 +2306,22 @@ private:
         }
     }
 
+    void isPure() {
+        GET_SYMBOL_DB("class C {\n"
+                      "    void f() = 0;\n"
+                      "    C(B b) = 0;\n"
+                      "    C(C& c) = default;"
+                      "    void g();\n"
+                      "};");
+        ASSERT(db && db->scopeList.back().functionList.size() == 4);
+        if (db && db->scopeList.back().functionList.size() == 4) {
+            std::list<Function>::const_iterator it = db->scopeList.back().functionList.begin();
+            ASSERT((it++)->isPure());
+            ASSERT((it++)->isPure());
+            ASSERT(!(it++)->isPure());
+            ASSERT(!(it++)->isPure());
+        }
+    }
     void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
         GET_SYMBOL_DB("TEST(a,b) {\n"
                       "  std::vector<int> messages;\n"
