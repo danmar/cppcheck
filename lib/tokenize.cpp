@@ -6223,6 +6223,7 @@ bool Tokenizer::simplifyKnownVariables()
 
     // variable id for float/double variables
     std::set<unsigned int> floatvars;
+    std::set<unsigned int> arrays;
 
     // auto variables..
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -6238,6 +6239,13 @@ bool Tokenizer::simplifyKnownVariables()
         for (; tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "[;{}] float|double %name% ;")) {
                 floatvars.insert(tok2->tokAt(2)->varId());
+            }
+
+            if (Token::Match(tok2, "[;{}] %type% |* %name% [")) {
+                const Token *nameToken = tok2->tokAt(2);
+                if (nameToken->str() == "*")
+                    nameToken = nameToken->next();
+                arrays.insert(nameToken->varId());
             }
 
             if (tok2->str() == "{")
@@ -6307,6 +6315,9 @@ bool Tokenizer::simplifyKnownVariables()
                     return false;
 
                 if (!simplifyKnownVariablesGetData(varid, &tok2, &tok3, value, valueVarId, valueIsPointer, floatvars.find(tok2->varId()) != floatvars.end()))
+                    continue;
+
+                if (valueVarId > 0 && arrays.find(valueVarId) != arrays.end())
                     continue;
 
                 ret |= simplifyKnownVariablesSimplify(&tok2, tok3, varid, structname, value, valueVarId, valueIsPointer, valueToken, indentlevel);

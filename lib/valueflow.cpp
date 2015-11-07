@@ -662,6 +662,21 @@ static void valueFlowArray(TokenList *tokenlist)
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
                 value.tokvalue = it->second;
+                value.setKnown();
+                setTokenValue(tok, value);
+            }
+
+            // pointer = array
+            else if (tok->variable() &&
+                     tok->variable()->isArray() &&
+                     Token::simpleMatch(tok->astParent(), "=") &&
+                     tok == tok->astParent()->astOperand2() &&
+                     tok->astParent()->astOperand1() &&
+                     tok->astParent()->astOperand1()->variable() &&
+                     tok->astParent()->astOperand1()->variable()->isPointer()) {
+                ValueFlow::Value value;
+                value.tokvalue = tok;
+                value.setKnown();
                 setTokenValue(tok, value);
             }
             continue;
@@ -675,7 +690,7 @@ static void valueFlowArray(TokenList *tokenlist)
             continue;
         }
 
-        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
+        else if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
             const Token *vartok = tok->tokAt(2);
             const Token *strtok = vartok->next()->link()->tokAt(2);
             constantArrays[vartok->varId()] = strtok;

@@ -229,6 +229,13 @@ private:
                 "    return x;\n"
                 "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\""));
+
+        code = "void f() {\n"
+               "  int a[10];\n"
+               "  int *x = a;\n" // <- a value is a
+               "  *x = 0;\n"     // .. => x value is a
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a"));
     }
 
     void valueFlowCalculations() {
