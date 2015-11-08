@@ -6897,7 +6897,7 @@ bool Tokenizer::simplifyRedundantParentheses()
         }
 
         while (Token::simpleMatch(tok, "( (") &&
-               tok->link()->previous() == tok->next()->link()) {
+               tok->link() && tok->link()->previous() == tok->next()->link()) {
             // We have "(( *something* ))", remove the inner
             // parentheses
             tok->deleteNext();

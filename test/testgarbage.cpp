@@ -201,6 +201,7 @@ private:
         TEST_CASE(garbageCode150); // #7089
         TEST_CASE(garbageCode151); // #4175
         TEST_CASE(garbageCode152); // travis after 9c7271a5
+        TEST_CASE(garbageCode153);
 
 
         TEST_CASE(garbageValueFlow);
@@ -1211,6 +1212,10 @@ private:
                            "static std::string foo(char *Bla) {\n"
                            "    while (Bla[1] && Bla[1] != ',') }\n";
         checkCode(code);
+    }
+
+    void garbageCode153() {
+        ASSERT_THROW(checkCode("enum { X = << { X } } { X X } enum { X = << { ( X ) } } { } X */"), InternalError);
     }
 
     void garbageValueFlow() {
