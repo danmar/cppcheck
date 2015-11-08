@@ -739,6 +739,31 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     }
 }
 
+static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * const tok, bool conditional, unsigned int dimensions)
+{
+    unsigned int indexvarid = 0;
+    const std::vector<ValueFlow::Value> empty;
+    std::vector<ValueFlow::Value> indexes;
+    for (const Token *tok2 = tok; indexes.size() < dimensions && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
+        if (!tok2->astOperand2())
+            return empty;
+
+        const ValueFlow::Value *index = tok2->astOperand2()->getMaxValue(conditional);
+        if (!index)
+            return empty;
+        if (indexvarid == 0U)
+            indexvarid = index->varId;
+        if (index->varId > 0 && indexvarid != index->varId)
+            return empty;
+        if (index->intvalue < 0)
+            return empty;
+        indexes.push_back(*index);
+    }
+
+    return indexes;
+}
+
+
 void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo)
 {
     // Declaration in global scope or namespace?
@@ -776,75 +801,43 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
         }
 
         // Index out of bounds..
-        std::vector<ValueFlow::Value> indexes;
-        unsigned int valuevarid = 0;
-        for (const Token *tok2 = tok; indexes.size() < arrayInfo.num().size() && Token::Match(tok2, "["); tok2 = tok2->link()->next()) {
-            if (!tok2->astOperand2()) {
-                indexes.clear();
-                break;
-            }
-            const ValueFlow::Value *value = tok2->astOperand2()->getMaxValue(warn == 1);
-            if (!value) {
-                indexes.clear();
-                break;
-            }
-            if (valuevarid == 0U)
-                valuevarid = value->varId;
-            if (value->varId > 0 && valuevarid != value->varId) {
-                indexes.clear();
-                break;
-            }
-            if (value->intvalue < 0) {
-                indexes.clear();
-                break;
-            }
-            indexes.push_back(*value);
+        const std::vector<ValueFlow::Value> indexes(valueFlowGetArrayIndexes(tok, warn==1, arrayInfo.num().size()));
+        if (indexes.size() != arrayInfo.num().size())
+            continue;
+
+        // Check if the indexes point outside the whole array..
+        // char a[10][10];
+        // a[0][20]  <-- ok.
+        // a[9][20]  <-- error.
+
+        // total number of elements of array..
+        const MathLib::bigint totalElements = arrayInfo.numberOfElements();
+
+        // total index..
+        const MathLib::bigint totalIndex = arrayInfo.totalIndex(indexes);
+
+        // totalElements <= 0 => Unknown size
+        if (totalElements <= 0)
+            continue;
+
+        if (addressOf && totalIndex == totalElements)
+            continue;
+
+        // Is totalIndex in bounds?
+        if (totalIndex >= totalElements) {
+            arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+            break;
         }
-        if (indexes.size() == arrayInfo.num().size()) {
-            // Check if the indexes point outside the whole array..
-            // char a[10][10];
-            // a[0][20]  <-- ok.
-            // a[9][20]  <-- error.
 
-            // total number of elements of array..
-            MathLib::bigint totalElements = 1;
-
-            // total index..
-            MathLib::bigint totalIndex = 0;
-
-            // calculate the totalElements and totalIndex..
+        // Is any array index out of bounds?
+        if (printInconclusive) {
+            // check each index for overflow
             for (std::size_t i = 0; i < indexes.size(); ++i) {
-                const std::size_t ri = indexes.size() - 1 - i;
-                totalIndex += indexes[ri].intvalue * totalElements;
-                totalElements *= arrayInfo.num(ri);
-            }
-
-            // totalElements <= 0 => Unknown size
-            if (totalElements <= 0)
-                continue;
-
-            // taking address of 1 past end?
-            if (addressOf && totalIndex == totalElements)
-                continue;
-
-            // Is totalIndex in bounds?
-            if (totalIndex >= totalElements) {
-                arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                break;
-            }
-
-            // Is any array index out of bounds?
-            else {
-                // check each index for overflow
-                for (std::size_t i = 0; i < indexes.size(); ++i) {
-                    if (indexes[i].intvalue >= arrayInfo.num(i)) {
-                        // The access is still within the memory range for the array
-                        // so it may be intentional.
-                        if (printInconclusive) {
-                            arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
-                            break; // only warn about the first one
-                        }
-                    }
+                if (indexes[i].intvalue >= arrayInfo.num(i)) {
+                    // The access is still within the memory range for the array
+                    // so it may be intentional.
+                    arrayIndexOutOfBoundsError(tok, arrayInfo, indexes);
+                    break; // only warn about the first one
                 }
             }
         }
@@ -1089,16 +1082,29 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (!it->tokvalue)
                     continue;
                 const Variable *var = it->tokvalue->variable();
-                if (var && var->isArray() && var->dimensions().size() == 1U && var->dimensionKnown(0) && value->intvalue > var->dimension(0)) {
+                if (var && var->isArray()) {
+                    const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
+                    const MathLib::bigint elements = arrayInfo.numberOfElements();
+                    if (elements <= 0) // unknown size
+                        continue;
+
+                    const std::vector<ValueFlow::Value> indexes(valueFlowGetArrayIndexes(tok->next(), false, var->dimensions().size()));
+                    if (indexes.size() != var->dimensions().size())
+                        continue;
+
+                    const MathLib::bigint index = arrayInfo.totalIndex(indexes);
+                    if (index <= elements)
+                        continue;
+
                     std::list<const Token *> callstack;
                     callstack.push_back(it->tokvalue);
                     callstack.push_back(tok);
 
-                    std::vector<MathLib::bigint> index;
-                    index.push_back(value->intvalue);
+                    std::vector<MathLib::bigint> indexes2;
+                    for (unsigned int i = 0; i < indexes.size(); ++i)
+                        indexes2.push_back(indexes[i].intvalue);
 
-                    const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
-                    arrayIndexOutOfBoundsError(callstack, arrayInfo, index);
+                    arrayIndexOutOfBoundsError(callstack, arrayInfo, indexes2);
                 }
             }
         }
@@ -1762,6 +1768,30 @@ CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigi
     return ArrayInfo(_declarationId, _varname, _element_size, n - uvalue);
 }
 
+MathLib::bigint CheckBufferOverrun::ArrayInfo::numberOfElements() const
+{
+    if (_num.empty())
+        return 0;
+
+    // total number of elements of array..
+    MathLib::bigint ret = 1;
+    for (std::size_t i = 0; i < _num.size(); ++i) {
+        ret *= _num[i];
+    }
+    return ret;
+}
+
+MathLib::bigint CheckBufferOverrun::ArrayInfo::totalIndex(const std::vector<ValueFlow::Value> &indexes) const
+{
+    MathLib::bigint index = 0;
+    MathLib::bigint elements = 1;
+    for (std::size_t i = 0; i < _num.size(); ++i) {
+        const std::size_t ri = _num.size() - 1U - i;
+        index += indexes[ri].intvalue * elements;
+        elements *= _num[ri];
+    }
+    return index;
+}
 
 
 void CheckBufferOverrun::arrayIndexThenCheck()

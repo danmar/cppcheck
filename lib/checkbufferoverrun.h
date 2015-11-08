@@ -164,6 +164,9 @@ public:
         void varname(const std::string &name) {
             _varname = name;
         }
+
+        MathLib::bigint numberOfElements() const;
+        MathLib::bigint totalIndex(const std::vector<ValueFlow::Value> &indexes) const;
     };
 
     /** Check for buffer overruns (based on ArrayInfo) */
