@@ -2065,6 +2065,13 @@ private:
               "  p[20] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[10]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "  int a[X];\n"
+              "  int *p = a;\n"
+              "  p[20] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_function_parameter() {

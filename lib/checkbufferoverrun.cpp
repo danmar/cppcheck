@@ -1089,7 +1089,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 if (!it->tokvalue)
                     continue;
                 const Variable *var = it->tokvalue->variable();
-                if (var && var->isArray() && var->dimensions().size() == 1U && value->intvalue > var->dimension(0)) {
+                if (var && var->isArray() && var->dimensions().size() == 1U && var->dimensionKnown(0) && value->intvalue > var->dimension(0)) {
                     std::list<const Token *> callstack;
                     callstack.push_back(it->tokvalue);
                     callstack.push_back(tok);
