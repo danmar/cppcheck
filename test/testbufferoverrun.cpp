@@ -141,6 +141,7 @@ private:
         TEST_CASE(array_index_string_literal);
         TEST_CASE(array_index_same_struct_and_var_name); // #4751 - not handled well when struct name and var name is same
         TEST_CASE(array_index_valueflow);
+        TEST_CASE(array_index_valueflow_pointer);
         TEST_CASE(array_index_function_parameter);
 
         TEST_CASE(buffer_overrun_2_struct);
@@ -2059,6 +2060,9 @@ private:
               "const int X::x[100] = {0}; }", false, "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void array_index_valueflow_pointer() {
         check("void f() {\n"
               "  int a[10];\n"
               "  int *p = a;\n"
@@ -2067,9 +2071,16 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[10]' accessed at index 20, which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
-              "  int a[X];\n"
+              "  int a[X];\n" // unknown size
               "  int *p = a;\n"
               "  p[20] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int a[2];\n"
+              "  char *p = (char *)a;\n" // cast
+              "  p[4] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

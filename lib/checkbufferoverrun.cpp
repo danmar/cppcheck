@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "astutils.h"
 
 #include <algorithm>
 #include <sstream>
@@ -1083,6 +1084,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     continue;
                 const Variable *var = it->tokvalue->variable();
                 if (var && var->isArray()) {
+                    if (astCanonicalType(tok) != astCanonicalType(it->tokvalue))
+                        continue;
+
                     const ArrayInfo arrayInfo(var, _tokenizer, &_settings->library);
                     const MathLib::bigint elements = arrayInfo.numberOfElements();
                     if (elements <= 0) // unknown size
