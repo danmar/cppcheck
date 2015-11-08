@@ -1066,7 +1066,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
     // check string literals
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% [")) {
+        if (Token::Match(tok, "%str% [") && tok->next()->astOperand2()) {
             const std::size_t strLen = Token::getStrLength(tok);
             const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
             if (value && value->intvalue > strLen)

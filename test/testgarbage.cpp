@@ -202,6 +202,7 @@ private:
         TEST_CASE(garbageCode151); // #4175
         TEST_CASE(garbageCode152); // travis after 9c7271a5
         TEST_CASE(garbageCode153);
+        TEST_CASE(garbageCode154); // #7112
 
 
         TEST_CASE(garbageValueFlow);
@@ -1216,6 +1217,10 @@ private:
 
     void garbageCode153() {
         ASSERT_THROW(checkCode("enum { X = << { X } } { X X } enum { X = << { ( X ) } } { } X */"), InternalError);
+    }
+
+    void garbageCode154() {
+        checkCode("\"abc\"[];");
     }
 
     void garbageValueFlow() {
