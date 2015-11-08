@@ -220,6 +220,8 @@ bool Path::isCPP(const std::string &path)
         extension == ".cc" ||
         extension == ".c++" ||
         extension == ".hpp" ||
+        extension == ".hxx" ||
+        extension == ".hh" ||
         extension == ".tpp" ||
         extension == ".txx") {
         return true;
