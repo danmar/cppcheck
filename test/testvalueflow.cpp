@@ -1729,6 +1729,17 @@ private:
                "}";
         ASSERT(isNotKnownValues(code, "!"));
 
+        code = "void f() {\n" // #7049
+               "  int x = 0;\n"
+               "  switch (a) {\n"
+               "  case 1:\n"
+               "    x = 1;\n"
+               "  case 2:\n"
+               "    if (!x) {}\n" // <- possible value
+               "  }\n"
+               "}";
+        ASSERT(isNotKnownValues(code, "!"));
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  while (!x) {\n" // <- possible value

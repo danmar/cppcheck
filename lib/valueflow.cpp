@@ -1105,7 +1105,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
         }
 
-        if (Token::Match(tok2, "[;{}] %name% :")) {
+        if (Token::Match(tok2, "[;{}] %name% :") || tok2->str() == "case") {
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it)
                 it->changeKnownToPossible();
             tok2 = tok2->tokAt(2);
