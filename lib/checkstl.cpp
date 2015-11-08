@@ -89,7 +89,7 @@ void CheckStl::iterators()
         }
 
         // the validIterator flag says if the iterator has a valid value or not
-        bool validIterator = Token::Match(var->nameToken()->next(), "[(=]");
+        bool validIterator = Token::Match(var->nameToken()->next(), "[(=:]");
         const Scope* invalidationScope = 0;
 
         // The container this iterator can be used with

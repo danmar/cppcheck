@@ -97,6 +97,7 @@ private:
         TEST_CASE(stlBoundaries3);
         TEST_CASE(stlBoundaries4); // #4364
         TEST_CASE(stlBoundaries5); // #4352
+        TEST_CASE(stlBoundaries6); // #7106
 
         // if (str.find("ab"))
         TEST_CASE(if_find);
@@ -1476,6 +1477,17 @@ private:
               "    return i.foo();;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Invalid iterator 'i' used.\n", errout.str());
+    }
+
+    void stlBoundaries6() { // #7106
+        check("void foo(std::vector<int>& vec) {\n"
+              "    for (Function::iterator BB : vec) {\n"
+              "        for (int Inst : *BB)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
