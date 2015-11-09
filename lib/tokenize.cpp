@@ -2606,7 +2606,7 @@ void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
             }
         } else if (tok->isName() && tok->varId() <= scopeStartVarId) {
             if (indentlevel > 0) {
-                if (Token::Match(tok->previous(), "::|."))
+                if (Token::Match(tok->previous(), "::|.") && tok->strAt(-2) != "this" && !Token::Match(tok->tokAt(-5), "( * this ) ."))
                     continue;
                 if (tok->next()->str() == "::") {
                     if (tok->str() == className)
@@ -2644,7 +2644,7 @@ static void setVarIdClassFunction(const std::string &classname,
             continue;
         if (Token::Match(tok2->tokAt(-4), "%name% :: %name% ::")) // Currently unsupported
             continue;
-        if (Token::Match(tok2->tokAt(-2), "!!this ."))
+        if (Token::Match(tok2->tokAt(-2), "!!this .") && !Token::Match(tok2->tokAt(-5), "( * this ) ."))
             continue;
 
         const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());

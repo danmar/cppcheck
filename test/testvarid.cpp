@@ -1646,15 +1646,39 @@ private:
     }
 
     void varid_in_class16() { // Set varId for inline member functions
-        const char code[] = "class Fred {\n"
-                            "    int x;\n"
-                            "    void foo(int x) { this->x = x; }\n"
-                            "};\n";
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: class Fred {\n"
-                      "2: int x@1 ;\n"
-                      "3: void foo ( int x@2 ) { this . x@1 = x@2 ; }\n"
-                      "4: } ;\n", tokenize(code, false, "test.cpp"));
+        {
+            const char code[] = "class Fred {\n"
+                                "    int x;\n"
+                                "    void foo(int x) { this->x = x; }\n"
+                                "};\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: class Fred {\n"
+                          "2: int x@1 ;\n"
+                          "3: void foo ( int x@2 ) { this . x@1 = x@2 ; }\n"
+                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+        }
+        {
+            const char code[] = "class Fred {\n"
+                                "    void foo(int x) { this->x = x; }\n"
+                                "    int x;\n"
+                                "};\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: class Fred {\n"
+                          "2: void foo ( int x@1 ) { this . x@2 = x@1 ; }\n"
+                          "3: int x@2 ;\n"
+                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+        }
+        {
+            const char code[] = "class Fred {\n"
+                                "    void foo(int x) { (*this).x = x; }\n"
+                                "    int x;\n"
+                                "};\n";
+            ASSERT_EQUALS("\n\n##file 0\n"
+                          "1: class Fred {\n"
+                          "2: void foo ( int x@1 ) { ( * this ) . x@2 = x@1 ; }\n"
+                          "3: int x@2 ;\n"
+                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+        }
     }
 
     void varid_in_class17() { // #6056 - Set no varid for member functions
