@@ -259,6 +259,14 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token *tok)
 //---------------------------------------------------------------------------
 
 
+static bool isAddressOf(const Token *tok)
+{
+    const Token *tok2 = tok->astParent();
+    while (Token::Match(tok2, "%name%|.|::|["))
+        tok2 = tok2->astParent();
+    return tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
+}
+
 /**
  * bailout if variable is used inside if/else/switch block or if there is "break"
  * @param tok token for "if" or "switch"
@@ -781,13 +789,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
     */
     const bool printInconclusive = _settings->inconclusive;
     // Taking address?
-    bool addressOf = false;
-    {
-        const Token *tok2 = tok->astParent();
-        while (Token::Match(tok2, "%name%|.|::|["))
-            tok2 = tok2->astParent();
-        addressOf = tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
-    }
+    const bool addressOf = isAddressOf(tok);
 
     // Look for errors first
     for (int warn = 0; warn == 0 || warn == 1; ++warn) {
@@ -1068,9 +1070,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     // check string literals
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% [") && tok->next()->astOperand2()) {
-            const std::size_t strLen = Token::getStrLength(tok);
+            const std::size_t size = Token::getStrSize(tok);
             const ValueFlow::Value *value = tok->next()->astOperand2()->getMaxValue(false);
-            if (value && value->intvalue > strLen)
+            if (value && value->intvalue >= (isAddressOf(tok) ? size + 1U : size))
                 bufferOverrunError(tok, tok->str());
         }
 
@@ -1097,7 +1099,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                         continue;
 
                     const MathLib::bigint index = arrayInfo.totalIndex(indexes);
-                    if (index <= elements)
+                    if (index < (isAddressOf(tok) ? elements + 1U : elements))
                         continue;
 
                     std::list<const Token *> callstack;

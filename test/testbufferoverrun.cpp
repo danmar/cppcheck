@@ -2070,6 +2070,23 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[10]' accessed at index 20, which is out of bounds.\n", errout.str());
 
+        {
+            // address of
+            check("void f() {\n"
+                  "  int a[10];\n"
+                  "  int *p = a;\n"
+                  "  p[10] = 0;\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+            check("void f() {\n"
+                  "  int a[10];\n"
+                  "  int *p = a;\n"
+                  "  dostuff(&p[10]);\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         check("void f() {\n"
               "  int a[X];\n" // unknown size
               "  int *p = a;\n"
@@ -2447,6 +2464,12 @@ private:
     void buffer_overrun_28() {
         check("char c = \"abc\"[4];");
         ASSERT_EQUALS("[test.cpp:1]: (error) Buffer is accessed out of bounds: \"abc\"\n", errout.str());
+
+        check("p = &\"abc\"[4];");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char c = \"\\0abc\"[2];");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_bailoutIfSwitch() {
