@@ -730,6 +730,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         // Assignment of member variable?
         else if (Token::Match(ftok, "%name% =")) {
             assignVar(ftok->str(), scope, usage);
+            bool bailout = ftok->variable() && ftok->variable()->isReference();
+            const Token* tok2 = ftok->tokAt(2);
+            if (tok2->str() == "&") {
+                tok2 = tok2->next();
+                bailout = true;
+            }
+            if (tok2->variable() && (bailout || tok2->variable()->isArray()) && tok2->strAt(1) != "[")
+                assignVar(tok2->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
