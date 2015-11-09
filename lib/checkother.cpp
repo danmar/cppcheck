@@ -517,7 +517,7 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
-                if (tok->next()->isAssignmentOp() && Token::Match(startToken, "[;{}]")) { // Assignment
+                if (tok->next() && tok->next()->isAssignmentOp() && Token::Match(startToken, "[;{}]")) { // Assignment
                     if (it != varAssignments.end()) {
                         bool error = true; // Ensure that variable is not used on right side
                         for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
@@ -550,7 +550,7 @@ void CheckOther::checkRedundantAssignment()
                         varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                     eraseMemberAssignments(tok->varId(), membervars, varAssignments);
-                } else if (tok->next()->tokType() == Token::eIncDecOp || (tok->previous()->tokType() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
+                } else if (tok->next() && tok->next()->tokType() == Token::eIncDecOp || (tok->previous()->tokType() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
                     varAssignments[tok->varId()] = tok;
                     memAssignments.erase(tok->varId());
                     eraseMemberAssignments(tok->varId(), membervars, varAssignments);

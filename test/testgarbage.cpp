@@ -204,6 +204,7 @@ private:
         TEST_CASE(garbageCode153);
         TEST_CASE(garbageCode154); // #7112
         TEST_CASE(garbageCode155); // #7118
+        TEST_CASE(garbageCode156); // #7120
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1225,6 +1226,10 @@ private:
 
     void garbageCode155() { // #7118
         checkCode("&p(!{}e x){({(0?:?){({})}()})}");
+    }
+
+    void garbageCode156() { // #7120
+        checkCode("struct {}a; d f() { c ? : } {}a.p");
     }
 
     void garbageValueFlow() {
