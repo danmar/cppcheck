@@ -241,6 +241,11 @@ void CheckClass::checkExplicitConstructors()
             }
         }
 
+        // Abstract classes can't be instantiated. But if there is "misuse" by derived
+        // classes then these constructors must be explicit.
+        if (isAbstractClass && _settings->standards.cpp != Standards::CPP11)
+            continue;
+
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
 
             // We are looking for constructors, which are meeting following criteria:
