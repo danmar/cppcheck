@@ -1369,17 +1369,18 @@ static bool valueFlowForward(Token * const               startToken,
         // If a ? is seen and it's known that the condition is true/false..
         else if (tok2->str() == "?") {
             const Token *condition = tok2->astOperand1();
-            if (!condition) // Ticket #6713
+            const Token *op2 = tok2->astOperand2();
+            if (!condition || !op2) // Ticket #6713
                 continue;
             std::list<ValueFlow::Value>::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it) {
                 const ProgramMemory programMemory(getProgramMemory(tok2, varid, *it));
                 if (conditionIsTrue(condition, programMemory))
-                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()->astOperand1()), varid, *it);
+                    valueFlowAST(const_cast<Token*>(op2->astOperand1()), varid, *it);
                 else if (conditionIsFalse(condition, programMemory))
-                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()->astOperand2()), varid, *it);
+                    valueFlowAST(const_cast<Token*>(op2->astOperand2()), varid, *it);
                 else
-                    valueFlowAST(const_cast<Token*>(tok2->astOperand2()), varid, *it);
+                    valueFlowAST(const_cast<Token*>(op2), varid, *it);
             }
             // Skip conditional expressions..
             while (tok2->astOperand1() || tok2->astOperand2()) {

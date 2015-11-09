@@ -203,7 +203,7 @@ private:
         TEST_CASE(garbageCode152); // travis after 9c7271a5
         TEST_CASE(garbageCode153);
         TEST_CASE(garbageCode154); // #7112
-
+        TEST_CASE(garbageCode155); // #7118
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1221,6 +1221,10 @@ private:
 
     void garbageCode154() {
         checkCode("\"abc\"[];");
+    }
+
+    void garbageCode155() { // #7118
+        checkCode("&p(!{}e x){({(0?:?){({})}()})}");
     }
 
     void garbageValueFlow() {
