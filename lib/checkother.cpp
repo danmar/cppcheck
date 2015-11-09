@@ -258,9 +258,7 @@ void CheckOther::warningOldStylePointerCast()
             // skip first "const" in "const Type* const"
             if (tok->strAt(1) == "const")
                 tok = tok->next();
-            const Token* typeTok = tok ? tok->next() : nullptr;
-            if (!typeTok)
-                continue;
+            const Token* typeTok = tok->next();
             // skip second "const" in "const Type* const"
             if (tok->strAt(3) == "const")
                 tok = tok->next();
