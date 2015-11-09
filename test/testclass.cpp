@@ -6178,23 +6178,33 @@ private:
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
 
         checkPureVirtualFunctionCall("class A\n"
-                                     " {\n"
-                                     "    virtual void pure()=0; \n"
-                                     "    virtual ~A(); \n"
-                                     "    int m; \n"
+                                     "{\n"
+                                     "    virtual void pure()=0;\n"
+                                     "    virtual ~A();\n"
+                                     "    int m;\n"
                                      "};\n"
                                      "A::~A()\n"
-                                     "{if (b) pure();}\n");
+                                     "{if (b) pure();}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
 
-        // ticket # 5831
+        // #5831
         checkPureVirtualFunctionCall("class abc {\n"
                                      "public:\n"
                                      "  virtual ~abc() throw() {}\n"
                                      "  virtual void def(void* g) throw () = 0;\n"
-                                     "};\n");
+                                     "};");
         ASSERT_EQUALS("", errout.str());
 
+        // #4992
+        checkPureVirtualFunctionCall("class CMyClass {\n"
+                                     "    std::function< void(void) > m_callback;\n"
+                                     "public:\n"
+                                     "    CMyClass() {\n"
+                                     "        m_callback = [this]() { return VirtualMethod(); };\n"
+                                     "    }\n"
+                                     "    virtual void VirtualMethod() = 0;\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCallOtherClass() {

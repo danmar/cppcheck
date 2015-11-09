@@ -2181,6 +2181,9 @@ const std::list<const Token *> & CheckClass::callsPureVirtualFunction(const Func
                         continue;
                     }
                 }
+                if (tok->scope()->type == Scope::eLambda)
+                    tok = tok->scope()->classEnd->next();
+
                 const Function * callFunction = tok->function();
                 if (!callFunction ||
                     function.nestedIn != callFunction->nestedIn ||
