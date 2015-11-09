@@ -1790,8 +1790,19 @@ private:
                       "4: } ;\n",
                       tokenize(code6));
 
+        const char code7[] = "class Foo : public Bar {\n"
+                             "  explicit Foo(int i) : Bar(mi = i) { }\n"
+                             "  int mi;\n"
+                             "};";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Foo : public Bar {\n"
+                      "2: explicit Foo ( int i@1 ) : Bar ( mi@2 = i@1 ) { }\n"
+                      "3: int mi@2 ;\n"
+                      "4: } ;\n",
+                      tokenize(code7));
+
         // #6520
-        const char code7[] = "class A {\n"
+        const char code8[] = "class A {\n"
                              "  A(int x) : y(a?0:1), x(x) {}\n"
                              "  int x, y;\n"
                              "};";
@@ -1800,7 +1811,7 @@ private:
                       "2: A ( int x@1 ) : y@3 ( a ? 0 : 1 ) , x@2 ( x@1 ) { }\n"
                       "3: int x@2 ; int y@3 ;\n"
                       "4: } ;\n",
-                      tokenize(code7));
+                      tokenize(code8));
     }
 
     void varid_initListWithBaseTemplate() {
