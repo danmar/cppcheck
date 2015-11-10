@@ -2743,6 +2743,12 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n",
                            "", errout.str());
 
+        checkUninitVar("void f() {\n"
+                       "    int x[10];\n"
+                       "    int &x0(*x);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // ....
         checkUninitVar("struct ABC { int a; };\n"  // struct initialization
                        "void clear(struct ABC &abc);\n"
@@ -3578,12 +3584,6 @@ private:
         checkUninitVar("void f() {\n"
                        "    char *s = malloc(100);\n"
                        "    if (s != NULL) { }\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar("void f() {\n"
-                       "    char *s = malloc(100);\n"
-                       "    *s = x;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 

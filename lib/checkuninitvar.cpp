@@ -796,6 +796,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
+        if (_tokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
+            return false;
+
         if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
             const Token* tok2 = vartok->previous();
             if (Token::simpleMatch(tok2->astOperand1(), ">>"))
