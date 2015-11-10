@@ -80,7 +80,13 @@ ifeq ($(CXX), clang++)
     CPPCHK_GLIBCXX_DEBUG=
 endif
 ifndef CXXFLAGS
-    CXXFLAGS=-std=c++0x -include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare $(CPPCHK_GLIBCXX_DEBUG) -g
+    CXXFLAGS=-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Winline -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wsign-promo -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare $(CPPCHK_GLIBCXX_DEBUG) -g
+endif
+
+ifeq ($(CXX), g++)
+    override CXXFLAGS += -std=c++0x
+else ifeq ($(CXX), clang++)
+    override CXXFLAGS += -std=c++0x
 endif
 
 ifeq ($(HAVE_RULES),yes)

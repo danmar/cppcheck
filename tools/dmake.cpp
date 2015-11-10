@@ -328,7 +328,6 @@ int main(int argc, char **argv)
         // -Wsign-conversion  : too many warnings
         // -Wunreachable-code : some GCC versions report lots of warnings
         makeConditionalVariable(fout, "CXXFLAGS",
-                                "-std=c++0x "
                                 "-include lib/cxx11emu.h "
                                 "-pedantic "
                                 "-Wall "
@@ -355,6 +354,13 @@ int main(int argc, char **argv)
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
+
+    fout << "ifeq ($(CXX), g++)\n"
+         << "    override CXXFLAGS += -std=c++0x\n"
+         << "else ifeq ($(CXX), clang++)\n"
+         << "    override CXXFLAGS += -std=c++0x\n"
+         << "endif\n"
+         << "\n";
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
          << "    CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)\n"
