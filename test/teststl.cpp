@@ -465,6 +465,18 @@ private:
               "    std::cout << (*iter) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+
+        // #6554 "False positive eraseDereference - erase in while() loop"
+        check("typedef std::map<Packet> packetMap;\n"
+              "packetMap waitingPackets;\n"
+              "void ProcessRawPacket() {\n"
+              "    packetMap::iterator wpi;\n"
+              "    while ((wpi = waitingPackets.find(lastInOrder + 1)) != waitingPackets.end()) {\n"
+              "        waitingPackets.erase(wpi);\n"
+              "        for (unsigned pos = 0; pos < buf.size(); ) {     }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereference_break() {  // #3644
