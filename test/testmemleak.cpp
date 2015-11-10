@@ -6360,6 +6360,16 @@ private:
               "  S socket(i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #6693
+        check("struct CTest {\n"
+              "    void Initialise();\n"
+              "    void malloc();\n"
+              "};\n"
+              "void CTest::Initialise() {\n"
+              "    malloc();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {

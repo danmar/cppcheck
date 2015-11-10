@@ -2755,7 +2755,8 @@ void CheckMemoryLeakNoVar::check()
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
-        if (!tok->varId() && Token::Match(tok, "%name% (") && (!tok->next()->astParent() || tok->next()->astParent()->str() == "!" || tok->next()->astParent()->isComparisonOp()) && tok->next()->astOperand1() == tok) {
+        if (!tok->varId() && Token::Match(tok, "%name% (") && (!tok->function() || !Token::Match(tok->function()->retDef, "void %name%"))
+            && (!tok->next()->astParent() || tok->next()->astParent()->str() == "!" || tok->next()->astParent()->isComparisonOp()) && tok->next()->astOperand1() == tok) {
             const AllocType allocType = getAllocationType(tok, 0);
             if (allocType != No)
                 returnValueNotUsedError(tok, tok->str());
