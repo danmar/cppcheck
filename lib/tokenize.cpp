@@ -2844,7 +2844,7 @@ void Tokenizer::setVarId()
 
         if (tok->isName()) {
             // don't set variable id after a struct|enum|union
-            if (Token::Match(tok->previous(), "struct|enum|union"))
+            if (Token::Match(tok->previous(), "struct|enum|union") || (isCPP() && tok->strAt(-1) == "class"))
                 continue;
 
             if (!isC()) {

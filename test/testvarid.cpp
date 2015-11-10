@@ -88,6 +88,7 @@ private:
         TEST_CASE(varid56); // function with a throw()
         TEST_CASE(varid57); // #6636: new scope by {}
         TEST_CASE(varid58); // #6638: for loop in for condition
+        TEST_CASE(varid59); // #6696
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -1056,6 +1057,24 @@ private:
                                  "6: }\n"
                                  "7: }\n";
         ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+    }
+
+    void varid59() { // #6696
+        const char code[] = "class DLLSYM B;\n"
+                            "struct B {\n"
+                            "    ~B() {}\n"
+                            "};";
+        const char expected[] = "\n\n##file 0\n"
+                                "1: class DLLSYM B@1 ;\n" // In this line, we cannot really do better...
+                                "2: struct B {\n"
+                                "3: ~ B@1 ( ) { }\n" // ...but here we could
+                                "4: } ;\n";
+        const char wanted[] = "\n\n##file 0\n"
+                              "1: class DLLSYM B@1 ;\n"
+                              "2: struct B {\n"
+                              "3: ~ B ( ) { }\n"
+                              "4: } ;\n";;
+        TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
     }
 
     void varid_cpp_keywords_in_c_code() {
