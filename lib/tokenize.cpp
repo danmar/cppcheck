@@ -6757,7 +6757,8 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 tok3 = tok3->previous();
                 tok3->deleteThis();
                 ret = true;
-            }
+            } else if (Token::Match(valueToken, "& %name% ;"))
+                tok3->insertToken("&", true);
         }
 
         if (Token::simpleMatch(tok3, "= {")) {

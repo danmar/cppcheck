@@ -181,6 +181,7 @@ private:
         TEST_CASE(simplifyKnownVariables57);    // ticket #4724
         TEST_CASE(simplifyKnownVariables58);    // ticket #5268
         TEST_CASE(simplifyKnownVariables59);    // skip for header
+        TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -2672,6 +2673,21 @@ private:
                       "for ( i = 0 , j = 1 ; i < 3 , j < 12 ; i ++ , j ++ ) {\n"
                       "a [ i ] = 0 ;\n"
                       "}\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables60() { // #6829
+        const char code[] = "void f() {\n"
+                            "  int i = 1;\n"
+                            "  const int * const constPtrToConst = &i;\n"
+                            "  std::cout << *constPtrToConst << std::endl;\n"
+                            "  std::cout << constPtrToConst << std::endl;\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "int i ; i = 1 ;\n"
+                      "const int * constPtrToConst ; constPtrToConst = & i ;\n"
+                      "std :: cout << i << std :: endl ;\n"
+                      "std :: cout << & i << std :: endl ;\n"
                       "}", tokenizeAndStringify(code, true));
     }
 
