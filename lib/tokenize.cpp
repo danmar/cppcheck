@@ -2962,15 +2962,20 @@ void Tokenizer::setVarId()
                     }
 
                     // constructor with initializer list
-                    if (Token::Match(tok2, ") : %name% (|{")) {
+                    if (Token::Match(tok2, ") : %name% (|{|<")) {
                         Token *tok3 = tok2;
                         do {
                             Token *vartok = tok3->tokAt(2);
                             std::map<std::string, unsigned int>::const_iterator varpos = thisClassVars.find(vartok->str());
                             if (varpos != thisClassVars.end())
                                 vartok->varId(varpos->second);
-                            tok3 = vartok->linkAt(1);
-                        } while (Token::Match(tok3, ")|} [:,] %name% (|{"));
+                            if (vartok->strAt(1) == "<") {
+                                tok3 = vartok->next()->findClosingBracket();
+                                if (tok3 && tok3->next()->link())
+                                    tok3 = tok3->next()->link();
+                            } else
+                                tok3 = vartok->linkAt(1);
+                        } while (Token::Match(tok3, ")|} [:,] %name% (|{|<"));
                         if (Token::Match(tok3, ")|} {")) {
                             setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
                         }

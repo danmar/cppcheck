@@ -1859,6 +1859,23 @@ private:
                       "3: A ( int x@2 ) : x@1 ( x@2 ) { }\n"
                       "4: } ;\n",
                       tokenize(code4));
+
+        const char code5[] = "class BCLass : public Ticket<void> {\n"
+                             "  BCLass();\n"
+                             "  PClass* member;\n"
+                             "};\n"
+                             "BCLass::BCLass() : Ticket<void>() {\n"
+                             "  member = 0;\n"
+                             "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class BCLass : public Ticket < void > {\n"
+                      "2: BCLass ( ) ;\n"
+                      "3: PClass * member@1 ;\n"
+                      "4: } ;\n"
+                      "5: BCLass :: BCLass ( ) : Ticket < void > ( ) {\n"
+                      "6: member@1 = 0 ;\n"
+                      "7: }\n",
+                      tokenize(code5));
     }
 
     void varid_operator() {
