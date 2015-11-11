@@ -76,6 +76,13 @@ bool CheckAutoVariables::isAutoVar(const Token *tok)
         return false;
     }
 
+    if (Token::Match(tok, "%name% .|::")) {
+        do {
+            tok = tok->tokAt(2);
+        } while (Token::Match(tok, "%name% .|::"));
+        if (Token::Match(tok, "%name% ("))
+            return false;
+    }
     return true;
 }
 

@@ -592,6 +592,13 @@ private:
               "  }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #6551
+        check("bool foo( ) {\n"
+              "  SwTxtFld * pTxtFld = GetFldTxtAttrAt();\n"
+              "  delete static_cast<SwFmtFld*>(&pTxtFld->GetAttr());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {
