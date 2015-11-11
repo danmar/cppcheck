@@ -5608,6 +5608,16 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // Member variable pointers
+        check("void podMemPtrs() {\n"
+              "    int POD::*memptr;\n"
+              "    memptr = &POD::a;\n"
+              "    memptr = &POD::b;\n"
+              "    if (memptr)\n"
+              "        memptr = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'memptr' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantMemWrite() {

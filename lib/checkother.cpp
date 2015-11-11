@@ -462,9 +462,9 @@ static bool checkExceptionHandling(const Token* tok)
 {
     const Variable* var = tok->variable();
     const Scope* upperScope = tok->scope();
-    if (upperScope == var->scope())
+    if (var && upperScope == var->scope())
         return true;
-    while (upperScope && upperScope->type != Scope::eTry && upperScope->type != Scope::eLambda && upperScope->nestedIn != var->scope() && upperScope->isExecutable()) {
+    while (upperScope && upperScope->type != Scope::eTry && upperScope->type != Scope::eLambda && (!var || upperScope->nestedIn != var->scope()) && upperScope->isExecutable()) {
         upperScope = upperScope->nestedIn;
     }
     if (upperScope && upperScope->type == Scope::eTry) {
