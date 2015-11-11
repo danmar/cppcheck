@@ -271,3 +271,36 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
     return true;
 }
 
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid)
+{
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() == varid) {
+            if (Token::Match(tok, "%name% =|++|--"))
+                return true;
+
+            if (Token::Match(tok->previous(), "++|-- %name%"))
+                return true;
+
+            if (Token::Match(tok->tokAt(-2), "[(,] & %var% [,)]"))
+                return true; // TODO: check if function parameter is const
+
+            if (Token::Match(tok->previous(), "[(,] %var% [,)]")) {
+                const Token *parent = tok->astParent();
+                while (parent && parent->str() == ",")
+                    parent = parent->astParent();
+                if (parent && parent->str() == "(") {
+                    if (parent->astOperand1() && parent->astOperand1()->isName() && !parent->astOperand1()->function())
+                        return true;
+                    // TODO: check if function parameter is non-const reference etc..
+                }
+            }
+
+            const Token *parent = tok->astParent();
+            while (Token::Match(parent, ".|::"))
+                parent = parent->astParent();
+            if (parent && parent->tokType() == Token::eIncDecOp)
+                return true;
+        }
+    }
+    return false;
+}

@@ -142,6 +142,13 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
         if (Token::Match(tok2, "if|while (")) {
             if (!islocal && tok2->str() == "while")
                 continue;
+            if (tok2->str() == "while") {
+                // is variable changed in loop?
+                const Token *bodyStart = tok2->linkAt(1)->next();
+                const Token *bodyEnd   = bodyStart ? bodyStart->link() : nullptr;
+                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid))
+                    continue;
+            }
 
             // parse condition
             const Token * const end = tok2->next()->link();

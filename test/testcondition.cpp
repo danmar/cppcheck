@@ -178,6 +178,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int x) {\n"
+              "    int a = 100;\n"
+              "    while (x) {\n"
+              "        int y = 16 | a;\n"
+              "        while (y != 0) y--;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // calling function
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
