@@ -1831,6 +1831,22 @@ private:
                       "3: int x@2 ; int y@3 ;\n"
                       "4: } ;\n",
                       tokenize(code8));
+
+        // #7123
+        const char code9[] = "class A {\n"
+                             "  double *work;\n"
+                             "  A(const Matrix &m) throw (e);\n"
+                             "};\n"
+                             "A::A(const Matrix &m) throw (e) : work(0)\n"
+                             "{}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class A {\n"
+                      "2: double * work@1 ;\n"
+                      "3: A ( const Matrix & m@2 ) throw ( e ) ;\n"
+                      "4: } ;\n"
+                      "5: A :: A ( const Matrix & m@3 ) throw ( e ) : work@1 ( 0 )\n"
+                      "6: { }\n",
+                      tokenize(code9));
     }
 
     void varid_initListWithBaseTemplate() {

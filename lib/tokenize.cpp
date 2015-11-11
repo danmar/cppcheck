@@ -2961,6 +2961,9 @@ void Tokenizer::setVarId()
                         setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
                     }
 
+                    if (Token::Match(tok2, ") %name% ("))
+                        tok2 = tok2->linkAt(2);
+
                     // constructor with initializer list
                     if (Token::Match(tok2, ") : %name% (|{|<")) {
                         Token *tok3 = tok2;
