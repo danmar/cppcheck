@@ -458,6 +458,28 @@ static void eraseMemberAssignments(const unsigned int varId, const std::map<unsi
     }
 }
 
+static bool checkExceptionHandling(const Token* tok)
+{
+    const Variable* var = tok->variable();
+    const Scope* upperScope = tok->scope();
+    if (upperScope == var->scope())
+        return true;
+    while (upperScope && upperScope->type != Scope::eTry && upperScope->type != Scope::eLambda && upperScope->nestedIn != var->scope() && upperScope->isExecutable()) {
+        upperScope = upperScope->nestedIn;
+    }
+    if (upperScope && upperScope->type == Scope::eTry) {
+        // Check all exception han
+        const Token* tok2 = upperScope->classEnd;
+        while (Token::simpleMatch(tok2, "} catch (")) {
+            tok2 = tok2->linkAt(2)->next();
+            if (Token::findmatch(tok2, "%varid%", tok2->link(), var->declarationId()))
+                return false;
+            tok2 = tok2->link();
+        }
+    }
+    return true;
+}
+
 void CheckOther::checkRedundantAssignment()
 {
     const bool printPerformance = _settings->isEnabled("performance");
@@ -541,7 +563,8 @@ void CheckOther::checkRedundantAssignment()
                             else if (printPerformance) {
                                 const bool nonlocal = nonLocal(it->second->variable());
                                 if (printInconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
-                                    redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
+                                    if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
+                                        redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
                             }
                         }
                         it->second = tok;

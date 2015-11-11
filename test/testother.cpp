@@ -5568,6 +5568,46 @@ private:
               "    i = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #6555
+        check("void foo() {\n"
+              "    char *p = 0;\n"
+              "    try {\n"
+              "        p = fred();\n"
+              "        p = wilma();\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        barney(p);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    char *p = 0;\n"
+              "    try {\n"
+              "        p = fred();\n"
+              "        p = wilma();\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        barney(x);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (performance) Variable 'p' is reassigned a value before the old one has been used.\n"
+                      "[test.cpp:2]: (style) The scope of the variable 'p' can be reduced.\n", errout.str());
+
+        check("void foo() {\n"
+              "    char *p = 0;\n"
+              "    try {\n"
+              "        if(z) {\n"
+              "            p = fred();\n"
+              "            p = wilma();\n"
+              "        }\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        barney(p);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
