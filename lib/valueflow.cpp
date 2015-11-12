@@ -598,6 +598,25 @@ static void valueFlowNumber(TokenList *tokenlist)
             ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
             value.setKnown();
             setTokenValue(tok, value);
+        } else if (tok->tokType() == Token::eChar) {
+            char c;
+            if (tok->str() == "\'\\n\'")
+                c = '\n';
+            else if (tok->str() == "\'\\r\'")
+                c = '\r';
+            else if (tok->str() == "\'\\t\'")
+                c = '\t';
+            else if (tok->str().size() == 3U &&
+                     tok->str()[0] == '\'' &&
+                     (tok->str()[1] & 0x80) == 0 &&
+                     tok->str()[2] == '\'')
+                c = tok->str()[1];
+            else
+                continue;
+
+            ValueFlow::Value value(c);
+            value.setKnown();
+            setTokenValue(tok, value);
         }
     }
 
