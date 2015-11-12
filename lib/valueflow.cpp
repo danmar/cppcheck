@@ -558,10 +558,15 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value)
                     result.inconclusive = value1->inconclusive | value2->inconclusive;
                     result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
                     result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
+                    if (value1->valueKind == value2->valueKind)
+                        result.valueKind = value1->valueKind;
                     if (value1->tokvalue->tokType() == Token::eString) {
                         const std::string s = value1->tokvalue->strValue();
                         const MathLib::bigint index = value2->intvalue;
-                        if (index >= 0 && index < s.size()) {
+                        if (index == s.size()) {
+                            result.intvalue = 0;
+                            setTokenValue(parent, result);
+                        } else if (index >= 0 && index < s.size()) {
                             result.intvalue = s[index];
                             setTokenValue(parent, result);
                         }

@@ -236,6 +236,18 @@ private:
                "  *x = 0;\n"     // .. => x value is a
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "a"));
+
+        code  = "char f() {\n"
+                "    const char *x = \"abcd\";\n"
+                "    return x[0];\n"
+                "}";
+        ASSERT_EQUALS((int)('a'), valueOfTok(code, "[").intvalue);
+
+        code  = "char f() {\n"
+                "    const char *x = \"\";\n"
+                "    return x[0];\n"
+                "}";
+        ASSERT_EQUALS(0, valueOfTok(code, "[").intvalue);
     }
 
     void valueFlowCalculations() {
