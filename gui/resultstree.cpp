@@ -903,7 +903,7 @@ void ResultsTree::SaveResults(Report *report) const
 
     for (int i = 0; i < mModel.rowCount(); i++) {
         QStandardItem *item = mModel.item(i, 0);
-        if (!isRowHidden(i, item->index()))
+        if (!isRowHidden(i, QModelIndex()))
             SaveErrors(report, item);
     }
 
