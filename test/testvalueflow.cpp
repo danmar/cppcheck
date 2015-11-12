@@ -1694,6 +1694,15 @@ private:
 
         code = "void f() {\n"
                "  int x = 0;\n"
+               "  do {\n"
+               "    if (x < 0) {}\n"
+               "    fred.dostuff(x);\n"
+               "  } while (abc);\n"
+               "}\n";
+        ASSERT(isNotKnownValues(code, "<"));
+
+        code = "void f() {\n"
+               "  int x = 0;\n"
                "  if (y) { dostuff(x); }\n"
                "  if (!x) {}\n"
                "}\n";

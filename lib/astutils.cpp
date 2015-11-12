@@ -288,11 +288,9 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
                 const Token *parent = tok->astParent();
                 while (parent && parent->str() == ",")
                     parent = parent->astParent();
-                if (parent && parent->str() == "(") {
-                    if (parent->astOperand1() && parent->astOperand1()->isName() && !parent->astOperand1()->function())
-                        return true;
-                    // TODO: check if function parameter is non-const reference etc..
-                }
+                if (parent && Token::Match(parent->previous(), "%name% (") && !parent->previous()->function())
+                    return true;
+                // TODO: check if function parameter is non-const reference etc..
             }
 
             const Token *parent = tok->astParent();
