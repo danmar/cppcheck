@@ -90,7 +90,7 @@ else ifeq ($(CXX), clang++)
 endif
 
 ifeq ($(HAVE_RULES),yes)
-    CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)
+    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell pcre-config --cflags)
     ifdef LIBS
         LIBS += $(shell pcre-config --libs)
     else
