@@ -2882,7 +2882,11 @@ void Tokenizer::setVarId()
     if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "%name% :: %name%")) {
-                const std::string& str3 = tok2->strAt(3);
+                const Token* tok3 = tok2->next();
+                do {
+                    tok3 = tok3->tokAt(2);
+                } while (Token::Match(tok3, ":: %name%"));
+                const std::string& str3 = tok3->str();
                 if (str3 == "(")
                     allMemberFunctions.push_back(tok2);
                 else if (str3 != "::" && tok2->strAt(-1) != "::") // Support only one depth
@@ -2894,10 +2898,17 @@ void Tokenizer::setVarId()
     // class members..
     std::map<std::string, std::map<std::string, unsigned int> > varsByClass;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "namespace|class|struct %name% {|:")) {
-            const std::string &classname(tok->next()->str());
-            std::map<std::string, unsigned int>& thisClassVars = varsByClass[classname];
+        if (Token::Match(tok, "namespace|class|struct %name% {|:|::")) {
+            std::string classname(tok->next()->str());
             const Token* tokStart = tok->tokAt(2);
+            unsigned int nestedCount = 1;
+            while (Token::Match(tokStart, ":: %name%")) {
+                classname += " :: " + tokStart->strAt(1);
+                tokStart = tokStart->tokAt(2);
+                nestedCount++;
+            }
+
+            std::map<std::string, unsigned int>& thisClassVars = varsByClass[classname];
             while (tokStart && tokStart->str() != "{") {
                 if (Token::Match(tokStart, "public|private|protected %name%"))
                     tokStart = tokStart->next();
@@ -2951,7 +2962,7 @@ void Tokenizer::setVarId()
                 // Found a class function..
                 if (Token::Match(tok2, funcpattern.c_str())) {
                     // Goto the end parentheses..
-                    tok2 = tok2->linkAt(3);
+                    tok2 = tok2->linkAt(nestedCount*2+1);
                     if (!tok2)
                         break;
 
