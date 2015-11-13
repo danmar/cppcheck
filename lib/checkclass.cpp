@@ -241,8 +241,8 @@ void CheckClass::checkExplicitConstructors()
             }
         }
 
-        // Abstract classes can't be instantiated. But if there is "misuse" by derived
-        // classes then these constructors must be explicit.
+        // Abstract classes can't be instantiated. But if there is C++11
+        // "misuse" by derived classes then these constructors must be explicit.
         if (isAbstractClass && _settings->standards.cpp != Standards::CPP11)
             continue;
 
@@ -256,13 +256,11 @@ void CheckClass::checkExplicitConstructors()
             if (!func->isConstructor() || func->isDelete() || (!func->hasBody() && func->access == Private))
                 continue;
 
-            if (!func->isExplicit() && func->argCount() == 1) {
-                // We must decide, if it is not a copy/move constructor, or it is a copy/move constructor of abstract class.
-                if (func->type != Function::eCopyConstructor && func->type != Function::eMoveConstructor) {
-                    noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
-                } else if (isAbstractClass) {
-                    noExplicitCopyMoveConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
-                }
+            if (!func->isExplicit() &&
+                func->argCount() == 1 &&
+                func->type != Function::eCopyConstructor &&
+                func->type != Function::eMoveConstructor) {
+                noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
             }
         }
     }
@@ -786,13 +784,6 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     const std::string message(std::string(isStruct ? "Struct" : "Class") + " '" + classname + "' has a constructor with 1 argument that is not explicit.");
     const std::string verbose(message + " Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided.");
     reportError(tok, Severity::style, "noExplicitConstructor", message + "\n" + verbose);
-}
-
-void CheckClass::noExplicitCopyMoveConstructorError(const Token *tok, const std::string &classname, bool isStruct)
-{
-    const std::string message(std::string(isStruct ? "Abstract struct" : "Abstract class") + " '" + classname + "' has a copy/move constructor that is not explicit.");
-    const std::string verbose(message + " For abstract classes, even copy/move constructors may be declared explicit, as, by definition, abstract classes cannot be instantiated, and so objects of such type should never be passed by value.");
-    reportError(tok, Severity::style, "noExplicitCopyMoveConstructor", message + "\n" + verbose);
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
