@@ -68,8 +68,6 @@ void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    // Using same iterator against different containers.
-    // for (it = foo.begin(); it != bar.end(); ++it)
     for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
         const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
 
@@ -77,8 +75,19 @@ void CheckStl::iterators()
         if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator|auto"))
             continue;
 
-        if (var->typeEndToken()->str() == "auto" && !Token::Match(var->typeEndToken(), "auto %name% ; %name% = %name% . begin|end ( )"))
-            continue;
+        if (var->typeEndToken()->str() == "auto") {
+            if (Token::Match(var->typeEndToken(), "auto %name% ; %name% = %var% . %name% ( )")) {
+                const Token* containertok = var->typeEndToken()->tokAt(5);
+                const Library::Container* container = _settings->library.detectContainer(containertok->variable()->typeStartToken());
+                if (!container)
+                    continue;
+
+                Library::Container::Yield yield = container->getYield(containertok->strAt(2));
+                if (yield != Library::Container::END_ITERATOR && yield != Library::Container::START_ITERATOR)
+                    continue;
+            } else
+                continue;
+        }
 
         if (var->type()) { // If it is defined, ensure that it is defined like an iterator
             // look for operator* and operator++
@@ -437,6 +446,10 @@ void CheckStl::pushback()
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = & %var% [")) {
+                // Skip it directly if it is a pointer or an array
+                if (tok->tokAt(3)->variable()->isArrayOrPointer())
+                    continue;
+
                 // Variable id for pointer
                 const unsigned int pointerId(tok->varId());
 
