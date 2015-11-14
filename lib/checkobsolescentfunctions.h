@@ -62,7 +62,7 @@ private:
     static std::map<std::string, std::string> _obsoleteC99Functions;
 
     /** init obsolete functions list ' */
-    void initObsoleteFunctions() {
+    static void initObsoleteFunctions() {
         // Obsolete posix functions, which messages suggest only one alternative and doesn't contain additional information.
         const struct {
             const char* bad;

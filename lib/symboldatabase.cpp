@@ -1301,7 +1301,7 @@ SymbolDatabase::~SymbolDatabase()
     }
 }
 
-bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart)
+bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart) const
 {
     if (tok->varId())
         return false;

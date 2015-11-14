@@ -317,7 +317,7 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
 //---------------------------------------------------------------------------
 
 // return temporary?
-bool CheckAutoVariables::returnTemporary(const Token *tok) const
+bool CheckAutoVariables::returnTemporary(const Token *tok)
 {
     bool func = false;     // Might it be a function call?
     bool retref = false;   // is there such a function that returns a reference?
