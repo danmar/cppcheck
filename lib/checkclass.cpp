@@ -260,10 +260,10 @@ void CheckClass::checkExplicitConstructors()
                 func->argCount() == 1 &&
                 func->type != Function::eCopyConstructor &&
                 func->type != Function::eMoveConstructor) {
-                noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
+                    noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
+                }
             }
         }
-    }
 }
 
 void CheckClass::copyconstructors()
@@ -413,26 +413,26 @@ bool CheckClass::canNotMove(const Scope *scope)
     return constructor && !(publicAssign || publicCopy || publicMove);
 }
 
-void CheckClass::assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::assignVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)
 {
     std::list<Variable>::const_iterator var;
     unsigned int count = 0;
 
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
-        if (var->declarationId() == varid) {
+        if (var->name() == varname) {
             usage[count].assign = true;
             return;
         }
     }
 }
 
-void CheckClass::initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initVar(const std::string &varname, const Scope *scope, std::vector<Usage> &usage)
 {
     std::list<Variable>::const_iterator var;
     unsigned int count = 0;
 
     for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
-        if (var->declarationId() == varid) {
+        if (var->name() == varname) {
             usage[count].init = true;
             return;
         }
@@ -491,7 +491,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%name% {|(") && Token::Match(ftok->linkAt(1), "}|) ,|{")) {
                 if (ftok->str() != func.name()) {
-                    initVar(ftok->varId(), scope, usage);
+                    initVar(ftok->str(), scope, usage);
                 } else { // c++11 delegate constructor
                     const Function *member = ftok->function();
                     // member function found
@@ -519,7 +519,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     }
                 }
             } else if (level != 0 && Token::Match(ftok, "%name% =")) // assignment in the initializer: var(value = x)
-                assignVar(ftok->varId(), scope, usage);
+                assignVar(ftok->str(), scope, usage);
 
             // Level handling
             if (ftok->link() && Token::Match(ftok, "(|<"))
@@ -539,7 +539,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %name%")) {
-            assignVar(ftok->next()->varId(), scope, usage);
+            assignVar(ftok->strAt(1), scope, usage);
         }
 
         // Before a new statement there is "[{};()=[]"
@@ -567,7 +567,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
                 if (var->declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
-                    assignVar(ftok->next()->varId(), scope, usage);
+                    assignVar(ftok->next()->str(), scope, usage);
                     break;
                 }
             }
@@ -613,7 +613,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         else if (Token::Match(ftok, "::| memset ( %name% ,")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
-            assignVar(ftok->tokAt(2)->varId(), scope, usage);
+            assignVar(ftok->strAt(2), scope, usage);
             ftok = ftok->linkAt(1);
             continue;
         }
@@ -688,7 +688,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             tok2 = tok2->next();
                             if (tok2->str() == "&")
                                 tok2 = tok2->next();
-                            assignVar(tok2->varId(), scope, usage);
+                            assignVar(tok2->str(), scope, usage);
                         }
                     }
                 }
@@ -718,7 +718,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 else {
                     for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->next()->link(); tok = tok->next()) {
                         if (tok->isName()) {
-                            assignVar(tok->varId(), scope, usage);
+                            assignVar(tok->str(), scope, usage);
                         }
                     }
                 }
@@ -727,7 +727,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%name% =")) {
-            assignVar(ftok->varId(), scope, usage);
+            assignVar(ftok->str(), scope, usage);
             bool bailout = ftok->variable() && ftok->variable()->isReference();
             const Token* tok2 = ftok->tokAt(2);
             if (tok2->str() == "&") {
@@ -735,7 +735,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 bailout = true;
             }
             if (tok2->variable() && (bailout || tok2->variable()->isArray()) && tok2->strAt(1) != "[")
-                assignVar(tok2->varId(), scope, usage);
+                assignVar(tok2->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
@@ -750,19 +750,19 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     break;
             }
             if (tok2 && tok2->strAt(1) == "=")
-                assignVar(ftok->varId(), scope, usage);
+                assignVar(ftok->str(), scope, usage);
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %name% =")) {
-            assignVar(ftok->next()->varId(), scope, usage);
+            assignVar(ftok->next()->str(), scope, usage);
         } else if (Token::Match(ftok, "* this . %name% =")) {
-            assignVar(ftok->tokAt(3)->varId(), scope, usage);
+            assignVar(ftok->strAt(3), scope, usage);
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%name% . clear|Clear (")) {
-            assignVar(ftok->varId(), scope, usage);
+            assignVar(ftok->str(), scope, usage);
         }
     }
 }
