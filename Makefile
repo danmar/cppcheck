@@ -87,6 +87,10 @@ ifeq ($(CXX), g++)
     override CXXFLAGS += -std=c++0x
 else ifeq ($(CXX), clang++)
     override CXXFLAGS += -std=c++0x
+else ifeq ($(CXX), c++)
+    ifeq ($(shell uname -s), Darwin)
+        override CXXFLAGS += -std=c++0x
+    endif
 endif
 
 ifeq ($(HAVE_RULES),yes)
