@@ -359,6 +359,10 @@ int main(int argc, char **argv)
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq ($(CXX), clang++)\n"
          << "    override CXXFLAGS += -std=c++0x\n"
+         << "else ifeq ($(CXX), c++)\n"
+         << "    ifeq ($(shell uname -s), Darwin)\n"
+         << "        override CXXFLAGS += -std=c++0x\n"
+         << "    endif\n"
          << "endif\n"
          << "\n";
 
