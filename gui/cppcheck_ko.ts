@@ -406,7 +406,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <source>&amp;Recheck files</source>
-        <translation>파일 재검사(&amp;R)</translation>
+        <translation type="obsolete">파일 재검사(&amp;R)</translation>
     </message>
     <message>
         <source>Ctrl+R</source>
@@ -895,6 +895,18 @@ Options:
         <source>Enforce C</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&amp;Recheck modified files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Recheck all files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C/C++ Source (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -1227,6 +1239,10 @@ Please select the directory where file is located.</source>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Inconclusive</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1388,18 +1404,26 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Advanced</source>
-        <translation>고급</translation>
+        <translation type="obsolete">고급</translation>
     </message>
     <message>
         <source>&amp;Show inconclusive errors</source>
-        <translation>불확실한 에러 표시(&amp;S)</translation>
+        <translation type="obsolete">불확실한 에러 표시(&amp;S)</translation>
     </message>
     <message>
         <source>S&amp;how internal warnings in log</source>
-        <translation>로그에 내부 경고 표시(&amp;H)</translation>
+        <translation type="obsolete">로그에 내부 경고 표시(&amp;H)</translation>
     </message>
     <message>
         <source>Display error Id in column &quot;Id&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check for inconclusive errors also</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -364,7 +364,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>&amp;Recheck files</source>
-        <translation type="unfinished">&amp;Revérifier les fichiers</translation>
+        <translation type="obsolete">&amp;Revérifier les fichiers</translation>
     </message>
     <message>
         <source>Ctrl+R</source>
@@ -847,6 +847,18 @@ Options:
         <source>Enforce C</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&amp;Recheck modified files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Recheck all files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C/C++ Source (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -1173,6 +1185,10 @@ Please select the default editor application in preferences/Applications.</sourc
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Inconclusive</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ResultsView</name>
@@ -1333,19 +1349,15 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Advanced</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Show inconclusive errors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>S&amp;how internal warnings in log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Display error Id in column &quot;Id&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check for inconclusive errors also</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
