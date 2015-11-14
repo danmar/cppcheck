@@ -260,10 +260,10 @@ void CheckClass::checkExplicitConstructors()
                 func->argCount() == 1 &&
                 func->type != Function::eCopyConstructor &&
                 func->type != Function::eMoveConstructor) {
-                    noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
-                }
+                noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
             }
         }
+    }
 }
 
 void CheckClass::copyconstructors()
