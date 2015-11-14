@@ -367,6 +367,18 @@ private:
                                   "};");
         ASSERT_EQUALS("", errout.str());
 
+        // #6692
+        checkDuplInheritedMembers("namespace test1 {\n"
+                                  "   struct SWibble{};\n"
+                                  "   typedef SWibble wibble;\n"
+                                  "}\n"
+                                  "namespace test2 {\n"
+                                  "   struct SWibble : public test1::wibble {\n"
+                                  "   int Value;\n"
+                                  "   };\n"
+                                  "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkCopyConstructor(const char code[]) {
