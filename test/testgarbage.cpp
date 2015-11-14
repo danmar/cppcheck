@@ -205,6 +205,7 @@ private:
         TEST_CASE(garbageCode154); // #7112
         TEST_CASE(garbageCode155); // #7118
         TEST_CASE(garbageCode156); // #7120
+        TEST_CASE(garbageCode157); // #7131
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1230,6 +1231,14 @@ private:
 
     void garbageCode156() { // #7120
         checkCode("struct {}a; d f() { c ? : } {}a.p");
+    }
+
+    void garbageCode157() { // #7131
+        ASSERT_THROW(checkCode("namespace std {\n"
+                               "  template < typename >\n"
+                               "  void swap(); \n"
+                               "}"
+                               "template std::swap\n"), InternalError);
     }
 
     void garbageValueFlow() {

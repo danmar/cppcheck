@@ -2886,6 +2886,8 @@ void Tokenizer::setVarId()
                 do {
                     tok3 = tok3->tokAt(2);
                 } while (Token::Match(tok3, ":: %name%"));
+                if (!tok3)
+                    syntaxError(tok2);
                 const std::string& str3 = tok3->str();
                 if (str3 == "(")
                     allMemberFunctions.push_back(tok2);
