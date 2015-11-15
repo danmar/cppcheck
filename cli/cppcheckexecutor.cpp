@@ -190,7 +190,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
  * \return size of array
  * */
 template<typename T, int size>
-constexpr size_t GetArrayLength(const T(&)[size])
+std::size_t GetArrayLength(const T(&)[size])
 {
     return size;
 }
