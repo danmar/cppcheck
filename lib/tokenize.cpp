@@ -138,9 +138,13 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
         return Token::getStrLength(type) + 1U;
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
-    if (it == _typeSize.end())
-        return 0;
-    else if (type->isLong()) {
+    if (it == _typeSize.end()) {
+        const Library::PodType* podtype = _settings->library.podtype(type->str());
+        if (!podtype)
+            return 0;
+
+        return podtype->size;
+    } else if (type->isLong()) {
         if (type->str() == "double")
             return _settings->sizeof_long_double;
         else if (type->str() == "long")

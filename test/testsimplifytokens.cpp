@@ -83,6 +83,7 @@ private:
         TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
         TEST_CASE(sizeof20);    // #2024 - sizeof a)
         TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
+        TEST_CASE(sizeof22);
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
@@ -1394,6 +1395,12 @@ private:
 
         // don't segfault
         tok(code);
+    }
+
+    void sizeof22() {
+        // sizeof from library
+        const char code[] = "foo(sizeof(uint32_t), sizeof(std::uint32_t));";
+        TODO_ASSERT_EQUALS("foo ( 4 , 4 ) ;", "foo ( 4 , sizeof ( std :: uint32_t ) ) ;", tokWithStdLib(code));
     }
 
     void sizeofsizeof() {
