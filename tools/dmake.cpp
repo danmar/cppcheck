@@ -427,7 +427,7 @@ int main(int argc, char **argv)
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
     fout << "tags:\n";
-    fout << "\tctags -R --exclude=doxyoutput .\n\n";
+    fout << "\tctags -R --exclude=doxyoutput --exclude=test/cfg cli externals gui lib test\n\n";
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";

@@ -284,7 +284,7 @@ man/cppcheck.1:	$(MAN_SOURCE)
 	$(XP) $(DB2MAN) $(MAN_SOURCE)
 
 tags:
-	ctags -R --exclude=doxyoutput .
+	ctags -R --exclude=doxyoutput --exclude=test/cfg cli externals gui lib test
 
 install: cppcheck
 	install -d ${BIN}

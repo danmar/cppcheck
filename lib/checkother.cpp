@@ -561,7 +561,7 @@ void CheckOther::checkRedundantAssignment()
                             if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
                             else if (printPerformance) {
-								// See #7133
+                                // See #7133
                                 const bool nonlocal = it->second->variable() && nonLocal(it->second->variable());
                                 if (printInconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
                                     if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
