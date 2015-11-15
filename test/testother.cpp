@@ -5641,7 +5641,29 @@ private:
               "   catch (const uno::Exception&)  {\n"
               "   }\n"
               "}", "test.cpp", false, true);
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:9]: (performance) Variable 'Name' is reassigned a value before the old one has been used.\n", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:6] -> [test.cpp:9]: (performance) Variable 'Name' is reassigned a value before the old one has been used.\n",
+                           errout.str());
+
+        check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
+              "BitmapBuffer aSrcBuf;\n"
+              "    aSrcBuf.mnBitCount = nSrcBits;\n"
+              "    BitmapBuffer aDstBuf;\n"
+              "    aSrcBuf.mnBitCount = nDestBits;\n"
+              "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:3] -> [test.c:5]: (performance) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n", errout.str());
+        check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
+              "BitmapBuffer aSrcBuf;\n"
+              "    aSrcBuf.mnBitCount = nSrcBits;\n"
+              "    BitmapBuffer aDstBuf;\n"
+              "    aSrcBuf.mnBitCount = nDestBits;\n"
+              "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (performance, inconclusive) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
+                           "[test.cpp:3] -> [test.cpp:5]: (performance) Variable 'mnBitCount' is reassigned a value before the old one has been used.\n",
+                           errout.str());
+
     }
 
     void redundantMemWrite() {
