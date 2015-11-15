@@ -209,6 +209,13 @@ private:
                 "  *x = 0;\n"  // <- x can point at i
                 "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "& i"));
+
+        code  = "void f() {\n"
+                "  struct X *x;\n"
+                "  x = &x[1];\n"
+                "}";
+        ASSERT_EQUALS(true, tokenValues(code, "&").empty());
+        ASSERT_EQUALS(true, tokenValues(code, "x [").empty());
     }
 
     void valueFlowArrayElement() {

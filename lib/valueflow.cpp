@@ -703,7 +703,16 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
             continue;
 
         // child should be some buffer or variable
-        if (!Token::Match(tok->astOperand1(), "%name%|.|[|;"))
+        const Token *vartok = tok->astOperand1();
+        while (vartok) {
+            if (vartok->str() == "[")
+                vartok = vartok->astOperand1();
+            else if (vartok->str() == "." || vartok->str() == "::")
+                vartok = vartok->astOperand2();
+            else
+                break;
+        }
+        if (!(vartok && vartok->variable() && !vartok->variable()->isPointer()))
             continue;
 
         ValueFlow::Value value;
