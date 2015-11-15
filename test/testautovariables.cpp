@@ -79,7 +79,6 @@ private:
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
-        TEST_CASE(testautovar_return4); // ticket #3030
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
         TEST_CASE(testinvaliddealloc_C);
@@ -88,6 +87,9 @@ private:
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
+        TEST_CASE(returnLocalVariable3); // &x[0]
+        TEST_CASE(returnLocalVariable4); // x+y
+        TEST_CASE(returnLocalVariable5); // cast
 
         // return reference..
         TEST_CASE(returnReference1);
@@ -464,23 +466,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovar_return4() {
-        // #3030
-        check("char *foo()\n"
-              "{\n"
-              "    char q[] = \"AAAAAAAAAAAA\";\n"
-              "    return &q[1];\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of an auto-variable returned.\n", errout.str());
-
-        check("char *foo()\n"
-              "{\n"
-              "    static char q[] = \"AAAAAAAAAAAA\";\n"
-              "    return &q[1];\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void testautovar_extern() {
         check("struct foo *f()\n"
               "{\n"
@@ -671,6 +656,40 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void returnLocalVariable3() { // &x[..]
+        // #3030
+        check("char *foo() {\n"
+              "    char q[] = \"AAAAAAAAAAAA\";\n"
+              "    return &q[1];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
+
+        check("char *foo()\n"
+              "{\n"
+              "    static char q[] = \"AAAAAAAAAAAA\";\n"
+              "    return &q[1];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnLocalVariable4() { // x+y
+        check("char *foo() {\n"
+              "    char x[10] = {0};\n"
+              "    return x+5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
+    }
+
+    void returnLocalVariable5() { // cast
+        check("char *foo() {\n"
+              "    int x[10] = {0};\n"
+              "    return (char *)x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
+    }
+
 
     void returnReference1() {
         check("std::string &foo()\n"
