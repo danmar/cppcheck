@@ -634,6 +634,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Pointer to local array variable returned.\n", errout.str());
 
+        check("char *foo()\n" // use ValueFlow
+              "{\n"
+              "    char str[100] = {0};\n"
+              "    char *p = str;\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Pointer to local array variable returned.\n", errout.str());
+
         check("class Fred {\n"
               "    char *foo();\n"
               "};\n"

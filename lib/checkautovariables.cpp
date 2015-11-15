@@ -88,9 +88,21 @@ bool CheckAutoVariables::isAutoVar(const Token *tok)
 
 bool CheckAutoVariables::isAutoVarArray(const Token *tok)
 {
+    // Variable
     const Variable *var = tok->variable();
+    if (var && var->isLocal() && !var->isStatic() && var->isArray() && !var->isPointer())
+        return true;
 
-    return (var && var->isLocal() && !var->isStatic() && var->isArray() && !var->isPointer());
+    // ValueFlow
+    if (var && var->isPointer()) {
+        for (std::list<ValueFlow::Value>::const_iterator it = tok->values.begin(); it != tok->values.end(); ++it) {
+            const ValueFlow::Value &val = *it;
+            if (val.tokvalue && isAutoVarArray(val.tokvalue))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 // Verification that we really take the address of a local variable
