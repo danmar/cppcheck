@@ -680,6 +680,12 @@ private:
               "    return x+5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
+
+        check("char *foo(int y) {\n"
+              "    char x[10] = {0};\n"
+              "    return (x+8)-y;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Pointer to local array variable returned.\n", errout.str());
     }
 
     void returnLocalVariable5() { // cast

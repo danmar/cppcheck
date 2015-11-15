@@ -99,6 +99,13 @@ bool CheckAutoVariables::isAutoVarArray(const Token *tok)
     if (tok->str() == "+")
         return isAutoVarArray(tok->astOperand1()) || isAutoVarArray(tok->astOperand2());
 
+    // x-intexpr
+    if (tok->str() == "-")
+        return isAutoVarArray(tok->astOperand1()) &&
+               tok->astOperand2() &&
+               tok->astOperand2()->valueType() &&
+               tok->astOperand2()->valueType()->isIntegral();
+
     const Variable *var = tok->variable();
     if (!var)
         return false;
