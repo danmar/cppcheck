@@ -148,6 +148,7 @@ private:
         TEST_CASE(incompleteArrayFill);
 
         TEST_CASE(redundantVarAssignment);
+		TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -5617,7 +5618,30 @@ private:
               "    if (memptr)\n"
               "        memptr = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance, inconclusive) Variable 'memptr' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (performance) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+	 }
+
+	 void redundantVarAssignment_7133() {
+        // #7133
+		check("sal_Int32 impl_Export() {\n"
+              "   try {\n"
+              "        try  {\n"
+              "          uno::Sequence< uno::Any > aArgs(2);\n"
+              "          beans::NamedValue aValue;\n"
+              "          aValue.Name = \"DocumentHandler\";\n"
+              "          aValue.Value <<= xDocHandler;\n"
+              "          aArgs[0] <<= aValue;\n"
+              "          aValue.Name = \"Model\";\n"
+              "          aValue.Value <<= xDocumentComp;\n"
+              "          aArgs[1] <<= aValue;\n"
+              "        }\n"
+              "        catch (const uno::Exception&) {\n"
+              "        }\n"
+              "   }\n"
+              "   catch (const uno::Exception&)  {\n"
+              "   }\n"
+			  "}", "test.cpp", false, true);
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:9]: (performance) Variable 'Name' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantMemWrite() {

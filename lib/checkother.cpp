@@ -467,7 +467,7 @@ static bool checkExceptionHandling(const Token* tok)
     while (upperScope && upperScope->type != Scope::eTry && upperScope->type != Scope::eLambda && (!var || upperScope->nestedIn != var->scope()) && upperScope->isExecutable()) {
         upperScope = upperScope->nestedIn;
     }
-    if (upperScope && upperScope->type == Scope::eTry) {
+    if (var && upperScope && upperScope->type == Scope::eTry) {
         // Check all exception han
         const Token* tok2 = upperScope->classEnd;
         while (Token::simpleMatch(tok2, "} catch (")) {
@@ -561,7 +561,8 @@ void CheckOther::checkRedundantAssignment()
                             if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, tok->str());
                             else if (printPerformance) {
-                                const bool nonlocal = nonLocal(it->second->variable());
+								// See #7133
+                                const bool nonlocal = it->second->variable() && nonLocal(it->second->variable());
                                 if (printInconclusive || !nonlocal) // see #5089 - report inconclusive only when requested
                                     if (_tokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
                                         redundantAssignmentError(it->second, tok, tok->str(), nonlocal); // Inconclusive for non-local variables
