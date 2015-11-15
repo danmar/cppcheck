@@ -180,18 +180,9 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         }
 
         // Filter errors
-        else if (std::strncmp(argv[i], "--exitcode-suppressions", 23) == 0) {
-            std::string filename;
-
-            // exitcode-suppressions filename.txt
-            if (std::strcmp(argv[i], "--exitcode-suppressions") == 0) {
-                // Error message to be removed in 1.72
-                PrintMessage("cppcheck: '--exitcode-suppressions <file>' has been removed, use '--exitcode-suppressions=<file>' instead.");
-                return false;
-            }
-
+        else if (std::strncmp(argv[i], "--exitcode-suppressions=", 24) == 0) {
             // exitcode-suppressions=filename.txt
-            filename = 24 + argv[i];
+            std::string filename = 24 + argv[i];
 
             std::ifstream f(filename.c_str());
             if (!f.is_open()) {
@@ -230,12 +221,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 PrintMessage(errmsg);
                 return false;
             }
-        }
-
-        else if (std::strcmp(argv[i], "--suppressions") == 0) {
-            // Error message to be removed in 1.72
-            PrintMessage("cppcheck: '--suppressions' has been removed, use '--suppressions-list=<file>' instead.");
-            return false;
         }
 
         else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
