@@ -234,6 +234,7 @@ private:
         TEST_CASE(symboldatabase50); // #6432
         TEST_CASE(symboldatabase51); // #6538
         TEST_CASE(symboldatabase52); // #6581
+        TEST_CASE(symboldatabase53); // #7124 (library podtype)
 
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
@@ -2188,6 +2189,19 @@ private:
             ASSERT_EQUALS(2, db->getVariableListSize()-1);
             ASSERT(db->getVariableFromVarId(1));
             ASSERT(db->getVariableFromVarId(2));
+        }
+    }
+
+    void symboldatabase53() { // #7124
+        GET_SYMBOL_DB("int32_t x;"
+                      "std::int32_t y;");
+
+        ASSERT(db != nullptr);
+        if (db) {
+            ASSERT(db->getVariableFromVarId(1));
+            ASSERT(db->getVariableFromVarId(2));
+            ASSERT_EQUALS(false, db->getVariableFromVarId(1)->isClass());
+            ASSERT_EQUALS(false, db->getVariableFromVarId(2)->isClass());
         }
     }
 
