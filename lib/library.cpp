@@ -28,6 +28,17 @@
 #include <string>
 #include <algorithm>
 
+static std::vector<std::string> getnames(const char *names)
+{
+    std::vector<std::string> ret;
+    while (const char *p = std::strchr(names,',')) {
+        ret.push_back(std::string(names, p-names));
+        names = p + 1;
+    }
+    ret.push_back(names);
+    return ret;
+}
+
 Library::Library() : allocid(0)
 {
 }
@@ -177,23 +188,15 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         }
 
         else if (nodename == "function") {
-            const char *name_char = node->Attribute("name");
-            if (name_char == nullptr)
+            const char *name = node->Attribute("name");
+            if (name == nullptr)
                 return Error(MISSING_ATTRIBUTE, "name");
-            std::string name = name_char;
-            for (;;) {
-                const std::string::size_type pos = name.find(',');
-                if (pos == std::string::npos)
-                    break;
-                const Error &err = loadFunction(node, name.substr(0,pos), unknown_elements);
+            const std::vector<std::string> names(getnames(name));
+            for (unsigned int i = 0U; i < names.size(); ++i) {
+                const Error &err = loadFunction(node, names[i], unknown_elements);
                 if (err.errorcode != ErrorCode::OK)
                     return err;
-                name.erase(0,pos+1);
             }
-
-            const Error &err = loadFunction(node, name, unknown_elements);
-            if (err.errorcode != ErrorCode::OK)
-                return err;
         }
 
         else if (nodename == "reflection") {
@@ -412,7 +415,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const sign = node->Attribute("sign");
             if (sign)
                 podType.sign = *sign;
-            podtypes[name] = podType;
+            const std::vector<std::string> names(getnames(name));
+            for (unsigned int i = 0U; i < names.size(); ++i)
+                podtypes[names[i]] = podType;
         }
 
         else if (nodename == "platformtype") {
