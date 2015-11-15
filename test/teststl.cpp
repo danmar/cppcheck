@@ -89,6 +89,7 @@ private:
         TEST_CASE(pushback10);
         TEST_CASE(pushback11);
         TEST_CASE(pushback12);
+        TEST_CASE(pushback13);
         TEST_CASE(insert1);
         TEST_CASE(insert2);
 
@@ -1296,6 +1297,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) After insert(), the iterator 'it' may be invalid.\n"
                       "[test.cpp:9]: (error) After insert(), the iterator 'it' may be invalid.\n", errout.str());
+    }
+
+    void pushback13() {
+        check("bool Preprocessor::ConcatenateIncludeName(SmallString<128> &FilenameBuffer, SourceLocation &End) {\n"
+              "    unsigned PreAppendSize = FilenameBuffer.size();\n"
+              "    FilenameBuffer.resize(PreAppendSize + CurTok.getLength());\n"
+              "    const char *BufPtr = &FilenameBuffer[PreAppendSize];\n"
+              "    return true;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void insert1() {

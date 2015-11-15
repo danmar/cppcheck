@@ -450,21 +450,19 @@ void CheckStl::pushback()
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = & %var% [")) {
                 // Skip it directly if it is a pointer or an array
-                if (tok->tokAt(3)->variable()->isArrayOrPointer())
+                const Token* containerTok = tok->tokAt(3);
+                if (containerTok->variable() && containerTok->variable()->isArrayOrPointer())
                     continue;
 
                 // Variable id for pointer
                 const unsigned int pointerId(tok->varId());
-
-                // Variable id for the container variable
-                const unsigned int containerId(tok->tokAt(3)->varId());
 
                 bool invalidPointer = false;
                 const Token* function = nullptr;
                 const Token* end2 = tok->scope()->classEnd;
                 for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                     // push_back on vector..
-                    if (Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear", containerId)) {
+                    if (Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear", containerTok->varId())) {
                         invalidPointer = true;
                         function = tok2->tokAt(2);
                     }
