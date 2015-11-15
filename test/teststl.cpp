@@ -535,6 +535,14 @@ private:
               "    auto b = x.first;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("const CXXRecordDecl *CXXRecordDecl::getTemplateInstantiationPattern() const {\n"
+              "    if (auto *TD = dyn_cast<ClassTemplateSpecializationDecl>(this)) {\n"
+              "        auto From = TD->getInstantiatedFrom();\n"
+              "    }\n"
+              "    return nullptr;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void STLSize() {

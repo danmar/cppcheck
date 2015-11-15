@@ -78,6 +78,9 @@ void CheckStl::iterators()
         if (var->typeEndToken()->str() == "auto") {
             if (Token::Match(var->typeEndToken(), "auto %name% ; %name% = %var% . %name% ( )")) {
                 const Token* containertok = var->typeEndToken()->tokAt(5);
+                if (!containertok->variable())
+                    continue;
+
                 const Library::Container* container = _settings->library.detectContainer(containertok->variable()->typeStartToken());
                 if (!container)
                     continue;
