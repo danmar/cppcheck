@@ -173,7 +173,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 
 struct VariableValue {
     VariableValue() : notEqual(false), value(0) {}
-    VariableValue(MathLib::bigint val) : notEqual(false), value(val) {}
+    explicit VariableValue(MathLib::bigint val) : notEqual(false), value(val) {}
     bool notEqual;
     MathLib::bigint value;
 };
@@ -362,7 +362,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         if (Token::Match(tok2, "[;{}.] %name% = - %name% ;"))
                             varValueIf[tok2->next()->varId()] = !VariableValue(0);
                         else if (Token::Match(tok2, "[;{}.] %name% = %num% ;"))
-                            varValueIf[tok2->next()->varId()] = MathLib::toLongNumber(tok2->strAt(3));
+                            varValueIf[tok2->next()->varId()] = VariableValue(MathLib::toLongNumber(tok2->strAt(3)));
                     }
                 }
 
@@ -392,7 +392,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                             if (Token::Match(tok2, "[;{}.] %var% = - %name% ;"))
                                 varValueElse[tok2->next()->varId()] = !VariableValue(0);
                             else if (Token::Match(tok2, "[;{}.] %var% = %num% ;"))
-                                varValueElse[tok2->next()->varId()] = MathLib::toLongNumber(tok2->strAt(3));
+                                varValueElse[tok2->next()->varId()] = VariableValue(MathLib::toLongNumber(tok2->strAt(3)));
                         }
                     }
 
