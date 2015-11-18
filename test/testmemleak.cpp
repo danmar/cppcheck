@@ -2351,7 +2351,7 @@ private:
               "{\n"
               "  std::string *x = new std::string;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: x\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: x\n", errout.str());
 
         check("void f(void)\n"
               "{\n"

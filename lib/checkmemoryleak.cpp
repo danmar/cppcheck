@@ -130,7 +130,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     if (! tok2->isName())
         return No;
 
-    if (!Token::Match(tok2, "%type%|%name% ::|. %type%")) {
+    if (!Token::Match(tok2, "%name% ::|. %type%")) {
         // Does tok2 point on "malloc", "strdup" or "kmalloc"..
         static const char * const mallocfunc[] = {
             "malloc",
@@ -150,15 +150,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         if (varid && Token::Match(tok2, "realloc ( %any% ,") && tok2->tokAt(2)->varId() != varid)
             return Malloc;
 
-        if (Token::Match(tok2, "new struct| %type% [;()]") ||
-            Token::Match(tok2, "new ( std :: nothrow ) struct| %type% [;()]") ||
-            Token::Match(tok2, "new ( nothrow ) struct| %type% [;()]"))
+        if (tokenizer->isCPP() && tok2->str() == "new") {
+            if (tok2->astOperand1() && tok2->astOperand1()->str() == "[")
+                return NewArray;
             return New;
-
-        if (Token::Match(tok2, "new struct| %type% *| [") ||
-            Token::Match(tok2, "new ( std :: nothrow ) struct| %type% *| [") ||
-            Token::Match(tok2, "new ( nothrow ) struct| %type% *| ["))
-            return NewArray;
+        }
 
         if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
             return File;
@@ -192,7 +188,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         }
     }
 
-    while (Token::Match(tok2,"%type%|%name% ::|. %type%"))
+    while (Token::Match(tok2,"%name% ::|. %type%"))
         tok2 = tok2->tokAt(2);
 
     // User function
