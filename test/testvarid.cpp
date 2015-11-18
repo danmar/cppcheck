@@ -119,6 +119,7 @@ private:
         TEST_CASE(varid_in_class16);
         TEST_CASE(varid_in_class17);    // #6056 - no varid for member functions
         TEST_CASE(varid_in_class18);    // #7127
+        TEST_CASE(varid_in_class19);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_operator);
@@ -1763,6 +1764,24 @@ private:
                       "8: A :: B :: B ( ) :\n"
                       "9: i@1 ( 0 )\n"
                       "10: { }\n", tokenize(code, false, "test.cpp"));
+    }
+
+    void varid_in_class19() {
+        const char code[] = "class Fred {\n"
+                            "    char *str1;\n"
+                            "    ~Fred();\n"
+                            "};\n"
+                            "Fred::~Fred() {\n"
+                            "    free(str1);\n"
+                            "}";
+        ASSERT_EQUALS("\n\n##file 0\n"
+                      "1: class Fred {\n"
+                      "2: char * str1@1 ;\n"
+                      "3: ~ Fred ( ) ;\n"
+                      "4: } ;\n"
+                      "5: Fred :: ~ Fred ( ) {\n"
+                      "6: free ( str1@1 ) ;\n"
+                      "7: }\n", tokenize(code, false, "test.cpp"));
     }
 
     void varid_initList() {

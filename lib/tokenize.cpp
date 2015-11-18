@@ -2885,11 +2885,14 @@ void Tokenizer::setVarId()
     std::list<Token *> allMemberVars;
     if (!isC()) {
         for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%name% :: %name%")) {
+            if (Token::Match(tok2, "%name% :: ~| %name%")) {
                 const Token* tok3 = tok2->next();
                 do {
-                    tok3 = tok3->tokAt(2);
-                } while (Token::Match(tok3, ":: %name%"));
+                    tok3 = tok3->next();
+                    if (tok3->str() == "~")
+                        tok3 = tok3->next();
+                    tok3 = tok3->next();
+                } while (Token::Match(tok3, ":: ~| %name%"));
                 if (!tok3)
                     syntaxError(tok2);
                 const std::string& str3 = tok3->str();
@@ -2961,14 +2964,18 @@ void Tokenizer::setVarId()
                 continue;
 
             // Set variable ids in member functions for this class..
-            const std::string funcpattern(classname + " :: %name% (");
+            const std::string funcpattern(classname + " :: ~| %name% (");
             for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
                 Token *tok2 = *func;
 
                 // Found a class function..
                 if (Token::Match(tok2, funcpattern.c_str())) {
                     // Goto the end parentheses..
-                    tok2 = tok2->linkAt(nestedCount*2+1);
+                    tok2 = tok2->tokAt(nestedCount*2);
+                    if (tok2 && tok2->str() == "~")
+                        tok2 = tok2->linkAt(2);
+                    else
+                        tok2 = tok2->linkAt(1);
                     if (!tok2)
                         break;
 
