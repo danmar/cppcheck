@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <QPrinter>
+#include <QDate>
+#include <QtWidgets>
 #include <QWidget>
 #include <QDialog>
 #include <QString>
@@ -32,6 +34,8 @@ StatsDialog::StatsDialog(QWidget *parent)
     mUI.setupUi(this);
 
     connect(mUI.mCopyToClipboard, SIGNAL(pressed()), this, SLOT(copyToClipboard()));
+    connect(mUI.mPDFexport, SIGNAL(pressed()), this, SLOT(PDFexport()));
+
 }
 
 void StatsDialog::setProject(const Project& project)
@@ -87,6 +91,45 @@ void StatsDialog::setScanDuration(double seconds)
         parts << tr("0.%1 seconds").arg(int(10.0 *(seconds - secs)));
 
     mUI.mScanDuration->setText(parts.join(tr(" and ")));
+}
+void StatsDialog::PDFexport()
+{
+   const QString Stat = QString(
+                "<center><h1>%1   %2</h1></center>\n"
+                "<font color=\"red\"><h3>%3   :   %4</h3></color>\n"
+                "<font color=\"green\"><h3>%5   :   %6</h3></color>\n"
+                "<font color=\"orange\"><h3>%7   :   %8</h3></color>\n"
+                "<font color=\"blue\"><h3>%9   :   %10</h3></color>\n"
+                "<font color=\"blue\"><h3>%11  :   %12</h3></color>\n"
+                "<font color=\"purple\"><h3>%13  :   %14</h3></color>\n")
+            .arg("Statistics")
+           .arg(QDate::currentDate().toString("dd.MM.yyyy"))
+            .arg("Errors")
+            .arg(mStatistics->GetCount(ShowTypes::ShowErrors))
+            .arg("Warnings")
+            .arg(mStatistics->GetCount(ShowTypes::ShowWarnings))
+            .arg("Style warnings")
+            .arg(mStatistics->GetCount(ShowTypes::ShowStyle))
+            .arg("Portability warnings")
+            .arg(mStatistics->GetCount(ShowTypes::ShowPortability))
+            .arg("Performance warnings")
+            .arg(mStatistics->GetCount(ShowTypes::ShowPerformance))
+            .arg("Information messages")
+            .arg(mStatistics->GetCount(ShowTypes::ShowInformation)
+            );
+
+   QString fileName = QFileDialog::getSaveFileName((QWidget* )0, "Export PDF", QString(), "*.pdf");
+    if (QFileInfo(fileName).suffix().isEmpty()) { fileName.append(".pdf"); }
+    QPrinter printer(QPrinter::PrinterResolution);
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setPaperSize(QPrinter::A4);
+        printer.setOutputFileName(fileName);
+
+        QTextDocument doc;
+        doc.setHtml(Stat);
+       // doc.setPageSize(printer.pageRect().size());
+        doc.print(&printer);
+
 }
 
 void StatsDialog::copyToClipboard()
