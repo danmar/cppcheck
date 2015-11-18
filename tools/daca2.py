@@ -167,7 +167,7 @@ def scanarchive(filepath, jobs):
          '-D__GCC__',
          '--enable=style',
          '--error-exitcode=0',
-         '--exception-handling',
+         '--exception-handling=stderr',
          jobs,
          '.'],
         stdout=subprocess.PIPE,
