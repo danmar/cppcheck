@@ -232,8 +232,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, unsigned int varid) const
 {
-    if (tokenizer->isCPP() && tok->str() == "delete") {
-        const Token* vartok = tok->astOperand1() ? tok->astOperand1() : tok->next();
+    if (tokenizer->isCPP() && tok->str() == "delete" && tok->astOperand1()) {
+        const Token* vartok = tok->astOperand1();
         if (Token::Match(vartok, ".|::"))
             vartok = vartok->astOperand2();
 
@@ -257,7 +257,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
         if (Token::Match(vartok, "%varid% )|,|-", varid)) {
             if (Token::Match(tok, "free|kfree") ||
-                (tok->str() == "realloc" && Token::Match(vartok->next(), ", 0 )")))
+                (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )")))
                 return Malloc;
 
             if (tok->str() == "fclose")
