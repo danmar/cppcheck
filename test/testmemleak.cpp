@@ -6175,18 +6175,8 @@ private:
         settings.standards.posix = true;
         settings.addEnabled("warning");
 
+        LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "gtk.cfg");
-
-        // Add some test allocation functions to the library.
-        // When not run as a unit test, these are read from
-        // an XML file (e.g. cfg/posix.cfg).
-        int id = 0;
-        while (!settings.library.ismemory(++id))
-            continue;
-        settings.library.setalloc("malloc", id);
-        settings.library.setalloc("calloc", id);
-        settings.library.setalloc("strdup", id);
-
 
         // pass allocated memory to function..
         TEST_CASE(functionParameter);

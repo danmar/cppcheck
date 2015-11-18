@@ -58,37 +58,24 @@ static unsigned int countParameters(const Token *tok)
 
 /** List of functions that can be ignored when searching for memory leaks.
  * These functions don't take the address of the given pointer
- * This list needs to be alphabetically sorted so we can run bsearch on it.
  * This list contains function names with const parameters e.g.: atof(const char *)
- * Reference: http://www.aquaphoenix.com/ref/gnu_c_library/libc_492.html#SEC492
+ * TODO: This list should be replaced by <leak-ignore/> in .cfg files.
  */
 static const std::set<std::string> call_func_white_list = make_container < std::set<std::string> > ()
-        << "_open" << "_wopen" << "access" << "adjtime" << "asctime" << "asctime_r" << "asprintf" << "assert"
-        << "atof" << "atoi" << "atol" << "chdir" << "chmod" << "chown"
-        << "clearerr" << "creat" << "ctime" << "ctime_r" << "execl" << "execle"
-        << "execlp" << "execv" << "execve" << "fchmod" << "fclose" << "fcntl"
-        << "fdatasync" << "feof" << "ferror" << "fflush" << "fgetc" << "fgetpos" << "fgets"
-        << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "fprintf" << "fputc" << "fputs" << "fread" << "free"
-        << "freopen" << "fscanf" << "fseek" << "fseeko" << "fsetpos" << "fstat" << "fsync" << "ftell" << "ftello"
-        << "ftruncate" << "fwrite" << "getc" << "getenv" << "getgrnam" << "gethostbyaddr" << "gethostbyname" << "getnetbyname"
-        << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "gets" << "getservbyname" << "getservbyport"
-        << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups" << "ioctl"
-        << "link" << "localtime" << "localtime_r"
-        << "lockf" << "lseek" << "lstat" << "mblen" << "mbstowcs" << "mbtowc" << "memchr" << "memcmp" << "memcpy" << "memmove" << "memset"
-        << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
+        << "_open" << "_wopen" << "access" << "adjtime" << "asctime_r" << "asprintf" << "chdir" << "chmod" << "chown"
+        << "creat" << "ctime_r" << "execl" << "execle" << "execlp" << "execv" << "execve" << "fchmod" << "fcntl"
+        << "fdatasync" << "fclose" << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "free"
+        << "freopen"<< "fseeko" << "fstat" << "fsync" << "ftello" << "ftruncate" << "getgrnam" << "gethostbyaddr" << "gethostbyname"
+        << "getnetbyname" << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "getservbyname" << "getservbyport"
+        << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups"
+        << "ioctl" << "link" << "localtime_r" << "lockf" << "lseek" << "lstat" << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
         << "obstack_printf" << "obstack_vprintf" << "open" << "opendir" << "parse_printf_format" << "pathconf"
-        << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread"
-        << "printf" << "psignal" << "puts" << "pwrite" << "qsort" << "read" << "readahead" << "readdir" << "readdir_r"
-        << "readlink" << "readv"
-        << "realloc" << "regcomp" << "remove" << "rename" << "return" << "rewind" << "rewinddir" << "rindex"
-        << "rmdir" << "scandir" << "scanf" << "seekdir"
-        << "setbuf" << "setbuffer" << "sethostname" << "setlinebuf" << "setlocale" << "setvbuf" << "sizeof" << "snprintf" << "sprintf" << "sscanf"
-        << "stat" << "stpcpy" << "strcasecmp" << "strcat" << "strchr" << "strcmp" << "strcoll"
-        << "strcpy" << "strcspn" << "strdup" << "stricmp" << "strlen" << "strncasecmp" << "strncat" << "strncmp"
-        << "strncpy" << "strpbrk" << "strrchr" << "strspn" << "strstr" << "strtod" << "strtok" << "strtol" << "strtoul" << "strxfrm" << "switch"
-        << "symlink" << "sync_file_range" << "system" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
-        << "utime" << "utimes" << "vasprintf" << "vfprintf" << "vfscanf" << "vprintf"
-        << "vscanf" << "vsnprintf" << "vsprintf" << "vsscanf" << "while" << "wordexp" << "write" << "writev";
+        << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread" << "psignal" << "pwrite" << "read" << "readahead"
+        << "readdir" << "readdir_r" << "readlink" << "readv" << "realloc" << "regcomp" << "return" << "rewinddir" << "rindex"
+        << "rmdir" << "scandir" << "seekdir" << "setbuffer" << "sethostname" << "setlinebuf" << "sizeof" << "strdup"
+        << "stat" << "stpcpy" << "strcasecmp" << "stricmp" << "strncasecmp" << "switch"
+        << "symlink" << "sync_file_range" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
+        << "utime" << "utimes" << "vasprintf" << "while" << "wordexp" << "write" << "writev";
 
 //---------------------------------------------------------------------------
 
@@ -363,24 +350,19 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 
     // Get return pointer..
     unsigned int varid = 0;
-    unsigned int indentlevel = 0;
     for (const Token *tok2 = func->functionScope->classStart; tok2 != func->functionScope->classEnd; tok2 = tok2->next()) {
-        if (tok2->str() == "{")
-            ++indentlevel;
-        else if (tok2->str() == "}") {
-            if (indentlevel <= 1)
-                return No;
-            --indentlevel;
-        }
-        if (Token::Match(tok2, "return %name% ;")) {
-            if (indentlevel != 1)
-                return No;
-            varid = tok2->next()->varId();
-            break;
-        } else if (tok2->str() == "return") {
+        if (tok2->str() == "return") {
             AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)
                 return allocType;
+
+            if (tok2->scope() != func->functionScope || !tok2->astOperand1())
+                return No;
+            const Token* tok = tok2->astOperand1();
+            if (Token::Match(tok, ".|::"))
+                tok = tok->astOperand2();
+            varid = tok->varId();
+            break;
         }
     }
 
@@ -404,10 +386,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
         if (Token::Match(tok, "= %varid% ;", varid)) {
             return No;
         }
-        if (Token::Match(tok, "static %type% * %varid% [;{}=]", varid)) {
-            return No;
-        }
-        if (Token::Match(tok, "[(,] %varid% [,)]", varid)) {
+        if (!tokenizer->isC() && Token::Match(tok, "[(,] %varid% [,)]", varid)) {
             return No;
         }
         if (Token::Match(tok, "[(,] & %varid% [.,)]", varid)) {
