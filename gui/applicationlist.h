@@ -116,6 +116,8 @@ protected:
 
 private:
 
+    bool CheckAndAddApplication(QString appPath, QString name, QString parameters);
+
     /**
     * @brief List of applications
     *

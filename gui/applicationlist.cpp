@@ -182,39 +182,42 @@ void ApplicationList::Clear()
     mDefaultApplicationIndex = -1;
 }
 
+bool ApplicationList::CheckAndAddApplication(QString appPath, QString name, QString parameters)
+{
+    if (QFileInfo(appPath).exists() && QFileInfo(appPath).isExecutable()) {
+        Application app;
+        app.setName(name);
+        app.setPath("\"" + appPath + "\"");
+        app.setParameters(parameters);
+        AddApplication(app);
+        return true;
+    }
+    return false;
+}
+
 bool ApplicationList::FindDefaultWindowsEditor()
 {
     bool foundOne = false;
-    const QString appPath(getenv("ProgramFiles"));
-    const QString notepadppPath = appPath + "\\Notepad++\\notepad++.exe";
-    if (QFileInfo(notepadppPath).exists() && QFileInfo(notepadppPath).isExecutable()) {
-        Application app;
-        app.setName("Notepad++");
-        app.setPath("\"" + notepadppPath + "\"");
-        app.setParameters("-n(line) (file)");
-        AddApplication(app);
-        foundOne = true;
-    }
-
-    const QString notepadTwoPath = appPath + "\\Notepad2\\Notepad2.exe";
-    if (QFileInfo(notepadTwoPath).exists() && QFileInfo(notepadTwoPath).isExecutable()) {
-        Application app;
-        app.setName("Notepad2");
-        app.setPath("\"" + notepadTwoPath + "\"");
-        app.setParameters("/g (line) (file)");
-        AddApplication(app);
-        foundOne = true;
-    }
-
+#ifdef WIN64 // As long as we do support 32-bit XP, we cannot be sure that the environment variable "ProgramFiles(x86)" exists
+    const QString appPathx86(getenv("ProgramFiles(x86)"));
+#else
+    const QString appPathx86(getenv("ProgramFiles"));
+#endif
+    const QString appPathx64(getenv("ProgramW6432"));
     const QString windowsPath(getenv("windir"));
-    const QString notepadPath = windowsPath + "\\system32\\notepad.exe";
-    if (QFileInfo(notepadPath).exists() && QFileInfo(notepadPath).isExecutable()) {
-        Application app;
-        app.setName("Notepad");
-        app.setPath(notepadPath);
-        app.setParameters("(file)");
-        AddApplication(app);
+
+    if (CheckAndAddApplication(appPathx86 + "\\Notepad++\\notepad++.exe", "Notepad++", "-n(line) (file)"))
         foundOne = true;
-    }
+    else if (CheckAndAddApplication(appPathx64 + "\\Notepad++\\notepad++.exe", "Notepad++", "-n(line) (file)"))
+        foundOne = true;
+
+    if (CheckAndAddApplication(appPathx86 + "\\Notepad2\\Notepad2.exe", "Notepad2", "/g (line) (file)"))
+        foundOne = true;
+    else if (CheckAndAddApplication(appPathx64 + "\\Notepad2\\Notepad2.exe", "Notepad2", "/g (line) (file)"))
+        foundOne = true;
+
+    if (CheckAndAddApplication(windowsPath + "\\system32\\notepad.exe", "Notepad", "(file)"))
+        foundOne = true;
+
     return foundOne;
 }
