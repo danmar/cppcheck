@@ -100,14 +100,6 @@ public:
     /**
      * @brief Get type of deallocation at given position
      * @param tok position
-     * @param varname variable name
-     * @return type of deallocation
-     */
-    AllocType getDeallocationType(const Token *tok, const std::string &varname) const;
-
-    /**
-     * @brief Get type of deallocation at given position
-     * @param tok position
      * @param varid variable id
      * @return type of deallocation
      */

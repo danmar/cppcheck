@@ -226,94 +226,55 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (tok2->str() == "realloc")
         return Malloc;
 
-    // GTK memory reallocation..
-    //if (Token::Match(tok2, "g_realloc|g_try_realloc|g_renew|g_try_renew"))
-
     return No;
 }
 
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, unsigned int varid) const
 {
-    if (tokenizer->isCPP()) {
-        if (Token::Match(tok, "delete %varid% ;", varid))
+    if (tokenizer->isCPP() && tok->str() == "delete") {
+        const Token* vartok = tok->astOperand1() ? tok->astOperand1() : tok->next();
+        if (Token::Match(vartok, ".|::"))
+            vartok = vartok->astOperand2();
+
+        if (vartok && vartok->varId() == varid) {
+            if (tok->strAt(1) == "[")
+                return NewArray;
             return New;
-
-        if (Token::Match(tok, "delete [ ] %varid% ;", varid))
-            return NewArray;
-
-        if (Token::Match(tok, "delete ( %varid% ) ;", varid))
-            return New;
-
-        if (Token::Match(tok, "delete [ ] ( %varid% ) ;", varid))
-            return NewArray;
+        }
     }
 
     if (tok && tok->str() == "::")
         tok = tok->next();
 
-    if (Token::Match(tok, "free|kfree ( %varid% ) [;:]", varid) ||
-        Token::Match(tok, "free|kfree ( %varid% -|,", varid) ||
-        Token::Match(tok, "realloc ( %varid% , 0 ) ;", varid))
-        return Malloc;
+    if (Token::Match(tok, "%name% (")) {
+        if (Token::simpleMatch(tok, "fcloseall ( )"))
+            return File;
 
-    if (Token::Match(tok, "fclose ( %varid% )", varid) ||
-        Token::simpleMatch(tok, "fcloseall ( )"))
-        return File;
+        const Token* vartok = tok->tokAt(2);
+        while (Token::Match(vartok, "%name% .|::"))
+            vartok = vartok->tokAt(2);
 
-    if (settings1->standards.posix) {
-        if (Token::Match(tok, "close ( %varid% )", varid))
-            return Fd;
+        if (Token::Match(vartok, "%varid% )|,|-", varid)) {
+            if (Token::Match(tok, "free|kfree") ||
+                (tok->str() == "realloc" && Token::Match(vartok->next(), ", 0 )")))
+                return Malloc;
 
-        if (Token::Match(tok, "pclose ( %varid% )", varid))
-            return Pipe;
-    }
+            if (tok->str() == "fclose")
+                return File;
 
-    // Does tok2 point on "g_free", etc ..
-    if (Token::Match(tok, "%type% ( %varid% )", varid)) {
-        const int dealloctype = settings1->library.dealloc(tok);
-        if (dealloctype > 0)
-            return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
-    }
+            if (settings1->standards.posix) {
+                if (tok->str() == "close")
+                    return Fd;
+                if (tok->str() == "pclose")
+                    return Pipe;
+            }
 
-    return No;
-}
-
-CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const std::string &varname) const
-{
-    if (tokenizer->isCPP()) {
-        if (Token::Match(tok, std::string("delete " + varname + " [,;]").c_str()))
-            return New;
-
-        if (Token::Match(tok, std::string("delete [ ] " + varname + " [,;]").c_str()))
-            return NewArray;
-
-        if (Token::Match(tok, std::string("delete ( " + varname + " ) [,;]").c_str()))
-            return New;
-
-        if (Token::Match(tok, std::string("delete [ ] ( " + varname + " ) [,;]").c_str()))
-            return NewArray;
-    }
-
-    if (Token::simpleMatch(tok, std::string("free ( " + varname + " ) ;").c_str()) ||
-        Token::simpleMatch(tok, std::string("kfree ( " + varname + " ) ;").c_str()) ||
-        Token::simpleMatch(tok, std::string("realloc ( " + varname + " , 0 ) ;").c_str()))
-        return Malloc;
-
-    if (Token::simpleMatch(tok, std::string("fclose ( " + varname + " )").c_str()) ||
-        Token::simpleMatch(tok, "fcloseall ( )"))
-        return File;
-
-    if (Token::simpleMatch(tok, std::string("close ( " + varname + " )").c_str()))
-        return Fd;
-
-    if (Token::simpleMatch(tok, std::string("pclose ( " + varname + " )").c_str()))
-        return Pipe;
-
-    if (Token::Match(tok, ("%type% ( " + varname + " )").c_str())) {
-        int type = settings1->library.dealloc(tok);
-        if (type > 0)
-            return Library::ismemory(type) ? OtherMem : OtherRes;
+            // Does tok2 point on "g_free", etc ..
+            const int dealloctype = settings1->library.dealloc(tok);
+            if (dealloctype > 0)
+                return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
+        }
     }
 
     return No;
@@ -2384,15 +2345,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                     continue;
 
                 // Deallocate..
-                AllocType dealloc = getDeallocationType(tok, varname);
-                if (dealloc == No) {
-                    std::string temp = scope->className + " :: " + varname;
-                    dealloc = getDeallocationType(tok, temp);
-                }
-                if (dealloc == No) {
-                    std::string temp = "this . " + varname;
-                    dealloc = getDeallocationType(tok, temp);
-                }
+                AllocType dealloc = getDeallocationType(tok, varid);
                 // some usage in the destructor => assume it's related
                 // to deallocation
                 if (destructor && tok->str() == varname)
