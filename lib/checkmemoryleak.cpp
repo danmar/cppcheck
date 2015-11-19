@@ -118,21 +118,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return No;
 
     if (!Token::Match(tok2, "%name% ::|. %type%")) {
-        // Does tok2 point on "malloc", "strdup" or "kmalloc"..
-        static const char * const mallocfunc[] = {
-            "malloc",
-            "calloc",
-            "strdup",
-            "strndup",
-            "kmalloc",
-            "kzalloc",
-            "kcalloc"
-        };
-        for (unsigned int i = 0; i < sizeof(mallocfunc)/sizeof(*mallocfunc); i++) {
-            if (tok2->str() == mallocfunc[i])
-                return Malloc;
-        }
-
         // Using realloc..
         if (varid && Token::Match(tok2, "realloc ( %any% ,") && tok2->tokAt(2)->varId() != varid)
             return Malloc;
@@ -142,9 +127,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                 return NewArray;
             return New;
         }
-
-        if (Token::Match(tok2, "fopen|tmpfile|g_fopen ("))
-            return File;
 
         if (settings1->standards.posix) {
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
@@ -164,7 +146,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                 return Pipe;
         }
 
-        // Does tok2 point on "g_malloc", "g_strdup", ..
+        // Does tok2 point on a Library allocation function?
         const int alloctype = settings1->library.alloc(tok2);
         if (alloctype > 0) {
             if (alloctype == settings1->library.dealloc("free"))
@@ -243,12 +225,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
             vartok = vartok->tokAt(2);
 
         if (Token::Match(vartok, "%varid% )|,|-", varid)) {
-            if (Token::Match(tok, "free|kfree") ||
-                (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )")))
+            if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
                 return Malloc;
-
-            if (tok->str() == "fclose")
-                return File;
 
             if (settings1->standards.posix) {
                 if (tok->str() == "close")
@@ -257,10 +235,15 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
                     return Pipe;
             }
 
-            // Does tok2 point on "g_free", etc ..
+            // Does tok point on a Library deallocation function?
             const int dealloctype = settings1->library.dealloc(tok);
-            if (dealloctype > 0)
+            if (dealloctype > 0) {
+                if (dealloctype == settings1->library.dealloc("free"))
+                    return Malloc;
+                if (dealloctype == settings1->library.dealloc("fclose"))
+                    return File;
                 return Library::ismemory(dealloctype) ? OtherMem : OtherRes;
+            }
         }
     }
 
@@ -2225,22 +2208,12 @@ void CheckMemoryLeakInClass::check()
             if (!var->isStatic() && var->isPointer()) {
                 // allocation but no deallocation of private variables in public function..
                 const Token *tok = var->typeStartToken();
-                if (tok->isStandardType()) {
+                // Either it is of standard type or a non-derived type
+                if (tok->isStandardType() || (var->type() && var->type()->derivedFrom.empty())) {
                     if (var->isPrivate())
                         checkPublicFunctions(scope, var->nameToken());
 
                     variable(scope, var->nameToken());
-                }
-
-                // known class?
-                else if (var->type()) {
-                    // not derived?
-                    if (var->type()->derivedFrom.empty()) {
-                        if (var->isPrivate())
-                            checkPublicFunctions(scope, var->nameToken());
-
-                        variable(scope, var->nameToken());
-                    }
                 }
             }
         }
@@ -2378,10 +2351,6 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
         return;
 
     const unsigned int varid = classtok->varId();
-    if (varid == 0) {
-        _tokenizer->getSymbolDatabase()->debugMessage(classtok, "CheckMemoryInClass::checkPublicFunctions found variable \'" + classtok->str() + "\' with varid 0");
-        return;
-    }
 
     // Parse public functions..
     // If they allocate member variables, they should also deallocate

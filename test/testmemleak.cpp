@@ -146,6 +146,7 @@ private:
     void run() {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "gtk.cfg");
+        LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
 
         // Check that getcode works correctly..
@@ -4209,7 +4210,7 @@ private:
         check("void f() {\n"
               "    char *p;\n"
               "    char **pp = &p;\n"
-              "    *pp = calloc(10);\n"
+              "    *pp = calloc(10, 1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
@@ -4294,6 +4295,8 @@ private:
     void run() {
         settings.addEnabled("warning");
         settings.addEnabled("style");
+
+        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(class1);
         TEST_CASE(class2);
@@ -5550,6 +5553,9 @@ private:
     }
 
     void run() {
+        LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
         // testing that errors are detected
         TEST_CASE(err);
 
@@ -5985,6 +5991,7 @@ private:
         settings.addEnabled("warning");
 
         LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "posix.cfg");
         LOAD_LIB_2(settings.library, "gtk.cfg");
 
         // pass allocated memory to function..
@@ -6095,7 +6102,7 @@ private:
 
         check("void x()\n"
               "{\n"
-              "    calloc(10);\n"
+              "    calloc(10, 1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'calloc' is not stored.\n", errout.str());
 
