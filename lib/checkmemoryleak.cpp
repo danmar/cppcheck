@@ -2719,7 +2719,7 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
                 } else if (!isNothrow) {
                     if (Token::Match(tok2, "%name% ("))
                         functionCalled = tok2;
-                    else if (tok2->isName() && tok2->next()->link() && Token::Match(tok2->next()->link(), "> ("))
+                    else if (tok2->isName() && tok2->next()->link() && Token::simpleMatch(tok2->next()->link(), "> ("))
                         functionCalled = tok2;
                 }
             }
