@@ -2394,6 +2394,14 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f(int x) {\n" // #3948
+                       "  int value;\n"
+                       "  if (x !=-1)\n"
+                       "    value = getvalue();\n"
+                       "  if (x == -1 || value > 300) {}\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("static int x;" // #4773
                        "int f() {\n"
                        "    int y;\n"

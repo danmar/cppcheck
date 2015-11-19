@@ -193,42 +193,84 @@ static bool operator!=(const VariableValue & v, MathLib::bigint i)
 
 static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned int, VariableValue> &variableValue, bool *alwaysTrue, bool *alwaysFalse)
 {
-    assert(Token::simpleMatch(tok, "if ("));
-
-    const Token *vartok = tok->tokAt(2);
-    const bool NOT(vartok->str() == "!");
-    if (NOT)
-        vartok = vartok->next();
-
-    while (Token::Match(vartok, "%name% . %name%"))
-        vartok = vartok->tokAt(2);
-
-    std::map<unsigned int, VariableValue>::const_iterator it = variableValue.find(vartok->varId());
-    if (it == variableValue.end())
+    if (!tok)
         return;
 
-    // always true
-    if (Token::Match(vartok, "%name% %oror%|)")) {
-        if (NOT)
-            *alwaysTrue = bool(it->second == 0);
-        else
-            *alwaysTrue = bool(it->second != 0);
-    } else if (Token::Match(vartok, "%name% == %num% %or%|)")) {
-        *alwaysTrue = bool(it->second == MathLib::toLongNumber(vartok->strAt(2)));
-    } else if (Token::Match(vartok, "%name% != %num% %or%|)")) {
-        *alwaysTrue = bool(it->second != MathLib::toLongNumber(vartok->strAt(2)));
+    if (tok->isName() || tok->str() == ".") {
+        while (tok && tok->str() == ".")
+            tok = tok->astOperand2();
+        const std::map<unsigned int, VariableValue>::const_iterator it = variableValue.find(tok ? tok->varId() : ~0U);
+        if (it != variableValue.end()) {
+            *alwaysTrue = (it->second != 0LL);
+            *alwaysFalse = (it->second == 0LL);
+        }
     }
 
-    // always false
-    if (Token::Match(vartok, "%name% &&|)")) {
-        if (NOT)
-            *alwaysFalse = bool(it->second != 0);
+    else if (tok->isComparisonOp()) {
+        const Token *vartok, *numtok;
+        if (tok->astOperand2() && tok->astOperand2()->isNumber()) {
+            vartok = tok->astOperand1();
+            numtok = tok->astOperand2();
+        } else if (tok->astOperand1() && tok->astOperand1()->isNumber()) {
+            vartok = tok->astOperand2();
+            numtok = tok->astOperand1();
+        } else {
+            return;
+        }
+
+        while (vartok && vartok->str() == ".")
+            vartok = vartok->astOperand2();
+
+        const std::map<unsigned int, VariableValue>::const_iterator it = variableValue.find(vartok ? vartok->varId() : ~0U);
+        if (it == variableValue.end())
+            return;
+
+        if (tok->str() == "==")
+            *alwaysTrue  = (it->second == MathLib::toLongNumber(numtok->str()));
+        else if (tok->str() == "!=")
+            *alwaysTrue  = (it->second != MathLib::toLongNumber(numtok->str()));
         else
-            *alwaysFalse = bool(it->second == 0);
-    } else if (Token::Match(vartok, "%name% == %num% &&|)")) {
-        *alwaysFalse = bool(it->second != MathLib::toLongNumber(vartok->strAt(2)));
-    } else if (Token::Match(vartok, "%name% != %num% &&|)")) {
-        *alwaysFalse = bool(it->second == MathLib::toLongNumber(vartok->strAt(2)));
+            return;
+        *alwaysFalse = !(*alwaysTrue);
+    }
+
+    else if (tok->str() == "!") {
+        bool t=false,f=false;
+        conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t, &f);
+        if (t||f) {
+            *alwaysTrue = !t;
+            *alwaysFalse = !f;
+        }
+    }
+
+    else if (tok->str() == "||") {
+        bool t1=false, f1=false;
+        conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t1, &f1);
+        bool t2=false, f2=false;
+        if (!t1)
+            conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t2, &f2);
+        if (t1 || t2) {
+            *alwaysTrue = true;
+            *alwaysFalse = false;
+        } else if (f1 && f2) {
+            *alwaysTrue = false;
+            *alwaysFalse = true;
+        }
+    }
+
+    else if (tok->str() == "&&") {
+        bool t1=false, f1=false;
+        conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t1, &f1);
+        bool t2=false, f2=false;
+        if (!f1)
+            conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t2, &f2);
+        if (t1 && t2) {
+            *alwaysTrue = true;
+            *alwaysFalse = false;
+        } else if (f1 && f2) {
+            *alwaysTrue = false;
+            *alwaysFalse = true;
+        }
     }
 }
 
@@ -305,7 +347,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             bool alwaysTrue = false;
             bool alwaysFalse = false;
 
-            conditionAlwaysTrueOrFalse(tok, variableValue, &alwaysTrue, &alwaysFalse);
+            conditionAlwaysTrueOrFalse(tok->next()->astOperand2(), variableValue, &alwaysTrue, &alwaysFalse);
 
             // initialization / usage in condition..
             if (!alwaysTrue && checkIfForWhileHead(tok->next(), var, suppressErrors, bool(number_of_if == 0), *alloc, membervar))
@@ -323,6 +365,25 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 else {
                     condVarId = condVarTok->varId();
                     condVarValue = !VariableValue(0);
+                }
+            } else if (Token::simpleMatch(tok, "if (") && Token::Match(tok->next()->astOperand2(), "==|!=")) {
+                const Token *condition = tok->next()->astOperand2();
+                const Token *lhs = condition->astOperand1();
+                const Token *rhs = condition->astOperand2();
+                const Token *vartok = rhs && rhs->isNumber() ? lhs : rhs;
+                const Token *numtok = rhs && rhs->isNumber() ? rhs : lhs;
+                while (Token::simpleMatch(vartok, "."))
+                    vartok = vartok->astOperand2();
+                if (vartok && vartok->varId() && numtok) {
+                    std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
+                    if (it != variableValue.end() && it->second != MathLib::toLongNumber(numtok->str()))
+                        return true;   // this scope is not fully analysed => return true
+                    else {
+                        condVarId = vartok->varId();
+                        condVarValue = VariableValue(MathLib::toLongNumber(numtok->str()));
+                        if (condition->str() == "!=")
+                            condVarValue = !condVarValue;
+                    }
                 }
             }
 
