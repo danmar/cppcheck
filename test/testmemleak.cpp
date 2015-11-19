@@ -6398,6 +6398,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If h() throws, memory could be leaked. Use make_shared<char>() instead.\n", errout.str());
 
+        check("void x() {\n"
+              "    f(shared_ptr<std::string>(new std::string(\"\")), g<std::string>());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g<std::string>() throws, memory could be leaked. Use make_shared<std::string>() instead.\n", errout.str());
+
         check("void g(int x) throw() { }\n"
               "void x() {\n"
               "    f(g(124), shared_ptr<char>(new char));\n"

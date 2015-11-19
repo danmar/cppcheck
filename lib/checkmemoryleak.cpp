@@ -799,7 +799,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 } else {
                     alloc = getAllocationType(tok->tokAt(2), varid);
                 }
-                //bool realloc = false;
 
                 if (sz > 1 &&
                     Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
@@ -812,8 +811,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (alloc != CheckMemoryLeak::No) {
                         addtoken(&rettail, tok, "realloc");
                         addtoken(&rettail, tok, ";");
-                        //TODO: this assignment is redundant, should be fixed
-                        //realloc = true;
                         tok = tok->tokAt(2);
                         if (Token::Match(tok, "%name% ("))
                             tok = tok->next()->link();
@@ -845,7 +842,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
 
                 if (alloc != No) {
-                    //if (! realloc)
                     addtoken(&rettail, tok, "alloc");
 
                     if (alloctype != No && alloctype != alloc)
@@ -911,8 +907,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 AllocType dealloc = getDeallocationType(tok, varid);
 
                 if (dealloc != No && tok->str() == "fcloseall" && alloctype != dealloc)
-                    //TODO: this assignment is redundant, should be fixed
-                    /*dealloc = No*/;
+                    ;
 
                 else if (dealloc != No) {
                     addtoken(&rettail, tok, "dealloc");
@@ -2712,28 +2707,38 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
     for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
         if (Token::Match(tok, "%name% (")) {
             const Token *endParamToken = tok->next()->link();
-            std::string pointerType;
-            std::string objectType;
-            std::string functionCalled;
+            const Token* pointerType = nullptr;
+            const Token* functionCalled = nullptr;
 
             // Scan through the arguments to the function call
             for (const Token *tok2 = tok->tokAt(2); tok2 && tok2 != endParamToken; tok2 = tok2->nextArgument()) {
                 const Function *func = tok2->function();
                 const bool isNothrow = func && (func->isAttributeNothrow() || func->isThrow());
 
-                if (Token::Match(tok2, "shared_ptr|unique_ptr < %name% > ( new %name%")) {
-                    pointerType = tok2->str();
-                    objectType = tok2->strAt(6);
+                if (Token::Match(tok2, "shared_ptr|unique_ptr <") && tok2->next()->link() && Token::Match(tok2->next()->link(), "> ( new %name%")) {
+                    pointerType = tok2;
                 } else if (!isNothrow) {
                     if (Token::Match(tok2, "%name% ("))
-                        functionCalled = tok2->str();
-                    else if (Token::Match(tok2, "%name% < %name% > ("))
-                        functionCalled = tok2->str() + "<" + tok2->strAt(2) + ">";
+                        functionCalled = tok2;
+                    else if (tok2->isName() && tok2->next()->link() && Token::Match(tok2->next()->link(), "> ("))
+                        functionCalled = tok2;
                 }
             }
 
-            if (!pointerType.empty() && !functionCalled.empty())
-                unsafeArgAllocError(tok, functionCalled, pointerType, objectType);
+            if (pointerType && functionCalled) {
+                std::string functionName = functionCalled->str();
+                if (functionCalled->strAt(1) == "<") {
+                    functionName += '<';
+                    for (const Token* tok2 = functionCalled->tokAt(2); tok2 != functionCalled->next()->link(); tok2 = tok2->next())
+                        functionName += tok2->str();
+                    functionName += '>';
+                }
+                std::string objectTypeName;
+                for (const Token* tok2 = pointerType->tokAt(2); tok2 != pointerType->next()->link(); tok2 = tok2->next())
+                    objectTypeName += tok2->str();
+
+                unsafeArgAllocError(tok, functionName, pointerType->str(), objectTypeName);
+            }
         }
     }
 }
