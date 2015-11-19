@@ -64,7 +64,7 @@ private:
         TEST_CASE(varid32);   // ticket #2835 (segmentation fault)
         TEST_CASE(varid33);   // ticket #2875 (segmentation fault)
         TEST_CASE(varid34);   // ticket #2825
-        TEST_CASE(varid35);   // ticket #2937
+        TEST_CASE(varid35);   // function declaration inside function body
         TEST_CASE(varid36);   // ticket #2980 (segmentation fault)
         TEST_CASE(varid37);   // ticket #3092 (varid for 'Bar bar(*this);')
         TEST_CASE(varid38);   // ticket #3272 (varid for 'FOO class C;')
@@ -760,7 +760,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void varid35() { // ticket #2937
+    void varid35() { // function declaration inside function body
+        // #2937
         const char code[] ="int foo() {\n"
                            "    int f(x);\n"
                            "    return f;\n"
@@ -771,6 +772,18 @@ private:
                                 "3: return f@1 ;\n"
                                 "4: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
+
+        // #4627
+        const char code2[] = "void f() {\n"
+                             "  int  *p;\n"
+                             "  void bar(int *p);\n"
+                             "}";
+        const char expected2[] = "\n\n##file 0\n"
+                                 "1: void f ( ) {\n"
+                                 "2: int * p@1 ;\n"
+                                 "3: void bar ( int * p ) ;\n"
+                                 "4: }\n";
+        ASSERT_EQUALS(expected2, tokenize(code2));
     }
 
     void varid36() { // ticket #2980 (segmentation fault)

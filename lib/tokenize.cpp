@@ -2858,6 +2858,29 @@ void Tokenizer::setVarId()
                     continue;
             }
 
+            // function declaration inside executable scope?
+            if (scopeStack.top().isExecutable && Token::Match(tok, "%name% [,)]")) {
+                bool par = false;
+                const Token *start, *end;
+                for (start = tok; Token::Match(start, "%name%|*|&|,|("); start = start->previous()) {
+                    if (start->str() == "(") {
+                        if (par)
+                            break;
+                        par = true;
+                    }
+                    if (Token::Match(start, "[(,]")) {
+                        if (!Token::Match(start, "[(,] %type% %name%|*|&"))
+                            break;
+                    }
+                    if (start->varId() > 0U)
+                        break;
+                }
+                for (end = tok->next(); Token::Match(end, "%name%|*|&|,"); end = end->next()) {}
+                if (Token::Match(start, "[;{}] %type% %name%|*") && par && Token::simpleMatch(end, ") ;"))
+                    // function declaration => don't set varid
+                    continue;
+            }
+
             const std::map<std::string, unsigned int>::const_iterator it = variableId.find(tok->str());
             if (it != variableId.end()) {
                 tok->varId(it->second);
