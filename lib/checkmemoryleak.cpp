@@ -2454,7 +2454,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
         // Check that variable is allocated with malloc
         if (!isMalloc(variable))
             return;
-    } else if (!_tokenizer->isC()) {
+    } else if (!_tokenizer->isC() && (!variable->typeScope() || variable->typeScope()->getDestructor())) {
         // For non-C code a destructor might cleanup members
         return;
     }
@@ -2477,8 +2477,10 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             break;
 
         // Struct member is allocated => check if it is also properly deallocated..
-        else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% = malloc|strdup|kmalloc|fopen (", variable->declarationId())
-                 || Token::Match(tok2->previous(), "[;{}] %varid% . %var% = new", variable->declarationId())) {
+        else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% =", variable->declarationId())) {
+            if (getAllocationType(tok2->tokAt(4), tok2->tokAt(2)->varId()) == AllocType::No)
+                continue;
+
             const unsigned int structid(variable->declarationId());
             const unsigned int structmemberid(tok2->tokAt(2)->varId());
 
@@ -2497,10 +2499,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                 }
 
                 // Deallocating the struct member..
-                else if (Token::Match(tok3, "free|kfree ( %var% . %varid% )", structmemberid)
-                         || Token::Match(tok3, "delete %var% . %varid%", structmemberid)
-                         || Token::Match(tok3, "delete [ ] %var% . %varid%", structmemberid)
-                         || Token::Match(tok3, "fclose ( %var% . %varid%", structmemberid)) {
+                else if (getDeallocationType(tok3, structmemberid) != AllocType::No) {
                     // If the deallocation happens at the base level, don't check this member anymore
                     if (indentlevel3 == 0)
                         break;
