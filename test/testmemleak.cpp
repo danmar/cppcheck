@@ -2967,7 +2967,6 @@ private:
               "}");
 
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n",
-
                            "[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
                            errout.str());
     }
