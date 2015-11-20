@@ -365,9 +365,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 
     if (str[0] == '\'' && str.size() >= 3U && str[str.size()-1U] == '\'') {
         char c;
-        if (str.size() == 3U &&
-            str[0] == '\'' &&
-            str[2] == '\'')
+        if (str.size() == 3U)
             c = str[1];
         else if (str == "\'\\0\'")
             c = '\0';
