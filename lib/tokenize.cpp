@@ -3734,6 +3734,14 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyCasts();
 
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%oror%|&& %num% %oror%|&&|,|)") ||
+            Token::Match(tok, "[(,] %num% %oror%|&&")) {
+            tok = tok->next();
+            tok->str(MathLib::isNullValue(tok->str()) ? "0" : "1");
+        }
+    }
+
     // Simplify simple calculations before replace constants, this allows the replacement of constants that are calculated
     // e.g. const static int value = sizeof(X)/sizeof(Y);
     simplifyCalculations();
