@@ -48,7 +48,8 @@ private:
         TEST_CASE(calculate);
         TEST_CASE(calculate1);
         TEST_CASE(typesuffix);
-        TEST_CASE(convert);
+        TEST_CASE(toLongNumber);
+        TEST_CASE(toDoubleNumber);
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
         TEST_CASE(incdec);
@@ -226,11 +227,7 @@ private:
         ASSERT_EQUALS("2ULL",  MathLib::add("1ULL", "1LLU"));
     }
 
-    void convert() const {
-        // ------------------
-        // tolong conversion:
-        // ------------------
-
+    void toLongNumber() const {
         // from hex
         ASSERT_EQUALS(0     , MathLib::toLongNumber("0x0"));
         ASSERT_EQUALS(0     , MathLib::toLongNumber("-0x0"));
@@ -272,6 +269,12 @@ private:
         ASSERT_EQUALS(100   , MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1    , MathLib::toLongNumber("-10.0E-1"));
 
+        // from char
+        ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
+        ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
+        ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
+
         ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
         ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
         ASSERT_EQUALS(9894494448401390090ULL, MathLib::toULongNumber("0x89504e470d0a1a0a"));
@@ -300,10 +303,9 @@ private:
                */
 
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
+    }
 
-        // -----------------
-        // to double number:
-        // -----------------
+    void toDoubleNumber() {
         ASSERT_EQUALS_DOUBLE(10.0  , MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS_DOUBLE(100.0 , MathLib::toDoubleNumber("1.0E+2"));
