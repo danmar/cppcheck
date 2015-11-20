@@ -367,15 +367,42 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         char c;
         if (str.size() == 3U)
             c = str[1];
-        else if (str == "\'\\0\'")
-            c = '\0';
-        else if (str == "\'\\n\'")
-            c = '\n';
-        else if (str == "\'\\r\'")
-            c = '\r';
-        else if (str == "\'\\t\'")
-            c = '\t';
-        else
+        else if (str[1] == '\\' && str.size() == 4U) {
+            switch (str[2]) {
+            case '0':
+                c = '\0';
+                break;
+            case 'a':
+                c = '\a';
+                break;
+            case 'b':
+                c = '\b';
+                break;
+            case 'f':
+                c = '\f';
+                break;
+            case 'n':
+                c = '\n';
+                break;
+            case 'r':
+                c = '\r';
+                break;
+            case 't':
+                c = '\t';
+                break;
+            case 'v':
+                c = '\v';
+                break;
+            case '\\':
+            case '\?':
+            case '\'':
+            case '\"':
+                c = str[2];
+                break;
+            default:
+                throw InternalError(0, "MathLib::toLongNumber: Unhandled char constant " + str);
+            }
+        } else
             throw InternalError(0, "MathLib::toLongNumber: Unhandled char constant " + str);
         return c & 0xff;
     }
