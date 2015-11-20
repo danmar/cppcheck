@@ -275,7 +275,6 @@ void CheckCondition::comparison()
     if (!_settings->isEnabled("style"))
         return;
 
-    // Experimental code based on AST
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "==|!=")) {
             const Token *expr1 = tok->astOperand1();

@@ -930,8 +930,6 @@ static bool isLocal(const Token *tok)
 }
 
 namespace {
-    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() <<
-            "string" <<  "u16string" <<  "u32string" <<  "wstring" ;
     static const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
             "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
 }
@@ -955,9 +953,9 @@ void CheckStl::string_c_str()
 
                 unsigned int numpar = 0;
                 c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
-                for (const Token* tok = func->argDef->next(); tok != 0; tok = tok->nextArgument()) {
+                for (std::list<Variable>::const_iterator var = func->argumentList.cbegin(); var != func->argumentList.cend(); ++var) {
                     numpar++;
-                    if (Token::Match(tok, "std :: string|wstring !!&") || Token::Match(tok, "const std :: string|wstring"))
+                    if (var->isStlStringType() && (!var->isReference() || var->isConst()))
                         c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar));
                 }
             }
@@ -980,7 +978,7 @@ void CheckStl::string_c_str()
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Invalid usage..
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
-                tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
+                tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
                 string_c_strThrowError(tok);
             } else if (Token::Match(tok, "[;{}] %name% = %var% . str ( ) . c_str|data ( ) ;")) {
                 const Variable* var = tok->next()->variable();
@@ -1014,7 +1012,7 @@ void CheckStl::string_c_str()
                         tok2 = tok2->previous();
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
-                        if (var && var->isStlType(stl_string)) {
+                        if (var && var->isStlStringType()) {
                             string_c_strParam(tok, i->second);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
@@ -1029,7 +1027,7 @@ void CheckStl::string_c_str()
             // Using c_str() to get the return value is only dangerous if the function returns a char*
             if (returnType == charPtr) {
                 if (Token::Match(tok, "return %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
-                    tok->next()->variable() && tok->next()->variable()->isStlType(stl_string)) {
+                    tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
                     string_c_strError(tok);
                 } else if (Token::Match(tok, "return %var% . str ( ) . c_str|data ( ) ;") && isLocal(tok->next()) &&
                            tok->next()->variable() && tok->next()->variable()->isStlType(stl_string_stream)) {
@@ -1048,7 +1046,7 @@ void CheckStl::string_c_str()
                     const Token *search_end = tok->next()->link();
                     for (const Token *search_tok = tok->tokAt(2); search_tok != search_end; search_tok = search_tok->next()) {
                         if (Token::Match(search_tok, "+ %var%") && isLocal(search_tok->next()) &&
-                            search_tok->next()->variable() && search_tok->next()->variable()->isStlType(stl_string)) {
+                            search_tok->next()->variable() && search_tok->next()->variable()->isStlStringType()) {
                             is_implicit_std_string = true;
                             break;
                         } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
@@ -1067,7 +1065,7 @@ void CheckStl::string_c_str()
                     const Token* tok2 = Token::findsimplematch(tok->next(), ";");
                     if (Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         tok2 = tok2->tokAt(-5);
-                        if (tok2->variable() && tok2->variable()->isStlType(stl_string)) { // return var.c_str();
+                        if (tok2->variable() && tok2->variable()->isStlStringType()) { // return var.c_str();
                             string_c_strReturn(tok);
                         }
                     }
@@ -1265,7 +1263,7 @@ void CheckStl::uselessCalls()
                        tok->varId() == tok->tokAt(4)->varId()) {
                 uselessCallsSwapError(tok, tok->str());
             } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
-                       tok->variable() && tok->variable()->isStlType(stl_string)) {
+                       tok->variable() && tok->variable()->isStlStringType()) {
                 if (Token::Match(tok->tokAt(4), "0| )"))
                     uselessCallsSubstrError(tok, false);
                 else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {

@@ -3714,7 +3714,7 @@ bool Tokenizer::simplifyTokenList2()
     // clear the _functionList so it can't contain dead pointers
     deleteSymbolDatabase();
 
-    // Experimental AST handling.
+    // Clear AST. It will be created again at the end of this function.
     for (Token *tok = list.front(); tok; tok = tok->next())
         tok->clearAst();
 
@@ -3886,11 +3886,8 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
         printUnknownTypes();
 
         // #5054 - the typeStartToken() should come before typeEndToken()
-        for (const Token *tok = tokens(); tok; tok = tok->next()) {
-            if (tok->varId() == 0U)
-                continue;
-
-            const Variable *var = tok->variable();
+        for (unsigned int varid = 1; varid < _symbolDatabase->getVariableListSize(); varid++) {
+            const Variable *var = _symbolDatabase->getVariableFromVarId(varid);
             if (!var)
                 continue;
 
@@ -3899,7 +3896,7 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
                 typetok = typetok->next();
 
             if (typetok != var->typeEndToken()) {
-                reportError(tok,
+                reportError(var->typeStartToken(),
                             Severity::debug,
                             "debug",
                             "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
