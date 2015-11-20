@@ -2786,11 +2786,37 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(std::vector<int> v) {\n"
+        check("void f(std::set<int> v) {\n"
               "    v.clear();\n"
               "    int i = v.find(foobar);\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
+
+        check("void f(std::set<int> v) {\n"
+              "    v.clear();\n"
+              "    v.begin();\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
+
+        check("void f(std::set<int> v) {\n"
+              "    v.clear();\n"
+              "    *v.begin();\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
+
+        check("void f(std::set<int> v) {\n"
+              "    v.clear();\n"
+              "    for(auto i = v.cbegin();\n"
+              "        i != v.cend(); ++i) {}\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n"
+                      "[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
+
+        check("void f(std::set<int> v) {\n"
+              "    v.clear();\n"
+              "    foo(v.begin());\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    std::map<int, std::string> CMap;\n"

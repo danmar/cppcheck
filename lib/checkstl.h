@@ -151,7 +151,7 @@ public:
     void readingEmptyStlContainer();
 
 private:
-    void readingEmptyStlContainer_parseUsage(const Token* tok, bool map, std::set<unsigned int>& empty, bool noerror);
+    void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 
     void missingComparisonError(const Token *incrementToken1, const Token *incrementToken2);
     void string_c_strThrowError(const Token *tok);
