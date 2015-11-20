@@ -382,7 +382,7 @@ private:
     void container() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <container id=\"A\" startPattern=\"std :: A &lt;\" endPattern=\"&gt; !!::\">\n"
+                               "  <container id=\"A\" startPattern=\"std :: A &lt;\" endPattern=\"&gt; !!::\" itEndPattern=\"&gt; :: iterator\">\n"
                                "    <type templateParameter=\"1\"/>\n"
                                "    <size templateParameter=\"4\">\n"
                                "      <function name=\"resize\" action=\"resize\"/>\n"
@@ -402,7 +402,7 @@ private:
                                "      <function name=\"find\" action=\"find\"/>\n"
                                "    </access>\n"
                                "  </container>\n"
-                               "  <container id=\"B\" startPattern=\"std :: B &lt;\" inherits=\"A\">\n"
+                               "  <container id=\"B\" startPattern=\"std :: B &lt;\" inherits=\"A\" opLessAllowed=\"false\">\n"
                                "    <size templateParameter=\"3\"/>\n" // Inherits all but templateParameter
                                "  </container>\n"
                                "  <container id=\"C\">\n"
@@ -422,8 +422,10 @@ private:
         ASSERT_EQUALS(A.size_templateArgNo, 4);
         ASSERT_EQUALS(A.startPattern, "std :: A <");
         ASSERT_EQUALS(A.endPattern, "> !!::");
+        ASSERT_EQUALS(A.itEndPattern, "> :: iterator");
         ASSERT_EQUALS(A.stdStringLike, false);
         ASSERT_EQUALS(A.arrayLike_indexOp, false);
+        ASSERT_EQUALS(A.opLessAllowed, true);
         ASSERT_EQUALS(Library::Container::SIZE, A.getYield("size"));
         ASSERT_EQUALS(Library::Container::EMPTY, A.getYield("empty"));
         ASSERT_EQUALS(Library::Container::AT_INDEX, A.getYield("at"));
@@ -444,7 +446,9 @@ private:
         ASSERT_EQUALS(B.size_templateArgNo, 3);
         ASSERT_EQUALS(B.startPattern, "std :: B <");
         ASSERT_EQUALS(B.endPattern, "> !!::");
+        ASSERT_EQUALS(B.itEndPattern, "> :: iterator");
         ASSERT_EQUALS(B.functions.size(), A.functions.size());
+        ASSERT_EQUALS(B.opLessAllowed, false);
 
         ASSERT(C.functions.empty());
         ASSERT_EQUALS(C.type_templateArgNo, -1);

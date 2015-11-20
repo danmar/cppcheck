@@ -137,7 +137,8 @@ public:
             type_templateArgNo(-1),
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
-            stdStringLike(false) {
+            stdStringLike(false),
+            opLessAllowed(true) {
         }
 
         enum Action {
@@ -152,12 +153,13 @@ public:
             Action action;
             Yield yield;
         };
-        std::string startPattern, endPattern;
+        std::string startPattern, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
+        bool opLessAllowed;
 
         Action getAction(const std::string& function) const {
             std::map<std::string, Function>::const_iterator i = functions.find(function);
@@ -174,7 +176,7 @@ public:
         }
     };
     std::map<std::string, Container> containers;
-    const Container* detectContainer(const Token* typeStart) const;
+    const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
 
     class ArgumentChecks {
     public:

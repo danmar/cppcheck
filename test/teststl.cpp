@@ -1406,8 +1406,7 @@ private:
 
     void stlBoundaries1() {
         const std::string stlCont[] = {
-            "list", "set", "multiset", "map",
-            "multimap", "hash_map", "hash_multimap", "hash_set"
+            "list", "set", "multiset", "map", "multimap"
         };
 
         for (size_t i = 0; i < getArraylength(stlCont); ++i) {
@@ -1418,16 +1417,16 @@ private:
                   "        ;\n"
                   "}");
 
-            ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous iterator comparison using operator< on 'std::" + stlCont[i] + "'.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
         }
 
         check("void f() {\n"
               "    std::forward_list<int>::iterator it;\n"
               "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
 
-        // #5926 no FP Dangerous iterator comparison using operator< on 'std::deque'.
+        // #5926 no FP Dangerous comparison using operator< on iterator on std::deque
         check("void f() {\n"
               "    std::deque<int>::iterator it;\n"
               "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
@@ -1473,7 +1472,7 @@ private:
               "    std::forward_list<std::vector<std::vector<int>>>::iterator it;\n"
               "    for (it = ab.begin(); ab.end() > it; ++it) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
 
         // don't crash
         check("void f() {\n"
@@ -1487,7 +1486,7 @@ private:
               "        for (it = ab.begin(); ab.end() > it; ++it) {}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous iterator comparison using operator< on 'std::forward_list'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
     }
 
     void stlBoundaries5() {

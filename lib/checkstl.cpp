@@ -597,43 +597,33 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 void CheckStl::stlBoundaries()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            // Declaring iterator..
-            if (tok->str() == "<" && Token::Match(tok->previous(), "bitset|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset")) {
-                if (!tok->link())
-                    continue;
-                const std::string& container_name(tok->strAt(-1));
-                tok = tok->link();
+    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
+        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
+        if (!var || !var->scope() || !var->scope()->isExecutable())
+            continue;
 
-                if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;")) {
-                    const unsigned int iteratorid(tok->tokAt(3)->varId());
+        const Library::Container* container = _settings->library.detectContainer(var->typeStartToken(), true);
+        if (!container || container->opLessAllowed)
+            continue;
 
-                    // Using "iterator < ..." is not allowed
-                    const Token* const end = tok->scope()->classEnd;
-                    for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
-                        if (Token::Match(tok2, "!!* %varid% <", iteratorid)) {
-                            stlBoundariesError(tok2, container_name);
-                        } else if (Token::Match(tok2, "> %varid% !!.", iteratorid)) {
-                            stlBoundariesError(tok2, container_name);
-                        }
-                    }
-                }
+        const Token* const end = var->scope()->classEnd;
+        for (const Token *tok = var->nameToken(); tok != end; tok = tok->next()) {
+            if (Token::Match(tok, "!!* %varid% <", var->declarationId())) {
+                stlBoundariesError(tok);
+            } else if (Token::Match(tok, "> %varid% !!.", var->declarationId())) {
+                stlBoundariesError(tok);
             }
         }
     }
 }
 
 // Error message for bad boundary usage..
-void CheckStl::stlBoundariesError(const Token *tok, const std::string &container_name)
+void CheckStl::stlBoundariesError(const Token *tok)
 {
     reportError(tok, Severity::error, "stlBoundaries",
-                "Dangerous iterator comparison using operator< on 'std::" + container_name + "'.\n"
-                "Iterator of container 'std::" + container_name + "' compared with operator<. "
-                "This is dangerous since the order of items in the container is not guaranteed. "
-                "One should use operator!= instead to compare iterators.");
+                "Dangerous comparison using operator< on iterator.\n"
+                "Iterator compared with operator<. This is dangerous since the order of items in the "
+                "container is not guaranteed. One should use operator!= instead to compare iterators.");
 }
 
 static bool if_findCompare(const Token * const tokBack)

@@ -322,6 +322,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const endPattern = node->Attribute("endPattern");
             if (endPattern)
                 container.endPattern = endPattern;
+            const char* const itEndPattern = node->Attribute("itEndPattern");
+            if (itEndPattern)
+                container.itEndPattern = itEndPattern;
+            const char* const opLessAllowed = node->Attribute("opLessAllowed");
+            if (opLessAllowed)
+                container.opLessAllowed = std::string(opLessAllowed) == "true";
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
@@ -778,7 +784,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
-const Library::Container* Library::detectContainer(const Token* typeStart) const
+const Library::Container* Library::detectContainer(const Token* typeStart, bool iterator) const
 {
     for (std::map<std::string, Container>::const_iterator i = containers.begin(); i != containers.end(); ++i) {
         const Container& container = i->second;
@@ -786,12 +792,13 @@ const Library::Container* Library::detectContainer(const Token* typeStart) const
             continue;
 
         if (Token::Match(typeStart, container.startPattern.c_str())) {
-            if (container.endPattern.empty())
+            if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
                 return &container;
 
             for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
                 if (tok->link()) {
-                    if (Token::Match(tok->link(), container.endPattern.c_str()))
+                    const std::string& endPattern = iterator ? container.itEndPattern : container.endPattern;
+                    if (Token::Match(tok->link(), endPattern.c_str()))
                         return &container;
                     break;
                 }

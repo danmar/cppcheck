@@ -165,7 +165,7 @@ private:
     void mismatchingContainersError(const Token *tok);
     void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name);
-    void stlBoundariesError(const Token *tok, const std::string &container_name);
+    void stlBoundariesError(const Token *tok);
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
     void redundantIfRemoveError(const Token *tok);
@@ -194,7 +194,7 @@ private:
         c.stlOutOfBoundsError(0, "i", "foo", false);
         c.invalidIteratorError(0, "push_back|push_front|insert", "iterator");
         c.invalidPointerError(0, "push_back", "pointer");
-        c.stlBoundariesError(0, "container");
+        c.stlBoundariesError(0);
         c.if_findError(0, false);
         c.if_findError(0, true);
         c.string_c_strError(0);
