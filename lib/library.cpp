@@ -356,6 +356,16 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 action = Container::POP;
                             else if (actionName == "find")
                                 action = Container::FIND;
+                            else if (actionName == "insert")
+                                action = Container::INSERT;
+                            else if (actionName == "erase")
+                                action = Container::ERASE;
+                            else if (actionName == "change-content")
+                                action = Container::CHANGE_CONTENT;
+                            else if (actionName == "change-internal")
+                                action = Container::CHANGE_INTERNAL;
+                            else if (actionName == "change")
+                                action = Container::CHANGE;
                             else
                                 return Error(BAD_ATTRIBUTE_VALUE, actionName);
                         }
@@ -376,6 +386,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 yield = Container::START_ITERATOR;
                             else if (yieldName == "end-iterator")
                                 yield = Container::END_ITERATOR;
+                            else if (yieldName == "iterator")
+                                yield = Container::ITERATOR;
                             else if (yieldName == "size")
                                 yield = Container::SIZE;
                             else if (yieldName == "empty")

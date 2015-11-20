@@ -142,11 +142,11 @@ public:
         }
 
         enum Action {
-            RESIZE, CLEAR, PUSH, POP, FIND,
+            RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
             NO_ACTION
         };
         enum Yield {
-            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, SIZE, EMPTY,
+            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
             NO_YIELD
         };
         struct Function {

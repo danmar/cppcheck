@@ -86,7 +86,7 @@ void CheckStl::iterators()
                     continue;
 
                 Library::Container::Yield yield = container->getYield(containertok->strAt(2));
-                if (yield != Library::Container::END_ITERATOR && yield != Library::Container::START_ITERATOR)
+                if (yield != Library::Container::END_ITERATOR && yield != Library::Container::START_ITERATOR && yield != Library::Container::ITERATOR)
                     continue;
             } else
                 continue;
@@ -693,7 +693,7 @@ void CheckStl::if_find()
                 if (if_findCompare(funcTok->next()))
                     continue;
 
-                if (printWarning && !container->stdStringLike)
+                if (printWarning && container->getYield(funcTok->str()) == Library::Container::ITERATOR)
                     if_findError(tok, false);
                 else if (printPerformance && container->stdStringLike)
                     if_findError(tok, true);
@@ -1405,13 +1405,14 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
         const Token* parent = tok->tokAt(3)->astParent();
         // Member function call
         if (yield != Library::Container::NO_YIELD &&
-            ((yield != Library::Container::START_ITERATOR &&
+            ((yield != Library::Container::ITERATOR &&
+              yield != Library::Container::START_ITERATOR &&
               yield != Library::Container::END_ITERATOR) || !parent || Token::Match(parent, "%cop%|=|*"))) { // These functions read from the container
             if (!noerror)
                 readingEmptyStlContainerError(tok);
         } else {
             Library::Container::Action action = container->getAction(tok->strAt(2));
-            if (action == Library::Container::FIND) {
+            if (action == Library::Container::FIND || action == Library::Container::ERASE || action == Library::Container::POP || action == Library::Container::CLEAR) {
                 if (!noerror)
                     readingEmptyStlContainerError(tok);
             } else
