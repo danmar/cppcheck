@@ -307,10 +307,10 @@ private:
 
         // Ticket #5734
         check("int foo(char c) {\n"
-              "return c == '42';}", "test.cpp");
+              "return c == '4';}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
         check("int foo(char c) {\n"
-              "return c == '42';}", "test.c");
+              "return c == '4';}", "test.c");
         ASSERT_EQUALS("", errout.str());
         check("int foo(char c) {\n"
               "return c == \"42\"[0];}", "test.cpp");

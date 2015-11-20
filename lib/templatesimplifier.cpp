@@ -1023,7 +1023,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(MathLib::toString(tok->str()[1] & 0xff));
+            int c = MathLib::toLongNumber(tok->str());
+            tok->str(MathLib::toString(c));
         }
 
         if (tok->isNumber()) {

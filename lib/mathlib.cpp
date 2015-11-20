@@ -363,6 +363,25 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
+    if (str[0] == '\'' && str.size() >= 3U && str[str.size()-1U] == '\'') {
+        char c;
+        if (str.size() == 3U &&
+            str[0] == '\'' &&
+            str[2] == '\'')
+            c = str[1];
+        else if (str == "\'\\0\'")
+            c = '\0';
+        else if (str == "\'\\n\'")
+            c = '\n';
+        else if (str == "\'\\r\'")
+            c = '\r';
+        else if (str == "\'\\t\'")
+            c = '\t';
+        else
+            throw InternalError(0, "MathLib::toLongNumber: Unhandled char constant " + str);
+        return c & 0xff;
+    }
+
     bigint ret = 0;
     std::istringstream istr(str);
     istr >> ret;

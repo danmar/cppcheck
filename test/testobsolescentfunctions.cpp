@@ -104,7 +104,7 @@ private:
         check("void f()\n"
               "{\n"
               "    struct hostent *hp;\n"
-              "    if(!hp = gethostbyname('127.0.0.1')) {\n"
+              "    if(!hp = gethostbyname(\"127.0.0.1\")) {\n"
               "        exit(1);\n"
               "    }\n"
               "}");
@@ -115,7 +115,7 @@ private:
         check("void f()\n"
               "{\n"
               "    long addr;\n"
-              "    addr = inet_addr('127.0.0.1');\n"
+              "    addr = inet_addr(\"127.0.0.1\");\n"
               "    if(!hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET)) {\n"
               "        exit(1);\n"
               "    }\n"
@@ -164,7 +164,7 @@ private:
 
         check("const char f()\n"
               "{\n"
-              "    const char var[6] = 'index';\n"
+              "    const char var[6] = \"index\";\n"
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}");
@@ -188,7 +188,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "    const char var[7] = 'rindex';\n"
+              "    const char var[7] = \"rindex\";\n"
               "    print(rindex(var, 0));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'rindex' called. It is recommended to use the function 'strrchr' instead.\n", errout.str());
