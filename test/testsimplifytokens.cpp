@@ -2653,6 +2653,15 @@ private:
                 "}";
             ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
         }
+
+        {
+            // #4931
+            const char code[] =
+                "void f() {\n"
+                "if (12 && 7) g();\n"
+                "}";
+            ASSERT_EQUALS("void f ( ) { g ( ) ; }", tok(code));
+        }
     }
 
 

@@ -4738,16 +4738,22 @@ bool Tokenizer::simplifyConditions()
             ret = true;
         }
 
-        if (Token::simpleMatch(tok, "( true &&") ||
-            Token::simpleMatch(tok, "&& true &&") ||
-            Token::simpleMatch(tok->next(), "&& true )")) {
+        if (Token::simpleMatch(tok, "&& true &&")) {
             tok->deleteNext(2);
             ret = true;
         }
 
-        else if (Token::simpleMatch(tok, "( false ||") ||
-                 Token::simpleMatch(tok, "|| false ||") ||
-                 Token::simpleMatch(tok->next(), "|| false )")) {
+        else if (Token::simpleMatch(tok, "|| false ||")) {
+            tok->deleteNext(2);
+            ret = true;
+        }
+
+        else if (Token::Match(tok, "(|&& true && true &&|)")) {
+            tok->deleteNext(2);
+            ret = true;
+        }
+
+        else if (Token::Match(tok, "%oror%|( false %oror% false %oror%|)")) {
             tok->deleteNext(2);
             ret = true;
         }
