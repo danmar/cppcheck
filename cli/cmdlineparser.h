@@ -104,6 +104,7 @@ protected:
      * Print message (to console?).
      */
     static void PrintMessage(const std::string &message);
+    static void PrintMessage(const char* message);
 
 private:
     std::vector<std::string> _pathnames;

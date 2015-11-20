@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "timer.h"
 #include "check.h"
+#include "threadexecutor.h" // Threading model
 
 #include <algorithm>
 #include <iostream>
@@ -67,8 +68,8 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
         std::string PathName;
         while (std::getline(Files, PathName)) { // next line
             if (!PathName.empty()) {
-                PathName = Path::fromNativeSeparators(PathName);
                 PathName = Path::removeQuotationMarks(PathName);
+                PathName = Path::fromNativeSeparators(PathName);
 
                 // If path doesn't end with / or \, add it
                 if (PathName.back() != '/')
@@ -101,626 +102,633 @@ void CmdLineParser::PrintMessage(const std::string &message)
     std::cout << message << std::endl;
 }
 
+void CmdLineParser::PrintMessage(const char* message)
+{
+    std::cout << message << std::endl;
+}
+
 bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 {
     bool def = false;
     bool maxconfigs = false;
 
     for (int i = 1; i < argc; i++) {
-        if (std::strcmp(argv[i], "--version") == 0) {
-            _showVersion = true;
-            _exitAfterPrint = true;
-            return true;
-        }
-
-        // Flag used for various purposes during debugging
-        else if (std::strcmp(argv[i], "--debug") == 0)
-            _settings->debug = _settings->debugwarnings = true;
-
-        // Show --debug output after the first simplifications
-        else if (std::strcmp(argv[i], "--debug-normal") == 0)
-            _settings->debugnormal = true;
-
-        // Show debug warnings
-        else if (std::strcmp(argv[i], "--debug-warnings") == 0)
-            _settings->debugwarnings = true;
-
-        // Print out code that triggers false positive
-        else if (std::strcmp(argv[i], "--debug-fp") == 0)
-            _settings->debugFalsePositive = true;
-
-        // dump cppcheck data
-        else if (std::strcmp(argv[i], "--dump") == 0)
-            _settings->dump = true;
-
-        // (Experimental) exception handling inside cppcheck client
-        else if (std::strcmp(argv[i], "--exception-handling") == 0)
-            _settings->exceptionHandling = true;
-        else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
-            _settings->exceptionHandling = true;
-            const std::string exceptionOutfilename=&(argv[i][21]);
-            CppCheckExecutor::setExceptionOutput(exceptionOutfilename);
-        }
-
-        // Inconclusive checking
-        else if (std::strcmp(argv[i], "--inconclusive") == 0)
-            _settings->inconclusive = true;
-
-        // Enforce language (--language=, -x)
-        else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
-            std::string str;
-            if (argv[i][2]) {
-                str = argv[i]+11;
-            } else {
-                i++;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: No language given to '-x' option.");
-                    return false;
-                }
-                str = argv[i];
+        if (argv[i][0] == '-') {
+            if (std::strcmp(argv[i], "--version") == 0) {
+                _showVersion = true;
+                _exitAfterPrint = true;
+                return true;
             }
 
-            if (str == "c")
-                _settings->enforcedLang = Settings::C;
-            else if (str == "c++")
-                _settings->enforcedLang = Settings::CPP;
-            else {
-                PrintMessage("cppcheck: Unknown language '" + str + "' enforced.");
-                return false;
+            // Flag used for various purposes during debugging
+            else if (std::strcmp(argv[i], "--debug") == 0)
+                _settings->debug = _settings->debugwarnings = true;
+
+            // Show --debug output after the first simplifications
+            else if (std::strcmp(argv[i], "--debug-normal") == 0)
+                _settings->debugnormal = true;
+
+            // Show debug warnings
+            else if (std::strcmp(argv[i], "--debug-warnings") == 0)
+                _settings->debugwarnings = true;
+
+            // Print out code that triggers false positive
+            else if (std::strcmp(argv[i], "--debug-fp") == 0)
+                _settings->debugFalsePositive = true;
+
+            // dump cppcheck data
+            else if (std::strcmp(argv[i], "--dump") == 0)
+                _settings->dump = true;
+
+            // (Experimental) exception handling inside cppcheck client
+            else if (std::strcmp(argv[i], "--exception-handling") == 0)
+                _settings->exceptionHandling = true;
+            else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+                _settings->exceptionHandling = true;
+                const std::string exceptionOutfilename = &(argv[i][21]);
+                CppCheckExecutor::setExceptionOutput(exceptionOutfilename);
             }
-        }
 
-        // Filter errors
-        else if (std::strncmp(argv[i], "--exitcode-suppressions=", 24) == 0) {
-            // exitcode-suppressions=filename.txt
-            std::string filename = 24 + argv[i];
+            // Inconclusive checking
+            else if (std::strcmp(argv[i], "--inconclusive") == 0)
+                _settings->inconclusive = true;
 
-            std::ifstream f(filename.c_str());
-            if (!f.is_open()) {
-                PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
-                return false;
-            }
-            const std::string errmsg(_settings->nofail.parseFile(f));
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
-        }
-
-        // Filter errors
-        else if (std::strncmp(argv[i], "--suppressions-list=", 20) == 0) {
-            std::string filename = argv[i]+20;
-            std::ifstream f(filename.c_str());
-            if (!f.is_open()) {
-                std::string message("cppcheck: Couldn't open the file: \"");
-                message += filename;
-                message += "\".";
-                if (std::count(filename.begin(), filename.end(), ',') > 0 ||
-                    std::count(filename.begin(), filename.end(), '.') > 1) {
-                    // If user tried to pass multiple files (we can only guess that)
-                    // e.g. like this: --suppressions-list=a.txt,b.txt
-                    // print more detailed error message to tell user how he can solve the problem
-                    message += "\nIf you want to pass two files, you can do it e.g. like this:";
-                    message += "\n    cppcheck --suppressions-list=a.txt --suppressions-list=b.txt file.cpp";
-                }
-
-                PrintMessage(message);
-                return false;
-            }
-            const std::string errmsg(_settings->nomsg.parseFile(f));
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
-        }
-
-        else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
-            std::string suppression = argv[i]+11;
-            const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
-            }
-        }
-
-        // Enables inline suppressions.
-        else if (std::strcmp(argv[i], "--inline-suppr") == 0)
-            _settings->_inlineSuppressions = true;
-
-        // Verbose error messages (configuration info)
-        else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
-            _settings->_verbose = true;
-
-        // Force checking of files that have "too many" configurations
-        else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
-            _settings->_force = true;
-
-        // Output relative paths
-        else if (std::strcmp(argv[i], "-rp") == 0 || std::strcmp(argv[i], "--relative-paths") == 0)
-            _settings->_relativePaths = true;
-        else if (std::strncmp(argv[i], "-rp=", 4) == 0 || std::strncmp(argv[i], "--relative-paths=", 17) == 0) {
-            _settings->_relativePaths = true;
-            if (argv[i][argv[i][3]=='='?4:17] != 0) {
-                std::string paths = argv[i]+(argv[i][3]=='='?4:17);
-                for (;;) {
-                    std::string::size_type pos = paths.find(';');
-                    if (pos == std::string::npos) {
-                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths));
-                        break;
-                    } else {
-                        _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
-                        paths.erase(0, pos + 1);
+            // Enforce language (--language=, -x)
+            else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
+                std::string str;
+                if (argv[i][2]) {
+                    str = argv[i]+11;
+                } else {
+                    i++;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: No language given to '-x' option.");
+                        return false;
                     }
+                    str = argv[i];
                 }
-            } else {
-                PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
-                return false;
-            }
-        }
 
-        // Write results in results.xml
-        else if (std::strcmp(argv[i], "--xml") == 0)
-            _settings->_xml = true;
-
-        // Define the XML file version (and enable XML output)
-        else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-            std::string numberString(argv[i]+14);
-
-            std::istringstream iss(numberString);
-            if (!(iss >> _settings->_xml_version)) {
-                PrintMessage("cppcheck: argument to '--xml-version' is not a number.");
-                return false;
+                if (str == "c")
+                    _settings->enforcedLang = Settings::C;
+                else if (str == "c++")
+                    _settings->enforcedLang = Settings::CPP;
+                else {
+                    PrintMessage("cppcheck: Unknown language '" + str + "' enforced.");
+                    return false;
+                }
             }
 
-            if (_settings->_xml_version < 0 || _settings->_xml_version > 2) {
-                // We only have xml versions 1 and 2
-                PrintMessage("cppcheck: '--xml-version' can only be 1 or 2.");
-                return false;
+            // Filter errors
+            else if (std::strncmp(argv[i], "--exitcode-suppressions=", 24) == 0) {
+                // exitcode-suppressions=filename.txt
+                std::string filename = 24 + argv[i];
+
+                std::ifstream f(filename.c_str());
+                if (!f.is_open()) {
+                    PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
+                    return false;
+                }
+                const std::string errmsg(_settings->nofail.parseFile(f));
+                if (!errmsg.empty()) {
+                    PrintMessage(errmsg);
+                    return false;
+                }
             }
 
-            // Enable also XML if version is set
-            _settings->_xml = true;
-        }
+            // Filter errors
+            else if (std::strncmp(argv[i], "--suppressions-list=", 20) == 0) {
+                std::string filename = argv[i]+20;
+                std::ifstream f(filename.c_str());
+                if (!f.is_open()) {
+                    std::string message("cppcheck: Couldn't open the file: \"");
+                    message += filename;
+                    message += "\".";
+                    if (std::count(filename.begin(), filename.end(), ',') > 0 ||
+                        std::count(filename.begin(), filename.end(), '.') > 1) {
+                        // If user tried to pass multiple files (we can only guess that)
+                        // e.g. like this: --suppressions-list=a.txt,b.txt
+                        // print more detailed error message to tell user how he can solve the problem
+                        message += "\nIf you want to pass two files, you can do it e.g. like this:";
+                        message += "\n    cppcheck --suppressions-list=a.txt --suppressions-list=b.txt file.cpp";
+                    }
 
-        // Only print something when there are errors
-        else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
-            _settings->quiet = true;
-
-        // Append user-defined code to checked source code
-        else if (std::strncmp(argv[i], "--append=", 9) == 0) {
-            const std::string filename = 9 + argv[i];
-            if (!_settings->append(filename)) {
-                PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
-                return false;
+                    PrintMessage(message);
+                    return false;
+                }
+                const std::string errmsg(_settings->nomsg.parseFile(f));
+                if (!errmsg.empty()) {
+                    PrintMessage(errmsg);
+                    return false;
+                }
             }
-        }
 
-        // Check configuration
-        else if (std::strcmp(argv[i], "--check-config") == 0) {
-            _settings->checkConfiguration = true;
-        }
-
-        // Check library definitions
-        else if (std::strcmp(argv[i], "--check-library") == 0) {
-            _settings->checkLibrary = true;
-        }
-
-        else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
-            const std::string errmsg = _settings->addEnabled(argv[i] + 9);
-            if (!errmsg.empty()) {
-                PrintMessage(errmsg);
-                return false;
+            else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
+                std::string suppression = argv[i]+11;
+                const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
+                if (!errmsg.empty()) {
+                    PrintMessage(errmsg);
+                    return false;
+                }
             }
-            // when "style" is enabled, also enable "warning", "performance" and "portability"
-            if (_settings->isEnabled("style")) {
-                _settings->addEnabled("warning");
-                _settings->addEnabled("performance");
-                _settings->addEnabled("portability");
+
+            // Enables inline suppressions.
+            else if (std::strcmp(argv[i], "--inline-suppr") == 0)
+                _settings->_inlineSuppressions = true;
+
+            // Verbose error messages (configuration info)
+            else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
+                _settings->_verbose = true;
+
+            // Force checking of files that have "too many" configurations
+            else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
+                _settings->_force = true;
+
+            // Output relative paths
+            else if (std::strcmp(argv[i], "-rp") == 0 || std::strcmp(argv[i], "--relative-paths") == 0)
+                _settings->_relativePaths = true;
+            else if (std::strncmp(argv[i], "-rp=", 4) == 0 || std::strncmp(argv[i], "--relative-paths=", 17) == 0) {
+                _settings->_relativePaths = true;
+                if (argv[i][argv[i][3]=='='?4:17] != 0) {
+                    std::string paths = argv[i]+(argv[i][3]=='='?4:17);
+                    for (;;) {
+                        std::string::size_type pos = paths.find(';');
+                        if (pos == std::string::npos) {
+                            _settings->_basePaths.push_back(Path::fromNativeSeparators(paths));
+                            break;
+                        } else {
+                            _settings->_basePaths.push_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                            paths.erase(0, pos + 1);
+                        }
+                    }
+                } else {
+                    PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
+                    return false;
+                }
             }
-        }
 
-        // --error-exitcode=1
-        else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-            std::string temp = argv[i]+17;
-            std::istringstream iss(temp);
-            if (!(iss >> _settings->_exitCode)) {
-                _settings->_exitCode = 0;
-                PrintMessage("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'.");
-                return false;
-            }
-        }
+            // Write results in results.xml
+            else if (std::strcmp(argv[i], "--xml") == 0)
+                _settings->_xml = true;
 
-        // User define
-        else if (std::strncmp(argv[i], "-D", 2) == 0) {
-            std::string define;
+            // Define the XML file version (and enable XML output)
+            else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
+                std::string numberString(argv[i]+14);
 
-            // "-D define"
-            if (std::strcmp(argv[i], "-D") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-D' is missing.");
+                std::istringstream iss(numberString);
+                if (!(iss >> _settings->_xml_version)) {
+                    PrintMessage("cppcheck: argument to '--xml-version' is not a number.");
                     return false;
                 }
 
-                define = argv[i];
-            }
-            // "-Ddefine"
-            else {
-                define = 2 + argv[i];
-            }
-
-            // No "=", append a "=1"
-            if (define.find('=') == std::string::npos)
-                define += "=1";
-
-            if (!_settings->userDefines.empty())
-                _settings->userDefines += ";";
-            _settings->userDefines += define;
-
-            def = true;
-        }
-        // User undef
-        else if (std::strncmp(argv[i], "-U", 2) == 0) {
-            std::string undef;
-
-            // "-U undef"
-            if (std::strcmp(argv[i], "-U") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-U' is missing.");
+                if (_settings->_xml_version < 0 || _settings->_xml_version > 2) {
+                    // We only have xml versions 1 and 2
+                    PrintMessage("cppcheck: '--xml-version' can only be 1 or 2.");
                     return false;
                 }
 
-                undef = argv[i];
-            }
-            // "-Uundef"
-            else {
-                undef = 2 + argv[i];
+                // Enable also XML if version is set
+                _settings->_xml = true;
             }
 
-            _settings->userUndefs.insert(undef);
-        }
+            // Only print something when there are errors
+            else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
+                _settings->quiet = true;
 
-        // Include paths
-        else if (std::strncmp(argv[i], "-I", 2) == 0) {
-            std::string path;
-
-            // "-I path/"
-            if (std::strcmp(argv[i], "-I") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-I' is missing.");
+            // Append user-defined code to checked source code
+            else if (std::strncmp(argv[i], "--append=", 9) == 0) {
+                const std::string filename = 9 + argv[i];
+                if (!_settings->append(filename)) {
+                    PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
-                path = argv[i];
             }
 
-            // "-Ipath/"
-            else {
-                path = 2 + argv[i];
+            // Check configuration
+            else if (std::strcmp(argv[i], "--check-config") == 0) {
+                _settings->checkConfiguration = true;
             }
-            path = Path::fromNativeSeparators(path);
-            path = Path::removeQuotationMarks(path);
 
-            // If path doesn't end with / or \, add it
-            if (path.back() != '/')
-                path += '/';
+            // Check library definitions
+            else if (std::strcmp(argv[i], "--check-library") == 0) {
+                _settings->checkLibrary = true;
+            }
 
-            _settings->_includePaths.push_back(path);
-        } else if (std::strncmp(argv[i], "--include=", 10) == 0) {
-            std::string path = argv[i] + 10;
-
-            path = Path::fromNativeSeparators(path);
-
-            _settings->userIncludes.push_back(path);
-        } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
-            // open this file and read every input file (1 file name per line)
-            AddInclPathsToList(16 + argv[i], &_settings->_includePaths);
-        } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
-            std::string path = argv[i] + 17;
-            path = Path::fromNativeSeparators(path);
-            _settings->configExcludePaths.insert(path);
-        } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
-            // open this file and read every input file (1 file name per line)
-            AddPathsToSet(23 + argv[i], &_settings->configExcludePaths);
-        }
-
-        // file list specified
-        else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
-            // open this file and read every input file (1 file name per line)
-            AddFilesToList(12 + argv[i], _pathnames);
-        }
-
-        // Ignored paths
-        else if (std::strncmp(argv[i], "-i", 2) == 0) {
-            std::string path;
-
-            // "-i path/"
-            if (std::strcmp(argv[i], "-i") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-i' is missing.");
+            else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
+                const std::string errmsg = _settings->addEnabled(argv[i] + 9);
+                if (!errmsg.empty()) {
+                    PrintMessage(errmsg);
                     return false;
                 }
-                path = argv[i];
+                // when "style" is enabled, also enable "warning", "performance" and "portability"
+                if (_settings->isEnabled("style")) {
+                    _settings->addEnabled("warning");
+                    _settings->addEnabled("performance");
+                    _settings->addEnabled("portability");
+                }
             }
 
-            // "-ipath/"
-            else {
-                path = 2 + argv[i];
+            // --error-exitcode=1
+            else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
+                std::string temp = argv[i]+17;
+                std::istringstream iss(temp);
+                if (!(iss >> _settings->_exitCode)) {
+                    _settings->_exitCode = 0;
+                    PrintMessage("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'.");
+                    return false;
+                }
             }
 
-            if (!path.empty()) {
-                path = Path::fromNativeSeparators(path);
-                path = Path::simplifyPath(path);
+            // User define
+            else if (std::strncmp(argv[i], "-D", 2) == 0) {
+                std::string define;
+
+                // "-D define"
+                if (std::strcmp(argv[i], "-D") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-D' is missing.");
+                        return false;
+                    }
+
+                    define = argv[i];
+                }
+                // "-Ddefine"
+                else {
+                    define = 2 + argv[i];
+                }
+
+                // No "=", append a "=1"
+                if (define.find('=') == std::string::npos)
+                    define += "=1";
+
+                if (!_settings->userDefines.empty())
+                    _settings->userDefines += ";";
+                _settings->userDefines += define;
+
+                def = true;
+            }
+            // User undef
+            else if (std::strncmp(argv[i], "-U", 2) == 0) {
+                std::string undef;
+
+                // "-U undef"
+                if (std::strcmp(argv[i], "-U") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-U' is missing.");
+                        return false;
+                    }
+
+                    undef = argv[i];
+                }
+                // "-Uundef"
+                else {
+                    undef = 2 + argv[i];
+                }
+
+                _settings->userUndefs.insert(undef);
+            }
+
+            // Include paths
+            else if (std::strncmp(argv[i], "-I", 2) == 0) {
+                std::string path;
+
+                // "-I path/"
+                if (std::strcmp(argv[i], "-I") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-I' is missing.");
+                        return false;
+                    }
+                    path = argv[i];
+                }
+
+                // "-Ipath/"
+                else {
+                    path = 2 + argv[i];
+                }
                 path = Path::removeQuotationMarks(path);
+                path = Path::fromNativeSeparators(path);
 
-                if (FileLister::isDirectory(path)) {
-                    // If directory name doesn't end with / or \, add it
-                    if (path.back() != '/')
-                        path += '/';
+                // If path doesn't end with / or \, add it
+                if (path.back() != '/')
+                    path += '/';
+
+                _settings->_includePaths.push_back(path);
+            } else if (std::strncmp(argv[i], "--include=", 10) == 0) {
+                std::string path = argv[i] + 10;
+
+                path = Path::fromNativeSeparators(path);
+
+                _settings->userIncludes.push_back(path);
+            } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
+                // open this file and read every input file (1 file name per line)
+                AddInclPathsToList(16 + argv[i], &_settings->_includePaths);
+            } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
+                std::string path = argv[i] + 17;
+                path = Path::fromNativeSeparators(path);
+                _settings->configExcludePaths.insert(path);
+            } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
+                // open this file and read every input file (1 file name per line)
+                AddPathsToSet(23 + argv[i], &_settings->configExcludePaths);
+            }
+
+            // file list specified
+            else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
+                // open this file and read every input file (1 file name per line)
+                AddFilesToList(12 + argv[i], _pathnames);
+            }
+
+            // Ignored paths
+            else if (std::strncmp(argv[i], "-i", 2) == 0) {
+                std::string path;
+
+                // "-i path/"
+                if (std::strcmp(argv[i], "-i") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-i' is missing.");
+                        return false;
+                    }
+                    path = argv[i];
                 }
-                _ignoredPaths.push_back(path);
-            }
-        }
 
-        // --library
-        else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-            if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
-                return false;
-        }
+                // "-ipath/"
+                else {
+                    path = 2 + argv[i];
+                }
 
-        // Report progress
-        else if (std::strcmp(argv[i], "--report-progress") == 0) {
-            _settings->reportProgress = true;
-        }
+                if (!path.empty()) {
+                    path = Path::removeQuotationMarks(path);
+                    path = Path::fromNativeSeparators(path);
+                    path = Path::simplifyPath(path);
 
-        // --std
-        else if (std::strcmp(argv[i], "--std=posix") == 0) {
-            _settings->standards.posix = true;
-        } else if (std::strcmp(argv[i], "--std=c89") == 0) {
-            _settings->standards.c = Standards::C89;
-        } else if (std::strcmp(argv[i], "--std=c99") == 0) {
-            _settings->standards.c = Standards::C99;
-        } else if (std::strcmp(argv[i], "--std=c11") == 0) {
-            _settings->standards.c = Standards::C11;
-        } else if (std::strcmp(argv[i], "--std=c++03") == 0) {
-            _settings->standards.cpp = Standards::CPP03;
-        } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
-            _settings->standards.cpp = Standards::CPP11;
-        }
-
-        // Output formatter
-        else if (std::strcmp(argv[i], "--template") == 0 ||
-                 std::strncmp(argv[i], "--template=", 11) == 0) {
-            // "--template path/"
-            if (argv[i][10] == '=')
-                _settings->_outputFormat = argv[i] + 11;
-            else if ((i+1) < argc && argv[i+1][0] != '-') {
-                ++i;
-                _settings->_outputFormat = argv[i];
-            } else {
-                PrintMessage("cppcheck: argument to '--template' is missing.");
-                return false;
+                    if (FileLister::isDirectory(path)) {
+                        // If directory name doesn't end with / or \, add it
+                        if (path.back() != '/')
+                            path += '/';
+                    }
+                    _ignoredPaths.push_back(path);
+                }
             }
 
-            if (_settings->_outputFormat == "gcc")
-                _settings->_outputFormat = "{file}:{line}: {severity}: {message}";
-            else if (_settings->_outputFormat == "vs")
-                _settings->_outputFormat = "{file}({line}): {severity}: {message}";
-            else if (_settings->_outputFormat == "edit")
-                _settings->_outputFormat = "{file} +{line}: {severity}: {message}";
-        }
+            // --library
+            else if (std::strncmp(argv[i], "--library=", 10) == 0) {
+                if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], argv[i]+10))
+                    return false;
+            }
 
-        // Checking threads
-        else if (std::strncmp(argv[i], "-j", 2) == 0) {
-            std::string numberString;
+            // Report progress
+            else if (std::strcmp(argv[i], "--report-progress") == 0) {
+                _settings->reportProgress = true;
+            }
 
-            // "-j 3"
-            if (std::strcmp(argv[i], "-j") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-j' is missing.");
+            // --std
+            else if (std::strcmp(argv[i], "--std=posix") == 0) {
+                _settings->standards.posix = true;
+            } else if (std::strcmp(argv[i], "--std=c89") == 0) {
+                _settings->standards.c = Standards::C89;
+            } else if (std::strcmp(argv[i], "--std=c99") == 0) {
+                _settings->standards.c = Standards::C99;
+            } else if (std::strcmp(argv[i], "--std=c11") == 0) {
+                _settings->standards.c = Standards::C11;
+            } else if (std::strcmp(argv[i], "--std=c++03") == 0) {
+                _settings->standards.cpp = Standards::CPP03;
+            } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
+                _settings->standards.cpp = Standards::CPP11;
+            }
+
+            // Output formatter
+            else if (std::strcmp(argv[i], "--template") == 0 ||
+                     std::strncmp(argv[i], "--template=", 11) == 0) {
+                // "--template path/"
+                if (argv[i][10] == '=')
+                    _settings->_outputFormat = argv[i] + 11;
+                else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    ++i;
+                    _settings->_outputFormat = argv[i];
+                } else {
+                    PrintMessage("cppcheck: argument to '--template' is missing.");
                     return false;
                 }
 
-                numberString = argv[i];
+                if (_settings->_outputFormat == "gcc")
+                    _settings->_outputFormat = "{file}:{line}: {severity}: {message}";
+                else if (_settings->_outputFormat == "vs")
+                    _settings->_outputFormat = "{file}({line}): {severity}: {message}";
+                else if (_settings->_outputFormat == "edit")
+                    _settings->_outputFormat = "{file} +{line}: {severity}: {message}";
             }
 
-            // "-j3"
-            else
-                numberString = argv[i]+2;
+            // Checking threads
+            else if (std::strncmp(argv[i], "-j", 2) == 0) {
+                std::string numberString;
 
-            std::istringstream iss(numberString);
-            if (!(iss >> _settings->_jobs)) {
-                PrintMessage("cppcheck: argument to '-j' is not a number.");
-                return false;
-            }
+                // "-j 3"
+                if (std::strcmp(argv[i], "-j") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-j' is missing.");
+                        return false;
+                    }
 
-            if (_settings->_jobs > 10000) {
-                // This limit is here just to catch typos. If someone has
-                // need for more jobs, this value should be increased.
-                PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
-                return false;
-            }
-        } else if (std::strncmp(argv[i], "-l", 2) == 0) {
-            std::string numberString;
+                    numberString = argv[i];
+                }
 
-            // "-l 3"
-            if (std::strcmp(argv[i], "-l") == 0) {
-                ++i;
-                if (i >= argc || argv[i][0] == '-') {
-                    PrintMessage("cppcheck: argument to '-l' is missing.");
+                // "-j3"
+                else
+                    numberString = argv[i]+2;
+
+                std::istringstream iss(numberString);
+                if (!(iss >> _settings->_jobs)) {
+                    PrintMessage("cppcheck: argument to '-j' is not a number.");
                     return false;
                 }
 
-                numberString = argv[i];
+                if (_settings->_jobs > 10000) {
+                    // This limit is here just to catch typos. If someone has
+                    // need for more jobs, this value should be increased.
+                    PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
+                    return false;
+                }
+            } else if (std::strncmp(argv[i], "-l", 2) == 0) {
+                std::string numberString;
+
+                // "-l 3"
+                if (std::strcmp(argv[i], "-l") == 0) {
+                    ++i;
+                    if (i >= argc || argv[i][0] == '-') {
+                        PrintMessage("cppcheck: argument to '-l' is missing.");
+                        return false;
+                    }
+
+                    numberString = argv[i];
+                }
+
+                // "-l3"
+                else
+                    numberString = argv[i]+2;
+
+                std::istringstream iss(numberString);
+                if (!(iss >> _settings->_loadAverage)) {
+                    PrintMessage("cppcheck: argument to '-l' is not a number.");
+                    return false;
+                }
             }
 
-            // "-l3"
-            else
-                numberString = argv[i]+2;
-
-            std::istringstream iss(numberString);
-            if (!(iss >> _settings->_loadAverage)) {
-                PrintMessage("cppcheck: argument to '-l' is not a number.");
-                return false;
-            }
-        }
-
-        // print all possible error messages..
-        else if (std::strcmp(argv[i], "--errorlist") == 0) {
-            _showErrorMessages = true;
-            _settings->_xml = true;
-            _exitAfterPrint = true;
-        }
-
-        // documentation..
-        else if (std::strcmp(argv[i], "--doc") == 0) {
-            std::ostringstream doc;
-            // Get documentation..
-            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-                const std::string& name((*it)->name());
-                const std::string info((*it)->classInfo());
-                if (!name.empty() && !info.empty())
-                    doc << "## " << name << " ##\n"
-                        << info << "\n";
+            // print all possible error messages..
+            else if (std::strcmp(argv[i], "--errorlist") == 0) {
+                _showErrorMessages = true;
+                _settings->_xml = true;
+                _exitAfterPrint = true;
             }
 
-            std::cout << doc.str();
-            _exitAfterPrint = true;
-            return true;
-        }
+            // documentation..
+            else if (std::strcmp(argv[i], "--doc") == 0) {
+                std::ostringstream doc;
+                // Get documentation..
+                for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+                    const std::string& name((*it)->name());
+                    const std::string info((*it)->classInfo());
+                    if (!name.empty() && !info.empty())
+                        doc << "## " << name << " ##\n"
+                            << info << "\n";
+                }
 
-        // show timing information..
-        else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
-            const std::string showtimeMode = argv[i] + 11;
-            if (showtimeMode == "file")
-                _settings->_showtime = SHOWTIME_FILE;
-            else if (showtimeMode == "summary")
-                _settings->_showtime = SHOWTIME_SUMMARY;
-            else if (showtimeMode == "top5")
-                _settings->_showtime = SHOWTIME_TOP5;
-            else if (showtimeMode.empty())
-                _settings->_showtime = SHOWTIME_NONE;
-            else {
-                std::string message("cppcheck: error: unrecognized showtime mode: \"");
-                message += showtimeMode;
-                message +=  "\". Supported modes: file, summary, top5.";
-                PrintMessage(message);
-                return false;
+                std::cout << doc.str();
+                _exitAfterPrint = true;
+                return true;
             }
-        }
+
+            // show timing information..
+            else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
+                const std::string showtimeMode = argv[i] + 11;
+                if (showtimeMode == "file")
+                    _settings->_showtime = SHOWTIME_FILE;
+                else if (showtimeMode == "summary")
+                    _settings->_showtime = SHOWTIME_SUMMARY;
+                else if (showtimeMode == "top5")
+                    _settings->_showtime = SHOWTIME_TOP5;
+                else if (showtimeMode.empty())
+                    _settings->_showtime = SHOWTIME_NONE;
+                else {
+                    std::string message("cppcheck: error: unrecognized showtime mode: \"");
+                    message += showtimeMode;
+                    message += "\". Supported modes: file, summary, top5.";
+                    PrintMessage(message);
+                    return false;
+                }
+            }
 
 #ifdef HAVE_RULES
-        // Rule given at command line
-        else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
-            Settings::Rule rule;
-            rule.pattern = 7 + argv[i];
-            _settings->rules.push_back(rule);
-        }
+            // Rule given at command line
+            else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
+                Settings::Rule rule;
+                rule.pattern = 7 + argv[i];
+                _settings->rules.push_back(rule);
+            }
 
-        // Rule file
-        else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
-            tinyxml2::XMLDocument doc;
-            if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_NO_ERROR) {
-                tinyxml2::XMLElement *node = doc.FirstChildElement();
-                for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
-                    Settings::Rule rule;
+            // Rule file
+            else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
+                tinyxml2::XMLDocument doc;
+                if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_NO_ERROR) {
+                    tinyxml2::XMLElement *node = doc.FirstChildElement();
+                    for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
+                        Settings::Rule rule;
 
-                    tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
-                    if (tokenlist)
-                        rule.tokenlist = tokenlist->GetText();
+                        tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                        if (tokenlist)
+                            rule.tokenlist = tokenlist->GetText();
 
-                    tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
-                    if (pattern) {
-                        rule.pattern = pattern->GetText();
+                        tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                        if (pattern) {
+                            rule.pattern = pattern->GetText();
+                        }
+
+                        tinyxml2::XMLElement *message = node->FirstChildElement("message");
+                        if (message) {
+                            tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                            if (severity)
+                                rule.severity = severity->GetText();
+
+                            tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                            if (id)
+                                rule.id = id->GetText();
+
+                            tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                            if (summary)
+                                rule.summary = summary->GetText() ? summary->GetText() : "";
+                        }
+
+                        if (!rule.pattern.empty())
+                            _settings->rules.push_back(rule);
                     }
-
-                    tinyxml2::XMLElement *message = node->FirstChildElement("message");
-                    if (message) {
-                        tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
-                        if (severity)
-                            rule.severity = severity->GetText();
-
-                        tinyxml2::XMLElement *id = message->FirstChildElement("id");
-                        if (id)
-                            rule.id = id->GetText();
-
-                        tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
-                        if (summary)
-                            rule.summary = summary->GetText() ? summary->GetText() : "";
-                    }
-
-                    if (!rule.pattern.empty())
-                        _settings->rules.push_back(rule);
                 }
             }
-        }
 #endif
 
-        // Specify platform
-        else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
-            std::string platform(11+argv[i]);
+            // Specify platform
+            else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
+                std::string platform(11+argv[i]);
 
-            if (platform == "win32A")
-                _settings->platform(Settings::Win32A);
-            else if (platform == "win32W")
-                _settings->platform(Settings::Win32W);
-            else if (platform == "win64")
-                _settings->platform(Settings::Win64);
-            else if (platform == "unix32")
-                _settings->platform(Settings::Unix32);
-            else if (platform == "unix64")
-                _settings->platform(Settings::Unix64);
-            else if (platform == "native")
-                _settings->platform(Settings::Unspecified);
+                if (platform == "win32A")
+                    _settings->platform(Settings::Win32A);
+                else if (platform == "win32W")
+                    _settings->platform(Settings::Win32W);
+                else if (platform == "win64")
+                    _settings->platform(Settings::Win64);
+                else if (platform == "unix32")
+                    _settings->platform(Settings::Unix32);
+                else if (platform == "unix64")
+                    _settings->platform(Settings::Unix64);
+                else if (platform == "native")
+                    _settings->platform(Settings::Unspecified);
+                else {
+                    std::string message("cppcheck: error: unrecognized platform: \"");
+                    message += platform;
+                    message += "\".";
+                    PrintMessage(message);
+                    return false;
+                }
+            }
+
+            // Set maximum number of #ifdef configurations to check
+            else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
+                _settings->_force = false;
+
+                std::istringstream iss(14+argv[i]);
+                if (!(iss >> _settings->_maxConfigs)) {
+                    PrintMessage("cppcheck: argument to '--max-configs=' is not a number.");
+                    return false;
+                }
+
+                if (_settings->_maxConfigs < 1) {
+                    PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
+                    return false;
+                }
+
+                maxconfigs = true;
+            }
+
+            // Print help
+            else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+                _pathnames.clear();
+                _showHelp = true;
+                _exitAfterPrint = true;
+                break;
+            }
+
             else {
-                std::string message("cppcheck: error: unrecognized platform: \"");
-                message += platform;
-                message +=  "\".";
+                std::string message("cppcheck: error: unrecognized command line option: \"");
+                message += argv[i];
+                message += "\".";
                 PrintMessage(message);
                 return false;
             }
-        }
-
-        // Set maximum number of #ifdef configurations to check
-        else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
-            _settings->_force = false;
-
-            std::istringstream iss(14+argv[i]);
-            if (!(iss >> _settings->_maxConfigs)) {
-                PrintMessage("cppcheck: argument to '--max-configs=' is not a number.");
-                return false;
-            }
-
-            if (_settings->_maxConfigs < 1) {
-                PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
-                return false;
-            }
-
-            maxconfigs = true;
-        }
-
-        // Print help
-        else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-            _pathnames.clear();
-            _showHelp = true;
-            _exitAfterPrint = true;
-            break;
-        }
-
-        else if (argv[i][0] == '-') {
-            std::string message("cppcheck: error: unrecognized command line option: \"");
-            message += argv[i];
-            message +=  "\".";
-            PrintMessage(message);
-            return false;
         }
 
         else {
-            std::string path = Path::fromNativeSeparators(argv[i]);
-            path = Path::removeQuotationMarks(path);
+            std::string path = Path::removeQuotationMarks(argv[i]);
+            path = Path::fromNativeSeparators(path);
             _pathnames.push_back(path);
         }
     }
@@ -779,10 +787,10 @@ void CmdLineParser::PrintHelp()
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
               "    --config-exclude=<dir>\n"
-              "                         Path (prefix) to be excluded from configuration checking.\n"
-              "                         Preprocessor configurations defined in headers (but not sources)\n"
-              "                         matching the prefix will not be considered for evaluation\n"
-              "                         of configuration alternatives\n"
+              "                         Path (prefix) to be excluded from configuration\n"
+              "                         checking. Preprocessor configurations defined in\n"
+              "                         headers (but not sources) matching the prefix will not\n"
+              "                         be considered for evaluation.\n"
               "    --config-excludes-file=<file>\n"
               "                         A file that contains a list of config-excludes\n"
               "    --dump               Dump xml data for each translation unit. The dump\n"
@@ -865,10 +873,12 @@ void CmdLineParser::PrintHelp()
               "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
               "                         more comments, like: '// cppcheck-suppress warningId'\n"
               "                         on the lines before the warning to suppress.\n"
-              "    -j <jobs>            Start [jobs] threads to do the checking simultaneously.\n"
-              "    -l <load>            Specifies that no new threads should be started if there\n"
-              "                         are other threads running and the load average is at least\n"
-              "                         load (ignored on non UNIX-like systems)\n"
+              "    -j <jobs>            Start <jobs> threads to do the checking simultaneously.\n"
+#ifdef THREADING_MODEL_FORK
+              "    -l <load>            Specifies that no new threads should be started if\n"
+              "                         there are other threads running and the load average is\n"
+              "                         at least <load>.\n"
+#endif
               "    --language=<language>, -x <language>\n"
               "                         Forces cppcheck to check all files as the given\n"
               "                         language. Valid values are: c, c++\n"
@@ -914,7 +924,7 @@ void CmdLineParser::PrintHelp()
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
               "    --rule-file=<file>   Use given rule file. For more information, see: \n"
-              "                         https://sourceforge.net/projects/cppcheck/files/Articles/\n"
+              "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
