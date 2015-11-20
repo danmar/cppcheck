@@ -7,9 +7,6 @@ uselessAssignmentPtrArg:build/tokenize.cpp
 *:test/test.cxx
 *:test/cfg*
 
-*:democlient*
 *:externals*
-*:htdocs*
 *:htmlreport*
 *:samples*
-*:win_installer*

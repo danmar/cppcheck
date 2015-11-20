@@ -655,11 +655,14 @@ void CheckStl::if_find()
         if ((i->type != Scope::eIf && i->type != Scope::eWhile) || !i->classDef)
             continue;
 
-        for (const Token *tok = i->classDef; tok->str() != "{"; tok = tok->next()) {
+        for (const Token *tok = i->classDef->next(); tok->str() != "{"; tok = tok->next()) {
             const Token* funcTok = nullptr;
             const Library::Container* container = nullptr;
 
-            if (tok->variable() && Token::Match(tok, "%var% . %name% (")) {
+            if (Token::Match(tok, "%name% ("))
+                tok = tok->linkAt(1);
+
+            else if (tok->variable() && Token::Match(tok, "%var% . %name% (")) {
                 container = _settings->library.detectContainer(tok->variable()->typeStartToken());
                 funcTok = tok->tokAt(2);
             }

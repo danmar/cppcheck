@@ -1721,6 +1721,11 @@ private:
               "    if (a.find(\"<\") < b.find(\">\")) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string &s) {\n"
+              "    if (foo(s.find(\"abc\"))) { }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
