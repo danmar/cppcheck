@@ -347,8 +347,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             unsigned int condVarId = 0;
             VariableValue condVarValue(0);
             const Token *condVarTok = nullptr;
-            if (Token::simpleMatch(tok, "if (") &&
-                astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
+            if (alwaysFalse)
+                ;
+            else if (Token::simpleMatch(tok, "if (") &&
+                     astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 std::map<unsigned int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
@@ -383,7 +385,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (!tok)
                 break;
             if (tok->str() == "{") {
-                bool possibleInitIf(number_of_if > 0 || suppressErrors);
+                bool possibleInitIf((!alwaysTrue && number_of_if > 0) || suppressErrors);
                 bool noreturnIf = false;
                 const bool initif = !alwaysFalse && checkScopeForVariable(tok->next(), var, &possibleInitIf, &noreturnIf, alloc, membervar);
 
@@ -433,7 +435,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     // goto the {
                     tok = tok->tokAt(2);
 
-                    bool possibleInitElse(number_of_if > 0 || suppressErrors);
+                    bool possibleInitElse((!alwaysFalse && number_of_if > 0) || suppressErrors);
                     bool noreturnElse = false;
                     const bool initelse = !alwaysTrue && checkScopeForVariable(tok->next(), var, &possibleInitElse, &noreturnElse, alloc, membervar);
 

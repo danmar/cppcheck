@@ -2402,6 +2402,24 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f(int x) {\n"
+                       "  int value;\n"
+                       "  if (x == 32)\n"
+                       "    value = getvalue();\n"
+                       "  if (x == 1)\n"
+                       "    v = value;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: value\n", errout.str());
+
+        checkUninitVar("void f(int x) {\n"
+                       "  int value;\n"
+                       "  if (x == 32)\n"
+                       "    value = getvalue();\n"
+                       "  if (x == 32) {}\n"
+                       "  else v = value;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: value\n", errout.str());
+
         checkUninitVar("static int x;" // #4773
                        "int f() {\n"
                        "    int y;\n"
