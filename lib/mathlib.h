@@ -113,6 +113,9 @@ public:
      * @return true if given character is octal digit.
      */
     static bool isOctalDigit(char c);
+private:
+    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
+
 };
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);

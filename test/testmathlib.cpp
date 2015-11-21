@@ -271,9 +271,17 @@ private:
 
         // from char
         ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
         ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
         ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
+        // may cause some compile problems: ASSERT_EQUALS((int)('\x123'), MathLib::toLongNumber("'\\x123'"));
+        // may cause some compile problems: ASSERT_EQUALS((int)('\x1234'), MathLib::toLongNumber("'\\x1234'"));
+        ASSERT_EQUALS((int)('\3'),  MathLib::toLongNumber("'\\3'"));
+        ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
         ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
+        ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
+        ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
 
         ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
         ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));

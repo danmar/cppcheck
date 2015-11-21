@@ -313,6 +313,76 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     return ret;
 }
 
+
+MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
+{
+    if (str.size()==1)
+        return str[0] & 0xff;
+    if (str[0] != '\\')
+        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+
+    if (str[1]=='x') {
+        return toLongNumber("0x" + str.substr(2));
+    }
+    char c;
+    switch (str.size()-1) {
+    case 1:
+        switch (str[1]) {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+            return str[1]-'0';
+        case 'a':
+            c = '\a';
+            break;
+        case 'b':
+            c = '\b';
+            break;
+        case 'f':
+            c = '\f';
+            break;
+        case 'n':
+            c = '\n';
+            break;
+        case 'r':
+            c = '\r';
+            break;
+        case 't':
+            c = '\t';
+            break;
+        case 'v':
+            c = '\v';
+            break;
+        case '\\':
+        case '\?':
+        case '\'':
+        case '\"':
+            c = str[1];
+            break;
+        default:
+            throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+            break;
+        }
+        return c & 0xff;
+    case 2:
+        if (isOctalDigit(str[1]) && isOctalDigit(str[2]))
+            return toLongNumber("0" + str.substr(1));
+        break;
+    case 3:
+        if (isOctalDigit(str[1]) && isOctalDigit(str[2]) && isOctalDigit(str[3]))
+            return toLongNumber("0" + str.substr(1));
+        break;
+    }
+
+    throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+}
+
+
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -364,51 +434,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     }
 
     if (str[0] == '\'' && str.size() >= 3U && str[str.size()-1U] == '\'') {
-        char c;
-        if (str.size() == 3U)
-            c = str[1];
-        else if (str[1] == '\\' && str.size() == 4U) {
-            switch (str[2]) {
-            case '0':
-                c = '\0';
-                break;
-            case 'a':
-                c = '\a';
-                break;
-            case 'b':
-                c = '\b';
-                break;
-            case 'f':
-                c = '\f';
-                break;
-            case 'n':
-                c = '\n';
-                break;
-            case 'r':
-                c = '\r';
-                break;
-            case 't':
-                c = '\t';
-                break;
-            case 'v':
-                c = '\v';
-                break;
-            case '\\':
-            case '\?':
-            case '\'':
-            case '\"':
-                c = str[2];
-                break;
-            default:
-                throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
-            }
-        } else if (str[1] == '\\' && str[2] == '0' && str.size() == 6U) {
-            return toLongNumber(str.substr(2,3));
-        } else if (str[1] == '\\' && str[2] == 'x' && str.size() == 6U) {
-            return toLongNumber("0" + str.substr(2,3));
-        } else
-            throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
-        return c & 0xff;
+        return characterLiteralToLongNumber(str.substr(1,str.size()-2));
     }
 
     bigint ret = 0;
