@@ -271,7 +271,8 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     while (comments.endsWith("\n"))
         comments.chop(1);
     foreach(const QString &comment, comments.split('\n')) {
-        xmlWriter.writeComment(comment);
+        if (comment.length() >= 1)
+            xmlWriter.writeComment(comment);
     }
 
     xmlWriter.writeStartElement("function");
