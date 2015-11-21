@@ -16,55 +16,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 //---------------------------------------------------------------------------
-#ifndef checknonreentrantfunctionsH
-#define checknonreentrantfunctionsH
+#ifndef checkfunctionsH
+#define checkfunctionsH
 //---------------------------------------------------------------------------
 
 #include "config.h"
 #include "check.h"
 #include <string>
-#include <map>
 
 
 /// @addtogroup Checks
 /// @{
 
 /**
- * @brief Using non reentrant functions that can be replaced by their reentrant versions
+ * @brief Check for functions which should not be used
  */
 
-class CPPCHECKLIB CheckNonReentrantFunctions : public Check {
+class CPPCHECKLIB CheckFunctions : public Check {
 public:
-    /** This constructor is used when registering the CheckNonReentrantFunctions */
-    CheckNonReentrantFunctions() : Check(myName()) {
+    /** This constructor is used when registering the CheckFunctions */
+    CheckFunctions() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
-    CheckNonReentrantFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
-        CheckNonReentrantFunctions checkNonReentrantFunctions(tokenizer, settings, errorLogger);
-        checkNonReentrantFunctions.nonReentrantFunctions();
+        CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
+        checkFunctions.check();
     }
 
-    /** Check for non reentrant functions */
-    void nonReentrantFunctions();
+    /** Check for functions that should not be used */
+    void check();
 
 private:
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+        CheckFunctions c(0, settings, errorLogger);
 
-    static std::string generateErrorMessage(const std::string& function);
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const;
-
-    static std::string myName() {
-        return "Non reentrant functions";
+        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
+            c.reportError(0, Severity::style, i->first+"Called", i->second.message);
+        }
     }
 
-    std::string classInfo() const;
+    static std::string myName() {
+        return "Check function usage";
+    }
+
+    std::string classInfo() const {
+        return "Warn if a function is called whose usage is discouraged\n";
+    }
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif // checknonreentrantfunctionsH
+#endif // checkfunctionsH

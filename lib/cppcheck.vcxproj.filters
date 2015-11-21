@@ -32,13 +32,7 @@
     <ClCompile Include="checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checknonreentrantfunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="checknullpointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="checkobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="checkother.cpp">
@@ -143,6 +137,9 @@
     <ClCompile Include="astutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkfunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -157,13 +154,7 @@
     <ClInclude Include="checkmemoryleak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="checknonreentrantfunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="checknullpointer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="checkobsolescentfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">
@@ -284,6 +275,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkfunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

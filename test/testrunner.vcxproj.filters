@@ -64,13 +64,7 @@
     <ClCompile Include="testmemleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testnonreentrantfunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testnullpointer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="testobsolescentfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testoptions.cpp">
@@ -203,6 +197,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testtokenlist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testfunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

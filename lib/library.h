@@ -24,6 +24,8 @@
 #include "config.h"
 #include "mathlib.h"
 #include "token.h"
+#include "standards.h"
+#include "errorlogger.h"
 
 #include <map>
 #include <set>
@@ -119,6 +121,15 @@ public:
     std::set<std::string> leakignore;
     std::set<std::string> functionconst;
     std::set<std::string> functionpure;
+
+    struct WarnInfo {
+        std::string message;
+        Standards standards;
+        Severity::SeverityType severity;
+    };
+    std::map<std::string, WarnInfo> functionwarn;
+
+    const WarnInfo* getWarnInfo(const Token* ftok) const;
 
     // returns true if ftok is not a library function
     bool isNotLibraryFunction(const Token *ftok) const;

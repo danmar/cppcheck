@@ -17,13 +17,13 @@
  */
 
 #include "tokenize.h"
-#include "checkobsolescentfunctions.h"
+#include "checkfunctions.h"
 #include "testsuite.h"
 
 
-class TestObsoleteFunctions : public TestFixture {
+class TestFunctions : public TestFixture {
 public:
-    TestObsoleteFunctions() : TestFixture("TestObsoleteFunctions") {
+    TestFunctions() : TestFixture("TestFunctions") {
     }
 
 private:
@@ -31,8 +31,13 @@ private:
 
     void run() {
         settings.addEnabled("style");
+        settings.addEnabled("warning");
+        settings.addEnabled("portability");
         settings.standards.posix = true;
         settings.standards.c = Standards::C11;
+        settings.standards.cpp = Standards::CPP11;
+        LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "posix.cfg");
 
         TEST_CASE(testbsd_signal);
         TEST_CASE(testgethostbyname);
@@ -65,8 +70,9 @@ private:
         // function with body
         TEST_CASE(test_function_with_body);
 
-        // null pointer dereference in obsoleteFunctions
-        TEST_CASE(ticket3238);
+        // Non-reentrant functions
+        TEST_CASE(test_crypt);
+        TEST_CASE(test_namespace_handling);
     }
 
     void check(const char code[], const char filename[]="test.cpp") {
@@ -79,9 +85,9 @@ private:
         tokenizer.tokenize(istr, filename);
         tokenizer.simplifyTokenList2();
 
-        // Check for obsolete functions..
-        CheckObsoleteFunctions checkObsoleteFunctions(&tokenizer, &settings, this);
-        checkObsoleteFunctions.obsoleteFunctions();
+        // Check...
+        CheckFunctions checkFunctions(&tokenizer, &settings, this);
+        checkFunctions.check();
     }
 
     void testbsd_signal() {
@@ -89,7 +95,7 @@ private:
               "{\n"
               "    bsd_signal(SIGABRT, SIG_IGN);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'bsd_signal' called. It is recommended to use the function 'sigaction' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolescent function 'bsd_signal' called. It is recommended to use 'sigaction' instead.\n", errout.str());
 
         check("int f()\n"
               "{\n"
@@ -108,7 +114,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'gethostbyname' called. It is recommended to use the function 'getaddrinfo' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolescent function 'gethostbyname' called. It is recommended to use 'getaddrinfo' instead.\n", errout.str());
     }
 
     void testgethostbyaddr() {
@@ -120,7 +126,7 @@ private:
               "        exit(1);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Obsolete function 'gethostbyaddr' called. It is recommended to use the function 'getnameinfo' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Obsolescent function 'gethostbyaddr' called. It is recommended to use 'getnameinfo' instead.\n", errout.str());
     }
 
     void testusleep() {
@@ -128,7 +134,7 @@ private:
               "{\n"
               "    usleep( 1000 );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolescent function 'usleep' called. It is recommended to use 'nanosleep' or 'setitimer' instead.\n", errout.str());
     }
 
     void testindex() {
@@ -168,7 +174,7 @@ private:
               "    const char i = index(var, 0);\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'index' called. It is recommended to use the function 'strchr' instead.\n",
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolescent function 'index' called. It is recommended to use 'strchr' instead.\n",
                       errout.str());
     }
 
@@ -176,7 +182,7 @@ private:
         check("void TDataModel::forceRowRefresh(int row) {\n"
               "    emit dataChanged(index(row, 0), index(row, columnCount() - 1));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Obsolete function 'index' called. It is recommended to use the function 'strchr' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Obsolescent function 'index' called. It is recommended to use 'strchr' instead.\n", errout.str());
     }
 
     void testrindex() {
@@ -191,7 +197,7 @@ private:
               "    const char var[7] = \"rindex\";\n"
               "    print(rindex(var, 0));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'rindex' called. It is recommended to use the function 'strrchr' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolescent function 'rindex' called. It is recommended to use 'strrchr' instead.\n", errout.str());
     }
 
 
@@ -207,29 +213,45 @@ private:
     void testgets() {
         check("void f()\n"
               "{\n"
-              "    char *x = gets();\n"
+              "    char *x = gets(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n", errout.str());
 
         check("void f()\n"
               "{\n"
-              "    foo(x, gets());\n"
+              "    foo(x, gets(a));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n", errout.str());
     }
 
     void testalloca() {
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}\n", "test.cpp");  // #4382 - there are no VLAs in C++
+              "}", "test.cpp");  // #4382 - there are no VLAs in C++
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called. In C++11 and later it is recommended to use std::array<> instead.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char *x = alloca(10);\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (warning) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
+
+        settings.standards.c = Standards::C89;
+        settings.standards.cpp = Standards::CPP03;
+        check("void f()\n"
+              "{\n"
+              "    char *x = alloca(10);\n"
+              "}", "test.cpp");  // #4382 - there are no VLAs in C++
         ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:3]: (style) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+        settings.standards.c = Standards::C11;
+        settings.standards.cpp = Standards::CPP11;
     }
 
     // ticket #3121
@@ -253,8 +275,8 @@ private:
               "    char *x = std::gets(str);\n"
               "    char *y = gets(str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
-                      "[test.cpp:4]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n"
+                      "[test.cpp:4]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n", errout.str());
     }
 
     // multiple use
@@ -264,8 +286,8 @@ private:
               "    char *x = std::gets(str);\n"
               "    usleep( 1000 );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n"
-                      "[test.cpp:4]: (style) Obsolete function 'usleep' called. It is recommended to use the 'nanosleep' or 'setitimer' function instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n"
+                      "[test.cpp:4]: (style) Obsolescent function 'usleep' called. It is recommended to use 'nanosleep' or 'setitimer' instead.\n", errout.str());
     }
 
     void test_c_declaration() {
@@ -275,14 +297,14 @@ private:
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Obsolete function 'gets' called. It is recommended to use the function 'fgets' instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' instead.\n", errout.str());
 
         check("int getcontext(ucontext_t *ucp);\n"
               "int f (ucontext_t *ucp)\n"
               "{\n"
               "    getcontext ( ucp ) ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Obsolete function 'getcontext' called. Due to portability issues, applications are recommended to be rewritten to use POSIX threads.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) Obsolescent function 'getcontext' called. Applications are recommended to be rewritten to use POSIX threads.\n", errout.str());
     }
 
     void test_function_with_body() {
@@ -295,11 +317,81 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ticket3238() {
-        check("__FBSDID(\"...\");\n");
+    void test_crypt() {
+        check("void f(char *pwd)\n"
+              "{\n"
+              "    char *cpwd;"
+              "    crypt(pwd, cpwd);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'crypt' called. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char *pwd = getpass(\"Password:\");"
+              "    char *cpwd;"
+              "    crypt(pwd, cpwd);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'crypt' called. For threadsafe applications it is recommended to use the reentrant replacement function 'crypt_r'.\n", errout.str());
+
+        check("int f()\n"
+              "{\n"
+              "    int crypt = 0;"
+              "    return crypt;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
+    void test_namespace_handling() {
+        check("int f()\n"
+              "{\n"
+              "    time_t t = 0;"
+              "    std::localtime(&t);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
+
+        // Passed as function argument
+        check("int f()\n"
+              "{\n"
+              "    printf(\"Magic guess: %d\n\", getpwent());\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
+
+        // Pass return value
+        check("int f()\n"
+              "{\n"
+              "    time_t t = 0;"
+              "    struct tm *foo = localtime(&t);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
+
+        // Access via global namespace
+        check("int f()\n"
+              "{\n"
+              "    ::getpwent();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
+
+        // Be quiet on function definitions
+        check("int getpwent()\n"
+              "{\n"
+              "    return 123;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Be quiet on other namespaces
+        check("int f()\n"
+              "{\n"
+              "    foobar::getpwent();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Be quiet on class member functions
+        check("int f()\n"
+              "{\n"
+              "    foobar.getpwent();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
-REGISTER_TEST(TestObsoleteFunctions)
+REGISTER_TEST(TestFunctions)

@@ -40,6 +40,7 @@ private:
         TEST_CASE(function_arg_valid);
         TEST_CASE(function_arg_minsize);
         TEST_CASE(function_namespace);
+        TEST_CASE(function_warn);
         TEST_CASE(memory);
         TEST_CASE(memory2); // define extra "free" allocation functions
         TEST_CASE(resource);
@@ -302,6 +303,42 @@ private:
             std::istringstream istr("bar();");
             tokenList.createTokens(istr);
             ASSERT(library.isnotnoreturn(tokenList.front()));
+        }
+    }
+
+    void function_warn() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"a\">\n"
+                               "    <warn severity=\"style\" cstd=\"c99\">Message</warn>\n"
+                               "  </function>\n"
+                               "  <function name=\"b\">\n"
+                               "    <warn severity=\"performance\" cppstd=\"c++11\" reason=\"Obsolescent\" alternatives=\"c,d,e\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+
+        Library library;
+        readLibrary(library, xmldata);
+
+        TokenList tokenList(nullptr);
+        std::istringstream istr("a(); b();");
+        tokenList.createTokens(istr);
+
+        const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
+        const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));
+
+        ASSERT_EQUALS(2, library.functionwarn.size());
+        ASSERT(a && b);
+        if (a && b) {
+            ASSERT_EQUALS("Message", a->message);
+            ASSERT_EQUALS(Severity::style, a->severity);
+            ASSERT_EQUALS(Standards::C99, a->standards.c);
+            ASSERT_EQUALS(Standards::CPP03, a->standards.cpp);
+
+            ASSERT_EQUALS("Obsolescent function 'b' called. It is recommended to use 'c', 'd' or 'e' instead.", b->message);
+            ASSERT_EQUALS(Severity::performance, b->severity);
+            ASSERT_EQUALS(Standards::C89, b->standards.c);
+            ASSERT_EQUALS(Standards::CPP11, b->standards.cpp);
         }
     }
 

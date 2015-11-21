@@ -621,6 +621,46 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             const tinyxml2::XMLAttribute* scan = functionnode->FindAttribute("scan");
             const tinyxml2::XMLAttribute* secure = functionnode->FindAttribute("secure");
             _formatstr[name] = std::make_pair(scan && scan->BoolValue(), secure && secure->BoolValue());
+        } else if (functionnodename == "warn") {
+            WarnInfo wi;
+            const char* const severity = functionnode->Attribute("severity");
+            if (severity == nullptr)
+                return Error(MISSING_ATTRIBUTE, "severity");
+            wi.severity = Severity::fromString(severity);
+
+            const char* const cstd = functionnode->Attribute("cstd");
+            if (cstd) {
+                if (!wi.standards.setC(cstd))
+                    return Error(BAD_ATTRIBUTE_VALUE, cstd);
+            } else
+                wi.standards.c = Standards::C89;
+
+            const char* const cppstd = functionnode->Attribute("cppstd");
+            if (cppstd) {
+                if (!wi.standards.setCPP(cppstd))
+                    return Error(BAD_ATTRIBUTE_VALUE, cppstd);
+            } else
+                wi.standards.cpp = Standards::CPP03;
+
+            const char* const reason = functionnode->Attribute("reason");
+            const char* const alternatives = functionnode->Attribute("alternatives");
+            if (reason && alternatives) {
+                // Construct message
+                wi.message = std::string(reason) + " function '" + name + "' called. It is recommended to use ";
+                std::vector<std::string> alt = getnames(alternatives);
+                for (std::size_t i = 0; i < alt.size(); ++i) {
+                    wi.message += "'" + alt[i] + "'";
+                    if (i == alt.size() - 1)
+                        wi.message += " instead.";
+                    else if (i == alt.size() - 2)
+                        wi.message += " or ";
+                    else
+                        wi.message += ", ";
+                }
+            } else
+                wi.message = functionnode->GetText();
+
+            functionwarn[name] = wi;
         } else
             unknown_elements.insert(functionnodename);
     }
@@ -850,6 +890,16 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
             return args > callargs;
     }
     return args != callargs;
+}
+
+const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return nullptr;
+    std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(functionName(ftok));
+    if (i == functionwarn.cend())
+        return nullptr;
+    return &i->second;
 }
 
 bool Library::isUseRetVal(const Token* ftok) const

@@ -53,9 +53,8 @@
     <ClCompile Include="testlibrary.cpp" />
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
-    <ClCompile Include="testnonreentrantfunctions.cpp" />
     <ClCompile Include="testnullpointer.cpp" />
-    <ClCompile Include="testobsolescentfunctions.cpp" />
+    <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
