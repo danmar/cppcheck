@@ -845,6 +845,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f() {\n"
+                       "    C c;\n"
+                       "    if (fun(&c.d));\n"
+                       "    return c;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
                        "   char a[10];\n"
                        "   if (a[0] = x){}\n"
                        "}");

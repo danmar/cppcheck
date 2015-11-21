@@ -676,6 +676,8 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
     for (const Token *tok = startparentheses->next(); tok && tok != endpar; tok = tok->next()) {
         if (tok->varId() == var.declarationId()) {
             if (Token::Match(tok, "%name% . %name%")) {
+                if (membervar.empty())
+                    return true;
                 if (tok->strAt(2) == membervar) {
                     if (isMemberVariableAssignment(tok, membervar))
                         return true;
