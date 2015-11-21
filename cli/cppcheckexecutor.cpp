@@ -66,6 +66,9 @@
 #include <TCHAR.H>
 #endif
 
+
+/*static*/ std::string CppCheckExecutor::exceptionOutput = "stdout";
+
 CppCheckExecutor::CppCheckExecutor()
     : _settings(0), time1(0), errorlist(false)
 {
@@ -203,11 +206,13 @@ namespace  {
      * That is very sensitive to the operating system, hardware, compiler and runtime!
      * The code is not meant for production environment, it's using functions not whitelisted for usage in a signal handler function.
      */
-    static void print_stacktrace(FILE* f, bool demangling, int maxdepth)
+    void print_stacktrace(bool useStdout, bool demangling, int maxdepth, bool bLowMem)
     {
 #if defined(USE_UNIX_BACKTRACE_SUPPORT)
 // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
+        FILE* f = (useStdout) ? stdout : stderr;
+        const int fd = (useStdout) ? 1 : 2;
         void *array[32]= {0}; // the less resources the better...
         const int currentdepth = backtrace(array, (int)GetArrayLength(array));
         const int offset=2; // some entries on top are within our own exception handling code or libc
@@ -215,56 +220,61 @@ namespace  {
             maxdepth=currentdepth-offset;
         else
             maxdepth = std::min(maxdepth, currentdepth);
-        char **symbolstrings = backtrace_symbols(array, currentdepth);
-        if (symbolstrings) {
+        if (bLowMem) {
             fputs("Callstack:\n", f);
-            for (int i = offset; i < maxdepth; ++i) {
-                const char * const symbol = symbolstrings[i];
-                char * realname = nullptr;
-                const char * const firstBracketName     = strchr(symbol, '(');
-                const char * const firstBracketAddress  = strchr(symbol, '[');
-                const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
-                const char * const beginAddress         = firstBracketAddress+3;
-                const int addressLen = int(secondBracketAddress-beginAddress);
-                const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
-                if (demangling && firstBracketName) {
-                    const char * const plus = strchr(firstBracketName, '+');
-                    if (plus && (plus>(firstBracketName+1))) {
-                        char input_buffer[512]= {0};
-                        strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
-                        char output_buffer[1024]= {0};
-                        size_t length = GetArrayLength(output_buffer);
-                        int status=0;
-                        realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
+            backtrace_symbols_fd(array+offset, maxdepth, fd);
+        } else {
+            char **symbolstrings = backtrace_symbols(array, currentdepth);
+            if (symbolstrings) {
+                fputs("Callstack:\n", f);
+                for (int i = offset; i < maxdepth; ++i) {
+                    const char * const symbol = symbolstrings[i];
+                    char * realname = nullptr;
+                    const char * const firstBracketName     = strchr(symbol, '(');
+                    const char * const firstBracketAddress  = strchr(symbol, '[');
+                    const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
+                    const char * const beginAddress         = firstBracketAddress+3;
+                    const int addressLen = int(secondBracketAddress-beginAddress);
+                    const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
+                    if (demangling && firstBracketName) {
+                        const char * const plus = strchr(firstBracketName, '+');
+                        if (plus && (plus>(firstBracketName+1))) {
+                            char input_buffer[512]= {0};
+                            strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
+                            char output_buffer[1024]= {0};
+                            size_t length = GetArrayLength(output_buffer);
+                            int status=0;
+                            realname = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
+                        }
+                    }
+                    const int ordinal=i-offset;
+                    fprintf(f, "#%-2d 0x",
+                            ordinal);
+                    if (padLen>0)
+                        fprintf(f, "%0*d",
+                                padLen, 0);
+                    if (realname) {
+                        fprintf(f, "%.*s in %s\n",
+                                (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                                realname);
+                    } else {
+                        fprintf(f, "%.*s in %.*s\n",
+                                (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
+                                (int)(firstBracketAddress-symbol), symbol);
                     }
                 }
-                const int ordinal=i-offset;
-                fprintf(f, "#%-2d 0x",
-                        ordinal);
-                if (padLen>0)
-                    fprintf(f, "%0*d",
-                            padLen, 0);
-                if (realname) {
-                    fprintf(f, "%.*s in %s\n",
-                            (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
-                            realname);
-                } else {
-                    fprintf(f, "%.*s in %.*s\n",
-                            (int)(secondBracketAddress-firstBracketAddress-3), firstBracketAddress+3,
-                            (int)(firstBracketAddress-symbol), symbol);
-                }
+                free(symbolstrings);
+            } else {
+                fputs("Callstack could not be obtained\n", f);
             }
-            free(symbolstrings);
-        } else {
-            fputs("Callstack could not be obtained\n", f);
         }
 #undef ADDRESSDISPLAYLENGTH
 #endif
     }
 
     const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
-    char mytstack[MYSTACKSIZE]; // alternative stack for signal handler
-    bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space
+    char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
+    bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
 
     /*
      * \return true if address is supposed to be on stack (contrary to heap or elsewhere). If ptr is 0 false will be returned.
@@ -322,10 +332,18 @@ namespace  {
         const Signalmap_t::const_iterator it=listofsignals.find(signo);
         const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
         bool bPrintCallstack=true;
+        bool bLowMem=false;
         bool bUnexpectedSignal=true;
         const bool isaddressonstack = isAddressOnStack(info->si_addr);
-        FILE* f = (CppCheckExecutor::getExceptionOutput()=="stderr") ? stderr : stdout;
+        const bool useStdout = CppCheckExecutor::getExceptionOutput()=="stdout";
+        FILE* f = (useStdout) ? stdout : stderr;
         switch (signo) {
+        case SIGABRT:
+            fputs("Internal error: cppcheck received signal ", f);
+            fputs(signame, f);
+            fputs(" - out of memory?\n", f);
+            bLowMem=true;
+            break;
         case SIGBUS:
             fputs("Internal error: cppcheck received signal ", f);
             fputs(signame, f);
@@ -464,7 +482,7 @@ namespace  {
             break;
         }
         if (bPrintCallstack) {
-            print_stacktrace(f, true, -1);
+            print_stacktrace(f, true, -1, bLowMem);
         }
         if (bUnexpectedSignal) {
             fputs("\nPlease report this to the cppcheck developers!\n", f);
@@ -990,5 +1008,3 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
     }
     return true;
 }
-
-std::string CppCheckExecutor::exceptionOutput;

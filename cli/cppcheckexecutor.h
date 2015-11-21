@@ -89,11 +89,12 @@ public:
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @param fn file name to be used from exception handler
+     * @param fn file name to be used from exception handler: Has to be either "stdout" or "stderr".
+     * Invalid arguments will be silently ignored. Default is "stdout".
      */
     static void setExceptionOutput(const std::string& fn);
     /**
-    * @return file name to be used for output from exception handler
+    * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
     static const std::string& getExceptionOutput();
 
