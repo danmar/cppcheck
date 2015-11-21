@@ -248,14 +248,9 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
         conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t1, &f1);
         bool t2=false, f2=false;
         if (!t1)
-            conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t2, &f2);
-        if (t1 || t2) {
-            *alwaysTrue = true;
-            *alwaysFalse = false;
-        } else if (f1 && f2) {
-            *alwaysTrue = false;
-            *alwaysFalse = true;
-        }
+            conditionAlwaysTrueOrFalse(tok->astOperand2(), variableValue, &t2, &f2);
+        *alwaysTrue = (t1 || t2);
+        *alwaysFalse = (f1 && f2);
     }
 
     else if (tok->str() == "&&") {
@@ -263,14 +258,9 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
         conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t1, &f1);
         bool t2=false, f2=false;
         if (!f1)
-            conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t2, &f2);
-        if (t1 && t2) {
-            *alwaysTrue = true;
-            *alwaysFalse = false;
-        } else if (f1 && f2) {
-            *alwaysTrue = false;
-            *alwaysFalse = true;
-        }
+            conditionAlwaysTrueOrFalse(tok->astOperand2(), variableValue, &t2, &f2);
+        *alwaysTrue = (t1 && t2);
+        *alwaysFalse = (f1 || f2);
     }
 }
 
