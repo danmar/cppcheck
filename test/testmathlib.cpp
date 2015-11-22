@@ -271,12 +271,14 @@ private:
 
         // from char
         ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+#ifdef __GNUC__
         // BEGIN Implementation-specific results
         ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
         ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
         ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
         ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
         // END Implementation-specific results
+#endif
         ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
         ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
         ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
@@ -313,10 +315,10 @@ private:
 
         // from long long
         /*
-        * ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
+         * ASSERT_EQUALS(0xFF00000000000000LL, MathLib::toLongNumber("0xFF00000000000000LL"));
          * This does not work in a portable way!
          * While it succeeds on 32bit Visual Studio it fails on Linux 64bit because it is greater than 0x7FFFFFFFFFFFFFFF (=LLONG_MAX)
-               */
+         */
 
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
     }
