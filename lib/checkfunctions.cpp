@@ -41,7 +41,7 @@ void CheckFunctions::check()
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (tok->isName() && tok->varId() == 0 && tok->strAt(1) == "(") {
                 // alloca() is special as it depends on the code being C or C++, so it is not in Library
-                if (checkAlloca && Token::Match(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
+                if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
                     if (_tokenizer->isC())
                         reportError(tok, Severity::warning, "allocaCalled",
                                     "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
