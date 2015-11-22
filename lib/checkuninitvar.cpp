@@ -1050,7 +1050,12 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
     } else if (tok->strAt(1) == "=")
         return true;
-    else if (tok->strAt(-1) == "&") {
+    else if (Token::Match(tok, "%var% . %name% (")) {
+        const Token *ftok = tok->tokAt(2);
+        if (!ftok->function() || !ftok->function()->isConst())
+            // TODO: Try to determine if membervar is assigned in method
+            return true;
+    } else if (tok->strAt(-1) == "&") {
         if (Token::Match(tok->tokAt(-2), "[(,] & %name%")) {
             // locate start parentheses in function call..
             unsigned int argumentNumber = 0;

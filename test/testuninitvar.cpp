@@ -3101,13 +3101,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-            checkUninitVar("void f(void) {\n"
+            checkUninitVar("struct AB { char a[10]; };\n"
+                           "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    strcpy(ab.a, STR);\n"
                            "}\n", "test.c");
             ASSERT_EQUALS("", errout.str());
 
-            checkUninitVar("void f(void) {\n"
+            checkUninitVar("struct AB { char a[10]; };\n"
+                           "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    strcpy(x, ab.a);\n"
                            "}\n", "test.c");
@@ -3129,6 +3131,33 @@ private:
                        "    do_something(ab);\n"
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        {
+            // #6769 - calling method that might assign struct members
+            checkUninitVar("struct AB { int a; int b; void set(); };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    ab.set();\n"
+                           "    x = ab;\n"
+                           "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            checkUninitVar("struct AB { int a; int get() const; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    ab.get();\n"
+                           "    x = ab;\n"
+                           "}\n");
+            ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+            checkUninitVar("struct AB { int a; void dostuff() {} };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    ab.dostuff();\n"
+                           "    x = ab;\n"
+                           "}\n");
+            TODO_ASSERT_EQUALS("error", "", errout.str());
+        }
 
         checkUninitVar("struct AB { int a; struct { int b; int c; } s; };\n"
                        "void do_something(const struct AB ab);\n"
