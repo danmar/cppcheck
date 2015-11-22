@@ -97,6 +97,20 @@ public:
             QList<struct MinSize> minsizes;
         };
         QList<struct Arg> args;
+
+        struct {
+            QString severity;
+            QString reason;
+            QString alternatives;
+            QString msg;
+
+            bool isEmpty() const {
+                return severity.isEmpty() &&
+                       reason.isEmpty() &&
+                       alternatives.isEmpty() &&
+                       msg.isEmpty();
+            }
+        } warn;
     };
 
     struct MemoryResource {

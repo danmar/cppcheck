@@ -145,10 +145,15 @@ static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, c
             function.formatstr.secure = xmlReader.attributes().value("secure").toString();
         } else if (elementName == "arg")
             function.args.append(loadFunctionArg(xmlReader));
+        else if (elementName == "warn") {
+            function.warn.severity     = xmlReader.attributes().value("severity").toString();
+            function.warn.reason       = xmlReader.attributes().value("reason").toString();
+            function.warn.alternatives = xmlReader.attributes().value("alternatives").toString();
+            function.warn.msg          = xmlReader.readElementText();
+        }
     }
     return function;
 }
-
 
 static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &xmlReader)
 {
@@ -329,6 +334,25 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
 
         xmlWriter.writeEndElement();
     }
+
+    if (!function.warn.isEmpty()) {
+        xmlWriter.writeStartElement("warn");
+
+        if (!function.warn.severity.isEmpty())
+            xmlWriter.writeAttribute("severity", function.warn.severity);
+
+        if (!function.warn.reason.isEmpty())
+            xmlWriter.writeAttribute("reason", function.warn.reason);
+
+        if (!function.warn.alternatives.isEmpty())
+            xmlWriter.writeAttribute("alternatives", function.warn.alternatives);
+
+        if (!function.warn.msg.isEmpty())
+            xmlWriter.writeCharacters(function.warn.msg);
+
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeEndElement();
 }
 
