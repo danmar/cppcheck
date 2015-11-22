@@ -31,7 +31,7 @@
 /// @{
 
 /**
- * @brief Check for functions which should not be used
+ * @brief Check for bad function usage
  */
 
 class CPPCHECKLIB CheckFunctions : public Check {
@@ -45,21 +45,67 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+    /** @brief Run checks against the normal token list */
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
+
+        // Checks
+        checkFunctions.checkIgnoredReturnValue();
+
+        // --check-library : functions with nonmatching configuration
+        checkFunctions.checkLibraryMatchFunctions();
+    }
+
+    /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
-        checkFunctions.check();
+
+        checkFunctions.checkProhibitedFunctions();
+        checkFunctions.invalidFunctionUsage();
+        checkFunctions.checkMathFunctions();
     }
 
     /** Check for functions that should not be used */
-    void check();
+    void checkProhibitedFunctions();
+
+    /**
+    * @brief Invalid function usage (invalid input value / overlapping data)
+    *
+    * %Check that given function parameters are valid according to the standard
+    * - wrong radix given for strtol/strtoul
+    * - overlapping data when using sprintf/snprintf
+    * - wrong input value according to library
+    */
+    void invalidFunctionUsage();
+
+    /** @brief %Check for ignored return values. */
+    void checkIgnoredReturnValue();
+
+    /** @brief %Check for parameters given to math function that do not make sense*/
+    void checkMathFunctions();
+
+    /** @brief --check-library: warn for unconfigured function calls */
+    void checkLibraryMatchFunctions();
 
 private:
+    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
+    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
+    void ignoredReturnValueError(const Token* tok, const std::string& function);
+    void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckFunctions c(0, settings, errorLogger);
 
         for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
             c.reportError(0, Severity::style, i->first+"Called", i->second.message);
         }
+
+        c.invalidFunctionArgError(0, "func_name", 1, "1-4");
+        c.invalidFunctionArgBoolError(0, "func_name", 1);
+        c.ignoredReturnValueError(0, "malloc");
+        c.mathfunctionCallWarning(0);
+        c.mathfunctionCallWarning(0, "1 - erf(x)", "erfc(x)");
     }
 
     static std::string myName() {
@@ -67,7 +113,10 @@ private:
     }
 
     std::string classInfo() const {
-        return "Warn if a function is called whose usage is discouraged\n";
+        return "Check function usage:\n"
+               "- return value of certain functions not used\n"
+               "- invalid input values for functions\n"
+               "- Warn if a function is called whose usage is discouraged\n";
     }
 };
 /// @}

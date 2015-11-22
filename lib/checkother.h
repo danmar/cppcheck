@@ -66,14 +66,10 @@ public:
         checkOther.checkVarFuncNullUB();
         checkOther.checkNanInArithmeticExpression();
         checkOther.checkCommaSeparatedReturn();
-        checkOther.checkIgnoredReturnValue();
         checkOther.checkRedundantPointerOp();
         checkOther.checkZeroDivision();
         checkOther.checkInterlockedDecrement();
         checkOther.checkUnusedLabel();
-
-        // --check-library : functions with nonmatching configuration
-        checkOther.checkLibraryMatchFunctions();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -86,9 +82,6 @@ public:
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
         checkOther.checkCastIntToCharAndBack();
-
-        checkOther.invalidFunctionUsage();
-        checkOther.checkMathFunctions();
 
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
@@ -115,16 +108,6 @@ public:
     /** @brief Check for pointer casts to a type with an incompatible binary data representation */
     void invalidPointerCast();
 
-    /**
-     * @brief Invalid function usage (invalid input value / overlapping data)
-     *
-     * %Check that given function parameters are valid according to the standard
-     * - wrong radix given for strtol/strtoul
-     * - overlapping data when using sprintf/snprintf
-     * - wrong input value according to library
-     */
-    void invalidFunctionUsage();
-
     /** @brief %Check scope of variables */
     void checkVariableScope();
     static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
@@ -146,9 +129,6 @@ public:
 
     /** @brief Check for NaN (not-a-number) in an arithmetic expression */
     void checkNanInArithmeticExpression();
-
-    /** @brief %Check for parameters given to math function that do not make sense*/
-    void checkMathFunctions();
 
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
@@ -214,14 +194,8 @@ public:
     /** @brief %Check for using of comparison functions evaluating always to true or false. */
     void checkComparisonFunctionIsAlwaysTrueOrFalse();
 
-    /** @brief %Check for ignored return values. */
-    void checkIgnoredReturnValue();
-
     /** @brief %Check for redundant pointer operations */
     void checkRedundantPointerOp();
-
-    /** @brief --check-library: warn for unconfigured function calls */
-    void checkLibraryMatchFunctions();
 
     /** @brief %Check for race condition with non-interlocked access after InterlockedDecrement() */
     void checkInterlockedDecrement();
@@ -238,8 +212,6 @@ private:
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
-    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const std::string &validstr);
-    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
     void charArrayIndexError(const Token *tok);
@@ -248,8 +220,6 @@ private:
     void zerodivError(const Token *tok, bool inconclusive);
     void zerodivcondError(const Token *tokcond, const Token *tokdiv, bool inconclusive);
     void nanInArithmeticExpressionError(const Token *tok);
-    void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
-    void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
     void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
     void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
     void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
@@ -278,7 +248,6 @@ private:
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
-    void ignoredReturnValueError(const Token* tok, const std::string& function);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok);
@@ -287,8 +256,6 @@ private:
         CheckOther c(0, settings, errorLogger);
 
         // error
-        c.invalidFunctionArgError(0, "func_name", 1, "1-4");
-        c.invalidFunctionArgBoolError(0, "func_name", 1);
         c.zerodivError(0, false);
         c.zerodivcondError(0,0,false);
         c.misusedScopeObjectError(NULL, "varname");
@@ -317,8 +284,6 @@ private:
         c.suspiciousCaseInSwitchError(0, "||");
         c.suspiciousEqualityComparisonError(0);
         c.selfAssignmentError(0, "varname");
-        c.mathfunctionCallWarning(0);
-        c.mathfunctionCallWarning(0, "1 - erf(x)", "erfc(x)");
         c.memsetZeroBytesError(0, "varname");
         c.memsetFloatError(0, "varname");
         c.memsetValueOutOfRangeError(0, "varname");
@@ -338,7 +303,6 @@ private:
         c.varFuncNullUBError(0);
         c.nanInArithmeticExpressionError(0);
         c.commaSeparatedReturnError(0);
-        c.ignoredReturnValueError(0, "malloc");
         c.redundantPointerOpError(0, "varname", false);
         c.unusedLabelError(0);
     }
@@ -358,13 +322,11 @@ private:
                "- bitwise operation with negative right operand\n"
                "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
-               "- invalid input values for functions\n"
                "- race condition with non-interlocked access after InterlockedDecrement() call\n"
 
                // warning
                "- either division by zero or useless condition\n"
                "- memset() with a value out of range as the 2nd parameter\n"
-               "- return value of certain functions not used\n"
 
                // performance
                "- redundant data copying for const variable\n"
