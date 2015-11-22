@@ -282,6 +282,8 @@ private:
         ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
         ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
         ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("'\\u9343'"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("'\\U0001f34c'"), InternalError);
 
         ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
         ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
