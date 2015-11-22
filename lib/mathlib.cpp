@@ -320,8 +320,13 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
         return 0; // for unit-testing...
     if (str.size()==1)
         return str[0] & 0xff;
-    if (str[0] != '\\')
-        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+    if (str[0] != '\\') {
+        // C99 6.4.4.4
+        // The value of an integer character constant containing more than one character (e.g., 'ab'),
+        // or containing a character or escape sequence that does not map to a single-byte execution character,
+        // is implementation-defined.
+        return str[0] & 0xff;
+    }
 
     switch (str[1]) {
     case 'x':

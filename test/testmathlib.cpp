@@ -271,6 +271,7 @@ private:
 
         // from char
         ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'ABC'"));
         ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
         ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
         ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
