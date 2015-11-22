@@ -325,7 +325,12 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
         // The value of an integer character constant containing more than one character (e.g., 'ab'),
         // or containing a character or escape sequence that does not map to a single-byte execution character,
         // is implementation-defined.
-        return str[0] & 0xff;
+        // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
+        int retval(str.front());
+        for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
+            retval = retval<<8 | *it;
+        }
+        return retval; // str[0] & 0xff;
     }
 
     switch (str[1]) {

@@ -271,7 +271,12 @@ private:
 
         // from char
         ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
-        ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'ABC'"));
+        // BEGIN Implementation-specific results
+        ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
+        ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
+        ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
+        ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
+        // END Implementation-specific results
         ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
         ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
         ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
