@@ -424,7 +424,7 @@ void uninitvar_asctime(void)
 {
     const struct tm *tm;
     // cppcheck-suppress uninitvar
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     (void)asctime(tm);
 }
 
@@ -1636,7 +1636,7 @@ void uninitvar_getenv(void)
 void uninitvar_gets(void)
 {
     char *buffer;
-    // cppcheck-suppress obsoleteFunctionsgets
+    // cppcheck-suppress getsCalled
     // cppcheck-suppress uninitvar
     (void)gets(buffer);
 }
@@ -2394,7 +2394,7 @@ void uninitvar_malloc(void)
 void uninitvar_alloca(void)
 {
     size_t size;
-    // cppcheck-suppress obsoleteFunctionsalloca
+    // cppcheck-suppress allocaCalled
     // cppcheck-suppress uninitvar
     (void)alloca(size);
 }
@@ -3585,10 +3585,10 @@ void ignoredReturnValue_abs(int i)
 void nullPointer_asctime(void)
 {
     struct tm *tm = 0;
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)asctime(tm);
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)asctime(0);
 }

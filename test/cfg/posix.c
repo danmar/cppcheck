@@ -51,8 +51,10 @@ void nullPointer(char *p)
     mkdir(p, 0);
     getcwd(0, 0);
     // cppcheck-suppress nullPointer
+    // cppcheck-suppress readdirCalled
     readdir(0);
     // cppcheck-suppress nullPointer
+    // cppcheck-suppress utimeCalled
     utime(NULL, NULL);
 }
 
@@ -135,10 +137,14 @@ void ignoredReturnValue(void *addr, int fd)
 void invalidFunctionArg()
 {
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress usleepCalled
     usleep(-1);
+    // cppcheck-suppress usleepCalled
     usleep(0);
+    // cppcheck-suppress usleepCalled
     usleep(999999);
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress usleepCalled
     usleep(1000000);
 }
 
@@ -171,15 +177,19 @@ void uninitvar(int fd)
     regerror(0, &reg, 0, 0);
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
+    // cppcheck-suppress ecvtCalled
     char *buffer = ecvt(d, 11, &decimal, &sign);
+    // cppcheck-suppress gcvtCalled
     gcvt(3.141, 2, buf);
 
     char *filename;
     struct utimbuf *times;
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress utimeCalled
     utime(filename, times);
     struct timeval times1[2];
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress utimeCalled
     utime(filename, times1);
 }
 
@@ -211,9 +221,11 @@ void timet_h(struct timespec* ptp1)
     // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress clock_settimeCalled
     clock_settime(clk_id, &tp);
 
     time_t clock = time(0);
     char buf[26];
+    // cppcheck-suppress ctime_rCalled
     ctime_r(&clock, buf);
 }

@@ -166,7 +166,7 @@ void uninitvar_asctime(void)
 {
     const struct tm *tm;
     // cppcheck-suppress uninitvar
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     (void)std::asctime(tm);
 }
 
@@ -3018,10 +3018,10 @@ void ignoredReturnValue_abs(int i)
 void nullPointer_asctime(void)
 {
     struct tm *tm = 0;
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)std::asctime(tm);
-    // cppcheck-suppress obsoleteFunctionsasctime
+    // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)std::asctime(0);
 }
