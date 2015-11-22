@@ -18,6 +18,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testerrorlogger.cpp \
            $${BASEPATH}/testexceptionsafety.cpp \
            $${BASEPATH}/testfilelister.cpp \
+           $${BASEPATH}/testfunctions.cpp \
            $${BASEPATH}/testgarbage.cpp \
            $${BASEPATH}/testincompletestatement.cpp \
            $${BASEPATH}/testinternal.cpp \
@@ -26,9 +27,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testlibrary.cpp \
            $${BASEPATH}/testmathlib.cpp \
            $${BASEPATH}/testmemleak.cpp \
-           $${BASEPATH}/testnonreentrantfunctions.cpp \
            $${BASEPATH}/testnullpointer.cpp \
-           $${BASEPATH}/testobsolescentfunctions.cpp \
            $${BASEPATH}/testoptions.cpp \
            $${BASEPATH}/testother.cpp \
            $${BASEPATH}/testpath.cpp \

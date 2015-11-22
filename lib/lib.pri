@@ -17,13 +17,12 @@ HEADERS += $${BASEPATH}check.h \
            $${BASEPATH}checkclass.h \
            $${BASEPATH}checkcondition.h \
            $${BASEPATH}checkexceptionsafety.h \
+           $${BASEPATH}checkfunctions.h \
            $${BASEPATH}checkinternal.h \
            $${BASEPATH}checkio.h \
            $${BASEPATH}checkleakautovar.h \
            $${BASEPATH}checkmemoryleak.h \
-           $${BASEPATH}checknonreentrantfunctions.h \
            $${BASEPATH}checknullpointer.h \
-           $${BASEPATH}checkobsolescentfunctions.h \
            $${BASEPATH}checkother.h \
            $${BASEPATH}checkpostfixoperator.h \
            $${BASEPATH}checksizeof.h \
@@ -62,13 +61,12 @@ SOURCES += $${BASEPATH}astutils.cpp \
            $${BASEPATH}checkclass.cpp \
            $${BASEPATH}checkcondition.cpp \
            $${BASEPATH}checkexceptionsafety.cpp \
+           $${BASEPATH}checkfunctions.cpp \
            $${BASEPATH}checkinternal.cpp \
            $${BASEPATH}checkio.cpp \
            $${BASEPATH}checkleakautovar.cpp \
            $${BASEPATH}checkmemoryleak.cpp \
-           $${BASEPATH}checknonreentrantfunctions.cpp \
            $${BASEPATH}checknullpointer.cpp \
-           $${BASEPATH}checkobsolescentfunctions.cpp \
            $${BASEPATH}checkother.cpp \
            $${BASEPATH}checkpostfixoperator.cpp \
            $${BASEPATH}checksizeof.cpp \
