@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e # abort on error
+set -x # be verbose
 
 if [[ `pwd` == */test/cfg ]] ; then # we are in test/cfg
 	CPPCHECK="../../cppcheck"
