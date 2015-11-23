@@ -1799,9 +1799,6 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
     // replace 'NULL' and similar '0'-defined macros with '0'
     simplifyNull();
 
-    // replace 'sin(0)' to '0' and other similar math expressions
-    simplifyMathExpressions();
-
     // combine "- %num%"
     concatenateNegativeNumberAndAnyPositive();
 
@@ -1823,9 +1820,6 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
             ;
 
     simplifyCAlternativeTokens();
-
-    // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
 
     simplifyDoublePlusAndDoubleMinus();
 
