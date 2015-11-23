@@ -313,6 +313,14 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     return ret;
 }
 
+static bool isOctalDigitString(const std::string& str)
+{
+    for (std::string::const_iterator it=str.begin(); it!=str.end(); ++it) {
+        if (!MathLib::isOctalDigit(*it))
+            return false;
+    }
+    return true;
+}
 
 MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 {
@@ -330,7 +338,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
         for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
             retval = retval<<8 | *it;
         }
-        return retval; // str[0] & 0xff;
+        return retval;
     }
 
     switch (str[1]) {
@@ -383,17 +391,15 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
                 break;
             default:
                 throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
-                break;
             }
             return c & 0xff;
         case 2:
-            if (isOctalDigit(str[1]) && isOctalDigit(str[2]))
-                return toLongNumber("0" + str.substr(1));
+        case 3: {
+            const std::string& str1 = str.substr(1);
+            if (isOctalDigitString(str1))
+                return toLongNumber("0" + str1);
             break;
-        case 3:
-            if (isOctalDigit(str[1]) && isOctalDigit(str[2]) && isOctalDigit(str[3]))
-                return toLongNumber("0" + str.substr(1));
-            break;
+        }
         }
     }
     }
