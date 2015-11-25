@@ -860,9 +860,13 @@ void TemplateSimplifier::expandTemplate(
     }
 }
 
+static bool isLowerThanLogicalAnd(const Token *lower)
+{
+    return lower->isAssignmentOp() || Token::Match(lower, "}|;|(|[|]|)|,|?|:|%oror%|return|throw|case");
+}
 static bool isLowerThanOr(const Token* lower)
 {
-    return lower->isAssignmentOp() || Token::Match(lower, "}|;|(|[|]|)|,|?|:|%oror%|&&|return|throw|case");
+    return isLowerThanLogicalAnd(lower) || lower->str() == "&&";
 }
 static bool isLowerThanXor(const Token* lower)
 {
@@ -947,7 +951,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                      (Token::Match(op, ">>|<<") && isLowerThanShift(tok) && isLowerThanPlusMinus(after)) || // NOT associative
                      (op->str() == "&" && isLowerThanShift(tok) && isLowerThanShift(after)) || // associative
                      (op->str() == "^" && isLowerThanAnd(tok) && isLowerThanAnd(after)) || // associative
-                     (op->str() == "|" && isLowerThanXor(tok) && isLowerThanXor(after)))) // associative
+                     (op->str() == "|" && isLowerThanXor(tok) && isLowerThanXor(after)) || // associative
+                     (op->str() == "&&" && isLowerThanOr(tok) && isLowerThanOr(after)) ||
+                     (op->str() == "||" && isLowerThanLogicalAnd(tok) && isLowerThanLogicalAnd(after))))
             break;
 
         tok = tok->next();
@@ -964,12 +970,17 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                 result = ShiftUInt(cop, tok, tok->tokAt(2));
             else
                 result = ShiftInt(cop, tok, tok->tokAt(2));
-            if (!result.empty()) {
-                ret = true;
-                tok->str(result);
-                tok->deleteNext(2);
-                continue;
-            }
+            if (result.empty())
+                break;
+            tok->str(result);
+        }
+
+        // Logical operations
+        else if (Token::Match(op, "%oror%|&&")) {
+            int op1 = !MathLib::isNullValue(tok->str());
+            int op2 = !MathLib::isNullValue(tok->strAt(2));
+            int result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
+            tok->str(result ? "1" : "0");
         }
 
         else if (Token::Match(tok->previous(), "- %num% - %num%"))
@@ -986,9 +997,15 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
         }
 
         tok->deleteNext(2);
+        tok = tok->previous();
 
         ret = true;
     }
+
+    if (Token::Match(tok, "%oror%|&& %num% %oror%|&&|,|)") || Token::Match(tok, "[(,] %num% %oror%|&&")) {
+        tok->next()->str(MathLib::isNullValue(tok->next()->str()) ? "0" : "1");
+    }
+
     return ret;
 }
 
@@ -1124,12 +1141,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 ret = true;
             }
 
-            if (Token::simpleMatch(tok->previous(), "( 0 ||") ||
-                Token::simpleMatch(tok->previous(), "|| 0 )") ||
-                Token::simpleMatch(tok->previous(), "( 0 |") ||
-                Token::simpleMatch(tok->previous(), "| 0 )") ||
-                Token::simpleMatch(tok->previous(), "( 1 &&") ||
-                Token::simpleMatch(tok->previous(), "&& 1 )")) {
+            if (Token::simpleMatch(tok->previous(), "( 0 |") ||
+                Token::simpleMatch(tok->previous(), "| 0 )")) {
                 if (tok->previous()->isConstOp())
                     tok = tok->previous();
                 tok->deleteNext();
@@ -1173,8 +1186,15 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             tok->deleteNext(2);
         }
 
-        else {
-            ret |= simplifyNumericCalculations(tok);
+        else if (simplifyNumericCalculations(tok)) {
+            ret = true;
+            while (Token::Match(tok->tokAt(-2), "%cop%|,|( %num% %cop% %num% %cop%|,|)")) {
+                Token *before = tok->tokAt(-2);
+                if (simplifyNumericCalculations(before))
+                    tok = before;
+                else
+                    break;
+            }
         }
     }
     return ret;

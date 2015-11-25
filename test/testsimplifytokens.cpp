@@ -2091,13 +2091,19 @@ private:
 
         ASSERT_EQUALS("( 4 )", tok("(1 * 2 / 1 * 2)")); // #3722
 
+        ASSERT_EQUALS("x ( 60129542144 )", tok("x(14<<4+17<<300%17)")); // #4931
+        ASSERT_EQUALS("x ( 1 )", tok("x(8|5&6+0 && 7)")); // #6104
+        ASSERT_EQUALS("x ( 1 )", tok("x(2 && 4<<4<<5 && 4)")); // #4933
+        ASSERT_EQUALS("x ( 1 )", tok("x(9&&8%5%4/3)")); // #4931
+        ASSERT_EQUALS("x ( 1 )", tok("x(2 && 2|5<<2%4)")); // #4931
+
         // don't remove these spaces..
         ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
     }
 
     void comparisons() {
         ASSERT_EQUALS("( 1 )", tok("( 1 < 2 )"));
-        ASSERT_EQUALS("( x )", tok("( x && 1 < 2 )"));
+        ASSERT_EQUALS("( x && true )", tok("( x && 1 < 2 )"));
         ASSERT_EQUALS("( 5 )", tok("( 1 < 2 && 3 < 4 ? 5 : 6 )"));
         ASSERT_EQUALS("( 6 )", tok("( 1 > 2 && 3 > 4 ? 5 : 6 )"));
     }
