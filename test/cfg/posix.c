@@ -193,6 +193,14 @@ void uninitvar(int fd)
     utime(filename, times1);
 }
 
+void uninitvar_getcwd(void)
+{
+    char *buf;
+    size_t size;
+    // cppcheck-suppress uninitvar
+    (void)getcwd(buf,size);
+}
+
 
 void uninitvar_types(void)
 {
