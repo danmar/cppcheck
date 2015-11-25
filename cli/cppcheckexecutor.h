@@ -20,6 +20,7 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "errorlogger.h"
+#include <cstdio>
 #include <ctime>
 #include <set>
 #include <string>
@@ -89,14 +90,13 @@ public:
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @param fn file name to be used from exception handler: Has to be either "stdout" or "stderr".
-     * Invalid arguments will be silently ignored. Default is "stdout".
+     * @param fp Output file
      */
-    static void setExceptionOutput(const std::string& fn);
+    static void setExceptionOutput(FILE* fp);
     /**
     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
-    static const std::string& getExceptionOutput();
+    static FILE* getExceptionOutput();
 
     /**
     * Tries to load a library and prints warning/error messages
@@ -172,7 +172,7 @@ private:
     /**
      * Output file name for exception handler
      */
-    static std::string exceptionOutput;
+    static FILE* exceptionOutput;
 
     /**
      * Has --errorlist been given?

@@ -146,7 +146,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
                 _settings->exceptionHandling = true;
                 const std::string exceptionOutfilename = &(argv[i][21]);
-                CppCheckExecutor::setExceptionOutput(exceptionOutfilename);
+                CppCheckExecutor::setExceptionOutput((exceptionOutfilename=="stderr") ? stderr : stdout);
             }
 
             // Inconclusive checking
