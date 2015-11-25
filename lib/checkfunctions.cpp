@@ -22,6 +22,7 @@
 
 #include "checkfunctions.h"
 #include "symboldatabase.h"
+#include <cmath>
 
 //---------------------------------------------------------------------------
 
