@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "cppcheck.h"
+#include "version.h"
 
 static void unencode(const char *src, char *dest)
 {
@@ -104,7 +105,7 @@ int main()
     }
 
     puts("Content-type: text/html\r\n\r\n");
-    puts("<html><body><pre>");
+    puts("<html><body>Cppcheck version " CPPCHECK_VERSION_STRING "<pre>");
 
     CppcheckExecutor cppcheckExecutor;
     cppcheckExecutor.run(code);
