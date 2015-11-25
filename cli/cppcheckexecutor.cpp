@@ -714,7 +714,7 @@ namespace {
         }
         fputc('\n', output);
         PrintCallstack(output, ex);
-        fflush(f);
+        fflush(output);
         return EXCEPTION_EXECUTE_HANDLER;
     }
 }
