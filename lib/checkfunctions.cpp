@@ -34,7 +34,7 @@ namespace {
 
 void CheckFunctions::checkProhibitedFunctions()
 {
-    const bool checkAlloca = (_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11;
+    const bool checkAlloca = _settings->isEnabled("warning") && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
