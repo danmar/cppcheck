@@ -266,7 +266,9 @@ void LibraryDialog::editArg()
 
     LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
     if (d->exec() == QDialog::Accepted) {
+        unsigned number = arg.nr;
         arg = d->getArg();
+        arg.nr = number;
         ui->arguments->selectedItems().first()->setText(getArgText(arg));
     }
 
