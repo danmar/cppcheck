@@ -35,7 +35,7 @@ endif()
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
     if (NOT (GCC_VERSION VERSION_GREATER 4.7 OR GCC_VERSION VERSION_EQUAL 4.7))
-        message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.7 or greater.")
+        message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.7 or greater, but it is ${GCC_VERSION}")
     endif ()
 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wabi")

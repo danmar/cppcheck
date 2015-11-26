@@ -10,9 +10,8 @@ if (BUILD_GUI)
         add_definitions(-DQT_DEBUG)
     endif()
     
-
-    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
     include_directories(${PROJECT_SOURCE_DIR}/lib/)
+    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
@@ -22,12 +21,15 @@ if (BUILD_GUI)
     QT4_ADD_RESOURCES(resources "gui.qrc")
     QT4_ADD_TRANSLATION(qms ${tss})
     
-    link_libraries(${PROJECT_NAME} tinyxml ${QT_LIBRARIES})
+    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml_objs>)
+    target_link_libraries(cppcheck-gui ${QT_LIBRARIES})
+    if (HAVE_RULES)
+        target_link_libraries(cppcheck-gui pcre)
+    endif()
 
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms})
 
-    install(TARGETS cppcheck-gui RUNTIME DESTINATION bin COMPONENT applications)
-    install(FILES ${qms} DESTINATION bin COMPONENT applications)
+    install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
+    install(FILES ${qms} DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)
 
     set(CMAKE_AUTOMOC OFF)
 

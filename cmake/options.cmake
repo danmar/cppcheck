@@ -35,10 +35,8 @@ else()
     set(USE_MATCHCOMPILER_OPT ${USE_MATCHCOMPILER})
 endif()
 
-option(BUILD_SHARED_LIBS    "Build shared libraries"                                        ON)
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
-option(BUILD_UTILS_TESTS    "Build applications tests using the different modules"          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 

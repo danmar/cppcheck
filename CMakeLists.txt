@@ -1,6 +1,8 @@
 project(CppCheck)
 cmake_minimum_required(VERSION 2.8)
 
+include(GNUInstallDirs)
+
 include(cmake/versions.cmake REQUIRED)
 include(cmake/options.cmake REQUIRED)
 include(cmake/findDependencies.cmake REQUIRED)
