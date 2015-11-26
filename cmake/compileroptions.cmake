@@ -103,6 +103,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
 
 endif()
 
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -U_GLIBCXX_DEBUG")
+endif()
+
 include(cmake/dynamic_analyzer_options.cmake    REQUIRED)
 
 # Add user supplied extra options (optimization, etc...)
