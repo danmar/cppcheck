@@ -20,4 +20,6 @@ if (BUILD_TESTS)
 
     add_dependencies(testrunner copy_cfg)
 
+    add_test(NAME testrunner COMMAND testrunner WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
 endif()
