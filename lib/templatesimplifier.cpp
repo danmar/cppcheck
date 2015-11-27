@@ -1074,7 +1074,8 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
             }
 
             if (tok->str() == "0") {
-                if (Token::Match(tok->previous(), "[+-|] 0")) {
+                if ((Token::Match(tok->previous(), "[+-] 0 %cop%|;") && isLowerThanMulDiv(tok->next())) ||
+                    (Token::Match(tok->previous(), "%or% 0 %cop%|;") && isLowerThanXor(tok->next()))) {
                     tok = tok->previous();
                     if (Token::Match(tok->tokAt(-4), "[;{}] %name% = %name% [+-|] 0 ;") &&
                         tok->strAt(-3) == tok->previous()->str()) {
