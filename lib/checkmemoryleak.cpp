@@ -123,7 +123,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return Malloc;
 
         if (tokenizer->isCPP() && tok2->str() == "new") {
-            if (tok2->astOperand1() && tok2->astOperand1()->str() == "[")
+            if (tok2->astOperand1() && (tok2->astOperand1()->str() == "[" || (tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->str() == "[")))
                 return NewArray;
             return New;
         }

@@ -1420,6 +1420,12 @@ private:
               "    free(a);\n"
               "}\n", false, false, true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n", errout.str());
+
+        check("void f() {\n"
+              "    char* str = new char[42]();\n"
+              "    delete[] str;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatch2() {
