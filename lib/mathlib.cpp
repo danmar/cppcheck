@@ -328,26 +328,27 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
         return 0; // for unit-testing...
     if (str.size()==1)
         return str[0] & 0xff;
+    const std::string& str1 = str.substr(1);
     if (str[0] != '\\') {
         // C99 6.4.4.4
         // The value of an integer character constant containing more than one character (e.g., 'ab'),
         // or containing a character or escape sequence that does not map to a single-byte execution character,
         // is implementation-defined.
         // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-        int retval(str.front());
-        for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
+        unsigned long retval(str.front());
+        for (std::string::const_iterator it=str1.begin(); it!=str1.end(); ++it) {
             retval = retval<<8 | *it;
         }
-        return retval;
+        return (MathLib::bigint)retval;
     }
 
-    switch (str[1]) {
+    switch (str1[0]) {
     case 'x':
         return toLongNumber("0x" + str.substr(2));
     case 'u': // 16bit unicode character
-        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 16-bit unicode char constant " + str);
+        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 16-bit unicode char constant \\" + str);
     case 'U': // 16bit unicode character
-        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 32-bit unicode char constant " + str);
+        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 32-bit unicode char constant \\" + str);
     default: {
         char c;
         switch (str.size()-1) {
@@ -394,12 +395,11 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
             }
             return c & 0xff;
         case 2:
-        case 3: {
-            const std::string& str1 = str.substr(1);
+        case 3:
             if (isOctalDigitString(str1))
                 return toLongNumber("0" + str1);
             break;
-        }
+
         }
     }
     }

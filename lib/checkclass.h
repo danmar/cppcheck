@@ -254,7 +254,7 @@ private:
 
     /**
      * @brief assign a variable in the varlist
-     * @param varname name of variable to mark assigned
+     * @param varid id of variable to mark assigned
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
@@ -262,7 +262,7 @@ private:
 
     /**
      * @brief initialize a variable in the varlist
-     * @param varname name of variable to mark initialized
+     * @param varid id of variable to mark initialized
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
