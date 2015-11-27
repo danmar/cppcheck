@@ -964,6 +964,12 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
+            // Don't simplify if operand is negative, shifting with negative
+            // operand is UB. Bitmasking with negative operand is implementation
+            // defined behaviour.
+            if (MathLib::isNegative(tok->str()) || MathLib::isNegative(tok->strAt(2)))
+                continue;
+
             const char cop = op->str()[0];
             std::string result;
             if (tok->str().find_first_of("uU") != std::string::npos)

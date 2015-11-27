@@ -2096,6 +2096,7 @@ private:
         ASSERT_EQUALS("x ( 1 )", tok("x(2 && 4<<4<<5 && 4)")); // #4933
         ASSERT_EQUALS("x ( 1 )", tok("x(9&&8%5%4/3)")); // #4931
         ASSERT_EQUALS("x ( 1 )", tok("x(2 && 2|5<<2%4)")); // #4931
+        ASSERT_EQUALS("x ( -2 << 6 | 1 )", tok("x(1-3<<6|5/3)")); // #4931
 
         // don't remove these spaces..
         ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
