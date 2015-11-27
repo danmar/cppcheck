@@ -335,7 +335,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
         // or containing a character or escape sequence that does not map to a single-byte execution character,
         // is implementation-defined.
         // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-        unsigned long retval(str.front());
+        unsigned int retval(str.front());
         for (std::string::const_iterator it=str1.begin(); it!=str1.end(); ++it) {
             retval = retval<<8 | *it;
         }
