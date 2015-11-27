@@ -362,6 +362,7 @@ private:
 
         TEST_CASE(gnucfg);
         TEST_CASE(trac3991);
+        TEST_CASE(crash);
     }
 
     std::string getcode(const char code[], const char varname[], bool classfunc=false) {
@@ -3891,6 +3892,24 @@ private:
               "  if (avierr == 0)\n"
               "    free(data);\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash() {
+        check("class ComponentDC {\n"
+              "    ::Component * getComponent();\n"
+              "};\n"
+              "::Component * ComponentDC::getComponent() {\n"
+              "    return ((::Component *)myComponent);\n"
+              "}\n"
+              "class  MultiComponentDC : public ComponentDC {\n"
+              "    virtual void addChild(InterfaceNode *);\n"
+              "};\n"
+              "void MultiComponentDC::addChild(InterfaceNode *childNode) {\n"
+              "    ComponentDC *cdc = dynamic_cast<ComponentDC *>(childNode);\n"
+              "    if (cdc)\n"
+              "        ::Component *c = cdc->getComponent();\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
