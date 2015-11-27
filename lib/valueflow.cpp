@@ -1782,9 +1782,12 @@ static void execute(const Token *expr,
             *result = result1 + result2;
         else if (expr->str() == "-")
             *result = result1 - result2;
-        else if (expr->str() == "*")
-            *result = result1 * result2;
-        else if (result2 == 0)
+        else if (expr->str() == "*") {
+            if (result2 && (result1 > std::numeric_limits<MathLib::bigint>::max()/result2))
+                *error = true;
+            else
+                *result = result1 * result2;
+        } else if (result2 == 0)
             *error = true;
         else if (expr->str() == "/")
             *result = result1 / result2;
