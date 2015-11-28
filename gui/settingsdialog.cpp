@@ -236,7 +236,10 @@ void SettingsDialog::EditApplication()
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
         if (dialog.exec() == QDialog::Accepted) {
-            item->setText(app.getName());
+            QString name = app.getName();
+            if (mTempApplications->GetDefaultApplication() == row)
+                name += tr(" [Default]");
+            item->setText(name);
         }
     }
 }
