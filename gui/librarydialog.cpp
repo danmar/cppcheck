@@ -20,12 +20,14 @@
 #include "ui_librarydialog.h"
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
+#include "path.h"
 
 #include <QFile>
 #include <QSettings>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QInputDialog>
+#include <QMessageBox>
 
 // TODO: get/compare functions from header
 
@@ -49,6 +51,7 @@ LibraryDialog::LibraryDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->buttonSave->setEnabled(false);
+    ui->buttonSaveAs->setEnabled(false);
     ui->sortFunctions->setEnabled(false);
     ui->filter->setEnabled(false);
     ui->addFunction->setEnabled(false);
@@ -84,13 +87,13 @@ void LibraryDialog::openCfg()
                                  &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
-        mFileName.clear();
         QFile file(selectedFile);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             ignoreChanges = true;
             data.open(file);
             mFileName = selectedFile;
             ui->buttonSave->setEnabled(false);
+            ui->buttonSaveAs->setEnabled(true);
             ui->filter->clear();
             ui->functions->clear();
             for (struct CppcheckLibraryData::Function &function : data.functions) {
@@ -102,6 +105,13 @@ void LibraryDialog::openCfg()
             ui->filter->setEnabled(!data.functions.empty());
             ui->addFunction->setEnabled(true);
             ignoreChanges = false;
+        } else {
+            QMessageBox msg(QMessageBox::Critical,
+                            tr("Cppcheck"),
+                            tr("Can not open file %1.").arg(selectedFile),
+                            QMessageBox::Ok,
+                            this);
+            msg.exec();
         }
     }
 }
@@ -115,7 +125,29 @@ void LibraryDialog::saveCfg()
         QTextStream ts(&file);
         ts << data.toString() << '\n';
         ui->buttonSave->setEnabled(false);
+    } else {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Cppcheck"),
+                        tr("Can not save file %1.").arg(mFileName),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
     }
+}
+
+void LibraryDialog::saveCfgAs()
+{
+    const QString filter(tr("Library files (*.cfg)"));
+    const QString path = Path::getPathFromFilename(mFileName.toStdString()).c_str();
+    QString selectedFile = QFileDialog::getSaveFileName(this,
+                           tr("Save the library as"),
+                           path,
+                           filter);
+    if (!selectedFile.endsWith(".cfg", Qt::CaseInsensitive))
+        selectedFile += ".cfg";
+
+    mFileName = selectedFile;
+    saveCfg();
 }
 
 void LibraryDialog::addFunction()

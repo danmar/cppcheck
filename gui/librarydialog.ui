@@ -31,6 +31,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonSaveAs">
+       <property name="text">
+        <string>Save as</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -499,6 +506,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>buttonSaveAs</sender>
+   <signal>clicked()</signal>
+   <receiver>LibraryDialog</receiver>
+   <slot>saveCfgAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>211</x>
+     <y>31</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>33</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addFunction()</slot>
@@ -511,5 +534,6 @@
   <slot>selectFunction()</slot>
   <slot>sortFunctions(bool)</slot>
   <slot>editFunctionName(QListWidgetItem*)</slot>
+  <slot>saveCfgAs()</slot>
  </slots>
 </ui>

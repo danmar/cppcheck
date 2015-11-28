@@ -40,6 +40,7 @@ public:
 private slots:
     void openCfg();
     void saveCfg();
+    void saveCfgAs();
     void addFunction();
     void changeFunction();
     void editArg();
