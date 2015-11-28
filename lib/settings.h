@@ -29,6 +29,7 @@
 #include "library.h"
 #include "suppressions.h"
 #include "standards.h"
+#include "errorlogger.h"
 #include "timer.h"
 
 /// @addtogroup Core
@@ -216,16 +217,16 @@ public:
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : tokenlist("simple") // use simple tokenlist
-            , id("rule")          // default id
-            , severity("style") { // default severity
+            : tokenlist("simple")         // use simple tokenlist
+            , id("rule")                  // default id
+            , severity(Severity::style) { // default severity
         }
 
         std::string tokenlist;
         std::string pattern;
         std::string id;
-        std::string severity;
         std::string summary;
+        Severity::SeverityType severity;
     };
 
     /**

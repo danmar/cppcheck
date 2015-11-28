@@ -456,7 +456,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
     for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
         const Settings::Rule &rule = *it;
-        if (rule.pattern.empty() || rule.id.empty() || rule.severity.empty() || rule.tokenlist != tokenlist)
+        if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
         const char *error = nullptr;
@@ -507,7 +507,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
             else
                 summary = rule.summary;
-            const ErrorLogger::ErrorMessage errmsg(callStack, Severity::fromString(rule.severity), summary, rule.id, false);
+            const ErrorLogger::ErrorMessage errmsg(callStack, rule.severity, summary, rule.id, false);
 
             // Report error
             reportErr(errmsg);

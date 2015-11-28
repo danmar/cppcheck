@@ -303,7 +303,7 @@ static bool bailoutIfSwitch(const Token *tok, const unsigned int varid)
 }
 //---------------------------------------------------------------------------
 
-static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const std::size_t arraySize, const Token **charSizeToken, const Settings * const settings)
+static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &minsizes, const Token * const ftok, const MathLib::bigint arraySize, const Token **charSizeToken, const Settings * const settings)
 {
     if (charSizeToken)
         *charSizeToken = nullptr;
@@ -534,7 +534,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const ArrayInfo &arrayInfo)
 {
     const MathLib::bigint size = arrayInfo.num(0);
-    if (size == 0)  // unknown size
+    if (size <= 0)  // unknown size
         return;
 
     if (tok->str() == "return") {
@@ -748,7 +748,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     }
 }
 
-static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * const tok, bool conditional, unsigned int dimensions)
+static std::vector<ValueFlow::Value> valueFlowGetArrayIndexes(const Token * const tok, bool conditional, std::size_t dimensions)
 {
     unsigned int indexvarid = 0;
     const std::vector<ValueFlow::Value> empty;
@@ -852,7 +852,7 @@ void CheckBufferOverrun::valueFlowCheckArrayIndex(const Token * const tok, const
 void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
 {
     assert(tok->previous() != nullptr);
-    const MathLib::bigint total_size = arrayInfo.num(0) * arrayInfo.element_size();
+    const MathLib::biguint total_size = arrayInfo.num(0) * arrayInfo.element_size();
 
     const unsigned int declarationId = arrayInfo.declarationId();
 
@@ -913,7 +913,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
             if (printWarning && printInconclusive && Token::Match(tok, "strncpy|memcpy|memmove ( %varid% , %str% , %num% )", declarationId)) {
                 if (Token::getStrLength(tok->tokAt(4)) >= total_size) {
-                    const MathLib::bigint num = MathLib::toLongNumber(tok->strAt(6));
+                    const MathLib::biguint num = MathLib::toULongNumber(tok->strAt(6));
                     if (total_size == num)
                         bufferNotZeroTerminatedError(tok, tok->strAt(2), tok->str());
                 }
@@ -925,7 +925,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 // check for strncpy which is not terminated
                 if (tok->str() == "strncpy") {
                     // strncpy takes entire variable length as input size
-                    const MathLib::bigint num = MathLib::toLongNumber(param3->str());
+                    const MathLib::biguint num = MathLib::toULongNumber(param3->str());
 
                     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
                     if (printInconclusive && num >= total_size) {
@@ -945,14 +945,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
                 // Dangerous usage of strncat..
                 else if (tok->str() == "strncat") {
-                    const MathLib::bigint n = MathLib::toLongNumber(param3->str());
+                    const MathLib::biguint n = MathLib::toULongNumber(param3->str());
                     if (n >= total_size)
                         strncatUsageError(tok);
                 }
 
                 // Dangerous usage of strncpy + strncat..
                 if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", declarationId) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
-                    const MathLib::bigint n = MathLib::toLongNumber(param3->str()) + MathLib::toLongNumber(param3->linkAt(4)->strAt(-1));
+                    const MathLib::biguint n = MathLib::toULongNumber(param3->str()) + MathLib::toULongNumber(param3->linkAt(4)->strAt(-1));
                     if (n > total_size)
                         strncatUsageError(param3->tokAt(3));
                 }
@@ -969,7 +969,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
             // Detect few strcat() calls
             if (total_size > 0) {
-                std::size_t charactersAppend = 0;
+                MathLib::biguint charactersAppend = 0;
                 const Token *tok2 = tok;
 
                 while (Token::Match(tok2, "strcat ( %varid% , %str% ) ;", declarationId)) {

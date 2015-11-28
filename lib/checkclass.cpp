@@ -1014,7 +1014,7 @@ void CheckClass::checkMemset()
                 else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
                     type = findFunctionOf(arg3->scope());
                 } else if (Token::Match(arg1, "&|*|%var%")) {
-                    int numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
+                    std::size_t numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
                     for (;; arg1 = arg1->next()) {
                         if (arg1->str() == "&")
                             ++numIndirToVariableType;
