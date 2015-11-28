@@ -86,7 +86,7 @@ private:
     }
 
     void many_threads() {
-        check(20, 100, 100,
+        check(16, 100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
