@@ -878,7 +878,7 @@ static bool isLowerThanAnd(const Token* lower)
 }
 static bool isLowerThanShift(const Token* lower)
 {
-    return isLowerThanAnd(lower) || Token::Match(lower, "&");
+    return isLowerThanAnd(lower) || lower->str() == "&";
 }
 static bool isLowerThanPlusMinus(const Token* lower)
 {
