@@ -3182,10 +3182,10 @@ bool Tokenizer::simplifySizeof()
 
                 const Token* tok2 = tok->next();
                 do {
-                    const MathLib::bigint arraySize = MathLib::toLongNumber(tok2->strAt(1));
-                    if (arraySize<0)
+                    const MathLib::bigint num = MathLib::toLongNumber(tok2->strAt(1));
+                    if (num<0)
                         break; // #6940 negative number
-                    size *= (unsigned)arraySize;
+                    size *= (unsigned)num;
                     tok2 = tok2->tokAt(3);
                 } while (Token::Match(tok2, "[ %num% ]"));
                 if (Token::Match(tok2, "[;=]")) {

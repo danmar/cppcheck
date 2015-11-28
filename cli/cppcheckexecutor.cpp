@@ -324,8 +324,8 @@ namespace  {
     {
         int type = -1;
         pid_t killid = getpid();
-        const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
 #if defined(__linux__) && defined(REG_ERR)
+        const ucontext_t* const uc = reinterpret_cast<const ucontext_t*>(context);
         killid = (pid_t) syscall(SYS_gettid);
         if (uc) {
             type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
