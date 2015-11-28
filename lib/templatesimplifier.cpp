@@ -1055,6 +1055,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 Token::Match(tok->previous(), "[(=,] 1 %oror%")) {
                 unsigned int par = 0;
                 const Token *tok2 = tok;
+                bool andAnd = (tok->next()->str() == "&&");
                 for (; tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(")
                         ++par;
@@ -1062,10 +1063,10 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         if (par == 0)
                             break;
                         --par;
-                    } else if (par == 0 && (Token::Match(tok2, "[,;?]")))
+                    } else if (par == 0 && isLowerThanLogicalAnd(tok2) && (andAnd || tok2->str() != "||"))
                         break;
                 }
-                if (Token::Match(tok2, "[);,?]")) {
+                if (tok2) {
                     Token::eraseTokens(tok, tok2);
                     ret = true;
                 }
