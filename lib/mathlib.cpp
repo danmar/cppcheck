@@ -322,33 +322,38 @@ static bool isOctalDigitString(const std::string& str)
     return true;
 }
 
+static unsigned int encodeMultiChar(const std::string& str)
+{
+    unsigned int retval(str.front());
+    for (std::string::const_iterator it=str.begin()+1; it!=str.end(); ++it) {
+        retval = retval<<8 | *it;
+    }
+    return retval;
+}
+
 MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 {
     if (str.empty())
         return 0; // for unit-testing...
     if (str.size()==1)
         return str[0] & 0xff;
-    const std::string& str1 = str.substr(1);
     if (str[0] != '\\') {
         // C99 6.4.4.4
         // The value of an integer character constant containing more than one character (e.g., 'ab'),
         // or containing a character or escape sequence that does not map to a single-byte execution character,
         // is implementation-defined.
         // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-        unsigned int retval(str.front());
-        for (std::string::const_iterator it=str1.begin(); it!=str1.end(); ++it) {
-            retval = retval<<8 | *it;
-        }
-        return (MathLib::bigint)retval;
+        return encodeMultiChar(str);
     }
+    const std::string& str1 = str.substr(1);
 
     switch (str1[0]) {
     case 'x':
         return toLongNumber("0x" + str.substr(2));
-    case 'u': // 16bit unicode character
-        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 16-bit unicode char constant \\" + str);
-    case 'U': // 16bit unicode character
-        throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled 32-bit unicode char constant \\" + str);
+    case 'u': // 16-bit unicode character
+        return encodeMultiChar(str1);
+    case 'U': // 32-bit unicode character
+        return encodeMultiChar(str1);
     default: {
         char c;
         switch (str.size()-1) {
