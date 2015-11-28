@@ -536,7 +536,7 @@ namespace {
     }
 
 
-    void PrintCallstack(FILE* output, PEXCEPTION_POINTERS ex)
+    void PrintCallstack(FILE* outputFile, PEXCEPTION_POINTERS ex)
     {
         if (!loadDbgHelp())
             return;
@@ -595,11 +595,11 @@ namespace {
                 ++beyond_main;
             if (_tcscmp(undname, _T("main"))==0)
                 beyond_main=0;
-            fprintf(output,
+            fprintf(outputFile,
                     "%lu. 0x%08I64X in ",
                     frame, (ULONG64)stack.AddrPC.Offset);
-            fputs((const char *)undname, output);
-            fputc('\n', output);
+            fputs((const char *)undname, outputFile);
+            fputc('\n', outputFile);
             if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
                 break;
         }
@@ -608,24 +608,24 @@ namespace {
         hLibDbgHelp=0;
     }
 
-    void writeMemoryErrorDetails(FILE* output, PEXCEPTION_POINTERS ex, const char* description)
+    void writeMemoryErrorDetails(FILE* outputFile, PEXCEPTION_POINTERS ex, const char* description)
     {
-        fputs(description, output);
-        fprintf(output, " (instruction: 0x%p) ", ex->ExceptionRecord->ExceptionAddress);
+        fputs(description, outputFile);
+        fprintf(outputFile, " (instruction: 0x%p) ", ex->ExceptionRecord->ExceptionAddress);
         // Using %p for ULONG_PTR later on, so it must have size identical to size of pointer
         // This is not the universally portable solution but good enough for Win32/64
         C_ASSERT(sizeof(void*) == sizeof(ex->ExceptionRecord->ExceptionInformation[1]));
         switch (ex->ExceptionRecord->ExceptionInformation[0]) {
         case 0:
-            fprintf(output, "reading from 0x%p",
+            fprintf(outputFile, "reading from 0x%p",
                     reinterpret_cast<void*>(ex->ExceptionRecord->ExceptionInformation[1]));
             break;
         case 1:
-            fprintf(output, "writing to 0x%p",
+            fprintf(outputFile, "writing to 0x%p",
                     reinterpret_cast<void*>(ex->ExceptionRecord->ExceptionInformation[1]));
             break;
         case 8:
-            fprintf(output, "data execution prevention at 0x%p",
+            fprintf(outputFile, "data execution prevention at 0x%p",
                     reinterpret_cast<void*>(ex->ExceptionRecord->ExceptionInformation[1]));
             break;
         default:
@@ -638,83 +638,83 @@ namespace {
      */
     int filterException(int code, PEXCEPTION_POINTERS ex)
     {
-        FILE *output = stdout;
-        fputs("Internal error: ", output);
+        FILE *outputFile = stdout;
+        fputs("Internal error: ", outputFile);
         switch (ex->ExceptionRecord->ExceptionCode) {
         case EXCEPTION_ACCESS_VIOLATION:
-            writeMemoryErrorDetails(output, ex, "Access violation");
+            writeMemoryErrorDetails(outputFile, ex, "Access violation");
             break;
         case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-            fputs("Out of array bounds", output);
+            fputs("Out of array bounds", outputFile);
             break;
         case EXCEPTION_BREAKPOINT:
-            fputs("Breakpoint", output);
+            fputs("Breakpoint", outputFile);
             break;
         case EXCEPTION_DATATYPE_MISALIGNMENT:
-            fputs("Misaligned data", output);
+            fputs("Misaligned data", outputFile);
             break;
         case EXCEPTION_FLT_DENORMAL_OPERAND:
-            fputs("Denormalized floating-point value", output);
+            fputs("Denormalized floating-point value", outputFile);
             break;
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-            fputs("Floating-point divide-by-zero", output);
+            fputs("Floating-point divide-by-zero", outputFile);
             break;
         case EXCEPTION_FLT_INEXACT_RESULT:
-            fputs("Inexact floating-point value", output);
+            fputs("Inexact floating-point value", outputFile);
             break;
         case EXCEPTION_FLT_INVALID_OPERATION:
-            fputs("Invalid floating-point operation", output);
+            fputs("Invalid floating-point operation", outputFile);
             break;
         case EXCEPTION_FLT_OVERFLOW:
-            fputs("Floating-point overflow", output);
+            fputs("Floating-point overflow", outputFile);
             break;
         case EXCEPTION_FLT_STACK_CHECK:
-            fputs("Floating-point stack overflow", output);
+            fputs("Floating-point stack overflow", outputFile);
             break;
         case EXCEPTION_FLT_UNDERFLOW:
-            fputs("Floating-point underflow", output);
+            fputs("Floating-point underflow", outputFile);
             break;
         case EXCEPTION_GUARD_PAGE:
-            fputs("Page-guard access", output);
+            fputs("Page-guard access", outputFile);
             break;
         case EXCEPTION_ILLEGAL_INSTRUCTION:
-            fputs("Illegal instruction", output);
+            fputs("Illegal instruction", outputFile);
             break;
         case EXCEPTION_IN_PAGE_ERROR:
-            writeMemoryErrorDetails(output, ex, "Invalid page access");
+            writeMemoryErrorDetails(outputFile, ex, "Invalid page access");
             break;
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
-            fputs("Integer divide-by-zero", output);
+            fputs("Integer divide-by-zero", outputFile);
             break;
         case EXCEPTION_INT_OVERFLOW:
-            fputs("Integer overflow", output);
+            fputs("Integer overflow", outputFile);
             break;
         case EXCEPTION_INVALID_DISPOSITION:
-            fputs("Invalid exception dispatcher", output);
+            fputs("Invalid exception dispatcher", outputFile);
             break;
         case EXCEPTION_INVALID_HANDLE:
-            fputs("Invalid handle", output);
+            fputs("Invalid handle", outputFile);
             break;
         case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-            fputs("Non-continuable exception", output);
+            fputs("Non-continuable exception", outputFile);
             break;
         case EXCEPTION_PRIV_INSTRUCTION:
-            fputs("Invalid instruction", output);
+            fputs("Invalid instruction", outputFile);
             break;
         case EXCEPTION_SINGLE_STEP:
-            fputs("Single instruction step", output);
+            fputs("Single instruction step", outputFile);
             break;
         case EXCEPTION_STACK_OVERFLOW:
-            fputs("Stack overflow", output);
+            fputs("Stack overflow", outputFile);
             break;
         default:
-            fprintf(output, "Unknown exception (%d)\n",
+            fprintf(outputFile, "Unknown exception (%d)\n",
                     code);
             break;
         }
-        fputc('\n', output);
-        PrintCallstack(output, ex);
-        fflush(output);
+        fputc('\n', outputFile);
+        PrintCallstack(outputFile, ex);
+        fflush(outputFile);
         return EXCEPTION_EXECUTE_HANDLER;
     }
 }
@@ -729,12 +729,12 @@ namespace {
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
-    FILE *output = stdout;
+    FILE *outputFile = stdout;
     __try {
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application...
-        fputs("Please report this to the cppcheck developers!\n", output);
+        fputs("Please report this to the cppcheck developers!\n", outputFile);
         return -1;
     }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)

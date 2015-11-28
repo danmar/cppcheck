@@ -2187,8 +2187,8 @@ private:
         if (db) {
             ASSERT_EQUALS(2, db->scopeList.size());
             ASSERT_EQUALS(2, db->getVariableListSize()-1);
-            ASSERT(db->getVariableFromVarId(1));
-            ASSERT(db->getVariableFromVarId(2));
+            ASSERT(db->getVariableFromVarId(1) != nullptr);
+            ASSERT(db->getVariableFromVarId(2) != nullptr);
         }
     }
 
@@ -2198,8 +2198,8 @@ private:
 
         ASSERT(db != nullptr);
         if (db) {
-            ASSERT(db->getVariableFromVarId(1));
-            ASSERT(db->getVariableFromVarId(2));
+            ASSERT(db->getVariableFromVarId(1) != nullptr);
+            ASSERT(db->getVariableFromVarId(2) != nullptr);
             ASSERT_EQUALS(false, db->getVariableFromVarId(1)->isClass());
             ASSERT_EQUALS(false, db->getVariableFromVarId(2)->isClass());
         }

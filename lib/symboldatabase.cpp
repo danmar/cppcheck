@@ -3922,7 +3922,7 @@ std::string ValueType::str() const
         ret += " double";
     else if (type == LONGDOUBLE)
         ret += " long double";
-    for (int p = 0; p < pointer; p++) {
+    for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
         if (constness & (2 << p))
             ret += " const";

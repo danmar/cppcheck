@@ -2188,7 +2188,7 @@ void Tokenizer::arraySize()
         }
 
         else if (Token::Match(tok, "%var% [ ] = {")) {
-            unsigned int sz = 1;
+            MathLib::biguint sz = 1;
             tok = tok->next();
             Token *end = tok->linkAt(3);
             for (Token *tok2 = tok->tokAt(4); tok2 && tok2 != end; tok2 = tok2->next()) {
