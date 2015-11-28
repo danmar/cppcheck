@@ -3413,6 +3413,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // combine "- %num%"
     concatenateNegativeNumberAndAnyPositive();
 
+    // Combine tokens..
+    combineOperators();
+
 #ifndef CPPCHECK2
     // simplify simple calculations
     for (Token *tok = list.front() ? list.front()->next() : nullptr; tok; tok = tok->next()) {
@@ -3438,9 +3441,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     if (!simplifyAddBraces())
         return false;
-
-    // Combine tokens..
-    combineOperators();
 
     sizeofAddParentheses();
 

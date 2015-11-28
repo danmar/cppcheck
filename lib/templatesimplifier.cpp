@@ -878,11 +878,11 @@ static bool isLowerThanAnd(const Token* lower)
 }
 static bool isLowerThanShift(const Token* lower)
 {
-    return isLowerThanAnd(lower) || Token::Match(lower, "%comp%|&");
+    return isLowerThanAnd(lower) || Token::Match(lower, "&");
 }
 static bool isLowerThanPlusMinus(const Token* lower)
 {
-    return isLowerThanShift(lower) || Token::Match(lower, "<<|>>");
+    return isLowerThanShift(lower) || Token::Match(lower, "%comp%|<<|>>");
 }
 static bool isLowerThanMulDiv(const Token* lower)
 {
