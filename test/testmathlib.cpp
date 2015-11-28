@@ -293,12 +293,6 @@ private:
         // that is not gcc/clang encoding
         ASSERT_EQUALS(959657011, MathLib::toLongNumber("'\\u9343'"));
         ASSERT_EQUALS(1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
-#ifdef __GNUC__
-        // BEGIN Implementation-specific results
-        TODO_ASSERT_EQUALS((int)'\u9343', 959657011, MathLib::toLongNumber("'\\u9343'"));
-        TODO_ASSERT_EQUALS((int)'\U0001f34c', 1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
-        // END Implementation-specific results
-#endif
         {
             // some unit-testing for a utility function
             ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string("")));
