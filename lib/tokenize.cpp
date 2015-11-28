@@ -3157,8 +3157,8 @@ bool Tokenizer::simplifySizeof()
 {
     // Locate variable declarations and calculate the size
     std::map<unsigned int, unsigned int> sizeOfVar;
-    std::map<unsigned int, Token *> declTokOfVar;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
+    std::map<unsigned int, const Token *> declTokOfVar;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->varId() != 0 && sizeOfVar.find(tok->varId()) == sizeOfVar.end()) {
             const unsigned int varId = tok->varId();
             if (Token::Match(tok->tokAt(-3), "[;{}(,] %type% * %name% [;,)]") ||
@@ -3180,9 +3180,12 @@ bool Tokenizer::simplifySizeof()
                 if (size == 0)
                     continue;
 
-                Token* tok2 = tok->next();
+                const Token* tok2 = tok->next();
                 do {
-                    size *= MathLib::toULongNumber(tok2->strAt(1));
+                    const MathLib::bigint arraySize = MathLib::toLongNumber(tok2->strAt(1));
+                    if (arraySize<0)
+                        break; // #6940 negative number
+                    size *= (unsigned)arraySize;
                     tok2 = tok2->tokAt(3);
                 } while (Token::Match(tok2, "[ %num% ]"));
                 if (Token::Match(tok2, "[;=]")) {
