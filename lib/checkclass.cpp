@@ -1035,7 +1035,7 @@ void CheckClass::checkMemset()
                         }
 
                         if (var->isArray())
-                            numIndirToVariableType += (int)var->dimensions().size();
+                            numIndirToVariableType += var->dimensions().size();
 
                         if (numIndirToVariableType == 1)
                             type = var->typeScope();

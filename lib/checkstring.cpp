@@ -281,12 +281,12 @@ void CheckString::checkIncorrectStringCompare()
                 const Token* end = tok->linkAt(2)->next();
                 if (Token::Match(begin->previous(), "%str% ==|!=") && begin->strAt(-2) != "+") {
                     std::size_t slen = Token::getStrLength(begin->previous());
-                    if (clen != (int)slen) {
+                    if (clen != slen) {
                         incorrectStringCompareError(tok->next(), "substr", begin->strAt(-1));
                     }
                 } else if (Token::Match(end, "==|!= %str% !!+")) {
                     std::size_t slen = Token::getStrLength(end->next());
-                    if (clen != (int)slen) {
+                    if (clen != slen) {
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }

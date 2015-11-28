@@ -326,7 +326,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
         case Library::ArgumentChecks::MinSize::ARGVALUE:
             if (Token::Match(argtok, "%num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str());
-                if ((std::size_t)sz > arraySize)
+                if (sz > arraySize)
                     error = true;
             } else if (argtok->tokType() == Token::eChar && Token::Match(argtok->next(), ",|)") && charSizeToken)
                 *charSizeToken = argtok; //sizeArgumentAsCharError(argtok);
@@ -335,7 +335,7 @@ static bool checkMinSizes(const std::list<Library::ArgumentChecks::MinSize> &min
             // TODO: handle arbitrary arg2
             if (minsize->arg2 == minsize->arg+1 && Token::Match(argtok, "%num% , %num% ,|)")) {
                 const MathLib::bigint sz = MathLib::toLongNumber(argtok->str()) * MathLib::toLongNumber(argtok->strAt(2));
-                if ((std::size_t)sz > arraySize)
+                if (sz > arraySize)
                     error = true;
             }
             break;
@@ -388,7 +388,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
             return;
 
         const Token *charSizeToken = nullptr;
-        if (checkMinSizes(*minsizes, &ftok, (std::size_t)arraySize, &charSizeToken, _settings))
+        if (checkMinSizes(*minsizes, &ftok, arraySize, &charSizeToken, _settings))
             bufferOverrunError(callstack, arrayInfo.varname());
         if (charSizeToken)
             sizeArgumentAsCharError(charSizeToken);
@@ -1567,7 +1567,7 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
         }
     }
 
-    return (MathLib::biguint)input_string_size;
+    return input_string_size;
 }
 
 

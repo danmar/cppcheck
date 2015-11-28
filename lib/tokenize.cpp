@@ -2183,7 +2183,7 @@ void Tokenizer::arraySize()
         if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
             tok = tok->next();
             std::size_t sz = Token::getStrSize(tok->tokAt(3));
-            tok->insertToken(MathLib::toString((unsigned int)sz));
+            tok->insertToken(MathLib::toString(sz));
             tok = tok->tokAt(5);
         }
 
@@ -2195,7 +2195,7 @@ void Tokenizer::arraySize()
                 if (tok2->link() && Token::Match(tok2, "{|(|[|<")) {
                     if (tok2->str() == "[" && tok2->link()->strAt(1) == "=") { // designated initializer
                         if (Token::Match(tok2, "[ %num% ]"))
-                            sz = std::max(sz, (unsigned int)MathLib::toULongNumber(tok2->strAt(1)) + 1U);
+                            sz = std::max(sz, MathLib::toULongNumber(tok2->strAt(1)) + 1U);
                         else {
                             sz = 0;
                             break;
@@ -7095,8 +7095,8 @@ void Tokenizer::simplifyCharAt()
         if (Token::Match(tok, "%str% [ %num% ]")) {
             const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
             // Check within range
-            if (index >= 0 && index <= (MathLib::bigint)Token::getStrLength(tok)) {
-                tok->str("'" + Token::getCharAt(tok, (size_t)index) + "'");
+            if (index >= 0 && index <= Token::getStrLength(tok)) {
+                tok->str("'" + Token::getCharAt(tok, index) + "'");
                 tok->deleteNext(3);
             }
         }

@@ -174,9 +174,9 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     // The UTF-16 BOM is 0xfffe or 0xfeff.
     unsigned int bom = 0;
     if (istr.peek() >= 0xfe) {
-        bom = ((unsigned int)istr.get() << 8);
+        bom = ((unsigned char)istr.get() << 8);
         if (istr.peek() >= 0xfe)
-            bom |= (unsigned int)istr.get();
+            bom |= (unsigned char)istr.get();
         else
             bom = 0; // allowed boms are 0/0xfffe/0xfeff
     }
