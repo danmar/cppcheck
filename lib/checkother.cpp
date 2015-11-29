@@ -2458,6 +2458,9 @@ void CheckOther::unusedLabelError(const Token* tok)
 
 void CheckOther::checkInvalidTestForOverflow()
 {
+    if (!_settings->isEnabled("warning"))
+        return;
+
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
