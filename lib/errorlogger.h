@@ -21,11 +21,11 @@
 #define errorloggerH
 //---------------------------------------------------------------------------
 
-#include <list>
-#include <string>
-
 #include "config.h"
 #include "suppressions.h"
+
+#include <list>
+#include <string>
 
 class Token;
 class TokenList;

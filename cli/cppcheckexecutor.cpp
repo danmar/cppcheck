@@ -26,7 +26,6 @@
 #include "threadexecutor.h"
 #include "utils.h"
 
-#include <climits>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
 #include <algorithm>

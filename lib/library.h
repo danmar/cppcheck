@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "token.h"
 #include "standards.h"
 #include "errorlogger.h"
 
@@ -31,8 +30,8 @@
 #include <set>
 #include <string>
 #include <list>
+#include <vector>
 
-class TokenList;
 namespace tinyxml2 {
     class XMLDocument;
     class XMLElement;

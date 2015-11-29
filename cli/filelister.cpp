@@ -21,7 +21,6 @@
 #include "pathmatch.h"
 #include <cstring>
 #include <string>
-#include <sstream>
 
 
 #ifdef _WIN32
@@ -114,7 +113,7 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
             continue;
 
         const char* ansiFfd = ffd.cFileName;
-        if (strchr(ansiFfd,'?')) {
+        if (std::strchr(ansiFfd,'?')) {
             ansiFfd = ffd.cAlternateFileName;
         }
 
@@ -122,9 +121,9 @@ void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, co
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
             // File
-            const std::string nativename = Path::fromNativeSeparators(fname);
-
             if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.Match(fname)) {
+                const std::string nativename = Path::fromNativeSeparators(fname);
+
                 // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
                 files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
@@ -168,6 +167,7 @@ bool FileLister::fileExists(const std::string &path)
 #include <stdlib.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <sstream>
 
 // Get absolute path. Returns empty string if path does not exist or other error.
 std::string FileLister::getAbsolutePath(const std::string& path)

@@ -18,9 +18,9 @@
 
 #include "testsuite.h"
 #include "options.h"
+#include "redirect.h"
 
 #include <iostream>
-#include <cstdio>
 #include <list>
 
 std::ostringstream errout;

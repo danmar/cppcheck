@@ -21,7 +21,6 @@
 #define mathlibH
 //---------------------------------------------------------------------------
 
-#include <cstdlib>
 #include <string>
 #include <sstream>
 #include "config.h"

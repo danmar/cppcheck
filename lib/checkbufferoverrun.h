@@ -75,9 +75,6 @@ public:
     /** @brief negative size for array */
     void negativeArraySize();
 
-    /** @brief %Check for buffer overruns by inspecting execution paths */
-    void executionPaths();
-
     /**
      * @brief Get minimum length of format string result
      * @param input_string format string

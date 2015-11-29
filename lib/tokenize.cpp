@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 #include "mathlib.h"
@@ -26,6 +25,7 @@
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
+#include "utils.h"
 
 #include <cstring>
 #include <sstream>

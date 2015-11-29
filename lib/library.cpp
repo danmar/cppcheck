@@ -26,7 +26,6 @@
 #include "astutils.h"
 
 #include <string>
-#include <algorithm>
 
 static std::vector<std::string> getnames(const char *names)
 {

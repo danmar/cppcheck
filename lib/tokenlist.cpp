@@ -29,7 +29,6 @@
 #include <sstream>
 #include <cctype>
 #include <stack>
-#include <cassert>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test

@@ -21,6 +21,7 @@
 
 #include "tokenize.h"
 #include "symboldatabase.h"
+#include "utils.h"
 
 #include <cctype>
 #include <cstdlib>

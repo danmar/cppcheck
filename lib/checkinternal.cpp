@@ -23,7 +23,6 @@
 #include <string>
 #include <set>
 #include <cstring>
-#include <cctype>
 
 // Register this check class (by creating a static instance of it).
 // Disabled in release builds

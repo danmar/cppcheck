@@ -23,6 +23,7 @@
 #include "token.h"
 #include "settings.h"
 #include "errorlogger.h"
+#include "utils.h"
 
 #include <string>
 #include <ostream>

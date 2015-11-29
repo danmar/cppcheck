@@ -31,7 +31,6 @@
 #include "config.h"
 #include "token.h"
 #include "mathlib.h"
-#include "utils.h"
 
 class Tokenizer;
 class Settings;

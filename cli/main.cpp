@@ -102,7 +102,7 @@ void CheckOther::checkZeroDivision()
 
 #include "cppcheckexecutor.h"
 
-#include <cstdio>
+#include <iostream>
 #include <cstdlib>
 
 #ifdef _WIN32
@@ -136,11 +136,11 @@ int main(int argc, char* argv[])
         return exec.check(argc, argv);
 #ifdef NDEBUG
     } catch (const InternalError& e) {
-        printf("%s\n", e.errorMessage.c_str());
+        std::cout << e.errorMessage << std::endl;
     } catch (const std::exception& error) {
-        printf("%s\n", error.what());
+        std::cout << error.what() << std::endl;
     } catch (...) {
-        printf("Unknown exception\n");
+        std::cout << "Unknown exception" << std::endl;
     }
     return EXIT_FAILURE;
 #endif

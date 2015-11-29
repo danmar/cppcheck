@@ -21,6 +21,7 @@
 #include "cppcheckexecutor.h"
 #include "path.h"
 #include "pathmatch.h"
+#include "redirect.h"
 #include <fstream>
 #include <cstring>
 #include <algorithm>

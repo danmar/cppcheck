@@ -19,6 +19,7 @@
 #include "testsuite.h"
 #include "testutils.h"
 #include "symboldatabase.h"
+#include "utils.h"
 #include <sstream>
 #include <stdexcept>
 

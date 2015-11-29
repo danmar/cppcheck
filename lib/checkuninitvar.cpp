@@ -21,9 +21,8 @@
 #include "checkuninitvar.h"
 #include "astutils.h"
 #include "mathlib.h"
-#include "checknullpointer.h"   // CheckNullPointer::parseFunctionCall
+#include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 #include "symboldatabase.h"
-#include <algorithm>
 #include <map>
 #include <cassert>
 #include <stack>
@@ -172,10 +171,9 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 }
 
 struct VariableValue {
-    VariableValue() : notEqual(false), value(0) {}
-    explicit VariableValue(MathLib::bigint val) : notEqual(false), value(val) {}
-    bool notEqual;
+    explicit VariableValue(MathLib::bigint val = 0) : value(val), notEqual(false) {}
     MathLib::bigint value;
+    bool notEqual;
 };
 static VariableValue operator!(VariableValue v)
 {

@@ -21,7 +21,6 @@
 #include "checkunusedvar.h"
 #include "symboldatabase.h"
 #include <algorithm>
-#include <cctype>
 #include <utility>
 //---------------------------------------------------------------------------
 

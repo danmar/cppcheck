@@ -23,7 +23,6 @@
 #include <sstream>
 #include <set>
 #include "errorlogger.h"
-#include "redirect.h"
 
 class options;
 

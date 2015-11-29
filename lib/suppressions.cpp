@@ -17,7 +17,6 @@
  */
 
 #include "suppressions.h"
-#include "settings.h"
 #include "path.h"
 
 #include <algorithm>

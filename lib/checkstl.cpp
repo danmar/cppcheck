@@ -19,6 +19,7 @@
 #include "checkstl.h"
 #include "symboldatabase.h"
 #include "checknullpointer.h"
+#include "utils.h"
 #include <sstream>
 
 // Register this check class (by creating a static instance of it)
@@ -1476,7 +1477,7 @@ void CheckStl::readingEmptyStlContainer()
                 bool insert = false;
                 if (var->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
                     insert = !Token::Match(tok->tokAt(1), "[(=]"); // Only if not initialized
-                } else if (Token::Match(tok, "%name% . clear ( ) ;")) {
+                } else if (Token::Match(tok, "%var% . clear ( ) ;")) {
                     insert = true;
                 }
 

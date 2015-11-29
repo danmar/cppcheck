@@ -21,6 +21,7 @@
 #include "checknullpointer.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "utils.h"
 #include <cctype>
 //---------------------------------------------------------------------------
 

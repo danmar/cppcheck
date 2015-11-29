@@ -18,9 +18,9 @@
 
 #include "token.h"
 #include "errorlogger.h"
-#include "check.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "utils.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>

@@ -17,7 +17,6 @@
  */
 
 #include "settings.h"
-#include "path.h"
 #include "preprocessor.h"       // Preprocessor
 #include "utils.h"
 

@@ -22,9 +22,9 @@
 #include "mathlib.h"
 #include "tokenize.h"
 #include "astutils.h"
+#include "utils.h"
 
 #include <algorithm>
-#include <sstream>
 #include <set>
 #include <stack>
 
@@ -2060,12 +2060,9 @@ void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::str
         noerr = noerr || Token::simpleMatch(first, "alloc ; if return ; dealloc; }");
 
         // Unhandled case..
-        if (!noerr) {
-            std::ostringstream errmsg;
-            errmsg << "inconclusive leak of " << varname << ": ";
-            errmsg << tok->stringifyList(false, false, false, false, false, 0, 0);
-            reportError(first, Severity::debug, "debug", errmsg.str());
-        }
+        if (!noerr)
+            reportError(first, Severity::debug, "debug",
+                        "inconclusive leak of " + varname + ": " + tok->stringifyList(false, false, false, false, false, 0, 0));
     }
 
     TokenList::deleteTokens(tok);

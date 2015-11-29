@@ -23,10 +23,10 @@
 #include "token.h"
 #include "errorlogger.h"
 #include "symboldatabase.h"
+#include "utils.h"
 
 #include <string>
 #include <algorithm>
-#include <cctype>
 
 //---------------------------------------------------------------------------
 

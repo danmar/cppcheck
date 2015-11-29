@@ -22,8 +22,8 @@
 #include "astutils.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "utils.h"
 
-#include <cmath> // fabs()
 #include <stack>
 #include <algorithm> // find_if()
 //---------------------------------------------------------------------------

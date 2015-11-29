@@ -27,7 +27,7 @@
 #include <cassert>
 #include <iomanip>
 #include <sstream>
-#include <vector>
+#include <array>
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg)
@@ -131,7 +131,8 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _inconclusive = false;
     _callStack.clear();
     std::istringstream iss(data);
-    std::vector<std::string> results;
+    std::array<std::string, 5> results;
+    std::size_t elem = 0;
     while (iss.good()) {
         unsigned int len = 0;
         if (!(iss >> len))
@@ -149,12 +150,12 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
             continue;
         }
 
-        results.push_back(temp);
-        if (results.size() == 5)
+        results[elem++] = temp;
+        if (elem == 5)
             break;
     }
 
-    if (results.size() != 5)
+    if (elem != 5)
         throw InternalError(0, "Internal Error: Deserialization of error message failed");
 
     _id = results[0];
