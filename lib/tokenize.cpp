@@ -1237,6 +1237,8 @@ void Tokenizer::simplifyTypedef()
                     bool inOperator = false;
                     bool inSizeof = false;
 
+                    const bool sameStartEnd = (typeStart == typeEnd);
+
                     // check for derived class: class A : some_typedef {
                     const bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
 
@@ -1273,6 +1275,9 @@ void Tokenizer::simplifyTypedef()
                     }
                     if (typeStart->str() == "struct" && Token::Match(tok2, "%name% ::"))
                         typeStart = typeStart->next();
+
+                    if (sameStartEnd)
+                        typeEnd = typeStart;
 
                     // start substituting at the typedef name by replacing it with the type
                     tok2->str(typeStart->str());

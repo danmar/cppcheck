@@ -207,6 +207,7 @@ private:
         TEST_CASE(garbageCode156); // #7120
         TEST_CASE(garbageCode157); // #7131
         TEST_CASE(garbageCode158); // #3238
+        TEST_CASE(garbageCode159); // #7119
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1244,6 +1245,10 @@ private:
 
     void garbageCode158() { // #3238
         checkCode("__FBSDID(\"...\");\n");
+    }
+
+    void garbageCode159() { // #7119
+        checkCode("({}typedef typename x;typename x!){({{}()})}"); // dont hang
     }
 
 
