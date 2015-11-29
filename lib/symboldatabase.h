@@ -49,7 +49,7 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : start(NULL), end(NULL), num(0), known(true) { }
+    Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
 
     const Token *start;  // size start token
     const Token *end;    // size end token
@@ -70,7 +70,7 @@ public:
     class BaseInfo {
     public:
         BaseInfo() :
-            type(NULL), nameTok(NULL), access(Public), isVirtual(false) {
+            type(nullptr), nameTok(nullptr), access(Public), isVirtual(false) {
         }
 
         std::string name;
@@ -86,7 +86,7 @@ public:
 
     struct FriendInfo {
         FriendInfo() :
-            nameStart(NULL), nameEnd(NULL), type(NULL) {
+            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {
         }
 
         const Token* nameStart;
@@ -632,14 +632,14 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
     Function()
-        : tokenDef(NULL),
-          argDef(NULL),
-          token(NULL),
-          arg(NULL),
-          retDef(NULL),
-          retType(NULL),
-          functionScope(NULL),
-          nestedIn(NULL),
+        : tokenDef(nullptr),
+          argDef(nullptr),
+          token(nullptr),
+          arg(nullptr),
+          retDef(nullptr),
+          retType(nullptr),
+          functionScope(nullptr),
+          nestedIn(nullptr),
           initArgCount(0),
           type(eFunction),
           access(Public),
@@ -1001,7 +1001,7 @@ public:
      */
     void debugMessage(const Token *tok, const std::string &msg) const;
 
-    void printOut(const char * title = NULL) const;
+    void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
     void printXml(std::ostream &out) const;
 

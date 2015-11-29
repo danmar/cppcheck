@@ -3642,6 +3642,7 @@ namespace {
             "static" << "struct" << "switch" << "typedef" << "union" << "unsigned" << "void" << "volatile" <<
             "while";
     const std::set<std::string> cpp_keywords = make_container< std::set<std::string> >() <<
+            c_keywords <<
             "alignas" << "alignof" << "and" << "and_eq" << "asm" << "auto" << "bitand" << "bitor" << "bool" <<
             "break" << "case" << "catch" << "char" << "char16_t" << "char32_t" << "class" << "compl" <<
             "concept" << "const" << "constexpr" << "const_cast" << "continue" << "decltype" << "default" <<
@@ -3654,9 +3655,13 @@ namespace {
             "true" << "try" << "typedef" << "typeid" << "typename" << "union" << "unsigned" << "using" <<
             "virtual" << "void" << "volatile" << "wchar_t" << "while" << "xor" << "xor_eq";
 }
+
 bool SymbolDatabase::isReservedName(const std::string& iName) const
 {
-    return (c_keywords.find(iName) != c_keywords.cend()) || (isCPP() && (cpp_keywords.find(iName) != cpp_keywords.cend()));
+    if (isCPP())
+        return cpp_keywords.find(iName) != cpp_keywords.cend();
+    else
+        return c_keywords.find(iName) != c_keywords.cend();
 }
 
 static const Token * parsedecl(const Token *type, ValueType * const valuetype);
