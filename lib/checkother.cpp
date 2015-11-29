@@ -2177,54 +2177,53 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 
 void CheckOther::checkNegativeBitwiseShift()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (tok->str() != "<<" && tok->str() != ">>")
+    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->str() != "<<" && tok->str() != ">>")
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        // don't warn if lhs is a class. this is an overloaded operator then
+        if (_tokenizer->isCPP()) {
+            const Token *rhs = tok->astOperand1();
+            while (Token::Match(rhs, "::|."))
+                rhs = rhs->astOperand2();
+            if (!rhs)
                 continue;
-
-            if (!tok->astOperand1() || !tok->astOperand2())
+            if (!rhs->isNumber() && !rhs->variable())
                 continue;
-
-            // don't warn if lhs is a class. this is an overloaded operator then
-            if (_tokenizer->isCPP()) {
-                const Token *rhs = tok->astOperand1();
-                while (Token::Match(rhs, "::|."))
-                    rhs = rhs->astOperand2();
-                if (!rhs)
-                    continue;
-                if (!rhs->isNumber() && !rhs->variable())
-                    continue;
-                if (rhs->variable() &&
-                    (!rhs->variable()->typeStartToken() || !rhs->variable()->typeStartToken()->isStandardType()))
-                    continue;
-            }
-
-            // bailout if operation is protected by ?:
-            bool ternary = false;
-            for (const Token *parent = tok; parent; parent = parent->astParent()) {
-                if (Token::Match(parent, "?|:")) {
-                    ternary = true;
-                    break;
-                }
-            }
-            if (ternary)
+            if (rhs->variable() &&
+                (!rhs->variable()->typeStartToken() || !rhs->variable()->typeStartToken()->isStandardType()))
                 continue;
-
-            // Get negative rhs value. preferably a value which doesn't have 'condition'.
-            const ValueFlow::Value *value = tok->astOperand2()->getValueLE(-1LL, _settings);
-            if (value)
-                negativeBitwiseShiftError(tok);
         }
+
+        // bailout if operation is protected by ?:
+        bool ternary = false;
+        for (const Token *parent = tok; parent; parent = parent->astParent()) {
+            if (Token::Match(parent, "?|:")) {
+                ternary = true;
+                break;
+            }
+        }
+        if (ternary)
+            continue;
+
+        // Get negative rhs value. preferably a value which doesn't have 'condition'.
+        if (tok->astOperand1()->getValueLE(-1LL, _settings))
+            negativeBitwiseShiftError(tok, 1);
+        else if (tok->astOperand2()->getValueLE(-1LL, _settings))
+            negativeBitwiseShiftError(tok, 2);
     }
 }
 
 
-void CheckOther::negativeBitwiseShiftError(const Token *tok)
+void CheckOther::negativeBitwiseShiftError(const Token *tok, int op)
 {
-    reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour");
+    if (op == 1) // LHS
+        reportError(tok, Severity::error, "shiftNegative", "Shifting a negative value is undefined behaviour");
+    else // RHS
+        reportError(tok, Severity::error, "shiftNegative", "Shifting by a negative value is undefined behaviour");
 }
 
 //---------------------------------------------------------------------------

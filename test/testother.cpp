@@ -4774,6 +4774,10 @@ private:
 
         check("x = y ? z << $-1 : 0;\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Negative LHS
+        check("const int x = -1 >> 2;");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting a negative value is undefined behaviour\n", errout.str());
     }
 
     void incompleteArrayFill() {

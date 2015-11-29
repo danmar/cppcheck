@@ -243,7 +243,7 @@ private:
     void unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive);
     void pointerPositiveError(const Token *tok, bool inconclusive);
     void SuspiciousSemicolonError(const Token *tok);
-    void negativeBitwiseShiftError(const Token *tok);
+    void negativeBitwiseShiftError(const Token *tok, int op);
     void redundantCopyError(const Token *tok, const std::string &varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
@@ -260,7 +260,7 @@ private:
         c.zerodivcondError(0,0,false);
         c.misusedScopeObjectError(NULL, "varname");
         c.invalidPointerCastError(0, "float", "double", false);
-        c.negativeBitwiseShiftError(0);
+        c.negativeBitwiseShiftError(0,1);
         c.checkPipeParameterSizeError(0, "varname", "dimension");
         c.raceAfterInterlockedDecrementError(0);
 
