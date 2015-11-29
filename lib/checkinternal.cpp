@@ -20,6 +20,7 @@
 
 #include "checkinternal.h"
 #include "symboldatabase.h"
+#include "utils.h"
 #include <string>
 #include <set>
 #include <cstring>
