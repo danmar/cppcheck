@@ -143,6 +143,9 @@ void LibraryDialog::saveCfgAs()
                            tr("Save the library as"),
                            path,
                            filter);
+    if (selectedFile.isEmpty())
+        return;
+
     if (!selectedFile.endsWith(".cfg", Qt::CaseInsensitive))
         selectedFile += ".cfg";
 
