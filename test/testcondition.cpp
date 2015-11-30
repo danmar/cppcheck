@@ -79,6 +79,8 @@ private:
         TEST_CASE(clarifyCondition6);     // #3818
 
         TEST_CASE(alwaysTrue);
+
+        TEST_CASE(checkInvalidTestForOverflow);
     }
 
     void check(const char code[], const char* filename = "test.cpp") {
@@ -1601,6 +1603,23 @@ private:
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
               "  if ($x != $0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkInvalidTestForOverflow() {
+        check("void f(char *p, unsigned int x) {\n"
+              "    assert((p + x) < p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+
+        check("void f(signed int x) {\n"
+              "    assert(x + 100 < x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'x+100<x'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+
+        check("void f(signed int x) {\n" // unsigned overflow => dont warn
+              "    assert(x + 100U < x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

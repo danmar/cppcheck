@@ -50,6 +50,7 @@ public:
         checkCondition.clarifyCondition();   // not simplified because ifAssign
         checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
+        checkCondition.checkInvalidTestForOverflow();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -97,6 +98,9 @@ public:
     /** @brief Condition is always true/false */
     void alwaysTrueFalse();
 
+    /** @brief %Check for invalid test for overflow 'x+100 < x' */
+    void checkInvalidTestForOverflow();
+
 private:
 
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions) const;
@@ -122,6 +126,8 @@ private:
 
     void alwaysTrueFalseError(const Token *tok, bool knownResult);
 
+    void invalidTestForOverflow(const Token* tok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckCondition c(0, settings, errorLogger);
 
@@ -136,6 +142,7 @@ private:
         c.moduloAlwaysTrueFalseError(0, "1");
         c.clarifyConditionError(0, true, false);
         c.alwaysTrueFalseError(0, true);
+        c.invalidTestForOverflow(0);
     }
 
     static std::string myName() {
@@ -150,10 +157,11 @@ private:
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Find dead code which is inaccessible due to the counter-conditions check in nested if statements\n"
-               "- condition that is always true/false\n"
-               "- mutual exclusion over || always evaluating to true\n"
+               "- Condition that is always true/false\n"
+               "- Mutual exclusion over || always evaluating to true\n"
                "- Comparisons of modulo results that are always true/false.\n"
-               "- Known variable values => condition is always true/false\n";
+               "- Known variable values => condition is always true/false\n"
+               "- Invalid test for overflow (for example 'ptr+u < ptr'). Condition is always false unless there is overflow, and overflow is UB.\n";
     }
 };
 /// @}

@@ -70,7 +70,6 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkInterlockedDecrement();
         checkOther.checkUnusedLabel();
-        checkOther.checkInvalidTestForOverflow();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -204,9 +203,6 @@ public:
     /** @brief %Check for unused labels */
     void checkUnusedLabel();
 
-    /** @brief %Check for invalid test for overflow 'x+100 < x' */
-    void checkInvalidTestForOverflow();
-
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -255,7 +251,6 @@ private:
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok);
-    void invalidTestForOverflow(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -310,7 +305,6 @@ private:
         c.commaSeparatedReturnError(0);
         c.redundantPointerOpError(0, "varname", false);
         c.unusedLabelError(0);
-        c.invalidTestForOverflow(0);
     }
 
     static std::string myName() {
@@ -333,7 +327,6 @@ private:
                // warning
                "- either division by zero or useless condition\n"
                "- memset() with a value out of range as the 2nd parameter\n"
-               "- invalid test for overflow\n"
 
                // performance
                "- redundant data copying for const variable\n"
