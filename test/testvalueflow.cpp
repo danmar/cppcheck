@@ -805,6 +805,21 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        // ?:
+        code = "void f() {\n"
+               "    int x = 8;\n"
+               "    a = ((x > 10) ?\n"
+               "        x : 0);\n" // <- x is not 8
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 8));
+
+        code = "void f() {\n" // #6973
+               "    char *x = \"\";\n"
+               "    a = ((x[0] == 'U') ?\n"
+               "        x[1] : 0);\n" // <- x is not ""
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\""));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"
