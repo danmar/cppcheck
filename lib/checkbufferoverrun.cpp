@@ -1179,13 +1179,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 type = tok->strAt(4);
                 var = tok->next()->variable();
                 nextTok = 8;
-            } else if (Token::Match(tok, "[;{}] %var% = %str% ;") &&
-                       tok->next()->variable() &&
-                       tok->next()->variable()->isPointer()) {
-                size = 1 + int(tok->tokAt(3)->strValue().size());
-                type = "char";
-                var = tok->next()->variable();
-                nextTok = 4;
             } else if (Token::Match(tok, "[*;{}] %var% = malloc|alloca ( %num% ) ;")) {
                 size = MathLib::toLongNumber(tok->strAt(5));
                 type = "char";   // minimum type, typesize=1

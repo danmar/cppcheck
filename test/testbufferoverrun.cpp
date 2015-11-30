@@ -1997,6 +1997,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
 
+        check("void f() {\n" // #6973
+              "    const char *name = \"\";\n"
+              "    if ( name[0] == 'U' ? name[1] : 0) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_same_struct_and_var_name() {
