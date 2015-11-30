@@ -733,7 +733,7 @@ int main(int argc, char *argv[])
             }
 
             maxconfigs = true;
-        } else if (settings.filename==NULL && strchr(argv[i],'.'))
+        } else if (settings.filename==nullptr && strchr(argv[i],'.'))
             settings.filename = argv[i];
         else if (settings.linenr == 0U && MathLib::isInt(argv[i]))
             settings.linenr = std::atoi(argv[i]);
@@ -749,7 +749,7 @@ int main(int argc, char *argv[])
     if (settings._force)
         settings._maxConfigs = ~0U;
 
-    if ((!settings.hang && settings.linenr == 0U) || settings.filename == NULL) {
+    if ((!settings.hang && settings.linenr == 0U) || settings.filename == nullptr) {
         std::cerr << "Syntax:" << std::endl
                   << argv[0] << " [--stdout] [--cfg=X] [--hang] [--maxtime=60] [-D define] [-I includepath] [--force] [--enable=<id>] [--inconclusive] [--debug-warnings] [--max-configs=<limit>] filename [linenr]" << std::endl;
         return EXIT_FAILURE;

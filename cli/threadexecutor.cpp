@@ -238,7 +238,7 @@ unsigned int ThreadExecutor::check()
             struct timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
             tv.tv_usec = 0;
-            int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, NULL, NULL, &tv);
+            int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
                 std::list<int>::iterator rp = rpipes.begin();

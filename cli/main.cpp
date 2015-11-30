@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
     CppCheckExecutor exec;
 #ifdef _WIN32
-    GetModuleFileNameA(NULL, exename, sizeof(exename)/sizeof(exename[0])-1);
+    GetModuleFileNameA(nullptr, exename, sizeof(exename)/sizeof(exename[0])-1);
     argv[0] = exename;
 #endif
 

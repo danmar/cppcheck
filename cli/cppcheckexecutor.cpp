@@ -580,10 +580,10 @@ namespace {
                          hThread,
                          &stack,
                          &context,
-                         NULL,
+                         nullptr,
                          pSymFunctionTableAccess64,
                          pSymGetModuleBase64,
-                         NULL
+                         nullptr
                      );
             if (!result)  // official end...
                 break;
@@ -748,7 +748,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     segv_stack.ss_sp = mytstack;
     segv_stack.ss_flags = 0;
     segv_stack.ss_size = MYSTACKSIZE;
-    sigaltstack(&segv_stack, NULL);
+    sigaltstack(&segv_stack, nullptr);
 
     // install signal handler
     struct sigaction act;
@@ -756,7 +756,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
     for (std::map<int, std::string>::const_iterator sig=listofsignals.begin(); sig!=listofsignals.end(); ++sig) {
-        sigaction(sig->first, &act, NULL);
+        sigaction(sig->first, &act, nullptr);
     }
     return check_internal(cppcheck, argc, argv);
 #else
@@ -912,7 +912,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
         return;
 
     // Report progress messages every 10 seconds
-    const std::time_t time2 = std::time(NULL);
+    const std::time_t time2 = std::time(nullptr);
     if (time2 >= (time1 + 10)) {
         time1 = time2;
 

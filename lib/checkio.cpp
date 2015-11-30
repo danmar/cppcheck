@@ -95,8 +95,8 @@ struct Filepointer {
 };
 
 namespace {
-    static const std::set<std::string> whitelist = make_container< std::set<std::string> > ()
-            << "clearerr" << "feof" << "ferror" << "fgetpos" << "ftell" << "setbuf" << "setvbuf" << "ungetc" << "ungetwc";
+    const std::set<std::string> whitelist = make_container< std::set<std::string> > ()
+                                            << "clearerr" << "feof" << "ferror" << "fgetpos" << "ftell" << "setbuf" << "setvbuf" << "ungetc" << "ungetwc";
 }
 
 void CheckIO::checkFileUsage()
@@ -1552,8 +1552,8 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
 }
 
 namespace {
-    static const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
-    static const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
+    const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
+    const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
 }
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
@@ -1614,7 +1614,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
 }
 
 namespace {
-    static const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
+    const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
             "array" << "bitset" << "deque" << "forward_list" <<
             "hash_map" << "hash_multimap" << "hash_set" <<
             "list" << "map" << "multimap" << "multiset" <<

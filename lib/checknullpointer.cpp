@@ -138,7 +138,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 }
 
 namespace {
-    static const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
+    const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
             "fstream" << "ifstream" << "iostream" << "istream" <<
             "istringstream" << "ofstream" << "ostream" << "ostringstream" <<
             "stringstream" << "wistringstream" << "wostringstream" << "wstringstream";
@@ -376,7 +376,7 @@ void CheckNullPointer::nullPointer()
 }
 
 namespace {
-    static const std::set<std::string> stl_istream = make_container< std::set<std::string> >() <<
+    const std::set<std::string> stl_istream = make_container< std::set<std::string> >() <<
             "fstream" << "ifstream" << "iostream" << "istream" <<
             "istringstream" << "stringstream" << "wistringstream" << "wstringstream";
 }

@@ -1067,12 +1067,12 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             }
 
             // is this a function call?
-            ftok = ftok ? ftok->previous() : NULL;
+            ftok = ftok ? ftok->previous() : nullptr;
             if (Token::Match(ftok, "%name% (")) {
                 // check how function handle uninitialized data arguments..
                 const Function *function = ftok->function();
-                const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : NULL;
-                const Token *argStart    = arg ? arg->typeStartToken() : NULL;
+                const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : nullptr;
+                const Token *argStart    = arg ? arg->typeStartToken() : nullptr;
                 while (argStart && argStart->previous() && argStart->previous()->isName())
                     argStart = argStart->previous();
                 if (Token::Match(argStart, "const struct| %type% * const| %name% [,)]"))

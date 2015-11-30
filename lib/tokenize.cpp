@@ -2658,6 +2658,15 @@ static void setVarIdClassFunction(const std::string &classname,
     }
 }
 
+namespace {
+    // Variable declarations can't start with "return" etc.
+    const std::set<std::string> notstart_c = make_container< std::set<std::string> > ()
+            << "goto" << "NOT" << "return" << "sizeof"<< "typedef";
+    const std::set<std::string> notstart_cpp = make_container< std::set<std::string> > ()
+            << notstart_c
+            << "delete" << "friend" << "new" << "throw" << "using" << "virtual" << "explicit" << "const_cast" << "dynamic_cast" << "reinterpret_cast" << "static_cast" ;
+}
+
 void Tokenizer::setVarId()
 {
     // Clear all variable ids
@@ -2669,16 +2678,7 @@ void Tokenizer::setVarId()
     setPodTypes();
 
     // Variable declarations can't start with "return" etc.
-    std::set<std::string> notstart;
-    notstart.insert("goto");
-    notstart.insert("NOT");
-    notstart.insert("return");
-    notstart.insert("sizeof");
-    notstart.insert("typedef");
-    if (!isC()) {
-        static const char *str[] = {"delete","friend","new","throw","using","virtual","explicit","const_cast","dynamic_cast","reinterpret_cast","static_cast"};
-        notstart.insert(str, str+(sizeof(str)/sizeof(*str)));
-    }
+    const std::set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
     // variable id
     _varId = 0;

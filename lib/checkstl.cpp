@@ -254,17 +254,16 @@ namespace {
     const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
             << "inplace_merge" << "nth_element" << "partial_sort" << "rotate" << "rotate_copy";
 
-    static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
-    static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
+    const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
+    const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
 
-    static const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
-    static const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
-    static const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
+    const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
+    const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
+    const std::string pattern2 = pattern1x1_1 + pattern1x1_2;
 }
 
 void CheckStl::mismatchingContainers()
 {
-
     // Check if different containers are used in various calls of standard functions
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -591,8 +590,6 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 {
     reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().");
 }
-
-
 
 
 void CheckStl::stlBoundaries()
@@ -924,7 +921,7 @@ static bool isLocal(const Token *tok)
 }
 
 namespace {
-    static const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
+    const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
             "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
 }
 
@@ -1115,7 +1112,7 @@ void CheckStl::checkAutoPointer()
 {
     std::set<unsigned int> autoPtrVarId;
     std::map<unsigned int, const std::string> mallocVarId; // variables allocated by the malloc-like function
-    static const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
+    const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
     const int malloc = _settings->library.alloc("malloc"); // allocation function, which are not compatible with auto_ptr
     const bool printStyle = _settings->isEnabled("style");
 
@@ -1229,7 +1226,7 @@ void CheckStl::autoPointerMallocError(const Token *tok, const std::string& alloc
 }
 
 namespace {
-    static const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
+    const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
             "deque" <<  "forward_list" <<  "list" <<
             "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
             "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
@@ -1386,7 +1383,6 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
                 "Make sure to check that the iterator is valid before dereferencing it - not after.");
 }
-
 
 
 

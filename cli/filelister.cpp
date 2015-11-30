@@ -176,11 +176,11 @@ std::string FileLister::getAbsolutePath(const std::string& path)
 
 #ifdef PATH_MAX
     char buf[PATH_MAX];
-    if (realpath(path.c_str(), buf) != NULL)
+    if (realpath(path.c_str(), buf) != nullptr)
         absolute_path = buf;
 #else
     char *dynamic_buf;
-    if ((dynamic_buf = realpath(path.c_str(), NULL)) != NULL) {
+    if ((dynamic_buf = realpath(path.c_str(), nullptr)) != nullptr) {
         absolute_path = dynamic_buf;
         free(dynamic_buf);
     }
