@@ -1030,12 +1030,15 @@ void CheckCondition::checkInvalidTestForOverflow()
                 continue;
 
             const Token *calcToken, *exprToken;
-            if (tok->str() == "<" && tok->astOperand1()->str() == "+") {
+            bool result;
+            if (Token::Match(tok, "<|>=") && tok->astOperand1()->str() == "+") {
                 calcToken = tok->astOperand1();
                 exprToken = tok->astOperand2();
-            } else if (tok->str() == ">" && tok->astOperand2()->str() == "+") {
+                result = (tok->str() == ">=");
+            } else if (Token::Match(tok, ">|<=") && tok->astOperand2()->str() == "+") {
                 calcToken = tok->astOperand2();
                 exprToken = tok->astOperand1();
+                result = (tok->str() == "<=");
             } else
                 continue;
 
@@ -1058,18 +1061,20 @@ void CheckCondition::checkInvalidTestForOverflow()
 
             // Only warn when termToken is always positive
             if (termToken->valueType() && termToken->valueType()->sign == ValueType::Sign::UNSIGNED)
-                invalidTestForOverflow(tok);
+                invalidTestForOverflow(tok, result);
             else if (termToken->isNumber() && MathLib::isPositive(termToken->str()))
-                invalidTestForOverflow(tok);
+                invalidTestForOverflow(tok, result);
         }
     }
 }
 
-void CheckCondition::invalidTestForOverflow(const Token* tok)
+void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
 {
     std::string errmsg;
     errmsg = "Invalid test for overflow '" +
              (tok ? tok->expressionString() : std::string("x + u < x")) +
-             "'. Condition is always false unless there is overflow, and overflow is UB.";
+             "'. Condition is always " +
+             std::string(result ? "true" : "false") +
+             " unless there is overflow, and overflow is UB.";
     reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg);
 }

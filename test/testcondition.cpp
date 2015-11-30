@@ -1613,6 +1613,21 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
 
+        check("void f(char *p, unsigned int x) {\n"
+              "    assert((p + x) >= p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'. Condition is always true unless there is overflow, and overflow is UB.\n", errout.str());
+
+        check("void f(char *p, unsigned int x) {\n"
+              "    assert(p > (p + x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'. Condition is always false unless there is overflow, and overflow is UB.\n", errout.str());
+
+        check("void f(char *p, unsigned int x) {\n"
+              "    assert(p <= (p + x));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'. Condition is always true unless there is overflow, and overflow is UB.\n", errout.str());
+
         check("void f(signed int x) {\n"
               "    assert(x + 100 < x);\n"
               "}");

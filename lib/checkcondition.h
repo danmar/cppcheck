@@ -126,7 +126,7 @@ private:
 
     void alwaysTrueFalseError(const Token *tok, bool knownResult);
 
-    void invalidTestForOverflow(const Token* tok);
+    void invalidTestForOverflow(const Token* tok, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckCondition c(0, settings, errorLogger);
@@ -142,7 +142,7 @@ private:
         c.moduloAlwaysTrueFalseError(0, "1");
         c.clarifyConditionError(0, true, false);
         c.alwaysTrueFalseError(0, true);
-        c.invalidTestForOverflow(0);
+        c.invalidTestForOverflow(0, false);
     }
 
     static std::string myName() {
