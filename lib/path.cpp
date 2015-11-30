@@ -63,8 +63,7 @@ std::string Path::simplifyPath(std::string originalPath)
     const bool isUnc = originalPath.size() > 2 && originalPath[0] == '/' && originalPath[1] == '/';
 
     // Remove ./, .//, ./// etc. at the beginning
-    if (originalPath.size() > 2 && originalPath[0] == '.' &&
-        originalPath[1] == '/') {
+    while (originalPath.size() > 2 && originalPath[0] == '.' && originalPath[1] == '/') { // remove "./././"
         size_t toErase = 2;
         for (std::size_t i = 2; i < originalPath.size(); i++) {
             if (originalPath[i] == '/')

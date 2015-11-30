@@ -485,7 +485,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             errmsg.str("");
             errmsg << "The code contains unhandled characters " << info << ". Checking continues, but do not expect valid results.\n"
                    << "The code contains characters that are unhandled " << info << ". Neither unicode nor extended ASCII are supported. Checking continues, but do not expect valid results.";
-            writeError(filename, lineno, _errorLogger, "unhandledCharacters", errmsg.str());
+            writeError(Path::simplifyPath(filename), lineno, _errorLogger, "unhandledCharacters", errmsg.str());
         }
 
         if (_settings.terminated())
@@ -1914,7 +1914,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
         // #error => return ""
         if (match && line.compare(0, 6, "#error") == 0) {
             if (!_settings.userDefines.empty() && !_settings._force) {
-                error(filenames.top(), lineno, line);
+                error(Path::simplifyPath(filenames.top()), lineno, line);
             }
             return "";
         }
@@ -3044,7 +3044,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     ++pos;
 
                     if (pos >= line.size()) {
-                        writeError(filename,
+                        writeError(Path::simplifyPath(filename),
                                    linenr + tmpLinenr,
                                    errorLogger,
                                    "noQuoteCharPair",

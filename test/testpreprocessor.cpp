@@ -300,6 +300,9 @@ private:
         TEST_CASE(invalid_ifs); // #5909
 
         TEST_CASE(garbage);
+
+        TEST_CASE(wrongPathOnUnicodeError); // see #6773
+        TEST_CASE(wrongPathOnErrorDirective);
     }
 
     std::string preprocessorRead(const char* code) {
@@ -3711,6 +3714,27 @@ private:
         std::map<std::string, std::string> actual;
         preprocess(filedata, actual);
     }
+
+    void wrongPathOnUnicodeError() {
+        const char filedata[] = "#file ././test.c\n"
+                                "extern int 🌷;\n";
+        preprocessorRead(filedata);
+        ASSERT_EQUALS("[test.c:2]: (error) The code contains unhandled characters (character code = 0xf0). Checking continues, but do not expect valid results.\n"
+                      "[test.c:2]: (error) The code contains unhandled characters (character code = 0x9f). Checking continues, but do not expect valid results.\n"
+                      "[test.c:2]: (error) The code contains unhandled characters (character code = 0x8c). Checking continues, but do not expect valid results.\n"
+                      "[test.c:2]: (error) The code contains unhandled characters (character code = 0xb7). Checking continues, but do not expect valid results.\n", errout.str());
+    }
+
+    void wrongPathOnErrorDirective() {
+        errout.str("");
+        Settings settings;
+        settings.userDefines = "foo";
+        Preprocessor preprocessor(settings, this);
+        const std::string code("#error hello world!\n");
+        preprocessor.getcode(code, "X", "./././test.c");
+        ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestPreprocessor)
