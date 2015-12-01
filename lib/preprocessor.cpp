@@ -1444,8 +1444,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // Get name of define
             std::string defineName(*it2);
-            if (defineName.find_first_of("=(") != std::string::npos)
-                defineName.erase(defineName.find_first_of("=("));
+            std::string::size_type end = defineName.find_first_of("=(");
+            if (end != std::string::npos)
+                defineName.erase(end);
 
             // Remove ifdef configurations that match the defineName
             while ((pos = cfg.find(defineName, pos)) != std::string::npos) {
