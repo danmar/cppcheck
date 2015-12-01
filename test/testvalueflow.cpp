@@ -820,6 +820,22 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\""));
 
+        code = "void f() {\n" // #6973
+               "    char *x = getenv (\"LC_ALL\");\n"
+               "    if (x == NULL)\n"
+               "        x = \"\";\n"
+               "\n"
+               "    if ( (x[0] == 'U') &&\n"  // x can be ""
+               "         (x[1] ?\n"           // x can't be ""
+               "          x[3] :\n"           // x can't be ""
+               "          x[2] ))\n"          // x can't be ""
+               "    {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"\""));
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, "\"\""));
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\""));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\""));
+
         // if/else
         code = "void f() {\n"
                "    int x = 123;\n"

@@ -1727,6 +1727,10 @@ static void execute(const Token *expr,
     if (!expr)
         *error = true;
 
+    else if (expr->values.size() == 1U && expr->values.front().isKnown() && !expr->values.front().tokvalue) {
+        *result = expr->values.front().intvalue;
+    }
+
     else if (expr->isNumber()) {
         *result = MathLib::toLongNumber(expr->str());
         if (MathLib::isFloat(expr->str()))
@@ -1838,16 +1842,22 @@ static void execute(const Token *expr,
     }
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
-        if (expr->astOperand1()->values.size() != 1U) {
+        const Token *tokvalue = nullptr;
+        std::map<unsigned int, const Token *>::iterator var = programMemory->tokvalues.find(expr->astOperand1()->varId());
+        if (var != programMemory->tokvalues.end()) {
+            tokvalue = var->second;
+        } else {
+            if (expr->astOperand1()->values.size() != 1U) {
+                *error = true;
+                return;
+            }
+            tokvalue = expr->astOperand1()->values.front().tokvalue;
+        }
+        if (!tokvalue || !tokvalue->isLiteral()) {
             *error = true;
             return;
         }
-        const ValueFlow::Value val = expr->astOperand1()->values.front();
-        if (!val.tokvalue || !val.tokvalue->isLiteral()) {
-            *error = true;
-            return;
-        }
-        const std::string strValue = val.tokvalue->strValue();
+        const std::string strValue = tokvalue->strValue();
         MathLib::bigint index = 0;
         execute(expr->astOperand2(), programMemory, &index, error);
         if (index >= 0 && index < strValue.size())
