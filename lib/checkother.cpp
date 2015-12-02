@@ -2418,6 +2418,24 @@ void CheckOther::checkInterlockedDecrement()
                 (Token::Match(checkStartTok, "%name% %comp% 0 )") && checkStartTok->str() == interlockedVarTok->str())) {
                 raceAfterInterlockedDecrementError(checkStartTok);
             }
+        } else if (Token::Match(tok, "if ( ::| InterlockedDecrement ( & %name%")) {
+            const Token* condEnd = tok->next()->link();
+            const Token* funcTok = tok->tokAt(2);
+            const Token* firstAccessTok = funcTok->str() == "::" ? funcTok->tokAt(4) : funcTok->tokAt(3);
+            if (condEnd && condEnd->next() && condEnd->next()->link()) {
+                const Token* ifEndTok = condEnd->next()->link();
+                if (Token::Match(ifEndTok, "} return %name%")) {
+                    const Token* secondAccessTok = ifEndTok->tokAt(2);
+                    if (secondAccessTok->str() == firstAccessTok->str()) {
+                        raceAfterInterlockedDecrementError(secondAccessTok);
+                    }
+                } else if (Token::Match(ifEndTok, "} else { return %name%")) {
+                    const Token* secondAccessTok = ifEndTok->tokAt(4);
+                    if (secondAccessTok->str() == firstAccessTok->str()) {
+                        raceAfterInterlockedDecrementError( secondAccessTok );
+                    }
+                }
+            }
         }
     }
 }
