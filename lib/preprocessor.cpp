@@ -1444,7 +1444,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
             // Get name of define
             std::string defineName(*it2);
-            std::string::size_type end = defineName.find_first_of("=(");
+            const std::string::size_type end = defineName.find_first_of("=(");
             if (end != std::string::npos)
                 defineName.erase(end);
 
