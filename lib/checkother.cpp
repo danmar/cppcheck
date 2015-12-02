@@ -137,12 +137,13 @@ void CheckOther::clarifyCalculation()
             for (; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
-                else if (tok2->str() == ")" || tok2->str() == "?")
+                else if (tok2->str() == ")")
                     break;
+                else if (tok2->str() == "?") {
+                    clarifyCalculationError(tok, tok->astOperand1()->str());
+                    break;
+                }
             }
-
-            if (tok2 && tok2->str() == "?")
-                clarifyCalculationError(tok, tok->astOperand1()->str());
         }
     }
 }
