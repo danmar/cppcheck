@@ -1039,7 +1039,7 @@ void Tokenizer::simplifyTypedef()
 
         while (!done) {
             std::string pattern = typeName->str();
-            int scope = 0;
+            unsigned int scope = 0;
             bool simplifyType = false;
             bool inMemberFunc = false;
             int memberScope = 0;
@@ -1069,33 +1069,32 @@ void Tokenizer::simplifyTypedef()
 
                             pattern += typeName->str();
                         } else {
-                            --scope;
-                            if (scope < 0)
+                            if (scope == 0)
                                 break;
+                            --scope;
                         }
                     }
 
                     // check for member functions
                     else if (isCPP() && Token::Match(tok2, ") const| {")) {
                         const Token *func = tok2->link()->previous();
-                        if (!func)
+                        if (!func || !func->previous()) // Ticket #4239
                             continue;
 
-                        if (func->previous()) { // Ticket #4239
-                            /** @todo add support for multi-token operators */
-                            if (func->previous()->str() == "operator")
-                                func = func->previous();
+                        /** @todo add support for multi-token operators */
+                        if (func->previous()->str() == "operator")
+                            func = func->previous();
 
-                            if (!func->previous()) // #7020
-                                syntaxError(func);
-                            // check for qualifier
-                            if (func->previous()->str() == "::") {
-                                // check for available and matching class name
-                                if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
-                                    func->strAt(-2) == spaceInfo[classLevel].className) {
-                                    memberScope = 0;
-                                    inMemberFunc = true;
-                                }
+                        if (!func->previous()) // #7020
+                            syntaxError(func);
+
+                        // check for qualifier
+                        if (func->previous()->str() == "::") {
+                            // check for available and matching class name
+                            if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                                func->strAt(-2) == spaceInfo[classLevel].className) {
+                                memberScope = 0;
+                                inMemberFunc = true;
                             }
                         }
                     }

@@ -2433,7 +2433,7 @@ void CheckOther::checkInterlockedDecrement()
                 } else if (Token::Match(ifEndTok, "} else { return %name%")) {
                     const Token* secondAccessTok = ifEndTok->tokAt(4);
                     if (secondAccessTok->str() == firstAccessTok->str()) {
-                        raceAfterInterlockedDecrementError( secondAccessTok );
+                        raceAfterInterlockedDecrementError(secondAccessTok);
                     }
                 }
             }
