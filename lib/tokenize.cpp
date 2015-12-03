@@ -1145,7 +1145,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (Token::Match(tok2, pattern.c_str()) ||
+                else if (Token::simpleMatch(tok2, pattern.c_str()) ||
                          (inMemberFunc && tok2->str() == typeName->str())) {
 
                     // member function class variables don't need qualification
