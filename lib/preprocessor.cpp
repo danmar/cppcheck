@@ -1812,16 +1812,18 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
             typedef std::set<std::string>::const_iterator It;
             for (It it = _settings.userUndefs.begin(); it != _settings.userUndefs.end(); ++it) {
-                std::string::size_type pos = line.find_first_not_of(' ',8);
-                if (pos != std::string::npos) {
-                    std::string::size_type pos2 = line.find(*it,pos);
-                    if ((pos2 != std::string::npos) &&
-                        ((line.size() == pos2 + (*it).size()) ||
-                         (line[pos2 + (*it).size()] == ' ') ||
-                         (line[pos2 + (*it).size()] == '('))) {
-                        match = false;
-                        break;
-                    }
+                const std::string::size_type symbolPos = line.find_first_not_of(' ', 8);
+                if (symbolPos == std::string::npos)
+                    continue;
+                const std::string::size_type undefMatchPos = line.find(*it, symbolPos);
+                if (undefMatchPos == std::string::npos)
+                    continue;
+                const std::string::size_type behindUndefPos = undefMatchPos + (*it).size();
+                if ((line.size() == behindUndefPos) ||
+                     (line[behindUndefPos] == ' ') ||
+                     (line[behindUndefPos] == '(')) {
+                    match = false;
+                    break;
                 }
             }
 
