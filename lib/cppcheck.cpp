@@ -286,26 +286,6 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     }
 }
 
-void CppCheck::analyseFile(std::istream &fin, const std::string &filename)
-{
-    // Preprocess file..
-    Preprocessor preprocessor(_settings, this);
-    std::list<std::string> configurations;
-    std::string filedata;
-    preprocessor.preprocess(fin, filedata, configurations, filename, _settings._includePaths);
-    const std::string code = preprocessor.getcode(filedata, "", filename);
-
-    if (_settings.checkConfiguration) {
-        return;
-    }
-
-    // Tokenize..
-    Tokenizer tokenizer(&_settings, this);
-    std::istringstream istr(code);
-    tokenizer.tokenize(istr, filename.c_str());
-    tokenizer.simplifyTokenList2();
-}
-
 //---------------------------------------------------------------------------
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
