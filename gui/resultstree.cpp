@@ -66,6 +66,14 @@ ResultsTree::~ResultsTree()
 {
 }
 
+void ResultsTree::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+        QuickStartApplication(this->currentIndex());
+    }
+    QTreeView::keyPressEvent(event);
+}
+
 void ResultsTree::Initialize(QSettings *settings, ApplicationList *list)
 {
     mSettings = settings;

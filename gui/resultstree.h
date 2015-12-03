@@ -162,6 +162,7 @@ public:
      */
     ShowTypes mShowSeverities;
 
+    virtual void keyPressEvent(QKeyEvent *event);
 
 signals:
     /**
