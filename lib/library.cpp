@@ -71,7 +71,7 @@ Library::Error Library::load(const char exename[], const char path[])
             fullfilename += ".cfg";
             error = doc.LoadFile(fullfilename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(fullfilename.c_str());
+                absolute_path = Path::getAbsoluteFilePath(fullfilename);
         }
 
         if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
@@ -87,7 +87,7 @@ Library::Error Library::load(const char exename[], const char path[])
             const std::string filename(cfgfolder + sep + fullfilename);
             error = doc.LoadFile(filename.c_str());
             if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(filename.c_str());
+                absolute_path = Path::getAbsoluteFilePath(filename);
         }
     } else
         absolute_path = Path::getAbsoluteFilePath(path);

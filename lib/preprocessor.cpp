@@ -2024,10 +2024,11 @@ static bool openHeader(std::string &filename, const std::list<std::string> &incl
         return true;
     }
 
-    std::list<std::string> includePaths2(includePaths);
-    includePaths2.push_front("");
+    fin.open(filename.c_str());
+    if (fin.is_open())
+        return true;
 
-    for (std::list<std::string>::const_iterator iter = includePaths2.begin(); iter != includePaths2.end(); ++iter) {
+    for (std::list<std::string>::const_iterator iter = includePaths.begin(); iter != includePaths.end(); ++iter) {
         const std::string nativePath(Path::toNativeSeparators(*iter));
         fin.open((nativePath + filename).c_str());
         if (fin.is_open()) {
