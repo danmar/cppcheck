@@ -7730,7 +7730,7 @@ void Tokenizer::simplifyEnum()
                             // skip ( .. )
                             tok2 = tok2->next()->link();
                         }
-                    } else if (!pattern.empty() && Token::Match(tok2, pattern.c_str())) {
+                    } else if (!pattern.empty() && Token::simpleMatch(tok2, pattern.c_str())) {
                         const Token* tok3 = tok2;
                         while (tok3->strAt(1) == "::")
                             tok3 = tok3->tokAt(2);
@@ -7847,7 +7847,7 @@ void Tokenizer::simplifyEnum()
                         }
                     } else if (tok2->str() == "{")
                         ++level;
-                    else if (!pattern.empty() && ((tok2->str() == "enum" && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str()))) {
+                    else if (!pattern.empty() && ((tok2->str() == "enum" && Token::simpleMatch(tok2->next(), pattern.c_str())) || Token::simpleMatch(tok2, pattern.c_str()))) {
                         simplify = true;
                         hasClass = true;
                     } else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next() && tok2->next()->str() == enumType->str()))) {

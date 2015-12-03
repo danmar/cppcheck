@@ -1315,7 +1315,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         return;
     }
     if (startTok->next() == last) {
-        if (Token::Match(func->argDef, std::string("( const " + scope->className + " &").c_str())) {
+        if (Token::simpleMatch(func->argDef, std::string("( const " + scope->className + " &").c_str())) {
             // Typical wrong way to suppress default assignment operator by declaring it and leaving empty
             operatorEqMissingReturnStatementError(func->token, func->access == Public);
         } else {

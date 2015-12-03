@@ -555,7 +555,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
     // ValueFlow array index..
     if ((declarationId > 0 && Token::Match(tok, "%varid% [", declarationId)) ||
-        (declarationId == 0 && Token::Match(tok, (varnames + " [").c_str()))) {
+        (declarationId == 0 && Token::simpleMatch(tok, (varnames + " [").c_str()))) {
 
         const Token *tok2 = tok->next();
         while (tok2->str() != "[")

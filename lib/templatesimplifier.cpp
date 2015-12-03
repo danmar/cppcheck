@@ -452,7 +452,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         tok->deleteThis();
 
         // Use this special template in the code..
-        while (nullptr != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str())))) {
+        while (nullptr != (tok2 = const_cast<Token *>(Token::findsimplematch(tok2, pattern.c_str())))) {
             Token::eraseTokens(tok2, Token::findsimplematch(tok2, "<")->findClosingBracket()->next());
             tok2->str(name);
         }
@@ -608,7 +608,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<Token *> &temp
         for (std::list<Token *>::const_iterator iter2 = templateInstantiations->begin(); iter2 != templateInstantiations->end(); ++iter2) {
             Token *tok = *iter2;
 
-            if (!Token::Match(tok, (classname + " < %any%").c_str()))
+            if (!Token::simpleMatch(tok, (classname + " <").c_str()))
                 continue;
 
             // count the parameters..
