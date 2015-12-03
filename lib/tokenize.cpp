@@ -7974,13 +7974,16 @@ bool Tokenizer::IsScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 
 bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
 {
+    if (isC()) // C does not support references
+        return true;
+
     // TODO: If symbol database is available, use it.
     const Token *ftok;
 
     // Look at function call, what parameter number is it?
     unsigned int parentheses = 1;
     unsigned int parameter = 1;
-    for (ftok = fpar; ftok; ftok = ftok->previous()) {
+    for (ftok = fpar->previous(); ftok; ftok = ftok->previous()) {
         if (ftok->str() == "(") {
             --parentheses;
             if (parentheses == 0) {
@@ -8003,13 +8006,10 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
             return true;
 
         // Locate function declaration..
-        unsigned int indentlevel = 0;
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (tok->str() == "{")
-                ++indentlevel;
-            else if (tok->str() == "}")
-                indentlevel = (indentlevel > 0) ? indentlevel - 1U : 0U;
-            else if (indentlevel == 0 && Token::Match(tok, "%type% (") && tok->str() == functionName) {
+                tok = tok->link();
+            else if (Token::Match(tok, "%type% (") && tok->str() == functionName) {
                 // Goto parameter
                 tok = tok->tokAt(2);
                 unsigned int par = 1;

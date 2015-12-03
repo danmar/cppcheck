@@ -1820,8 +1820,8 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                     continue;
                 const std::string::size_type behindUndefPos = undefMatchPos + (*it).size();
                 if ((line.size() == behindUndefPos) ||
-                     (line[behindUndefPos] == ' ') ||
-                     (line[behindUndefPos] == '(')) {
+                    (line[behindUndefPos] == ' ') ||
+                    (line[behindUndefPos] == '(')) {
                     match = false;
                     break;
                 }
