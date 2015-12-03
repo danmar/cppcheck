@@ -1840,8 +1840,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
                     cfgmap[line.substr(8)] = "";
                 else if (line[pos] == ' ') {
                     std::string value(line.substr(pos + 1));
-                    if (cfgmap.find(value) != cfgmap.end())
-                        value = cfgmap[value];
+                    std::map<std::string, std::string>::const_iterator cfgpos = cfgmap.find(value);
+                    if (cfgpos != cfgmap.end())
+                        value = cfgpos->second;
                     cfgmap[line.substr(8, pos - 8)] = value;
                 } else
                     cfgmap[line.substr(8, pos - 8)] = "";
