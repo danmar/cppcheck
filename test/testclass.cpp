@@ -595,6 +595,15 @@ private:
                              "   F() : p(malloc(100)) {}\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
+
+        // #7198
+        checkCopyConstructor("struct F {\n"
+                             "   static char* c;\n"
+                             "   F() {\n"
+                             "      p = malloc(100);\n"
+                             "   }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -289,7 +289,7 @@ void CheckClass::copyconstructors()
                 for (const Token* const end = func->functionScope->classEnd; tok != end; tok = tok->next()) {
                     if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
                         const Variable* var = tok->variable();
-                        if (var && var->isPointer() && var->scope() == scope)
+                        if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
                             allocatedVars[tok->varId()] = tok;
                     }
                 }
