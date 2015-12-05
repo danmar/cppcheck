@@ -344,7 +344,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
             const Token* tok = tok2->astOperand1();
             if (Token::Match(tok, ".|::"))
                 tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
-            varid = tok->varId();
+            if (tok)
+                varid = tok->varId();
             break;
         }
     }
