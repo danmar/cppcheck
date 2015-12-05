@@ -2260,7 +2260,6 @@ private:
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
-        ASSERT_EQUALS("", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
