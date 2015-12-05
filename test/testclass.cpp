@@ -78,6 +78,7 @@ private:
         TEST_CASE(memsetOnInvalid);    // Ticket #5425: Crash upon invalid
         TEST_CASE(memsetOnStdPodType); // Ticket #5901 - std::uint8_t
         TEST_CASE(memsetOnFloat);      // Ticket #5421
+        TEST_CASE(memsetOnUnknown);    // Ticket #7183
         TEST_CASE(mallocOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
@@ -2259,6 +2260,7 @@ private:
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -2685,6 +2687,14 @@ private:
                       "void f() {\n"
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetOnUnknown() {
+        checkNoMemset("void clang_tokenize(CXToken **Tokens) {\n"
+                      "  *Tokens = (CXToken *)malloc(sizeof(CXToken) * CXTokens.size());\n"
+                      "  memmove(*Tokens, CXTokens.data(), sizeof(CXToken) * CXTokens.size());\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
     }

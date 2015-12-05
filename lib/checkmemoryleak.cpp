@@ -36,46 +36,46 @@ namespace {
     CheckMemoryLeakInClass instance2;
     CheckMemoryLeakStructMember instance3;
     CheckMemoryLeakNoVar instance4;
+
+    /**
+     * Count function parameters
+     * \param tok Function name token before the '('
+     */
+    unsigned int countParameters(const Token *tok)
+    {
+        tok = tok->tokAt(2);
+        if (tok->str() == ")")
+            return 0;
+
+        unsigned int numpar = 1;
+        while (nullptr != (tok = tok->nextArgument()))
+            numpar++;
+
+        return numpar;
+    }
+
+
+    /** List of functions that can be ignored when searching for memory leaks.
+     * These functions don't take the address of the given pointer
+     * This list contains function names with const parameters e.g.: atof(const char *)
+     * TODO: This list should be replaced by <leak-ignore/> in .cfg files.
+     */
+    const std::set<std::string> call_func_white_list = make_container < std::set<std::string> > ()
+            << "_open" << "_wopen" << "access" << "adjtime" << "asctime_r" << "asprintf" << "chdir" << "chmod" << "chown"
+            << "creat" << "ctime_r" << "execl" << "execle" << "execlp" << "execv" << "execve" << "fchmod" << "fcntl"
+            << "fdatasync" << "fclose" << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "free"
+            << "freopen"<< "fseeko" << "fstat" << "fsync" << "ftello" << "ftruncate" << "getgrnam" << "gethostbyaddr" << "gethostbyname"
+            << "getnetbyname" << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "getservbyname" << "getservbyport"
+            << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups"
+            << "ioctl" << "link" << "localtime_r" << "lockf" << "lseek" << "lstat" << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
+            << "obstack_printf" << "obstack_vprintf" << "open" << "opendir" << "parse_printf_format" << "pathconf"
+            << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread" << "psignal" << "pwrite" << "read" << "readahead"
+            << "readdir" << "readdir_r" << "readlink" << "readv" << "realloc" << "regcomp" << "return" << "rewinddir" << "rindex"
+            << "rmdir" << "scandir" << "seekdir" << "setbuffer" << "sethostname" << "setlinebuf" << "sizeof" << "strdup"
+            << "stat" << "stpcpy" << "strcasecmp" << "stricmp" << "strncasecmp" << "switch"
+            << "symlink" << "sync_file_range" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
+            << "utime" << "utimes" << "vasprintf" << "while" << "wordexp" << "write" << "writev";
 }
-
-/**
- * Count function parameters
- * \param tok Function name token before the '('
- */
-static unsigned int countParameters(const Token *tok)
-{
-    tok = tok->tokAt(2);
-    if (tok->str() == ")")
-        return 0;
-
-    unsigned int numpar = 1;
-    while (nullptr != (tok = tok->nextArgument()))
-        numpar++;
-
-    return numpar;
-}
-
-
-/** List of functions that can be ignored when searching for memory leaks.
- * These functions don't take the address of the given pointer
- * This list contains function names with const parameters e.g.: atof(const char *)
- * TODO: This list should be replaced by <leak-ignore/> in .cfg files.
- */
-static const std::set<std::string> call_func_white_list = make_container < std::set<std::string> > ()
-        << "_open" << "_wopen" << "access" << "adjtime" << "asctime_r" << "asprintf" << "chdir" << "chmod" << "chown"
-        << "creat" << "ctime_r" << "execl" << "execle" << "execlp" << "execv" << "execve" << "fchmod" << "fcntl"
-        << "fdatasync" << "fclose" << "flock" << "fmemopen" << "fnmatch" << "fopen" << "fopencookie" << "for" << "free"
-        << "freopen"<< "fseeko" << "fstat" << "fsync" << "ftello" << "ftruncate" << "getgrnam" << "gethostbyaddr" << "gethostbyname"
-        << "getnetbyname" << "getopt" << "getopt_long" << "getprotobyname" << "getpwnam" << "getservbyname" << "getservbyport"
-        << "glob" << "gmtime" << "gmtime_r" << "if" << "index" << "inet_addr" << "inet_aton" << "inet_network" << "initgroups"
-        << "ioctl" << "link" << "localtime_r" << "lockf" << "lseek" << "lstat" << "mkdir" << "mkfifo" << "mknod" << "mkstemp"
-        << "obstack_printf" << "obstack_vprintf" << "open" << "opendir" << "parse_printf_format" << "pathconf"
-        << "perror" << "popen" << "posix_fadvise" << "posix_fallocate" << "pread" << "psignal" << "pwrite" << "read" << "readahead"
-        << "readdir" << "readdir_r" << "readlink" << "readv" << "realloc" << "regcomp" << "return" << "rewinddir" << "rindex"
-        << "rmdir" << "scandir" << "seekdir" << "setbuffer" << "sethostname" << "setlinebuf" << "sizeof" << "strdup"
-        << "stat" << "stpcpy" << "strcasecmp" << "stricmp" << "strncasecmp" << "switch"
-        << "symlink" << "sync_file_range" << "telldir" << "tempnam" << "time" << "typeid" << "unlink"
-        << "utime" << "utimes" << "vasprintf" << "while" << "wordexp" << "write" << "writev";
 
 //---------------------------------------------------------------------------
 

@@ -987,7 +987,6 @@ static const Scope* findFunctionOf(const Scope* scope)
 void CheckClass::checkMemset()
 {
     const bool printWarnings = _settings->isEnabled("warning");
-
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1014,7 +1013,7 @@ void CheckClass::checkMemset()
                 else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
                     type = findFunctionOf(arg3->scope());
                 } else if (Token::Match(arg1, "&|*|%var%")) {
-                    std::size_t numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
+                    int numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
                     for (;; arg1 = arg1->next()) {
                         if (arg1->str() == "&")
                             ++numIndirToVariableType;
@@ -1024,7 +1023,7 @@ void CheckClass::checkMemset()
                             break;
                     }
 
-                    const Variable *var = arg1->variable();
+                    const Variable * const var = arg1->variable();
                     if (var && arg1->strAt(1) == ",") {
                         if (var->isArrayOrPointer()) {
                             const Token *endTok = var->typeEndToken();
@@ -1035,7 +1034,7 @@ void CheckClass::checkMemset()
                         }
 
                         if (var->isArray())
-                            numIndirToVariableType += var->dimensions().size();
+                            numIndirToVariableType += int(var->dimensions().size());
 
                         if (numIndirToVariableType == 1)
                             type = var->typeScope();
@@ -1069,12 +1068,12 @@ void CheckClass::checkMemset()
 
 void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::list<const Scope *> parsedTypes)
 {
-    const bool printPortability = _settings->isEnabled("portability");
-
     // If type has been checked there is no need to check it again
     if (std::find(parsedTypes.begin(), parsedTypes.end(), type) != parsedTypes.end())
         return;
     parsedTypes.push_back(type);
+
+    const bool printPortability = _settings->isEnabled("portability");
 
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
@@ -1862,7 +1861,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 continue;
 
             if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
-                return (false);
+                return false;
 
 
             const Token* lhs = tok1->previous();
@@ -1914,22 +1913,22 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
                     ;
                 else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
-                    return (false);
+                    return false;
             }
 
             // Assignment
             else if (end->next()->tokType() == Token::eAssignmentOp)
-                return (false);
+                return false;
 
             // Streaming
             else if (end->strAt(1) == "<<" && tok1->strAt(-1) != "<<")
-                return (false);
+                return false;
             else if (tok1->strAt(-1) == ">>")
-                return (false);
+                return false;
 
             // ++/--
             else if (end->next()->tokType() == Token::eIncDecOp || tok1->previous()->tokType() == Token::eIncDecOp)
-                return (false);
+                return false;
 
 
             const Token* start = tok1;
@@ -1937,7 +1936,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 tok1 = tok1->linkAt(-1);
 
             if (start->strAt(-1) == "delete")
-                return (false);
+                return false;
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
         }
@@ -1947,7 +1946,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                  isMemberVar(scope, tok1->tokAt(-2))) {
             const Variable* var = tok1->tokAt(-2)->variable();
             if (!var || !var->isMutable())
-                return (false);
+                return false;
         }
 
 
@@ -1956,7 +1955,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
             if (isMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
                 if (!isConstMemberFunc(scope, tok1))
-                    return (false);
+                    return false;
                 memberAccessed = true;
             }
             // Member variable given as parameter
@@ -1966,15 +1965,15 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 else if (tok2->isName() && isMemberVar(scope, tok2)) {
                     const Variable* var = tok2->variable();
                     if (!var || !var->isMutable())
-                        return (false); // TODO: Only bailout if function takes argument as non-const reference
+                        return false; // TODO: Only bailout if function takes argument as non-const reference
                 }
             }
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
-            return (false);
+            return false;
         }
     }
 
-    return (true);
+    return true;
 }
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)

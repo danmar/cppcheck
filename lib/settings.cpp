@@ -61,18 +61,18 @@ Settings::Settings()
 }
 
 namespace {
-    static const std::set<std::string> id = make_container< std::set<std::string> > ()
-                                            << "warning"
-                                            << "style"
-                                            << "performance"
-                                            << "portability"
-                                            << "information"
-                                            << "missingInclude"
-                                            << "unusedFunction"
+    const std::set<std::string> id = make_container< std::set<std::string> > ()
+                                     << "warning"
+                                     << "style"
+                                     << "performance"
+                                     << "portability"
+                                     << "information"
+                                     << "missingInclude"
+                                     << "unusedFunction"
 #ifdef CHECK_INTERNAL
-                                            << "internal"
+                                     << "internal"
 #endif
-                                            ;
+                                     ;
 }
 std::string Settings::addEnabled(const std::string &str)
 {
