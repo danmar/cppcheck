@@ -280,6 +280,7 @@ private:
         // END Implementation-specific results
 #endif
         ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
+        ASSERT_EQUALS(0x1B,   MathLib::toLongNumber("'\\e'"));
         ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
         ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
         // may cause some compile problems: ASSERT_EQUALS((int)('\x123'), MathLib::toLongNumber("'\\x123'"));

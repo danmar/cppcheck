@@ -375,6 +375,9 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
             case 'b':
                 c = '\b';
                 break;
+            case 'e':
+                c = 0x1B; // clang, gcc, tcc interpret this as 0x1B - escape character
+                break;
             case 'f':
                 c = '\f';
                 break;
