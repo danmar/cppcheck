@@ -365,7 +365,7 @@ unsigned int ThreadExecutor::check()
     InitializeCriticalSection(&_reportSync);
 
     for (unsigned int i = 0; i < _settings._jobs; ++i) {
-        threadHandles[i] = (HANDLE)_beginthreadex(NULL, 0, threadProc, this, 0, NULL);
+        threadHandles[i] = (HANDLE)_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr);
         if (!threadHandles[i]) {
             std::cerr << "#### .\nThreadExecutor::check error, errno :" << errno << std::endl;
             exit(EXIT_FAILURE);
