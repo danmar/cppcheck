@@ -208,6 +208,7 @@ private:
         TEST_CASE(garbageCode157); // #7131
         TEST_CASE(garbageCode158); // #3238
         TEST_CASE(garbageCode159); // #7119
+        TEST_CASE(garbageCode160); // #7190
 
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
@@ -1248,7 +1249,11 @@ private:
     }
 
     void garbageCode159() { // #7119
-        checkCode("({}typedef typename x;typename x!){({{}()})}"); // dont hang
+        checkCode("({}typedef typename x;typename x!){({{}()})}"); // don't hang
+    }
+
+    void garbageCode160() { // #7190
+        ASSERT_THROW(checkCode("f(a,b,c,d)float [  a[],d;int ]  b[],c;{} "), InternalError); // don't hang
     }
 
 

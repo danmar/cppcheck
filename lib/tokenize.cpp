@@ -3502,6 +3502,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // class Fred FINAL : Base { };
     removeMacroInClassDef();
 
+    // That call here fixes #7190
+    validate();
+
     // remove __attribute__((?))
     simplifyAttribute();
 
