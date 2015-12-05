@@ -9840,6 +9840,8 @@ void Tokenizer::createSymbolDatabase()
 {
     if (!_symbolDatabase)
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
+    if (_settings->debug)
+        _symbolDatabase->validate();
 }
 
 void Tokenizer::deleteSymbolDatabase()

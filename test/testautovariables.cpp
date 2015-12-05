@@ -446,7 +446,7 @@ private:
 
     void testautovar_return2() {
         check("class Fred {\n"
-              "    int* func1()\n"
+              "    int* func1();\n"
               "}\n"
               "int* Fred::func1()\n"
               "{\n"
@@ -876,7 +876,6 @@ private:
               "    return foo();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
         // Don't crash with function in unknown scope (#4076)
         check("X& a::Bar() {}"
               "X& foo() {"

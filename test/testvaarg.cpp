@@ -50,6 +50,7 @@ private:
         TEST_CASE(va_end_missing);
         TEST_CASE(va_list_usedBeforeStarted);
         TEST_CASE(va_start_subsequentCalls);
+        TEST_CASE(unknownFunctionScope);
     }
 
     void wrongParameterTo_va_start() {
@@ -224,6 +225,15 @@ private:
               "    va_end(arg_ptr);\n"
               "    va_start(arg_ptr, szBuffer);\n"
               "    va_end(arg_ptr);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void unknownFunctionScope() {
+        check("void BG_TString::Format() {\n"
+              "  BG_TChar * f;\n"
+              "  va_start(args,f);\n"
+              "  BG_TString result(f);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

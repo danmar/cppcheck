@@ -1982,7 +1982,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
                     break;
                 if (parent->str() == "?") {
                     if (parent->astOperand2() != p)
-                        parent = NULL;
+                        parent = nullptr;
                     break;
                 }
             }

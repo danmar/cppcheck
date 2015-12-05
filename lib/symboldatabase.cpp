@@ -1425,6 +1425,25 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     return false;
 }
 
+void SymbolDatabase::validate() const
+{
+    const std::size_t functions = functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope* scope = functionScopes[i];
+        if (scope->isExecutable()) {
+            const Function* function = scope->function;
+            if (!function) {
+                cppcheckError(nullptr);
+            }
+        }
+    }
+}
+
+void SymbolDatabase::cppcheckError(const Token *tok) const
+{
+    throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
+}
+
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");

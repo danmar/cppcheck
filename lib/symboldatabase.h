@@ -1007,6 +1007,11 @@ public:
 
     bool isCPP() const;
 
+    /*
+     * @brief Do a sanity check
+     */
+    void validate() const;
+
     /** Set valuetype in provided tokenlist */
     static void setValueTypeInTokenList(Token *tokens);
 
@@ -1022,6 +1027,11 @@ private:
     const Type *findTypeInNested(const Token *tok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
     Function *findFunctionInScope(const Token *func, const Scope *ns);
+    /**
+     * Send error message to error logger about internal bug.
+     * @param tok the token that this bug concerns.
+     */
+    void cppcheckError(const Token *tok) const __attribute__((noreturn));
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
