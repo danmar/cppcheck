@@ -7540,10 +7540,10 @@ void Tokenizer::simplifyEnum()
                     continue;
                 }
 
-                Token * enumName = 0;
-                Token * enumValue = 0;
-                Token * enumValueStart = 0;
-                Token * enumValueEnd = 0;
+                Token * enumName = nullptr;
+                Token * enumValue = nullptr;
+                Token * enumValueStart = nullptr;
+                Token * enumValueEnd = nullptr;
 
                 if (Token::Match(tok1->previous(), ",|{ %type%")) {
                     if (Token::Match(tok1->next(), ",|}")) {
@@ -7811,7 +7811,7 @@ void Tokenizer::simplifyEnum()
 
                 tempTok->insertToken(";");
                 tempTok = tempTok->next();
-                if (typeTokenStart == 0)
+                if (typeTokenStart == nullptr)
                     tempTok->insertToken("int");
                 else {
                     Token *tempTok1 = typeTokenStart;
@@ -9840,9 +9840,7 @@ void Tokenizer::createSymbolDatabase()
 {
     if (!_symbolDatabase)
         _symbolDatabase = new SymbolDatabase(this, _settings, _errorLogger);
-    if (_settings->debug) {
-        //_symbolDatabase->validate();
-    }
+    _symbolDatabase->validate();
 }
 
 void Tokenizer::deleteSymbolDatabase()

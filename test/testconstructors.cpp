@@ -2519,7 +2519,7 @@ private:
               "    float g;\n"
               "public:\n"
               "    Fred() : f{0, true} { }\n"
-              "    float get() const\n"
+              "    float get() const;\n"
               "};\n"
               "float Fred::get() const { return g; }");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::g' is not initialized in the constructor.\n", errout.str());

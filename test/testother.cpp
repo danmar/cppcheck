@@ -4992,7 +4992,7 @@ private:
         check("class C {\n"
               "    int x;\n"
               "    void g() { return x*x; }\n"
-              "    void f();\n"
+              "    void f(Foo z);\n"
               "};\n"
               "\n"
               "void C::f(Foo z) {\n"

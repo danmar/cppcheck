@@ -1430,11 +1430,19 @@ void SymbolDatabase::validate() const
     const std::size_t functions = functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = functionScopes[i];
-        if (scope->isExecutable()) {
-            const Function* function = scope->function;
-            if (!function) {
-                cppcheckError(nullptr);
+        const Function* function = scope->function;
+        if (scope->isExecutable() && !function) {
+        if (_settings->debugwarnings)
+            {
+                const std::list<const Token*> callstack(1, scope->classDef);
+                const std::string msg = std::string("executable scope '") + scope->classDef->str() + "' with unknown function";
+                const ErrorLogger::ErrorMessage errmsg(callstack, &_tokenizer->list, Severity::debug,
+                                                       "symbolDatabaseWarning",
+                                                       msg,
+                                                       false);
+                _errorLogger->reportErr(errmsg);
             }
+
         }
     }
 }
@@ -1687,7 +1695,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
-    Function* function = 0;
+    Function* function = nullptr;
     for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
         if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), "", 0)) {
             function = const_cast<Function *>(i->second);
@@ -1709,7 +1717,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
         function->functionScope = scope;
         return function;
     }
-    return 0;
+    return nullptr;
 }
 
 Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
@@ -2000,7 +2008,6 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 base.isVirtual = true;
                 tok2 = tok2->next();
             }
-
             if (!tok2)
                 return nullptr;
 
@@ -2061,7 +2068,7 @@ const Function* Type::getFunction(const std::string& funcName) const
 
     for (std::size_t i = 0; i < derivedFrom.size(); i++) {
         if (derivedFrom[i].type) {
-            const Function* func = derivedFrom[i].type->getFunction(funcName);
+            const Function* const func = derivedFrom[i].type->getFunction(funcName);
             if (func)
                 return func;
         }
