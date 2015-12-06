@@ -302,3 +302,17 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
     }
     return false;
 }
+
+int numberOfArguments(const Token *start)
+{
+    int arguments=0;
+    const Token* const openBracket = start->next();
+    if (openBracket && openBracket->str()=="(" && openBracket->next() && openBracket->next()->str()!=")") {
+        const Token* argument=openBracket->next();
+        while (argument) {
+            ++arguments;
+            argument = argument->nextArgument();
+        }
+    }
+    return arguments;
+}

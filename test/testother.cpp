@@ -3275,6 +3275,16 @@ private:
               "    memset(p, sizeof(p), i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6269 false positives in case of overloaded standard library functions
+        check("class c {\n"
+              "  void memset( int i );\n"
+              "  void f( void )   {\n"
+              "     memset( 0 );\n"
+              "  }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void memsetInvalid2ndParam() {

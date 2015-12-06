@@ -67,4 +67,10 @@ bool isWithoutSideEffects(bool cpp, const Token* tok);
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid);
 
+/** Determines the number of arguments - if token is a function call or macro
+ * @param start token which is supposed to be the function/macro name.
+ * \return Number of arguments
+ */
+int numberOfArguments(const Token *start);
+
 #endif // astutilsH

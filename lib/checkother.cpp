@@ -1076,7 +1076,7 @@ void CheckOther::checkMemsetZeroBytes()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "memset (")) {
+            if (Token::simpleMatch(tok, "memset (") && (numberOfArguments(tok)==3)) {
                 const Token* lastParamTok = tok->next()->link()->previous();
                 if (lastParamTok->str() == "0")
                     memsetZeroBytesError(tok, tok->strAt(2));

@@ -869,15 +869,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
     if (ftok->varId())
         return true;
 
-    int callargs = 0;
-    for (const Token *tok = ftok->tokAt(2); tok && tok->str() != ")"; tok = tok->next()) {
-        if (callargs == 0)
-            callargs = 1;
-        if (tok->str() == ",")
-            callargs++;
-        else if (tok->link() && Token::Match(tok, "<|(|["))
-            tok = tok->link();
-    }
+    int callargs = numberOfArguments(ftok);
     const std::map<std::string, std::map<int, ArgumentChecks> >::const_iterator it = argumentChecks.find(functionName(ftok));
     if (it == argumentChecks.end())
         return (callargs != 0);

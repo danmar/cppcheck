@@ -758,9 +758,9 @@ Token* Token::nextArgument() const
         else if (tok->link() && Token::Match(tok, "(|{|[|<"))
             tok = tok->link();
         else if (Token::Match(tok, ")|;"))
-            return 0;
+            return nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 Token* Token::nextArgumentBeforeCreateLinks2() const
@@ -775,9 +775,9 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
             if (temp)
                 tok = temp;
         } else if (Token::Match(tok, ")|;"))
-            return 0;
+            return nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 Token* Token::nextTemplateArgument() const
@@ -788,9 +788,9 @@ Token* Token::nextTemplateArgument() const
         else if (tok->link() && Token::Match(tok, "(|{|[|<"))
             tok = tok->link();
         else if (Token::Match(tok, ">|;"))
-            return 0;
+            return nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 const Token * Token::findClosingBracket() const
@@ -846,7 +846,7 @@ const Token *Token::findsimplematch(const Token *startTok, const char pattern[],
         if (Token::simpleMatch(tok, pattern))
             return tok;
     }
-    return 0;
+    return nullptr;
 }
 
 const Token *Token::findmatch(const Token *startTok, const char pattern[], unsigned int varId)
@@ -855,7 +855,7 @@ const Token *Token::findmatch(const Token *startTok, const char pattern[], unsig
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
-    return 0;
+    return nullptr;
 }
 
 const Token *Token::findmatch(const Token *startTok, const char pattern[], const Token *end, unsigned int varId)
@@ -864,7 +864,7 @@ const Token *Token::findmatch(const Token *startTok, const char pattern[], const
         if (Token::Match(tok, pattern, varId))
             return tok;
     }
-    return 0;
+    return nullptr;
 }
 
 void Token::insertToken(const std::string &tokenStr, bool prepend)
