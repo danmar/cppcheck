@@ -1598,7 +1598,7 @@ private:
         check("testing::testing()\n"
               "{\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (debug) executable scope 'testing' with unknown function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n", errout.str());
     }
 
     void symboldatabase5() {

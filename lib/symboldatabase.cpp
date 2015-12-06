@@ -1427,15 +1427,14 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 
 void SymbolDatabase::validate() const
 {
-    const std::size_t functions = functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope* scope = functionScopes[i];
-        const Function* function = scope->function;
-        if (scope->isExecutable() && !function) {
-        if (_settings->debugwarnings)
-            {
+    if (_settings->debugwarnings) {
+        const std::size_t functions = functionScopes.size();
+        for (std::size_t i = 0; i < functions; ++i) {
+            const Scope* scope = functionScopes[i];
+            const Function* function = scope->function;
+            if (scope->isExecutable() && !function) {
                 const std::list<const Token*> callstack(1, scope->classDef);
-                const std::string msg = std::string("executable scope '") + scope->classDef->str() + "' with unknown function";
+                const std::string msg = std::string("Executable scope '") + scope->classDef->str() + "' with unknown function.";
                 const ErrorLogger::ErrorMessage errmsg(callstack, &_tokenizer->list, Severity::debug,
                                                        "symbolDatabaseWarning",
                                                        msg,
