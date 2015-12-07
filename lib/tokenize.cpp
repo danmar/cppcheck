@@ -7908,7 +7908,7 @@ void Tokenizer::simplifyEnum()
 }
 
 namespace {
-    const std::set<std::string> f = make_container< std::set<std::string> > () <<
+    const std::set<std::string> stdFunctionsPresentInC = make_container< std::set<std::string> > () <<
                                     "strcat" <<
                                     "strcpy" <<
                                     "strncat" <<
@@ -7928,7 +7928,7 @@ void Tokenizer::simplifyStd()
             continue;
 
         if (Token::Match(tok->previous(), "[(,{};] std :: %name% (") &&
-            f.find(tok->strAt(2)) != f.end()) {
+            stdFunctionsPresentInC.find(tok->strAt(2)) != stdFunctionsPresentInC.end()) {
             tok->deleteNext();
             tok->deleteThis();
         }
