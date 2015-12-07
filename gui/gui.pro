@@ -159,7 +159,7 @@ win32 {
 }
 
 contains(QMAKE_CC, gcc) {
-    QMAKE_CXXFLAGS += -std=c++0x
+    QMAKE_CXXFLAGS += -std=c++0x -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare
 }
 
 macx {

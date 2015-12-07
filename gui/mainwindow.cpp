@@ -613,6 +613,12 @@ bool MainWindow::TryLoadLibrary(Library *library, QString filename)
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             errmsg = tr("Platform type redefined");
             break;
+        case Library::ErrorCode::UNKNOWN_ELEMENT:
+            errmsg = tr("Unknown element");
+            break;
+        default:
+            errmsg = tr("Unknown issue");
+            break;
         }
         if (!error.reason.empty())
             errmsg += " '" + QString::fromStdString(error.reason) + "'";
