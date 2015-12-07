@@ -596,14 +596,16 @@ void CheckOther::checkRedundantAssignment()
                     if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat")) {
                         if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end() && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray())
                             initialized.insert(param1->varId());
-                        else if (memAssignments.find(param1->varId()) == memAssignments.end())
-                            memAssignments[param1->varId()] = tok;
                         else {
                             const std::map<unsigned int, const Token*>::const_iterator it = memAssignments.find(param1->varId());
-                            if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
-                                redundantCopyInSwitchError(it->second, tok, param1->str());
-                            else if (printPerformance)
-                                redundantCopyError(it->second, tok, param1->str());
+                            if (it == memAssignments.end())
+                                memAssignments[param1->varId()] = tok;
+                            else {
+                                if (printWarning && scope->type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
+                                    redundantCopyInSwitchError(it->second, tok, param1->str());
+                                else if (printPerformance)
+                                    redundantCopyError(it->second, tok, param1->str());
+                            }
                         }
                     }
                 } else if (scope->type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
