@@ -287,6 +287,8 @@ tags:
 install: cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
+	install addons/*.py ${BIN}
+	install addons/*/*.py ${BIN}
 	install htmlreport/cppcheck-htmlreport ${BIN}
 ifdef CFGDIR 
 	install -d ${DESTDIR}${CFGDIR}

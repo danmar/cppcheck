@@ -430,6 +430,8 @@ int main(int argc, char **argv)
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";
+    fout << "\tinstall addons/*.py ${BIN}\n";
+    fout << "\tinstall addons/*/*.py ${BIN}\n";
     fout << "\tinstall htmlreport/cppcheck-htmlreport ${BIN}\n";
     fout << "ifdef CFGDIR \n";
     fout << "\tinstall -d ${DESTDIR}${CFGDIR}\n";
