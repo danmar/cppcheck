@@ -2452,32 +2452,6 @@ void SymbolDatabase::printOut(const char *title) const
     std::cout << std::resetiosflags(std::ios::boolalpha);
 }
 
-static std::string toxml(const std::string &str)
-{
-    std::ostringstream xml;
-    for (std::size_t i = 0U; i < str.length(); i++) {
-        char c = str[i];
-        switch (c) {
-        case '<':
-            xml << "&lt;";
-            break;
-        case '>':
-            xml << "&gt;";
-            break;
-        case '&':
-            xml << "&amp;";
-            break;
-        case '\"':
-            xml << "&quot;";
-            break;
-        default:
-            xml << c;
-            break;
-        }
-    }
-    return xml.str();
-}
-
 void SymbolDatabase::printXml(std::ostream &out) const
 {
     out << std::setiosflags(std::ios::boolalpha);
@@ -2488,7 +2462,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " id=\"" << &*scope << "\"";
         out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
-            out << " className=\"" << toxml(scope->className) << "\"";
+            out << " className=\"" << ErrorLogger::toxml(scope->className) << "\"";
         if (scope->classStart)
             out << " classStart=\"" << scope->classStart << '\"';
         if (scope->classEnd)
@@ -2504,7 +2478,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << toxml(function->name()) << '\"';
+                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {

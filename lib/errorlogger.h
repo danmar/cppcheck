@@ -311,6 +311,13 @@ public:
     void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
+
+    /**
+     * Convert XML-sensitive characters into XML entities
+     * @param str The input string containing XML-sensitive characters
+     * @return The ouput string containing XML entities
+     */
+    static std::string toxml(const std::string &str);
 };
 
 /// @}
