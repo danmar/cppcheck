@@ -3911,39 +3911,6 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
     }
 }
 
-static std::string toxml(const std::string &str)
-{
-    std::ostringstream xml;
-    const bool isstring(str[0] == '\"');
-    for (std::size_t i = 0U; i < str.length(); i++) {
-        char c = str[i];
-        switch (c) {
-        case '<':
-            xml << "&lt;";
-            break;
-        case '>':
-            xml << "&gt;";
-            break;
-        case '&':
-            xml << "&amp;";
-            break;
-        case '\"':
-            xml << "&quot;";
-            break;
-        case '\0':
-            xml << "\\0";
-            break;
-        default:
-            if (!isstring || (c >= ' ' && c <= 'z'))
-                xml << c;
-            else
-                xml << 'x';
-            break;
-        }
-    }
-    return xml.str();
-}
-
 void Tokenizer::dump(std::ostream &out) const
 {
     // Create a xml data dump.
@@ -3953,8 +3920,8 @@ void Tokenizer::dump(std::ostream &out) const
     // tokens..
     out << "  <tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
-        out << " str=\"" << toxml(tok->str()) << '\"';
+        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
+        out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
         if (tok->isName())
             out << " type=\"name\"";
