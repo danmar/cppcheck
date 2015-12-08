@@ -7876,13 +7876,13 @@ void Tokenizer::simplifyEnum()
 
 namespace {
     const std::set<std::string> stdFunctionsPresentInC = make_container< std::set<std::string> > () <<
-                                    "strcat" <<
-                                    "strcpy" <<
-                                    "strncat" <<
-                                    "strncpy" <<
-                                    "free" <<
-                                    "malloc" <<
-                                    "strdup";
+            "strcat" <<
+            "strcpy" <<
+            "strncat" <<
+            "strncpy" <<
+            "free" <<
+            "malloc" <<
+            "strdup";
 }
 
 void Tokenizer::simplifyStd()
