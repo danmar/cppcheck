@@ -1734,9 +1734,10 @@ bool Tokenizer::tokenize(std::istream &code,
             for (std::size_t i = 0; i < _symbolDatabase->getVariableListSize(); i++) {
                 const Variable* var = _symbolDatabase->getVariableFromVarId(i);
                 if (var && var->isRValueReference()) {
-                    const_cast<Token*>(var->typeEndToken())->str("&");
-                    const_cast<Token*>(var->typeEndToken())->insertToken("&");
-                    const_cast<Token*>(var->typeEndToken()->next())->scope(var->typeEndToken()->scope());
+                    Token* endTok = const_cast<Token*>(var->typeEndToken());
+                    endTok->str("&");
+                    endTok->insertToken("&");
+                    endTok->next()->scope(endTok->scope());
                 }
             }
 
@@ -2100,10 +2101,11 @@ void Tokenizer::simplifyArrayAccessSyntax()
     // 0[a] -> a[0]
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && Token::Match(tok, "%num% [ %name% ]")) {
-            std::string temp = tok->str();
-            tok->str(tok->strAt(2));
-            tok->varId(tok->tokAt(2)->varId());
-            tok->tokAt(2)->str(temp);
+            const std::string number(tok->str());
+            Token* indexTok = tok->tokAt(2);
+            tok->str(indexTok->str());
+            tok->varId(indexTok->varId());
+            indexTok->str(number);
         }
     }
 }
