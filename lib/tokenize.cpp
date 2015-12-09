@@ -1835,6 +1835,7 @@ bool Tokenizer::tokenizeCondition(const std::string &code)
 
 void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
 {
+    validate();
     TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates(list.front());
 }
 
@@ -3495,7 +3496,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove __declspec()
     simplifyDeclspec();
-
+    validate();
     // remove some unhandled macros in global scope
     removeMacrosInGlobalScope();
 

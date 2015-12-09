@@ -209,7 +209,7 @@ private:
         TEST_CASE(garbageCode158); // #3238
         TEST_CASE(garbageCode159); // #7119
         TEST_CASE(garbageCode160); // #7190
-
+        TEST_CASE(garbageCode161); // #7200
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1381,6 +1381,10 @@ private:
 
         // #4169
         checkCode("volatile true , test < test < #ifdef __ppc__ true ,");
+    }
+    void garbageCode161() {
+        //7200
+        ASSERT_THROW(checkCode("{ }{ if () try { } catch (...)} B : : ~B { }"), InternalError);
     }
 };
 
