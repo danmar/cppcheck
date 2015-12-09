@@ -8322,8 +8322,7 @@ void Tokenizer::simplifyMathFunctions()
         if (tok->isName() && !tok->varId() && tok->strAt(1) == "(") { // precondition for function
             bool simplifcationMade = false;
             if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
-                if (tok->previous() &&
-                    Token::simpleMatch(tok->tokAt(-2), "std ::")) {
+                if (Token::simpleMatch(tok->tokAt(-2), "std ::")) {
                     tok = tok->tokAt(-2);// set token index two steps back
                     tok->deleteNext(2);  // delete "std ::"
                 }
@@ -8339,8 +8338,7 @@ void Tokenizer::simplifyMathFunctions()
                 tok->deleteNext(3);
                 simplifcationMade = true;
             } else if (Token::Match(tok, "abs|fabs|labs|llabs ( %num% )")) {
-                if (tok->previous() &&
-                    Token::simpleMatch(tok->tokAt(-2), "std ::")) {
+                if (Token::simpleMatch(tok->tokAt(-2), "std ::")) {
                     tok = tok->tokAt(-2);// set token index two steps back
                     tok->deleteNext(2);  // delete "std ::"
                 }
@@ -8509,7 +8507,7 @@ void Tokenizer::simplifyMathFunctions()
                     simplifcationMade = true;
                 }
             } else if (Token::Match(tok, "pow|powf|powl (")) {
-                if (tok && Token::Match(tok->tokAt(2), "%num% , %num% )")) {
+                if (Token::Match(tok->tokAt(2), "%num% , %num% )")) {
                     // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
                     // In case of pow ( 0 , 0 ): It simplified to 1
                     // In case of pow ( 1 , anyNumber ): It simplified to 1
@@ -8532,7 +8530,7 @@ void Tokenizer::simplifyMathFunctions()
                         simplifcationMade = true;
                     }
                 }
-                if (tok && Token::Match(tok->tokAt(2), "%any% , %num% )")) {
+                if (Token::Match(tok->tokAt(2), "%any% , %num% )")) {
                     // In case of pow( x , 1 ): It can be simplified to x.
                     const std::string& leftParameter(tok->strAt(2)); // get the left parameter
                     const std::string& rightNumber(tok->strAt(4)); // get right number
