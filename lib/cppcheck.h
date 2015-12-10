@@ -177,12 +177,6 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
-    /**
-     * @brief Replace "from" strings with "to" strings in "code"
-     * and return it.
-     */
-    static void replaceAll(std::string& code, const std::string &from, const std::string &to);
-
     std::list<std::string> _errorList;
     Settings _settings;
 

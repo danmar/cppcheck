@@ -76,15 +76,6 @@ unsigned int CppCheck::check(const std::string &path, const std::string &content
     return processFile(path, iss);
 }
 
-void CppCheck::replaceAll(std::string& code, const std::string &from, const std::string &to)
-{
-    std::size_t pos = 0;
-    while ((pos = code.find(from, pos)) != std::string::npos) {
-        code.replace(pos, from.length(), to);
-        pos += to.length();
-    }
-}
-
 unsigned int CppCheck::processFile(const std::string& filename, std::istream& fileStream)
 {
     exitcode = 0;
