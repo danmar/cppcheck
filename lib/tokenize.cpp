@@ -7954,21 +7954,16 @@ bool Tokenizer::isFunctionParameterPassedByValue(const Token *fpar) const
     const Token *ftok;
 
     // Look at function call, what parameter number is it?
-    unsigned int parentheses = 1;
     unsigned int parameter = 1;
     for (ftok = fpar->previous(); ftok; ftok = ftok->previous()) {
-        if (ftok->str() == "(") {
-            --parentheses;
-            if (parentheses == 0) {
-                break;
-            }
-        } else if (ftok->str() == ")") {
-            ++parentheses;
-        } else if (parentheses == 1 && ftok->str() == ",") {
-            ++parameter;
-        } else if (Token::Match(ftok, "[;{}]")) {
+        if (ftok->str() == "(")
             break;
-        }
+        else if (ftok->str() == ")")
+            ftok = ftok->link();
+        else if (ftok->str() == ",")
+            ++parameter;
+        else if (Token::Match(ftok, "[;{}]"))
+            break;
     }
 
     // Is this a function call?
