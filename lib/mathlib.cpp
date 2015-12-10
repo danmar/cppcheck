@@ -400,7 +400,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
                 c = str[1];
                 break;
             default:
-                throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+                throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant '" + str + "'.");
             }
             return c & 0xff;
         case 2:
@@ -413,7 +413,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
     }
     }
 
-    throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant " + str);
+    throw InternalError(0, "Internal Error. MathLib::toLongNumber: Unhandled char constant '" + str + "'.");
 }
 
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
