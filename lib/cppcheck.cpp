@@ -85,56 +85,6 @@ void CppCheck::replaceAll(std::string& code, const std::string &from, const std:
     }
 }
 
-bool CppCheck::findError(std::string code, const char FileName[])
-{
-    std::set<unsigned long long> checksums;
-    // First make sure that error occurs with the original code
-    bool internalErrorFound(false);
-    checkFile(code, FileName, checksums, internalErrorFound);
-    if (_errorList.empty()) {
-        // Error does not occur with this code
-        return false;
-    }
-
-    const std::string previousCode = code;
-    std::string error = _errorList.front();
-    for (;;) {
-
-        // Try to remove included files from the source
-        const std::size_t found = previousCode.rfind("\n#endfile");
-        if (found == std::string::npos) {
-            // No modifications can be done to the code
-        } else {
-            // Modify code and re-check it to see if error
-            // is still there.
-            code = previousCode.substr(found+9);
-            _errorList.clear();
-            checksums.clear();
-            checkFile(code, FileName, checksums, internalErrorFound);
-        }
-
-        if (_errorList.empty()) {
-            // Latest code didn't fail anymore. Fall back
-            // to previous code
-            code = previousCode;
-        } else {
-            error = _errorList.front();
-        }
-
-        // Add '\n' so that "\n#file" on first line would be found
-        code = "// " + error + "\n" + code;
-        replaceAll(code, "\n#file", "\n// #file");
-        replaceAll(code, "\n#endfile", "\n// #endfile");
-
-        // We have reduced the code as much as we can. Print out
-        // the code and quit.
-        _errorLogger.reportOut(code);
-        break;
-    }
-
-    return true;
-}
-
 unsigned int CppCheck::processFile(const std::string& filename, std::istream& fileStream)
 {
     exitcode = 0;
@@ -231,15 +181,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
             codeWithoutCfg += _settings.append();
 
-            if (_settings.debugFalsePositive) {
-                if (findError(codeWithoutCfg, filename.c_str())) {
-                    return exitcode;
-                }
-            } else {
-                if (!checkFile(codeWithoutCfg, filename.c_str(), checksums, internalErrorFound)) {
-                    if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
-                        purgedConfigurationMessage(filename, cfg);
-                }
+            if (!checkFile(codeWithoutCfg, filename.c_str(), checksums, internalErrorFound)) {
+                if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
+                    purgedConfigurationMessage(filename, cfg);
             }
         }
     } catch (const std::runtime_error &e) {
@@ -581,12 +525,6 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
         return;
-
-    if (_settings.debugFalsePositive) {
-        // Don't print out error
-        _errorList.push_back(errmsg);
-        return;
-    }
 
     std::string file;
     unsigned int line(0);

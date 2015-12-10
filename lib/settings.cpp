@@ -28,7 +28,6 @@ Settings::Settings()
       debug(false),
       debugnormal(false),
       debugwarnings(false),
-      debugFalsePositive(false),
       dump(false),
       exceptionHandling(false),
       inconclusive(false),

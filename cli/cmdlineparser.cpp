@@ -132,10 +132,6 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
                 _settings->debugwarnings = true;
 
-            // Print out code that triggers false positive
-            else if (std::strcmp(argv[i], "--debug-fp") == 0)
-                _settings->debugFalsePositive = true;
-
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
                 _settings->dump = true;
