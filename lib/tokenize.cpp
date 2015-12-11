@@ -1710,23 +1710,24 @@ void Tokenizer::simplifyMulAndParens()
     }
 }
 
-bool Tokenizer::tokenize(std::istream &code,
-                         const char FileName[],
-                         const std::string &configuration,
-                         bool noSymbolDB_AST)
+bool Tokenizer::createTokens(std::istream &code,
+                             const char FileName[])
 {
     // make sure settings specified
     assert(_settings);
 
+    return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths));
+}
+
+bool Tokenizer::simplifyTokens1(const std::string &configuration,
+                                bool noSymbolDB_AST)
+{
     // Fill the map _typeSize..
     fillTypeSizes();
 
     _configuration = configuration;
 
-    if (!list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), _settings->_basePaths)))
-        cppcheckError(nullptr);
-
-    if (simplifyTokenList1(FileName)) {
+    if (simplifyTokenList1(list.getFiles()[0].c_str())) {
         if (!noSymbolDB_AST) {
             createSymbolDatabase();
 
@@ -1753,6 +1754,17 @@ bool Tokenizer::tokenize(std::istream &code,
         return true;
     }
     return false;
+}
+
+bool Tokenizer::tokenize(std::istream &code,
+                         const char FileName[],
+                         const std::string &configuration,
+                         bool noSymbolDB_AST)
+{
+    if (!createTokens(code, FileName))
+        return false;
+
+    return simplifyTokens1(configuration, noSymbolDB_AST);
 }
 //---------------------------------------------------------------------------
 

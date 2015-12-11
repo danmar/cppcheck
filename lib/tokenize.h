@@ -75,6 +75,11 @@ public:
      */
     bool IsScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
+    bool createTokens(std::istream &code,
+                      const char FileName[]);
+
+    bool simplifyTokens1(const std::string &configuration,
+                         bool noSymbolDB_AST = false);
     /**
      * Tokenize code
      * @param code input stream for code, e.g.
