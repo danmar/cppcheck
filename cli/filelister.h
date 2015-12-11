@@ -81,20 +81,6 @@ public:
       * @return true if path points to file and the file exists.
       */
     static bool fileExists(const std::string &path);
-
-#ifndef _WIN32
-    static std::string getAbsolutePath(const std::string& path);
-
-private:
-
-    static void addFiles2(std::set<std::string> &seen_paths,
-                          std::map<std::string, std::size_t> &files,
-                          const std::string &path,
-                          const std::set<std::string> &extra,
-                          bool recursive,
-                          const PathMatch& ignored);
-#endif
-
 };
 
 /// @}
