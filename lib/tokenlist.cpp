@@ -1054,11 +1054,9 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
 void TokenList::createAst()
 {
-    for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
+    for (Token *tok = _front; tok; tok = tok ? tok->next() : nullptr) {
         tok = createAstAtToken(tok, isCPP());
     }
-
-    validateAst();
 }
 
 void TokenList::validateAst()

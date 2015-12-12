@@ -1742,17 +1742,7 @@ bool Tokenizer::tokenize(std::istream &code,
             }
 
             list.createAst();
-
-            // Verify that ast looks ok
-            for (const Token *tok = list.front(); tok; tok = tok->next()) {
-                // Syntax error if binary operator only has 1 operand
-                if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
-                    throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::SYNTAX);
-
-                // Syntax error if we encounter "?" with operand2 that is not ":"
-                if (tok->astOperand2() && tok->str() == "?" && tok->astOperand2()->str() != ":")
-                    throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::SYNTAX);
-            }
+            list.validateAst();
 
             SymbolDatabase::setValueTypeInTokenList(list.front());
             ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
@@ -3844,6 +3834,8 @@ bool Tokenizer::simplifyTokenList2()
     simplifyPointerConst();
 
     list.createAst();
+    // skipping this here may help improve performance. Might be enabled later on demand. #7208
+    // list.validateAst();
 
     ValueFlow::setValues(&list, _symbolDatabase, _errorLogger, _settings);
 

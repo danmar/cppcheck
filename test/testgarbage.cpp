@@ -1390,7 +1390,7 @@ private:
 
     void garbageCode162() {
         //7208
-        ASSERT_THROW(checkCode("return <<  >>  x return <<  >>  x ", "test.c"), InternalError);
+        ASSERT_THROW(checkCode("return <<  >>  x return <<  >>  x ", false), InternalError);
     }
 
 };
