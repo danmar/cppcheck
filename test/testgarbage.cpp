@@ -210,6 +210,7 @@ private:
         TEST_CASE(garbageCode159); // #7119
         TEST_CASE(garbageCode160); // #7190
         TEST_CASE(garbageCode161); // #7200
+        TEST_CASE(garbageCode162); // #7208
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1386,6 +1387,12 @@ private:
         //7200
         ASSERT_THROW(checkCode("{ }{ if () try { } catch (...)} B : : ~B { }"), InternalError);
     }
+
+    void garbageCode162() {
+        //7208
+        ASSERT_THROW(checkCode("return <<  >>  x return <<  >>  x ", "test.c"), InternalError);
+    }
+
 };
 
 REGISTER_TEST(TestGarbage)

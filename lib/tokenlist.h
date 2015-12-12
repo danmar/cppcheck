@@ -126,9 +126,24 @@ public:
     */
     unsigned long long calculateChecksum() const;
 
+    /**
+     * Create abstract syntax tree.
+     */
     void createAst();
 
+    /**
+     * Create abstract syntax tree.
+     */
+    void validateAst();
+
 private:
+
+    /**
+     * Send error message to error logger about internal bug.
+     * @param tok the token that this bug concerns.
+     */
+    void cppcheckError(const Token *tok) const;
+
     /** Disable copy constructor, no implementation */
     TokenList(const TokenList &);
 

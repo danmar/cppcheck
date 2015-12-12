@@ -1057,6 +1057,34 @@ void TokenList::createAst()
     for (Token *tok = _front; tok; tok = tok ? tok->next() : NULL) {
         tok = createAstAtToken(tok, isCPP());
     }
+
+    validateAst();
+}
+
+void TokenList::validateAst()
+{
+    // Verify that ast looks ok
+    for (const Token *tok = _front; tok; tok = tok->next()) {
+        // Syntax error if binary operator only has 1 operand
+        if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
+            throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::SYNTAX);
+
+        // Syntax error if we encounter "?" with operand2 that is not ":"
+        if (tok->astOperand2() && tok->str() == "?" && tok->astOperand2()->str() != ":")
+            throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::SYNTAX);
+
+        // check for endless recursion
+        const Token* parent=tok;
+        while (parent = parent->astParent()) {
+            if (parent==tok)
+                throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
+        }
+    }
+}
+
+void TokenList::cppcheckError(const Token *tok) const
+{
+    throw InternalError(tok, "Analysis failed - inconsisten AST. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 
 const std::string& TokenList::file(const Token *tok) const
