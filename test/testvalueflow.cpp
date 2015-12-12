@@ -900,6 +900,13 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 4));
 
+        code = "void f(int y) {\n" // #3923
+               "  int x = 6;\n"
+               "  if (y) { x = 0; }\n"
+               "  else { a = x; }\n" // <- x is 6
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 6));
+
         code = "void f() {\n"
                "    int x = 32;\n"
                "    if (x>=32) return;\n"
