@@ -132,17 +132,12 @@ public:
     void createAst();
 
     /**
-     * Create abstract syntax tree.
+     * Check abstract syntax tree.
+     * Throws InternalError on failure
      */
     void validateAst();
 
 private:
-
-    /**
-     * Send error message to error logger about internal bug.
-     * @param tok the token that this bug concerns.
-     */
-    void cppcheckError(const Token *tok) const;
 
     /** Disable copy constructor, no implementation */
     TokenList(const TokenList &);

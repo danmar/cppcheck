@@ -1075,16 +1075,11 @@ void TokenList::validateAst()
 
         // check for endless recursion
         const Token* parent=tok;
-        while (parent = parent->astParent()) {
+        while ((parent = parent->astParent())) {
             if (parent==tok)
                 throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
         }
     }
-}
-
-void TokenList::cppcheckError(const Token *tok) const
-{
-    throw InternalError(tok, "Analysis failed - inconsisten AST. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 
 const std::string& TokenList::file(const Token *tok) const
