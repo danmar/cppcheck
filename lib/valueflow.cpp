@@ -1148,29 +1148,11 @@ static bool valueFlowForward(Token * const               startToken,
             const bool condAlwaysTrue = (condTok && condTok->values.size() == 1U && condTok->values.front().isKnown() && condTok->values.front().intvalue != 0);
 
             // Should scope be skipped because variable value is checked?
-            std::list<ValueFlow::Value> truevalues, falsevalues;
+            std::list<ValueFlow::Value> truevalues;
             for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
                 if (condAlwaysTrue || !conditionIsFalse(condTok, getProgramMemory(tok2, varid, *it)))
                     truevalues.push_back(*it);
-                if (!condAlwaysTrue && !conditionIsTrue(condTok, getProgramMemory(tok2, varid, *it)))
-                    falsevalues.push_back(*it);
             }
-
-            if (!falsevalues.empty() && Token::simpleMatch(tok2->linkAt(1)->linkAt(1), "} else {")) {
-                // '{'
-                Token * const startToken1 = tok2->linkAt(1)->linkAt(1)->tokAt(2);
-
-                valueFlowForward(startToken1->next(),
-                                 startToken1->link(),
-                                 var,
-                                 varid,
-                                 falsevalues,
-                                 constValue,
-                                 tokenlist,
-                                 errorLogger,
-                                 settings);
-            }
-
             if (truevalues.size() != values.size() || condAlwaysTrue) {
                 // '{'
                 Token * const startToken1 = tok2->linkAt(1)->next();
