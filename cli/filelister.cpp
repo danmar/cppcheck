@@ -196,7 +196,7 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
 
-                new_path = path + "/" + dir_result->d_name;
+                new_path = path + '/' + dir_result->d_name;
 
                 if (dir_result->d_type == DT_DIR) {
                     if (recursive && !ignored.Match(new_path)) {
