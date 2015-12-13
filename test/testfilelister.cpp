@@ -46,9 +46,6 @@ private:
         }
 
         TEST_CASE(isDirectory);
-#ifndef _WIN32
-        TEST_CASE(absolutePath);
-#endif
         TEST_CASE(recursiveAddFiles);
     }
 
@@ -56,23 +53,6 @@ private:
         ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
         ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
-
-#ifndef _WIN32
-    void absolutePath() const {
-        std::vector<char> current_dir;
-#ifdef PATH_MAX
-        current_dir.resize(PATH_MAX);
-#else
-        current_dir.resize(1024);
-#endif
-        while (getcwd(&current_dir[0], current_dir.size()) == nullptr && errno == ERANGE) {
-            current_dir.resize(current_dir.size() + 1024);
-        }
-
-        std::string absolute_path = FileLister::getAbsolutePath(".");
-        ASSERT_EQUALS(&current_dir[0], absolute_path);
-    }
-#endif
 
     void recursiveAddFiles() const {
         // Recursively add add files..
