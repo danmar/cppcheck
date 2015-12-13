@@ -108,7 +108,7 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             return 0;
         }
 
-        // Run rules on this code
+        // Run define rules on raw code
         for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
             if (it->tokenlist == "define") {
                 Tokenizer tokenizer2(&_settings, this);
@@ -146,6 +146,10 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
+            // bail out if terminated
+            if (_settings.terminated())
+                break;
+
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
             if (!_settings._force && ++checkCount > _settings._maxConfigs)
@@ -172,11 +176,95 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
 
             codeWithoutCfg += _settings.append();
 
-            if (!checkFile(codeWithoutCfg, filename.c_str(), checksums, internalErrorFound)) {
+            Tokenizer _tokenizer(&_settings, this);
+            if (_settings._showtime != SHOWTIME_NONE)
+                _tokenizer.setTimerResults(&S_timerResults);
+
+            try {
+                // Create tokens, skip rest of iteration if failed
+                std::istringstream istr(codeWithoutCfg);
+                Timer timer("Tokenizer::createTokens", _settings._showtime, &S_timerResults);
+                bool result = _tokenizer.createTokens(istr, filename.c_str());
+                timer.Stop();
+                if (!result)
+                    continue;
+
+                // skip rest of iteration if just checking configuration
+                if (_settings.checkConfiguration)
+                    continue;
+
+                // Check raw tokens
+                checkRawTokens(_tokenizer);
+
+                // Simplify tokens into normal form, skip rest of iteration if failed
+                Timer timer2("Tokenizer::simplifyTokens1", _settings._showtime, &S_timerResults);
+                result = _tokenizer.simplifyTokens1(cfg);
+                timer2.Stop();
+                if (!result)
+                    continue;
+
+                // dump xml
+                if (_settings.dump) {
+                    std::ofstream fdump((filename + ".dump").c_str());
+                    if (fdump.is_open()) {
+                        fdump << "<?xml version=\"1.0\"?>" << std::endl;
+                        fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
+                        _tokenizer.dump(fdump);
+                        fdump << "</dump>" << std::endl;
+                    }
+                }
+
+                // Skip if we already met the same simplified token list
+                if (_settings._force || _settings._maxConfigs > 1) {
+                    const unsigned long long checksum = _tokenizer.list.calculateChecksum();
+                    if (checksums.find(checksum) != checksums.end())
+                        continue;
+                    checksums.insert(checksum);
+                }
+
+                // Check normal tokens
+                checkNormalTokens(_tokenizer);
+
+                // simplify more if required, skip rest of iteration if failed
+                if (_simplify) {
+                    // if further simplification fails then skip rest of iteration
+                    Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
+                    result = _tokenizer.simplifyTokenList2();
+                    timer3.Stop();
+                    if (!result)
+                        continue;
+
+                    // Check simplified tokens
+                    checkSimplifiedTokens(_tokenizer);
+                }
+
+            } catch (const InternalError &e) {
                 if (_settings.isEnabled("information") && (_settings.debug || _settings._verbose))
                     purgedConfigurationMessage(filename, cfg);
+                internalErrorFound=true;
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                if (e.token) {
+                    loc.line = e.token->linenr();
+                    const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
+                    loc.setfile(fixedpath);
+                } else {
+                    ErrorLogger::ErrorMessage::FileLocation loc2;
+                    loc2.setfile(Path::toNativeSeparators(filename.c_str()));
+                    locationList.push_back(loc2);
+                    loc.setfile(_tokenizer.list.getSourceFilePath());
+                }
+                locationList.push_back(loc);
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       Severity::error,
+                                                       e.errorMessage,
+                                                       e.id,
+                                                       false);
+
+                reportErr(errmsg);
             }
         }
+
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
     } catch (const InternalError &e) {
@@ -222,128 +310,57 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 }
 
 //---------------------------------------------------------------------------
-// CppCheck - A function that checks a specified file
+// CppCheck - A function that checks a raw token list
 //---------------------------------------------------------------------------
-bool CppCheck::checkFile(const std::string &code, const char FileName[], std::set<unsigned long long>& checksums, bool& internalErrorFound)
+void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 {
-    internalErrorFound=false;
-    if (_settings.terminated() || _settings.checkConfiguration)
-        return true;
+    // Execute rules for "raw" code
+    executeRules("raw", tokenizer);
+}
 
-    Tokenizer _tokenizer(&_settings, this);
-    if (_settings._showtime != SHOWTIME_NONE)
-        _tokenizer.setTimerResults(&S_timerResults);
-    try {
-        // Execute rules for "raw" code
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-            if (it->tokenlist == "raw") {
-                Tokenizer tokenizer2(&_settings, this);
-                std::istringstream istr(code);
-                tokenizer2.list.createTokens(istr, FileName);
-                executeRules("raw", tokenizer2);
-                break;
-            }
-        }
+//---------------------------------------------------------------------------
+// CppCheck - A function that checks a normal token list
+//---------------------------------------------------------------------------
 
-        // Tokenize the file
-        std::istringstream istr(code);
-
-        Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
-        bool result = _tokenizer.tokenize(istr, FileName, cfg);
-        timer.Stop();
-
-        if (_settings._force || _settings._maxConfigs > 1) {
-            const unsigned long long checksum = _tokenizer.list.calculateChecksum();
-            if (checksums.find(checksum) != checksums.end())
-                return false;
-            checksums.insert(checksum);
-        }
-
-        if (!result) {
-            // File had syntax errors, abort
-            return true;
-        }
-
-        // dump
-        if (_settings.dump) {
-            std::string dumpfile = std::string(FileName) + ".dump";
-            std::ofstream fdump(dumpfile.c_str());
-            if (fdump.is_open()) {
-                fdump << "<?xml version=\"1.0\"?>" << std::endl;
-                fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
-                _tokenizer.dump(fdump);
-                fdump << "</dump>" << std::endl;
-            }
-            return true;
-        }
-
-        // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            if (_settings.terminated())
-                return true;
-
-            Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
-            (*it)->runChecks(&_tokenizer, &_settings, this);
-        }
-
-        // Analyse the tokens..
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            Check::FileInfo *fi = (*it)->getFileInfo(&_tokenizer, &_settings);
-            if (fi != nullptr)
-                fileInfo.push_back(fi);
-        }
-
-        executeRules("normal", _tokenizer);
-
-        if (!_simplify)
-            return true;
-
-        Timer timer3("Tokenizer::simplifyTokenList2", _settings._showtime, &S_timerResults);
-        result = _tokenizer.simplifyTokenList2();
-        timer3.Stop();
-        if (!result)
-            return true;
-
-        // call all "runSimplifiedChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            if (_settings.terminated())
-                return true;
-
-            Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
-            (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
-        }
-
+void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
+{
+    // call all "runChecks" in all registered Check classes
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         if (_settings.terminated())
-            return true;
+            return;
 
-        executeRules("simple", _tokenizer);
-
-        if (_settings.terminated())
-            return true;
-    } catch (const InternalError &e) {
-        internalErrorFound=true;
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        if (e.token) {
-            loc.line = e.token->linenr();
-            const std::string fixedpath = Path::toNativeSeparators(_tokenizer.list.file(e.token));
-            loc.setfile(fixedpath);
-        } else {
-            ErrorLogger::ErrorMessage::FileLocation loc2;
-            loc2.setfile(Path::toNativeSeparators(FileName));
-            locationList.push_back(loc2);
-            loc.setfile(_tokenizer.list.getSourceFilePath());
-        }
-        locationList.push_back(loc);
-        const ErrorLogger::ErrorMessage errmsg(locationList,
-                                               Severity::error,
-                                               e.errorMessage,
-                                               e.id,
-                                               false);
-
-        reportErr(errmsg);
+        Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
+        (*it)->runChecks(&tokenizer, &_settings, this);
     }
-    return true;
+
+    // Analyse the tokens..
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &_settings);
+        if (fi != nullptr)
+            fileInfo.push_back(fi);
+    }
+
+    executeRules("normal", tokenizer);
+}
+
+//---------------------------------------------------------------------------
+// CppCheck - A function that checks a simplified token list
+//---------------------------------------------------------------------------
+
+void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
+{
+    // call all "runSimplifiedChecks" in all registered Check classes
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        if (_settings.terminated())
+            return;
+
+        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
+        (*it)->runSimplifiedChecks(&tokenizer, &_settings, this);
+        timerSimpleChecks.Stop();
+    }
+
+    if (!_settings.terminated())
+        executeRules("simple", tokenizer);
 }
 
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
