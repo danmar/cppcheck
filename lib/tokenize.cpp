@@ -7101,13 +7101,13 @@ void Tokenizer::simplifyReference()
             for (Token *tok2 = tok; tok2 && tok2 != end; tok2 = tok2->next()) {
                 // found a reference..
                 if (Token::Match(tok2, "[;{}] %type% & %name% (|= %name% )| ;")) {
-                    const unsigned int ref_id = tok2->tokAt(3)->varId();
-                    if (!ref_id)
+                    const unsigned int refId = tok2->tokAt(3)->varId();
+                    if (!refId)
                         continue;
 
                     // replace reference in the code..
                     for (Token *tok3 = tok2->tokAt(7); tok3 && tok3 != end; tok3 = tok3->next()) {
-                        if (tok3->varId() == ref_id) {
+                        if (tok3->varId() == refId) {
                             tok3->str(tok2->strAt(5));
                             tok3->varId(tok2->tokAt(5)->varId());
                         }
