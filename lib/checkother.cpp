@@ -2178,6 +2178,11 @@ void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 // Checking for shift by negative values
 //---------------------------------------------------------------------------
 
+static bool isNegative(const Token *tok, const Settings *settings)
+{
+    return tok->valueType() && tok->valueType()->sign == ValueType::SIGNED && tok->getValueLE(-1LL, settings);
+}
+
 void CheckOther::checkNegativeBitwiseShift()
 {
     for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -2213,9 +2218,9 @@ void CheckOther::checkNegativeBitwiseShift()
             continue;
 
         // Get negative rhs value. preferably a value which doesn't have 'condition'.
-        if (tok->astOperand1()->getValueLE(-1LL, _settings))
+        if (isNegative(tok->astOperand1(), _settings))
             negativeBitwiseShiftError(tok, 1);
-        else if (tok->astOperand2()->getValueLE(-1LL, _settings))
+        else if (isNegative(tok->astOperand2(), _settings))
             negativeBitwiseShiftError(tok, 2);
     }
 }
