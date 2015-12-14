@@ -12,8 +12,11 @@ import cppcheckdata
 import sys
 import re
 
+
 def reportError(token, severity, msg):
-    sys.stderr.write('[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') cert.py: ' + msg + '\n')
+    sys.stderr.write(
+        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') cert.py: ' + msg + '\n')
+
 
 def isUnpackedStruct(var):
     decl = var.typeStartToken
@@ -26,16 +29,18 @@ def isUnpackedStruct(var):
                     linenr = linenr - 1
                     if linenr == 0:
                         return True
-                    if re.match(r'#pragma\s+pack\s*\(',line):
+                    if re.match(r'#pragma\s+pack\s*\(', line):
                         return False
             break
         decl = decl.next
     return False
 
+
 def isLocalUnpackedStruct(arg):
     if arg and arg.str == '&' and not arg.astOperand2:
         arg = arg.astOperand1
     return arg and arg.variable and (arg.variable.isLocal or arg.variable.isArgument) and isUnpackedStruct(arg.variable)
+
 
 def isBitwiseOp(token):
     return token and (token.str in ['&', '|', '^'])
@@ -60,7 +65,8 @@ def exp42(data):
                 arg2 = token.astOperand2.astOperand1.astOperand2
 
         if token.astOperand1.str == 'memcmp' and (isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2)):
-            reportError(token, 'style', 'EXP42-C Comparison of struct padding data (fix either by packing the struct using \'#pragma pack\' or by rewriting the comparison)')
+            reportError(
+                token, 'style', 'EXP42-C Comparison of struct padding data (fix either by packing the struct using \'#pragma pack\' or by rewriting the comparison)')
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
@@ -70,10 +76,14 @@ def exp42(data):
 def exp46(data):
     for token in data.tokenlist:
         if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):
-            reportError(token, 'style', 'EXP46-C Bitwise operator is used with a Boolean-like operand')
+            reportError(
+                token, 'style', 'EXP46-C Bitwise operator is used with a Boolean-like operand')
 
 for arg in sys.argv[1:]:
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
-    exp42(data)
-    exp46(data)
+    for cfg in data.configurations:
+        if len(data.configurations) > 1:
+            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+        exp42(cfg)
+        exp46(cfg)

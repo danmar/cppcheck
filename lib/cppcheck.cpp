@@ -143,6 +143,17 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
             }
         }
 
+        // write dump file xml prolog
+        std::ofstream fdump;
+        if (_settings.dump) {
+            const std::string dumpfile(filename + ".dump");
+            fdump.open(dumpfile.c_str());
+            if (fdump.is_open()) {
+                fdump << "<?xml version=\"1.0\"?>" << std::endl;
+                fdump << "<dumps>" << std::endl;
+            }
+        }
+
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
         for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
@@ -203,11 +214,9 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 if (!result)
                     continue;
 
-                // dump xml
+                // dump xml if --dump
                 if (_settings.dump) {
-                    std::ofstream fdump((filename + ".dump").c_str());
                     if (fdump.is_open()) {
-                        fdump << "<?xml version=\"1.0\"?>" << std::endl;
                         fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
                         _tokenizer.dump(fdump);
                         fdump << "</dump>" << std::endl;
@@ -264,6 +273,10 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                 reportErr(errmsg);
             }
         }
+
+        // dumped all configs, close root </dumps> element now
+        if (_settings.dump && fdump.is_open())
+            fdump << "</dumps>" << std::endl;
 
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
