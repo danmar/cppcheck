@@ -215,12 +215,10 @@ unsigned int CppCheck::processFile(const std::string& filename, std::istream& fi
                     continue;
 
                 // dump xml if --dump
-                if (_settings.dump) {
-                    if (fdump.is_open()) {
-                        fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
-                        _tokenizer.dump(fdump);
-                        fdump << "</dump>" << std::endl;
-                    }
+                if (_settings.dump && fdump.is_open()) {
+                    fdump << "<dump cfg=\"" << cfg << "\">" << std::endl;
+                    _tokenizer.dump(fdump);
+                    fdump << "</dump>" << std::endl;
                 }
 
                 // Skip if we already met the same simplified token list
