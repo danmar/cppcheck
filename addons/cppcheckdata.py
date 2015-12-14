@@ -15,13 +15,15 @@ import xml.etree.ElementTree as ET
 #
 # To iterate through all tokens use such code:
 # @code
-# data = CppcheckData.parsedump(...)
+# data = cppcheckdata.parsedump(...)
 # code = ''
 # for token in data.tokenlist:
 #   code = code + token.str + ' '
 # print(code)
 # @endcode
 #
+
+
 class Token:
     Id = None
     ## Token string
@@ -69,7 +71,7 @@ class Token:
     #
     # Example code:
     # @code
-    # data = CppcheckData.parsedump(...)
+    # data = cppcheckdata.parsedump(...)
     # code = ''
     # for token in data.tokenlist:
     #   code = code + token.str
@@ -91,7 +93,7 @@ class Token:
     #
     # Example code:
     # @code
-    # data = CppcheckData.parsedump(...)
+    # data = cppcheckdata.parsedump(...)
     # code = ''
     # for token in data.tokenlist:
     #   code = code + token.str
@@ -119,7 +121,7 @@ class Token:
     #
     # Example code:
     # @code
-    # data = CppcheckData.parsedump(...)
+    # data = cppcheckdata.parsedump(...)
     # for token in data.tokenlist:
     #
     #   # is this a addition?
@@ -127,7 +129,7 @@ class Token:
     #
     #     # print LHS operand
     #     print(token.astOperand1.str)
-    # 
+    #
     # @endcode
     astOperand1 = None
     astOperand2Id = None
@@ -135,7 +137,7 @@ class Token:
     #
     # Example code:
     # @code
-    # data = CppcheckData.parsedump(...)
+    # data = cppcheckdata.parsedump(...)
     # for token in data.tokenlist:
     #
     #   # is this a division?
@@ -143,7 +145,7 @@ class Token:
     #
     #     # print RHS operand
     #     print(token.astOperand2.str)
-    # 
+    #
     # @endcode
     astOperand2 = None
 
@@ -226,16 +228,20 @@ class Token:
 
 ## Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.
 # C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classScope.html
+
+
 class Scope:
     Id = None
     classStartId = None
-    
+
     ## The { Token for this scope
     classStart = None
     classEndId = None
     ## The } Token for this scope
     classEnd = None
-    ## Name of this scope. For a function scope, this is the function name, For a class scope, this is the class name.
+    ## Name of this scope.
+    # For a function scope, this is the function name;
+    # for a class scope, this is the class name.
     className = None
     ## Type of scope: Global, Function, Class, If, While
     type = None
@@ -257,7 +263,10 @@ class Scope:
         self.nestedIn = IdMap[self.nestedInId]
 
 ## Information about a function
-# C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classFunction.html
+# C++ class:
+# http://cppcheck.sourceforge.net/devinfo/doxyoutput/classFunction.html
+
+
 class Function:
     Id = None
     argument = None
@@ -281,11 +290,14 @@ class Function:
         self.tokenDef = IdMap[self.tokenDefId]
 
 ## Information about a variable
-# C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classVariable.html
+# C++ class:
+# http://cppcheck.sourceforge.net/devinfo/doxyoutput/classVariable.html
+
+
 class Variable:
     Id = None
     nameTokenId = None
-    # name token in variable declaration
+    ## name token in variable declaration
     nameToken = None
     typeStartTokenId = None
     ## start token of variable declaration
@@ -330,17 +342,21 @@ class Variable:
         self.typeEndToken = IdMap[self.typeEndTokenId]
 
 ## ValueFlow class
+
+
 class ValueFlow:
     ## ValueFlow::Value class
     # Each possible value has a ValueFlow::Value item.
     # Each ValueFlow::Value either has a intvalue or tokvalue
-    # C++ class: http://cppcheck.sourceforge.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+    # C++ class:
+    # http://cppcheck.sourceforge.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+
     class Value:
-        # integer value
+        # #integer value
         intvalue = None
-        # token value
+        ## token value
         tokvalue = None
-        # condition where this Value comes from
+        ## condition where this Value comes from
         condition = None
 
         def __init__(self, element):
@@ -363,25 +379,14 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
 
-## Class that makes cppcheck dump data available
-#
-# To iterate through all tokens use such code:
-# @code
-# data = CppcheckData.parsedump(...)
-# code = ''
-# for token in data.tokenlist:
-#   code = code + token.str + ' '
-# print(code)
-# @endcode
-#
-# To iterate through all scopes (functions, types, etc) use such code:
-# @code
-# data = CppcheckData.parsedump(...)
-# for scope in data.scopes:
-#   print('type:' + scope.type + ' name:' + scope.className)
-# @endcode
-#
-class CppcheckData:
+## Configuration class
+# This class contains the tokens, scopes, functions, variables and
+# value flows for one configuration.
+
+
+class Configuration:
+    ## Name of the configuration, "" for default
+    name = ''
     ## List of Token items
     tokenlist = []
     ## List of Scope items
@@ -393,15 +398,15 @@ class CppcheckData:
     ## List of ValueFlow values
     valueflow = []
 
-    def __init__(self, filename):
+    def __init__(self, confignode):
+        self.name = confignode.get('cfg')
         self.tokenlist = []
         self.scopes = []
         self.functions = []
         self.variables = []
         self.valueflow = []
 
-        data = ET.parse(filename)
-        for element in data.getroot():
+        for element in confignode:
             if element.tag == 'tokenlist':
                 for token in element:
                     self.tokenlist.append(Token(token))
@@ -450,11 +455,60 @@ class CppcheckData:
         for variable in self.variables:
             variable.setId(IdMap)
 
+## Class that makes cppcheck dump data available
+# Contains a list of Configuration instances
+#
+# To iterate through all configurations use such code:
+# @code
+# data = cppcheckdata.parsedump(...)
+# for cfg in data.configurations:
+#     print('cfg: ' + cfg.name)
+# @endcode
+#
+# To iterate through all tokens in each configuration use such code:
+# @code
+# data = cppcheckdata.parsedump(...)
+# for cfg in data.configurations:
+#     print('cfg: ' + cfg.name)
+#     code = ''
+#         for token in cfg.tokenlist:
+#             code = code + token.str + ' '
+#     print('    ' + code)
+# @endcode
+#
+# To iterate through all scopes (functions, types, etc) use such code:
+# @code
+# data = cppcheckdata.parsedump(...)
+# for cfg in data.configurations:
+#     print('cfg: ' + cfg.name)
+#     for scope in cfg.scopes:
+#         print('    type:' + scope.type + ' name:' + scope.className)
+# @endcode
+#
+#
+
+
+class CppcheckData:
+    ## List of Configurations
+    configurations = []
+
+    def __init__(self, filename):
+        self.configurations = []
+
+        data = ET.parse(filename)
+        # root is 'dumps' node, each config has its own 'dump' subnode.
+        for cfgnode in data.getroot():
+            self.configurations.append(Configuration(cfgnode))
+
 ## parse a cppcheck dump file
+
+
 def parsedump(filename):
     return CppcheckData(filename)
 
 ## Check if type of ast node is float/double
+
+
 def astIsFloat(token):
     if not token:
         return False
