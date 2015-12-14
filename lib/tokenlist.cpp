@@ -1072,8 +1072,7 @@ void TokenList::validateAst()
             throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::SYNTAX);
 
         // check for endless recursion
-        const Token* parent=tok;
-        while ((parent = parent->astParent())) {
+        for (const Token* parent = tok->astParent(); parent; parent = parent->astParent()) {
             if (parent==tok)
                 throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
         }
