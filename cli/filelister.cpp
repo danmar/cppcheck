@@ -235,7 +235,7 @@ bool FileLister::isDirectory(const std::string &path)
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1)
         return ((file_stat.st_mode & S_IFMT) == S_IFDIR);
-    
+
     return false;
 }
 
@@ -244,7 +244,7 @@ bool FileLister::fileExists(const std::string &path)
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1)
         return ((file_stat.st_mode & S_IFMT) == S_IFREG);
-    
+
     return false;
 }
 
