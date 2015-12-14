@@ -5855,10 +5855,10 @@ void Tokenizer::simplifyStaticConst()
             // Move the qualifier to the left-most position in the declaration
             tok->deleteNext();
             if (!leftTok) {
-                list.front()->insertToken(qualifiers[i], false);
+                list.front()->insertToken(qualifiers[i], emptyString, false);
                 list.front()->swapWithNext();
             } else if (leftTok->next())
-                leftTok->next()->insertToken(qualifiers[i], true);
+                leftTok->next()->insertToken(qualifiers[i], emptyString, true);
             else
                 leftTok->insertToken(qualifiers[i]);
         }
@@ -6796,7 +6796,7 @@ bool Tokenizer::simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, unsign
                 tok3->deleteThis();
                 ret = true;
             } else if (Token::Match(valueToken, "& %name% ;"))
-                tok3->insertToken("&", true);
+                tok3->insertToken("&", emptyString, true);
         }
 
         if (Token::simpleMatch(tok3, "= {")) {
@@ -10256,7 +10256,7 @@ void Tokenizer::prepareTernaryOpForAST()
             }
             if (paranthesesNeeded && tok2 && tok2->str() == ":") {
                 tok->insertToken("(");
-                tok2->insertToken(")", true);
+                tok2->insertToken(")", emptyString, true);
                 Token::createMutualLinks(tok->next(), tok2->previous());
             }
         }

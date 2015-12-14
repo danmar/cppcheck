@@ -220,6 +220,7 @@ void Token::deleteThis()
         _variable = _next->_variable;
         _type = _next->_type;
         if (_next->_originalName) {
+            delete _originalName;
             _originalName = _next->_originalName;
             _next->_originalName = nullptr;
         }
@@ -241,6 +242,7 @@ void Token::deleteThis()
         _variable = _previous->_variable;
         _type = _previous->_type;
         if (_previous->_originalName) {
+            delete _originalName;
             _originalName = _previous->_originalName;
             _previous->_originalName = nullptr;
         }
@@ -296,13 +298,13 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
 const Token *Token::tokAt(int index) const
 {
     const Token *tok = this;
-    int num = std::abs(index);
-    while (num > 0 && tok) {
-        if (index > 0)
-            tok = tok->next();
-        else
-            tok = tok->previous();
-        --num;
+    while (index > 0 && tok) {
+        tok = tok->next();
+        --index;
+    }
+    while (index < 0 && tok) {
+        tok = tok->previous();
+        ++index;
     }
     return tok;
 }
@@ -865,44 +867,6 @@ const Token *Token::findmatch(const Token *startTok, const char pattern[], const
             return tok;
     }
     return nullptr;
-}
-
-void Token::insertToken(const std::string &tokenStr, bool prepend)
-{
-    //TODO: Find a solution for the first token on the list
-    if (prepend && !this->previous())
-        return;
-    Token *newToken;
-    if (_str.empty())
-        newToken = this;
-    else
-        newToken = new Token(tokensBack);
-    newToken->str(tokenStr);
-    newToken->_linenr = _linenr;
-    newToken->_fileIndex = _fileIndex;
-    newToken->_progressValue = _progressValue;
-
-    if (newToken != this) {
-        if (prepend) {
-            /*if (this->previous())*/ {
-                newToken->previous(this->previous());
-                newToken->previous()->next(newToken);
-            } /*else if (tokensFront?) {
-                *tokensFront? = newToken;
-            }*/
-            this->previous(newToken);
-            newToken->next(this);
-        } else {
-            if (this->next()) {
-                newToken->next(this->next());
-                newToken->next()->previous(newToken);
-            } else if (tokensBack) {
-                *tokensBack = newToken;
-            }
-            this->next(newToken);
-            newToken->previous(this);
-        }
-    }
 }
 
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)

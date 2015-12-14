@@ -466,12 +466,11 @@ public:
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
      * @param tokenStr String for the new token.
+     * @param originalNameStr String used for Token::originalName().
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    void insertToken(const std::string &tokenStr, bool prepend=false);
-
-    void insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend=false);
+    void insertToken(const std::string &tokenStr, const std::string &originalNameStr=emptyString, bool prepend=false);
 
     Token *previous() const {
         return _previous;
