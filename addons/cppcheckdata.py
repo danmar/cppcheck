@@ -352,7 +352,7 @@ class ValueFlow:
     # http://cppcheck.sourceforge.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
 
     class Value:
-        # #integer value
+        ## integer value
         intvalue = None
         ## token value
         tokvalue = None

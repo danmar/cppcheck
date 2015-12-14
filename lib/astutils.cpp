@@ -239,6 +239,51 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                         (comp1 == ">" && comp2 == "<"))));
 }
 
+
+bool isIncorrectCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions)
+{
+    if (!cond1 || !cond2)
+        return false;
+
+    if (cond1->str() == "!") {
+        if (cond2->str() == "!=") {
+            if (cond2->astOperand1() && cond2->astOperand1()->str() == "0")
+                return isSameExpression(cpp, cond1->astOperand1(), cond2->astOperand2(), constFunctions);
+            if (cond2->astOperand2() && cond2->astOperand2()->str() == "0")
+                return isSameExpression(cpp, cond1->astOperand1(), cond2->astOperand1(), constFunctions);
+        }
+        return isSameExpression(cpp, cond1->astOperand1(), cond2, constFunctions);
+    }
+
+    if (cond2->str() == "!")
+        return isIncorrectCond(isNot, cpp, cond2, cond1, constFunctions);
+
+    if (!cond1->isComparisonOp() || !cond2->isComparisonOp())
+        return false;
+
+    const std::string &comp1 = cond1->str();
+
+    // condition found .. get comparator
+    std::string comp2;
+    if (isSameExpression(cpp, cond1->astOperand1(), cond2->astOperand1(), constFunctions) &&
+        isSameExpression(cpp, cond1->astOperand2(), cond2->astOperand2(), constFunctions)) {
+        comp2 = cond2->str();
+    } else if (isSameExpression(cpp, cond1->astOperand1(), cond2->astOperand2(), constFunctions) &&
+               isSameExpression(cpp, cond1->astOperand2(), cond2->astOperand1(), constFunctions)) {
+        comp2 = cond2->str();
+        if (comp2[0] == '>')
+            comp2[0] = '<';
+        else if (comp2[0] == '<')
+            comp2[0] = '>';
+    }
+
+    // is condition incorrect?
+    return ((comp1 == "<" && comp2 == "==") ||
+            (comp1 == ">" && comp2 == "==") ||
+            (comp1 == "=="  && comp2 == "<") ||
+            (comp1 == "==" && comp2 == ">"));
+}
+
 bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions)
 {
     if (!tok)

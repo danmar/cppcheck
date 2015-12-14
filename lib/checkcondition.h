@@ -50,6 +50,7 @@ public:
         checkCondition.clarifyCondition();   // not simplified because ifAssign
         checkCondition.oppositeInnerCondition();
         checkCondition.checkIncorrectLogicOperator();
+        checkCondition.checkIncorrectCondition();
         checkCondition.checkInvalidTestForOverflow();
     }
 
@@ -88,6 +89,7 @@ public:
 
     /** @brief %Check for testing for mutual exclusion over ||*/
     void checkIncorrectLogicOperator();
+    void checkIncorrectCondition();
 
     /** @brief %Check for suspicious usage of modulo (e.g. "if(var % 4 == 4)") */
     void checkModuloAlwaysTrueFalse();
@@ -118,6 +120,7 @@ private:
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always);
+    void incorrectConditionError(const Token *tok, const std::string &condition, bool always);
     void redundantConditionError(const Token *tok, const std::string &text);
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);

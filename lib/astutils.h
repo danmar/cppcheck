@@ -59,6 +59,7 @@ bool isSameExpression(bool cpp, const Token *tok1, const Token *tok2, const std:
  * @param constFunctions  constFunctions
  */
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions);
+bool isIncorrectCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const std::set<std::string> &constFunctions);
 
 bool isConstExpression(const Token *tok, const std::set<std::string> &constFunctions);
 
