@@ -8673,7 +8673,7 @@ void Tokenizer::simplifyComma()
 
 void Tokenizer::validate() const
 {
-    std::stack<const Token *> linktok;
+    std::stack<const Token *> linkTokens;
     const Token *lastTok = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         lastTok = tok;
@@ -8681,31 +8681,31 @@ void Tokenizer::validate() const
             if (tok->link() == nullptr)
                 cppcheckError(tok);
 
-            linktok.push(tok);
+            linkTokens.push(tok);
         }
 
         else if (Token::Match(tok, "[})]]") || (tok->str() == ">" && tok->link())) {
             if (tok->link() == nullptr)
                 cppcheckError(tok);
 
-            if (linktok.empty() == true)
+            if (linkTokens.empty() == true)
                 cppcheckError(tok);
 
-            if (tok->link() != linktok.top())
+            if (tok->link() != linkTokens.top())
                 cppcheckError(tok);
 
             if (tok != tok->link()->link())
                 cppcheckError(tok);
 
-            linktok.pop();
+            linkTokens.pop();
         }
 
         else if (tok->link() != nullptr)
             cppcheckError(tok);
     }
 
-    if (!linktok.empty())
-        cppcheckError(linktok.top());
+    if (!linkTokens.empty())
+        cppcheckError(linkTokens.top());
 
     // Validate that the Tokenizer::list.back() is updated correctly during simplifications
     if (lastTok != list.back())
