@@ -1073,7 +1073,7 @@ void TokenList::validateAst()
 
         // check for endless recursion
         const Token* parent=tok;
-        while ((parent = parent->astParent())) {
+        while ((parent = parent->astParent()) != nullptr) {
             if (parent==tok)
                 throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
         }
