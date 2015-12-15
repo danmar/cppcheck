@@ -3003,7 +3003,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token *tok = Token::findsimplematch(tokenizer.tokens(),str);
+        const Token * const tok = Token::findsimplematch(tokenizer.tokens(),str);
         return tok->valueType()->str();
     }
 
