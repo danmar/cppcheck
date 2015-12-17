@@ -2590,10 +2590,10 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                 argType = symbolDatabase->findVariableType(scope, typeTok);
                 if (!argType) {
                     // look for variable type in any using namespace in this scope or above
-                    const Scope *parent = scope;
-                    while (parent) {
-                        for (std::list<Scope::UsingInfo>::const_iterator ui = scope->usingList.begin();
-                             ui != scope->usingList.end(); ++ui) {
+                    const Scope *currentScope = scope;
+                    while (currentScope) {
+                        for (std::list<Scope::UsingInfo>::const_iterator ui = currentScope->usingList.begin();
+                             ui != currentScope->usingList.end(); ++ui) {
                             if (ui->scope) {
                                 argType = symbolDatabase->findVariableType(ui->scope, typeTok);
                                 if (argType)
@@ -2602,7 +2602,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                         }
                         if (argType)
                             break;
-                        parent = parent->nestedIn;
+                        currentScope = currentScope->nestedIn;
                     }
                 }
             }
