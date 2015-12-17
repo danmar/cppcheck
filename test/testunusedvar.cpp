@@ -47,6 +47,7 @@ private:
         TEST_CASE(structmember_extern); // No false positives for extern structs
         TEST_CASE(structmember10);
         TEST_CASE(structmember11); // #4168 - initialization with {} / passed by address to unknown function
+        TEST_CASE(structmember12); // #7179 - FP unused structmember
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -390,6 +391,26 @@ private:
                                "struct abc s = {0};\n"
                                "void f() { }");
         TODO_ASSERT_EQUALS("abc::x is not used", "", errout.str());
+    }
+
+    void structmember12() { // #7179
+        checkStructMemberUsage("#include <stdio.h>\n"
+                                "struct\n"
+                                "{\n"
+                                "    union\n"
+                                "    {\n"
+                                "        struct\n"
+                                "        {\n"
+                                "            int a;\n"
+                                "        } struct1;\n"
+                                "    };\n"
+                                "} var = {0};\n"
+                                "int main(int argc, char *argv[])\n"
+                                "{\n"
+                                "    printf(\"var.struct1.a = %d\n\", var.struct1.a);\n"
+                                "    return 1;\n"
+                                "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember_extern() {
