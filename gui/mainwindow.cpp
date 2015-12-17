@@ -530,7 +530,7 @@ void MainWindow::CheckDirectory()
 void MainWindow::AddIncludeDirs(const QStringList &includeDirs, Settings &result)
 {
     QString dir;
-    foreach(dir, includeDirs) {
+    foreach (dir, includeDirs) {
         QString incdir;
         if (!QDir::isAbsolutePath(dir))
             incdir = mCurrentDirectory + "/";
@@ -642,20 +642,20 @@ Settings MainWindow::GetCppcheckSettings()
 
         const QStringList defines = pfile->GetDefines();
         QString define;
-        foreach(define, defines) {
+        foreach (define, defines) {
             if (!result.userDefines.empty())
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
 
         const QStringList libraries = pfile->GetLibraries();
-        foreach(QString library, libraries) {
+        foreach (QString library, libraries) {
             const QString filename = library + ".cfg";
             TryLoadLibrary(&result.library, filename);
         }
 
         const QStringList suppressions = pfile->GetSuppressions();
-        foreach(QString suppression, suppressions) {
+        foreach (QString suppression, suppressions) {
             result.nomsg.addSuppressionLine(suppression.toStdString());
         }
 

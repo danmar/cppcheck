@@ -338,7 +338,7 @@ void ResultsView::ReadErrorsXml(const QString &filename)
     }
 
     ErrorItem item;
-    foreach(item, errors) {
+    foreach (item, errors) {
         mUI.mTree->AddErrorItem(item);
     }
     mUI.mTree->SetCheckDirectory("");

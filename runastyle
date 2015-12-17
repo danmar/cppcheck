@@ -6,7 +6,7 @@
 
 # If project management wishes to take a newer astyle version into use
 # just change this string to match the start of astyle version string.
-ASTYLE_VERSION="Artistic Style Version 2.03"
+ASTYLE_VERSION="Artistic Style Version 2.05.1"
 ASTYLE="astyle"
 
 DETECTED_VERSION=`$ASTYLE --version 2>&1`
@@ -17,7 +17,7 @@ if [[ "$DETECTED_VERSION" != ${ASTYLE_VERSION}* ]]; then
 fi
 
 style="--style=stroustrup --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0"
-options="--options=none --pad-header --unpad-paren --suffix=none --convert-tabs"
+options="--options=none --pad-header --unpad-paren --suffix=none --convert-tabs --attach-inlines"
 
 $ASTYLE $style $options cli/*.cpp
 $ASTYLE $style $options cli/*.h

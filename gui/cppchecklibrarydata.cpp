@@ -232,7 +232,7 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString n
         else if (name == "size")
             xmlWriter.writeAttribute("templateParameter", QString::number(extra));
     }
-    foreach(const CppcheckLibraryData::Container::Function &function, functions) {
+    foreach (const CppcheckLibraryData::Container::Function &function, functions) {
         xmlWriter.writeStartElement("function");
         xmlWriter.writeAttribute("name", function.name);
         if (!function.action.isEmpty())
@@ -275,7 +275,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
         comments = comments.mid(1);
     while (comments.endsWith("\n"))
         comments.chop(1);
-    foreach(const QString &comment, comments.split('\n')) {
+    foreach (const QString &comment, comments.split('\n')) {
         if (comment.length() >= 1)
             xmlWriter.writeComment(comment);
     }
@@ -294,7 +294,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     if (function.leakignore)
         xmlWriter.writeEmptyElement("leak-ignore");
     // Argument info..
-    foreach(const CppcheckLibraryData::Function::Arg &arg, function.args) {
+    foreach (const CppcheckLibraryData::Function::Arg &arg, function.args) {
         if (arg.formatstr) {
             xmlWriter.writeStartElement("formatstr");
             if (!function.formatstr.scan.isNull())
@@ -323,7 +323,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
         if (!arg.valid.isEmpty())
             xmlWriter.writeTextElement("valid",arg.valid);
 
-        foreach(const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+        foreach (const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
             xmlWriter.writeStartElement("minsize");
             xmlWriter.writeAttribute("type", minsize.type);
             xmlWriter.writeAttribute("arg", minsize.arg);
@@ -359,16 +359,16 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
 static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::MemoryResource &mr)
 {
     xmlWriter.writeStartElement(mr.type);
-    foreach(const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
+    foreach (const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
         xmlWriter.writeStartElement("alloc");
         xmlWriter.writeAttribute("init", alloc.init ? "true" : "false");
         xmlWriter.writeCharacters(alloc.name);
         xmlWriter.writeEndElement();
     }
-    foreach(const QString &dealloc, mr.dealloc) {
+    foreach (const QString &dealloc, mr.dealloc) {
         xmlWriter.writeTextElement("dealloc", dealloc);
     }
-    foreach(const QString &use, mr.use) {
+    foreach (const QString &use, mr.use) {
         xmlWriter.writeTextElement("use", use);
     }
     xmlWriter.writeEndElement();
@@ -384,26 +384,26 @@ QString CppcheckLibraryData::toString() const
     xmlWriter.writeStartElement("def");
     xmlWriter.writeAttribute("format","2");
 
-    foreach(const Define &define, defines) {
+    foreach (const Define &define, defines) {
         xmlWriter.writeStartElement("define");
         xmlWriter.writeAttribute("name", define.name);
         xmlWriter.writeAttribute("value", define.value);
         xmlWriter.writeEndElement();
     }
 
-    foreach(const Function &function, functions) {
+    foreach (const Function &function, functions) {
         writeFunction(xmlWriter, function);
     }
 
-    foreach(const MemoryResource &mr, memoryresource) {
+    foreach (const MemoryResource &mr, memoryresource) {
         writeMemoryResource(xmlWriter, mr);
     }
 
-    foreach(const Container &container, containers) {
+    foreach (const Container &container, containers) {
         writeContainer(xmlWriter, container);
     }
 
-    foreach(const PodType &podtype, podtypes) {
+    foreach (const PodType &podtype, podtypes) {
         xmlWriter.writeStartElement("podtype");
         xmlWriter.writeAttribute("name", podtype.name);
         if (!podtype.sign.isEmpty())

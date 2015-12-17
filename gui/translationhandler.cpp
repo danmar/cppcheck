@@ -71,7 +71,7 @@ TranslationHandler::~TranslationHandler()
 const QStringList TranslationHandler::GetNames() const
 {
     QStringList names;
-    foreach(TranslationInfo translation, mTranslations) {
+    foreach (TranslationInfo translation, mTranslations) {
         names.append(translation.mName);
     }
     return names;

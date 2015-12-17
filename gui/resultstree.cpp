@@ -782,7 +782,7 @@ void ResultsTree::HideResult()
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QModelIndex index;
-    foreach(index, selectedRows) {
+    foreach (index, selectedRows) {
         QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();

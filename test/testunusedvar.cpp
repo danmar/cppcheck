@@ -395,21 +395,21 @@ private:
 
     void structmember12() { // #7179
         checkStructMemberUsage("#include <stdio.h>\n"
-                                "struct\n"
-                                "{\n"
-                                "    union\n"
-                                "    {\n"
-                                "        struct\n"
-                                "        {\n"
-                                "            int a;\n"
-                                "        } struct1;\n"
-                                "    };\n"
-                                "} var = {0};\n"
-                                "int main(int argc, char *argv[])\n"
-                                "{\n"
-                                "    printf(\"var.struct1.a = %d\n\", var.struct1.a);\n"
-                                "    return 1;\n"
-                                "}\n");
+                               "struct\n"
+                               "{\n"
+                               "    union\n"
+                               "    {\n"
+                               "        struct\n"
+                               "        {\n"
+                               "            int a;\n"
+                               "        } struct1;\n"
+                               "    };\n"
+                               "} var = {0};\n"
+                               "int main(int argc, char *argv[])\n"
+                               "{\n"
+                               "    printf(\"var.struct1.a = %d\n\", var.struct1.a);\n"
+                               "    return 1;\n"
+                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

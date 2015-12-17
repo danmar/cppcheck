@@ -999,7 +999,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'l':
                                 if (i+1 != formatString.end() && *(i+1) == *i)
                                     specifier += *i++;
-                                // fallthrough
+                            // fallthrough
                             case 'j':
                             case 'q':
                             case 't':
@@ -1301,7 +1301,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                     specifier += *i++;
                                     specifier += *i++;
                                 }
-                                // fallthrough
+                            // fallthrough
                             case 'j': // intmax_t or uintmax_t
                             case 'z': // size_t
                             case 't': // ptrdiff_t
