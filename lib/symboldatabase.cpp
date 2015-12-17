@@ -2969,6 +2969,8 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
                                 break;
                         }
                     }
+                    if (vType)
+                        break;
                     parent = parent->nestedIn;
                 }
             }
