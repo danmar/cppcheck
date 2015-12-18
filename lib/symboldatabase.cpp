@@ -2528,6 +2528,29 @@ void SymbolDatabase::printXml(std::ostream &out) const
 
 //---------------------------------------------------------------------------
 
+static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase* symbolDatabase, const Scope* scope, const Token* typeTok)
+{
+    const Type* argType = symbolDatabase->findVariableType(scope, typeTok);
+    if (argType)
+        return argType;
+
+    // look for variable type in any using namespace in this scope or above
+    while (scope) {
+        for (std::list<Scope::UsingInfo>::const_iterator ui = scope->usingList.begin();
+                 ui != scope->usingList.end(); ++ui) {
+            if (ui->scope) {
+                argType = symbolDatabase->findVariableType(ui->scope, typeTok);
+                if (argType)
+                    return argType;
+            }
+        }
+        scope = scope->nestedIn;
+    }
+    return nullptr;
+}
+
+//---------------------------------------------------------------------------
+
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
@@ -2587,24 +2610,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
             const ::Type *argType = nullptr;
             if (!typeTok->isStandardType()) {
-                argType = symbolDatabase->findVariableType(scope, typeTok);
-                if (!argType) {
-                    // look for variable type in any using namespace in this scope or above
-                    const Scope *currentScope = scope;
-                    while (currentScope) {
-                        for (std::list<Scope::UsingInfo>::const_iterator ui = currentScope->usingList.begin();
-                             ui != currentScope->usingList.end(); ++ui) {
-                            if (ui->scope) {
-                                argType = symbolDatabase->findVariableType(ui->scope, typeTok);
-                                if (argType)
-                                    break;
-                            }
-                        }
-                        if (argType)
-                            break;
-                        currentScope = currentScope->nestedIn;
-                    }
-                }
+                argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
             }
 
             // skip default values
@@ -2956,24 +2962,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         const Type *vType = nullptr;
 
         if (typetok) {
-            vType = check->findVariableType(this, typetok);
-            if (!vType) {
-                // look for variable type in any using namespace in this scope or above
-                const Scope *parent = this;
-                while (parent) {
-                    for (std::list<Scope::UsingInfo>::const_iterator ui = parent->usingList.begin();
-                         ui != parent->usingList.end(); ++ui) {
-                        if (ui->scope) {
-                            vType = check->findVariableType(ui->scope, typetok);
-                            if (vType)
-                                break;
-                        }
-                    }
-                    if (vType)
-                        break;
-                    parent = parent->nestedIn;
-                }
-            }
+            vType = findVariableTypeIncludingUsedNamespaces(check, this, typetok);
         }
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, lib);
