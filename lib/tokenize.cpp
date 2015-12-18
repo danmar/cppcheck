@@ -2999,12 +2999,10 @@ void Tokenizer::setVarId()
                 if (Token::Match(tok2, funcpattern.c_str())) {
                     // Goto the end parentheses..
                     tok2 = tok2->tokAt(nestedCount*2);
-                    if (tok2 && tok2->str() == "~")
+                    if (tok2->str() == "~")
                         tok2 = tok2->linkAt(2);
                     else
                         tok2 = tok2->linkAt(1);
-                    if (!tok2)
-                        break;
 
                     // If this is a function implementation.. add it to funclist
                     Token * start = startOfFunction(tok2);

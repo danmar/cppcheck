@@ -2537,7 +2537,7 @@ static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase*
     // look for variable type in any using namespace in this scope or above
     while (scope) {
         for (std::list<Scope::UsingInfo>::const_iterator ui = scope->usingList.begin();
-                 ui != scope->usingList.end(); ++ui) {
+             ui != scope->usingList.end(); ++ui) {
             if (ui->scope) {
                 argType = symbolDatabase->findVariableType(ui->scope, typeTok);
                 if (argType)
