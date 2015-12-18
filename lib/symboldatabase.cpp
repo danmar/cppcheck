@@ -365,22 +365,22 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
                             // copy/move constructor?
                             else if (Token::Match(function.tokenDef, "%name% ( const| %name% &|&& &| %name%| )") ||
                                      Token::Match(function.tokenDef, "%name% ( const| %name% <")) {
-                                const Token* typTok = function.tokenDef->tokAt(2);
-                                if (typTok->str() == "const")
-                                    typTok = typTok->next();
-                                if (typTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
-                                    if (Token::Match(typTok->linkAt(1), "> & %name%| )"))
+                                const Token* typeTok = function.tokenDef->tokAt(2);
+                                if (typeTok->str() == "const")
+                                    typeTok = typeTok->next();
+                                if (typeTok->strAt(1) == "<") { // TODO: Remove this branch (#4710)
+                                    if (Token::Match(typeTok->linkAt(1), "> & %name%| )"))
                                         function.type = Function::eCopyConstructor;
-                                    else if (Token::Match(typTok->linkAt(1), "> &&|& & %name%| )"))
+                                    else if (Token::Match(typeTok->linkAt(1), "> &&|& & %name%| )"))
                                         function.type = Function::eMoveConstructor;
                                     else
                                         function.type = Function::eConstructor;
-                                } else if (typTok->strAt(1) == "&&" || typTok->strAt(2) == "&")
+                                } else if (typeTok->strAt(1) == "&&" || typeTok->strAt(2) == "&")
                                     function.type = Function::eMoveConstructor;
                                 else
                                     function.type = Function::eCopyConstructor;
 
-                                if (typTok->str() != function.tokenDef->str())
+                                if (typeTok->str() != function.tokenDef->str())
                                     function.type = Function::eConstructor; // Overwrite, if types are not identical
                             }
                             // regular constructor
