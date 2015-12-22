@@ -37,6 +37,7 @@ CheckUnusedFunctions CheckUnusedFunctions::instance;
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
+    const bool doMarkup = settings->library.markupFile(FileName);
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
@@ -103,7 +104,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (!settings->library.markupFile(FileName) // only check source files
+        if (!doMarkup // only check source files
             && settings->library.isexporter(tok->str()) && tok->next() != 0) {
             const Token * propToken = tok->next();
             while (propToken && propToken->str() != ")") {
@@ -125,8 +126,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        if (settings->library.markupFile(FileName)
-            && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
+        if (doMarkup && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
             const Token * propToken = tok->next();
             if (propToken->next()) {
                 propToken = propToken->next();
