@@ -802,7 +802,7 @@ void MainWindow::ReCheckSelected(QStringList files, bool all)
 {
     if (files.empty())
         return;
-    if(mThread->IsChecking())
+    if (mThread->IsChecking())
         return;
 
     // Clear details, statistics and progress
