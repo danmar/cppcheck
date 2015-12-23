@@ -2763,8 +2763,9 @@ public:
                             const std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(str);
                             if (it != macros.end() && it->second->_macro.find('(') == std::string::npos) {
                                 str = it->second->_macro;
-                                if (str.find(' ') != std::string::npos)
-                                    str.erase(0, str.find(' '));
+                                const std::string::size_type whitespacePos = str.find(' ');
+                                if (whitespacePos != std::string::npos)
+                                    str.erase(0, whitespacePos);
                                 else
                                     str = "";
                             }
