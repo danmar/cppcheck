@@ -1079,7 +1079,7 @@ void TokenList::validateAst()
                 throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::SYNTAX);
             if (astTokens.find(parent)!= astTokens.end()) {
                 break;
-             }
+            }
             astTokens.insert(parent);
         }
     }
