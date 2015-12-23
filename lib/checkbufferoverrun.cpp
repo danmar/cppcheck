@@ -1427,13 +1427,14 @@ void CheckBufferOverrun::bufferOverrun2()
             continue;
 
         // Set full varname..
-        std::string varname(tok->str());
+        std::string varname;
         if (tok->astParent() && tok->astParent()->str() == ".") {
             const Token *parent = tok->astParent();
             while (parent->astParent() && parent->astParent()->str() == ".")
                 parent = parent->astParent();
             varname = parent->expressionString();
-        }
+        } else
+            varname = tok->str();
 
 
         const Token * const strtoken = tok->getValueTokenMinStrSize();
