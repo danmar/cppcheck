@@ -62,9 +62,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mExiting(false)
 {
     mUI.setupUi(this);
-    mUI.mResults->Initialize(mSettings, mApplications);
-
     mThread = new ThreadHandler(this);
+    mUI.mResults->Initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
@@ -122,6 +121,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mResults, SIGNAL(ResultsHidden(bool)), mUI.mActionShowHidden, SLOT(setEnabled(bool)));
+    connect(mUI.mResults, SIGNAL(CheckSelected(QStringList)), this, SLOT(PerformSelectedFilesCheck(QStringList)));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
     // File menu
@@ -388,7 +388,8 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     if (mProject)
         qDebug() << "Checking project file" << mProject->GetProjectFile()->GetFilename();
 
-    mThread->Check(checkSettings, false);
+    mThread->SetCheckFiles(true);
+    mThread->Check(checkSettings, true);
 }
 
 void MainWindow::CheckCode(const QString& code, const QString& filename)
@@ -797,6 +798,29 @@ void MainWindow::ReCheckAll()
     ReCheck(true);
 }
 
+void MainWindow::ReCheckSelected(QStringList files, bool all)
+{
+    if (files.empty())
+        return;
+    if(mThread->IsChecking())
+        return;
+
+    // Clear details, statistics and progress
+    mUI.mResults->Clear(false);
+    for (int i = 0; i < files.size(); ++i)
+        mUI.mResults->Clear(files[i]);
+    CheckLockDownUI(); // lock UI while checking
+    mUI.mResults->CheckingStarted(files.size());
+    mThread->SetCheckFiles(files);
+
+    // Saving last check start time, otherwise unchecked modified files will not be
+    // considered in "Modified Files Check"  performed after "Selected Files Check"
+    // TODO: Should we store per file CheckStartTime?
+    QDateTime saveCheckStartTime = mThread->GetCheckStartTime();
+    mThread->Check(GetCppcheckSettings(), all);
+    mThread->SetCheckStartTime(saveCheckStartTime);
+}
+
 void MainWindow::ReCheck(bool all)
 {
     const QStringList files = mThread->GetReCheckFiles(all);
@@ -816,7 +840,8 @@ void MainWindow::ReCheck(bool all)
     if (mProject)
         qDebug() << "Rechecking project file" << mProject->GetProjectFile()->GetFilename();
 
-    mThread->Check(GetCppcheckSettings(), !all);
+    mThread->SetCheckFiles(all);
+    mThread->Check(GetCppcheckSettings(), all);
 }
 
 void MainWindow::ClearResults()
@@ -991,6 +1016,11 @@ void MainWindow::ShowAuthors()
     FileViewDialog *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
+}
+
+void MainWindow::PerformSelectedFilesCheck(QStringList selectedFilesList)
+{
+    ReCheckSelected(selectedFilesList, true);
 }
 
 void MainWindow::Save()

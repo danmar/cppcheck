@@ -45,6 +45,7 @@
 #include "report.h"
 #include "application.h"
 #include "showtypes.h"
+#include "threadhandler.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -74,10 +75,11 @@ void ResultsTree::keyPressEvent(QKeyEvent *event)
     QTreeView::keyPressEvent(event);
 }
 
-void ResultsTree::Initialize(QSettings *settings, ApplicationList *list)
+void ResultsTree::Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
 {
     mSettings = settings;
     mApplications = list;
+    mThread = checkThreadHandler;
     LoadSettings();
 }
 
@@ -552,6 +554,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
+            QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
             QAction *copyfilename           = new QAction(tr("Copy filename"), &menu);
             QAction *copypath               = new QAction(tr("Copy full path"), &menu);
             QAction *copymessage            = new QAction(tr("Copy message"), &menu);
@@ -568,7 +571,12 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 hideallid->setDisabled(true);
                 opencontainingfolder->setDisabled(true);
             }
+            if(mThread->IsChecking())
+                recheckSelectedFiles->setDisabled(true);
+            else
+                recheckSelectedFiles->setDisabled(false);
 
+            menu.addAction(recheckSelectedFiles);
             menu.addAction(copyfilename);
             menu.addAction(copypath);
             menu.addAction(copymessage);
@@ -577,6 +585,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hideallid);
             menu.addAction(opencontainingfolder);
 
+            connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(RecheckSelectedFiles()));
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
             connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
@@ -588,20 +597,22 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
         //Start the menu
         menu.exec(e->globalPos());
+        index = indexAt(e->pos());
+        if (index.isValid()) {
+            mContextItem = mModel.itemFromIndex(index);
+            if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent()) {
+                //Disconnect all signals
+                for (int i = 0; i < actions.size(); i++) {
 
-        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent()) {
-            //Disconnect all signals
-            for (int i = 0; i < actions.size(); i++) {
+                    disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+                }
 
-                disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+                disconnect(signalMapper, SIGNAL(mapped(int)),
+                           this, SLOT(Context(int)));
+                //And remove the signal mapper
+                delete signalMapper;
             }
-
-            disconnect(signalMapper, SIGNAL(mapped(int)),
-                       this, SLOT(Context(int)));
-            //And remove the signal mapper
-            delete signalMapper;
         }
-
     }
 }
 
@@ -781,8 +792,7 @@ void ResultsTree::HideResult()
         return;
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
-    QModelIndex index;
-    foreach (index, selectedRows) {
+    foreach (QModelIndex index, selectedRows) {
         QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();
@@ -792,6 +802,21 @@ void ResultsTree::HideResult()
         RefreshTree();
         emit ResultsHidden(true);
     }
+}
+
+void ResultsTree::RecheckSelectedFiles()
+{
+    if (!mSelectionModel)
+        return;
+
+    QModelIndexList selectedRows = mSelectionModel->selectedRows();
+    QStringList selectedItems;
+    foreach (QModelIndex index, selectedRows) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        QVariantMap data = item->data().toMap();
+        selectedItems<<data["file"].toString();
+    }
+    emit CheckSelected(selectedItems);
 }
 
 void ResultsTree::HideAllIdResult()

@@ -35,6 +35,7 @@ class ErrorLine;
 class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
+class ThreadHandler;
 
 /// @addtogroup GUI
 /// @{
@@ -49,7 +50,7 @@ class ResultsTree : public QTreeView {
 public:
     explicit ResultsTree(QWidget * parent = 0);
     virtual ~ResultsTree();
-    void Initialize(QSettings *settings, ApplicationList *list);
+    void Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
     /**
     * @brief Add a new item to the tree
@@ -173,6 +174,13 @@ signals:
     void ResultsHidden(bool hidden);
 
     /**
+    * @brief Signal to perform selected files recheck
+    *
+    * @param selectedItems list of selected files
+    */
+    void CheckSelected(QStringList selectedItems);
+
+    /**
     * @brief Signal for selection change in result tree.
     *
     * @param current Model index to specify new selected item.
@@ -223,6 +231,12 @@ protected slots:
     *
     */
     void HideResult();
+
+    /**
+    * @brief Slot for rechecking selected files
+    *
+    */
+    void RecheckSelectedFiles();
 
     /**
     * @brief Slot for context menu item to hide all messages with the current message Id
@@ -472,6 +486,7 @@ protected:
 
 private:
     QItemSelectionModel *mSelectionModel;
+    ThreadHandler *mThread;
 };
 /// @}
 #endif // RESULTSTREE_H

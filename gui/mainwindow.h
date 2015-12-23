@@ -85,6 +85,12 @@ public slots:
     void ReCheckAll();
 
     /**
+    * @brief Slot to recheck selected files
+    * @param selectedFilesList list of selected files
+    */
+    void PerformSelectedFilesCheck(QStringList selectedFilesList);
+
+    /**
     * @brief Slot to recheck modified files
     *
     */
@@ -318,6 +324,13 @@ private:
     *
     */
     void ReCheck(bool all);
+
+    /**
+    * @brief Recheck selected files
+    * @param files list of selected files
+    * @param all true if all files of list, false if modified files of list
+    */
+    void ReCheckSelected(QStringList files, bool all);
 
     /**
       * @brief Check the project.

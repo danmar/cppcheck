@@ -49,10 +49,11 @@ ResultsView::ResultsView(QWidget * parent) :
     mUI.setupUi(this);
 
     connect(mUI.mTree, SIGNAL(ResultsHidden(bool)), this, SIGNAL(ResultsHidden(bool)));
+    connect(mUI.mTree, SIGNAL(CheckSelected(QStringList)), this, SIGNAL(CheckSelected(QStringList)));
     connect(mUI.mTree, SIGNAL(SelectionChanged(const QModelIndex &)), this, SLOT(UpdateDetails(const QModelIndex &)));
 }
 
-void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
+void ResultsView::Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
 {
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
@@ -61,7 +62,7 @@ void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
     mUI.mVerticalSplitter->restoreState(state);
     mShowNoErrorsMessage = settings->value(SETTINGS_SHOW_NO_ERRORS, true).toBool();
 
-    mUI.mTree->Initialize(settings, list);
+    mUI.mTree->Initialize(settings, list, checkThreadHandler);
 }
 
 ResultsView::~ResultsView()

@@ -45,7 +45,7 @@ class ResultsView : public QWidget {
 public:
 
     explicit ResultsView(QWidget * parent = 0);
-    void Initialize(QSettings *settings, ApplicationList *list);
+    void Initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     virtual ~ResultsView();
 
     /**
@@ -180,6 +180,13 @@ signals:
     * @param hidden true if there are some hidden results, or false if there are not
     */
     void ResultsHidden(bool hidden);
+
+    /**
+    * @brief Signal to perform recheck of selected files
+    *
+    * @param selectedFilesList list of selected files
+    */
+    void CheckSelected(QStringList selectedFilesList);
 
 public slots:
 

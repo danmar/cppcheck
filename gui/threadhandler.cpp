@@ -51,13 +51,22 @@ void ThreadHandler::SetFiles(const QStringList &files)
     mLastFiles = files;
 }
 
-void ThreadHandler::Check(const Settings &settings, bool recheck)
+void ThreadHandler::SetCheckFiles(bool all)
 {
-    if (recheck && mRunningThreadCount == 0) {
-        // only recheck changed files
-        mResults.SetFiles(GetReCheckFiles(false));
+    if (mRunningThreadCount == 0) {
+        mResults.SetFiles(GetReCheckFiles(all));
     }
+}
 
+void ThreadHandler::SetCheckFiles(QStringList files)
+{
+    if (mRunningThreadCount == 0) {
+        mResults.SetFiles(files);
+    }
+}
+
+void ThreadHandler::Check(const Settings &settings, bool all)
+{
     if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
@@ -190,7 +199,7 @@ int ThreadHandler::GetPreviousScanDuration() const
 
 QStringList ThreadHandler::GetReCheckFiles(bool all) const
 {
-    if (mLastCheckTime.isNull())
+    if (mLastCheckTime.isNull() || all)
         return mLastFiles;
 
     std::set<QString> modified;
@@ -242,4 +251,14 @@ bool ThreadHandler::NeedsReCheck(const QString &filename, std::set<QString> &mod
     }
 
     return false;
+}
+
+QDateTime ThreadHandler::GetCheckStartTime() const
+{
+    return mCheckStartTime;
+}
+
+void ThreadHandler::SetCheckStartTime(QDateTime checkStartTime)
+{
+    mCheckStartTime = checkStartTime;
 }
