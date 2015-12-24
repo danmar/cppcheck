@@ -2094,7 +2094,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
         // Search for the "var = realloc(var, 100" pattern within this function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId() > 0 &&
-                Token::Match(tok, "%name% = realloc|g_try_realloc ( %name% , %any%") &&
+                Token::Match(tok, "%name% = realloc|g_try_realloc ( %name% ,") &&
                 tok->varId() == tok->tokAt(4)->varId() &&
                 isNoArgument(symbolDatabase, tok->varId())) {
                 // Check that another copy of the pointer wasn't saved earlier in the function
@@ -2113,7 +2113,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
                 memleakUponReallocFailureError(tok, tok->str());
             } else if (tok->next()->varId() > 0 &&
-                       (Token::Match(tok, "* %name% = realloc|g_try_realloc ( * %name% , %any%") &&
+                       (Token::Match(tok, "* %name% = realloc|g_try_realloc ( * %name% ,") &&
                         tok->next()->varId() == tok->tokAt(6)->varId()) &&
                        isNoArgument(symbolDatabase, tok->next()->varId())) {
                 // Check that another copy of the pointer wasn't saved earlier in the function

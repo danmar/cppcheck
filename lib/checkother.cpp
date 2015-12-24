@@ -921,7 +921,7 @@ void CheckOther::checkSuspiciousEqualityComparison()
                 //    for (i = 0; i < 10; i == a)
                 if (Token::Match(openParen->next(), "%name% =="))
                     suspiciousEqualityComparisonError(openParen->tokAt(2));
-                if (Token::Match(closeParen->tokAt(-2), "== %any%"))
+                if (closeParen->strAt(-2) == "==")
                     suspiciousEqualityComparisonError(closeParen->tokAt(-2));
 
                 // Skip over for() loop conditions because "for (;running==1;)"
@@ -1292,7 +1292,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (Token::Match(tok, "& %varid%", var->declarationId())) // Taking address of variable
             return false;
 
-        if (Token::Match(tok, "%varid% = %any%", var->declarationId()))
+        if (Token::Match(tok, "%varid% =", var->declarationId()))
             bFirstAssignment = true;
 
         if (!bFirstAssignment && Token::Match(tok, "* %varid%", var->declarationId())) // dereferencing means access to previous content
@@ -1793,8 +1793,8 @@ void CheckOther::checkInvalidFree()
 
             // If a variable that was previously assigned a newly-allocated memory location is
             // added or subtracted from when used to free the memory, report an error.
-            else if (Token::Match(tok, "free|g_free|delete ( %any% +|- %any%") ||
-                     Token::Match(tok, "delete [ ] ( %any% +|- %any%") ||
+            else if (Token::Match(tok, "free|g_free|delete ( %any% +|-") ||
+                     Token::Match(tok, "delete [ ] ( %any% +|-") ||
                      Token::Match(tok, "delete %any% +|- %any%")) {
 
                 const int varIndex = tok->strAt(1) == "(" ? 2 :
