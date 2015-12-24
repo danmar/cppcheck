@@ -236,8 +236,8 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             if (!CurrentToken.empty()) {
                 addtoken(CurrentToken, lineno, FileIndex, true);
                 _back->isExpandedMacro(expandedMacro);
+                CurrentToken.clear();
             }
-            CurrentToken.clear();
             expandedMacro = true;
             continue;
         }
@@ -352,9 +352,8 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
             if (!CurrentToken.empty()) {
                 _back->isExpandedMacro(expandedMacro);
                 expandedMacro = false;
+                CurrentToken.clear();
             }
-
-            CurrentToken.clear();
 
             if (ch == '\n') {
                 if (_settings->terminated())
