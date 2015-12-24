@@ -2481,3 +2481,59 @@ void CheckOther::unusedLabelError(const Token* tok)
     reportError(tok, Severity::style, "unusedLabel",
                 "Label '" + (tok?tok->str():emptyString) + "' is not used.");
 }
+
+
+void CheckOther::checkEvaluationOrder()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const std::size_t functions = symbolDatabase->functionScopes.size();
+    for (std::size_t i = 0; i < functions; ++i) {
+        const Scope * functionScope = symbolDatabase->functionScopes[i];
+        for (const Token* tok = functionScope->classStart; tok != functionScope->classEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "++|--") && !tok->isAssignmentOp())
+                continue;
+            if (!tok->astOperand1())
+                continue;
+            for (const Token *tok2 = tok; tok2 && tok2->astParent(); tok2 = tok2->astParent()) {
+                const Token * const parent = tok2->astParent();
+                if (Token::Match(parent, "%oror%|&&|?|:|;"))
+                    break;
+                if (parent->str() == ",") {
+                    const Token *par = parent;
+                    while (Token::simpleMatch(par,","))
+                        par = par->astParent();
+                    if (!par || par->str() != "(")
+                        break;
+                }
+
+                // Is expression used?
+                bool foundError = false;
+                std::stack<const Token *> tokens;
+                tokens.push((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2());
+                while (!tokens.empty() && !foundError) {
+                    const Token * const tok3 = tokens.top();
+                    tokens.pop();
+                    if (!tok3)
+                        continue;
+                    tokens.push(tok3->astOperand1());
+                    tokens.push(tok3->astOperand2());
+                    if (isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), tok3, _settings->library.functionpure)) {
+                        foundError = true;
+                    }
+                }
+
+                if (foundError) {
+                    unknownEvaluationOrder(parent);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::unknownEvaluationOrder(const Token* tok)
+{
+    reportError(tok, Severity::error, "unknownEvaluationOrder",
+                "Expression '" + (tok ? tok->expressionString() : std::string("x = x++;")) + "' depends on order of evaluation of side effects");
+}
+

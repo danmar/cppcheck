@@ -70,6 +70,7 @@ public:
         checkOther.checkZeroDivision();
         checkOther.checkInterlockedDecrement();
         checkOther.checkUnusedLabel();
+        checkOther.checkEvaluationOrder();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -203,6 +204,9 @@ public:
     /** @brief %Check for unused labels */
     void checkUnusedLabel();
 
+    /** @brief %Check for expression that depends on order of evaluation of side effects */
+    void checkEvaluationOrder();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
@@ -251,6 +255,7 @@ private:
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok);
+    void unknownEvaluationOrder(const Token* tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckOther c(0, settings, errorLogger);
@@ -305,6 +310,7 @@ private:
         c.commaSeparatedReturnError(0);
         c.redundantPointerOpError(0, "varname", false);
         c.unusedLabelError(0);
+        c.unknownEvaluationOrder(0);
     }
 
     static std::string myName() {
@@ -323,6 +329,7 @@ private:
                "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "- race condition with non-interlocked access after InterlockedDecrement() call\n"
+               "- expression 'x = x++;' depends on order of evaluation of side effects\n"
 
                // warning
                "- either division by zero or useless condition\n"

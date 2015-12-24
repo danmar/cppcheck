@@ -1142,7 +1142,8 @@ std::string Token::expressionString() const
         start = start->astOperand1();
     const Token *end = top;
     while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
-        if (Token::Match(end,"(|[")) {
+        if (Token::Match(end,"(|[") &&
+            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
             end = end->link();
             break;
         }

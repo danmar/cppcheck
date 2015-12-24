@@ -157,6 +157,8 @@ private:
         TEST_CASE(raceAfterInterlockedDecrement);
 
         TEST_CASE(testUnusedLabel);
+
+        TEST_CASE(testEvaluationOrder);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -2883,12 +2885,6 @@ private:
               "    int x = x;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::string var = var = \"test\";\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'var' to itself.\n", "", errout.str());
 
         check("struct A { int b; };\n"
               "void foo(A* a1, A* a2) {\n"
@@ -6101,6 +6097,20 @@ private:
               "    };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testEvaluationOrder() {
+        check("void f() {\n"
+              "  int x = dostuff();\n"
+              "  return x + x++;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Expression 'x+x++' depends on order of evaluation of side effects\n", errout.str());
+
+        // #7226
+        check("long int f1(const char *exp) {\n"
+              "  return strtol(++exp, (char **)&exp, 10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
     }
 };
 
