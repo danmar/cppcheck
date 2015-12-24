@@ -1598,7 +1598,7 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &c
     if (Token::Match(tokenizer.tokens(), "( %name% )")) {
         std::map<std::string,std::string>::const_iterator var = cfg.find(tokenizer.tokens()->strAt(1));
         if (var != cfg.end()) {
-            const std::string &value = (*var).second;
+            const std::string &value = var->second;
             condition = (value == "0") ? "0" : "1";
         } else if (match)
             condition = "0";
