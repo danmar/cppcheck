@@ -1876,10 +1876,11 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (lhs->astParent()->strAt(1) != "const")
                     return false;
             } else {
-                const Variable* v2 = lhs->previous()->variable();
-                if (lhs->tokType() == Token::eAssignmentOp && v2)
-                    if (!v2->isConst() && v2->isReference() && lhs == v2->nameToken()->next())
+                if (lhs->tokType() == Token::eAssignmentOp) {
+                    const Variable* lhsVar = lhs->previous()->variable();
+                    if (lhsVar && !lhsVar->isConst() && lhsVar->isReference() && lhs == lhsVar->nameToken()->next())
                         return false;
+                }
             }
 
             const Token* jumpBackToken = nullptr;
