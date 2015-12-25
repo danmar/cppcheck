@@ -6112,6 +6112,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Expression '++exp,(char**)&exp' depends on order of evaluation of side effects\n", errout.str());
 
+        // self assignment
+        check("void f() {\n"
+              "  int x = x = y + 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+
         // sequence points
         {
             // FP

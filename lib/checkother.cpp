@@ -2494,9 +2494,11 @@ void CheckOther::checkEvaluationOrder()
                 continue;
             if (!tok->astOperand1())
                 continue;
-            for (const Token *tok2 = tok; tok2 && tok2->astParent(); tok2 = tok2->astParent()) {
+            for (const Token *tok2 = tok;; tok2 = tok2->astParent()) {
                 // If ast parent is a sequence point then break
                 const Token * const parent = tok2->astParent();
+                if (!parent)
+                    break;
                 if (Token::Match(parent, "%oror%|&&|?|:|;"))
                     break;
                 if (parent->str() == ",") {
@@ -2508,6 +2510,16 @@ void CheckOther::checkEvaluationOrder()
                 }
                 if (parent->str() == "(" && parent->astOperand2())
                     break;
+
+                // self assignment..
+                if (tok2 == tok &&
+                    tok->str() == "=" &&
+                    parent->str() == "=" &&
+                    isSameExpression(_tokenizer->isCPP(), tok->astOperand1(), parent->astOperand1(), _settings->library.functionpure)) {
+                    if (_settings->isEnabled("warning"))
+                        selfAssignmentError(parent, tok->astOperand1()->expressionString());
+                    break;
+                }
 
                 // Is expression used?
                 bool foundError = false;
