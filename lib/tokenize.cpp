@@ -3536,7 +3536,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove __asm..
     simplifyAsm();
 
-    // Add parantheses to ternary operator where necessary
+    // Add parentheses to ternary operator where necessary
     prepareTernaryOpForAST();
 
     // Change initialisation of variable to assignment
@@ -10229,10 +10229,10 @@ void Tokenizer::prepareTernaryOpForAST()
 {
     // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
     //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
-    // The AST parser relies on this function to add such parantheses where necessary.
+    // The AST parser relies on this function to add such parentheses where necessary.
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "?") {
-            bool paranthesesNeeded = false;
+            bool parenthesesNeeded = false;
             unsigned int depth = 0;
             Token* tok2 = tok->next();
             for (; tok2; tok2 = tok2->next()) {
@@ -10245,13 +10245,13 @@ void Tokenizer::prepareTernaryOpForAST()
                 } else if (tok2->str() == ";" || (tok2->link() && tok2->str() != "{" && tok2->str() != "}"))
                     break;
                 else if (tok2->str() == ",")
-                    paranthesesNeeded = true;
+                    parenthesesNeeded = true;
                 else if (tok2->str() == "?") {
                     depth++;
-                    paranthesesNeeded = true;
+                    parenthesesNeeded = true;
                 }
             }
-            if (paranthesesNeeded && tok2 && tok2->str() == ":") {
+            if (parenthesesNeeded && tok2 && tok2->str() == ":") {
                 tok->insertToken("(");
                 tok2->insertToken(")", emptyString, true);
                 Token::createMutualLinks(tok->next(), tok2->previous());

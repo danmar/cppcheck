@@ -908,7 +908,7 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
         } else if (tok->str() == "?") {
             // http://en.cppreference.com/w/cpp/language/operator_precedence says about ternary operator:
             //       "The expression in the middle of the conditional operator (between ? and :) is parsed as if parenthesized: its precedence relative to ?: is ignored."
-            // Hence, we rely on Tokenizer::prepareTernaryOpForAST() to add such parantheses where necessary.
+            // Hence, we rely on Tokenizer::prepareTernaryOpForAST() to add such parentheses where necessary.
             if (tok->strAt(1) == ":") {
                 state.op.push(0);
             }

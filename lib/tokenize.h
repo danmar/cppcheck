@@ -695,7 +695,7 @@ private:
     bool simplifyStrlen();
 
     /**
-    * Prepare ternary operators with parantheses so that the AST can be created
+    * Prepare ternary operators with parentheses so that the AST can be created
     * */
     void prepareTernaryOpForAST();
 
