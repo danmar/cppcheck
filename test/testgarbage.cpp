@@ -211,6 +211,7 @@ private:
         TEST_CASE(garbageCode160); // #7190
         TEST_CASE(garbageCode161); // #7200
         TEST_CASE(garbageCode162); // #7208
+	TEST_CASE(garbageCode163); // #7228
         TEST_CASE(garbageValueFlow);
         TEST_CASE(garbageSymbolDatabase);
         TEST_CASE(garbageAST);
@@ -1391,6 +1392,11 @@ private:
     void garbageCode162() {
         //7208
         ASSERT_THROW(checkCode("return <<  >>  x return <<  >>  x ", false), InternalError);
+    }
+    
+    void garbageCode163() {
+        //7228
+        ASSERT_THROW(checkCode("typedef s f[](){typedef d h(;f)}", false), InternalError);
     }
 
 };

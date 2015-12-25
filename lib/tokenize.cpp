@@ -54,6 +54,8 @@ namespace {
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith) const
 {
+    if (!tok)
+        return nullptr;
     if (tok->str() == "(")
         tok = tok->link();
     if (Token::Match(tok, ") const| [;:{]")) {
